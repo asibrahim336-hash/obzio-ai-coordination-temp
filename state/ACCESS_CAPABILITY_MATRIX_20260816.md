@@ -27,3 +27,16 @@ Evidence basis: exercised this session unless marked (reported). Browser-side ro
 3. Metamate tab availability at delivery time (blocks bootstrap commission delivery only).
 4. ChatGPT file-attach from operator (owner drag or synthetic-paste; platform file-picker is OS-gated).
 5. GitHub token rotations before ≈18/≈21 Aug expiries (founder-only).
+
+## v2 DELTA — 17 Aug 2026, ~01:20 Irish (successor Claude-in-Chrome session; exercised unless marked)
+
+- Claude-in-Chrome: UP (successor session live). Re-demonstrated full chatgpt.com operate: project-chat sends, Work-surface new-chat creation outside projects, model/effort picker set to Ultra, conversation rename via backend-api PATCH (200), verbatim message extraction via backend-api GET, paste-attachment delivery at 35,690 B and 65,419 B (synthetic ClipboardEvent → pasted-text attachment; no composer freeze at these sizes).
+- New failure mode + standing mitigation: SPA navigation race — the home/new-chat composer can silently rebind to the most recent conversation between tool calls (caused one misrouted seed 6b3372c1…, voided by in-lane correction). Mitigation now standard: one JS call performing route-check → paste → chip-check → route-recheck → send. Also: coordinate clicks unreliable under window resize; element-ref/DOM clicks required.
+- ChatGPT account facts (API-level): asibrahim336@gmail.com, plan pro; Work-surface effort tiers Light/Medium/High/Extra High/Max/Ultra; observed model slug gpt-5.6-sol-wm.
+- ChatGPT connected apps (partial): Google Drive connected as Work source (observed in E&I Sources panel); Slack and Linear NOT connected (Connect buttons on Work home); 2 plugins enabled on Work composer (identity not yet inventoried); full settings-dialog inventory deferred to next queue.
+- Metamate: extension tool injection FAILS on metamate.meta.com (all extension tools error on that origin — site access not granted or unsupported). Bootstrap delivery blocked from the operator. Owner routes: (a) grant the Claude extension site access to metamate.meta.com and provide a signed-in tab, or (b) paste the paste-ready commission directly (~1 min) from commissions/METAMATE_BOOTSTRAP_COMMISSION_DRAFT_20260816.md.
+- chrome:// pages (extensions, site permissions, settings): CONFIRMED unreachable — navigation coerces chrome:// to https and tools cannot attach. Method substitution per Addendum 02: provider-native settings/API surfaces + connected-tool registries are the discovery routes; history scraping remains excluded.
+- GitHub browser route: signed-in session CONFIRMED (private repo readable in-tab; raw.githubusercontent token-redirect fetch works).
+- Zapier estate verified live this session: Gmail (12 actions), LinkedIn (4), GitHub (30, connection asibrahim336-hash), Anthropic (6), ChatGPT/OpenAI API (27).
+- Claude scheduled tasks verified live via claude-code-remote: trig_01SATZsoQttGX6SUGC4yRKrW daily 07:30Z (next 2026-08-17T07:31Z), trig_01GLX97waErKzNWgrsVrncd1 weekly Sun 16:00Z (next 2026-08-23T16:03Z), push on, both enabled.
+- Drive fallback pointer verified readable via Claude Drive connector (doc 1SzDA5Q47gOX0f5ysBuRCSiOF8X_tlwQoWTHOKGYCYKA).
