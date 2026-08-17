@@ -36,3 +36,12 @@ TEMPORARY — NON-CANONICAL — REPLACEABLE — NO SECRETS
 6) Anthropic payment card update.
 7) Calendar-invite decision · evilasf.com confirmation.
 8) When wanted: open signed-in Metamate tab (bootstrap delivery) and connect ahmed@obzio.com mailbox.
+
+## DELTA — 17 Aug 2026, ~01:20 Irish (successor browser session)
+- Successor Claude-in-Chrome session ACTIVE; owner-batch item 1 CLOSED. Browser queue items 1–3 executed; item 4 blocked (Metamate origin unreachable by extension); item 5 partially executed (see matrix v2).
+- E&I lane 6a7f544d…: SUPPLEMENT DELIVERED = user msg 35ff78ac-7201-4067-bd92-1d8e06d7bad4 (pasted-text attachment, 35,690 B) at 2026-08-17T00:03:32Z. Assembled in-page from verbatim sources fetched via backend-api (successor 80d38064… = 12,066 chars exact; Ultra lane defeeb16… = 20,219 chars exact) + exact template from templates/EI_SUPPLEMENT_TEMPLATE.md. Re-anchor requested, not restart. E&I re-anchor pass generating at snapshot.
+- Desk successor 6a8209a5…: transfer receipt = msg 12175acf… (2026-08-17T00:05:49Z). Misrouted planning seed 6b3372c1… (00:09Z, SPA navigation race) VOIDED by routing-correction note; any Desk reply to it is void. Evidence-lane operation by the browser operator STOPPED per runbook.
+- Pro planning lane 6a822d7d…: stamped = msg 84671b17… "PROVISIONAL STRATEGIC INPUT — NOT THE CONTROLLING PLAN — pending the Work/Ultra planning lane".
+- NEW CONTROLLING PLANNING LANE OPEN: "Obzio Ultra — Operating Plan Lane (Work)" conv 6a8251c3-9f7c-83ed-b653-0bfca1034ba7 (Work surface, GPT-5.6 Sol, Ultra effort verified in-picker pre-send; slug gpt-5.6-sol-wm). Seed = user msg 277ea3cf-e935-4853-9d79-ec08c82eafc1 (65,419 B pasted-text attachment): activation preamble + procurement/operator-enablement delta (≈€5,000 planning signal; no purchase authorised) + current dispatch state + twelve-point delta (2099e082… verbatim) + provisional Pro output (10945dcb…, 52,502 chars verbatim). .004 adjudication and permanent information-plane selection explicitly excluded from that plan. Controlling plan generating at snapshot.
+- Metamate bootstrap commission OBZIO-MM-ESTATE-BOOTSTRAP-20260817-001: UNSENT. Extension cannot attach to metamate.meta.com (site-access boundary). Owner routes: grant extension site access + signed-in tab, or paste the commission directly from commissions/METAMATE_BOOTSTRAP_COMMISSION_DRAFT_20260816.md (~1 min).
+- Holds: all preserved; no .004 contact, no spend, no external sends to people, no credential values, no production changes, no information-plane adoption.
