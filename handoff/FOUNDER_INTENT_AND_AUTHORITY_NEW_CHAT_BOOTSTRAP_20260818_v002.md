@@ -105,11 +105,12 @@ Branch: `main`
   Blob: `e75cf97a9b72f1da96d26f047589e21f5d4d0824`
 - `state/FOUNDER_INTENT_STRATEGIC_BOOTSTRAP_REFERENCE_AND_WORK_ROUTE_DELTA_20260818_v001.md`  
   Blob: `04805ba18dc330d59de54c2c48541591559e3cf0`
-- `state/FOUNDER_INTENT_FULL_OPERATIONAL_INITIATIVE_AND_ACTIVE_STARTUP_DELTA_20260818_v001.md`
+- `state/FOUNDER_INTENT_FULL_OPERATIONAL_INITIATIVE_AND_ACTIVE_STARTUP_DELTA_20260818_v001.md`  
+  Blob: `1452d43a7e00c1ef5a5058edea0c80b9a45c16a3`
 - `dispatch/SC_V008_DELIVERY_PACKAGING_RULING_20260818_v001.md`  
   Blob: `4eed6ab855e0c36fea376519a21778a7c9e98ecb`
 
-Verify the new operational-initiative delta and this bootstrap by exact read-back identity when technically accessible.
+Verify exact source identities when technically accessible.
 
 ## 9. Current live work
 
