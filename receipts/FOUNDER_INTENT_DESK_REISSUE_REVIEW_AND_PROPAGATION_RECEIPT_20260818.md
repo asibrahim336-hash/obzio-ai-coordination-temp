@@ -8,18 +8,26 @@
 
 ## 1. Files written and read back
 
-| Path | Purpose | Write commit SHA | Read-back blob SHA | Standing |
+| Path | Purpose | Current write commit SHA | Current read-back blob SHA | Standing |
 |---|---|---|---|---|
 | `state/FOUNDER_INTENT_DESK_REISSUE_ALIGNMENT_AND_INTERACTION_CORRECTION_20260818.md` | Controlling founder-intent, authority, estate, interaction and dispatch-semantic correction | `80d055c8a584d1725fe433f09ecaf54fc6ac0910` | `a9cf2476cb09aebce3d98fd4b5b7d40c0d5a8d61` | `CURRENT CONTROLLING CORRECTION` |
 | `dispatch/STRATEGIC_CONTROL_FOUNDER_INTENT_REISSUE_DIRECTIVE_20260818_v001.md` | Exact Strategic Control successor-reissue route | `853df8baf9713c51c79ed910c20d00db00237850` | `380d5c1979fe508422a5f222fbc2457714dfa3a9` | `READY TO ROUTE — UNSENT` |
-| `state/SOURCE_CLAIM_REGISTER_DELTA_20260818_07.jsonl` | Proposition, authority, estate and semantic-defect registration | `64b0115bf7aeab57463c1bcc0289ff42dadde4aa` | `02df79493553881c0a09a23088d34bd7bf99b6c5` | `CURRENT DELTA` |
+| `state/SOURCE_CLAIM_REGISTER_DELTA_20260818_07.jsonl` | Proposition, authority, estate and semantic-defect registration; FIA-generated ruling/directive typed as `MODEL-RECOMMENDATION`, not founder-originated | `cd6857a92f03140ba594c91dca522c0d3ba3afc2` | `86e3a524889a69e3e8b6bce2bd20a7ff0f3bcf4c` | `CURRENT DELTA — TYPING CORRECTED` |
 | `state/OPERATOR_LANE_REGISTER_DELTA_20260818_07.jsonl` | FIA review, Strategic Control reissue, repository-estate and interaction lanes | `dca772b066c720447b40e8965b23cbd161c6d24b` | `bf229a7d40b40edb68ba28c97253c1d2d2b7ed51` | `CURRENT DELTA` |
 | `state/OPERATIONAL_LEARNING_REGISTER_DELTA_20260818_06.jsonl` | Interaction, authority/access, estate, semantic-state and typing learning | `d0c6b183483fad4981cd8c55d9409418ab40dbd5` | `4b8f64280bc6d818c8a64c6f000951fe2818abd9` | `CURRENT DELTA` |
-| `state/ACTIVE_CONTROL_POINTER_20260818_09.json` | Current live pointer holding v003 and requiring successor reissue | `451889cce96b76a3ecbd4843a9f695eedc382253` | `c1ac711623c7b168635d6879c3268153cce795f4` | `CURRENT LIVE POINTER` |
+| `state/ACTIVE_CONTROL_POINTER_20260818_09.json` | Current live pointer holding v003 and requiring successor reissue | `8cfeee4516614f8592cbf65fc2cb74f5488297ed` | `e57cd98259f43fc74e87248f68d1bd04ac3ccbc6` | `CURRENT LIVE POINTER` |
 
-All listed files were fetched from `main` after write and their returned Git blob SHAs are recorded above.
+All listed files were fetched from `main` after their current write and the returned Git blob SHAs are recorded above.
 
-## 2. Core review outcome
+## 2. Typing integrity
+
+Ahmed-originated propositions are retained as `FOUNDER-EXPRESSED`.
+
+The function's alignment ruling and exact Strategic Control repair route are typed `MODEL-RECOMMENDATION` with institutional routing standing. They are not represented as words Ahmed personally stated, even though the Founder Intent & Authority mandate permits the function to hold and route a misaligned derived package.
+
+Empirical findings—eleven connected repositories and the destination semantic-currentness defect—are typed `EMPIRICAL-CLAIM`.
+
+## 3. Core review outcome
 
 ### Aligned and retained
 
@@ -45,7 +53,7 @@ All listed files were fetched from `main` after write and their returned Git blo
 - semantic-currentness repair of destination packages;
 - correct typing of approximately seven-day planning and exact acceptance/cutover method as derived/model method unless separately founder-bound.
 
-## 3. Dispatch standing
+## 4. Dispatch standing
 
 - `dispatch/OWNED_OPERATOR_COMMAND_MIGRATION_DISPATCH_MANIFEST_20260818_v001.json`: retained historical/current-base evidence; blob identity verified.
 - `dispatch/CLAUDE_EXTENSION_REFERENCE_DISPATCH_20260818_v003.md`: `HELD UNSENT — SUPERSEDED PENDING SUCCESSOR`.
@@ -55,17 +63,17 @@ All listed files were fetched from `main` after write and their returned Git blo
 
 No Claude, ChatGPT/D, SW or Independent Acceptance dispatch was sent by this function.
 
-## 4. Estate observation
+## 5. Estate observation
 
 The connected GitHub account enumerated 11 repositories. The names are registered in the controlling correction and lane register. Enumeration is `OBSERVED`; repository content consumption and disposition remain `INCOMPLETE — REQUIRED`.
 
-## 5. Authority standing
+## 6. Authority standing
 
 No new founder permission is required for the internal repair, estate recovery, authorised integration use, temporary internal evaluation, model/lane/method allocation, internal state writes or learning propagation within constituted mandates.
 
 External outreach, new spend/obligation, financial transaction, credential disclosure, production database/DNS/deployment/security mutation, irreversible deletion and permanent architecture activation remain held.
 
-## 6. Route and propagation standing
+## 7. Route and propagation standing
 
 ### GitHub coordination route
 
@@ -91,16 +99,16 @@ This function can write the exact GitHub route but cannot post directly into a s
 
 No production database mutation was attempted.
 
-## 7. Founder standing
+## 8. Founder standing
 
 - New founder strategic decision required: `NO`.
 - New founder permission required: `NO`.
 - Immediate founder owner act: `NONE IF AN AUTHORISED OPERATOR CAN ROUTE THE GITHUB DIRECTIVE`.
 - Contingent minimal owner act: transmit the short Strategic Control reference only if no authorised operator can access the target ChatGPT thread.
 
-## 8. Interlock metadata
+## 9. Interlock metadata
 
-**decision_changed[]:** Desk reissue ruled partial; v003 held; founder interaction, full standing delegation, authority/access separation, eleven-repository estate intelligence, human queue and semantic-currentness repair made current; active pointer advanced to `_09`.
+**decision_changed[]:** Desk reissue ruled partial; v003 held; founder interaction, full standing delegation, authority/access separation, eleven-repository estate intelligence, human queue and semantic-currentness repair made current; proposition typing corrected; active pointer advanced to `_09`.
 
 **premises[]:** Ahmed's latest direct corrections; full Desk return; GitHub file read-backs; SW-W1; connected GitHub enumeration; current strategy snapshot.
 
