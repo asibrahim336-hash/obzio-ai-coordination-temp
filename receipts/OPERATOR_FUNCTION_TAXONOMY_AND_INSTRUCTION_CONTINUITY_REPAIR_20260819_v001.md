@@ -46,6 +46,7 @@ unresolved_founder_only_decision: "NONE"
 - original v008: missing-state defect retained; no reconstruction.
 - Principal AI Operator handover: quarantined as an operator report pending source validation.
 - provider/runtime labels in active v010 evidence: preserved as provenance, resolved through aliases and current function stack.
+- v010 Phase-Two cross-platform gate: scoped supersession recorded; already-authorised internal cross-estate operation is active now, while permanent architecture, outreach, spend, protected production/owner acts, secrets and substantive strategy remain gated.
 
 ## Verification
 
@@ -57,4 +58,3 @@ unresolved_founder_only_decision: "NONE"
 - GitHub branch/commit/PR read-back and diff review.
 
 The destination byte-identity defect recorded for founder-assisted v010 paste remains a separate known defect. It does not mean execution failed and this repair does not relaunch it.
-

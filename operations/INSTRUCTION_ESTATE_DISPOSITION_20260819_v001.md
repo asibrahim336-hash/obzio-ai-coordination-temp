@@ -5,7 +5,7 @@
 
 | Object/class | Disposition | Current treatment |
 |---|---|---|
-| Current active pointer, v010 payload, command and manifest | RETAIN / CURRENT EXECUTION EVIDENCE | Preserve hash-pinned bytes. Resolve their mission title/runtime labels through the new function compatibility layer. |
+| Current active pointer, v010 payload, command and manifest | RETAIN / CURRENT EXECUTION EVIDENCE WITH SCOPED SUPERSESSION | Preserve hash-pinned bytes. Resolve their mission title/runtime labels through the new function compatibility layer. The payload's Phase-Two gate no longer blocks already-authorised internal cross-estate operation; protected/permanent/owner/external acts remain gated. Do not re-run admission. |
 | `state/FOUNDER_CORRECTION_V00X_PHASE_ONE_FULL_SCALE_CHATGPT_OPERATION_20260819_v001.md` | RETAIN / CURRENT GOVERNING SOURCE | First authority source in the active stack. |
 | Work-thread launch correction dated 19 Aug | RETAIN / CURRENT ADDITIVE CORRECTION | Launch-now, Google-boundary and parallel-research requirements remain active. |
 | Strategic Control taxonomy correction dated 18 Aug | RETAIN / MIGRATED | Its function-over-runtime doctrine remains valid; implementation is completed by the operator-system registers. |
@@ -24,4 +24,3 @@ The current envelope preserves v010 internal operating permission plus useful pr
 ## Removal rule
 
 No historical object is deleted in this patch. Once migration references and cold-start tests remain stable, later custodial work may move redundant objects to an explicit archive. Permanent deletion requires dependency/evidence treatment and any applicable reserved owner act.
-

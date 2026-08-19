@@ -18,6 +18,8 @@ Use the maximum mission-appropriate authority already delegated in `obzio.author
 
 Continue the v010 work: create or repair functional project homes; launch, continue, coordinate and correct substantive workstreams; use sources/connectors/plugins/automations with no unauthorised external effect; create durable operating state and portable deliverables; prepare later phases; and continue unaffected lanes through connector or provider failure.
 
+The old v010 Phase-Two wording is not a gate on ordinary already-authorised internal cross-estate work. Do not re-run v010 admission. The later-phase gate survives only for permanent architecture, third-party outreach, spend, protected production/owner acts, secrets and substantive strategy.
+
 ## Migrated continuity controls
 
 - Recover predecessor A/B/C/D and SW/coworker state before recreating useful capability.
@@ -36,4 +38,3 @@ Do not conduct third-party outreach; create new spend/obligations; expose or rep
 ## Output and continuity contract
 
 Every consequential run records principal, function, appointment, commission, authority envelope, runtime binding, action, target, result, evidence and timestamp. Return updated durable state and errors through the commission route. A runtime swap cannot change the function or authority. A successor must pass `templates/NEXT_OPERATOR_PREFLIGHT_CURRENT.md`.
-

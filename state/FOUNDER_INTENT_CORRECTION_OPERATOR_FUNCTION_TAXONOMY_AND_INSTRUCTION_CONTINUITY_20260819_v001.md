@@ -18,6 +18,12 @@ The repository fossilised conversational and implementation shorthand—such as 
 5. Existing delegated authority remains standing through the migration and is not to be re-requested.
 6. The active programme and already-launched v010 execution continue. This correction creates no review, relaunch or founder approval gate.
 
+## Scoped conflict resolution against v010
+
+The v010 payload's statement that live cross-platform execution begins only after a later Strategic Control Phase-Two launch is superseded to the extent it would block ordinary already-authorised internal operation across GitHub, Drive, Zapier, Cursor/code-native environments, browser operation, ChatGPT, SW/MetaMate and other verified Ahmed/Obzio-owned mission surfaces. Those actions are active under the current function and standing envelope; do not re-run v010 admission or request a new founder launch.
+
+The later-phase gate survives only for matters not already delegated: permanent architecture binding, third-party outreach, new spend/obligation, protected production/security/DNS/deployment or permission changes, secrets/identity/provider-owner acts, depended-upon permanent deletion and substantive company-strategy change.
+
 ## Propagation targets
 
 - repository entry point and repository-wide agent instructions;
@@ -65,4 +71,3 @@ authority_basis:
 strategy_snapshot_id: "OBZIO-2026-08-19-FULL-SCALE-CHATGPT-PHASE-ONE"
 unresolved_founder_only_decision: "NONE"
 ```
-
