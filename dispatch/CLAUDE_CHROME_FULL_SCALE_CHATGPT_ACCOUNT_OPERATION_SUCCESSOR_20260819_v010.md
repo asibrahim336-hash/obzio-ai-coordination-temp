@@ -4,7 +4,7 @@
 **Payload ID:** `OBZIO-CLAUDE-CHROME-FULL-SCALE-CHATGPT-20260819-010`  
 **Document ID:** `OBZIO-SC-CIEG-FULL-SCALE-LAUNCH-PAYLOAD-20260819-001`  
 **Originating function:** Strategic Control — Command Integration & Evidence Governance (`SC-CIEG-01`)  
-**Selected destination:** a new primary Claude Chrome extension operation inside Ahmed's authenticated browser context for the relevant Ahmed/Obzio-owned ChatGPT account  
+**Selected destination:** a new primary Claude Chrome extension operation inside Ahmed's authenticated browser context for all technically accessible Ahmed/Obzio-owned ChatGPT workspaces and top-level account surfaces  
 **Constituted destination function:** `CHATGPT ACCOUNT OPERATIONS AND COMMISSIONING DIRECTOR`  
 **Status:** `CLEAN V010 SUCCESSOR — NOT ORIGINAL v008 — V009 SUPERSEDED-UNSENT`  
 **Substantive objective change:** `NONE`  
@@ -34,7 +34,7 @@ The detached v010 manifest and sole canonical v010 launch command pin the frozen
 
 Resolve propositions independently. Apply this order:
 
-1. Ahmed Sadek's latest explicit statement;
+1. Ahmed Sadek's latest identity-verified, applicable explicit statement on an authenticated Ahmed/Obzio-owned source;
 2. the current founder correction listed first in the source manifest below;
 3. the 19/08 v008 currentness/operator-coordination founder input;
 4. current Founder Intent bootstrap and later durable deltas;
@@ -81,6 +81,7 @@ Where GitHub is technically accessible, fetch and fully read each current root a
 | Prior Metamate bootstrap draft | `commissions/METAMATE_BOOTSTRAP_COMMISSION_DRAFT_20260816.md` | `06c963b747dceb7d2cecb771a094c0838de2ee61` | `SUPERSEDED-UNSENT EVIDENCE, DO NOT LAUNCH` |
 | Metamate candidate-surface research draft | `commissions/SW_CANDIDATE_SURFACE_RESEARCH_AND_COWORKER_EXPERIMENT_20260818_v003.md` | `913a866057c0e6581ef7d7a3e6acd92e5ea48a34` | `HISTORICAL MODEL RECOMMENDATION, FULL-PLATFORM EVIDENCE` |
 | Founder Intent alignment correction | `state/FOUNDER_INTENT_ALIGNMENT_CORRECTION_20260818.md` | `ad615b097567fec8b9031f26b6c9524db4286293` | `RETAINED SUBJECT TO LATEST CORRECTION` |
+| Sanitised Metamate archive-defect receipt | `receipts/METAMATE_ARCHIVE_INTEGRITY_AND_RESTRICTED_CONTENT_DEFECT_20260819_v001.md` | `313c2468fd02119d5c6d46707a367c2eeafbc592` | `CURRENT BOUNDED EMPIRICAL DEFECT RECEIPT, NO RAW PRIVATE LOCATORS` |
 | Predecessor v009 payload | `dispatch/CLAUDE_EXTENSION_PROJECT_SOURCE_ESTATE_AND_COORDINATION_SUCCESSOR_20260819_v009.md` | `ba3651313676b97f87f09b47017b9f2de911ea85` | `SUPERSEDED-UNSENT, DO NOT EXECUTE` |
 | Predecessor v009 manifest | `dispatch/SC_CIEG_V009_SUCCESSOR_DISPATCH_MANIFEST_20260819_v001.json` | `61eb80cefa6f3cd88e622f12ca88e68f6ed6557a` | `SUPERSEDED-UNSENT IDENTITY EVIDENCE` |
 | Predecessor v009 command | `dispatch/CLAUDE_EXTENSION_CANONICAL_LAUNCH_COMMAND_20260819_v009.md` | `c096e28e77919d181662d3716f1909ba794a4a0a` | `SUPERSEDED-UNSENT, DO NOT SEND` |
@@ -145,7 +146,7 @@ Within Ahmed/Obzio-owned accounts and controlled operator surfaces, you may:
 - update durable internal sources and pointers without placing secrets or identity data in them; and
 - continue ordinary execution without waiting for Ahmed to relay replies or approve routine technical choices.
 
-Technical access to an internal owned surface is sufficient authority for these bounded actions. Do not request a generic reapproval.
+Authority for these bounded actions exists only after admission has established that the surface is Ahmed/Obzio-owned or controlled and the action is within this founder mandate. Technical access alone is not authority for an ambiguously owned, shared, external or third-party surface. Quarantine ambiguous destinations, continue unaffected verified-owned work and do not request generic reapproval for verified in-scope execution.
 
 ### 5.2 Hard boundaries
 
@@ -164,7 +165,7 @@ Use reversible internal organisation. Before any archive, merge, supersession or
 
 ## 6. Admission, identity and operating-fitness gate
 
-Do not collapse receipt states. Return this receipt before relying on the operation:
+Do not collapse receipt states. Before admission, perform only read-only or non-destructive capability probes. Complete identity, principal, currentness and boundary checks before any project/chat/source/task mutation or prompt launch. Return this receipt before relying on the operation; `EXECUTION_STARTED` may and normally will be `NO` at this gate. Immediately after `ADMITTED:YES`, perform and read back the first substantive native ChatGPT action and record it in the separate first-wave action receipt.
 
 ```text
 V010 ADMISSION, IDENTITY AND OPERATING-FITNESS RECEIPT
@@ -213,7 +214,7 @@ CAPABILITY PROOF
 - recent-chat read proved:
 - Library and Add to Source visibility proved:
 - tasks/automations/connectors/plugins visibility proved:
-- safe reversible internal action plus read-back proved:
+- read-only/non-destructive capability probe plus read-back proved:
 - internal prompt-launch route proved:
 - durable receipt/write route proved:
 - unavailable routes and alternatives attempted:
@@ -250,7 +251,7 @@ Identity mismatch means quarantine and corrective retransmission. Capability fai
 
 ### 7.1 Recover enough live state to operate
 
-Create a timestamped estate baseline covering relevant:
+Discover and enumerate every technically accessible Ahmed/Obzio-owned ChatGPT workspace and top-level account surface. Strategic relevance governs depth and priority, not whether a top-level surface is omitted. Create a timestamped estate baseline covering:
 
 - ChatGPT account/workspaces and project list;
 - project names, instructions, memory mode, sources and access;
@@ -374,7 +375,7 @@ During live recovery:
 
 Phase One must begin preparing the next expansion across Cursor, the full Metamate platform, additional browser extensions/operators, Coworkers, agents, missions, workflows, ChatGPT and Metamate automations, source/memory/knowledge systems and other technically accessible Ahmed/Obzio-owned surfaces.
 
-Produce a Phase Two readiness map containing live surface locators, access paths, currentness/identity unknowns, dependencies, candidate operator lanes, portability requirements, irreversible-risk gates and exact reversible follow-on commissions. Prepare launchable items where useful. Do not activate or finalise a permanent cross-platform architecture before the relevant live estates are recovered. Preparation starts now; later execution begins when Phase One evidence is sufficient and does not require routine founder reapproval.
+Produce a Phase Two readiness map containing live surface locators, access paths, currentness/identity unknowns, dependencies, candidate operator lanes, portability requirements, irreversible-risk gates and exact reversible follow-on commissions. Prepare launchable items where useful. Do not activate or finalise a permanent cross-platform architecture before the relevant live estates are recovered. Preparation and exact follow-on commissions start now. Live cross-platform execution begins only when Strategic Control issues and activates the current Phase Two launch item from recovered-estate evidence; that is an operational Strategic Control decision and does not return routine topology choices to Ahmed.
 
 ## 9. Phase One success criteria
 
@@ -394,7 +395,7 @@ All criteria below are mandatory:
 10. Departmental ownership and continuation state cover every counted workstream.
 11. The parallel-operator decision is evidenced and materially beneficial parallelism is launched or exactly prepared.
 12. Provenance, identities, current pointers, task ownership, failures, corrections and supersession remain durable and read back.
-13. A function distinct from the producer verifies identity/currentness, all five project-home/equivalence records, the qualifying workstream register and the boundary audit.
+13. A functionally independent, separately commissioned operator/chat/model with a distinct evidence-review remit verifies identity/currentness, all five project-home/equivalence records, the qualifying workstream register and the boundary audit. This review is not a precondition to launching the workstream portfolio. If no independent route is technically accessible, prepare its exact launch item, continue operation and keep final acceptance `PENDING` rather than shrinking execution.
 14. No external outreach, new spend, credential/identity-data disclosure, protected mutation, permanent deletion or premature architecture activation occurs.
 15. Active work with named internal checkpoints is already continuing at handoff; Ahmed is not left as the ordinary reply relay.
 
@@ -438,7 +439,7 @@ Prepare the complete item before asking for an irreducible interface action. Ask
 
 **premises[]:** Ahmed Sadek's latest 19/08/2026 founder correction; the prior v008 repair/coordination founder input; current durable Founder Intent roots; the read-back-verified but untransmitted v009 chain; historical browser-operation evidence; reported Metamate archive integrity/restricted-content defects; independent scope and acceptance audits.
 
-**scope:** full-scale internal operation of Ahmed's relevant ChatGPT account through Claude Chrome extension, currentness/source repair, account/project/workstream commissioning, monitoring, receipts and Phase Two preparation. No external outreach, new spend, secrets/identity data, protected mutation, irreversible deletion or permanent architecture activation.
+**scope:** full-scale internal operation across all technically accessible Ahmed/Obzio-owned ChatGPT workspaces and top-level account surfaces through Claude Chrome extension, currentness/source repair, account/project/workstream commissioning, monitoring, receipts and Phase Two preparation. No external outreach, new spend, secrets/identity data, protected mutation, irreversible deletion or permanent architecture activation.
 
 **authority_basis[]:** Ahmed Sadek's latest explicit founder instruction; constituted Strategic Control routing and coordination mandate; bounded internal-operation delegation.
 
