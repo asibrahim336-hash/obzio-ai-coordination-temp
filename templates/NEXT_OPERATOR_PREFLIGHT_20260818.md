@@ -1,3 +1,6 @@
+> [!CAUTION]
+> **SUPERSEDED FOR ACTIVE ROUTING — RETAINED EVIDENCE.** Do not launch, assign work to, or derive a current operator identity from this file. Its useful continuity controls were migrated to `instructions/functions/strategic-operations-orchestration/CURRENT.md`. Resolve current execution through `state/operator-system/ACTIVE_OPERATOR_SYSTEM_POINTER_CURRENT.json` and `state/operator-system/ACTIVE_INSTRUCTION_STACK.json`.
+
 # OBZIO — NEXT OPERATOR COLD-START CONTINUITY PREFLIGHT
 
 **Date:** 18/08/2026  
