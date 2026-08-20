@@ -7,6 +7,54 @@
   "commission_id": "obzio.commission.full-scale-chatgpt-phase-one.20260819.001",
   "authority_envelope_id": "obzio.authority-envelope.strategic-operations-orchestration.20260819.001",
   "runtime_binding_id": "obzio.runtime-binding.strategic-operations-orchestration.20260819.001",
+  "controlling_command": {
+    "object_id": "OBZIO-FOUNDER-CONTINUATION-COMMAND-20260820-V003",
+    "logical_document": "OBZIO_FOUNDER_CONTINUATION_COMMAND_FULL_OPERATOR_ESTATE_20260820_v003.md",
+    "standing": "CURRENT_CONTROLLING_FOUNDER_INPUT_FOR_THIS_SCOPE",
+    "effective_date": "2026-08-20",
+    "identity_manifest_path": "dispatch/FOUNDER_CONTINUATION_COMMAND_20260820_v003_MANIFEST.json",
+    "resolution_rule": "A successor resolves the v003 logical object by content address, not by filename. Any candidate copy is admissible only if its sha256 equals reassembled_logical_object.sha256 below.",
+    "reassembled_logical_object": {
+      "utf8_bytes": 149424,
+      "lines": 1496,
+      "sha256": "64e25d95e8b351127d319bf5b4cc0057b614df92b1ff03a8e6f269398031ae96",
+      "reassembly": "Concatenate parts in ascending ordinal order with no separator, no re-encoding and no newline normalisation. The sha256 of the concatenation MUST equal the value above."
+    },
+    "part_manifest": {
+      "scheme": "split -b 30000",
+      "part_count": 5,
+      "declared_part_bytes_total": 149424,
+      "parts": [
+        {"ordinal": 0, "bytes": 30000, "sha256": "a3d14ae75053a2ae61b558a6a1549a3e1eaef3cc5600c57c82ddc041e86df051"},
+        {"ordinal": 1, "bytes": 30000, "sha256": "5707e849a2be798d16e9b1b1ed14a56a82f1fa45b51923ea2db894f314dad6d3"},
+        {"ordinal": 2, "bytes": 30000, "sha256": "3995185b5951a5e87030c529acd1e0de796c45ba88c42cec2187e0a787736db3"},
+        {"ordinal": 3, "bytes": 30000, "sha256": "ac007e12d4386f09b1ec4e7404e8c48b641d9c012dbb267e2d2a876cbc7493b9"},
+        {"ordinal": 4, "bytes": 29424, "sha256": "34eb34fa3e75ae3c650d0e19c8d60dc2c722fdb47e08cc02c3509c4f450b0ca1"}
+      ]
+    },
+    "body_storage_state": "PART_MANIFEST_RECORDED_BODY_BYTES_NOT_PRESENT_IN_THIS_REPOSITORY",
+    "provenance_of_hashes": "Part hashes and the reassembled hash are transcribed from dispatch/FOUNDER_CONTINUATION_COMMAND_20260820_v003_MANIFEST.json (blob 465ef868634ef12cebfd2596ff6290b74c15151c). They were NOT recomputed by the operator that wrote this stack entry, because the 149,424 body bytes are not in the tree. Arithmetic consistency was checked: 4 x 30000 + 29424 = 149424.",
+    "supersedes": {
+      "object": "OBZIO_FOUNDER_CONTINUATION_COMMAND_FULL_OPERATOR_ESTATE_20260820_v002.md",
+      "utf8_bytes": 92445,
+      "sha256": "097c8311b9f05b2f10792b20b2adc894522752c16bb7db4446173311aadca65e",
+      "treatment": "IMMUTABLE_SUPERSEDED_EVIDENCE - do not overwrite, delete or execute"
+    }
+  },
+  "founder_patch_sw_reset_cancellation": {
+    "patch_id": "OBZIO-FOUNDER-PATCH-SW-RESET-CANCELLATION-20260820",
+    "applies_to": "OBZIO-FOUNDER-CONTINUATION-COMMAND-20260820-V003",
+    "patched_section": "5 - Resolve the SW reset and deletion state exactly",
+    "effect": "SW_ACCOUNT_RESET_CANCELLED",
+    "clean_execution_mechanism": "ISOLATED_SW_PROJECT_SPACES",
+    "statement": "A later founder correction CANCELS the SW account reset. Clean execution is obtained by isolated SW project spaces, not by resetting or deleting the account. Any instruction to reset, wipe or delete the SW account is superseded and must not be executed.",
+    "supersedes_state_string": "LEGACY_ACCOUNT_PENDING_FOUNDER_RESET",
+    "supersedes_gating_return": "RESET_READY",
+    "successor_rule": "Do not execute an SW account reset. Do not treat RESET_READY as an outstanding gating return. Create or use isolated SW project spaces instead.",
+    "provenance": "Relayed to this operator as founder correction in the repair tasking for this branch. The patch document itself is NOT present in this repository as a file, and no sha256 for it has been supplied.",
+    "verification": "NOT_INDEPENDENTLY_VERIFIED_BY_THIS_OPERATOR",
+    "acceptance": "PROPOSED_PENDING_INDEPENDENT_ACCEPTANCE"
+  },
   "resolve_in_order": [
     "dispatch/FOUNDER_CONTINUATION_COMMAND_20260820_v003_MANIFEST.json",
     "state/FOUNDER_CORRECTION_V00X_PHASE_ONE_FULL_SCALE_CHATGPT_OPERATION_20260819_v001.md",
@@ -21,13 +69,18 @@
     "operations/INSTRUCTION_ESTATE_DISPOSITION_20260819_v001.md",
     "templates/NEXT_OPERATOR_PREFLIGHT_CURRENT.md"
   ],
-  "controlling_input_rule": "v003 resolves FIRST for this scope. Where v003 and an earlier object conflict within the same scope, v003 governs and the earlier object becomes evidence. Where v003 is silent, the earlier stack continues to govern - v003 does not blank the stack.",
+  "controlling_input_rule": "v003 resolves FIRST for this scope. Where v003 and an earlier object conflict within the same scope, v003 governs and the earlier object becomes evidence. Where v003 is silent, the earlier stack continues to govern - v003 does not blank the stack. Where the SW reset-cancellation patch and v003 section 5 conflict, the patch governs, because it is the later founder correction.",
   "immutable_execution_evidence": [
     "dispatch/CLAUDE_CHROME_FULL_SCALE_CHATGPT_ACCOUNT_OPERATION_SUCCESSOR_20260819_v010.md",
     "dispatch/CLAUDE_CHROME_CANONICAL_FULL_SCALE_LAUNCH_COMMAND_20260819_v010.md",
     "dispatch/SC_CIEG_V010_FULL_SCALE_CHATGPT_LAUNCH_MANIFEST_20260819_v001.json",
     "state/ACTIVE_CONTROL_POINTER_20260819_02.json"
   ],
+  "v010_lineage_standing": {
+    "standing": "EXECUTED_HISTORY_NOT_CURRENTLY_RUNNING",
+    "treatment": "RETAINED-HISTORICAL",
+    "rule": "The v010 lineage is preserved as execution evidence. It is NOT erased and NOT rewritten as never launched. It is also NOT the controlling command: v003 is."
+  },
   "supersession_rule": "Files not selected by this stack cannot become active merely because their filename resembles a current operator or runtime.",
   "continuation_rule": "This stack continues the SAME appointment in the SAME thread. v003 resumed it after a halt; it did not restart the programme, replace the operator or introduce a review gate. v010 remains executed history and must not be rewritten as never launched, nor represented as presently running.",
   "superseded_v002": {
@@ -35,5 +88,9 @@
     "sha256": "097c8311b9f05b2f10792b20b2adc894522752c16bb7db4446173311aadca65e",
     "utf8_bytes": 92445,
     "treatment": "IMMUTABLE_SUPERSEDED_EVIDENCE - do not overwrite, delete or execute"
+  },
+  "acceptance_state": {
+    "standing": "PROPOSED_NOT_ADOPTED",
+    "note": "This file is a prepared repair on an unmerged branch. It becomes active state only on merge plus independent acceptance. Being well argued does not make it active."
   }
 }
