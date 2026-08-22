@@ -253,6 +253,11 @@ def validate_wave(doc: dict[str, Any]) -> list[str]:
     return errors
 
 
+VALIDATORS = {"result": validate_result, "wave": validate_wave}
+
+EXCLUDED_DIRECTORY_NAMES = frozenset({"__pycache__"})
+
+
 def _load(path: Path) -> dict[str, Any]:
     data = json.loads(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
@@ -260,24 +265,93 @@ def _load(path: Path) -> dict[str, Any]:
     return data
 
 
-def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("kind", choices=("result", "wave"))
-    parser.add_argument("document", type=Path)
-    args = parser.parse_args(argv)
+def iter_json_documents(directory: Path) -> list[Path]:
+    return sorted(
+        path
+        for path in directory.rglob("*.json")
+        if path.is_file() and not EXCLUDED_DIRECTORY_NAMES.intersection(path.parts)
+    )
+
+
+def validate_document(kind: str, path: Path) -> list[str]:
     try:
-        doc = _load(args.document)
-        errors = validate_result(doc) if args.kind == "result" else validate_wave(doc)
+        return VALIDATORS[kind](_load(path))
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        return [f"unreadable document: {exc}"]
+
+
+def validate_directory(kind: str, directory: Path) -> list[tuple[Path, list[str]]]:
+    return [(path, validate_document(kind, path)) for path in iter_json_documents(directory)]
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(description="Validate PO-03 custody documents.")
+    modes = parser.add_subparsers(dest="mode", required=True)
+    for kind in ("result", "wave"):
+        single = modes.add_parser(kind, help=f"validate one {kind} document")
+        single.add_argument("document", type=Path)
+    directory = modes.add_parser(
+        "validate-dir", help="validate every *.json document in a directory tree"
+    )
+    directory.add_argument("kind", choices=("result", "wave"))
+    directory.add_argument("directory", type=Path)
+    directory.add_argument(
+        "--allow-empty",
+        action="store_true",
+        help="treat a directory with no documents as success instead of an error",
+    )
+    return parser
+
+
+def _run_single(kind: str, document: Path) -> int:
+    try:
+        doc = _load(document)
     except (OSError, ValueError, json.JSONDecodeError) as exc:
         print(f"INVALID: {exc}")
         return 2
+    errors = VALIDATORS[kind](doc)
     if errors:
         for error in errors:
             print(f"INVALID: {error}")
         return 1
-    digest = hashlib.sha256(args.document.read_bytes()).hexdigest()
-    print(f"VALID {args.kind} sha256={digest}")
+    digest = hashlib.sha256(document.read_bytes()).hexdigest()
+    print(f"VALID {kind} sha256={digest}")
     return 0
+
+
+def _run_directory(kind: str, directory: Path, allow_empty: bool) -> int:
+    if not directory.is_dir():
+        print(f"VALIDATE-DIR ERROR: not a directory: {directory}")
+        return 2
+    outcomes = validate_directory(kind, directory)
+    if not outcomes:
+        if allow_empty:
+            print(f"VALIDATE-DIR {kind} {directory}: scanned=0 valid=0 invalid=0")
+            return 0
+        print(f"VALIDATE-DIR ERROR: no *.json documents under {directory}")
+        return 2
+    valid = 0
+    invalid = 0
+    for path, errors in outcomes:
+        if errors:
+            invalid += 1
+            print(f"INVALID {path}: {errors[0]}")
+        else:
+            valid += 1
+            digest = hashlib.sha256(path.read_bytes()).hexdigest()
+            print(f"VALID {path} sha256={digest}")
+    print(
+        f"VALIDATE-DIR {kind} {directory}: "
+        f"scanned={len(outcomes)} valid={valid} invalid={invalid}"
+    )
+    return 1 if invalid else 0
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = _build_parser().parse_args(argv)
+    if args.mode == "validate-dir":
+        return _run_directory(args.kind, args.directory, args.allow_empty)
+    return _run_single(args.mode, args.document)
 
 
 if __name__ == "__main__":
