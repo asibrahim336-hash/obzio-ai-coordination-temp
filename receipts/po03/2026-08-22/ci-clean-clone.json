@@ -34,20 +34,76 @@
       "python": "3.12.14 from actions/setup-python@v5"
     },
     "steps": [
-      {"number": 2, "name": "Run actions/checkout@v4", "conclusion": "success"},
-      {"number": 3, "name": "Run actions/setup-python@v5", "conclusion": "success"},
-      {"number": 4, "name": "Record the runner's starting state", "conclusion": "success"},
-      {"number": 5, "name": "Prove the surface carries no cache, install or secret", "conclusion": "success"},
-      {"number": 6, "name": "Run the full suite with site-packages removed", "conclusion": "success"},
-      {"number": 7, "name": "Run the canonical gate command", "conclusion": "success"},
-      {"number": 8, "name": "Static hermeticity prober", "conclusion": "success"},
-      {"number": 9, "name": "Byte-determinism of generated artifacts", "conclusion": "success"},
-      {"number": 10, "name": "Uncommitted-file and untracked-manifest gate", "conclusion": "success"},
-      {"number": 11, "name": "Subprocess-boundary harness", "conclusion": "success"},
-      {"number": 12, "name": "Path-scope rejection selftest", "conclusion": "success"},
-      {"number": 13, "name": "Full suite from a fresh clone of the real remote", "conclusion": "success"},
-      {"number": 14, "name": "Full suite with outbound network disabled", "conclusion": "success"},
-      {"number": 15, "name": "Summarise for the CI receipt", "conclusion": "success"}
+      {
+        "number": 2,
+        "name": "Run actions/checkout@v4",
+        "conclusion": "success"
+      },
+      {
+        "number": 3,
+        "name": "Run actions/setup-python@v5",
+        "conclusion": "success"
+      },
+      {
+        "number": 4,
+        "name": "Record the runner's starting state",
+        "conclusion": "success"
+      },
+      {
+        "number": 5,
+        "name": "Prove the surface carries no cache, install or secret",
+        "conclusion": "success"
+      },
+      {
+        "number": 6,
+        "name": "Run the full suite with site-packages removed",
+        "conclusion": "success"
+      },
+      {
+        "number": 7,
+        "name": "Run the canonical gate command",
+        "conclusion": "success"
+      },
+      {
+        "number": 8,
+        "name": "Static hermeticity prober",
+        "conclusion": "success"
+      },
+      {
+        "number": 9,
+        "name": "Byte-determinism of generated artifacts",
+        "conclusion": "success"
+      },
+      {
+        "number": 10,
+        "name": "Uncommitted-file and untracked-manifest gate",
+        "conclusion": "success"
+      },
+      {
+        "number": 11,
+        "name": "Subprocess-boundary harness",
+        "conclusion": "success"
+      },
+      {
+        "number": 12,
+        "name": "Path-scope rejection selftest",
+        "conclusion": "success"
+      },
+      {
+        "number": 13,
+        "name": "Full suite from a fresh clone of the real remote",
+        "conclusion": "success"
+      },
+      {
+        "number": 14,
+        "name": "Full suite with outbound network disabled",
+        "conclusion": "success"
+      },
+      {
+        "number": 15,
+        "name": "Summarise for the CI receipt",
+        "conclusion": "success"
+      }
     ]
   },
   "observed_step_output": {
@@ -117,5 +173,13 @@
     "why_it_matters": "In run 32562707415 the six Receipt tests in test_a3_ci_clean_clone.py skipped, because the receipt they check did not exist yet at that commit. Run 32562938448 is the first in which this document was committed, so those checks ran on a clean runner rather than only here.",
     "recursion_note": "This field cannot be self-referential. Recording a run inside the receipt changes the receipt, which produces a new run that the receipt does not mention. The chain is cut deliberately here: the last run of this workflow is never the one named in the receipt, and a reader should expect exactly one unrecorded run after the newest recorded one."
   },
-  "recorded_honestly": "Two of this workflow's four runs failed and both failures are recorded above with their causes, along with the passing run this receipt is about and the later run that validated the receipt itself."
+  "recorded_honestly": "Two of this workflow's four runs failed and both failures are recorded above with their causes, along with the passing run this receipt is about and the later run that validated the receipt itself.",
+  "workflow_amended_after_this_run": {
+    "amended": true,
+    "recorded_run_tested_workflow_at_commit": "b6d388cf3cc44b0d17796de6e54f3b16d1b4b528",
+    "what_changed": "The bytecode step now calls ci_surface.py with --require-pristine and -B. The step's name is unchanged, so the step-name checks in test_a3_ci_clean_clone still hold, but the run recorded here exercised the earlier command.",
+    "why_the_receipt_is_not_restated": "The recorded fields are observations of a run that happened. Rewriting them to describe the amended workflow would be fabricating evidence for an execution that never occurred. The amendment is declared instead, and a fresh run is recorded below when one is observed.",
+    "fresh_run_for_the_amended_workflow": "NOT_YET",
+    "fresh_run_note": "Recorded as NOT_YET rather than left implicit. Until a run of the amended workflow is observed by run id, the clean-runner claim rests on the earlier run plus the declared diff, which is weaker than the claim this receipt made before the amendment."
+  }
 }
