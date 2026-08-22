@@ -171,6 +171,8 @@ class ImmutableReadbackTests(unittest.TestCase):
             completed = subprocess.run(
                 [
                     sys.executable,
+                    "-I",
+                    "-B",
                     str(HERE / "reproduce_branch_movement.py"),
                     "--output",
                     str(output),
