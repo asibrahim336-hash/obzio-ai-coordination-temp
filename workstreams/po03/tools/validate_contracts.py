@@ -39,6 +39,81 @@ RESULT_STATES = {
 
 TERMINAL_RESULT_STATES = {"RESULT_COMMITTED", "PARENT_INGESTED", "COMPLETED"}
 
+RESULT_TOP_LEVEL_KEYS = frozenset({
+    "protocol_version",
+    "task_id",
+    "commission_id",
+    "immutable_input_manifest_sha256",
+    "acceptance_contract_sha256",
+    "provider_state",
+    "obzio_state",
+    "attempt",
+    "result_transaction",
+    "artifacts",
+    "completion_actor",
+    "independent_acceptance",
+})
+
+ATTEMPT_KEYS = frozenset({
+    "attempt_id",
+    "idempotency_key",
+    "lease_id",
+    "fence_token",
+    "provider_run_id",
+    "worker_id",
+    "heartbeat_at",
+    "checkpoint_seq",
+})
+
+RESULT_TRANSACTION_KEYS = frozenset({
+    "result_txn_id",
+    "state",
+    "manifest_uri",
+    "manifest_sha256",
+    "artifact_count",
+    "total_bytes",
+    "committed_at",
+    "verified_at",
+    "parent_ingested_at",
+    "result_commit_id",
+})
+
+ARTIFACT_KEYS = frozenset({
+    "artifact_id",
+    "logical_name",
+    "content_uri",
+    "sha256",
+    "bytes",
+    "media_type",
+    "readback_verified_at",
+})
+
+ACCEPTANCE_KEYS = frozenset({"state", "reviewer_id", "receipt_uri"})
+
+WAVE_TOP_LEVEL_KEYS = frozenset({
+    "protocol_version",
+    "wave_id",
+    "baseline",
+    "observations",
+    "challenges",
+    "external_hypotheses",
+    "reproductions",
+    "live_mechanism_changes",
+    "independent_tests",
+    "dispositions",
+    "successor_manifest_uri",
+    "decision_changed",
+})
+
+
+def _unexpected(obj: Any, allowed: frozenset[str], prefix: str) -> list[str]:
+    if not isinstance(obj, dict):
+        return []
+    return [
+        f"{prefix}.{name}: not permitted by the contract"
+        for name in sorted(set(obj) - allowed)
+    ]
+
 
 def _nonempty(value: Any) -> bool:
     return isinstance(value, str) and bool(value.strip())
@@ -69,6 +144,7 @@ def validate_result(doc: dict[str, Any]) -> list[str]:
         "independent_acceptance",
     )
     errors.extend(_required(doc, required, "$"))
+    errors.extend(_unexpected(doc, RESULT_TOP_LEVEL_KEYS, "$"))
     if errors:
         return errors
 
@@ -105,6 +181,7 @@ def validate_result(doc: dict[str, Any]) -> list[str]:
             "$.attempt",
         )
     )
+    errors.extend(_unexpected(attempt, ATTEMPT_KEYS, "$.attempt"))
     if errors:
         return errors
     for field in ("attempt_id", "idempotency_key", "lease_id", "provider_run_id", "worker_id"):
@@ -132,6 +209,7 @@ def validate_result(doc: dict[str, Any]) -> list[str]:
         "result_commit_id",
     )
     errors.extend(_required(txn, txn_required, "$.result_transaction"))
+    errors.extend(_unexpected(txn, RESULT_TRANSACTION_KEYS, "$.result_transaction"))
     if errors:
         return errors
 
@@ -155,6 +233,7 @@ def validate_result(doc: dict[str, Any]) -> list[str]:
                 prefix,
             )
         )
+        errors.extend(_unexpected(artifact, ARTIFACT_KEYS, prefix))
         if any(name not in artifact for name in ("artifact_id", "logical_name", "content_uri", "sha256", "bytes", "media_type", "readback_verified_at")):
             continue
         if artifact["artifact_id"] in artifact_ids:
@@ -200,6 +279,7 @@ def validate_result(doc: dict[str, Any]) -> list[str]:
         errors.append("$.independent_acceptance: must be an object")
     else:
         errors.extend(_required(acceptance, ("state", "reviewer_id", "receipt_uri"), "$.independent_acceptance"))
+        errors.extend(_unexpected(acceptance, ACCEPTANCE_KEYS, "$.independent_acceptance"))
         if acceptance.get("state") in {"ACCEPTED", "REJECTED"}:
             if not _nonempty(acceptance.get("reviewer_id")) or not _nonempty(acceptance.get("receipt_uri")):
                 errors.append("$.independent_acceptance: terminal review requires reviewer_id and receipt_uri")
@@ -228,6 +308,7 @@ def validate_wave(doc: dict[str, Any]) -> list[str]:
         "decision_changed",
     )
     errors.extend(_required(doc, required, "$"))
+    errors.extend(_unexpected(doc, WAVE_TOP_LEVEL_KEYS, "$"))
     if errors:
         return errors
     if doc["protocol_version"] != "OBZIO-WAVE-COMPOUNDING-v1":

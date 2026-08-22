@@ -382,6 +382,94 @@ class EmittedResultInstanceTests(unittest.TestCase):
             self.assertIsNone(document["independent_acceptance"]["reviewer_id"], name)
 
 
+class ResearchLedgerTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.hypotheses_path = PO03 / "research" / "hypotheses.jsonl"
+        cls.ledger_path = PO03 / "research" / "reproduction-ledger.jsonl"
+        if not cls.hypotheses_path.is_file() or not cls.ledger_path.is_file():
+            raise unittest.SkipTest("research records not present in this tree")
+        cls.hypotheses = load_jsonl(cls.hypotheses_path)
+        cls.ledger = load_jsonl(cls.ledger_path)
+
+    def test_hypothesis_count_is_within_the_declared_range(self):
+        self.assertGreaterEqual(len(self.hypotheses), 6)
+
+    def test_every_hypothesis_has_exactly_one_reproduction(self):
+        hypothesis_ids = [row["hypothesis_id"] for row in self.hypotheses]
+        reproduced = [row["hypothesis_id"] for row in self.ledger]
+        self.assertEqual(len(hypothesis_ids), len(set(hypothesis_ids)))
+        self.assertEqual(sorted(hypothesis_ids), sorted(reproduced))
+
+    def test_every_hypothesis_declares_a_falsifier_and_a_reproduction(self):
+        for row in self.hypotheses:
+            self.assertTrue(row["falsifier"].strip(), row["hypothesis_id"])
+            self.assertTrue(row["obzio_reproduction"].strip(), row["hypothesis_id"])
+
+    def test_external_citations_are_marked_not_yet_rather_than_invented(self):
+        for row in self.hypotheses:
+            self.assertEqual("NOT_YET", row["external_literature_citation"], row["hypothesis_id"])
+            self.assertTrue(row["external_literature_citation_reason"].strip())
+
+    def test_no_research_record_contains_a_url(self):
+        for path in (self.hypotheses_path, self.ledger_path):
+            text = path.read_text(encoding="utf-8")
+            self.assertNotIn("http://", text)
+            self.assertNotIn("https://", text)
+
+
+class CitedTestsExistTests(unittest.TestCase):
+    """Evidence may not cite a test that does not exist."""
+
+    SOURCES = (
+        PO03 / "research" / "hypotheses.jsonl",
+        PO03 / "research" / "reproduction-ledger.jsonl",
+        PO03 / "metrics" / "generation-comparison.json",
+        PO03 / "control" / "recovery-state.json",
+        PO03 / "evidence" / "recovery-fault-matrix.json",
+        PO03 / "evidence" / "wave-a-compounding-receipt.json",
+        PO03 / "control" / "path-ownership.json",
+    )
+
+    REFERENCE_RE = re.compile(r"::([A-Za-z_][A-Za-z0-9_]*)")
+
+    @classmethod
+    def setUpClass(cls):
+        cls.defined = set()
+        for path in sorted((PO03 / "tests").glob("test_*.py")):
+            for match in re.finditer(
+                r"^\s*(?:def|class)\s+([A-Za-z_][A-Za-z0-9_]*)",
+                path.read_text(encoding="utf-8"),
+                re.MULTILINE,
+            ):
+                cls.defined.add(match.group(1))
+
+    def test_every_cited_test_name_is_defined(self):
+        missing = []
+        checked = 0
+        for source in self.SOURCES:
+            if not source.is_file():
+                continue
+            text = source.read_text(encoding="utf-8")
+            for name in sorted(set(self.REFERENCE_RE.findall(text))):
+                checked += 1
+                if name not in self.defined:
+                    missing.append(f"{source.name}: {name}")
+        self.assertEqual([], missing)
+        self.assertGreater(checked, 0, "no test references were found to check")
+
+    def test_every_cited_test_file_exists(self):
+        pattern = re.compile(r"workstreams/po03/tests/(test_[A-Za-z0-9_]+\.py)")
+        missing = []
+        for source in self.SOURCES:
+            if not source.is_file():
+                continue
+            for name in sorted(set(pattern.findall(source.read_text(encoding="utf-8")))):
+                if not (PO03 / "tests" / name).is_file():
+                    missing.append(f"{source.name}: {name}")
+        self.assertEqual([], missing)
+
+
 class PathOwnershipTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):

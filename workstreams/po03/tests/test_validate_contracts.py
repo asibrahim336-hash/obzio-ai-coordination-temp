@@ -213,6 +213,88 @@ class WaveCompoundingTests(unittest.TestCase):
         self.assertTrue(any("decision_changed" in e for e in MODULE.validate_wave(doc)))
 
 
+class UnknownFieldTests(unittest.TestCase):
+    def test_unknown_top_level_result_field_rejected(self):
+        doc = committed_result()
+        doc["extra_field"] = "drift"
+        errors = MODULE.validate_result(doc)
+        self.assertTrue(any("extra_field" in error for error in errors), errors)
+
+    def test_unknown_attempt_field_rejected(self):
+        doc = committed_result()
+        doc["attempt"]["sneaky"] = 1
+        self.assertTrue(any("attempt.sneaky" in e for e in MODULE.validate_result(doc)))
+
+    def test_unknown_result_transaction_field_rejected(self):
+        doc = committed_result()
+        doc["result_transaction"]["sneaky"] = 1
+        self.assertTrue(
+            any("result_transaction.sneaky" in e for e in MODULE.validate_result(doc))
+        )
+
+    def test_unknown_artifact_field_rejected(self):
+        doc = committed_result()
+        doc["artifacts"][0]["sneaky"] = 1
+        self.assertTrue(any("sneaky" in e for e in MODULE.validate_result(doc)))
+
+    def test_unknown_acceptance_field_rejected(self):
+        doc = committed_result()
+        doc["independent_acceptance"]["sneaky"] = 1
+        self.assertTrue(
+            any("independent_acceptance.sneaky" in e for e in MODULE.validate_result(doc))
+        )
+
+    def test_unknown_top_level_wave_field_rejected(self):
+        doc = wave_receipt()
+        doc["commentary"] = "narrative"
+        self.assertTrue(any("commentary" in e for e in MODULE.validate_wave(doc)))
+
+    def test_optional_heartbeat_field_still_permitted(self):
+        doc = committed_result()
+        doc["attempt"]["heartbeat_at"] = None
+        self.assertEqual([], MODULE.validate_result(doc))
+
+
+class SchemaAgreementTests(unittest.TestCase):
+    """The executable validator must not drift from the published JSON Schemas."""
+
+    CONTRACTS = Path(__file__).parents[1] / "contracts"
+
+    def load_schema(self, name):
+        return json.loads((self.CONTRACTS / name).read_text(encoding="utf-8"))
+
+    def test_result_schema_properties_match_the_validator(self):
+        schema = self.load_schema("transactional-result.schema.json")
+        self.assertFalse(schema["additionalProperties"])
+        self.assertEqual(set(schema["properties"]), set(MODULE.RESULT_TOP_LEVEL_KEYS))
+        self.assertEqual(
+            set(schema["properties"]["attempt"]["properties"]), set(MODULE.ATTEMPT_KEYS)
+        )
+        self.assertEqual(
+            set(schema["properties"]["result_transaction"]["properties"]),
+            set(MODULE.RESULT_TRANSACTION_KEYS),
+        )
+        self.assertEqual(
+            set(schema["properties"]["artifacts"]["items"]["properties"]),
+            set(MODULE.ARTIFACT_KEYS),
+        )
+        self.assertEqual(
+            set(schema["properties"]["independent_acceptance"]["properties"]),
+            set(MODULE.ACCEPTANCE_KEYS),
+        )
+
+    def test_wave_schema_properties_match_the_validator(self):
+        schema = self.load_schema("wave-compounding.schema.json")
+        self.assertFalse(schema["additionalProperties"])
+        self.assertEqual(set(schema["properties"]), set(MODULE.WAVE_TOP_LEVEL_KEYS))
+
+    def test_result_states_match_the_schema_enum(self):
+        schema = self.load_schema("transactional-result.schema.json")
+        self.assertEqual(
+            set(schema["properties"]["obzio_state"]["enum"]), set(MODULE.RESULT_STATES)
+        )
+
+
 class CliCaptureMixin:
     def run_main(self, argv):
         buffer = io.StringIO()
