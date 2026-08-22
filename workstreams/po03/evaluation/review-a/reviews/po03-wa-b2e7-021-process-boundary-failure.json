@@ -1,0 +1,92 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-sol-xhigh",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-021-process-boundary-failure",
+  "cohort": "c3",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c3",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "4343c4e03d095c948e081398ecf6aed5e67a266675de2939eb0c78a8768aff97",
+  "frozen_hypothesis": "A pack that only qualifies inside its producing process is detectable by re-qualifying across a process boundary.",
+  "frozen_required_deliverable": "A cross-process re-qualification harness that compares in-process and subprocess qualification verdicts and reports divergence.",
+
+  "po01_contact_check": "READ-ONLY CONFIRMED - in fact this unit touches no pack material at all, real or pinned.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -I (CPython 3.12.3)",
+    "producer_test_command": "python3 -I test_process_boundary.py",
+    "producer_test_exit_code": 0
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-A",
+      "rationale": "The producer wrote only a positive case. Without a negative control, a harness that always reports FAIL_PROCESS_BOUNDARY would pass its own test. I wrote the missing control.",
+      "construction": "Reviewer fixture REVIEWER_STABLE_QUALIFIER implementing the same two-function interface but holding no process state: prime_producer_memory() is a no-op and qualify() always returns qualified=True.",
+      "observed_output_verbatim": "HC-A stable fixture exit: 0\n   verdict: PASS_STABLE divergence_detected: False in_process: True subprocess: True",
+      "component_survived": true,
+      "interpretation": "The negative control passes. A stable qualifier is correctly reported PASS_STABLE with divergence_detected false. The harness is not one-directional, even though the producer never demonstrated this."
+    },
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "Symmetry probe: the producer's fixture diverges in one direction only (in-process true, subprocess false). Does the harness catch the inverse?",
+      "construction": "Reviewer fixture that qualifies only when NOT primed, so in-process is False and subprocess is True.",
+      "observed_output_verbatim": "HC-B reverse-direction exit: 0\n   verdict: FAIL_PROCESS_BOUNDARY in_process: False subprocess: True",
+      "component_survived": true,
+      "interpretation": "Caught. The comparison is a genuine inequality test rather than a one-way check for a specific pattern."
+    },
+    {
+      "hidden_case_id": "HC-C",
+      "rationale": "The decisive question for this unit. The frozen hypothesis is about a PACK that only qualifies inside its producing process, and unit 017's real pack qualification engine sits in the same cohort. Can this harness actually be pointed at it?",
+      "construction": "python3 -I process_boundary_harness.py --qualifier <unit 017 qualify_pack.py>",
+      "observed_output_verbatim": "HC-C real qualify_pack.py exit: 1 | error: AttributeError: module 'synthetic_qualifier' has no attribute 'prime_producer_memory'",
+      "component_survived": false,
+      "interpretation": "The harness cannot be applied to any real qualifier. It requires the target to implement a bespoke two-function protocol - prime_producer_memory() and qualify() returning a dict with 'qualified' and 'fixture_label' - which nothing in the repository implements except the fixture shipped alongside it. Pointed at the cohort's own real pack qualification engine it dies with an unhandled AttributeError rather than failing closed with a structured error. So the harness's reach over real pack qualification is zero, and it does not fail safe on a non-conforming target."
+    }
+  ],
+
+  "synthetic_evidence_assessment": {
+    "does_the_synthetic_case_stand_in_for_the_real_claim": "NO, and this is my central finding. The synthetic fixture proves the COMPARISON MECHANISM works - I confirmed that myself in both directions with a working negative control. But no pack is qualified anywhere in this unit. The harness operates on a Python module implementing an interface invented for this unit, not on a pack, a manifest, or a pinned commit. The frozen hypothesis is about 'a pack that only qualifies inside its producing process', and the demonstrated artifact never qualifies a pack at all. The evidence is therefore circular in the specific sense that matters: it detects process-memory dependence in a fixture whose entire purpose is to have process-memory dependence, and it cannot be aimed at anything else.",
+    "is_this_fixable": "Yes, and cheaply, which is why I judge NOT_YET rather than NOT_SUPPORTED. Unit 017's qualify_pack.qualify(repo, commit, manifest_path) is an ordinary function. Importing it and calling it in-process, then invoking qualify_pack.py as a subprocess on the same pinned pack and comparing the two verdicts, would make this unit's claim real using material already committed in the same cohort."
+  },
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "MET - reproduced independently.",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET - 4 artifacts verified, no unlisted files on disk.",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - acceptance_contract_sha256 equals my pre-disclosure hash 4343c4e0...",
+    "result is committed and read back by a different process from an immutable object id": "MET - artifact_commit b85548e4aebaa8107154abb10cf57ae75060c199.",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - PASS recorded; I judge it premature.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "NOT_APPLICABLE - the hypothesis is neither confirmed nor refuted for its stated subject, which is why I reach NOT_YET.",
+    "no value, hash, metric or provider capability is invented": "MET - hashes and byte counts recompute exactly, and the fixture is clearly labelled SYNTHETIC_PROCESS_MEMORY_QUALIFIER so it cannot be mistaken for real pack data. Nothing is fabricated; the issue is scope."
+  },
+
+  "scope_honesty_assessment": {
+    "producer_declared_limitations": [
+      "The divergence fixture is synthetic and demonstrates detection mechanics; it does not assert that every published pack has process-memory coupling."
+    ],
+    "assessment": "The producer is admirably candid that the fixture is synthetic and demonstrates 'detection mechanics'. That phrasing is honest and it is close to my own conclusion. But the limitation as written disclaims the wrong thing. It disclaims a claim nobody would make - that every published pack has this coupling - while leaving unstated the material fact that the harness cannot be applied to ANY real pack qualifier, including the cohort's own unit-017 engine, and crashes with an unhandled AttributeError when tried. The producer also did not supply the negative control, without which even the mechanics claim was unproven; I had to establish it."
+  },
+
+  "verification_commands": {
+    "artifact_verification_verbatim": "artifact_count: 4 ALL_VERIFY: True\non disk not listed: []"
+  },
+
+  "nonportable_artifacts_in_subtree": [],
+  "reproducibility_check": "All three hidden cases and the producer test were run in fresh python3 -I processes and reproduced identically. The harness sets sys.dont_write_bytecode before loading the fixture, so no bytecode is emitted.",
+
+  "reviewer_independent_verdict": "NOT_YET",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "DIVERGE",
+  "divergence_reason": "The frozen hypothesis concerns 'a pack that only qualifies inside its producing process', and no pack is qualified anywhere in this unit. The harness only accepts targets implementing a bespoke prime_producer_memory()/qualify() protocol that nothing in the repository implements except the fixture shipped beside it. When I pointed it at the cohort's own real pack qualification engine (unit 017's qualify_pack.py) it died with an unhandled AttributeError rather than failing closed. The comparison mechanism itself is sound - I verified it detects divergence in both directions and correctly returns PASS_STABLE on the negative control I had to write myself - but demonstrating the mechanism on a fixture purpose-built to exhibit the defect does not establish the hypothesis about packs. That is NOT_YET, not PASS, and not FAIL.",
+  "disposition_recommendation": "REJECTED",
+  "disposition_reason": "REJECTED as an unqualified PASS. The mechanism is real and I confirmed it works in both directions, and I supplied the negative control the producer omitted, so there is genuine salvageable work here. What cannot be accepted is a PASS on a hypothesis about pack qualification from a unit that qualifies no pack and whose harness cannot be aimed at a real qualifier. The remedy is concrete and uses material already committed in the same cohort: wire the harness to unit 017's qualify_pack, comparing an in-process call against a subprocess invocation on the same pinned pack. Recommend re-verdict to NOT_YET pending that, plus a structured fail-closed path for non-conforming targets and adoption of the stable-qualifier negative control.",
+  "followups_for_coordinator": [
+    "The harness has no real-world reach: it requires a bespoke prime_producer_memory()/qualify() interface implemented by nothing except its own fixture. Reviewer-observed: pointing it at unit 017's qualify_pack.py yields 'AttributeError: module 'synthetic_qualifier' has no attribute 'prime_producer_memory''. Wire it to unit 017's engine over the pinned pack to make the claim real.",
+    "The harness does not fail closed on a non-conforming target - it raises an unhandled AttributeError instead of returning a structured error and a non-zero code, which is inconsistent with the fail-closed behaviour every other unit in this cohort implements.",
+    "Adopt the negative control I wrote: a stable qualifier with no process memory must yield PASS_STABLE. Reviewer-verified that it does, but the producer shipped no such test, so nothing in the committed suite would have caught a harness that always reports divergence."
+  ]
+}

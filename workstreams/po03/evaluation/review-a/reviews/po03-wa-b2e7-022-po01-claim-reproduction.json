@@ -1,0 +1,95 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-sol-xhigh",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-022-po01-claim-reproduction",
+  "cohort": "c3",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c3",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "f25f25f8e7546d6954390c515e2d0f259e342085ade3926d84e85c72205e0078",
+  "frozen_hypothesis": "PO-01 pack claims are reproducible, or refutable, strictly from immutable commits with zero contact or mutation.",
+  "frozen_required_deliverable": "A read-only reproduction ledger over pinned PO-01 commits recording each claim, the reproduction attempt, the observed result and an explicit PASS, FAIL, NOT_YET or NOT_SUPPORTED verdict.",
+
+  "po01_contact_check": "READ-ONLY CONFIRMED. Every access is 'git ls-tree' or 'git cat-file' with no checkout, which the ledger itself declares as access_mode 'git ls-tree and git cat-file only; no checkout'. I inspected the source and found no write path, no branch operation and no network call. The unit's own po01_contact_or_mutation field is false and I found nothing contradicting it.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -I (CPython 3.12.3)",
+    "producer_test_command": "python3 -I test_reproduce_claims.py",
+    "producer_test_exit_code": 0,
+    "reviewer_ledger_run_verbatim": "claim_count: 9 overall_verdict: PASS\nper-claim verdicts: {'PASS': 2, 'FAIL': 4, 'NOT_SUPPORTED': 1, 'NOT_YET': 2}\n\n  [         PASS] packs/operator-packs-v1-20260820 - aggregate manifest byte and hash inventory matches the published pack tree\n  [         FAIL] packs/operator-packs-v1-20260820 - published operator pack tree is directly runnable and portable as committed\n  [         FAIL] packs/operator-packs-v1-source - source target contains an operator-pack source tree\n  [         FAIL] soo/operator-packs-source-v1-20260820 - source target contains a qualifying operator-pack implementation\n  [         FAIL] soo/operator-packs-v1-source-20260820 - modules/operators source is self-contained for all declared runtime files\n  [         PASS] soo/work-unit-contract-and-run-ledger-20260819 - pinned commit contains the claimed five-file executable module\n  [NOT_SUPPORTED] soo/v003-controlling-pointer-and-part-manifest-repair-20260820 - pointer-repair commit independently supports an operator-pack claim\n  [      NOT_YET] pinned-base - pinned base contains the operator packs\n  [      NOT_YET] main - main contains the operator packs"
+  },
+
+  "aggregate_pass_honesty_assessment": {
+    "question_posed": "Unit 022 reports an overall PASS while containing individual FAIL, NOT_YET and NOT_SUPPORTED findings, including a runtime portability failure. Is an aggregate PASS honest here?",
+    "my_finding": "Honest in its labelling and correct at the unit level, but structurally vacuous as a computed value. Both halves of that need stating.",
+    "why_honest": "The unit's OWN frozen hypothesis is disjunctive: PO-01 pack claims are 'reproducible, OR refutable' from immutable commits with zero contact. That hypothesis is genuinely confirmed - the ledger reproduced 2 claims and refuted 4, strictly from immutable objects, with no PO-01 contact. A FAIL row is a successful refutation, and the frozen criteria explicitly require that 'a refuted hypothesis is recorded as a refutation rather than restated as success', which is exactly what the producer did. Crucially, the producer disclosed the semantics precisely and without hedging, in two places: the artifact's own overall_meaning field ('Every listed claim received an evidence-bounded reproduction verdict; individual FAIL and NOT_SUPPORTED findings remain negative') and the manifest limitation ('The overall PASS means the claims were independently reproduced or refuted, not that every individual PO-01 claim passed'). The manifest evidence string also names the failure outright - 'runtime portability failed on five absent declared _spine.py files' - rather than burying it. I went looking for concealment and did not find it.",
+    "why_still_defective": "overall_verdict is a hardcoded string literal in build_ledger, not a computed value. I forced all nine per-claim verdicts to FAIL and the aggregate stayed PASS. A verdict that cannot fail carries no information and cannot distinguish a complete ledger from a broken one - which is a genuine vacuity inside a unit whose purpose is falsifiable verdicts. The NOT_SUPPORTED row's verdict is likewise a hardcoded literal rather than derived from its own observed evidence. Separately, the manifest-level 'verdict: PASS' field - the one an automated ingestion would read - carries none of the disclaiming context, so the honesty depends entirely on a human reading the limitation."
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-A",
+      "rationale": "Direct test of whether the aggregate verdict is derived or constant. This is the specific overclaim risk flagged for this unit.",
+      "construction": "Replaced the per-claim verdict field with the literal 'FAIL' so that all nine claims fail, then re-ran the ledger.",
+      "observed_output_verbatim": "literal 'overall_verdict': 'PASS' present in source: True\nSTUB(all-claims-FAIL) per-claim verdicts: {'FAIL': 9}\nSTUB(all-claims-FAIL) overall_verdict: PASS <- unchanged\nSTUB(all-claims-FAIL) producer test exit: 1",
+      "component_survived": false,
+      "interpretation": "CONFIRMED VACUOUS AGGREGATE. With every claim failing, overall_verdict is still PASS. It is a constant. The producer's own test does catch the mutation, but only because it asserts specific per-claim verdicts - the aggregate itself is unpinned and unpinnable."
+    },
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "Independent recomputation of the unit's headline positive measurement, so the one substantive PASS row does not rest on the producer's arithmetic.",
+      "construction": "Reviewer script reading packs/MANIFEST_ALL.json at the pinned commit and independently hashing and byte-counting every declared blob, plus an ls-tree count.",
+      "observed_output_verbatim": "  reviewer-computed declared rows: 92\n  reviewer-computed declared total bytes: 811121\n  manifest totals: {\"file_count\": 93, \"total_bytes\": 811121, \"note\": \"file_count includes MANIFEST_ALL.json itself, which cannot hash itself; total_bytes excludes it\"}\n  reviewer-computed tree file count under packs/: 93\n  reviewer-found mismatches: NONE\n  producer claim was: 92 declared blobs, 811121 declared bytes -> CONFIRMED",
+      "component_survived": true,
+      "interpretation": "Fully confirmed by independent computation. 92 declared blobs, 811121 bytes, zero mismatches, 93 tree files with the manifest self-exclusion correctly accounted for. Nothing invented."
+    },
+    {
+      "hidden_case_id": "HC-C",
+      "rationale": "Target-integrity sweep. A ledger over pinned commits is only as good as its pins, and nobody had checked whether the eight named targets are eight distinct commits.",
+      "construction": "For each of the 8 declared targets, independently resolve the object type and count files under packs/ and modules/operators/.",
+      "observed_output_verbatim": "  main                                                           37943ec2ff type=commit packs/=0 modules/operators/=0\n  packs/operator-packs-v1-20260820                               1e6f53c323 type=commit packs/=93 modules/operators/=0\n  packs/operator-packs-v1-source                                 37943ec2ff type=commit packs/=0 modules/operators/=0\n  pinned-base                                                    5db7affeb7 type=commit packs/=0 modules/operators/=0\n  soo/operator-packs-source-v1-20260820                          4612fee16a type=commit packs/=0 modules/operators/=0\n  soo/operator-packs-v1-source-20260820                          62c29e1a64 type=commit packs/=0 modules/operators/=93\n  soo/v003-controlling-pointer-and-part-manifest-repair-20260820  8c52ef6d8f type=commit packs/=0 modules/operators/=0\n  soo/work-unit-contract-and-run-ledger-20260819                 9696c325f0 type=commit packs/=0 modules/operators/=0\n\nDUPLICATE SHAs across named targets: {\"37943ec2ff9f6702d72e127a3c8e56c81b0c3812\": [\"main\", \"packs/operator-packs-v1-source\"]}",
+      "component_survived": false,
+      "interpretation": "All eight commits exist, and the two positive findings check out - 93 files under packs/ at the published pin, 93 files under modules/operators/ at the modules-source pin. But 'main' and 'packs/operator-packs-v1-source' are the SAME commit 37943ec2ff. The ledger presents them as two targets and reaches two DIFFERENT verdicts for the same commit on nearly the same question: 'contains an operator-pack source tree' is FAIL, 'contains the operator packs' is NOT_YET. Both observed zero paths, so the differing verdicts come from differing hardcoded fallbacks, not from differing evidence. That inflates claim_count and makes the verdict distribution less meaningful than it looks."
+    }
+  ],
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "MET - I reproduced the full 9-claim ledger and the verdict distribution exactly.",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET - 3 artifacts verified.",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - acceptance_contract_sha256 equals my pre-disclosure hash f25f25f8...",
+    "result is committed and read back by a different process from an immutable object id": "MET - artifact_commit 4eecd022ce07ee3db8231404fdcb1f2307a40e18.",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - every one of the 9 claims carries an explicit verdict from the permitted vocabulary, which is precisely what the frozen deliverable demands.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "MET, and this is the criterion the unit satisfies best. Four refutations are recorded as FAIL rows with their observed evidence intact, including the runtime portability failure over five absent _spine.py files. Nothing is restated as success.",
+    "no value, hash, metric or provider capability is invented": "MET, verified hard. I independently recomputed the 92-blob / 811121-byte headline and confirmed all eight target commits exist with the file counts the ledger implies."
+  },
+
+  "scope_honesty_assessment": {
+    "producer_declared_limitations": [
+      "The overall PASS means the claims were independently reproduced or refuted, not that every individual PO-01 claim passed; the ledger preserves FAIL, NOT_YET and NOT_SUPPORTED rows."
+    ],
+    "assessment": "This is the most precisely targeted limitation in either cohort I reviewed. It anticipates exactly the misreading an aggregate PASS invites and closes it in one sentence, and the artifact repeats the same disclaimer internally in overall_meaning. The producer also volunteered the runtime portability failure in its evidence string rather than leaving it to be discovered. I was specifically directed to judge whether this aggregate PASS is honest, and on the evidence it is: the semantics are disclosed, the negatives are preserved, and the numbers are real."
+  },
+
+  "verification_commands": {
+    "artifact_verification_verbatim": "artifact_count: 3 ALL_VERIFY: True"
+  },
+
+  "nonportable_artifacts_in_subtree": [],
+  "reproducibility_check": "Commit-pinned by construction. The 9-claim ledger reproduced an identical verdict distribution in fresh python3 -I processes on repeat.",
+
+  "reviewer_independent_verdict": "PASS",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "AGREE",
+  "divergence_reason": null,
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "ACCEPTED, and I want to be plain that I reached this after actively trying to break it, because an aggregate PASS over four FAIL rows is exactly the shape of an overclaim. It is not one here. The unit's frozen hypothesis is disjunctive - claims are 'reproducible, or refutable' - and the ledger genuinely reproduced 2 and refuted 4 strictly from immutable objects with no PO-01 contact, which is the hypothesis confirmed rather than dodged. The frozen criteria positively require refutations to be recorded as refutations, and they are, with the runtime portability failure named in the producer's own evidence string. I independently recomputed the headline measurement (92 declared blobs, 811121 bytes, zero mismatches) and confirmed all eight target commits exist. The semantics of the aggregate are disclosed twice, in the artifact and in the manifest limitation. Two defects must still be fixed and I am escalating them: overall_verdict is a hardcoded constant that stayed PASS when I forced all nine claims to FAIL, and two named targets are the same commit with two different verdicts on the same zero-path evidence.",
+  "followups_for_coordinator": [
+    "overall_verdict is the string literal 'PASS' in build_ledger, not a computed value. Reviewer-observed: forcing all nine per-claim verdicts to FAIL leaves overall_verdict PASS. Derive it from the rows - for example 'LEDGER_COMPLETE' only when every row carries a verdict from the permitted vocabulary - so the field can actually fail. The NOT_SUPPORTED row's verdict is likewise a hardcoded literal rather than derived from its observed evidence.",
+    "The manifest-level 'verdict: PASS' field carries none of the disclaiming context that the limitation provides. Any automated ingestion reading only that field will conclude the PO-01 claims passed, when 7 of 9 did not. Consider a distinct aggregate vocabulary for ledger units so the top-line field is self-describing.",
+    "Targets 'main' and 'packs/operator-packs-v1-source' resolve to the SAME commit 37943ec2ff9f6702d72e127a3c8e56c81b0c3812, yet receive different verdicts (FAIL and NOT_YET) on identical zero-path evidence. This inflates claim_count from 7 distinct commits to 9 claims and makes the verdict distribution misleading. Deduplicate the pins or state explicitly that two named refs share one commit."
+  ]
+}
