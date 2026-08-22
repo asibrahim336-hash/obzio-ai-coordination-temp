@@ -39,7 +39,17 @@ FIRST-PASS AND REWORK EVIDENCE
 The first direct isolated-mode reproduction attempt exited 1 with
 ModuleNotFoundError: No module named 'immutable_readback'. The focused suite
 had passed because its test loader inserted the module path. Commit
-6ed7ba2 added an explicit script-directory import path and changed the
+8d92136 added an explicit script-directory import path and changed the
 black-box test to invoke Python with -I -B. A second hardening pass removed
 ephemeral temporary-root values from durable reproduction evidence; commit
-af19c50 added a recurrence assertion. All final commands above passed.
+551c316 added a recurrence assertion. All final commands above passed.
+
+CUSTODY RECOVERY
+The first result branch inherited 11 WA-002 paths when a shared local base ref
+moved between resolution and branch creation. Immutable-base ownership
+validation rejected that branch. The WA-025 changes were replayed in the
+separate worktree /tmp/po03-wa-025-b195-a01-1a9f created directly at
+e56eda6e8e4a4e958795f7157839926d93272b30. The replacement remote branch is
+cursor/po03-wa-025-b195-a01-1a9f. Base-to-payload ownership validation passed:
+13 changed paths, all below workstreams/po03/wave-a/units/wa-025/, and zero
+out-of-scope changed paths.
