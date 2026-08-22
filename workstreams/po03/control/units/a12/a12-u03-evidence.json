@@ -1,0 +1,46 @@
+{
+  "unit_id": "a12-u03",
+  "fence_token": 2,
+  "outcome": "READY_TO_COMMIT",
+  "pre_fix": {
+    "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a12_capsule_preflight.py'",
+    "exit_code": 1,
+    "output": "Ran 1 test in 0.000s; FAILED (errors=1): FileNotFoundError for workstreams/po03/capsule/preflight.py"
+  },
+  "post_fix": {
+    "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a12_capsule_preflight.py'",
+    "exit_code": 0,
+    "output": "Ran 3 tests in 26.718s; OK"
+  },
+  "real_drift_fixture": {
+    "capsule": "workstreams/po03/capsule/po03-wave-a-sources-v001.json",
+    "current_ref": "b7b1888ad17eb232b9f284c753df79da3c0633ba",
+    "pinning_reason": "immutable parent of the commit that recorded source-capsule-drift.json; this is the git state from which its current hashes were computed",
+    "command_exit_code": 3,
+    "aggregate_state": "DRIFTED",
+    "counts": {
+      "CURRENT": 8,
+      "DRIFTED": 4,
+      "MISSING": 0
+    },
+    "report": "workstreams/po03/capsule/preflight-four-drift.json"
+  },
+  "clean_fixture": {
+    "capsule": "workstreams/po03/capsule/po03-wave-a-sources-v002.json",
+    "current_ref": "85d595cd7b19edfccc605577a8ca1ade63cccf74",
+    "command_exit_code": 0,
+    "aggregate_state": "CURRENT",
+    "counts": {
+      "CURRENT": 12,
+      "DRIFTED": 0,
+      "MISSING": 0
+    },
+    "report": "workstreams/po03/capsule/preflight-clean.json"
+  },
+  "missing_fixture": {
+    "construction": "synthetic committed source followed by a committed deletion",
+    "command_exit_code": 4,
+    "aggregate_state": "MISSING"
+  },
+  "control_plane_change_not_made": "Before control_plane records RUNNING or launches a worker, it must invoke capsule/preflight.py with the dispatch's immutable capsule and intended current ref, persist the returned capsule_manifest_sha256 and current_commit_sha, and abort dispatch unless exit code is 0. Cohort po03-worker-a11 owns control_plane.py."
+}
