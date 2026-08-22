@@ -1,0 +1,64 @@
+{
+  "task_id": "po03-wa-b2e7-055-reproduction-scale-versus-acceptance",
+  "cohort": "c7",
+  "producer": "gpt-5.6-sol-xhigh",
+  "ref_reviewed": "refs/heads/po03/wa-b2e7-c7",
+  "reviewer_id": "po03-reviewer-b-claude-sonnet-5",
+  "protocol": {
+    "step1_frozen_acceptance_sha256_recorded_before_disclosure": "dc17c2d41b9d743b79c278536946d4f3078195421878c8bd40c6e71eeec55f81",
+    "step1_frozen_hypothesis": "Raising attempt concurrency without proportional recovery and acceptance capacity degrades independently accepted throughput.",
+    "step2_archive_command": "git archive po03/wa-b2e7-c7 workstreams/po03/attempts/po03-wa-b2e7-055-reproduction-scale-versus-acceptance | tar -x -C /home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-055-reproduction-scale-versus-acceptance",
+    "step3_independent_execution": "executed test_scale_acceptance.py and experiment.py myself under python3 -I before reading manifest.json/result.json"
+  },
+  "independent_execution": {
+    "tests_command": "python3 -I test_scale_acceptance.py -v",
+    "tests_raw_output": "test_pressure_formulas_are_monotonic (__main__.ScaleAcceptanceTests.test_pressure_formulas_are_monotonic) ... ok\ntest_unbalanced_scale_degrades_accepted_good_throughput (__main__.ScaleAcceptanceTests.test_unbalanced_scale_degrades_accepted_good_throughput) ... ok\n\n----------------------------------------------------------------------\nRan 2 tests in 0.004s\n\nOK",
+    "tests_exit_code": 0,
+    "experiment_command": "python3 -I experiment.py --output /tmp/repro_055.json",
+    "experiment_raw_output_summary": {
+      "concurrency_4_good_throughput": 3.86,
+      "concurrency_32_good_throughput": 1.15,
+      "concurrency_4_escaped_defect_fraction": 0.0,
+      "concurrency_32_escaped_defect_fraction": 0.5825771324863884,
+      "seed": 55055,
+      "verdict": "PASS"
+    },
+    "reproducibility": "EXACT MATCH -- re-running experiment.py with the committed preregister.json (seed 55055) in a fresh python3 -I process reproduced 3.86 -> 1.15 throughput and 0.000 -> 0.583 escaped-defect fraction bit-for-bit against the committed measurement.json, matching this review's brief exactly (3.86 to 1.15)."
+  },
+  "positive_finding": "Unlike unit 054, this unit implements a genuine discrete-event queueing simulation: a bounded acceptance_queue and recovery_queue with FIFO processing, per-slot arrivals equal to `concurrency`, and per-slot service capped at `acceptance_capacity`/`recovery_capacity`. This is real mechanism-level code, not a closed-form calculator, and the queue-depth bookkeeping (final_acceptance_queue_depth growing to 5848 at concurrency=32) is genuinely emergent from the simulation loop.",
+  "construction_audit": {
+    "description": "The simulation's outcome depends on two decoupled inputs at each concurrency level: (1) the REAL queueing dynamics (arrival rate = concurrency vs fixed service rate = acceptance_capacity), and (2) `defect_probability(concurrency, acceptance_capacity)` and `detection_probability(concurrency, acceptance_capacity)`, two hand-written linear formulas that directly and deterministically inject a WORSE intrinsic item-defect-rate and a WORSE reviewer-detection-rate purely as a function of concurrency, with no causal mechanism connecting concurrency to quality anywhere in the simulation loop itself -- the formulas are evaluated once per level and used as a fixed per-item coin-flip probability for the entire run.",
+    "hidden_case": {
+      "description": "Isolated the two effects by re-running the SAME queueing simulation (same seed, same acceptance_capacity=4, recovery_capacity=2, slots=200) at concurrency=4 and concurrency=32, but holding defect_chance and detection_chance FIXED at the concurrency=4 baseline values (0.04 and 0.98) instead of letting them scale with concurrency per the committed formulas -- i.e. testing what pure capacity-bottleneck queueing alone does to throughput when item quality and reviewer skill do not change with concurrency.",
+      "command": "python3 -I one-off script reimplementing simulate_level with defect_chance/detection_chance passed in as fixed baseline constants for both concurrency=4 and concurrency=32",
+      "raw_output": "baseline (concurrency=4) defect_chance = 0.04 detection_chance = 0.98\nHIDDEN CASE (quality HELD CONSTANT at baseline levels) concurrency=4: {'accepted_good_per_slot': 3.86, 'escaped_defect_fraction': 0.0, 'final_queue_depth': 28}\nHIDDEN CASE (quality HELD CONSTANT at baseline levels) concurrency=32: {'accepted_good_per_slot': 3.825, 'escaped_defect_fraction': 0.0013054830287206266, 'final_queue_depth': 5634}\n\nCompare to committed (formula-driven, quality DEGRADES with concurrency) result:\n  concurrency=4: throughput=3.86, escaped_fraction=0.0, defect_chance=0.04, detection_chance=0.98\n  concurrency=32: throughput=1.15, escaped_fraction=0.5825771324863884, defect_chance=0.7400000000000001, detection_chance=0.41999999999999993",
+      "outcome": "DECISIVE -- with intrinsic item quality and reviewer detection skill held constant across concurrency levels, accepted-good throughput at concurrency=32 (3.825) is statistically indistinguishable from concurrency=4 (3.86, a 0.9% difference attributable to sampling noise), and escaped-defect fraction stays near zero (0.0013 vs the reported 0.583). The bottleneck DOES cause a massive unprocessed backlog (queue depth grows to 5634), but that backlog has essentially NO effect on the quality or volume of what IS successfully reviewed and accepted, because FIFO service at a fixed capacity simply processes the oldest items at the same per-item quality rate regardless of how large the backlog behind them grows.",
+      "analysis": "This proves that the real, emergent queueing mechanism in this simulation contributes essentially NOTHING to the reported 3.86-to-1.15 throughput collapse or the 0.000-to-0.583 escaped-defect rise. The ENTIRE reported effect is attributable to the two hand-picked formulas that directly assign a concurrency-dependent defect probability and detection probability as an unmediated input assumption, not as an emergent consequence of contention, overload, or any other mechanism the simulation actually models. This is the same 'arm defined so it must win' pattern as units 050, 051 and 054: the formulas were chosen (defect_probability rising by exactly 0.025 per unit of excess concurrency, capped at 0.80; detection_probability falling by exactly 0.02 per unit, floored at 0.25) specifically to produce a large, monotonic, and reliably passing effect, and dressing this in a real discrete-event simulation loop does not change that the causal driver is an assumption, not a measurement."
+    },
+    "preregistration_bindingness": "preregister.json states the formulas explicitly (defect_probability_formula and review_detection_formula), so in a narrow sense they ARE preregistered -- but registering an assumption is not the same as registering a genuine risk of refutation. Because the formulas guarantee monotonically worse quality and detection at every concurrency level above 4, and the hidden case shows the queueing mechanism alone contributes negligibly, the accept_when condition (throughput lower AND escape fraction higher at 32 vs 4) is virtually certain to hold for this or any nearby seed -- the preregistration documents the rigging rather than constraining against it."
+  },
+  "independent_verdict": "FAIL",
+  "independent_verdict_reasoning": "The required_deliverable is 'a reproduction sweeping concurrency against fixed acceptance capacity and reporting accepted throughput and escaped-defect rate per level.' A genuine queueing simulation IS present and does produce real emergent backlog behavior, which is commendable relative to units 054's closed-form calculator. However, my hidden case proves that the queueing/capacity-bottleneck mechanism itself -- the actual mechanism named in the falsifiable hypothesis ('without proportional recovery and acceptance capacity') -- contributes negligibly to the reported effect. The entire 3.86-to-1.15 collapse is instead driven by two formulas that directly assert, as an unproven and unmediated input assumption, that concurrency itself degrades the intrinsic quality of submitted work and the skill of the reviewer. This is measuring the formulas' own construction, not a consequence of capacity mismatch, which is the actual mechanism the hypothesis claims to test.",
+  "hidden_case": {
+    "summary": "See construction_audit.hidden_case above: with defect/detection probabilities held constant across concurrency levels, the pure queueing/backlog effect produces a negligible ~1% throughput difference and near-zero escaped-defect fraction at concurrency=32, versus the reported -70% throughput collapse and 58-point escaped-defect rise when the formulas are allowed to vary with concurrency.",
+    "outcome": "FAILS -- the claimed mechanism (capacity bottleneck degrading throughput) is not what actually produces the reported effect; an unmediated formula assumption is."
+  },
+  "producer_claim": {
+    "verdict": "PASS",
+    "evidence_text": "Executed five 200-slot concurrency arms at fixed acceptance 4 and recovery 2: good throughput fell from 3.860 at concurrency 4 to 1.150 at 32 while escaped-defect fraction rose from 0.000 to 0.582577; 2 tests passed.",
+    "manifest_artifact_count": 5,
+    "producer_disclosed_limitation": "Synthetic queue contention and review-sensitivity formulas do not estimate production provider latency or cost."
+  },
+  "agreement": "DIVERGE",
+  "divergence_reason": "The producer's disclosed limitation names 'synthetic queue contention and review-sensitivity formulas' but frames this as a fidelity/scope limitation (does not estimate real provider latency/cost), not as the actual finding that the queue-contention part of the simulation is nearly inert and the review-sensitivity formula is doing essentially all the work. My hidden case isolates and quantifies this: holding the formulas constant across concurrency levels reduces the entire effect from a 70% throughput collapse to a ~1% difference indistinguishable from noise. The producer's PASS treats the formula-driven number as if it demonstrated the hypothesized capacity-bottleneck mechanism, when it demonstrates almost entirely the pre-assumed formula instead.",
+  "additional_findings": {
+    "no_committed_pycache": "This unit's committed subtree contains no __pycache__ bytecode artifacts.",
+    "vacuous_test_check": {
+      "performed": true,
+      "method": "Checked whether a stub simulate_level (e.g. always returning fixed throughput values) would pass. test_pressure_formulas_are_monotonic directly calls the real defect_probability/detection_probability functions and asserts monotonicity, and test_unbalanced_scale_degrades_accepted_good_throughput calls the real run() end-to-end; a broken stub would fail both.",
+      "result": "NOT_VACUOUS -- the queueing code genuinely executes and is exercised by the tests. The issue found is one of causal attribution (formula vs mechanism), not test vacuity."
+    }
+  },
+  "disposition_recommendation": "REJECTED",
+  "disposition_reason": "The queueing engineering is real and more sophisticated than several other c7 units, but the headline effect (3.86 to 1.15 throughput, 0.000 to 0.583 escaped-defect fraction) is not a consequence of the capacity-mismatch mechanism the falsifiable hypothesis names. My hidden case shows that mechanism alone produces a negligible ~1% effect; the reported large effect comes almost entirely from two hand-picked, concurrency-indexed probability formulas asserted as ground truth rather than derived from the simulation. This should be recorded as a refutation of the specific causal claim (or at minimum a NOT_YET pending a version that derives quality degradation from actual contention rather than assuming it), not restated as a confirmed PASS for the stated hypothesis."
+}

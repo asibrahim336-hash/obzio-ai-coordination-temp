@@ -1,0 +1,61 @@
+{
+  "task_id": "po03-wa-b2e7-056-mechanism-change-and-recurrence",
+  "cohort": "c7",
+  "producer": "gpt-5.6-sol-xhigh",
+  "ref_reviewed": "refs/heads/po03/wa-b2e7-c7",
+  "reviewer_id": "po03-reviewer-b-claude-sonnet-5",
+  "protocol": {
+    "step1_frozen_acceptance_sha256_recorded_before_disclosure": "6659a97bb96bfdddee6b4fa8506973984aff165537ebc8672c4f1731d51722da",
+    "step1_frozen_hypothesis": "At least two reproduced findings can change the live PO-03 mechanism and be locked by recurrence tests that fail if the change regresses.",
+    "step2_archive_command": "git archive po03/wa-b2e7-c7 workstreams/po03/attempts/po03-wa-b2e7-056-mechanism-change-and-recurrence | tar -x -C /home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-056-mechanism-change-and-recurrence",
+    "step3_independent_execution": "executed test_ingestion.py, test_recurrence.py (staged AND reverted), and run_recurrence.py myself under python3 -I before reading manifest.json/result.json; read change_contract.json and mechanism_changes.json before disclosure as they are the frozen design contract/ledger, not the outcome narrative"
+  },
+  "independent_execution": {
+    "revert_proof_verification": {
+      "command_staged": "python3 -I test_recurrence.py staged_mechanisms -v",
+      "raw_output_staged": "test_bounded_capsule_admits_all_and_only_required_fields ... ok\ntest_capsule_hash_detects_reverted_verification ... ok\ntest_outbox_is_durable_before_return_and_reads_back ... ok\ntest_outbox_readback_detects_corruption ... ok\n\nRan 4 tests in 0.007s\n\nOK",
+      "exit_code_staged": 0,
+      "command_reverted": "python3 -I test_recurrence.py reverted_mechanisms -v",
+      "raw_output_reverted": "test_bounded_capsule_admits_all_and_only_required_fields ... FAIL\ntest_capsule_hash_detects_reverted_verification ... FAIL\ntest_outbox_is_durable_before_return_and_reads_back ... FAIL\ntest_outbox_readback_detects_corruption ... FAIL\n\nFAILED (failures=4)",
+      "exit_code_reverted": 1,
+      "conclusion": "INDEPENDENTLY CONFIRMED -- staged exits 0 with 4/4 passing, reverted exits 1 with exactly 4/4 failing, matching the producer's claim (staged exit 0, reverted exit 1 with 4 failures) exactly. This is a genuine, non-vacuous revert-proof: the recurrence suite discriminates real behavioral differences (explicit key filtering vs blind truncation; real hash verification vs `return True`; real fsynced file write vs in-memory-only stand-in; real corruption detection vs none)."
+    },
+    "run_recurrence_py_reproduction": "Ran run_recurrence.py end-to-end myself (python3 -I run_recurrence.py --output /tmp/repro_056_revert.json); reproduced staged_run.exit_code=0, reverted_run.exit_code=1, recurrence_sensitive_to_reversion=true, verdict=PASS, byte-identical in structure to the committed revert_proof.json.",
+    "test_ingestion_py": "python3 -I test_ingestion.py -v -> all 3 tests passed (Ran 3 tests in 0.000s, OK), independently confirming reproduction_ledger.jsonl has 6 executed links, mechanism_changes.json has 2 staged changes plus >=1 evidence-backed rejection, and revert_proof.json shows the expected staged/reverted split."
+  },
+  "additional_hidden_case_per_mechanism_sensitivity": {
+    "description": "The producer's own tests only check the ALL-STAGED vs ALL-REVERTED extremes. I constructed a mixed fixture directory containing the STAGED context_capsule.py alongside the REVERTED durable_outbox.py, to test whether the recurrence suite genuinely discriminates PER-MECHANISM (i.e. is not merely a coincidental all-or-nothing binary switch that happens to work only when both are reverted together).",
+      "command": "mkdir /tmp/mixed_056/mixed_mechanisms; cp staged_mechanisms/context_capsule.py and reverted_mechanisms/durable_outbox.py into it; python3 -I test_recurrence.py /tmp/mixed_056/mixed_mechanisms -v",
+      "raw_output": "test_bounded_capsule_admits_all_and_only_required_fields ... ok\ntest_capsule_hash_detects_reverted_verification ... ok\ntest_outbox_is_durable_before_return_and_reads_back ... FAIL\ntest_outbox_readback_detects_corruption ... FAIL\n\nFAILED (failures=2)",
+      "outcome": "SURVIVES -- exactly and only the 2 outbox-related tests fail when only the outbox mechanism is reverted, while both capsule-related tests continue to pass. This confirms genuine, fine-grained per-mechanism sensitivity, not a coincidental global switch."
+  },
+  "chain_of_custody_finding": {
+    "description": "Both staged mechanism changes and the one evidence-backed rejection in this unit are explicitly 'supported_by' three other c7 reproduction units that I independently reviewed earlier in this same session: MC-001-bounded-hashed-context-admission cites po03-wa-b2e7-050-reproduction-context-admission, MC-002-atomic-outbox-readback cites po03-wa-b2e7-053-reproduction-outbox-durability, and MR-001-concurrency-only-scale-to-32 cites po03-wa-b2e7-055-reproduction-scale-versus-acceptance.",
+    "my_own_prior_findings": "I independently found and documented construction defects in all three of those supporting reproductions: unit 050's 0.845 delta collapses to 0.0 under an equally legitimate unshuffled full-dump baseline (my independent verdict: FAIL); unit 053's 1.000 outbox recovery does not survive a correlated-failure model matching the actual named PO-02 Code-2 failure class of entire provider-runtime loss (my independent verdict: FAIL); and unit 055's 3.86-to-1.15 throughput collapse is driven almost entirely by a hand-picked, concurrency-indexed probability formula rather than the claimed capacity-bottleneck mechanism (my independent verdict: FAIL).",
+    "implication_for_this_unit": "This does not mean unit 056's OWN deliverable is fabricated or fails on its own literal terms -- the staged mechanism code (explicit required-key filtering plus hash verification; fsync-plus-atomic-rename plus hash-and-byte-count read-back) is itself sound, reasonable engineering that stands on its own merits independent of the flawed comparison studies, and the recurrence/revert-proof harness genuinely and rigorously works, including under my own additional per-mechanism hidden case. But the specific 'measured_effect' magnitudes recorded in mechanism_changes.json (delta 0.845, outbox_recovered 1.0, escape-fraction jump to 0.583) are inherited directly from reproductions I found to be construction artifacts, not robust findings. A controller relying on this unit's mechanism_changes.json to judge the SIZE of the benefit, or relying on MR-001 to judge that concurrency scaling specifically (as opposed to formula-injected quality assumptions) is the causal driver of degraded throughput, would be relying on compromised evidence."
+  },
+  "independent_verdict": "PASS",
+  "independent_verdict_reasoning": "Evaluated strictly against this unit's own required_deliverable ('two independently supported live mechanism changes staged for controller promotion, each with a recurrence test that fails when the change is reverted, plus an evidence-backed rejection of at least one tempting-but-unsupported change'): two distinct mechanism changes are staged, each cites its own separate reproduction task (satisfying 'independently supported' in the structural sense of two separate, dedicated reproductions rather than one narrative covering both), the shared recurrence suite is real and genuinely revert-sensitive (verified independently, including a per-mechanism hidden case the producer's own tests did not cover), one evidence-backed rejection is recorded, and the unit correctly refrains from overclaiming actual promotion (controller_promotion_status: STAGED_NOT_PROMOTED, strategy_status: PROPOSAL_ONLY). This narrow, literal deliverable is genuinely met and is not vacuous.",
+  "hidden_case": {
+    "summary": "See additional_hidden_case_per_mechanism_sensitivity above: a mixed staged/reverted fixture correctly produces exactly the expected partial failure (2 of 4 tests), proving the recurrence suite is genuinely per-mechanism sensitive rather than a coincidental all-or-nothing binary.",
+    "outcome": "SURVIVES"
+  },
+  "producer_claim": {
+    "verdict": "PASS",
+    "evidence_text": "Staged bounded hashed context admission and atomic outbox read-back, linked 6 reproductions, and executed one shared 4-test recurrence suite: staged exit 0, reverted fixtures exit 1 with 4 failures. Recorded concurrency-only scaling as an evidence-backed rejection; 3 ingestion tests passed.",
+    "manifest_artifact_count": 13,
+    "producer_disclosed_limitation": "Changes remain staged inside the owned unit subtree and require independent controller promotion."
+  },
+  "agreement": "AGREE_WITH_STRONG_CAVEAT",
+  "divergence_reason": "I agree with the producer's PASS verdict for this unit's own literal, narrow deliverable (the recurrence/revert-proof mechanism and staging structure), which I independently verified to be genuine and non-vacuous. This is not a full AGREE, however, because the producer's evidence text and manifest do not disclose that the specific measured_effect magnitudes this unit stages for promotion are inherited from three reproductions (050, 053, 055) that I independently found, through my own hidden-case analysis earlier in this review, to contain material construction defects that inflate or misattribute the claimed effects. The producer's disclosed limitation ('requires independent controller promotion') is honest but generic, and does not surface this specific chain-of-custody risk.",
+  "additional_findings": {
+    "no_committed_pycache": "This unit's committed subtree contains no __pycache__ bytecode artifacts.",
+    "vacuous_test_check": {
+      "performed": true,
+      "method": "The review brief specifically warns that 'a recurrence test that passes both staged and reverted is worthless.' I verified directly that this is NOT the case here: reverted_mechanisms genuinely fails all 4 tests (confirmed independently), and my own mixed-fixture hidden case further confirms per-mechanism (not just aggregate) sensitivity.",
+      "result": "NOT_VACUOUS -- this is one of the strongest, most rigorously self-validating artifacts in cohort c7."
+    }
+  },
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "The recurrence/revert-proof engineering genuinely works, is non-vacuous under both the producer's own tests and my independent per-mechanism hidden case, and the unit correctly limits its claim to a staged, not-yet-promoted proposal. Acceptance is for this unit's own literal deliverable only. I explicitly flag for the controller and for whoever aggregates this review that the 'measured_effect' figures cited in mechanism_changes.json as the justification for staging MC-001, MC-002, and MR-001 rest on three reproductions (050, 053, 055) that this same review independently rejected for construction defects, and that any actual promotion decision should require those reproductions to be corrected and re-run with fairer comparison arms before being relied upon for magnitude claims."
+}
