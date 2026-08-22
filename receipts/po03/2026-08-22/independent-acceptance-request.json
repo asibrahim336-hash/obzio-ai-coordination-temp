@@ -1,0 +1,182 @@
+{
+  "receipt_id": "RCP-PO03-INDEPENDENT-ACCEPTANCE-REQUEST-20260822-v001",
+  "recorded_at": "2026-08-22T07:50:41Z",
+  "document_type": "REQUEST",
+  "document_type_note": "This is a request for independent acceptance. It is not a grant, and nothing in it may be read as PO-03 accepting its own work.",
+  "requested_by": "PO-03 integration controller",
+  "requested_by_function": "obzio.function.repository-engineering-portable-runtime",
+  "addressed_to": [
+    "the founder",
+    "any reviewer independent of this producer"
+  ],
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "commission_revision": "v002",
+  "commission_source": {
+    "path": "workstreams/po03/COMMISSION.md",
+    "commit": "f36bbefcb4a24eb8e4f55090ea03aaa48f1dbb7a",
+    "sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+    "section": "Acceptance candidate controls"
+  },
+  "criteria_freeze_uri": "workstreams/po03/evidence/criteria-freeze.json",
+  "criteria_frozen_before_execution": true,
+  "wave": "WAVE-A",
+  "working_branch": "cursor/po03-wave-a-transactional-factory-5086",
+  "branch_point_sha": "552b12eacee637716451492a98980fb0da19ff3e",
+  "head_at_request": "PENDING_SELF_REFERENTIAL",
+  "head_at_request_note": "This document is committed by the commit it would have to name. Recover the head with `git rev-parse cursor/po03-wave-a-transactional-factory-5086`.",
+  "self_acceptance_claimed": false,
+  "independent_acceptance": "NOT_TESTED",
+  "summary_of_verdicts": {
+    "PASS": 5,
+    "NOT_YET": 7,
+    "NOT_SUPPORTED": 0,
+    "FAIL": 0,
+    "OWNER_BLOCKED": 0,
+    "total_controls": 12,
+    "not_supported_note": "No whole control is NOT_SUPPORTED. Heterogeneous model allocation is NOT_SUPPORTED as one part of the model control, which is recorded as NOT_YET overall because another part of it does hold.",
+    "honest_reading": "Five of twelve acceptance controls are met. The producer does not consider this Wave an acceptance candidate. The largest genuine gaps are scale, fault injection, the third generation and every form of independence."
+  },
+  "controls": [
+    {
+      "control": "the preserved v001 mission has substantive code, tests and CI effects",
+      "verdict": "PASS",
+      "evidence": "Four new dependency-free tools and one extended tool, four new test modules, 23 tests grown to 178, and four new CI gates in .github/workflows/po03-contracts.yml. The v001 mission and its appointment-seed receipt are unmodified.",
+      "evidence_uri": "receipts/po03/2026-08-22/producer-execution.json",
+      "reviewer_check": "Run `python3 -m unittest discover -s workstreams/po03/tests -p 'test_*.py'` at this head and confirm 178 tests pass, then read the workflow file for five gate steps."
+    },
+    {
+      "control": "account-observed strongest-model use and heterogeneous allocation are evidenced",
+      "verdict": "NOT_YET",
+      "evidence": "The runtime reported claude-sonnet-5-thinking-max for this worker. That is an observation, not a selection: no model-selection or agent-dispatch capability is exposed inside this worker, so neither strongest-model use nor heterogeneous allocation can be evidenced as a choice.",
+      "evidence_uri": "workstreams/po03/control/model-capability-register.json",
+      "sub_verdicts": [
+        {
+          "part": "account-observed model recorded",
+          "verdict": "PASS",
+          "detail": "The exact runtime-reported slug is recorded, not guessed."
+        },
+        {
+          "part": "strongest-model use evidenced as a deliberate choice",
+          "verdict": "NOT_YET",
+          "detail": "This worker cannot enumerate or select models from inside the session, so it cannot demonstrate that the strongest available model was chosen."
+        },
+        {
+          "part": "heterogeneous allocation across model families",
+          "verdict": "NOT_SUPPORTED",
+          "detail": "No dispatch channel exists. cursor-agent and cursor are absent from PATH and the connected MCP servers expose read-only run listing only."
+        },
+        {
+          "part": "gemini-3.1-pro and composer-2.5",
+          "verdict": "NOT_SUPPORTED",
+          "detail": "Named in workstreams/po03/evidence/so02-operating-correction.json but not exposed anywhere in this tooling. That prior evidence file also carries model documentation URLs this session could not verify; it was left unmodified and not relied on."
+        }
+      ],
+      "reviewer_check": "Confirm from the runtime's own records which model executed this branch, and decide whether an observed-but-unchosen model satisfies the control."
+    },
+    {
+      "control": "Wave A has 64 substantive durable results or an exact provider ceiling was observed and fully saturated in queued cohorts",
+      "verdict": "NOT_YET",
+      "evidence": "Ten genuine work units were executed, nine with durable commits. No provider ceiling was observed because no dispatch channel exists to measure one. This is a disclosed scope decision, not an oversight: manufacturing 64 units at this task's real size would have required trivial busy-work or fabricated evidence, and parallel writers in this shared working directory would have caused git corruption rather than isolation.",
+      "evidence_uri": "workstreams/po03/evidence/scale-ladder.json",
+      "reviewer_decision_requested": "Direct whether to scale via true isolated worktrees or separate cloud VMs. The mechanism is available; it was not stood up unprompted.",
+      "reviewer_check": "Count the lines of workstreams/po03/control/work-unit-registry.jsonl and confirm ten, and confirm no unit duplicates another's falsifiable claim."
+    },
+    {
+      "control": "every counted unit has a terminal durable disposition and immutable locator",
+      "verdict": "NOT_YET",
+      "evidence": "Nine of ten units carry RESULT_COMMITTED_AND_INGESTED with a real commit id and a schema-valid transactional-result document. The tenth is this compilation unit, whose locator is the branch head rather than an embedded id, because a document cannot record the SHA of the commit that introduces it. No unit is COMPLETED, deliberately: the commission reserves that state for a coordinator distinct from the producer, and here they were the same actor.",
+      "evidence_uri": "workstreams/po03/control/work-unit-registry.jsonl",
+      "supporting_uri": "workstreams/po03/contracts/instances/results",
+      "reviewer_check": "Run `python3 workstreams/po03/tools/validate_contracts.py validate-dir result workstreams/po03/contracts/instances/results` and expect scanned=9 valid=9 invalid=0. Then resolve `git rev-parse cursor/po03-wave-a-transactional-factory-5086` as U10's locator."
+    },
+    {
+      "control": "strategy, research, reproduction, evaluation, OS and successor functions produced tested material effects",
+      "verdict": "NOT_YET",
+      "evidence": "Research and reproduction produced material effects: eight hypotheses reproduced against this repository's own code, three of which found real divergences that changed live mechanisms and gained regression tests. Evaluation produced the anti-fabrication suite. Strategy produced the disclosed scope decision. The successor function produced a real G1 but no G2.",
+      "evidence_uri": "workstreams/po03/research/reproduction-ledger.jsonl",
+      "gaps": [
+        "External-literature research is NOT_YET: no browse or search tool exists in this runtime, so no source outside this repository was fetched or cited.",
+        "Evaluation is not independent: every test was written by the producer of the code it exercises, so none is a holdout.",
+        "The successor function produced G1 only; G2 is NOT_YET."
+      ],
+      "reviewer_check": "Read workstreams/po03/research/reproduction-ledger.jsonl and confirm each cited test exists and fails when its mechanism is reverted."
+    },
+    {
+      "control": "transactional recovery and fault injection pass",
+      "verdict": "NOT_YET",
+      "evidence": "Four of fourteen named fault scenarios were genuinely exercised as real tests against real files in throwaway repositories: corrupt or missing artifact, symlink substitution, out-of-allowlist mutation and the rename bypass. Six more are partially covered by document invariants. No recovery path ran, because nothing was lost; an untested recovery path is not a demonstrated one.",
+      "evidence_uri": "workstreams/po03/evidence/recovery-fault-matrix.json",
+      "supporting_uri": "workstreams/po03/control/recovery-state.json",
+      "gaps": [
+        "No process, session, network or provider-runtime fault was injected, because no multi-process or multi-machine unreliable channel was reachable from this worker.",
+        "Lease ids and fence tokens are structurally validated but never enforced by a live sink, because there was one writer and no queue.",
+        "Committed artifacts were read back from the git object store by the same process that wrote the record, not by an independent second reader."
+      ],
+      "reviewer_check": "Read the matrix and confirm each EXERCISED row names a test that exists and actually injects the fault, rather than merely asserting a document field."
+    },
+    {
+      "control": "OS metrics cover every counted unit without invented values",
+      "verdict": "PASS",
+      "evidence": "workstreams/po03/metrics/work-unit-runs.jsonl carries exactly one row per registry unit against the schema in workstreams/po03/metrics/metric-definitions.json. Columns that could not be observed carry NOT_SUPPORTED with the reason rather than a value: token and monetary cost are not readable from any tool exposed to this worker, and queue time does not exist without a queue.",
+      "evidence_uri": "workstreams/po03/metrics/work-unit-runs.jsonl",
+      "enforced_by": "workstreams/po03/tests/test_control_evidence.py::MetricsTests",
+      "reviewer_check": "Confirm the row count equals the registry line count and that every 40-hex id in the file resolves to a real commit; MetricsTests and NoFabricatedShaTests check both mechanically."
+    },
+    {
+      "control": "G0/G1/G2 and holdout evidence establish or refuse the claimed lift",
+      "verdict": "NOT_YET",
+      "evidence": "G0 and G1 are both real, executable and measured: G0 at 552b12eacee637716451492a98980fb0da19ff3e with 23 passing tests, G1 at this head with 178. G2 is NOT_YET and was deliberately withheld rather than fabricated, because G1's CI gates had not run once on GitHub, so G1 has produced no field failures to learn from.",
+      "evidence_uri": "workstreams/po03/metrics/generation-comparison.json",
+      "claimed_lift": "NOT_YET",
+      "claimed_lift_detail": "Only a capability delta is claimed: G0 had no changed-path, manifest, disposition or directory-validation control, and G1 has all four with tests and CI enforcement. No preregistered metric was measured on both generations against a common holdout, and no holdout written by an independent evaluator exists.",
+      "quality_regression": "NONE_OBSERVED",
+      "quality_regression_detail": "The 23 G0 invariant tests were re-run in isolation against G1 and all pass; no existing invariant was weakened.",
+      "reviewer_check": "Check out the branch point, run the suite, expect 23; return to this head, run it again, expect 178. Then decide whether a capability delta without a holdout is worth anything to you."
+    },
+    {
+      "control": "a fresh checkout reproduces the complete suite",
+      "verdict": "NOT_YET",
+      "evidence": "Every tool and test imports only the Python standard library and all five gates run under `python -I`, which ignores environment and user site directories. But no GitHub Actions run existed for this branch when this request was written, so clean-clone reproduction is asserted by construction and not yet observed.",
+      "evidence_uri": "receipts/po03/2026-08-22/ci-clean-clone.json",
+      "becomes_checkable": "As soon as this branch is pushed and the workflow runs.",
+      "reviewer_check": "Clone the repository fresh, check out this branch, and run the five gate commands listed in the CI receipt. Any failure is a real defect in this Wave."
+    },
+    {
+      "control": "all changed paths remain inside the original allowlist",
+      "verdict": "PASS",
+      "evidence": "Every changed path in this Wave lies inside workstreams/po03/**, receipts/po03/** or .github/workflows/po03-*.yml. The guard was run over the full branch-point-to-head diff with rename detection disabled and reported every path in scope. No write outside the allowlist was performed at any point, including to demonstrate rejection: rejection is proved with synthetic path strings and throwaway git repositories under the system temporary directory.",
+      "verification_command": "git diff --name-only --no-renames -z 552b12eacee637716451492a98980fb0da19ff3e...HEAD | python3 workstreams/po03/tools/path_scope_guard.py --null --stdin",
+      "enforced_by": ".github/workflows/po03-contracts.yml",
+      "reviewer_check": "Re-run the command above at this head. It is the same command CI runs, so a disagreement between your result and CI's is itself a finding."
+    },
+    {
+      "control": "PO-01 non-interference is evidenced",
+      "verdict": "PASS",
+      "evidence": "No PO-01 branch, packs/, modules/ or _transport/ artifact exists anywhere at this head, confirmed by `git branch -a` and directory listing. Nothing was read for narrative evidence, contacted or mutated. PO-01 reproduction is therefore NOT_APPLICABLE rather than skipped, and no PO-01 content was invented to fill the gap. PR #8, PR #9, cursor/setup-dev-environment-b5ce and main are untouched, and no pull request was created or updated by this worker.",
+      "evidence_uri": "workstreams/po03/evidence/reproduction-results.json",
+      "reviewer_check": "Run `git branch -a` and confirm no PO-01 branch exists, then confirm this branch's diff touches nothing outside the allowlist."
+    },
+    {
+      "control": "an independent acceptance request is issued",
+      "verdict": "PASS",
+      "evidence": "This document. It is issued as a request, lists every acceptance control with an honest verdict, and grants nothing.",
+      "evidence_uri": "receipts/po03/2026-08-22/independent-acceptance-request.json",
+      "enforced_by": "workstreams/po03/tests/test_control_evidence.py::SelfAcceptanceTests",
+      "reviewer_check": "SelfAcceptanceTests scans every PO-03 document and fails if any claims ACCEPTED or PASS for independent acceptance. Confirm it still passes."
+    }
+  ],
+  "what_the_producer_asks_the_reviewer_to_attack_first": [
+    "The guard passes vacuously on an empty changed-path set, so a silently wrong diff base yields PASS rather than FAIL. A fixture reproduces the wrong-base failure, but the vacuous-pass case is still unguarded.",
+    "The guard reads path strings only. It cannot see a write that reaches outside the allowlist through a pre-existing symlink; only the manifest's symlink refusal covers that, and only inside the PO-03 subtree.",
+    "Every test in this Wave was written by the producer of the code it exercises. If the producer misunderstood a requirement, the tests encode that misunderstanding and still pass.",
+    "The five defects reported in this Wave were all found by the producer reviewing its own work, which is exactly the arrangement the producer/reviewer separation hypothesis says is unreliable.",
+    "The anti-fabrication tests check that recorded hashes and commit ids resolve. They cannot check that a prose claim is true."
+  ],
+  "decisions_requested_from_the_reviewer": [
+    "Whether to scale beyond ten units via true isolated worktrees or cloud VMs, or to accept that ten genuine units carry more evidence than sixty-four manufactured ones.",
+    "Whether an observed-but-unselectable model satisfies the strongest-model control, or whether a runtime that exposes model selection is a precondition for that control.",
+    "Whether to open Wave B. The commission's gate reads zero false completion, zero result loss and zero path collision; all three were observed as zero, but across ten units with no independent acceptance."
+  ],
+  "producer_recommendation": "Do not accept this Wave. Accept or reject the individual controls marked PASS on their own evidence, and treat the six NOT_YET controls as open work rather than as satisfied.",
+  "decision_changed": []
+}

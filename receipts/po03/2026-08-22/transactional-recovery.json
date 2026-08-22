@@ -1,0 +1,58 @@
+{
+  "receipt_id": "RCP-PO03-TRANSACTIONAL-RECOVERY-20260822-v001",
+  "recorded_at": "2026-08-22T07:43:15Z",
+  "actor": "PO-03 integration controller",
+  "wave": "WAVE-A",
+  "subject": "transactional result custody and recovery state at the end of Wave A",
+  "custody_protocol": "OBZIO-TRANSACTIONAL-RESULT-v1",
+  "counted_units": 10,
+  "units_with_validated_result_documents": 9,
+  "units_without_a_result_document": 1,
+  "units_without_a_result_document_detail": "PO03-WAVE-A-U10 is the compilation unit that produces the final commit. A document cannot record the SHA of the commit that introduces it, so its immutable locator is the branch head after push rather than an embedded id. It is skipped and reported by the emitter, not filled in with a guess.",
+  "state_distribution": {
+    "PARENT_INGESTED": 9,
+    "RESULT_STAGING": 1,
+    "COMPLETED": 0
+  },
+  "completed_withheld_deliberately": {
+    "reason": "The commission reserves COMPLETED for the coordinator and requires a different producer to accept the result. Wave A had one worker acting as producer and coordinator, so setting COMPLETED would have been self-completion.",
+    "enforced_by": "workstreams/po03/tests/test_control_evidence.py::RegistryIntegrityTests::test_no_unit_is_marked_completed"
+  },
+  "durable_result_verification": {
+    "method": "Each artifact was read back from the immutable git object at the unit's recorded commit with `git show <commit>:<path>`, then hashed. The working tree was not used as the source of any recorded hash.",
+    "artifacts_verified": "every artifact in all 9 documents",
+    "independence": "SAME_PROCESS_NOT_INDEPENDENT_READER",
+    "independence_note": "The commission requires that another process read every artifact back by immutable SHA. Reading from the git object store is stronger than a worktree hash but is still the same process; a genuinely independent second reader is NOT_YET.",
+    "enforced_by": "workstreams/po03/tests/test_control_evidence.py::EmittedResultInstanceTests::test_artifact_hashes_match_the_committed_blobs"
+  },
+  "false_completion_count": 0,
+  "result_loss_count": 0,
+  "path_collision_count": 0,
+  "duplicate_external_effect_count": 0,
+  "orphaned_unit_count": 0,
+  "in_flight_lease_count": 0,
+  "founder_relay_events": 0,
+  "recovery_invoked": false,
+  "recovery_invoked_note": "Nothing was lost, so no recovery ran. An untested recovery path is not a demonstrated one; 100% recovery of committed results is therefore NOT_YET rather than PASS.",
+  "lease_and_fence_state": {
+    "fence_tokens_assigned": "1 through 10, strictly increasing",
+    "enforcement": "structural validation only; no live sink rejected a stale writer because there was one writer",
+    "state": "MODELLED_NOT_ENFORCED_AT_RUNTIME"
+  },
+  "fault_injection": {
+    "state": "NOT_YET",
+    "scenarios_named_by_commission": 12,
+    "scenarios_genuinely_exercised": 4,
+    "scenarios_partially_covered_by_document_invariants": 6,
+    "scenarios_not_covered": 5,
+    "detail_uri": "workstreams/po03/evidence/recovery-fault-matrix.json",
+    "reason": "No multi-process or multi-machine unreliable channel was available to interrupt, because this worker has no agent-dispatch capability. Genuinely exercised scenarios were the corrupt/missing artifact case, the symlink substitution case, the out-of-allowlist mutation fixture and the rename bypass, all reproduced on real files in throwaway repositories under /tmp."
+  },
+  "po02_code2_fixture": {
+    "state": "PROVIDER_COMPLETED_UNCOMMITTED / UNRECOVERED_AFTER_FOUR_REPORTED_ROUTES / NOT_ACCEPTED",
+    "treatment": "Retained frozen as a fault fixture and not called a completed deliverable. The invariant that reproduces its failure mode is workstreams/po03/tests/test_validate_contracts.py::TransactionalResultTests::test_provider_completion_without_commit_is_reclassified.",
+    "modified_by_this_wave": false
+  },
+  "recovery_state_uri": "workstreams/po03/control/recovery-state.json",
+  "independent_acceptance": "NOT_TESTED"
+}

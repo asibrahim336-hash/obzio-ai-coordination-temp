@@ -1,0 +1,51 @@
+{
+  "receipt_id": "RCP-PO03-CI-CLEAN-CLONE-20260822-v001",
+  "recorded_at": "2026-08-22T07:43:15Z",
+  "actor": "PO-03 integration controller",
+  "wave": "WAVE-A",
+  "subject": "clean-clone reproduction of the PO-03 gates in GitHub Actions",
+  "state": "PENDING_PUSH",
+  "state_detail": "The actual clean-clone CI result can only be known once this branch is pushed and GitHub Actions runs. At the time of this receipt no workflow run existed for this branch. No run id, run URL, conclusion or duration is recorded, because inventing any of them would be fabricated evidence.",
+  "workflow_path": ".github/workflows/po03-contracts.yml",
+  "workflow_run_url": "PENDING_PUSH",
+  "workflow_run_conclusion": "PENDING_PUSH",
+  "triggers": {
+    "pull_request": ["workstreams/po03/**", "receipts/po03/**", ".github/workflows/po03-*.yml"],
+    "push_branches": ["po03/**", "cursor/po03-**"],
+    "push_branch_note": "cursor/po03-** was added by this Wave so that the gates execute on this working branch on push, not only when a pull request exists."
+  },
+  "gates_configured": [
+    { "step": "Enforce the PO-03 changed-path allowlist", "command": "git diff --name-only --no-renames -z <base>...HEAD | python -I workstreams/po03/tools/path_scope_guard.py --null --stdin" },
+    { "step": "Run dependency-free contract tests", "command": "python -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v" },
+    { "step": "Verify the PO-03 subtree manifest", "command": "python -I workstreams/po03/tools/manifest.py --verify" },
+    { "step": "Validate every emitted result document", "command": "python -I workstreams/po03/tools/validate_contracts.py validate-dir result workstreams/po03/contracts/instances/results" },
+    { "step": "Validate the wave compounding receipt", "command": "python -I workstreams/po03/tools/validate_contracts.py wave workstreams/po03/evidence/wave-a-compounding-receipt.json" }
+  ],
+  "local_execution_of_the_same_commands": {
+    "note": "These are local runs in this workspace, which is a warm checkout. They are evidence that the commands work, not evidence of clean-clone reproduction.",
+    "observed_at": "2026-08-22T07:57:53Z",
+    "changed_path_guard": "PATH-SCOPE GUARD: PASS 57 paths in scope",
+    "unittest": "Ran 178 tests — OK",
+    "manifest_verify": "MANIFEST VERIFY: PASS 54 entries",
+    "validate_dir_result": "VALIDATE-DIR result workstreams/po03/contracts/instances/results: scanned=9 valid=9 invalid=0",
+    "validate_wave": "VALID wave sha256=52571abb87a81bb01caa8d8ef52cd14e9191a4c0344f736a15a8314de7efe7de",
+    "operator_taxonomy_gate": "OPERATOR TAXONOMY CHECK: PASS"
+  },
+  "clean_runtime_properties": {
+    "third_party_packages_required": 0,
+    "third_party_packages_note": "Every tool and test imports only the Python standard library. The suite and all gates run under `python -I`, which ignores the environment and user site directories.",
+    "python_version_local": "3.12.3",
+    "python_version_ci": "3.12",
+    "provider_memory_dependency": false,
+    "tmp_dependency": false,
+    "tmp_note": "Tests create throwaway git repositories under the system temporary directory and delete them. No committed artifact and no gate result depends on /tmp persisting between runs.",
+    "uncommitted_file_dependency": false,
+    "warm_checkout_dependency": false,
+    "hidden_local_state_dependency": false,
+    "git_dependency": true,
+    "git_dependency_note": "The changed-path guard, the manifest and the result emitter all require git. In CI this is satisfied by actions/checkout with fetch-depth 0. Tests that need git skip cleanly when it is absent rather than failing."
+  },
+  "fresh_checkout_reproduces_the_complete_suite": "NOT_YET",
+  "fresh_checkout_reproduces_the_complete_suite_reason": "Not yet demonstrated. It becomes checkable as soon as the branch is pushed and the workflow runs; until an actual run exists this stays NOT_YET.",
+  "independent_acceptance": "NOT_TESTED"
+}

@@ -1,0 +1,55 @@
+{
+  "receipt_id": "RCP-PO03-SUCCESSOR-GENERATION-20260822-v001",
+  "recorded_at": "2026-08-22T07:43:15Z",
+  "actor": "PO-03 integration controller",
+  "wave": "WAVE-A",
+  "subject": "three-generation successor test",
+  "state": "NOT_YET",
+  "generations": {
+    "G0": {
+      "state": "MEASURED",
+      "locator": "552b12eacee637716451492a98980fb0da19ff3e",
+      "tests": 23,
+      "tests_result": "OK",
+      "observed_at": "2026-08-22T06:59:45Z",
+      "is_executable_code": true
+    },
+    "G1": {
+      "state": "MEASURED",
+      "locator": "head of cursor/po03-wave-a-transactional-factory-5086",
+      "locator_note": "Not embedded: a file cannot contain the SHA of the commit that introduces it. Recover with `git rev-parse cursor/po03-wave-a-transactional-factory-5086`.",
+          "tests": 178,
+          "tests_result": "OK",
+          "observed_at": "2026-08-22T07:57:00Z",
+      "is_executable_code": true,
+      "description_uri": "workstreams/po03/successor/g1/README.md"
+    },
+    "G2": {
+      "state": "NOT_YET",
+      "reason": "No successor has been compiled from G1 field failures. G1's CI gates had not run once on GitHub at the time of this receipt, so G1 has produced no field failures to learn from, and no lesson has been independently accepted. Compiling G2 now would mean inventing the failures it claims to have learned from.",
+      "description_uri": "workstreams/po03/successor/g2/README.md"
+    }
+  },
+  "lessons_that_changed_live_mechanisms": 5,
+  "lessons_with_recurrence_tests": 5,
+  "lessons_independently_supported": 0,
+  "lessons_independently_supported_note": "The commission requires at least three independently supported lessons. All five lessons here were found and fixed by the same producer, so the independence requirement is NOT_YET even though the tested requirement is met.",
+  "changed_route_dispositions": {
+    "RETAIN": 7,
+    "SUPERSEDE": 1,
+    "RETEST": 3,
+    "REJECT": 1,
+    "DELETE": 0,
+    "source_uri": "workstreams/po03/evidence/wave-a-compounding-receipt.json"
+  },
+  "lineage_preserved": true,
+  "lineage_note": "G0 remains recoverable at its commit; no seeded file was deleted. The one superseded route (the origin/main merge-base fallback) is recorded in workstreams/po03/control/events/0005-ci-base-resolution-defect-repaired.json rather than silently removed.",
+  "frozen_public_suite": "python3 -m unittest discover -s workstreams/po03/tests -p 'test_*.py'",
+  "evaluator_held_novel_cases": "NOT_YET",
+  "evaluator_held_novel_cases_reason": "No holdout written by an independent evaluator exists. Every test in this repository was written by the producer of the code it exercises, so none can serve as a novel case.",
+  "claimed_lift": "NOT_YET",
+  "claimed_lift_reason": "Lift requires a preregistered metric measured on both generations against a common holdout with no quality regression. Only a capability delta is claimed: G0 had no changed-path, manifest, disposition or directory-validation control and G1 has all four with tests and CI enforcement.",
+  "quality_regression": "NONE_OBSERVED",
+  "quality_regression_evidence": "The 23 G0 invariant tests were re-run in isolation against G1 and all pass.",
+  "independent_acceptance": "NOT_TESTED"
+}
