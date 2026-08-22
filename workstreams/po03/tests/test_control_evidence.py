@@ -315,6 +315,53 @@ class SelfAcceptanceTests(unittest.TestCase):
         self.assertEqual([], offenders)
 
 
+class AcceptanceRequestTests(unittest.TestCase):
+    """The acceptance request may not tally its own verdicts wrongly."""
+
+    VERDICTS = ("PASS", "FAIL", "NOT_YET", "NOT_SUPPORTED", "OWNER_BLOCKED")
+
+    @classmethod
+    def setUpClass(cls):
+        path = RECEIPTS / "2026-08-22" / "independent-acceptance-request.json"
+        if not path.is_file():
+            raise unittest.SkipTest("no acceptance request in this tree")
+        cls.document = json.loads(path.read_text(encoding="utf-8"))
+
+    def test_it_is_a_request_and_not_a_grant(self):
+        self.assertEqual("REQUEST", self.document["document_type"])
+        self.assertFalse(self.document["self_acceptance_claimed"])
+        self.assertEqual("NOT_TESTED", self.document["independent_acceptance"])
+
+    def test_every_control_carries_a_permitted_verdict_and_evidence(self):
+        for control in self.document["controls"]:
+            self.assertIn(control["verdict"], self.VERDICTS, control["control"])
+            self.assertTrue(control["evidence"].strip(), control["control"])
+
+    def test_the_verdict_tally_matches_the_controls(self):
+        controls = self.document["controls"]
+        summary = self.document["summary_of_verdicts"]
+        self.assertEqual(len(controls), summary["total_controls"])
+        for verdict in self.VERDICTS:
+            counted = sum(1 for control in controls if control["verdict"] == verdict)
+            self.assertEqual(counted, summary[verdict], verdict)
+
+    def test_every_frozen_acceptance_control_is_answered(self):
+        frozen = json.loads(
+            (PO03 / "evidence" / "criteria-freeze.json").read_text(encoding="utf-8")
+        )["frozen_acceptance_candidate_controls"]
+        answered = [control["control"] for control in self.document["controls"]]
+        self.assertEqual(frozen, answered)
+
+    def test_cited_evidence_paths_exist(self):
+        missing = []
+        for control in self.document["controls"]:
+            for key in ("evidence_uri", "supporting_uri"):
+                uri = control.get(key)
+                if uri and not (REPO_ROOT / uri).exists():
+                    missing.append(f"{control['control']}: {uri}")
+        self.assertEqual([], missing)
+
+
 @unittest.skipUnless(GIT, "git is required to read committed blobs")
 class EmittedResultInstanceTests(unittest.TestCase):
     @classmethod
@@ -429,6 +476,8 @@ class CitedTestsExistTests(unittest.TestCase):
         PO03 / "evidence" / "recovery-fault-matrix.json",
         PO03 / "evidence" / "wave-a-compounding-receipt.json",
         PO03 / "control" / "path-ownership.json",
+        *sorted(RECEIPTS.glob("*/*.json")),
+        *sorted((PO03 / "control" / "events").glob("*.json")),
     )
 
     REFERENCE_RE = re.compile(r"::([A-Za-z_][A-Za-z0-9_]*)")

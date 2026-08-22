@@ -74,6 +74,23 @@ def tracked_entries(root: Path) -> list[tuple[str, str]]:
     return entries
 
 
+def untracked_files(root: Path) -> list[str]:
+    git = shutil.which("git")
+    if git is None:
+        raise ManifestError("git is required to enumerate untracked files")
+    completed = subprocess.run(
+        [git, "-C", str(root), "ls-files", "--others", "--exclude-standard", "-z", "--", SUBTREE],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return sorted(
+        entry
+        for entry in completed.stdout.split("\x00")
+        if entry and not is_excluded(entry)
+    )
+
+
 def tracked_files(root: Path) -> list[str]:
     included = [
         (mode, relative_path)
@@ -116,6 +133,12 @@ def manifest_text(root: Path, relative_paths: list[str]) -> str:
 
 
 def build(root: Path) -> str:
+    stray = untracked_files(root)
+    if stray:
+        raise ManifestError(
+            "untracked files under the subtree would be left out of the manifest; "
+            "stage or ignore them first: " + ", ".join(stray)
+        )
     return manifest_text(root, tracked_files(root))
 
 

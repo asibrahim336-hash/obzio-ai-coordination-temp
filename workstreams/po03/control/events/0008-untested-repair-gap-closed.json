@@ -1,0 +1,23 @@
+{
+  "event_id": "EVT-PO03-WAVE-A-0008",
+  "seq": 8,
+  "occurred_at": "2026-08-22T07:50:41Z",
+  "timestamp_provenance": "REAL_SHELL_CLOCK_AT_OBSERVATION",
+  "event_type": "defect-found-and-repaired",
+  "wave": "WAVE-A",
+  "actor": "po03-integration-controller-bc-ecd55d9e",
+  "subject": "a repaired defect that had no recurrence test",
+  "detail": {
+    "found_by": "writing receipts/po03/2026-08-22/producer-execution.json, which required naming the regression test for every repaired defect",
+    "defect": "The base-resolution repair recorded in event 0005 was verified only by running the four resolution branches by hand. No committed test would have caught a reintroduction, so a lesson was being reported as tested when it was not.",
+    "repair": "Two real tests were added: test_wrong_diff_base_charges_the_wave_for_pre_existing_paths reproduces the failure on real git history in a throwaway repository, and test_ci_workflow_prefers_the_po03_base_ref_over_main asserts the workflow keeps the corrected ordering.",
+    "regression_test": "workstreams/po03/tests/test_path_scope_guard.py::DeliberateOutOfAllowlistFixtureTests::test_wrong_diff_base_charges_the_wave_for_pre_existing_paths",
+    "secondary_repairs": [
+      "workstreams/po03/tests/test_control_evidence.py::CitedTestsExistTests now also scans receipts/po03/**/*.json and workstreams/po03/control/events/*.json, so a receipt may not cite a test that does not exist.",
+      "workstreams/po03/tests/test_control_evidence.py::AcceptanceRequestTests was added so the acceptance request cannot mistally its own verdicts, skip a frozen control or cite a missing evidence path."
+    ],
+    "note": "The verdict tally in the first draft of the acceptance request was wrong. The test that now guards it was written because of that error, not before it.",
+    "result_commit_id": "PENDING_SELF_REFERENTIAL"
+  },
+  "decision_changed": []
+}

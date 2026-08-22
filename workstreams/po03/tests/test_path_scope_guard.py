@@ -316,6 +316,59 @@ class DeliberateOutOfAllowlistFixtureTests(unittest.TestCase):
             self.assertEqual(1, result.returncode, result.stdout)
             self.assertIn("OUT-OF-ALLOWLIST: state/governed.json", result.stdout)
 
+    def test_wrong_diff_base_charges_the_wave_for_pre_existing_paths(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.git(root, "init", "-q", "-b", "main")
+            seed = root / "workstreams" / "po03" / "seed.json"
+            seed.parent.mkdir(parents=True)
+            seed.write_text("{}\n", encoding="utf-8")
+            self.git(root, "add", "-A")
+            self.git(root, "commit", "-q", "-m", "main")
+            main = self.git(root, "rev-parse", "HEAD").stdout.strip()
+
+            self.git(root, "checkout", "-q", "-b", "po03/base")
+            inherited = root / ".cursor" / "environment.json"
+            inherited.parent.mkdir(parents=True)
+            inherited.write_text("{}\n", encoding="utf-8")
+            self.git(root, "add", "-A")
+            self.git(root, "commit", "-q", "-m", "base branch content")
+            po03_base = self.git(root, "rev-parse", "HEAD").stdout.strip()
+
+            self.git(root, "checkout", "-q", "-b", "cursor/po03-wave")
+            wave = root / "workstreams" / "po03" / "evidence" / "wave.json"
+            wave.parent.mkdir(parents=True, exist_ok=True)
+            wave.write_text("{}\n", encoding="utf-8")
+            self.git(root, "add", "-A")
+            self.git(root, "commit", "-q", "-m", "wave")
+
+            against_main = self.git(
+                root, "diff", "--name-only", "--no-renames", f"{main}...HEAD"
+            ).stdout
+            self.assertIn(".cursor/environment.json", against_main)
+            self.assertEqual(1, self.guard(against_main).returncode)
+
+            against_po03_base = self.git(
+                root, "diff", "--name-only", "--no-renames", f"{po03_base}...HEAD"
+            ).stdout
+            self.assertNotIn(".cursor/environment.json", against_po03_base)
+            result = self.guard(against_po03_base)
+            self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+
+    def test_ci_workflow_prefers_the_po03_base_ref_over_main(self):
+        workflow = Path(__file__).parents[3] / ".github" / "workflows" / "po03-contracts.yml"
+        text = workflow.read_text(encoding="utf-8")
+        candidates = [
+            line for line in text.splitlines() if 'first_existing_ref' in line and '\\' in line
+        ]
+        self.assertTrue(candidates, "no fallback ref list found in the workflow")
+        fallbacks = text.split("first_existing_ref")[-1]
+        base_ref_at = fallbacks.find("origin/${PO03_BASE_REF}")
+        main_at = fallbacks.find("origin/main")
+        self.assertNotEqual(-1, base_ref_at, fallbacks)
+        self.assertNotEqual(-1, main_at, fallbacks)
+        self.assertLess(base_ref_at, main_at, fallbacks)
+
     def test_ci_workflow_disables_rename_detection(self):
         workflow = Path(__file__).parents[3] / ".github" / "workflows" / "po03-contracts.yml"
         text = workflow.read_text(encoding="utf-8")

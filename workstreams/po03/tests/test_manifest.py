@@ -144,15 +144,15 @@ class WriteAndVerifyTests(unittest.TestCase):
             self.assertFalse(ok)
             self.assertIn("tools/thing.py", detail)
 
-    def test_verify_detects_untracked_addition_only_after_tracking(self):
+    def test_untracked_addition_fails_closed_then_is_detected_once_staged(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             self.build_repo(root)
             MODULE.write(root)
             new_file = root / MODULE.SUBTREE / "evidence" / "added.json"
             new_file.write_text("{}\n", encoding="utf-8")
-            ok, _ = MODULE.verify(root)
-            self.assertTrue(ok, "untracked files are outside manifest scope")
+            with self.assertRaises(MODULE.ManifestError):
+                MODULE.verify(root)
             self.git(root, "add", "-A")
             ok, detail = MODULE.verify(root)
             self.assertFalse(ok)
@@ -227,6 +227,30 @@ class WriteAndVerifyTests(unittest.TestCase):
             (subtree / "link.txt").symlink_to(Path("..") / ".." / "target.txt")
             with self.assertRaises(MODULE.ManifestError):
                 MODULE.manifest_text(root, [f"{MODULE.SUBTREE}/link.txt"])
+
+    def test_untracked_file_blocks_manifest_generation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.build_repo(root)
+            stray = root / MODULE.SUBTREE / "evidence" / "unstaged.json"
+            stray.write_text("{}\n", encoding="utf-8")
+            with self.assertRaises(MODULE.ManifestError) as caught:
+                MODULE.build(root)
+            self.assertIn("unstaged.json", str(caught.exception))
+            self.git(root, "add", "-A")
+            self.assertIn("unstaged.json", MODULE.build(root))
+
+    def test_ignored_files_do_not_block_manifest_generation(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.build_repo(root)
+            (root / MODULE.SUBTREE / ".gitignore").write_text("__pycache__/\n", encoding="utf-8")
+            cache = root / MODULE.SUBTREE / "tools" / "__pycache__"
+            cache.mkdir(parents=True, exist_ok=True)
+            (cache / "thing.cpython-312.pyc").write_bytes(b"\x00\x01")
+            self.git(root, "add", "-A")
+            text = MODULE.build(root)
+            self.assertNotIn("__pycache__", text)
 
     def test_tracked_entries_report_modes(self):
         with tempfile.TemporaryDirectory() as tmp:

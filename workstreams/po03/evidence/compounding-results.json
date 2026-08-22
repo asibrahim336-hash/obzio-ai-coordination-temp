@@ -1,0 +1,48 @@
+{
+  "evidence_id": "EV-PO03-COMPOUNDING-RESULTS-WAVE-A-20260822-v001",
+  "recorded_at": "2026-08-22T07:35:27Z",
+  "wave": "WAVE-A",
+  "wave_receipt_path": "workstreams/po03/evidence/wave-a-compounding-receipt.json",
+  "wave_receipt_validation": {
+    "command": "python3 workstreams/po03/tools/validate_contracts.py wave workstreams/po03/evidence/wave-a-compounding-receipt.json",
+    "observed_stdout": "VALID wave sha256=52571abb87a81bb01caa8d8ef52cd14e9191a4c0344f736a15a8314de7efe7de",
+    "observed_exit_code": 0,
+    "hash_caveat": "The sha256 above is the hash of the receipt file bytes at the moment of validation. If the receipt is edited afterwards the hash changes; the authoritative post-commit hash for the receipt is its line in workstreams/po03/MANIFEST.sha256, which CI re-verifies.",
+    "recorded_in_ci": "The workflow validates the receipt on every run, so this result is reproduced in a clean clone rather than only asserted here."
+  },
+  "baseline_choice_rationale": "The receipt's baseline points at workstreams/po03/evidence/source-lock.json as committed in d67598ac516e8ebe8c5d11d715275cff6a848062, because that file records the observed G0 gate baseline (23 of 23 tests passing and the taxonomy check passing) and has not been modified since it was committed, so its hash is stable and independently checkable with `git show`.",
+  "counted": {
+    "observations": 6,
+    "challenges": 5,
+    "external_hypotheses": 9,
+    "reproductions": 6,
+    "live_mechanism_changes": 5,
+    "independent_tests": 6,
+    "dispositions": 12
+  },
+  "decision_changed": [],
+  "strategy_restarted": false,
+  "compounding_claim": {
+    "state": "NOT_YET",
+    "reason": "Compounding may be claimed only from measured lift on preregistered metrics with no quality regression. This Wave has a capability delta and no measured lift: there is no independent holdout, no G2, and no live run history for G1. The three-generation test is therefore incomplete by design rather than by omission.",
+    "what_is_claimed_instead": "Five live mechanism changes, each with a recurrence test, and three of them prompted by defects reproduced inside this Wave rather than anticipated.",
+    "quality_regression": "NONE_OBSERVED",
+    "quality_regression_evidence": "The 23 pre-amendment invariant tests were re-run in isolation against the final tree and all pass, so no G0 invariant was weakened by any G1 change."
+  },
+  "commission_first_return_thresholds": {
+    "twelve_current_method_hypotheses": "NOT_YET",
+    "twelve_current_method_hypotheses_detail": "Eight recorded, all reproduced in-repository. The shortfall is deliberate: no search or browse tool exists in this session, so the remaining four would have had to be invented.",
+    "six_obzio_reproductions": "PASS",
+    "six_obzio_reproductions_detail": "Eight reproductions recorded in workstreams/po03/research/reproduction-ledger.jsonl, each pointing at a named executable test; three of them found real divergences rather than confirming an assumption.",
+    "two_independently_tested_mechanism_changes": "NOT_YET",
+    "two_independently_tested_mechanism_changes_detail": "Five mechanism changes each have a recurrence test, which satisfies the tested part but not the independent part: every test was written by the producer of the change. Independence requires a reviewer this session could not reach."
+  },
+  "false_completion_check": {
+    "units_marked_completed": 0,
+    "units_with_durable_commit_and_ingestion": 9,
+    "units_pre_commit_by_construction": 1,
+    "detail": "COMPLETED was withheld from every unit because the commission reserves it for the coordinator and requires a different producer to accept, while this Wave had a single worker acting as both. Recording COMPLETED would have been exactly the false completion the seeded contracts were built to prevent."
+  },
+  "decision_changed_note": "No founder decision was changed and no strategy was restarted by this Wave.",
+  "independent_acceptance": "NOT_TESTED"
+}

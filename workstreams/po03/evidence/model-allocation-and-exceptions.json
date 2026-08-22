@@ -1,0 +1,93 @@
+{
+  "evidence_id": "EV-PO03-MODEL-ALLOCATION-WAVE-A-20260822-v001",
+  "recorded_at": "2026-08-22T07:35:27Z",
+  "wave": "WAVE-A",
+  "allocation_actually_used": [
+    {
+      "role": "integration controller, sole writer, and producer of every unit",
+      "units": [
+        "PO03-WAVE-A-U01",
+        "PO03-WAVE-A-U02",
+        "PO03-WAVE-A-U03",
+        "PO03-WAVE-A-U04",
+        "PO03-WAVE-A-U05",
+        "PO03-WAVE-A-U06",
+        "PO03-WAVE-A-U07",
+        "PO03-WAVE-A-U08",
+        "PO03-WAVE-A-U09",
+        "PO03-WAVE-A-U10"
+      ],
+      "family": "claude",
+      "observed_model": "claude-sonnet-5-thinking-max",
+      "observation_method": "cursor-cloud MCP run-info; run-level originalModelName for run bc-ecd55d9e-0ffe-49e1-897d-929d0a4b5086",
+      "reasoning_control": "thinking-max as indicated by the run model slug",
+      "selected_by_po03": false,
+      "selection_note": "This worker cannot choose or change its own model. The configuration is a runtime binding inherited from the hosting run, not a choice PO-03 made."
+    }
+  ],
+  "heterogeneous_allocation": {
+    "state": "NOT_SUPPORTED",
+    "distinct_families_used": 1,
+    "distinct_families_required_by_commission": 2,
+    "reason": "No agent-dispatch capability is exposed to this worker, so no second family could be allocated to any role. Probes run: `command -v cursor-agent` (absent), `command -v cursor` (absent), exposed-toolset inspection (no subagent or task tool), and an MCP search across all connected servers for agent/dispatch/create/launch/model, which returned only the read-only `cursor-cloud list-cloud-agents`."
+  },
+  "commission_role_defaults_versus_reality": [
+    {
+      "role": "lead/integrator",
+      "commission_default": "claude-opus-5 with high thinking",
+      "actual": "claude-sonnet-5-thinking-max",
+      "state": "NOT_YET",
+      "reason": "The hosting run was created on a claude-sonnet-5 configuration. PO-03 cannot re-bind its own runtime."
+    },
+    {
+      "role": "independent chief challenger and parallel engineering",
+      "commission_default": "gpt-5.6-sol at the highest exposed reasoning setting",
+      "actual": "not allocated",
+      "state": "NOT_SUPPORTED",
+      "reason": "No dispatch mechanism to allocate any second worker."
+    },
+    {
+      "role": "independent long-context and alternative generation",
+      "commission_default": "gemini-3.1-pro at its highest exposed setting",
+      "actual": "not allocated",
+      "state": "NOT_SUPPORTED",
+      "reason": "gemini-3.1-pro is not exposed anywhere in this tooling."
+    },
+    {
+      "role": "distinct Cursor-harness hypothesis",
+      "commission_default": "composer-2.5 only under a preregistered matched evaluation",
+      "actual": "not allocated",
+      "state": "NOT_SUPPORTED",
+      "reason": "composer-2.5 is not exposed anywhere in this tooling."
+    }
+  ],
+  "families_recorded_not_supported": [
+    {
+      "family": "gemini-3.1-pro",
+      "state": "NOT_SUPPORTED",
+      "reason": "Not exposed in this tooling. It is named in workstreams/po03/evidence/so02-operating-correction.json but does not appear in the dispatch slug list reported for this account, and no tool here can select it."
+    },
+    {
+      "family": "composer-2.5",
+      "state": "NOT_SUPPORTED",
+      "reason": "Not exposed in this tooling; same boundary as gemini-3.1-pro."
+    }
+  ],
+  "prior_evidence_correction": {
+    "subject": "workstreams/po03/evidence/so02-operating-correction.json current_cursor_sources",
+    "concern": "That file records model documentation URLs such as https://cursor.com/docs/models/gemini-3-1-pro as observed sources. This Wave did not verify any of them and cannot confirm they exist or say what is claimed.",
+    "action_taken": "Recorded as unverified. The file is prior evidence and is not modified by this Wave; no PO-03 record in this Wave cites those URLs as support.",
+    "what_this_wave_actually_fetched": "One HTTP HEAD request to https://cursor.com/docs returned HTTP 200 in an earlier probe by the orchestrating session. No documentation page content was retrieved, rendered or read this session, so no model capability claim in this Wave rests on a fetched document.",
+    "state": "UNVERIFIED_PRIOR_CITATIONS_NOT_RELIED_UPON"
+  },
+  "auto_model_used": false,
+  "downward_cost_optimisation": {
+    "performed": false,
+    "note": "No configuration was downgraded to save tokens or money. Cost was not observable at all; see the cost boundary in workstreams/po03/control/model-capability-register.json."
+  },
+  "weaker_configuration_exception": {
+    "claimed": false,
+    "note": "No paired evaluation was run, so no weaker-configuration exception is claimed. The single available configuration was used for everything, which is a constraint rather than an exception."
+  },
+  "decision_changed": []
+}

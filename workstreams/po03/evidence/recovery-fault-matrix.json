@@ -1,0 +1,119 @@
+{
+  "evidence_id": "EV-PO03-RECOVERY-FAULT-MATRIX-WAVE-A-20260822-v001",
+  "recorded_at": "2026-08-22T07:35:27Z",
+  "wave": "WAVE-A",
+  "scope_statement": "The commission requires fault injection after every state transition. This Wave exercised invariant checks over durable custody documents and two real filesystem/git fixtures in throwaway repositories. It did not inject faults into a live multi-process channel, because no such channel was reachable from this worker.",
+  "live_fault_injection_overall": "NOT_YET",
+  "live_fault_injection_reason": "Inducing process loss, a lost return message, a stale-lease takeover, a duplicate callback or provider-runtime loss requires at least two independently scheduled parties. This worker has no agent-dispatch capability, so no second party existed to lose, delay, duplicate or preempt.",
+  "scenarios": [
+    {
+      "scenario": "process or session loss",
+      "exercised_as_real_test": false,
+      "state": "NOT_YET",
+      "reason": "No second process held work to lose. The controller ran to completion in one session.",
+      "partial_control_present": "Every unit's input is pinned by workstreams/po03/evidence/source-lock.json and criteria-freeze.json, and per-unit state is durable in control/work-unit-registry.jsonl, so a restarted controller has a defined resume point.",
+      "resume_rule_test": "workstreams/po03/tests/test_control_evidence.py::RegistryIntegrityTests::test_every_recorded_commit_id_resolves"
+    },
+    {
+      "scenario": "lost return message",
+      "exercised_as_real_test": true,
+      "state": "PARTIAL",
+      "test": "workstreams/po03/tests/test_validate_contracts.py::TransactionalResultTests::test_provider_completion_without_commit_is_reclassified",
+      "detail": "A provider report of COMPLETED with no durable result commit is forced to PROVIDER_COMPLETED_UNCOMMITTED, so a lost return cannot be recorded as a completion. The document rule is enforced; replay of the lost message itself was not exercised because no message transport existed."
+    },
+    {
+      "scenario": "partial write",
+      "exercised_as_real_test": true,
+      "state": "PARTIAL",
+      "test": "workstreams/po03/tests/test_validate_contracts.py::TransactionalResultTests::test_manifest_required_after_commit and ::test_artifact_count_is_reconciled and ::test_byte_count_is_reconciled",
+      "detail": "A result whose artifact count or byte total disagrees with its artifact list is rejected, so a truncated staging set cannot be committed as complete. Physical torn writes to the filesystem were not simulated."
+    },
+    {
+      "scenario": "failure before commit",
+      "exercised_as_real_test": true,
+      "state": "PARTIAL",
+      "test": "workstreams/po03/tests/test_validate_contracts.py::TransactionalResultTests::test_provider_completed_uncommitted_is_valid_recovery_state",
+      "detail": "The pre-commit state is representable and valid with null transaction fields and no artifacts, which is what a recovery scanner would need to find and re-run. Observed live in this Wave: units 8, 9 and 10 each sat in a pre-commit state in the recorded registry and were later filled from real commits, with unit 10 remaining pre-commit by construction."
+    },
+    {
+      "scenario": "failure after commit but before parent ingestion",
+      "exercised_as_real_test": true,
+      "state": "PARTIAL",
+      "test": "workstreams/po03/tests/test_validate_contracts.py::TransactionalResultTests::test_completed_without_parent_ingestion_is_impossible",
+      "detail": "A document cannot claim PARENT_INGESTED or COMPLETED without a parent_ingested_at timestamp."
+    },
+    {
+      "scenario": "failure before push",
+      "exercised_as_real_test": false,
+      "state": "NOT_YET",
+      "reason": "The push happens once, at the end of the Wave. No pre-push failure was induced. A pre-push failure is recoverable without loss because every result is already committed locally and addressable by SHA, but that claim was not tested by inducing the failure."
+    },
+    {
+      "scenario": "failure after push",
+      "exercised_as_real_test": false,
+      "state": "NOT_YET",
+      "reason": "Not induced. The remote branch is the durable locator after push; nothing in the Wave depends on post-push local state."
+    },
+    {
+      "scenario": "stale lease",
+      "exercised_as_real_test": true,
+      "state": "PARTIAL",
+      "test": "workstreams/po03/tests/test_validate_contracts.py::TransactionalResultTests::test_fence_token_required and workstreams/po03/tests/test_control_evidence.py::RegistryIntegrityTests::test_fence_tokens_are_strictly_monotonic_from_one",
+      "detail": "Fence tokens are required and are strictly monotonic across counted units, which is the precondition for rejecting a stale writer. No live sink rejected an actual stale writer, because there was one writer."
+    },
+    {
+      "scenario": "duplicate callback",
+      "exercised_as_real_test": true,
+      "state": "PARTIAL",
+      "test": "workstreams/po03/tests/test_validate_contracts.py::TransactionalResultTests::test_duplicate_artifact_id_rejected and workstreams/po03/tests/test_control_evidence.py::RegistryIntegrityTests::test_idempotency_keys_are_unique",
+      "detail": "Duplicate artifact ids are rejected and idempotency keys are unique per unit, so a replayed result is identifiable. Harmlessness of an actual duplicate delivery was not exercised."
+    },
+    {
+      "scenario": "corrupt or missing artifact",
+      "exercised_as_real_test": true,
+      "state": "EXERCISED",
+      "test": "workstreams/po03/tests/test_manifest.py::WriteAndVerifyTests::test_verify_detects_modified_content and ::test_verify_reports_missing_manifest and ::test_symlink_content_is_never_hashed_into_the_manifest",
+      "detail": "Real corruption and real absence were induced on real files in throwaway repositories and both were detected. A symlink attempting to substitute outside content was refused. This scenario was genuinely exercised rather than modelled."
+    },
+    {
+      "scenario": "network interruption",
+      "exercised_as_real_test": false,
+      "state": "NOT_YET",
+      "reason": "Not induced. One incidental observation only: the CI step's `git fetch` is written to tolerate failure with `|| true` and the base resolution then falls back to a local ref, and that fallback path was executed locally. That is fallback coverage, not an injected network fault."
+    },
+    {
+      "scenario": "parent restart",
+      "exercised_as_real_test": false,
+      "state": "NOT_YET",
+      "reason": "The parent controller was never restarted. The durable registry plus frozen input define the resume point, but no restart was performed to prove recovery."
+    },
+    {
+      "scenario": "entire provider-runtime loss",
+      "exercised_as_real_test": false,
+      "state": "NOT_YET",
+      "reason": "Cannot be induced from inside the runtime being lost. Every committed result is addressable by SHA in git and independent of provider memory, which is the structural mitigation, but it was not tested by destroying the runtime."
+    },
+    {
+      "scenario": "out-of-allowlist mutation (commission-mandated rejection fixture)",
+      "exercised_as_real_test": true,
+      "state": "EXERCISED",
+      "test": "workstreams/po03/tests/test_path_scope_guard.py::DeliberateOutOfAllowlistFixtureTests::test_out_of_allowlist_mutation_fails_the_guard and ::test_rename_out_of_the_allowlist_is_caught_without_rename_detection",
+      "detail": "A real out-of-allowlist mutation was committed in a throwaway repository under /tmp, a real `git diff --name-only` was taken, and the guard rejected it with a non-zero exit. No path outside the allowlist was ever written in this repository to produce this evidence."
+    }
+  ],
+  "acceptance_criteria_from_the_commission": {
+    "zero_false_completion": "PASS_WITHIN_OBSERVED_SCOPE",
+    "zero_false_completion_detail": "No unit was marked COMPLETED at all. Nine units are PARENT_INGESTED with a real commit id whose artifact hashes were re-derived from git objects; one is pre-commit by construction. Asserted by workstreams/po03/tests/test_control_evidence.py::RegistryIntegrityTests::test_no_unit_is_marked_completed.",
+    "one_hundred_percent_recovery_of_committed_results": "NOT_YET",
+    "one_hundred_percent_recovery_of_committed_results_detail": "Nothing was lost, so recovery was never invoked. An untested recovery path is not a demonstrated one.",
+    "automatic_resume_of_uncommitted_tasks": "NOT_YET",
+    "automatic_resume_detail": "The resume rule is written and its precondition is machine-checked, but no automatic resume driver exists and none ran.",
+    "zero_duplicate_external_effects": "PASS_WITHIN_OBSERVED_SCOPE",
+    "zero_duplicate_external_effects_detail": "The only external effects were read-only MCP queries and the single end-of-wave push. No effect was issued twice.",
+    "complete_hash_coverage": "PASS_WITHIN_OBSERVED_SCOPE",
+    "complete_hash_coverage_detail": "workstreams/po03/MANIFEST.sha256 covers every tracked file in the subtree and is verified in CI; every artifact in every emitted result document is hashed and re-derived from its commit.",
+    "no_founder_relay": "PASS",
+    "no_founder_relay_detail": "No founder action was requested or required during the Wave."
+  },
+  "decision_changed": []
+}

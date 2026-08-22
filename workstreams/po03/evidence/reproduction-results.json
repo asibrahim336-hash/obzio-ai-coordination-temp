@@ -1,0 +1,54 @@
+{
+  "evidence_id": "EV-PO03-REPRODUCTION-RESULTS-WAVE-A-20260822-v001",
+  "recorded_at": "2026-08-22T07:35:27Z",
+  "wave": "WAVE-A",
+  "subject": "PO-01 operator-pack reproduction from immutable commits",
+  "finding": "NOT_APPLICABLE",
+  "finding_statement": "No PO-01 artifacts exist at this immutable head; there is nothing to read, contact or interfere with.",
+  "observations": [
+    {
+      "check": "PO-01 branch present",
+      "method": "git branch -a",
+      "observed": "No PO-01 branch exists locally or on the remote. The remote branches observed are main, cursor/setup-dev-environment-b5ce, po03/repository-engineering-portable-runtime-20260822-v001, agent/operator-function-taxonomy-continuity-repair, two packs/* branches and four soo/* branches. None is a PO-01 branch."
+    },
+    {
+      "check": "packs/** present in the working tree",
+      "method": "directory listing of the repository root at this head",
+      "observed": "Absent. The root contains AGENTS.md, README.md, commissions, dispatch, handoff, handover, instructions, operations, receipts, scripts, sources, state, templates and workstreams."
+    },
+    {
+      "check": "modules/** present",
+      "method": "directory listing of the repository root at this head",
+      "observed": "Absent, including modules/operators/** and modules/work_unit_contract/**."
+    },
+    {
+      "check": "_transport/** present",
+      "method": "directory listing of the repository root at this head",
+      "observed": "Absent."
+    }
+  ],
+  "reproduction_attempted": false,
+  "reproduction_not_attempted_reason": "A reproduction requires a claim and an artifact to reproduce it against. Neither exists at this head. Fabricating a pack tree in order to appear to reproduce it would be invented evidence.",
+  "note_on_remote_pack_branches": {
+    "observed": "Two remote branches named packs/operator-packs-v1-20260820 and packs/operator-packs-v1-source, plus four soo/* branches, exist on the remote.",
+    "action_taken": "None. They were not fetched, checked out, read or pinned.",
+    "reason": "They are not identified as PO-01 branches by any pointer available to this Wave, and the commission restricts PO-03 to reading immutable PO-01 commits only for reproduction purposes. With no PO-01 identification and no reproduction claim in scope, reading them would be unnecessary contact with another workstream's surfaces rather than evidence gathering.",
+    "state": "NOT_READ_BY_CHOICE"
+  },
+  "po01_non_interference": {
+    "state": "PASS",
+    "detail": "No PO-01 branch, path, pull request, artifact or workspace was read, written, messaged, paused, redirected, restarted or signalled. No producer narrative was used as independent evidence.",
+    "evidence_uri": "workstreams/po03/control/path-ownership.json"
+  },
+  "missing_file_detection": "NOT_APPLICABLE",
+  "non_portable_path_detection": "NOT_APPLICABLE",
+  "manifest_gap_detection": "NOT_APPLICABLE",
+  "process_boundary_failure_detection": "NOT_APPLICABLE",
+  "not_applicable_scope_note": "These four detections are the commission's PO-01 pack checks. They are NOT_APPLICABLE for lack of a pack tree, not because the capability is missing: the equivalent detections were built and tested against this repository's own subtree in workstreams/po03/tools/manifest.py and workstreams/po03/tools/repository_disposition.py, so the capability exists and can be pointed at a pack tree if one appears.",
+  "frozen_test_for_a_future_po01_defect": {
+    "state": "NOT_YET",
+    "reason": "The commission requires that a PO-01 defect produce a frozen test and an isolated PO-03 repair candidate rather than an in-place repair. No defect was observed because no artifact was observed, so there is nothing to freeze."
+  },
+  "independent_acceptance": "NOT_TESTED",
+  "decision_changed": []
+}
