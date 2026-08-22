@@ -354,6 +354,34 @@ class CapsuleBuilderTests(unittest.TestCase):
         self.assertEqual(2, response["deterministic_rebuilds"])
         self.assertEqual(2, len(response["negative_fixtures"]))
 
+    def test_source_claim_compiler_reads_immutable_base(self):
+        completed = subprocess.run(
+            [
+                sys.executable,
+                str(UNIT_ROOT / "compile_source_claims.py"),
+                "--repo",
+                str(UNIT_ROOT.parents[4]),
+            ],
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(0, completed.returncode, completed.stderr)
+        response = json.loads(completed.stdout)
+        self.assertEqual(33, response["source_claim_count"])
+        by_path = {item["path"]: item for item in response["sources_read"]}
+        task_input = by_path[
+            "workstreams/po03/control/inputs/wave-a/wa-009-a02.json"
+        ]
+        self.assertEqual(
+            "6915fd4bd8e3aa39ba86fbf238bfbb76bff2995506e06111d03c5bd17ab2e0d0",
+            task_input["sha256"],
+        )
+        self.assertEqual(
+            "affc82b35e6205010fda90f9914a97e467294a44",
+            task_input["read_commit"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
