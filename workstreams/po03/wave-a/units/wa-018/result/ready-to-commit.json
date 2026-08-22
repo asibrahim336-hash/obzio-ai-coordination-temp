@@ -1,0 +1,708 @@
+{
+  "acceptance_contract_hash_match": "EXACT",
+  "acceptance_contract_path": "workstreams/po03/control/acceptance/wave-a-material-v1.json",
+  "acceptance_contract_sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a",
+  "acceptance_self_check": [
+    {
+      "assertion": "The attempt tests the exact falsifiable hypothesis in its immutable task input and does not substitute a plan, inventory, renamed clone, idle session, or narrative-only summary.",
+      "disposition": "PASS",
+      "evidence": "The exact frozen hypothesis from the immutable input was tested across 160 grid cells, 5120 ensemble runs and 12 named threshold cases, with 8 falsifiers evaluated and the two that fired reported as fired. No plan, inventory, renamed clone, idle session or narrative summary substitutes for the test."
+    },
+    {
+      "assertion": "The attempt leaves at least one executable component, reproduction, test, adversarial case, acceptance decision, or evidence-backed rejection in its owned subtree.",
+      "disposition": "PASS",
+      "evidence": "The owned subtree contains five executable components: queue_verification_sim.py, threshold_cases.py, calibrate_from_repository.py, reproduce_all.py and result_custody.py, plus 75 focused tests, 12 adversarial and invariant threshold cases, and an evidence-backed disposition with 7 findings and 5 route dispositions."
+    },
+    {
+      "assertion": "A research attempt records current source claims separately from hypotheses, reproductions, mechanism changes, and strategy proposals; a source summary alone fails.",
+      "disposition": "PASS",
+      "evidence": "source-claims.json records 21 claims separately from hypotheses.json, from reproduction-result.json, from mechanism-change.json and from strategy-proposals.json. The strategy proposals are UNBOUND_PROPOSAL and change nothing. No source summary stands in for a result."
+    },
+    {
+      "assertion": "An engineering attempt includes focused automated tests and command output; unexecuted code fails.",
+      "disposition": "PASS",
+      "evidence": "75 focused automated tests execute from a clean clone with no third-party dependency, and test-output.txt carries the verbose run plus the seeded suite, the taxonomy gate, the threshold-case run and the reproduction summary."
+    },
+    {
+      "assertion": "A reproduction attempt runs on a sanitized repository-native Obzio workload and records enough detail for clean-clone recurrence.",
+      "disposition": "PASS",
+      "evidence": "R-PO03-WA-018-001 runs on sanitized repository-native evidence at immutable commit 48ac81e2580c6efefae8de39dc6b484b57e5c881 and regenerates all three derived artifacts byte-identically over 615264 bytes. reproduce_all.py records the exact clean-clone recurrence commands."
+    },
+    {
+      "assertion": "The producer records exact source URLs or immutable repository SHAs actually read, plus exclusions and limitations; unsupported facts use NOT_SUPPORTED rather than invention.",
+      "disposition": "PASS",
+      "evidence": "Every source read is recorded with its immutable path and SHA-256, and all eight declared source hashes in the immutable input were verified as exact matches. External retrieval is NOT_SUPPORTED and no external URL is claimed. The detection-power curve and the promotion-policy archetypes are declared MODELLING_CHOICE_NOT_EVIDENCE rather than presented as measured."
+    },
+    {
+      "assertion": "The producer writes only its declared owned subtree in an isolated best-of-N worktree and causes no external effect.",
+      "disposition": "PASS",
+      "evidence": "All 23 changed paths from the producer source base are under workstreams/po03/wave-a/units/wa-018/ and the readback reports an out-of-scope changed-path count of 0. Work ran in a dedicated git worktree; the shared controller checkout was never written to or switched. No pull request, message, deployment, spend or secret operation occurred."
+    },
+    {
+      "assertion": "The result contains result.json, tests.json, limitations.json, artifact-manifest.json, and ready-to-commit.json, with complete SHA-256 and byte accounting.",
+      "disposition": "PASS",
+      "evidence": "result.json, tests.json, limitations.json, artifact-manifest.json and ready-to-commit.json are all present. The manifest reconciles 21 payload artifacts and 868337 bytes, and this envelope carries the manifest digest, the manifest byte count and the readback of all 22 verified objects."
+    },
+    {
+      "assertion": "The producer validates changed paths, commits, pushes a unique branch, and reads every artifact back from an immutable remote commit.",
+      "disposition": "PASS",
+      "evidence": "Changed paths were validated, the branch cursor/po03-wa-018-b195-a02-1a9f was pushed, and a separate process cloned the remote with --no-hardlinks into a throwaway directory and matched every artifact's SHA-256 and byte count at f2a4ead49409913c7f4bb9cf474a3f57a126a288, then reran all 75 tests there under a restricted environment."
+    },
+    {
+      "assertion": "The producer reports only READY_TO_COMMIT; provider completion without a durable commit is PROVIDER_COMPLETED_UNCOMMITTED.",
+      "disposition": "PASS",
+      "evidence": "terminal_report is READY_TO_COMMIT and obzio_state is RESULT_COMMITTED only because a durable commit exists and was read back. Without that, the state recorded would be PROVIDER_COMPLETED_UNCOMMITTED."
+    },
+    {
+      "assertion": "Only the coordinator may record COMPLETED, and a producer cannot independently accept its own result.",
+      "disposition": "PASS",
+      "evidence": "completion_actor is null, completion_claimed is false, independent_acceptance.state is NOT_TESTED, and result.json records self_acceptance REFUSED_BY_PROTOCOL. No COMPLETED state is claimed."
+    },
+    {
+      "assertion": "PO-01, PR #8, protected state, shared current pointers, and every path outside the PO-03 allowlist remain untouched.",
+      "disposition": "PASS",
+      "evidence": "No PO-01 path, branch or artifact was read as evidence or written, and pull request 8 and cursor/setup-dev-environment-b5ce were not touched. state/**, dispatch/**, .cursor/environment.json, receipts/po01/** and workstreams/po01/** are absent from the changed-path list. workstreams/po03/control/** and the operator pointers were read only."
+    }
+  ],
+  "acceptance_self_check_note": "A producer self-check is not an acceptance. It records how this attempt believes it meets each frozen assertion so an independent reviewer can contradict it against the same evidence.",
+  "artifact_accounting_note": "artifact_count and total_bytes cover the 21 payload artifacts inventoried by the manifest. The manifest itself adds 8144 bytes and this return envelope adds its own bytes; neither is a payload entry, because a manifest cannot contain its own digest and this envelope carries the manifest digest. The readback verifies 22 objects: the 21 payload artifacts plus the manifest.",
+  "artifact_count": 21,
+  "attempt_id": "PO03-WA-018-A02",
+  "auto_model_selection": false,
+  "changed_file_count": 23,
+  "changed_files": [
+    "workstreams/po03/wave-a/units/wa-018/result/artifact-manifest.json",
+    "workstreams/po03/wave-a/units/wa-018/result/calibrate_from_repository.py",
+    "workstreams/po03/wave-a/units/wa-018/result/calibration-capsule.json",
+    "workstreams/po03/wave-a/units/wa-018/result/disposition.json",
+    "workstreams/po03/wave-a/units/wa-018/result/frontier-results.json",
+    "workstreams/po03/wave-a/units/wa-018/result/hypotheses.json",
+    "workstreams/po03/wave-a/units/wa-018/result/limitations.json",
+    "workstreams/po03/wave-a/units/wa-018/result/mechanism-change.json",
+    "workstreams/po03/wave-a/units/wa-018/result/preregistration.json",
+    "workstreams/po03/wave-a/units/wa-018/result/queue_verification_sim.py",
+    "workstreams/po03/wave-a/units/wa-018/result/ready-to-commit.json",
+    "workstreams/po03/wave-a/units/wa-018/result/reproduce_all.py",
+    "workstreams/po03/wave-a/units/wa-018/result/reproduction-result.json",
+    "workstreams/po03/wave-a/units/wa-018/result/result.json",
+    "workstreams/po03/wave-a/units/wa-018/result/result_custody.py",
+    "workstreams/po03/wave-a/units/wa-018/result/source-claims.json",
+    "workstreams/po03/wave-a/units/wa-018/result/strategy-proposals.json",
+    "workstreams/po03/wave-a/units/wa-018/result/test-output.txt",
+    "workstreams/po03/wave-a/units/wa-018/result/test_queue_verification_sim.py",
+    "workstreams/po03/wave-a/units/wa-018/result/test_threshold_cases.py",
+    "workstreams/po03/wave-a/units/wa-018/result/tests.json",
+    "workstreams/po03/wave-a/units/wa-018/result/threshold-case-results.json",
+    "workstreams/po03/wave-a/units/wa-018/result/threshold_cases.py"
+  ],
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "commit_sequence": [
+    {
+      "commit": "0c7413f5db21996d70c299a99e874e6da1eae4c4",
+      "content": "preregistration and sanitized calibration capsule, before the simulator existed"
+    },
+    {
+      "commit": "dade7fa5f2b88dc39bb3fade00f4a992da0d36dd",
+      "content": "simulator, threshold-case harness and tests, before any configuration was executed"
+    },
+    {
+      "commit": "99013eb532dfd89af5079a346882cfaa4174a6fa",
+      "content": "frontier grid, threshold cases, reproduction and disposition"
+    },
+    {
+      "commit": "86378ad7daea6ef068fcdae0b418bc220d2b1584",
+      "content": "result envelope, custody tool and first manifest"
+    },
+    {
+      "commit": "f2a4ead49409913c7f4bb9cf474a3f57a126a288",
+      "content": "readback clone-checkout repair and rebuilt manifest; this is the result commit the readback verifies"
+    }
+  ],
+  "completion_actor": null,
+  "completion_claimed": false,
+  "controller_run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+  "decision_changed": [],
+  "deviations": [
+    {
+      "as_written_verdict": "FIRED, consequence REFUTED_AS_CONFOUNDED",
+      "counted_as": "one defect and one rework cycle",
+      "falsifier": "F-018-2",
+      "handling": "Nothing preregistered was edited. The fired verdict is still reported as fired. An additive decomposition separates the three drivers and reports each with its own evidence.",
+      "id": "D-018-01",
+      "summary": "The preregistered latency materiality rule mixed an absolute SLO clause with a relative penalty rule, so the falsifier fired on the proportional control ladder for a reason unrelated to proportional scaling."
+    },
+    {
+      "as_written_verdict": "FIRED, consequence INCONCLUSIVE",
+      "counted_as": "one defect and one rework cycle",
+      "falsifier": "F-018-5",
+      "handling": "Reported as fired with the failing object named. Every safety and saturation frontier is monotone; only the truncated-verification service frontier is INCONCLUSIVE.",
+      "id": "D-018-02",
+      "summary": "The falsifier attached one global consequence to twelve distinct frontier objects."
+    }
+  ],
+  "fence_token": 2,
+  "hypothesis_id": "H-PO03-WA-018",
+  "hypothesis_outcome": "SUPPORTED",
+  "idempotency_key": "po03:100bc2079ced:wa-018:a02",
+  "immutable_input_hash_match": "EXACT",
+  "immutable_input_manifest_sha256": "cb577017d732c65d45ce28712e929304b0b3bc983025686acd3b5106bae3735f",
+  "immutable_input_path": "workstreams/po03/control/inputs/wave-a/wa-018-a02.json",
+  "independent_acceptance": {
+    "receipt_uri": null,
+    "reviewer_id": null,
+    "state": "NOT_TESTED"
+  },
+  "lease_id": "lease-po03-wa-018-a02",
+  "limitations": {
+    "correlated_defects": "EXCLUDED_FROM_MODEL",
+    "count": 22,
+    "details_path": "workstreams/po03/wave-a/units/wa-018/result/limitations.json",
+    "detection_power_curve": "MODELLING_CHOICE_NOT_MEASURED",
+    "external_source_retrieval": "NOT_SUPPORTED",
+    "independent_acceptance": "NOT_TESTED",
+    "non_linux_platforms": "NOT_SUPPORTED",
+    "pure_verification_service_time": "NOT_SEPARATELY_OBSERVABLE",
+    "reasoning_attestation": "NOT_SUPPORTED",
+    "strategy_proposals_applied": 0,
+    "wave_b_scale": "NOT_SIMULATED"
+  },
+  "manifest_bytes": 8144,
+  "manifest_path": "workstreams/po03/wave-a/units/wa-018/result/artifact-manifest.json",
+  "manifest_sha256": "701aad5b284997e2ec4f5ef365a8eddda0e6e68a21ec0ef74a27ba573e2cc002",
+  "material_work": true,
+  "model_observed": "claude-opus-5",
+  "model_observed_source": "runtime self-report only; the provider exposed no separate model or reasoning attestation to this runner",
+  "model_requested": "claude-opus-5-thinking-high",
+  "obzio_state": "RESULT_COMMITTED",
+  "ordering_evidence": "Preregistration precedes the code and the code precedes the outcomes in commit order, so the claim that parameters and thresholds were frozen before outcomes were read is verifiable from history rather than asserted.",
+  "owned_subtree": "workstreams/po03/wave-a/units/wa-018/",
+  "portfolio_sha256_verified": "515cf2325bda326471140aa1a294696f02c6c10effc3bae9022d55934c063ebd",
+  "preregistered_metrics": {
+    "artifact_bytes": 868337,
+    "artifact_count": 21,
+    "collision": false,
+    "defects": 4,
+    "first_pass_outcome": "FAIL",
+    "mechanism_change_count": 5,
+    "provider_block": false,
+    "recovery_events": 0,
+    "reproduction_count": 1,
+    "rework": 4,
+    "source_claim_count": 21,
+    "test_count": 135,
+    "wall_time": 2280,
+    "wall_time_unit": "seconds"
+  },
+  "producer_source_base_commit": "48ac81e2580c6efefae8de39dc6b484b57e5c881",
+  "producer_source_base_commit_note": "The exact controller source base this attempt was instructed to work from, and the commit the isolated worktree was created at. Every changed path is measured against it. producer_source_base_commit and source_base_commit are the same value; both names are present so the field is unambiguous to a reader and resolvable by the controller reconciler.",
+  "protocol_version": "OBZIO-PRODUCER-RETURN-v1",
+  "provider_run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+  "readback_verification": {
+    "all_match": true,
+    "artifact_count": 22,
+    "base_commit": "48ac81e2580c6efefae8de39dc6b484b57e5c881",
+    "changed_path_count": 22,
+    "checks": [
+      {
+        "bytes": 13295,
+        "matches": true,
+        "observed_bytes": 13295,
+        "observed_sha256": "5da24570f38861d1b3dd66b9184809bd132618fa3d4df35e712aed6f24b28b47",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/calibrate_from_repository.py",
+        "sha256": "5da24570f38861d1b3dd66b9184809bd132618fa3d4df35e712aed6f24b28b47"
+      },
+      {
+        "bytes": 7198,
+        "matches": true,
+        "observed_bytes": 7198,
+        "observed_sha256": "1fca4fefac16692655102afa6eef06e69b7b098049433fd16f912c23d4d54a44",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/calibration-capsule.json",
+        "sha256": "1fca4fefac16692655102afa6eef06e69b7b098049433fd16f912c23d4d54a44"
+      },
+      {
+        "bytes": 16041,
+        "matches": true,
+        "observed_bytes": 16041,
+        "observed_sha256": "9db8e1298a81b528110956ff87d52df3459fc6dd7591a66fc1db1c31cb9edf12",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/disposition.json",
+        "sha256": "9db8e1298a81b528110956ff87d52df3459fc6dd7591a66fc1db1c31cb9edf12"
+      },
+      {
+        "bytes": 397779,
+        "matches": true,
+        "observed_bytes": 397779,
+        "observed_sha256": "15625ec7de73151dd97983e97a75d496cacb4ab2aeaf99fef27678b688b0e096",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/frontier-results.json",
+        "sha256": "15625ec7de73151dd97983e97a75d496cacb4ab2aeaf99fef27678b688b0e096"
+      },
+      {
+        "bytes": 4447,
+        "matches": true,
+        "observed_bytes": 4447,
+        "observed_sha256": "ca80f51269dedd193b2b12397a3107a0b77d50407d7b841432b0528ea50b5863",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/hypotheses.json",
+        "sha256": "ca80f51269dedd193b2b12397a3107a0b77d50407d7b841432b0528ea50b5863"
+      },
+      {
+        "bytes": 11580,
+        "matches": true,
+        "observed_bytes": 11580,
+        "observed_sha256": "b4280851131aec00f08f6b62dd4ced02f8c4f75dc577273ca3d95b21c48df16a",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/limitations.json",
+        "sha256": "b4280851131aec00f08f6b62dd4ced02f8c4f75dc577273ca3d95b21c48df16a"
+      },
+      {
+        "bytes": 9993,
+        "matches": true,
+        "observed_bytes": 9993,
+        "observed_sha256": "42c5a6f97beb8035bdad4abfb4ab9f615de5dc21ef4bf1f21d8e9297d09954da",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/mechanism-change.json",
+        "sha256": "42c5a6f97beb8035bdad4abfb4ab9f615de5dc21ef4bf1f21d8e9297d09954da"
+      },
+      {
+        "bytes": 17712,
+        "matches": true,
+        "observed_bytes": 17712,
+        "observed_sha256": "fd86880a69f62c6a120d4cba38b0039d09c1d2d4cc0018a7a0f0000748942b47",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/preregistration.json",
+        "sha256": "fd86880a69f62c6a120d4cba38b0039d09c1d2d4cc0018a7a0f0000748942b47"
+      },
+      {
+        "bytes": 21914,
+        "matches": true,
+        "observed_bytes": 21914,
+        "observed_sha256": "e8670cd804b318284ff28a8f27404f2ba8bb325dba564084e057d043a66bb704",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/queue_verification_sim.py",
+        "sha256": "e8670cd804b318284ff28a8f27404f2ba8bb325dba564084e057d043a66bb704"
+      },
+      {
+        "bytes": 7376,
+        "matches": true,
+        "observed_bytes": 7376,
+        "observed_sha256": "9bfa1960ee539e58e0083b5f7c4221dc1434c2c12139320013d81792ed53b30a",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/reproduce_all.py",
+        "sha256": "9bfa1960ee539e58e0083b5f7c4221dc1434c2c12139320013d81792ed53b30a"
+      },
+      {
+        "bytes": 2924,
+        "matches": true,
+        "observed_bytes": 2924,
+        "observed_sha256": "887136b0c7451130d63e6db4ca1c388ed75a2a04847b529663f6e084c7a08c93",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/reproduction-result.json",
+        "sha256": "887136b0c7451130d63e6db4ca1c388ed75a2a04847b529663f6e084c7a08c93"
+      },
+      {
+        "bytes": 19515,
+        "matches": true,
+        "observed_bytes": 19515,
+        "observed_sha256": "c84ae46cef6ef050f642614fde5fab0c9bed314c814373c5a1db444d0bfadde1",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/result.json",
+        "sha256": "c84ae46cef6ef050f642614fde5fab0c9bed314c814373c5a1db444d0bfadde1"
+      },
+      {
+        "bytes": 9668,
+        "matches": true,
+        "observed_bytes": 9668,
+        "observed_sha256": "b5fb560854ff7830a51d815d943fda629a9adbd7aa2c3111894a9e1946fa20fb",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/result_custody.py",
+        "sha256": "b5fb560854ff7830a51d815d943fda629a9adbd7aa2c3111894a9e1946fa20fb"
+      },
+      {
+        "bytes": 15119,
+        "matches": true,
+        "observed_bytes": 15119,
+        "observed_sha256": "f5a1c99489895b41518644b6de254509717369a47199263775ab9be0ae6ca08d",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/source-claims.json",
+        "sha256": "f5a1c99489895b41518644b6de254509717369a47199263775ab9be0ae6ca08d"
+      },
+      {
+        "bytes": 6355,
+        "matches": true,
+        "observed_bytes": 6355,
+        "observed_sha256": "fd745b02724e554a3efd3e51a1aec431e2b15fca1761f7aba0ca7dbaea895f2e",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/strategy-proposals.json",
+        "sha256": "fd745b02724e554a3efd3e51a1aec431e2b15fca1761f7aba0ca7dbaea895f2e"
+      },
+      {
+        "bytes": 13002,
+        "matches": true,
+        "observed_bytes": 13002,
+        "observed_sha256": "0b00cc4bc07555b63460cf335fa1c009d98227f67eb842146361d56e33d43565",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/test-output.txt",
+        "sha256": "0b00cc4bc07555b63460cf335fa1c009d98227f67eb842146361d56e33d43565"
+      },
+      {
+        "bytes": 21237,
+        "matches": true,
+        "observed_bytes": 21237,
+        "observed_sha256": "08c2076aa2525060075ce5e973c569779af02ccc01c48ace5d8178b57ffca651",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/test_queue_verification_sim.py",
+        "sha256": "08c2076aa2525060075ce5e973c569779af02ccc01c48ace5d8178b57ffca651"
+      },
+      {
+        "bytes": 15621,
+        "matches": true,
+        "observed_bytes": 15621,
+        "observed_sha256": "661978ea790fa9c12a9e5e737d6255906d08e1db071a7ce10a5285df6a2a64a1",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/test_threshold_cases.py",
+        "sha256": "661978ea790fa9c12a9e5e737d6255906d08e1db071a7ce10a5285df6a2a64a1"
+      },
+      {
+        "bytes": 6913,
+        "matches": true,
+        "observed_bytes": 6913,
+        "observed_sha256": "c4f05a48417bbd17a0e6276b1b0f53210458096aadf115bad651e46d8012348b",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/tests.json",
+        "sha256": "c4f05a48417bbd17a0e6276b1b0f53210458096aadf115bad651e46d8012348b"
+      },
+      {
+        "bytes": 210343,
+        "matches": true,
+        "observed_bytes": 210343,
+        "observed_sha256": "52524a2de621918c3c1e84e8a3a16943d507e9cb0c6a7c3506428823fe05fe32",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/threshold-case-results.json",
+        "sha256": "52524a2de621918c3c1e84e8a3a16943d507e9cb0c6a7c3506428823fe05fe32"
+      },
+      {
+        "bytes": 40305,
+        "matches": true,
+        "observed_bytes": 40305,
+        "observed_sha256": "ef8227f0c1e4d8feca77ae3441ffc0565482be6a439e175feb3b58e6b3d5b3c8",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/threshold_cases.py",
+        "sha256": "ef8227f0c1e4d8feca77ae3441ffc0565482be6a439e175feb3b58e6b3d5b3c8"
+      },
+      {
+        "bytes": 8144,
+        "matches": true,
+        "note": "manifest verified as present and hashed at the immutable commit",
+        "observed_bytes": 8144,
+        "observed_sha256": "701aad5b284997e2ec4f5ef365a8eddda0e6e68a21ec0ef74a27ba573e2cc002",
+        "path": "workstreams/po03/wave-a/units/wa-018/result/artifact-manifest.json",
+        "sha256": "701aad5b284997e2ec4f5ef365a8eddda0e6e68a21ec0ef74a27ba573e2cc002"
+      }
+    ],
+    "clean_clone_suite": {
+      "command": "python3 -m unittest discover -s . -p 'test_*.py'",
+      "cwd": "workstreams/po03/wave-a/units/wa-018/result/",
+      "environment": "PATH restricted to /usr/bin:/bin, no inherited environment",
+      "exit_code": 0,
+      "state": "PASS",
+      "summary": "OK",
+      "tests_run": 75
+    },
+    "commit": "f2a4ead49409913c7f4bb9cf474a3f57a126a288",
+    "method": "Fresh no-hardlink clone of the remote into a throwaway directory, forced ref fetch, then git show --no-textconv <immutable-commit>:<path> with SHA-256 and byte comparison for every manifest entry.",
+    "out_of_scope_changed_path_count": 0,
+    "out_of_scope_changed_paths": [],
+    "protocol_version": "OBZIO-WA-018-READBACK-v1",
+    "remote_ref": "refs/heads/cursor/po03-wa-018-b195-a02-1a9f",
+    "remote_tip_at_readback": "f2a4ead49409913c7f4bb9cf474a3f57a126a288",
+    "verified_at": "2026-08-22T09:43:26.765105+00:00"
+  },
+  "reasoning_observed": "NOT_SUPPORTED",
+  "reasoning_requested": "high",
+  "remote_branch": "cursor/po03-wa-018-b195-a02-1a9f",
+  "result_commit_id": "f2a4ead49409913c7f4bb9cf474a3f57a126a288",
+  "result_slot": "workstreams/po03/wave-a/units/wa-018/result/",
+  "return_commit_id": null,
+  "return_commit_id_note": "Assigned when this document is committed, because a file cannot contain the id of the commit that contains it. The immutable return commit is reported in the producer terminal response and can be read from the pushed branch.",
+  "runner_id": "best-of-n-runner-bc-b1956656-wa-018-a02",
+  "runtime_binding": {
+    "execution_environment": "dedicated git worktree of the controller checkout, created at the immutable producer base",
+    "host_git": "2.43.0",
+    "host_python": "3.12.3",
+    "note": "Runtime details are execution evidence only and grant no authority.",
+    "provider": "cursor-cloud-agent",
+    "provider_run_url": "https://cursor.com/agents/bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+    "subagent_type": "best-of-n-runner",
+    "third_party_dependencies": "NONE",
+    "worktree_root_class": "unique /tmp worktree; the shared controller checkout was never written to or switched"
+  },
+  "self_acceptance": "REFUSED_BY_PROTOCOL",
+  "source_base": {
+    "commission_commit": "552b12eacee637716451492a98980fb0da19ff3e",
+    "commission_sha256_verified": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+    "immutable_controller_base": "48ac81e2580c6efefae8de39dc6b484b57e5c881",
+    "immutable_producer_base": "48ac81e2580c6efefae8de39dc6b484b57e5c881",
+    "minimum_protocol_ancestor_declared": "100bc2079cedc193af3524234ab833cc9f9f4669",
+    "minimum_protocol_ancestor_note": "git merge-base --is-ancestor confirms 100bc2079cedc193af3524234ab833cc9f9f4669 is an ancestor of the producer base. Every declared source hash in the immutable input matched exactly.",
+    "minimum_protocol_ancestor_resolution": "VERIFIED_ANCESTOR_OF_PRODUCER_BASE",
+    "producer_start_commit": "48ac81e2580c6efefae8de39dc6b484b57e5c881",
+    "repository": "github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+    "seed_tests_sha256_verified": "401a684c0a2d3817d08a76044a331f0f241b16d687d2dd12d9ea0f31612dc112",
+    "transactional_schema_sha256_verified": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1",
+    "validator_sha256_verified": "ead7d6c78c1f60aaf5440db7fc00fc2ae57d773647ed3b24c279d1a59b43da03",
+    "wave_schema_sha256_verified": "5278cb6bc4e7f41a5d513d4a00427a1ed199a21459025c7fa96fb97d56439360",
+    "workflow_sha256_verified": "427949c07d93fe69bea6485a91ca58c4297be21759e6b0b00a0e5cc9f450c7cb"
+  },
+  "source_base_commit": "48ac81e2580c6efefae8de39dc6b484b57e5c881",
+  "supersedes": {
+    "attempt_id": "PO03-WA-018-A01",
+    "defect": "UNRESOLVABLE_MINIMUM_PROTOCOL_ANCESTOR",
+    "fenced_before_dispatch": true,
+    "immutable_input": {
+      "path": "workstreams/po03/control/inputs/wave-a/wa-018.json",
+      "sha256": "0fa8db3def5587d5c1d9b95cee1fba07d34fdec5af82be40bd5db2712b25f651"
+    },
+    "note": "A01 was fenced before dispatch by the controller. This A02 attempt carries fence token 2 and is the first substantive execution of this work unit. Under the corrected A02 input the minimum protocol ancestor resolves and is confirmed an ancestor of the producer base."
+  },
+  "task_id": "PO03-WA-018",
+  "terminal_report": "READY_TO_COMMIT",
+  "tests": {
+    "changed_path_ownership_check": "PASS",
+    "clean_clone_suite_runs": 75,
+    "details_path": "workstreams/po03/wave-a/units/wa-018/result/tests.json",
+    "ensemble_runs": 5120,
+    "expectations_met": 11,
+    "falsifiers_evaluated": 8,
+    "falsifiers_fired": [
+      "F-018-2",
+      "F-018-5"
+    ],
+    "final_outcome": "PASS",
+    "first_pass_outcome": "FAIL",
+    "focused_harness_module": 35,
+    "focused_simulation_module": 40,
+    "focused_tests": 75,
+    "frontier_grid_cells": 160,
+    "invalidating_falsifiers_fired": 0,
+    "outcome": "PASS",
+    "sanitized_reproduction_artifacts_identical": 3,
+    "sanitized_reproduction_bytes": 615264,
+    "seeded_po03_contract_tests_read_only": 60,
+    "simulated_unit_executions": 327680,
+    "taxonomy_check": "PASS",
+    "test_count": 135,
+    "threshold_cases": 12
+  },
+  "total_bytes": 868337,
+  "transactional_result": {
+    "acceptance_contract_sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a",
+    "artifacts": [
+      {
+        "artifact_id": "art-po03-wa-018-calibrate-from-repository-py",
+        "bytes": 13295,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/calibrate_from_repository.py",
+        "logical_name": "calibrate_from_repository.py",
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "5da24570f38861d1b3dd66b9184809bd132618fa3d4df35e712aed6f24b28b47"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-calibration-capsule-json",
+        "bytes": 7198,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/calibration-capsule.json",
+        "logical_name": "calibration-capsule.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "1fca4fefac16692655102afa6eef06e69b7b098049433fd16f912c23d4d54a44"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-disposition-json",
+        "bytes": 16041,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/disposition.json",
+        "logical_name": "disposition.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "9db8e1298a81b528110956ff87d52df3459fc6dd7591a66fc1db1c31cb9edf12"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-frontier-results-json",
+        "bytes": 397779,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/frontier-results.json",
+        "logical_name": "frontier-results.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "15625ec7de73151dd97983e97a75d496cacb4ab2aeaf99fef27678b688b0e096"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-hypotheses-json",
+        "bytes": 4447,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/hypotheses.json",
+        "logical_name": "hypotheses.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "ca80f51269dedd193b2b12397a3107a0b77d50407d7b841432b0528ea50b5863"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-limitations-json",
+        "bytes": 11580,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/limitations.json",
+        "logical_name": "limitations.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "b4280851131aec00f08f6b62dd4ced02f8c4f75dc577273ca3d95b21c48df16a"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-mechanism-change-json",
+        "bytes": 9993,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/mechanism-change.json",
+        "logical_name": "mechanism-change.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "42c5a6f97beb8035bdad4abfb4ab9f615de5dc21ef4bf1f21d8e9297d09954da"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-preregistration-json",
+        "bytes": 17712,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/preregistration.json",
+        "logical_name": "preregistration.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "fd86880a69f62c6a120d4cba38b0039d09c1d2d4cc0018a7a0f0000748942b47"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-queue-verification-sim-py",
+        "bytes": 21914,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/queue_verification_sim.py",
+        "logical_name": "queue_verification_sim.py",
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "e8670cd804b318284ff28a8f27404f2ba8bb325dba564084e057d043a66bb704"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-reproduce-all-py",
+        "bytes": 7376,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/reproduce_all.py",
+        "logical_name": "reproduce_all.py",
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "9bfa1960ee539e58e0083b5f7c4221dc1434c2c12139320013d81792ed53b30a"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-reproduction-result-json",
+        "bytes": 2924,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/reproduction-result.json",
+        "logical_name": "reproduction-result.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "887136b0c7451130d63e6db4ca1c388ed75a2a04847b529663f6e084c7a08c93"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-result-json",
+        "bytes": 19515,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/result.json",
+        "logical_name": "result.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "c84ae46cef6ef050f642614fde5fab0c9bed314c814373c5a1db444d0bfadde1"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-result-custody-py",
+        "bytes": 9668,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/result_custody.py",
+        "logical_name": "result_custody.py",
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "b5fb560854ff7830a51d815d943fda629a9adbd7aa2c3111894a9e1946fa20fb"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-source-claims-json",
+        "bytes": 15119,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/source-claims.json",
+        "logical_name": "source-claims.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "f5a1c99489895b41518644b6de254509717369a47199263775ab9be0ae6ca08d"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-strategy-proposals-json",
+        "bytes": 6355,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/strategy-proposals.json",
+        "logical_name": "strategy-proposals.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "fd745b02724e554a3efd3e51a1aec431e2b15fca1761f7aba0ca7dbaea895f2e"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-test-output-txt",
+        "bytes": 13002,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/test-output.txt",
+        "logical_name": "test-output.txt",
+        "media_type": "text/plain; charset=utf-8",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "0b00cc4bc07555b63460cf335fa1c009d98227f67eb842146361d56e33d43565"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-test-queue-verification-sim-py",
+        "bytes": 21237,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/test_queue_verification_sim.py",
+        "logical_name": "test_queue_verification_sim.py",
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "08c2076aa2525060075ce5e973c569779af02ccc01c48ace5d8178b57ffca651"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-test-threshold-cases-py",
+        "bytes": 15621,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/test_threshold_cases.py",
+        "logical_name": "test_threshold_cases.py",
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "661978ea790fa9c12a9e5e737d6255906d08e1db071a7ce10a5285df6a2a64a1"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-tests-json",
+        "bytes": 6913,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/tests.json",
+        "logical_name": "tests.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "c4f05a48417bbd17a0e6276b1b0f53210458096aadf115bad651e46d8012348b"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-threshold-case-results-json",
+        "bytes": 210343,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/threshold-case-results.json",
+        "logical_name": "threshold-case-results.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "52524a2de621918c3c1e84e8a3a16943d507e9cb0c6a7c3506428823fe05fe32"
+      },
+      {
+        "artifact_id": "art-po03-wa-018-threshold-cases-py",
+        "bytes": 40305,
+        "content_uri": "workstreams/po03/wave-a/units/wa-018/result/threshold_cases.py",
+        "logical_name": "threshold_cases.py",
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T09:43:26.765105+00:00",
+        "sha256": "ef8227f0c1e4d8feca77ae3441ffc0565482be6a439e175feb3b58e6b3d5b3c8"
+      }
+    ],
+    "attempt": {
+      "attempt_id": "PO03-WA-018-A02",
+      "checkpoint_seq": 1,
+      "fence_token": 2,
+      "heartbeat_at": "2026-08-22T09:43:26.765105+00:00",
+      "idempotency_key": "po03:100bc2079ced:wa-018:a02",
+      "lease_id": "lease-po03-wa-018-a02",
+      "provider_run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+      "worker_id": "best-of-n-runner-bc-b1956656-wa-018-a02"
+    },
+    "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+    "completion_actor": null,
+    "immutable_input_manifest_sha256": "cb577017d732c65d45ce28712e929304b0b3bc983025686acd3b5106bae3735f",
+    "independent_acceptance": {
+      "receipt_uri": null,
+      "reviewer_id": null,
+      "state": "NOT_TESTED"
+    },
+    "obzio_state": "RESULT_COMMITTED",
+    "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+    "provider_state": "RUNNING",
+    "result_transaction": {
+      "artifact_count": 21,
+      "committed_at": "2026-08-22T09:43:26.765105+00:00",
+      "manifest_sha256": "701aad5b284997e2ec4f5ef365a8eddda0e6e68a21ec0ef74a27ba573e2cc002",
+      "manifest_uri": "workstreams/po03/wave-a/units/wa-018/result/artifact-manifest.json",
+      "parent_ingested_at": null,
+      "result_commit_id": "f2a4ead49409913c7f4bb9cf474a3f57a126a288",
+      "result_txn_id": "txn-po03-wa-018-a02",
+      "state": "COMMITTED",
+      "total_bytes": 868337,
+      "verified_at": "2026-08-22T09:43:26.765105+00:00"
+    },
+    "task_id": "PO03-WA-018"
+  },
+  "wave_id": "PO03-WAVE-A"
+}
