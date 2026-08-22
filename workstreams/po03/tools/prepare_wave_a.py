@@ -12,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import json
 import re
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -22,10 +23,11 @@ LEASE_EXPIRES_AT = "2026-08-22T13:13:11Z"
 COMMISSION_ID = "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001"
 CONTROLLER_RUN_ID = "bc-b1956656-b897-4889-aeab-82c4556c1a9f"
 COMMISSION_COMMIT = "552b12eacee637716451492a98980fb0da19ff3e"
-PROTOCOL_ANCESTOR = "100bc20ad5eec62a4f35b60921423135cc0b9d9a"
+PROTOCOL_ANCESTOR = "100bc2079cedc193af3524234ab833cc9f9f4669"
 ACCEPTANCE_REL = "control/acceptance/wave-a-material-v1.json"
 EXPECTED_ACCEPTANCE_SHA = "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a"
 MATERIAL_TASK_RE = re.compile(r"^PO03-WA-\d{3}$")
+FULL_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 
 SOURCE_HASHES = {
     "commission_sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
@@ -139,6 +141,44 @@ def _sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+def _git(root: Path, *args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", "-C", str(root), *args],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+
+def _resolve_exact_commit(root: Path, value: str, label: str) -> str:
+    if not FULL_COMMIT_RE.fullmatch(value):
+        raise ValueError(f"{label} must be a full lowercase 40-character commit SHA")
+    result = _git(root, "rev-parse", "--verify", f"{value}^{{commit}}")
+    resolved = result.stdout.strip()
+    if result.returncode != 0 or resolved != value:
+        detail = result.stderr.strip() or "object did not resolve exactly"
+        raise ValueError(f"{label} is not an exact resolvable commit: {value}: {detail}")
+    return resolved
+
+
+def validate_git_provenance(
+    root: Path = ROOT,
+    protocol_ancestor: str = PROTOCOL_ANCESTOR,
+    commission_commit: str = COMMISSION_COMMIT,
+) -> None:
+    """Fail closed before generation unless both pins are real and related."""
+    ancestor = _resolve_exact_commit(root, protocol_ancestor, "protocol ancestor")
+    commission = _resolve_exact_commit(root, commission_commit, "commission commit")
+    ancestry = _git(root, "merge-base", "--is-ancestor", ancestor, commission)
+    if ancestry.returncode == 1:
+        raise ValueError(
+            f"protocol ancestor {ancestor} is not an ancestor of commission commit {commission}"
+        )
+    if ancestry.returncode != 0:
+        detail = ancestry.stderr.strip() or "git ancestry check failed"
+        raise ValueError(f"unable to validate protocol ancestry: {detail}")
+
+
 def _write(relative: str, value: Any) -> str:
     path = (ROOT / relative).resolve()
     if ROOT not in path.parents:
@@ -172,6 +212,7 @@ def _write_jsonl(relative: str, rows: list[dict[str, Any]]) -> None:
 
 
 def main() -> int:
+    validate_git_provenance()
     if len(TASKS) != 64 or {item["number"] for item in TASKS} != set(range(1, 65)):
         raise ValueError("Wave A must contain exactly 64 uniquely numbered tasks")
 
