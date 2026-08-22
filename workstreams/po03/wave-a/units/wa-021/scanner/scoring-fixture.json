@@ -1,0 +1,223 @@
+{
+  "protocol_version": "PO03-OPPORTUNITY-SCORING-FIXTURE-v1",
+  "fixture_id": "PO03-WA-021-A02-FROZEN-SCORING-v1",
+  "task_id": "PO03-WA-021",
+  "hypothesis_id": "H-PO03-WA-021",
+  "falsifiable_hypothesis": "Repository evidence can identify useful unnamed work by scoring recurring defects, missing recurrence tests, and high-leverage gaps.",
+  "source_base": "22af3833bd25e2fa1b4e91111c045907e9534119",
+  "frozen_at": "2026-08-22T09:41:00Z",
+  "frozen_before_canonical_execution": true,
+  "outcome_rule": {
+    "supported_when": "At least one candidate reaches 55 points, has at least two independent immutable source paths, satisfies every required evidence rule, and is neither unsupported, circular, nor already named in repository evidence.",
+    "refuted_when": "No candidate is eligible under the frozen rule.",
+    "inconclusive_when": "The immutable source commit or a required evidence blob cannot be read."
+  },
+  "scoring": {
+    "weights": {
+      "recurrence": 25,
+      "missing_recurrence_test": 25,
+      "leverage": 25,
+      "traceability": 15,
+      "actionability": 10
+    },
+    "population_thresholds": [
+      {
+        "minimum": 1,
+        "fraction_of_dimension": "1/5"
+      },
+      {
+        "minimum": 2,
+        "fraction_of_dimension": "2/5"
+      },
+      {
+        "minimum": 4,
+        "fraction_of_dimension": "3/5"
+      },
+      {
+        "minimum": 8,
+        "fraction_of_dimension": "4/5"
+      },
+      {
+        "minimum": 16,
+        "fraction_of_dimension": "5/5"
+      }
+    ],
+    "eligibility_threshold": 55,
+    "minimum_independent_source_paths": 2,
+    "hard_rejections": [
+      "UNSUPPORTED_NO_REQUIRED_EVIDENCE",
+      "UNSUPPORTED_REQUIRED_EVIDENCE_FAILED",
+      "CIRCULAR_EVIDENCE",
+      "ALREADY_NAMED_WORK",
+      "INSUFFICIENT_INDEPENDENT_SOURCE_PATHS"
+    ],
+    "tie_break": "candidate_id ascending"
+  },
+  "candidates": [
+    {
+      "candidate_id": "OP-WA021-01-UNIT-SUITES-OUTSIDE-CI",
+      "title": "Execute committed Wave A unit recurrence suites in PO-03 CI",
+      "opportunity_type": "MISSING_RECURRENCE_TEST",
+      "hypothesis": "The active PO-03 workflow omits committed unit-level recurrence suites, so a repository-native aggregate test entry point would close a high-leverage regression gap.",
+      "action_targets": [
+        ".github/workflows/po03-contracts.yml"
+      ],
+      "evidence_rules": [
+        {
+          "evidence_id": "E-WA021-001",
+          "type": "glob_count",
+          "mode": "required",
+          "roles": [
+            "recurrence",
+            "leverage"
+          ],
+          "path_glob": "workstreams/po03/wave-a/units/wa-*/tests/test_*.py",
+          "minimum": 2,
+          "claim": "Wave A units contain multiple committed focused test modules."
+        },
+        {
+          "evidence_id": "E-WA021-002",
+          "type": "file_regex",
+          "mode": "required",
+          "roles": [],
+          "path": ".github/workflows/po03-contracts.yml",
+          "regex": "unittest discover -s workstreams/po03/tests",
+          "expect": "present",
+          "claim": "The PO-03 workflow executes only the central workstreams/po03/tests discovery root."
+        },
+        {
+          "evidence_id": "E-WA021-003",
+          "type": "file_regex",
+          "mode": "required",
+          "roles": [
+            "missing_recurrence_test"
+          ],
+          "path": ".github/workflows/po03-contracts.yml",
+          "regex": "wave-a/units|wave-a.units",
+          "expect": "absent",
+          "claim": "The PO-03 workflow contains no Wave A unit-suite discovery or aggregate invocation."
+        }
+      ]
+    },
+    {
+      "candidate_id": "OP-WA021-02-RUNTIME-ATTESTATION-CONTRACT",
+      "title": "Contractually separate requested and attested runtime configuration",
+      "opportunity_type": "RECURRING_DEFECT_AND_TEST_GAP",
+      "hypothesis": "Repeated model/reasoning attribution limitations and the absence of attestation fields in the transactional schema justify a tested requested-versus-observed runtime envelope.",
+      "action_targets": [
+        "workstreams/po03/contracts/transactional-result.schema.json",
+        "workstreams/po03/tools/validate_contracts.py"
+      ],
+      "evidence_rules": [
+        {
+          "evidence_id": "E-WA021-004",
+          "type": "glob_regex",
+          "mode": "required",
+          "roles": [
+            "recurrence",
+            "leverage"
+          ],
+          "path_glob": "workstreams/po03/wave-a/units/wa-*/result/limitations.json",
+          "regex": "reasoning_observed|reasoning setting|reasoning attestation|model attestation|model that actually|requested exact model|per-subagent model",
+          "minimum_distinct_files": 4,
+          "claim": "Multiple material Wave A results independently record unavailable or divergent model/reasoning attestation."
+        },
+        {
+          "evidence_id": "E-WA021-005",
+          "type": "file_regex",
+          "mode": "required",
+          "roles": [
+            "missing_recurrence_test"
+          ],
+          "path": "workstreams/po03/contracts/transactional-result.schema.json",
+          "regex": "model_observed|reasoning_observed|model_requested|reasoning_requested",
+          "expect": "absent",
+          "claim": "The transactional result schema has no requested-versus-observed model or reasoning fields."
+        },
+        {
+          "evidence_id": "E-WA021-006",
+          "type": "file_regex",
+          "mode": "required",
+          "roles": [],
+          "path": "workstreams/po03/control/inputs/wave-a/wa-021-a02.json",
+          "regex": "\"model_slug\": \"gpt-5\\.6-sol-xhigh\"",
+          "expect": "present",
+          "claim": "The immutable dispatch records an exact requested model configuration."
+        }
+      ]
+    },
+    {
+      "candidate_id": "OP-WA021-03-PROVENANCE-OBJECT-GUARD",
+      "title": "Reject unresolvable provenance object identifiers before dispatch",
+      "opportunity_type": "RECURRING_DEFECT",
+      "hypothesis": "Unresolvable immutable-input provenance identifiers warrant a generator and validator recurrence guard.",
+      "action_targets": [
+        "workstreams/po03/tools/prepare_wave_a.py",
+        "workstreams/po03/tools/validate_contracts.py"
+      ],
+      "evidence_rules": [
+        {
+          "evidence_id": "E-WA021-007",
+          "type": "json_field_unresolvable",
+          "mode": "required",
+          "roles": [
+            "recurrence",
+            "leverage"
+          ],
+          "path_glob": "workstreams/po03/control/inputs/wave-a/*.json",
+          "field": "source_base.minimum_protocol_ancestor",
+          "minimum": 2,
+          "claim": "Multiple immutable Wave A input files record a minimum protocol ancestor that is not a Git commit object."
+        },
+        {
+          "evidence_id": "E-WA021-008",
+          "type": "glob_regex",
+          "mode": "reject_if_pass",
+          "roles": [],
+          "path_glob": "workstreams/po03/wave-a/units/wa-*/proposals/*.json",
+          "regex": "MC-02-VERIFY-FROZEN-OBJECT-IDS|VERIFY_FROZEN_OBJECT_IDS",
+          "minimum_distinct_files": 1,
+          "claim": "A prior material unit already names and verifies this mechanism change."
+        }
+      ]
+    },
+    {
+      "candidate_id": "OP-WA021-90-CIRCULAR-SCANNER-CONFIRMATION",
+      "title": "Treat this scanner's own ranking as proof of scanner value",
+      "opportunity_type": "CIRCULAR_CONTROL",
+      "hypothesis": "The scanner output proves that an opportunity scanner is useful.",
+      "declared_source_paths": [
+        "workstreams/po03/wave-a/units/wa-021/result/ranked-opportunities.json"
+      ],
+      "action_targets": [],
+      "evidence_rules": [
+        {
+          "evidence_id": "E-WA021-090",
+          "type": "no_evidence",
+          "mode": "required",
+          "roles": [],
+          "reason": "The only proposed evidence is generated by this attempt.",
+          "claim": "No independent source supports this circular candidate."
+        }
+      ]
+    },
+    {
+      "candidate_id": "OP-WA021-91-UNSUPPORTED-PRODUCTION-FAILURES",
+      "title": "Attribute production incidents to omitted unit suites",
+      "opportunity_type": "UNSUPPORTED_CONTROL",
+      "hypothesis": "Omitted unit suites have already caused production failures.",
+      "action_targets": [],
+      "evidence_rules": [
+        {
+          "evidence_id": "E-WA021-091",
+          "type": "no_evidence",
+          "mode": "required",
+          "roles": [],
+          "reason": "No production incident source was consulted or present in the bounded repository corpus.",
+          "claim": "Production causation is not established by repository test-discovery evidence."
+        }
+      ]
+    }
+  ],
+  "decision_changed": []
+}
