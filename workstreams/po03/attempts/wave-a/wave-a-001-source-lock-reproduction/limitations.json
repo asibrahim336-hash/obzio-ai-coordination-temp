@@ -40,8 +40,8 @@
     },
     {
       "id": "L6",
-      "impact": "evidence/test-run.log is not byte-reproducible across runs and is therefore evidence of a run, not a fixture. evidence/reproduction.json was confirmed byte-identical across two independent runs.",
-      "limitation": "The test log embeds a per-run temporary directory name and a test duration.",
+      "impact": "evidence/test-run.log and evidence/clean-clone-run.log are not byte-reproducible across runs and are therefore evidence of a run, not fixtures. evidence/reproduction.json was confirmed byte-identical across three runs, including one in a fresh clone.",
+      "limitation": "The test logs embed a per-run temporary directory name, a checkout path and a test duration.",
       "mitigation_available": "Compare reproduction.json, which is deterministic, rather than the log.",
       "severity": "MINOR"
     },
@@ -74,6 +74,20 @@
       "severity": "SCOPE"
     },
     {
+      "id": "L12",
+      "impact": "The branch is not isolated as instructed. Its tree carries four files belonging to wave-a-041, and this unit's own push carried a sibling commit to the remote. This unit's commits remain owned-path-only, so the contamination is in the branch, not in the artifacts.",
+      "limitation": "Sibling Wave A units shared this working tree and Git index. Commit 7bb2de9 became the parent of this unit's first commit, and 4cd20d7 was committed onto this branch between this unit's commit and its push.",
+      "mitigation_available": "Proposal P3 in result.json: one worktree or clone per unit. Not fixable from inside this unit without a write outside its owned path or a force push that could orphan another unit's only copy of its evidence.",
+      "severity": "MATERIAL"
+    },
+    {
+      "id": "L13",
+      "impact": "The Wave A acceptance criterion of zero path collision is not satisfied in this workspace, which is a fact about the dispatch mechanism rather than about this hypothesis.",
+      "limitation": "A path collision was observed and is recorded rather than repaired.",
+      "mitigation_available": "The coordinator should count this as a collision event in the operating-system metrics for this wave.",
+      "severity": "MATERIAL"
+    },
+    {
       "id": "L11",
       "impact": "Absence of network use is argued from static analysis and the absence of any network import, not from an enforced sandbox.",
       "limitation": "The sanitized run clears the environment with env -i but does not enforce a network namespace, so it cannot prove at runtime that no socket was opened.",
@@ -85,7 +99,8 @@
     "The committed source-lock receipt fails verification at the current base head f5b758f: three of six declared sources drifted.",
     "The receipt covers about 1.6 percent of the files tracked under workstreams/po03/ at that commit.",
     "An added undeclared file is not detectable by the receipt, confirmed by a deliberate PASS fixture.",
-    "The requested reasoning-control setting is not observable and is recorded as NOT_SUPPORTED."
+    "The requested reasoning-control setting is not observable and is recorded as NOT_SUPPORTED.",
+    "A path collision occurred: sibling units committed onto this unit's branch through a shared working tree, so the branch is not isolated even though this unit's commits are."
   ],
   "not_done": [
     "No shared PO-03 control, receipt, workflow or evidence file was changed; the two mechanism-change proposals are recorded as proposals only.",
