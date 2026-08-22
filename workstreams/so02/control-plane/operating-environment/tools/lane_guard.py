@@ -91,7 +91,20 @@ def evaluate_lane(parent: dict[str, Any], base_sha: str) -> dict[str, Any]:
     code, listing, _ = run(["git", "diff", "--name-only", f"{base_sha}..{head}"])
     changed = [line for line in listing.splitlines() if line.strip()]
     if not changed:
-        findings.append("branch contains no changes against the declared base")
+        # An empty branch means the lane has not delivered yet. That is not the
+        # same as a lane that delivered something disallowed, and conflating the
+        # two is the state-confusion this estate is trying to eliminate.
+        return {
+            "parent_id": lane_id,
+            "branch": branch,
+            "immutable_head": head,
+            "base_sha": base_sha,
+            "changed_file_count": 0,
+            "changed_files": [],
+            "state": "IN_FLIGHT_NO_CONTENT_YET",
+            "detail": "branch exists but carries no changes against the declared base; not delivered and not rejected",
+            "integrable": False,
+        }
 
     outside = [path for path in changed if not namespace_matches(path, owned)]
     for path in outside:
@@ -166,16 +179,20 @@ def evaluate() -> dict[str, Any]:
     })
 
     declared = manifest["declared_parent_denominator"]
-    returned = sum(1 for r in results if r["state"] != "NOT_RETURNED")
+    undelivered = {"NOT_RETURNED", "IN_FLIGHT_NO_CONTENT_YET"}
+    returned = sum(1 for r in results if r["state"] not in undelivered)
     integrable = sum(1 for r in results if r["integrable"])
+    rejected = sum(1 for r in results if r["state"] == "REJECTED_FAIL_CLOSED")
 
     return {
         "guard_id": "CUR-ENV-01-LANE-GUARD",
         "decision_changed": [],
         "base_sha": base_sha,
         "declared_parent_denominator": declared,
-        "returned_lane_count": returned,
+        "delivered_lane_count": returned,
         "integrable_lane_count": integrable,
+        "rejected_lane_count": rejected,
+        "undelivered_lane_count": len(results) - returned,
         "denominator_reconciles": len(results) == declared,
         "path_collisions": collisions,
         "protected_ref_drift": drift,
@@ -201,8 +218,10 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print(f"base {report['base_sha']}")
         print(f"declared {report['declared_parent_denominator']} | "
-              f"returned {report['returned_lane_count']} | "
-              f"integrable {report['integrable_lane_count']}")
+              f"delivered {report['delivered_lane_count']} | "
+              f"integrable {report['integrable_lane_count']} | "
+              f"rejected {report['rejected_lane_count']} | "
+              f"undelivered {report['undelivered_lane_count']}")
         for lane in report["lanes"]:
             print(f"  {lane['parent_id']:<32} {lane['state']}")
             for finding in lane.get("findings", []):

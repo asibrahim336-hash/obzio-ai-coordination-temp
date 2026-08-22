@@ -110,6 +110,23 @@ class LaneVerdictTests(unittest.TestCase):
         self.assertEqual("NOT_RETURNED", result["state"])
         self.assertFalse(result["integrable"])
 
+    def test_undelivered_and_rejected_are_distinct_states(self) -> None:
+        """Not finished is not the same as failed; conflating them is the estate's core defect."""
+        self.assertNotEqual("REJECTED_FAIL_CLOSED", "IN_FLIGHT_NO_CONTENT_YET")
+        for state in ("NOT_RETURNED", "IN_FLIGHT_NO_CONTENT_YET", "REJECTED_FAIL_CLOSED"):
+            self.assertNotEqual("READY_FOR_INTEGRATION", state)
+
+    def test_an_empty_branch_is_never_integrable(self) -> None:
+        parent = {
+            "parent_id": "OE-L1-CURSOR-BASELINE",
+            "isolated_branch": "cursor/oe-l1-cursor-baseline-696d",
+            "owned_namespace": ["receipts/so02/2026-08-22/oe-l1-cursor-baseline/**"],
+        }
+        result = lane_guard.evaluate_lane(parent, "fe0a595206e5986de7eaac6cabc619215a1eb81b")
+        if result["state"] == "IN_FLIGHT_NO_CONTENT_YET":
+            self.assertFalse(result["integrable"])
+            self.assertEqual(0, result["changed_file_count"])
+
 
 if __name__ == "__main__":
     unittest.main()
