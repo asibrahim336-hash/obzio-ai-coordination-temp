@@ -1,0 +1,124 @@
+{
+  "task_capsule_version": "PO03-WAVE-A-CHALLENGER-CAPSULE-v1",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "commission_continuation": true,
+  "strategy_restarted": false,
+  "decision_changed": [],
+  "controller_source": {
+    "repository": "github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+    "branch": "po03/repository-engineering-portable-runtime-20260822-v001",
+    "immutable_commit_sha": "7b9ee3e29f2d364cff5cdf2383dd512a0a6603e0",
+    "pull_request": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/pull/9"
+  },
+  "source_capsule": [
+    {
+      "path": "workstreams/po03/tools/transactional_factory.py",
+      "sha256": "46c57f433c7f074ae6ae159429df3d3a1d38dadc95ac6a5ce34c343edf516199"
+    },
+    {
+      "path": "workstreams/po03/tools/validate_contracts.py",
+      "sha256": "ead7d6c78c1f60aaf5440db7fc00fc2ae57d773647ed3b24c279d1a59b43da03"
+    },
+    {
+      "path": "workstreams/po03/tools/check_path_scope.py",
+      "sha256": "6e5eaa3a6aff410847b95aa8b306c51903285b75da358c16958b4dc4c8ac0a8e"
+    },
+    {
+      "path": "workstreams/po03/contracts/transactional-result.schema.json",
+      "sha256": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1"
+    },
+    {
+      "path": "workstreams/po03/contracts/wave-compounding.schema.json",
+      "sha256": "5278cb6bc4e7f41a5d513d4a00427a1ed199a21459025c7fa96fb97d56439360"
+    }
+  ],
+  "acceptance_contract": {
+    "path": "workstreams/po03/attempts/wave-a/bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8/acceptance.json",
+    "sha256": "fcb97d5577141ba2eeb58dc56969466b65c149593eddbf1bf0b694485f86393a"
+  },
+  "runtime": {
+    "provider": "Cursor",
+    "interface": "Cursor Cloud",
+    "cursor_run_id": "bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8",
+    "exact_model": "gpt-5.6-sol-max-fast",
+    "reasoning_control": "provider-encoded-max-fast",
+    "context_policy": "bounded immutable source capsule",
+    "tools": [
+      "git",
+      "Python 3 standard library",
+      "repository file tools"
+    ]
+  },
+  "transaction": {
+    "task_group_id": "po03-wave-a-bc94cf-adversarial-cohort",
+    "attempt_number": 1,
+    "idempotency_key": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001:bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8:1",
+    "lease_id": "lease-po03-bc94cf-001",
+    "fence_token": 1,
+    "provider_run_id": "bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8",
+    "created_at": "2026-08-22T06:53:44Z",
+    "result_slot": "workstreams/po03/attempts/wave-a/bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8",
+    "owned_paths": [
+      "workstreams/po03/attempts/wave-a/bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8/**"
+    ],
+    "branch": "cursor/po03-independent-challenger-70f8"
+  },
+  "attempts": [
+    {
+      "task_id": "po03-wa-adv-001",
+      "function": "independent-evaluation",
+      "falsifiable_hypothesis": "The seeded JSON schema and dependency-free validator accept and reject the same transactional-result documents across generated boundary cases.",
+      "executable_component": "schema-validator differential harness",
+      "acceptance_focus": "No unexplained validator/schema disagreement in the generated corpus."
+    },
+    {
+      "task_id": "po03-wa-adv-002",
+      "function": "clean-runtime-reproduction",
+      "falsifiable_hypothesis": "source_lock(head_sha) hashes bytes from exactly head_sha even when the worktree differs from that commit.",
+      "executable_component": "dirty-worktree immutable-source-lock reproduction",
+      "acceptance_focus": "Every recorded byte count and SHA-256 corresponds to the pinned Git object."
+    },
+    {
+      "task_id": "po03-wa-adv-003",
+      "function": "operating-system-failure-recovery",
+      "falsifiable_hypothesis": "Concurrent event writers cannot allocate the same sequence or silently overwrite one another.",
+      "executable_component": "multiprocess event-chain collision reproduction",
+      "acceptance_focus": "All admitted events are unique, monotonic, hash-linked, and recoverable."
+    },
+    {
+      "task_id": "po03-wa-adv-004",
+      "function": "transactional-result-custody",
+      "falsifiable_hypothesis": "write_once remains idempotent and leaves neither a partial destination nor an unreported false success under injected link and fsync failures.",
+      "executable_component": "atomic-write fault-injection harness",
+      "acceptance_focus": "No partial immutable artifact and deterministic retry behavior."
+    },
+    {
+      "task_id": "po03-wa-adv-005",
+      "function": "manifest-and-path-enforcement",
+      "falsifiable_hypothesis": "The path-scope guard detects out-of-allowlist additions, copies, renames, deletions, traversal forms, and base-selection failures.",
+      "executable_component": "changed-path adversarial fixture matrix",
+      "acceptance_focus": "Zero false negatives across the frozen path-escape matrix."
+    },
+    {
+      "task_id": "po03-wa-adv-006",
+      "function": "portable-runtime-execution",
+      "falsifiable_hypothesis": "A local task-capsule verification cannot be mistaken for the required remote immutable-commit canary readback.",
+      "executable_component": "remote-readback evidence-state test",
+      "acceptance_focus": "Material dispatch remains blocked until an independently fetched commit contains exact canary bytes."
+    },
+    {
+      "task_id": "po03-wa-adv-007",
+      "function": "lease-and-fencing-evaluation",
+      "falsifiable_hypothesis": "A stale or expired worker cannot advance state or commit after a higher fence token takes ownership.",
+      "executable_component": "lease-expiry and stale-fence state-machine tests",
+      "acceptance_focus": "Every stale transition fails closed and leaves a recovery event."
+    },
+    {
+      "task_id": "po03-wa-adv-008",
+      "function": "provider-loss-recovery",
+      "falsifiable_hypothesis": "Provider COMPLETED without committed result bytes is always classified as PROVIDER_COMPLETED_UNCOMMITTED and can be deterministically resumed from immutable input.",
+      "executable_component": "lost-callback and provider-loss replay tests",
+      "acceptance_focus": "Zero false completion and deterministic retry identity."
+    }
+  ]
+}

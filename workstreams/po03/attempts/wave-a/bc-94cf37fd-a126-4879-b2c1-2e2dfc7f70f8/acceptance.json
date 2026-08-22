@@ -1,0 +1,47 @@
+{
+  "acceptance_version": "PO03-WAVE-A-CHALLENGER-ACCEPTANCE-v1",
+  "attempt_ids": [
+    "po03-wa-adv-001",
+    "po03-wa-adv-002",
+    "po03-wa-adv-003",
+    "po03-wa-adv-004",
+    "po03-wa-adv-005",
+    "po03-wa-adv-006",
+    "po03-wa-adv-007",
+    "po03-wa-adv-008"
+  ],
+  "criteria": [
+    "Each attempt tests one distinct falsifiable control-plane hypothesis.",
+    "Every claimed defect has an executable reproduction against the immutable controller source.",
+    "Every non-defect conclusion records the exercised boundary and observed evidence.",
+    "The harness runs from a clean clone with Python standard-library dependencies only.",
+    "No test mutates PO-01, PR #8, protected state, or a path outside this run's owned subtree.",
+    "Artifacts have a complete manifest with SHA-256 and byte counts.",
+    "Provider completion remains separate from durable Obzio completion.",
+    "The producer reports READY_TO_COMMIT only; a different process must ingest and accept or reject."
+  ],
+  "required_artifacts": [
+    "adversarial_harness.py",
+    "tests/test_adversarial_harness.py",
+    "results/attempt-results.json",
+    "results/test-output.txt",
+    "result-manifest.json",
+    "transaction-ready-to-commit.json"
+  ],
+  "terminal_dispositions": [
+    "PASS",
+    "FAIL",
+    "NOT_YET",
+    "NOT_SUPPORTED",
+    "OWNER_BLOCKED"
+  ],
+  "forbidden": [
+    "write outside workstreams/po03/attempts/wave-a/bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8/**",
+    "modify shared PO-03 controller paths",
+    "contact or mutate PO-01",
+    "modify PR #8",
+    "merge or promote",
+    "self-mark COMPLETED or independently accepted"
+  ],
+  "decision_changed": []
+}
