@@ -1,0 +1,54 @@
+PO03-WA-033 execution evidence
+captured_at_utc: 2026-08-22T07:16:28Z
+python: Python 3.12.3
+platform: Linux 6.12.94+ x86_64
+worktree_head: 44de68e52a0baa480a8a8c0b95fd5071391dd4a1
+base_commit: 44de68e52a0baa480a8a8c0b95fd5071391dd4a1
+cwd: workstreams/po03/runs/wave-a/route-05/PO03-WA-033
+
+$ python3 -m unittest discover -s tests -p 'test_*.py' -v
+test_clean_changeset_exits_zero (test_changed_path_guard.CommandLineTests.test_clean_changeset_exits_zero) ... ok
+test_deliberate_out_of_allowlist_mutation_exits_one (test_changed_path_guard.CommandLineTests.test_deliberate_out_of_allowlist_mutation_exits_one) ... ok
+test_unusable_allowlist_exits_two (test_changed_path_guard.CommandLineTests.test_unusable_allowlist_exits_two) ... ok
+test_absolute_allowlist_entry_is_refused (test_changed_path_guard.ContainmentTests.test_absolute_allowlist_entry_is_refused) ... ok
+test_allowlist_entry_escaping_root_is_refused (test_changed_path_guard.ContainmentTests.test_allowlist_entry_escaping_root_is_refused) ... ok
+test_cosmetic_spelling_cannot_smuggle_a_write (test_changed_path_guard.ContainmentTests.test_cosmetic_spelling_cannot_smuggle_a_write) ... ok
+test_deliberate_out_of_allowlist_mutation_is_rejected (test_changed_path_guard.ContainmentTests.test_deliberate_out_of_allowlist_mutation_is_rejected) ... ok
+test_dot_dot_traversal_out_of_owned_subtree_is_rejected (test_changed_path_guard.ContainmentTests.test_dot_dot_traversal_out_of_owned_subtree_is_rejected) ... ok
+test_double_star_suffix_is_accepted_as_a_subtree_rule (test_changed_path_guard.ContainmentTests.test_double_star_suffix_is_accepted_as_a_subtree_rule) ... ok
+test_empty_allowlist_rejects_everything (test_changed_path_guard.ContainmentTests.test_empty_allowlist_rejects_everything) ... ok
+test_exact_file_rule_does_not_admit_siblings (test_changed_path_guard.ContainmentTests.test_exact_file_rule_does_not_admit_siblings) ... ok
+test_owned_path_is_allowed (test_changed_path_guard.ContainmentTests.test_owned_path_is_allowed) ... ok
+test_prefix_match_respects_component_boundary (test_changed_path_guard.ContainmentTests.test_prefix_match_respects_component_boundary)
+`route-05/PO03-WA-033` must not admit `route-05/PO03-WA-0330`. ... ok
+test_shared_control_path_is_rejected (test_changed_path_guard.ContainmentTests.test_shared_control_path_is_rejected) ... ok
+test_sibling_route_is_rejected (test_changed_path_guard.ContainmentTests.test_sibling_route_is_rejected) ... ok
+test_traversal_above_repository_root_is_a_distinct_verdict (test_changed_path_guard.ContainmentTests.test_traversal_above_repository_root_is_a_distinct_verdict) ... ok
+test_absolute_path_is_rejected_not_normalised (test_changed_path_guard.NormalisationTests.test_absolute_path_is_rejected_not_normalised) ... ok
+test_dot_slash_prefix_is_collapsed (test_changed_path_guard.NormalisationTests.test_dot_slash_prefix_is_collapsed) ... ok
+test_drive_qualified_path_is_rejected (test_changed_path_guard.NormalisationTests.test_drive_qualified_path_is_rejected) ... ok
+test_nul_byte_is_rejected (test_changed_path_guard.NormalisationTests.test_nul_byte_is_rejected) ... ok
+test_redundant_separators_collapse (test_changed_path_guard.NormalisationTests.test_redundant_separators_collapse) ... ok
+test_root_relative_dot_is_rejected (test_changed_path_guard.NormalisationTests.test_root_relative_dot_is_rejected) ... ok
+test_report_counts_reconcile (test_changed_path_guard.ReportTests.test_report_counts_reconcile) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 0.442s
+
+OK
+[exit code: 0]
+
+$ python3 src/changed_path_guard.py --allowlist-file allowlist.txt --changed-paths-file changed-clean.txt
+ok   ALLOWED                          workstreams/po03/runs/wave-a/route-05/PO03-WA-033/src/changed_path_guard.py  (inside allowlisted subtree)
+ok   ALLOWED                          workstreams/po03/runs/wave-a/route-05/PO03-WA-033/result.json  (inside allowlisted subtree)
+summary: evaluated=2 allowed=2 rejected=0
+[exit code: 0]
+
+$ python3 src/changed_path_guard.py --allowlist-file allowlist.txt --changed-paths-file changed-rejected.txt
+ok   ALLOWED                          workstreams/po03/runs/wave-a/route-05/PO03-WA-033/src/changed_path_guard.py  (inside allowlisted subtree)
+FAIL REJECTED_NOT_IN_ALLOWLIST        workstreams/po03/control/leases/route-05.json  (no allowlist rule covers this path)
+FAIL REJECTED_NOT_IN_ALLOWLIST        workstreams/po03/runs/wave-a/route-04/PO03-WA-025/stolen.json  (no allowlist rule covers this path)
+FAIL REJECTED_ESCAPES_ROOT            ../../../etc/hosts  (path escapes repository root)
+summary: evaluated=4 allowed=1 rejected=3
+[exit code: 1]
+
