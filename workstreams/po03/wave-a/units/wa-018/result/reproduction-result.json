@@ -1,0 +1,77 @@
+{
+  "artifact_comparisons": [
+    {
+      "artifact": "calibration-capsule.json",
+      "committed_bytes": 7198,
+      "committed_sha256": "1fca4fefac16692655102afa6eef06e69b7b098049433fd16f912c23d4d54a44",
+      "regenerated_bytes": 7198,
+      "regenerated_sha256": "1fca4fefac16692655102afa6eef06e69b7b098049433fd16f912c23d4d54a44",
+      "stage": "calibration",
+      "state": "IDENTICAL",
+      "volatile_fields_excluded": []
+    },
+    {
+      "artifact": "frontier-results.json",
+      "committed_bytes": 397751,
+      "committed_sha256": "c33e53aa174a1289488d7649dfec894d399ca61958ce88f18dff2f35d57176d3",
+      "regenerated_bytes": 397751,
+      "regenerated_sha256": "c33e53aa174a1289488d7649dfec894d399ca61958ce88f18dff2f35d57176d3",
+      "stage": "threshold_cases",
+      "state": "IDENTICAL",
+      "volatile_fields_excluded": [
+        "compute_seconds"
+      ]
+    },
+    {
+      "artifact": "threshold-case-results.json",
+      "committed_bytes": 210315,
+      "committed_sha256": "587538ca8a4e118ec21d93d046c2101d40efe58089006c3ca083a085d68f68b7",
+      "regenerated_bytes": 210315,
+      "regenerated_sha256": "587538ca8a4e118ec21d93d046c2101d40efe58089006c3ca083a085d68f68b7",
+      "stage": "threshold_cases",
+      "state": "IDENTICAL",
+      "volatile_fields_excluded": [
+        "compute_seconds"
+      ]
+    }
+  ],
+  "dependencies": "CPython standard library only, plus git on PATH",
+  "immutable_commit": "48ac81e2580c6efefae8de39dc6b484b57e5c881",
+  "protocol_version": "OBZIO-WA-018-REPRODUCTION-v1",
+  "recurrence_instructions": [
+    "git clone --no-hardlinks <repository> fresh && cd fresh",
+    "git checkout cursor/po03-wa-018-b195-a02-1a9f",
+    "cd workstreams/po03/wave-a/units/wa-018/result",
+    "python3 reproduce_all.py --repo ../../../../../.. --commit 48ac81e2580c6efefae8de39dc6b484b57e5c881"
+  ],
+  "repository_native": true,
+  "reproduction_id": "R-PO03-WA-018-001",
+  "sanitization_note": "Only committed PO-03 control and metrics evidence is read, through git show at an immutable commit. No secret, credential, provider identifier or environment value enters any artifact.",
+  "sanitized": true,
+  "stages": [
+    {
+      "command": "python3 -m unittest discover -s . -p 'test_*.py'",
+      "exit_code": 0,
+      "stage": "focused_suite",
+      "state": "PASS",
+      "summary": "OK",
+      "tests_run": 75
+    },
+    {
+      "command": "calibrate_from_repository.py --commit 48ac81e2580c6efefae8de39dc6b484b57e5c881",
+      "exit_code": 0,
+      "stage": "calibration",
+      "state": "PASS",
+      "stderr": ""
+    },
+    {
+      "command": "threshold_cases.py",
+      "exit_code": 0,
+      "stage": "threshold_cases",
+      "state": "PASS",
+      "stdout": "{\"case_seconds\": 1.404, \"expectations_met\": 11, \"expectations_total\": 12, \"falsifiers_fired\": [\"F-018-2\", \"F-018-5\"], \"grid_seconds\": 2.759}"
+    }
+  ],
+  "state": "PASS",
+  "task_id": "PO03-WA-018"
+}

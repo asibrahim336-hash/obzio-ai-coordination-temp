@@ -1,0 +1,99 @@
+{
+  "mechanism_change_version": "OBZIO-WA-018-MECHANISM-CHANGE-v1",
+  "task_id": "PO03-WA-018",
+  "attempt_id": "PO03-WA-018-A02",
+  "requirement_note": "The immutable task input sets mechanism_change_or_rejection_required to false for this attempt, so nothing here is claimed in order to satisfy a quota. The changes below are the ones the evidence forced inside this owned subtree, and the rejections are recorded with the evidence that caused them.",
+  "scope_boundary": "Every change listed here is inside workstreams/po03/wave-a/units/wa-018/**. No shared PO-03 control path, contract, tool or workflow was modified. Changes that would touch a shared mechanism are recorded as unbound proposals in strategy-proposals.json instead.",
+  "changes": [
+    {
+      "id": "MC-018-01",
+      "change": "The tandem-queue closed form used to validate the simulator was corrected from a serial sum to the Lindley recursion.",
+      "trigger": "The first execution of the focused suite failed: the model reported a makespan of 95389 seconds against my asserted 118592.",
+      "diagnosis": "The assertion was wrong, not the model. The producer slot is released at staging because a real producer pushes its branch and returns before the controller verifies, so production of unit k+1 overlaps verification of unit k.",
+      "disposition": "RETAIN",
+      "recurrence_test": "test_tandem_pipeline_makespan_matches_lindley_recursion, plus test_producer_slot_is_released_at_staging which pins the pipelining property directly and test_full_concurrency_makespan_matches_single_verifier_closed_form which pins the opposite extreme.",
+      "counted_as": "one defect and one rework cycle"
+    },
+    {
+      "id": "MC-018-02",
+      "change": "Materiality evaluation was split into an as-written rule that retains the absolute SLO clause and an additive relative-only penalty rule, and the falsifier F-018-2 verdict now reports both an as-written and a decomposed result.",
+      "trigger": "F-018-2 fired on the first full threshold-case execution, which under the preregistered decision rule would have labelled the result REFUTED as confounded.",
+      "diagnosis": "The as-written latency materiality rule mixes a level indicator with a penalty indicator. Applied to the proportional control ladder it reported that the balanced ratio operates above the 900 second SLO, which is a level property of balancing by mean service times, not a penalty from losing proportionality. Latency in fact falls at every rung of the ladder.",
+      "disposition": "SUPERSEDE",
+      "superseded": "the single combined materiality rule",
+      "successor": "_material retained unchanged plus _penalty_only added; both are reported for every grid cell",
+      "recurrence_test": "test_absolute_slo_breach_is_material_in_the_as_written_rule and test_absolute_slo_breach_is_not_a_relative_penalty assert the two rules disagree exactly where they should.",
+      "recorded_deviation": "D-018-01",
+      "counted_as": "one defect and one rework cycle",
+      "honesty_note": "The fired verdict was not reclassified as a limitation. It is still reported as fired, and the specification defect is recorded as mine."
+    },
+    {
+      "id": "MC-018-03",
+      "change": "The consequence of falsifier F-018-5 was scoped to the individual frontier object that fails monotonicity, and the evaluation now reports the failing object, its series, and whether the safety and saturation frontiers are monotone for all policies.",
+      "trigger": "The full 32-seed grid produced one non-monotone series out of twelve frontier objects: the truncated-verification service frontier, 32, 32, 32, 24.",
+      "diagnosis": "The falsifier was written as though a single frontier existed. Applying a global consequence would have discarded eleven well-behaved objects, including every safety frontier, because of one explainable exception.",
+      "disposition": "SUPERSEDE",
+      "recurrence_test": "test_monotonicity_detects_a_decreasing_series and test_monotonicity_ignores_missing_values pin the monotonicity checker itself.",
+      "recorded_deviation": "D-018-02",
+      "counted_as": "one defect and one rework cycle"
+    },
+    {
+      "id": "MC-018-04",
+      "change": "An operating recommendation table was added to the frontier output, reducing each policy and verifier count to a usable concurrency cap defined as the smaller of the safety and saturation frontiers.",
+      "trigger": "The raw frontier grid answered the falsifiable question but not the operating question the commission actually poses, which is what maximum safe active concurrency to run.",
+      "diagnosis": "Concurrency above the safety frontier buys unverified promotions and concurrency above the saturation frontier buys no verified throughput, so neither frontier alone is the operating answer.",
+      "disposition": "RETAIN",
+      "recurrence_test": "test_usable_cap_never_exceeds_either_frontier asserts the reduction is sound for every policy and verifier count in the recorded output."
+    }
+  ],
+  "explicit_rejections": [
+    {
+      "id": "RJ-018-01",
+      "rejected": "Reporting nominal throughput as the factory's throughput metric.",
+      "evidence": "Under deadline bypass at one verifier, nominal throughput rises 7.4, 16.7 and 27.9 units per hour at C=3, 8 and 32 while verified throughput moves 7.9, 8.8 and 7.3. At C=32 nominal overstates verified by 3.8 times and verified output is below its own value at C=8.",
+      "disposition": "REJECT",
+      "consequence": "Nominal throughput above the frontier measures the bypass rate, not output."
+    },
+    {
+      "id": "RJ-018-02",
+      "rejected": "Treating proportional verifier slots as sufficient verification capacity.",
+      "evidence": "T-018-08 walks the proportional ladder C3/V1, C7/V2, C14/V4, C28/V8 at detection power 0.7 and the escaped-defect count is exactly 36 at every rung. Proportional slot scaling changed the escape count by zero.",
+      "disposition": "REJECT",
+      "consequence": "Capacity and power are separate axes. Adding verifiers relieves queueing and does nothing for escape rate."
+    },
+    {
+      "id": "RJ-018-03",
+      "rejected": "Using queue backlog or p95 latency as the safety signal for this factory.",
+      "evidence": "Sampled verification pins its mean peak backlog at 9.0 against a queue cap of 8 while reaching 85 false greens and a 0.969 seed fraction at C=32. Truncated verification's p95 wait falls from 903 to 747 seconds between C=3 and C=32 while its false greens rise from 7 to 66.",
+      "disposition": "REJECT",
+      "consequence": "Both policies degrade safety while their queue and latency indicators improve or stay flat. A safety signal has to count unverified promotions directly."
+    },
+    {
+      "id": "RJ-018-04",
+      "rejected": "Balancing producer concurrency against verification capacity using mean service times.",
+      "evidence": "At the balanced ratio of 3.49, the p95 staged wait at one verifier is 1818 seconds against a 900 second SLO, deadline bypass already leaks 3 false greens across the ensemble at the balanced C=3, and its safety frontier is C=2, which is below balance.",
+      "disposition": "REJECT",
+      "consequence": "Mean-based balance leaves no headroom for the observed produce-time spread of 538 to 3689 seconds. The safe operating point is below mean balance."
+    },
+    {
+      "id": "RJ-018-05",
+      "rejected": "Raising a claim that the observed penalty is attributable to the capacity ratio alone.",
+      "evidence": "Sampled and truncated verification leak false greens at the balanced ratio itself, so F-018-2 fired and attribution is clean only for the blocking gate and deadline bypass.",
+      "disposition": "REJECT",
+      "consequence": "The claim retained is the narrower joint one: the penalty is set by the capacity ratio together with the promotion policy."
+    }
+  ],
+  "changes_deliberately_not_made": [
+    {
+      "candidate": "Strengthening the seeded controller reconciler to enforce a verified-throughput based concurrency cap.",
+      "why_not": "workstreams/po03/tools/** and workstreams/po03/control/** are read-only for this attempt and the ownership block restricts writes to this unit's subtree. Recorded as an unbound proposal instead."
+    },
+    {
+      "candidate": "Recording the measured frontier into the shared recovery-state or metrics files.",
+      "why_not": "Those are shared controller paths. Only the integration controller may write them."
+    }
+  ],
+  "mechanism_change_count": 4,
+  "explicit_rejection_count": 5,
+  "decision_changed": []
+}

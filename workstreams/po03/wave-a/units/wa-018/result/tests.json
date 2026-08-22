@@ -1,0 +1,146 @@
+{
+  "tests_version": "OBZIO-WA-018-TESTS-v1",
+  "task_id": "PO03-WA-018",
+  "attempt_id": "PO03-WA-018-A02",
+  "command_output": "workstreams/po03/wave-a/units/wa-018/result/test-output.txt",
+  "runtime": {
+    "python": "3.12.3",
+    "git": "2.43.0",
+    "platform": "linux",
+    "third_party_dependencies": "NONE",
+    "bytecode": "PYTHONDONTWRITEBYTECODE=1 for every recorded run; no bytecode is committed"
+  },
+  "suites": [
+    {
+      "id": "focused_unit_suite",
+      "command": "python3 -m unittest discover -s . -p 'test_*.py' -v",
+      "modules": [
+        "test_queue_verification_sim.py",
+        "test_threshold_cases.py"
+      ],
+      "count": 75,
+      "outcome": "PASS",
+      "covers": [
+        "common-random-number addressing and cross-configuration invariance",
+        "detection-power boundary conditions, monotonicity and concavity",
+        "conservation and partition invariants, including that the guards themselves fire",
+        "the three preregistered invalidating falsifiers",
+        "policy behaviour for all four promotion policies",
+        "two independent closed-form queueing checks and a capacity upper bound",
+        "configuration validation and ensemble reproducibility",
+        "calibrator timeline collapse, numeric extraction and sanitization",
+        "materiality arithmetic, including the separation behind deviation D-018-01",
+        "frontier extraction, monotonicity detection and the operating reduction",
+        "case-verdict logic for every declared expectation",
+        "binding between the harness constants and the frozen preregistration",
+        "integrity of the recorded frontier and case outputs"
+      ]
+    },
+    {
+      "id": "queue_verification_sim_tests",
+      "module": "test_queue_verification_sim.py",
+      "count": 40,
+      "outcome": "PASS"
+    },
+    {
+      "id": "threshold_cases_tests",
+      "module": "test_threshold_cases.py",
+      "count": 35,
+      "outcome": "PASS"
+    },
+    {
+      "id": "frontier_grid",
+      "command": "python3 threshold_cases.py",
+      "grid_cells": 160,
+      "grid_detail": "10 concurrency values x 4 verifier counts x 4 promotion policies",
+      "ensemble_runs": 5120,
+      "seeds_per_cell": 32,
+      "wave_units_per_run": 64,
+      "simulated_unit_executions": 327680,
+      "outcome": "PASS",
+      "compute_seconds_grid": 2.642
+    },
+    {
+      "id": "threshold_cases",
+      "command": "python3 threshold_cases.py",
+      "cases": 12,
+      "expectations_met": 11,
+      "expectations_total": 12,
+      "unmet": ["T-018-06"],
+      "unmet_note": "The proportional-capacity null control did not meet its NO_PENALTY expectation. Its three drivers are decomposed in threshold-case-results.json and recorded as deviation D-018-01.",
+      "outcome": "PASS",
+      "outcome_note": "PASS means every case executed and produced a verdict against its preregistered expectation. It does not mean every expectation was met; one was not, and that is reported rather than hidden."
+    },
+    {
+      "id": "falsifier_evaluation",
+      "falsifiers_declared": 8,
+      "falsifiers_evaluated": 8,
+      "fired": ["F-018-2", "F-018-5"],
+      "not_fired": ["F-018-1", "F-018-3", "F-018-4", "F-018-6", "F-018-7", "F-018-8"],
+      "invalidating_falsifiers_fired": 0,
+      "outcome": "PASS",
+      "coverage_assertion": "test_every_preregistered_falsifier_is_evaluated compares the declared set against the recorded set."
+    },
+    {
+      "id": "sensitivity_sweeps",
+      "parameters_swept": 6,
+      "sweep_rows": 20,
+      "outcome": "PASS",
+      "detail": "latent defect probability, detection power, detection k, bypass deadline, queue cap and downstream discovery probability, each at C=32 with one verifier."
+    },
+    {
+      "id": "sanitized_repository_native_reproduction",
+      "command": "python3 reproduce_all.py",
+      "reproduction_id": "R-PO03-WA-018-001",
+      "immutable_commit": "48ac81e2580c6efefae8de39dc6b484b57e5c881",
+      "artifacts_compared": 3,
+      "artifacts_identical": 3,
+      "bytes_compared": 615264,
+      "outcome": "PASS",
+      "volatile_fields_excluded": ["compute_seconds"],
+      "volatile_exclusion_note": "compute_seconds records host wall time for the grid and is execution evidence rather than a result. The exclusion is declared in the reproduction report rather than applied silently."
+    },
+    {
+      "id": "clean_clone_reproduction",
+      "command": "python3 -m unittest discover -s . -p 'test_*.py' and python3 reproduce_all.py in a fresh no-hardlink clone",
+      "count": 75,
+      "outcome": "PASS",
+      "detail": "Recorded in the readback section of ready-to-commit.json against the pushed immutable commit."
+    },
+    {
+      "id": "seeded_po03_contract_suite_read_only",
+      "command": "python3 -m unittest discover -s workstreams/po03/tests -p 'test_*.py'",
+      "count": 60,
+      "outcome": "PASS",
+      "note": "Seeded controls were executed to confirm this attempt did not weaken them. They were not modified."
+    },
+    {
+      "id": "repository_taxonomy_gate",
+      "command": "python3 scripts/check_operator_taxonomy.py",
+      "outcome": "PASS",
+      "observed": "OPERATOR TAXONOMY CHECK: PASS, active function obzio.function.strategic-operations-orchestration, 9 classified aliases"
+    },
+    {
+      "id": "changed_path_ownership_check",
+      "outcome": "PASS",
+      "detail": "Every changed path from the producer source base is under workstreams/po03/wave-a/units/wa-018/; the out-of-scope changed-path count is 0."
+    }
+  ],
+  "totals": {
+    "focused_assertions_suites": 75,
+    "seeded_read_only_tests": 60,
+    "test_count": 135,
+    "test_count_note": "75 focused tests written by this attempt plus 60 seeded PO-03 contract tests executed read-only. The frontier grid's 5120 ensemble runs and 327680 simulated unit executions are measured evidence rather than tests and are not counted here."
+  },
+  "first_pass_outcome": "FAIL",
+  "first_pass_detail": "The first execution of the focused suite failed one test: the tandem-queue closed form had been asserted as a serial sum, which the correctly pipelined model beat. Repaired under MC-018-01 and pinned by three tests.",
+  "final_outcome": "PASS",
+  "defects_found_and_repaired": 3,
+  "defect_detail": [
+    "MC-018-01: a wrong closed-form assertion in my own test, found by the first suite run.",
+    "MC-018-02: the preregistered latency materiality rule conflated an absolute level with a relative penalty, found when F-018-2 fired on the control ladder.",
+    "MC-018-03: falsifier F-018-5 attached a global consequence to twelve distinct frontier objects, found on the full 32-seed grid."
+  ],
+  "rework_cycles": 3,
+  "decision_changed": []
+}

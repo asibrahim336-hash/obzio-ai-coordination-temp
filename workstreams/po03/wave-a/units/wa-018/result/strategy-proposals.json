@@ -1,0 +1,77 @@
+{
+  "strategy_proposals_version": "OBZIO-WA-018-STRATEGY-PROPOSALS-v1",
+  "task_id": "PO03-WA-018",
+  "attempt_id": "PO03-WA-018-A02",
+  "status": "UNBOUND_PROPOSAL",
+  "binding_note": "These are proposals only. They change nothing outside this owned subtree, they are not applied, and under the commission they remain proposals until the founder interlock binds them. Several would touch shared PO-03 control paths that this attempt may only read.",
+  "standing_function": "zero-base-strategy",
+  "proposals": [
+    {
+      "id": "SP-018-01",
+      "proposal": "Report Wave A throughput as verified throughput only, and treat nominal throughput as a diagnostic of bypass rather than a result.",
+      "grounded_in": ["FIND-018-03", "RJ-018-01"],
+      "why": "Nominal throughput rose 3.8 times while verified throughput fell in the simulated bypass regimes. A factory that reports nominal throughput cannot tell growth from leakage.",
+      "would_touch": "workstreams/po03/metrics/metric-definitions.json and the operating-system measurement reporting",
+      "owned_by_this_attempt": false,
+      "cost": "A definition change and a reporting change; no new measurement is required because verified promotions are already distinguishable from ingested ones in the ledger."
+    },
+    {
+      "id": "SP-018-02",
+      "proposal": "Keep the controller verification gate strictly blocking, and never add a promotion deadline, a queue cap that sheds, or an adaptive shortening of verification under backlog.",
+      "grounded_in": ["FIND-018-02", "RJ-018-03"],
+      "why": "The blocking gate is the only policy tested that produced zero false greens in all 40 grid cells. Each of the three alternatives that keep pace under load converts backlog into false completions, and two of them do so while their queue and latency indicators look healthy.",
+      "would_touch": "the controller ingestion path and any future auto-promotion feature",
+      "owned_by_this_attempt": false,
+      "cost": "Accepting unbounded staged latency under load as the price of the zero-false-completion guarantee the commission requires."
+    },
+    {
+      "id": "SP-018-03",
+      "proposal": "Treat verification capacity, not producer concurrency, as the Wave A scaling lever, and raise verifier capacity before raising concurrency further.",
+      "grounded_in": ["FIND-018-01", "FIND-018-04"],
+      "why": "The safety frontier scales close to linearly in verifier count, and at one verifier the blocking-gate saturation frontier is 6 while the live configuration runs 8. Moving from C=6 to C=8 at one verifier buys 0.27 percent more verified throughput for 31 percent more p95 staged latency. The commission's instruction to run at maximum safe active concurrency is currently limited by verification, not by the provider ceiling of 8.",
+      "would_touch": "the Wave A dispatch policy and the number of independent verifier routes",
+      "owned_by_this_attempt": false,
+      "cost": "Independent verification capacity is the scarce resource, and adding it means more independent reviewer routes rather than more producer VMs.",
+      "caveat": "The commission also forbids producer self-certification, so added verification capacity must be independent of the producers whose work it checks."
+    },
+    {
+      "id": "SP-018-04",
+      "proposal": "Measure and report verification power separately from verification capacity, and set a floor on the work applied per verification.",
+      "grounded_in": ["FIND-018-06", "RJ-018-02"],
+      "why": "Escaped defects were completely invariant to proportional slot scaling at degraded power. Capacity metrics cannot detect a power regression, and the current metric set has no power metric at all.",
+      "would_touch": "workstreams/po03/metrics/metric-definitions.json",
+      "owned_by_this_attempt": false,
+      "cost": "Requires an observable proxy for verification depth, which the ledger does not currently carry; this is the main unresolved measurement gap this unit found."
+    },
+    {
+      "id": "SP-018-05",
+      "proposal": "Set the operating concurrency below the mean-balance point rather than at it, and derive the target from the measured safety frontier instead of from mean service times.",
+      "grounded_in": ["FIND-018-05", "RJ-018-04"],
+      "why": "At mean balance the p95 staged wait already exceeded the SLO derived from live observation, and the deadline-bypass safety frontier was below the balance point. The observed produce-time spread of 538 to 3689 seconds makes burstiness, not the mean, the binding property.",
+      "would_touch": "the Wave A cohort dispatch sizing",
+      "owned_by_this_attempt": false,
+      "cost": "Lower nominal concurrency, with no loss of verified throughput according to the saturation frontier."
+    },
+    {
+      "id": "SP-018-06",
+      "proposal": "Add a standing recovery-scanner check that counts promotions which reached a terminal accepted state without an independent verification record, and treat any non-zero count as a stop condition.",
+      "grounded_in": ["FIND-018-02", "RJ-018-03"],
+      "why": "Every unsafe regime in this study is visible as unverified promotions and invisible or nearly invisible in queue length and latency. The check is cheap because the ledger already records verifier decisions separately from controller ingestion.",
+      "would_touch": "workstreams/po03/control/recovery-state.json and the recovery scanner",
+      "owned_by_this_attempt": false,
+      "cost": "One additional scan over the event ledger."
+    },
+    {
+      "id": "SP-018-07",
+      "proposal": "Record pure verification service time separately from queue wait in the event ledger.",
+      "grounded_in": ["SC-018-06"],
+      "why": "The single largest limitation of this unit is that commit-to-ingest latency bounds service time from above and cannot be decomposed. One additional timestamp at verification start would remove the need for the adversarial rescaling in T-018-10 and would let the frontier be computed from measurement rather than from a bounded estimate.",
+      "would_touch": "the controller ingestion path and the event ledger schema",
+      "owned_by_this_attempt": false,
+      "cost": "One additional event or field per verification."
+    }
+  ],
+  "proposal_count": 7,
+  "applied_count": 0,
+  "decision_changed": []
+}

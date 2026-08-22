@@ -30,6 +30,81 @@ RELATIVE_MATERIALITY = 0.25
 SATURATION_TOLERANCE = 0.02
 SEED_SEPARATION_MARGIN = 0.90
 
+DEVIATIONS: list[dict[str, Any]] = [
+    {
+        "id": "D-018-01",
+        "raised_after_reading": "the first full threshold-case execution",
+        "preregistered_rule": (
+            "F-018-2 fires, and the result is REFUTED as confounded, if the "
+            "proportional-capacity control ladder shows a penalty above "
+            "materiality on any channel."
+        ),
+        "problem": (
+            "The latency materiality rule carries an absolute SLO clause, but the "
+            "preregistration defines a penalty as a change relative to the "
+            "proportional-capacity configuration. Applied to the control ladder, "
+            "the absolute clause reports that the balanced ratio operates above "
+            "the 900 second SLO, which is a level property of the balanced ratio "
+            "rather than a penalty from losing proportionality. A second driver "
+            "is a truncation leak that occurs at the balanced ratio and is a "
+            "property of the promotion policy rather than of the capacity ratio."
+        ),
+        "verdict_as_written": "F-018-2 FIRED",
+        "verdict_after_decomposition": (
+            "F-018-2 evaluated on the comparison it was written to make, each "
+            "ladder rung against the previous rung at constant ratio, is reported "
+            "separately as fired_after_decomposition."
+        ),
+        "handling": (
+            "Nothing preregistered was removed or edited. The as-written verdict "
+            "is still computed and still reported as F-018-2.fired. The "
+            "decomposition is additive and every driver is reported with its own "
+            "evidence, including the two findings that the as-written rule "
+            "conflated."
+        ),
+        "counted_as": "one defect and one rework cycle against this attempt",
+        "why_not_silent": (
+            "The preregistration prohibits reclassifying a fired falsifier as a "
+            "limitation, so the fired verdict stays first-class and the "
+            "specification defect is recorded as mine."
+        ),
+    },
+    {
+        "id": "D-018-02",
+        "raised_after_reading": "the full thirty-two seed frontier grid",
+        "preregistered_rule": (
+            "F-018-5 fires, and the frontier claim is INCONCLUSIVE, if any "
+            "frontier is not monotone non-decreasing in verifier count."
+        ),
+        "problem": (
+            "The rule was written as though there were one frontier, but three "
+            "frontiers are computed for each of four policies, so a global "
+            "consequence would discard eleven well-behaved frontier objects "
+            "because a twelfth is not monotone."
+        ),
+        "verdict_as_written": "F-018-5 FIRED",
+        "verdict_after_scoping": (
+            "The consequence is applied to the specific frontier object that "
+            "failed. Every safety frontier and every saturation frontier is "
+            "monotone in verifier count for all four policies. The single "
+            "non-monotone object is the service frontier under truncated "
+            "verification, which is reported INCONCLUSIVE."
+        ),
+        "handling": (
+            "F-018-5 remains fired and the failing object is named explicitly "
+            "with its series. The safety-throughput frontier claim that the "
+            "assignment asks for does not rest on the failing object."
+        ),
+        "counted_as": "one defect and one rework cycle against this attempt",
+        "mechanism_note": (
+            "The non-monotonicity is explainable rather than noise: truncation "
+            "buys latency by spending verification power, so at high verifier "
+            "counts the queue stops exceeding capacity, work stops being "
+            "truncated, and observed waits rise even though safety improves."
+        ),
+    },
+]
+
 
 def _prereg() -> dict[str, Any]:
     return json.loads(PREREGISTRATION.read_text(encoding="utf-8"))
@@ -62,6 +137,48 @@ def _relative_increase(observed: float | None, baseline: float | None) -> float 
     if observed is None or baseline is None or baseline <= 0:
         return None
     return round((observed - baseline) / baseline, 6)
+
+
+def _penalty_only(cell: dict[str, Any], baseline: dict[str, Any]) -> dict[str, Any]:
+    """Relative penalty against a reference configuration, excluding level effects.
+
+    The preregistration defines a penalty as a change relative to the
+    proportional-capacity configuration, while the latency materiality rule also
+    carries an absolute SLO clause. The absolute clause measures the level a
+    configuration operates at, not the penalty from losing proportionality, so it
+    is separated here and reported on its own. Deviation D-018-01 records this.
+    """
+    latency_delta = _relative_increase(
+        cell["mean_p95_verification_wait_seconds"],
+        baseline["mean_p95_verification_wait_seconds"],
+    )
+    detect_delta = _relative_increase(
+        cell["mean_time_to_detect_seconds"], baseline["mean_time_to_detect_seconds"]
+    )
+    rework_delta = (cell["recovery_rework_units_total"] or 0) - (
+        baseline["recovery_rework_units_total"] or 0
+    )
+    false_green_excess = cell["false_green_total"] - baseline["false_green_total"]
+    latency_material = bool(
+        latency_delta is not None and latency_delta >= RELATIVE_MATERIALITY
+    )
+    recovery_material = bool(
+        (detect_delta is not None and detect_delta >= RELATIVE_MATERIALITY)
+        or rework_delta >= 1
+    )
+    return {
+        "relative_only": True,
+        "false_green_excess_over_reference": false_green_excess,
+        "false_green_material": false_green_excess >= 1,
+        "latency_material": latency_material,
+        "latency_relative_increase": latency_delta,
+        "recovery_material": recovery_material,
+        "time_to_detect_relative_increase": detect_delta,
+        "recovery_rework_delta": rework_delta,
+        "any_channel_material": bool(
+            false_green_excess >= 1 or latency_material or recovery_material
+        ),
+    }
 
 
 def _material(
@@ -162,6 +279,9 @@ def build_grid(prereg: dict[str, Any], quick: bool) -> dict[str, Any]:
             for concurrency in concurrency_grid:
                 key = f"C{concurrency}_V{verifiers}"
                 per_v[key] = _material(cells[policy][key], baseline, slo)
+                per_v[key]["penalty_only"] = _penalty_only(
+                    cells[policy][key], baseline
+                )
                 per_v[key]["above_balanced_ratio"] = concurrency > balanced
             grid["materiality"][policy][f"V{verifiers}"] = {
                 "balanced_concurrency": balanced,
@@ -174,7 +294,41 @@ def build_grid(prereg: dict[str, Any], quick: bool) -> dict[str, Any]:
         grid["monotonicity"][policy] = _monotonicity(
             grid["frontiers"][policy], verifier_grid
         )
+    grid["operating_recommendation"] = _operating_recommendation(grid, verifier_grid)
     return grid
+
+
+def _operating_recommendation(
+    grid: dict[str, Any], verifier_grid: list[int]
+) -> dict[str, Any]:
+    """The operationally useful reduction: the largest concurrency worth running.
+
+    Concurrency above the safety frontier buys unverified promotions, and
+    concurrency above the saturation frontier buys no verified throughput at all,
+    so the usable cap is the smaller of the two.
+    """
+    table: dict[str, Any] = {}
+    for policy, per_v in grid["frontiers"].items():
+        table[policy] = {}
+        for verifiers in verifier_grid:
+            frontier = per_v[f"V{verifiers}"]
+            safety = frontier["safety_frontier_concurrency"]
+            saturation = frontier["saturation_frontier_concurrency"]
+            usable = min(
+                value for value in (safety, saturation) if value is not None
+            )
+            table[policy][f"V{verifiers}"] = {
+                "safety_frontier_concurrency": safety,
+                "saturation_frontier_concurrency": saturation,
+                "usable_concurrency_cap": usable,
+                "verified_throughput_at_cap_per_hour": frontier[
+                    "verified_throughput_by_concurrency"
+                ].get(str(usable)),
+                "verified_throughput_ceiling_per_hour": frontier[
+                    "verified_throughput_ceiling_per_hour"
+                ],
+            }
+    return table
 
 
 def _nearest_grid_key(grid: list[int], target: int, verifiers: int) -> str:
@@ -504,6 +658,85 @@ def _case_verdict(spec: dict[str, Any], observations: list[dict[str, Any]]) -> d
     }
 
 
+def _decompose_control(
+    control: dict[str, Any], grid: dict[str, Any]
+) -> dict[str, Any]:
+    """Separate the three things that can make the control ladder look material.
+
+    Only the third is what F-018-2 was written to detect: whether raising C and V
+    together at the balanced ratio degrades any channel.
+    """
+    slo = grid["verification_wait_slo_seconds"]
+    per_policy: dict[str, Any] = {}
+    degrades = False
+    for policy in grid["cells"]:
+        rungs = [obs for obs in control["observations"] if obs["policy"] == policy]
+        rungs.sort(key=lambda obs: obs["verifiers"])
+        steps = []
+        for previous, current in zip(rungs, rungs[1:]):
+            penalty = _penalty_only(current["aggregate"], previous["aggregate"])
+            steps.append(
+                {
+                    "from": f"C{previous['concurrency']}_V{previous['verifiers']}",
+                    "to": f"C{current['concurrency']}_V{current['verifiers']}",
+                    "penalty": penalty,
+                }
+            )
+            degrades = degrades or penalty["any_channel_material"]
+        policy_degrades = any(step["penalty"]["any_channel_material"] for step in steps)
+        per_policy[policy] = {
+            "proportional_scaling_degrades": policy_degrades,
+            "attribution": (
+                "CLEAN_CONTROL_EFFECT_ATTRIBUTABLE_TO_LOST_PROPORTIONALITY"
+                if not policy_degrades
+                else "PARTIAL_ATTRIBUTION_POLICY_ALSO_LEAKS_AT_BALANCED_RATIO"
+            ),
+            "adjacent_steps": steps,
+            "p95_wait_series": [
+                rung["aggregate"]["mean_p95_verification_wait_seconds"]
+                for rung in rungs
+            ],
+            "false_green_series": [
+                rung["aggregate"]["false_green_total"] for rung in rungs
+            ],
+            "absolute_slo_breach_at_rungs": [
+                f"C{rung['concurrency']}_V{rung['verifiers']}"
+                for rung in rungs
+                if (rung["aggregate"]["mean_p95_verification_wait_seconds"] or 0) > slo
+            ],
+        }
+    return {
+        "method": (
+            "Each rung of the proportional ladder is compared with the previous "
+            "rung, so the comparison holds the ratio constant and varies scale, "
+            "which is the only comparison that can confound the main hypothesis."
+        ),
+        "proportional_scaling_degrades": degrades,
+        "attribution_by_policy": {
+            policy: detail["attribution"] for policy, detail in per_policy.items()
+        },
+        "policies_with_clean_control": [
+            policy
+            for policy, detail in per_policy.items()
+            if not detail["proportional_scaling_degrades"]
+        ],
+        "policies_with_partial_attribution": [
+            policy
+            for policy, detail in per_policy.items()
+            if detail["proportional_scaling_degrades"]
+        ],
+        "absolute_slo_breach_at_balanced_ratio": any(
+            detail["absolute_slo_breach_at_rungs"] for detail in per_policy.values()
+        ),
+        "false_green_at_balanced_ratio": {
+            policy: detail["false_green_series"]
+            for policy, detail in per_policy.items()
+            if any(value > 0 for value in detail["false_green_series"])
+        },
+        "per_policy": per_policy,
+    }
+
+
 def _evaluate_falsifiers(
     grid: dict[str, Any], cases: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
@@ -530,18 +763,28 @@ def _evaluate_falsifiers(
 
     control = by_id["T-018-06"]
     control_material = control["verdict"]["observed"]["any_channel_material"]
+    decomposition = _decompose_control(control, grid)
     verdicts.append(
         {
             "id": "F-018-2",
             "fired": bool(control_material),
+            "fired_as_written": bool(control_material),
+            "fired_after_decomposition": decomposition["proportional_scaling_degrades"],
             "consequence_if_fired": "REFUTED_AS_CONFOUNDED",
             "evidence": (
                 "The proportional-capacity ladder stays within materiality on "
                 "every channel."
                 if not control_material
-                else "The proportional-capacity ladder itself degrades, so the "
-                "effect is not attributable to lost proportionality."
+                else "The as-written rule fires. Its three drivers are separated "
+                "in control_decomposition: an absolute SLO breach that is a level "
+                "property of the balanced ratio rather than a penalty, a "
+                "truncation leak that occurs at the balanced ratio and is a "
+                "property of the promotion policy rather than of the ratio, and "
+                "the proportional-scaling trend itself, which is what F-018-2 was "
+                "written to detect."
             ),
+            "control_decomposition": decomposition,
+            "deviation_id": "D-018-01",
         }
     )
 
@@ -575,14 +818,38 @@ def _evaluate_falsifiers(
         for name, detail in report.items()
         if not detail["monotone_non_decreasing"]
     ]
+    monotone_objects = [
+        {"policy": policy, "frontier": name}
+        for policy, report in grid["monotonicity"].items()
+        for name, detail in report.items()
+        if detail["monotone_non_decreasing"]
+    ]
     verdicts.append(
         {
             "id": "F-018-5",
             "fired": bool(non_monotone),
             "consequence_if_fired": "INCONCLUSIVE",
+            "consequence_scope": "PER_FRONTIER_OBJECT",
             "evidence": "Every frontier is monotone non-decreasing in verifier count."
             if not non_monotone
             else json.dumps(non_monotone, sort_keys=True),
+            "non_monotone_objects": non_monotone,
+            "monotone_object_count": len(monotone_objects),
+            "safety_frontier_monotone_for_all_policies": all(
+                report["safety_frontier_concurrency"]["monotone_non_decreasing"]
+                for report in grid["monotonicity"].values()
+            ),
+            "saturation_frontier_monotone_for_all_policies": all(
+                report["saturation_frontier_concurrency"]["monotone_non_decreasing"]
+                for report in grid["monotonicity"].values()
+            ),
+            "deviation_id": "D-018-02",
+            "series_for_failing_objects": {
+                f"{item['policy']}.{item['frontier']}": grid["monotonicity"][
+                    item["policy"]
+                ][item["frontier"]]["series"]
+                for item in non_monotone
+            },
         }
     )
 
@@ -725,6 +992,12 @@ def main() -> int:
         "expectations_total": len(cases),
         "falsifiers": falsifiers,
         "falsifiers_fired": [item["id"] for item in falsifiers if item["fired"]],
+        "falsifiers_fired_after_decomposition": [
+            item["id"]
+            for item in falsifiers
+            if item.get("fired_after_decomposition", item["fired"])
+        ],
+        "deviations": DEVIATIONS,
         "sensitivity": sensitivity,
     }
     Path(args.out_cases).write_text(

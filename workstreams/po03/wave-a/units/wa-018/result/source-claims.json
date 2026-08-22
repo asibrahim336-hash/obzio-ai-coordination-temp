@@ -1,0 +1,228 @@
+{
+  "source_claims_version": "OBZIO-WA-018-SOURCE-CLAIMS-v1",
+  "task_id": "PO03-WA-018",
+  "attempt_id": "PO03-WA-018-A02",
+  "external_network_retrieval": "NOT_SUPPORTED",
+  "external_url_claims": "NONE_CLAIMED",
+  "external_url_claims_note": "No external documentation, paper, repository or community source was retrieved by this runner. No external URL is cited, and no external claim is reproduced or attributed. The assignment requires sanitized repository-native evidence only, and the immutable task input sets the minimum external-method hypothesis count to zero.",
+  "po01_evidence": "NONE_READ",
+  "producer_narrative_as_evidence": "REFUSED",
+  "producer_narrative_note": "Other producers' result narratives under workstreams/po03/wave-a/units/ were not read as evidence. The one prior result artifact opened was wa-008's result envelope, and it was read only as a return-envelope shape reference, not as a source of fact about the safety-throughput question.",
+  "claim_types": [
+    "IMMUTABLE_REPOSITORY_READ",
+    "DERIVED_FROM_IMMUTABLE_REPOSITORY_READ",
+    "ARITHMETIC_ON_IMMUTABLE_EVIDENCE",
+    "RUNTIME_OBSERVATION",
+    "MODELLING_CHOICE_NOT_EVIDENCE"
+  ],
+  "immutable_commit": "48ac81e2580c6efefae8de39dc6b484b57e5c881",
+  "claim_count": 21,
+  "claims": [
+    {
+      "id": "SC-018-01",
+      "type": "IMMUTABLE_REPOSITORY_READ",
+      "path": "workstreams/po03/control/inputs/wave-a/wa-018-a02.json",
+      "sha256": "cb577017d732c65d45ce28712e929304b0b3bc983025686acd3b5106bae3735f",
+      "bytes": 4528,
+      "claim": "The immutable task input declares the frozen hypothesis, the owned write glob workstreams/po03/wave-a/units/wa-018/**, the result slot, the attempt identity with fence token 2, and preregistered metric names.",
+      "verification": "Hash matched the exact value named in the assignment before any other action.",
+      "match": "EXACT"
+    },
+    {
+      "id": "SC-018-02",
+      "type": "IMMUTABLE_REPOSITORY_READ",
+      "path": "workstreams/po03/control/acceptance/wave-a-material-v1.json",
+      "sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a",
+      "bytes": 3091,
+      "claim": "The acceptance contract sets false_completion to zero and out_of_allowlist_writes to zero as quality guardrails, and enumerates the five required artifacts and the allowed hypothesis outcomes.",
+      "verification": "Hash matched the exact value named in the assignment.",
+      "match": "EXACT",
+      "used_for": "The zero-tolerance false-green materiality rule is taken from this contract rather than chosen by me."
+    },
+    {
+      "id": "SC-018-03",
+      "type": "IMMUTABLE_REPOSITORY_READ",
+      "path": "workstreams/po03/COMMISSION.md",
+      "sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+      "bytes": 16030,
+      "claim": "The commission instructs beginning at the maximum safe active concurrency the provider exposes, requires Wave A to contain at least 64 substantive attempts, declares the lifecycle CREATED through ACCEPTED or REJECTED, and requires zero false completion.",
+      "verification": "Hash matched the commission_sha256 declared in the immutable task input.",
+      "match": "EXACT",
+      "used_for": "The wave size of 64, the lifecycle modelled by the simulation, and the operating question the unit answers."
+    },
+    {
+      "id": "SC-018-04",
+      "type": "IMMUTABLE_REPOSITORY_READ",
+      "path": "workstreams/po03/control/events/ledger.jsonl",
+      "sha256": "541ac7999123bcc535d88aa6d90bd76d09183f151943bd1a4ade3e0c901e56b8",
+      "bytes": 224402,
+      "claim": "The append-only ledger contains 549 events across 66 task identifiers, including 14 RESULT_COMMITTED transitions, 14 PARENT_INGESTED transitions, 13 ACCEPTED and 1 REJECTED decision, all recorded by a single controller-verifier actor.",
+      "verification": "Read through git show at the immutable commit and parsed by calibrate_from_repository.py.",
+      "match": "EXACT"
+    },
+    {
+      "id": "SC-018-05",
+      "type": "DERIVED_FROM_IMMUTABLE_REPOSITORY_READ",
+      "derived_from": "SC-018-04",
+      "claim": "Producer durations from RUNNING to CHECKPOINTED for the 12 material completed units are 538, 655, 674, 693, 694, 727, 744, 1040, 1211, 2141, 2737 and 3689 seconds, with a mean of 1295.25 seconds.",
+      "verification": "Recorded in calibration-capsule.json distributions.producer_produce_seconds with n, min, max and the full sample list.",
+      "used_for": "The produce-time bootstrap population of the simulation."
+    },
+    {
+      "id": "SC-018-06",
+      "type": "DERIVED_FROM_IMMUTABLE_REPOSITORY_READ",
+      "derived_from": "SC-018-04",
+      "claim": "Controller latencies from RESULT_COMMITTED to PARENT_INGESTED for the same 12 units are 157, 231, 237, 254, 295, 323, 329, 411, 416, 516, 546 and 738 seconds, with a mean of 371.083 seconds.",
+      "verification": "Recorded in calibration-capsule.json distributions.verifier_commit_to_ingest_seconds.",
+      "used_for": "The verification service-time bootstrap population.",
+      "explicit_bound": "This interval contains any queue wait at the single verifier, so it bounds pure service time from above rather than measuring it. Pure service time is recorded as NOT_SEPARATELY_OBSERVABLE and case T-018-10 rescales the population to the observed 157 second floor as an adversarial sensitivity."
+    },
+    {
+      "id": "SC-018-07",
+      "type": "DERIVED_FROM_IMMUTABLE_REPOSITORY_READ",
+      "derived_from": "SC-018-04",
+      "claim": "Exactly one distinct controller-verifier actor appears across all 14 verifier decisions, and those decisions are recorded serially.",
+      "verification": "calibration-capsule.json observed.distinct_verifier_actors is 1.",
+      "used_for": "The observed verification capacity of one verifier slot in the live configuration."
+    },
+    {
+      "id": "SC-018-08",
+      "type": "DERIVED_FROM_IMMUTABLE_REPOSITORY_READ",
+      "derived_from": "SC-018-04",
+      "claim": "One of the 14 verifier decisions is a REJECTED decision on a canary route whose durable result custody had passed, recorded with the reason that shared-checkout runtime isolation failed.",
+      "verification": "calibration-capsule.json observed.verifier_rejected is 1 and verifier_rejection_fraction is 0.071429.",
+      "used_for": "The latent-defect probability point estimate, meaning the rate at which a producer reports itself ready while independent verification disagrees.",
+      "explicit_bound": "One event over fourteen decisions is a coarse estimate with a wide interval. The simulation sweeps the value from 0.0 to 0.30 rather than trusting the point estimate, and every reported direction is unchanged across that sweep."
+    },
+    {
+      "id": "SC-018-09",
+      "type": "DERIVED_FROM_IMMUTABLE_REPOSITORY_READ",
+      "derived_from": "SC-018-04",
+      "claim": "Two controller fault events are recorded: PO03-WA-001 reached RECOVERY_REQUIRED after a provider activity timeout with no matching remote branch, and PO03-WA-010 reached RETRY_SCHEDULED after a duplicate workflow start, again with no matching remote branch.",
+      "verification": "calibration-capsule.json observed.controller_fault_detail.",
+      "used_for": "Evidence that the recovery channel is a real observed channel in this factory and not a hypothetical one."
+    },
+    {
+      "id": "SC-018-10",
+      "type": "IMMUTABLE_REPOSITORY_READ",
+      "path": "workstreams/po03/control/recovery-state.json",
+      "sha256": "c037922d04c48aaa3d6dffeb55863e503939b262c6d0205c0c4013c10045bbd6",
+      "bytes": 39498,
+      "claim": "The recovery snapshot records observed_provider_concurrency 8, active_provider_runs 7, registered 64, completed_durable 12 and independently_accepted 12 for Wave A.",
+      "verification": "Read through git show at the immutable commit.",
+      "match": "EXACT",
+      "used_for": "The observed producer concurrency ceiling of 8 and the queue_cap primary value of 8."
+    },
+    {
+      "id": "SC-018-11",
+      "type": "IMMUTABLE_REPOSITORY_READ",
+      "path": "workstreams/po03/metrics/work-unit-runs.jsonl",
+      "sha256": "aaea0dcfd37f39008a79aeda00d591389d47547be4225a5ea6fb09c4a91df04f",
+      "bytes": 14967,
+      "claim": "Twelve metric rows are recorded. Three declare first_pass_outcome PASS and eight declare a FAIL or FAIL_THEN_REPAIRED first pass; self-detected defects total 27 and rework cycles total 20 across the rows carrying integer values.",
+      "verification": "Read through git show and aggregated by calibrate_from_repository.py.",
+      "match": "EXACT",
+      "used_for": "Context on producer self-detection, recorded separately from the latent-defect rate because a producer-detected defect never reaches verification."
+    },
+    {
+      "id": "SC-018-12",
+      "type": "IMMUTABLE_REPOSITORY_READ",
+      "path": "workstreams/po03/control/work-unit-registry.jsonl",
+      "sha256": "10af34e02e44a1afff520eeb4c85649b58e5882288c60829e5da8af8ec7ba18e",
+      "bytes": 98922,
+      "claim": "Sixty-four registry rows carry material true, matching the registered count in the recovery snapshot.",
+      "verification": "calibration-capsule.json observed.registry_material_rows is 64.",
+      "match": "EXACT",
+      "used_for": "The wave size of 64 units per simulated wave."
+    },
+    {
+      "id": "SC-018-13",
+      "type": "ARITHMETIC_ON_IMMUTABLE_EVIDENCE",
+      "derived_from": ["SC-018-05", "SC-018-06"],
+      "claim": "One producer slot yields 3600/1295.25 = 2.7794 units per hour and one verifier slot absorbs 3600/371.083 = 9.7013 units per hour, so balance requires 3.4905 producer slots per verifier slot.",
+      "verification": "calibration-capsule.json derived block; the verifier rate also appears as the analytic ceiling the simulation's verified throughput approaches from below."
+    },
+    {
+      "id": "SC-018-14",
+      "type": "ARITHMETIC_ON_IMMUTABLE_EVIDENCE",
+      "derived_from": ["SC-018-07", "SC-018-10", "SC-018-13"],
+      "claim": "The live configuration of 8 producer slots against 1 verifier slot runs at 8/3.4905 = 2.292 times the balanced ratio implied by its own measured service times.",
+      "verification": "Arithmetic on the two preceding claims; asserted independently of the simulation."
+    },
+    {
+      "id": "SC-018-15",
+      "type": "IMMUTABLE_REPOSITORY_READ",
+      "path": "workstreams/po03/contracts/transactional-result.schema.json",
+      "sha256": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1",
+      "bytes": 4618,
+      "claim": "The seeded transactional result contract requires the attempt envelope fields attempt_id, idempotency_key, lease_id, fence_token, provider_run_id, worker_id and checkpoint_seq, constrains fence_token to an integer of at least 1, and enumerates the permitted obzio_state values.",
+      "verification": "Hash matched the transactional_schema_sha256 declared in the immutable task input.",
+      "match": "EXACT",
+      "used_for": "The shape of the transactional_result block embedded in ready-to-commit.json."
+    },
+    {
+      "id": "SC-018-16",
+      "type": "IMMUTABLE_REPOSITORY_READ",
+      "path": "workstreams/po03/tools/validate_contracts.py",
+      "sha256": "ead7d6c78c1f60aaf5440db7fc00fc2ae57d773647ed3b24c279d1a59b43da03",
+      "claim": "The seeded contract validator is present unmodified at the producer base.",
+      "verification": "Hash matched the validator_sha256 declared in the immutable task input.",
+      "match": "EXACT"
+    },
+    {
+      "id": "SC-018-17",
+      "type": "IMMUTABLE_REPOSITORY_READ",
+      "path": "workstreams/po03/contracts/wave-compounding.schema.json",
+      "sha256": "5278cb6bc4e7f41a5d513d4a00427a1ed199a21459025c7fa96fb97d56439360",
+      "claim": "The seeded wave compounding schema is present unmodified at the producer base.",
+      "verification": "Hash matched the wave_schema_sha256 declared in the immutable task input.",
+      "match": "EXACT"
+    },
+    {
+      "id": "SC-018-18",
+      "type": "IMMUTABLE_REPOSITORY_READ",
+      "path": "workstreams/po03/tests/test_validate_contracts.py",
+      "sha256": "401a684c0a2d3817d08a76044a331f0f241b16d687d2dd12d9ea0f31612dc112",
+      "claim": "The seeded contract test suite is present unmodified at the producer base.",
+      "verification": "Hash matched the seed_tests_sha256 declared in the immutable task input.",
+      "match": "EXACT"
+    },
+    {
+      "id": "SC-018-19",
+      "type": "IMMUTABLE_REPOSITORY_READ",
+      "path": ".github/workflows/po03-contracts.yml",
+      "sha256": "427949c07d93fe69bea6485a91ca58c4297be21759e6b0b00a0e5cc9f450c7cb",
+      "claim": "The seeded contracts workflow is present unmodified at the producer base.",
+      "verification": "Hash matched the workflow_sha256 declared in the immutable task input.",
+      "match": "EXACT"
+    },
+    {
+      "id": "SC-018-20",
+      "type": "IMMUTABLE_REPOSITORY_READ",
+      "paths": ["AGENTS.md", "operations/README.md"],
+      "sha256": [
+        "4b44b6ab71e32c3ab9f2b5e83c8f6bba7ed7274593e289a15e2fbee68b183e68",
+        "ba4ee8f99931f34a2885afea274f20d3a512607b5ddbf52b44c529f2272f2e91"
+      ],
+      "claim": "The repository-wide operator instructions require resolving the current operator-system pointer from operations/README.md before acting, preserving the active v010 execution, keeping hash-pinned launch evidence byte-identical, and running scripts/check_operator_taxonomy.py before commit.",
+      "verification": "Read at the immutable commit; the taxonomy gate was executed and its result is recorded in tests.json.",
+      "match": "EXACT"
+    },
+    {
+      "id": "SC-018-21",
+      "type": "MODELLING_CHOICE_NOT_EVIDENCE",
+      "claim": "The detection-power curve power(w) = P * (1 - exp(-k*w/W)) / (1 - exp(-k)) with k = 3.0, the downstream discovery probability of 0.5, the discovery delay of 3600 seconds, and the four promotion policies themselves are modelling choices with no repository measurement behind them.",
+      "verification": "NOT_APPLICABLE",
+      "status": "NOT_SUPPORTED_BY_EVIDENCE",
+      "handling": "Declared as a modelling choice in preregistration.json, swept in the sensitivity table over k in {1.0, 3.0, 8.0} and discovery probability in {0.25, 0.5, 1.0}, and listed in limitations.json. The concave form is the choice least favourable to the hypothesis because it lets partial verification retain most of its power."
+    }
+  ],
+  "exclusions": [
+    "No PO-01 path, branch, artifact or narrative was read or written.",
+    "Pull request 8 and the branch cursor/setup-dev-environment-b5ce were not read as evidence and not touched.",
+    "state/**, dispatch/** and .cursor/environment.json were not written; operations/README.md and the operator pointers were read only.",
+    "No secret, credential or environment value was read into any artifact; the calibration capsule is asserted free of model names, provider identifiers and URLs by test_capsule_carries_no_prohibited_field.",
+    "Other Wave A unit results were not used as evidence for the safety-throughput question."
+  ],
+  "decision_changed": []
+}

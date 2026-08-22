@@ -1,0 +1,86 @@
+{
+  "hypotheses_version": "OBZIO-WA-018-HYPOTHESES-v1",
+  "task_id": "PO03-WA-018",
+  "attempt_id": "PO03-WA-018-A02",
+  "state_separation_note": "Hypotheses are kept separate from source claims, from the sanitized reproduction, from mechanism changes and from strategy proposals. A hypothesis here is a frozen falsifiable statement, not a finding and not a proposal.",
+  "primary": {
+    "id": "H-PO03-WA-018",
+    "statement": "Increasing concurrency without proportional verification capacity creates a measurable false-green or recovery penalty.",
+    "source": "immutable task input workstreams/po03/control/inputs/wave-a/wa-018-a02.json",
+    "frozen_before_first_execution": true,
+    "frozen_in_commit": "0c7413f",
+    "outcome": "SUPPORTED"
+  },
+  "current_method_hypothesis_count": 0,
+  "current_method_hypothesis_note": "The immutable task input sets minimum_current_method_hypotheses to 0 and no external retrieval route was exposed to this runner, so no external-method hypothesis is claimed. Every hypothesis below is derived from repository-native evidence.",
+  "derived": [
+    {
+      "id": "H-018-1",
+      "statement": "Under a blocking verification gate, raising concurrency above the balanced ratio with verifier count fixed produces zero false greens and a material increase in verification wait and time-to-detect.",
+      "frozen_before_first_execution": true,
+      "predicted": "SUPPORTED",
+      "outcome": "SUPPORTED"
+    },
+    {
+      "id": "H-018-2",
+      "statement": "Under a deadline-driven bypass, raising concurrency above the balanced ratio with verifier count fixed produces a material false-green count.",
+      "frozen_before_first_execution": true,
+      "predicted": "SUPPORTED",
+      "outcome": "SUPPORTED"
+    },
+    {
+      "id": "H-018-3",
+      "statement": "Under capacity-driven sampling, raising concurrency above the balanced ratio with verifier count fixed produces a material false-green count.",
+      "frozen_before_first_execution": true,
+      "predicted": "SUPPORTED",
+      "outcome": "SUPPORTED"
+    },
+    {
+      "id": "H-018-4",
+      "statement": "Under truncated verification that preserves pace by shortening each verification, raising concurrency above the balanced ratio with verifier count fixed produces a material false-green count without a material queue backlog.",
+      "frozen_before_first_execution": true,
+      "predicted": "SUPPORTED",
+      "outcome": "SUPPORTED"
+    },
+    {
+      "id": "H-018-5",
+      "statement": "The null control that raises concurrency and verifier count together at the constant balanced ratio shows no penalty above materiality in any channel.",
+      "frozen_before_first_execution": true,
+      "predicted": "SUPPORTED",
+      "outcome": "PARTIALLY_SUPPORTED",
+      "prediction_wrong": true,
+      "why_prediction_was_wrong": "I expected the balanced ratio to be a safe operating point. It is not: three of four policies breach the latency SLO at the low rungs and two leak false greens at balance, because balancing by mean service times leaves no headroom for the observed burstiness."
+    },
+    {
+      "id": "H-018-6",
+      "statement": "Verified throughput saturates at a finite concurrency for every fixed verifier count, so nominal throughput gained above the safety frontier is not verified throughput.",
+      "frozen_before_first_execution": true,
+      "predicted": "SUPPORTED",
+      "outcome": "SUPPORTED"
+    },
+    {
+      "id": "H-018-7",
+      "statement": "Proportional verification capacity counted in slots is sufficient to prevent false greens even when the verification work applied per slot is degraded.",
+      "frozen_before_first_execution": true,
+      "predicted": "REFUTED",
+      "outcome": "REFUTED",
+      "note": "Stated in the direction I expected to fail so that failing it would be informative rather than convenient."
+    },
+    {
+      "id": "H-018-8",
+      "statement": "The live PO-03 Wave A configuration sits above the balanced ratio implied by its own measured service times.",
+      "frozen_before_first_execution": true,
+      "predicted": "SUPPORTED",
+      "outcome": "SUPPORTED",
+      "determination": "arithmetic on the frozen calibration capsule, not simulation"
+    }
+  ],
+  "added_after_first_execution": [],
+  "prediction_accuracy": {
+    "predictions_made": 8,
+    "predictions_correct": 7,
+    "predictions_wrong": 1,
+    "wrong": ["H-018-5"]
+  },
+  "decision_changed": []
+}

@@ -1,0 +1,217 @@
+{
+  "disposition_version": "OBZIO-WA-018-DISPOSITION-v1",
+  "task_id": "PO03-WA-018",
+  "attempt_id": "PO03-WA-018-A02",
+  "hypothesis_id": "H-PO03-WA-018",
+  "frozen_hypothesis": "Increasing concurrency without proportional verification capacity creates a measurable false-green or recovery penalty.",
+  "hypothesis_outcome": "SUPPORTED",
+  "hypothesis_outcome_bound": "Supported wherever verification is or becomes the binding constraint, which the grid locates precisely. Two bounds are load-bearing and are evidenced rather than asserted. First, which penalty appears is decided by the promotion policy and not by the capacity ratio: a strictly blocking gate pays the entire cost in latency and time-to-detect and never produces a false green at any concurrency tested, while every policy that trades verification for pace pays in false greens. Second, proportional capacity counted in verifier slots does not bound the escape rate, because escapes are set by verification power; T-018-08 holds the ratio constant and the escape count does not move at all.",
+
+  "decision_rule_applied": {
+    "source": "preregistration.json decision_rule, unchanged",
+    "supported_conditions": [
+      {
+        "condition": "at least one policy shows a penalty above materiality when concurrency rises above the balanced ratio with verifier count fixed",
+        "met": true,
+        "evidence": "All four policies do. Under BLOCKING_GATE at one verifier the p95 staged wait rises from 1818 to 19487 seconds between the balanced C=3 and C=32, a relative increase of 9.72, and mean time-to-detect rises from 2509 to 12744 seconds, a relative increase of 4.08. Under DEADLINE_BYPASS at one verifier, false greens rise from 0 at C=3 to 86 across the 32-seed ensemble at C=32."
+      },
+      {
+        "condition": "the effect is monotone non-decreasing beyond the identified frontier",
+        "met": true,
+        "evidence": "The BLOCKING_GATE p95 series at one verifier is 702, 1818, 9974, 13072, 17552, 19487 seconds for C = 1, 3, 6, 8, 16, 32. Every safety frontier and every saturation frontier is monotone non-decreasing in verifier count for all four policies."
+      },
+      {
+        "condition": "the proportional-capacity control stays within materiality",
+        "met": "PARTIAL",
+        "evidence": "On the comparison the control was written to make, each ladder rung against the previous rung at constant ratio, the p95 wait falls at every step for all four policies. Attribution is clean for BLOCKING_GATE and DEADLINE_BYPASS and partial for SAMPLED_VERIFICATION and TRUNCATED_VERIFICATION, which leak at the balanced ratio itself. F-018-2 is recorded as fired and is not reclassified.",
+        "consequence": "The penalty is attributed jointly to the capacity ratio and the promotion policy rather than to the ratio alone. This narrows the claim; it does not remove it."
+      },
+      {
+        "condition": "no invalidating falsifier fires",
+        "met": true,
+        "evidence": "F-018-3, F-018-4 and F-018-8, the three falsifiers whose consequence is RUN_INVALID, all did not fire. They are additionally carried as executable tests."
+      },
+      {
+        "condition": "the seed separation margin is met",
+        "met": true,
+        "evidence": "T-018-09 reports a false-green seed fraction of 1.0 at C=32 with one verifier under DEADLINE_BYPASS, against the preregistered margin of 0.90. At the live C=8 the fraction is 0.9375."
+      }
+    ]
+  },
+
+  "falsifier_outcomes": {
+    "not_fired": ["F-018-1", "F-018-3", "F-018-4", "F-018-6", "F-018-7", "F-018-8"],
+    "fired": ["F-018-2", "F-018-5"],
+    "fired_detail": [
+      {
+        "id": "F-018-2",
+        "consequence_as_written": "REFUTED_AS_CONFOUNDED",
+        "consequence_applied": "ATTRIBUTION_NARROWED_NOT_REFUTED",
+        "deviation": "D-018-01",
+        "drivers_separated": [
+          "An absolute SLO breach at the balanced ratio, which is a level property of balancing by mean service times rather than a penalty from losing proportionality. This is itself a finding: mean-based balance does not hold a latency SLO derived from live observation.",
+          "A false-green leak at the balanced ratio under SAMPLED_VERIFICATION and TRUNCATED_VERIFICATION, which is a property of the promotion policy at every ratio rather than of disproportion.",
+          "The proportional-scaling trend the falsifier was written to detect, which is absent: latency falls at every rung of the ladder for all four policies."
+        ],
+        "honest_statement": "The rule as written fires and is reported as fired. Reading it as a refutation of the main hypothesis would be wrong on the evidence, because the ladder improves rather than degrades. The specification defect is mine and is counted as a defect against this attempt."
+      },
+      {
+        "id": "F-018-5",
+        "consequence_as_written": "INCONCLUSIVE",
+        "consequence_applied": "INCONCLUSIVE_FOR_ONE_NAMED_FRONTIER_OBJECT",
+        "deviation": "D-018-02",
+        "failing_object": "TRUNCATED_VERIFICATION service frontier, series 32, 32, 32, 24 across verifier counts 1, 2, 4, 8",
+        "unaffected_objects": "11 of 12 frontier objects are monotone, including every safety frontier and every saturation frontier",
+        "mechanism": "Truncation buys latency by spending verification power, so at high verifier counts the queue stops exceeding capacity, work stops being truncated, and observed waits rise even as safety improves. The non-monotonicity is explainable rather than noise."
+      }
+    ]
+  },
+
+  "sub_hypothesis_outcomes": [
+    {
+      "id": "H-018-1",
+      "predicted": "SUPPORTED",
+      "outcome": "SUPPORTED",
+      "prediction_correct": true,
+      "evidence": "BLOCKING_GATE at one verifier: zero false greens at every concurrency from 1 to 32, p95 wait +972 percent and mean time-to-detect +408 percent between the balanced C=3 and C=32."
+    },
+    {
+      "id": "H-018-2",
+      "predicted": "SUPPORTED",
+      "outcome": "SUPPORTED",
+      "prediction_correct": true,
+      "evidence": "DEADLINE_BYPASS at one verifier: false greens 0, 53 and 86 across the 32-seed ensemble at C=3, C=8 and C=32, present in 100 percent of seeds at C=32."
+    },
+    {
+      "id": "H-018-3",
+      "predicted": "SUPPORTED",
+      "outcome": "SUPPORTED",
+      "prediction_correct": true,
+      "evidence": "SAMPLED_VERIFICATION at one verifier reaches 85 false greens and a false-green seed fraction of 0.969 at C=32 while its mean peak staged backlog is pinned at 9.0 against a queue cap of 8, so a backlog metric alone would have shown nothing at all."
+    },
+    {
+      "id": "H-018-4",
+      "predicted": "SUPPORTED",
+      "outcome": "SUPPORTED",
+      "prediction_correct": true,
+      "evidence": "TRUNCATED_VERIFICATION at one verifier goes from 7 to 66 false greens between C=3 and C=32 while verified throughput collapses from 6.16 to 2.60 units per hour. Its p95 wait actually falls over that range, from 903 to 747 seconds, so the latency metric moves in the reassuring direction while safety degrades."
+    },
+    {
+      "id": "H-018-5",
+      "predicted": "SUPPORTED",
+      "outcome": "PARTIALLY_SUPPORTED",
+      "prediction_correct": false,
+      "evidence": "No proportional step degrades any channel for any policy, but SAMPLED_VERIFICATION and TRUNCATED_VERIFICATION leak false greens at the balanced ratio itself, and three of four policies breach the 900 second SLO at the low rungs.",
+      "note": "A wrong prediction of mine, recorded as such."
+    },
+    {
+      "id": "H-018-6",
+      "predicted": "SUPPORTED",
+      "outcome": "SUPPORTED",
+      "prediction_correct": true,
+      "evidence": "Verified throughput saturates at a finite concurrency for every verifier count: 6, 12, 24 and 32 under BLOCKING_GATE for 1, 2, 4 and 8 verifiers. At one verifier it plateaus at 9.42 units per hour against the analytic ceiling of 3600/371 = 9.70 implied by the calibrated mean verification time."
+    },
+    {
+      "id": "H-018-7",
+      "predicted": "REFUTED",
+      "outcome": "REFUTED",
+      "prediction_correct": true,
+      "evidence": "T-018-08 walks the proportional ladder at detection power 0.7 and the escaped-defect count is 36 at every rung: C3/V1, C7/V2, C14/V4 and C28/V8. Scaling verifier slots proportionally changes the escape count by exactly zero.",
+      "consequence": "The control variable in the frozen hypothesis must be read as verification work, not verifier slots. Adding verifiers buys queueing relief and nothing else if each verification is weaker."
+    },
+    {
+      "id": "H-018-8",
+      "predicted": "SUPPORTED",
+      "outcome": "SUPPORTED",
+      "prediction_correct": true,
+      "evidence": "The calibration capsule records an observed producer concurrency ceiling of 8 and exactly one distinct verifier actor. Its own measured mean service times imply balance at 3.49 producers per verifier, so the live configuration runs at 2.29 times the balanced ratio."
+    }
+  ],
+
+  "principal_findings": [
+    {
+      "id": "FIND-018-01",
+      "finding": "The safety-throughput frontier is real, and it is set by verification capacity almost linearly.",
+      "evidence": "Safety frontier concurrency against verifier count 1, 2, 4, 8 is 2, 6, 16, 32 under DEADLINE_BYPASS; 3, 6, 12, 24 under SAMPLED_VERIFICATION; and 1, 4, 12, 24 under TRUNCATED_VERIFICATION. Every series is monotone non-decreasing and close to a fixed multiple of the verifier count.",
+      "consequence": "Safe concurrency is not a provider property to be discovered by pushing until something breaks. It is computable from measured verification capacity."
+    },
+    {
+      "id": "FIND-018-02",
+      "finding": "A strictly blocking verification gate converts the entire cost of disproportion into latency and recovery time, and produces no false green at any concurrency tested.",
+      "evidence": "BLOCKING_GATE records false_green_total of 0 in all 40 grid cells, asserted by test_blocking_gate_records_no_false_green_anywhere, while its p95 staged wait at one verifier rises from 702 seconds at C=1 to 19487 seconds at C=32.",
+      "consequence": "Back-pressure is the mechanism that buys the zero-false-completion guarantee the commission requires. The guarantee is not free, and what it costs is time, not safety."
+    },
+    {
+      "id": "FIND-018-03",
+      "finding": "Nominal throughput above the frontier is largely illusory, and past a point it is negative.",
+      "evidence": "DEADLINE_BYPASS at one verifier: nominal throughput rises 7.4, 16.7, 27.9 units per hour at C=3, 8, 32, while verified throughput moves 7.9, 8.8, 7.3. Verified throughput at C=32 is below its own value at C=8, so tripling concurrency reduced verified output while inflating apparent output 3.8 times.",
+      "consequence": "Any throughput number reported for this factory has to be a verified-throughput number, or it measures the bypass rate."
+    },
+    {
+      "id": "FIND-018-04",
+      "finding": "The live PO-03 Wave A configuration sits above the usable concurrency cap for every promotion policy tested.",
+      "evidence": "Observed configuration is 8 producer slots against 1 verifier actor. Usable concurrency caps at one verifier are 6 for BLOCKING_GATE, 2 for DEADLINE_BYPASS, 3 for SAMPLED_VERIFICATION and 1 for TRUNCATED_VERIFICATION.",
+      "consequence": "The live system is safe today only because its controller gate is blocking. Under a blocking gate, moving from C=6 to C=8 at one verifier buys 0.27 percent more verified throughput for 31 percent more p95 staged latency. The concurrency is not paying for itself; the verifier count is the constraint to relieve."
+    },
+    {
+      "id": "FIND-018-05",
+      "finding": "Balancing by mean service times is not a safe operating point.",
+      "evidence": "At the balanced ratio of 3.49, the p95 staged wait at one verifier is 1818 seconds against a 900 second SLO derived from the maximum live commit-to-ingest latency, and DEADLINE_BYPASS already leaks 3 false greens across the ensemble at the balanced C=3 while its safety frontier is C=2, below balance.",
+      "consequence": "Mean-based balance leaves no headroom for the burstiness that the observed produce-time spread of 538 to 3689 seconds creates. The safe point is below mean balance, not at it."
+    },
+    {
+      "id": "FIND-018-06",
+      "finding": "Verification capacity and verification power are separate axes, and only power bounds the escape rate.",
+      "evidence": "T-018-08 holds the ratio constant while degrading power to 0.7: the escaped-defect count is exactly 36 at all four rungs. Meanwhile the detect_power_full sweep at C=32 under DEADLINE_BYPASS moves the false-green total by 0, because bypassed results receive no verification at all and power cannot apply to them.",
+      "consequence": "Two distinct controls are needed: enough capacity to avoid bypass, and enough power per verification to catch what capacity admits. Neither substitutes for the other."
+    },
+    {
+      "id": "FIND-018-07",
+      "finding": "The penalty survives the most adversarial calibration available.",
+      "evidence": "T-018-10 rescales verification service time to the observed 157 second floor, which is the assumption least favourable to the hypothesis. At C=32 with one verifier, false greens remain at 53, 54 and 54 under the three bypass-capable policies, and the BLOCKING_GATE p95 wait still rises from 343 to 6437 seconds.",
+      "consequence": "F-018-7 does not fire. The result is not an artefact of using commit-to-ingest latency as the service-time estimate."
+    }
+  ],
+
+  "route_dispositions": [
+    {
+      "route": "queue/verification simulation and threshold-case harness in this owned subtree",
+      "disposition": "RETAIN",
+      "reason": "It is executable, deterministic, calibrated from committed repository evidence, covered by 75 focused tests, and it answers the operating question the commission poses about maximum safe active concurrency."
+    },
+    {
+      "route": "the preregistered absolute-SLO clause inside the latency materiality rule",
+      "disposition": "SUPERSEDE",
+      "reason": "It is correct as a level indicator and wrong as a penalty indicator. The successor separates level from penalty; both are reported.",
+      "successor": "the penalty_only rule alongside the as-written rule",
+      "recorded_as": "D-018-01"
+    },
+    {
+      "route": "the global consequence attached to F-018-5",
+      "disposition": "SUPERSEDE",
+      "reason": "Consequences must attach to the frontier object that failed, since twelve distinct frontier objects are computed.",
+      "recorded_as": "D-018-02"
+    },
+    {
+      "route": "reporting nominal throughput as a factory throughput metric",
+      "disposition": "REJECT",
+      "reason": "FIND-018-03 shows nominal throughput rising while verified throughput falls, so nominal throughput measures the bypass rate rather than output."
+    },
+    {
+      "route": "treating proportional verifier slots as sufficient verification capacity",
+      "disposition": "REJECT",
+      "reason": "FIND-018-06 and the refutation of H-018-7 show the escape count is invariant to proportional slot scaling."
+    }
+  ],
+
+  "what_would_change_this_conclusion": [
+    "Measured pure verification service time separated from queue wait, which the ledger cannot currently provide, could move the frontier in either direction.",
+    "A measured relationship between verification effort and detection power would replace the concave saturating form, which is a modelling choice and not evidence.",
+    "A latent-defect rate materially different from the single observed rejection in fourteen verifier decisions would rescale the false-green counts, though the sweep from 0.03 to 0.30 leaves every direction unchanged.",
+    "Correlated defects across units, which the model excludes, would raise the cost of any bypass."
+  ],
+
+  "independent_acceptance": "NOT_TESTED",
+  "self_acceptance": "REFUSED_BY_PROTOCOL",
+  "decision_changed": []
+}

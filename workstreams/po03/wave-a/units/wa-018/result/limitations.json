@@ -1,0 +1,161 @@
+{
+  "limitations_version": "OBZIO-WA-018-LIMITATIONS-v1",
+  "task_id": "PO03-WA-018",
+  "attempt_id": "PO03-WA-018-A02",
+  "limitation_count": 22,
+  "limitations": [
+    {
+      "id": "LIM-PO03-WA-018-01",
+      "class": "MODEL_NOT_MEASUREMENT",
+      "limitation": "This unit is a simulation calibrated from repository evidence, not a measurement of the live factory under high concurrency. It establishes what follows from the calibrated service times, defect rate and promotion policies; it does not observe a false green actually occurring in production.",
+      "consequence": "Every quantitative frontier value is conditional on the model. The direction of every effect is robust across the sweeps; the exact frontier numbers are not measurements."
+    },
+    {
+      "id": "LIM-PO03-WA-018-02",
+      "class": "UNOBSERVABLE_PARAMETER",
+      "limitation": "Pure verification service time cannot be separated from queue wait in the event ledger. The commit-to-ingest interval used as the service-time population bounds service time from above.",
+      "status": "NOT_SEPARATELY_OBSERVABLE",
+      "mitigation": "Case T-018-10 rescales the population to the observed 157 second floor, the least favourable assumption for the hypothesis, and the penalty persists with 53, 54 and 54 false greens at C=32 under the three bypass-capable policies.",
+      "residual": "The absolute frontier positions would shift if true service time is far below the floor-scaled variant."
+    },
+    {
+      "id": "LIM-PO03-WA-018-03",
+      "class": "SMALL_SAMPLE",
+      "limitation": "The produce-time and verification-latency populations each contain 12 samples, and the latent-defect rate rests on a single observed rejection in 14 verifier decisions.",
+      "mitigation": "The distributions are used as bootstrap populations rather than fitted laws, and the defect rate is swept from 0.0 to 0.30. No reported direction changes across the sweep.",
+      "residual": "A defect rate outside the swept range, or a produce-time distribution with a heavier tail than observed, would rescale the false-green counts."
+    },
+    {
+      "id": "LIM-PO03-WA-018-04",
+      "class": "MODELLING_CHOICE",
+      "limitation": "The relationship between verification work applied and detection power has no repository measurement behind it. The concave saturating form with k = 3.0 is a choice.",
+      "status": "NOT_SUPPORTED_BY_EVIDENCE",
+      "mitigation": "The form is declared in the preregistration, k is swept over 1.0, 3.0 and 8.0, and the concave shape is the choice least favourable to the hypothesis because it lets partial verification keep most of its power.",
+      "residual": "If detection power collapses faster than concavely with reduced effort, truncated verification is worse than reported, not better."
+    },
+    {
+      "id": "LIM-PO03-WA-018-05",
+      "class": "MODELLING_CHOICE",
+      "limitation": "The four promotion policies are constructed archetypes. The live controller implements a blocking gate; the other three are hypothetical futures, not observed behaviour.",
+      "consequence": "Findings about deadline bypass, sampling and truncation are conditional claims about what those policies would do, not descriptions of the current system."
+    },
+    {
+      "id": "LIM-PO03-WA-018-06",
+      "class": "MODELLING_CHOICE",
+      "limitation": "Downstream discovery of an escaped defect is modelled as a fixed probability of 0.5 after a fixed delay of 3600 seconds, and rework is modelled as one non-defective unit of mean producer work.",
+      "mitigation": "Discovery probability is swept over 0.25, 0.5 and 1.0; the false-green totals are unchanged because discovery affects only the recovery channel.",
+      "residual": "Real recovery cost is likely to be heavier-tailed and may itself be defective, which would understate the recovery penalty here."
+    },
+    {
+      "id": "LIM-PO03-WA-018-07",
+      "class": "EXCLUDED_FROM_MODEL",
+      "limitation": "Correlated defects across units are not modelled. Each unit's latent defect is drawn independently.",
+      "consequence": "A shared-cause defect class, which is exactly what a systemic factory failure looks like, would make every bypass regime worse than reported. This limitation biases the result against the hypothesis, not for it."
+    },
+    {
+      "id": "LIM-PO03-WA-018-08",
+      "class": "EXCLUDED_FROM_MODEL",
+      "limitation": "Producer contention for shared machine resources, verifier learning or fatigue, per-unit human review depth, and provider-side queueing outside the controller are all excluded.",
+      "consequence": "The model treats concurrency as free on the producer side, so it understates the cost of high concurrency."
+    },
+    {
+      "id": "LIM-PO03-WA-018-09",
+      "class": "PREREGISTRATION_DEFECT",
+      "limitation": "The preregistered latency materiality rule mixed an absolute SLO clause with a relative penalty rule, which caused falsifier F-018-2 to fire on the control ladder for a reason unrelated to proportional scaling.",
+      "handling": "Recorded as deviation D-018-01 and mechanism change MC-018-02. The fired verdict is reported as fired and is not reclassified. Counted as a defect against this attempt.",
+      "residual": "A reviewer applying the preregistered rule literally and without the decomposition would label this result REFUTED as confounded."
+    },
+    {
+      "id": "LIM-PO03-WA-018-10",
+      "class": "PREREGISTRATION_DEFECT",
+      "limitation": "Falsifier F-018-5 attached a global consequence to a set of twelve distinct frontier objects.",
+      "handling": "Recorded as deviation D-018-02 and mechanism change MC-018-03. F-018-5 is reported as fired and the failing object is named with its series.",
+      "residual": "The truncated-verification service frontier remains INCONCLUSIVE."
+    },
+    {
+      "id": "LIM-PO03-WA-018-11",
+      "class": "SCOPE_BOUND",
+      "limitation": "The hypothesis is supported only where verification is or becomes the binding constraint. In the slack region, case T-018-01 with 8 verifiers and concurrency from 1 to 8, no channel is material.",
+      "consequence": "A reader who insists on the strictly unconditional reading of the frozen hypothesis should treat the slack region as refuting that stronger claim. This reading was chosen and recorded in the preregistration before execution, not afterwards."
+    },
+    {
+      "id": "LIM-PO03-WA-018-12",
+      "class": "ATTRIBUTION_BOUND",
+      "limitation": "Attribution of the penalty to lost proportionality is clean only for the blocking gate and deadline bypass. Sampled and truncated verification leak false greens at the balanced ratio itself.",
+      "consequence": "The claim retained is the narrower joint claim that the penalty is set by the capacity ratio together with the promotion policy."
+    },
+    {
+      "id": "LIM-PO03-WA-018-13",
+      "class": "GRID_BOUND",
+      "limitation": "The blocking-gate safety frontier is reported as the grid maximum of 32 at every verifier count, which means no upper bound was found within the grid rather than that none exists.",
+      "flagged_in_output": "safety_frontier_is_grid_maximum is true for those cells."
+    },
+    {
+      "id": "LIM-PO03-WA-018-14",
+      "class": "DEFINITIONAL",
+      "limitation": "False greens are counted as escapes from incomplete verification, while escapes missed by complete verification are counted separately under escaped_defect_count. A reader who counts all escapes as false greens will read different numbers.",
+      "mitigation": "Both channels are reported for every grid cell and every case, the definitions are recorded in the simulator's MEASUREMENT_DEFINITIONS, and that definition was committed before any configuration was executed."
+    },
+    {
+      "id": "LIM-PO03-WA-018-15",
+      "class": "DEFINITIONAL",
+      "limitation": "The verification wait metric measures staged-to-promotion latency, so under deadline bypass it is capped at the deadline by construction and cannot exceed it.",
+      "consequence": "Latency comparisons across policies are not like-for-like; only within-policy latency comparisons across concurrency are meaningful."
+    },
+    {
+      "id": "LIM-PO03-WA-018-16",
+      "class": "MEASUREMENT_PRECISION",
+      "limitation": "Ledger timestamps are second-resolution and several producer transitions were recorded at minute precision, so short calibrated durations carry up to 60 seconds of quantisation error.",
+      "consequence": "The 157 second service floor is the value most affected by this."
+    },
+    {
+      "id": "LIM-PO03-WA-018-17",
+      "class": "RUNTIME_ATTESTATION",
+      "limitation": "The provider exposed no model or reasoning attestation to this runner. The requested configuration was claude-opus-5-thinking-high with high reasoning.",
+      "model_observed": "claude-opus-5",
+      "model_observed_source": "runtime self-report only",
+      "reasoning_observed": "NOT_SUPPORTED",
+      "handling": "Recorded as observed without inference. No availability or diversity is manufactured."
+    },
+    {
+      "id": "LIM-PO03-WA-018-18",
+      "class": "EXTERNAL_EVIDENCE",
+      "limitation": "No external network retrieval route was exposed, so no current-frontier external source claim is made.",
+      "status": "NOT_SUPPORTED",
+      "consistency": "The immutable task input sets minimum_current_method_hypotheses and minimum_sanitized_reproductions to 0, so nothing is claimed that the runtime could not support."
+    },
+    {
+      "id": "LIM-PO03-WA-018-19",
+      "class": "INDEPENDENCE",
+      "limitation": "The producer wrote the model, the thresholds and the evaluation of its own falsifiers. Preregistration and committed ordering constrain this but do not remove it.",
+      "status": "INDEPENDENT_ACCEPTANCE_NOT_TESTED",
+      "mitigation": "The preregistration and calibration were committed at 0c7413f and the code at dade7fa, both before any outcome existed, so the ordering is verifiable from history rather than asserted. Self-acceptance is refused by protocol."
+    },
+    {
+      "id": "LIM-PO03-WA-018-20",
+      "class": "PORTABILITY",
+      "limitation": "The suite was executed only on Linux with CPython 3.12.3 and git 2.43.0. Other platforms and interpreter versions are untested.",
+      "status": "NOT_SUPPORTED",
+      "note": "The code uses only the standard library and no third-party dependency, and the calibrator depends on git being present on PATH."
+    },
+    {
+      "id": "LIM-PO03-WA-018-21",
+      "class": "SCALE_BOUND",
+      "limitation": "Every simulated wave is 64 units, matching Wave A. The commission anticipates Wave B at 128 or more units, which was not simulated.",
+      "consequence": "The frontier values reported apply to a 64-unit wave. Makespan-derived throughput metrics would change with wave size, although the capacity ceiling would not."
+    },
+    {
+      "id": "LIM-PO03-WA-018-22",
+      "class": "PROPOSAL_STATUS",
+      "limitation": "None of the seven strategy proposals was applied. Each would touch a shared PO-03 control path, tool or metric definition that this attempt may only read.",
+      "status": "UNBOUND_PROPOSAL"
+    }
+  ],
+  "unresolved_constraints": [
+    "Verification power has no observable proxy in the current ledger, which is the main measurement gap this unit found.",
+    "Pure verification service time is not recorded, so the frontier rests on a bounded estimate rather than a measurement."
+  ],
+  "owner_blocked_acts": [],
+  "provider_blocks": [],
+  "decision_changed": []
+}
