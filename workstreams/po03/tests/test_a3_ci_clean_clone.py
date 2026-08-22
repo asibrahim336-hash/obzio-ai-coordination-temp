@@ -15,6 +15,7 @@ than asserting against a placeholder.
 
 from __future__ import annotations
 
+import contextlib
 import importlib.util
 import json
 import subprocess
@@ -154,53 +155,109 @@ class PlantedWorkflowDefectsAreCaught(unittest.TestCase):
 
 
 class BytecodePolicy(unittest.TestCase):
-    def test_the_real_checkout_carries_only_registered_bytecode(self) -> None:
-        findings = [
-            finding
-            for finding in ci_surface.check_bytecode(RULES, REPO_ROOT)
-            if finding.rule != "WARM_BYTECODE_CACHE"
-        ]
-        self.assertEqual([finding.as_dict() for finding in findings], [])
+    """The restored gate, and the evidence that restoring it did not weaken it."""
 
-    def test_registered_exceptions_are_the_paths_actually_committed(self) -> None:
-        self.assertEqual(
-            sorted(RULES["bytecode_policy"]["tracked_exceptions"]),
-            ci_surface.tracked_bytecode(REPO_ROOT),
-        )
+    def test_no_bytecode_is_committed_and_none_is_tolerated(self) -> None:
+        self.assertEqual(RULES["bytecode_policy"]["tracked_exceptions"], [])
+        self.assertEqual(ci_surface.tracked_bytecode(REPO_ROOT), [])
 
-    def test_a_warm_cache_is_detected(self) -> None:
-        with tempfile.TemporaryDirectory() as scratch:
-            root = Path(scratch)
-            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+    def test_a_committed_pyc_fails_with_the_registry_empty(self) -> None:
+        """The strength the empty registry buys, proved rather than assumed.
+
+        The registry once held two paths so that two committed caches would not
+        fail every run. With it empty, any committed .pyc is a finding -- which
+        is the whole reason the registry had to be emptied once its defect was
+        fixed upstream.
+        """
+        with self.scratch_repo() as root:
+            cache = root / "pkg" / "__pycache__"
+            cache.mkdir(parents=True)
+            committed = cache / "mod.cpython-312.pyc"
+            committed.write_bytes(b"\x00\x01")
+            subprocess.run(["git", "add", "-f", str(committed)], cwd=root, check=True)
+            findings = ci_surface.check_bytecode(RULES, root)
+            self.assertIn("UNDECLARED_TRACKED_BYTECODE", {finding.rule for finding in findings})
+
+    def test_a_warm_cache_the_repository_never_declared_is_detected(self) -> None:
+        with self.scratch_repo() as root:
             cache = root / "pkg" / "__pycache__"
             cache.mkdir(parents=True)
             (cache / "warm.cpython-312.pyc").write_bytes(b"\x00")
-            rules = json.loads(RULES_PATH.read_text(encoding="utf-8"))
-            rules["bytecode_policy"]["tracked_exceptions"] = []
-            findings = ci_surface.check_bytecode(rules, root)
+            findings = ci_surface.check_bytecode(RULES, root)
             self.assertEqual([finding.rule for finding in findings], ["WARM_BYTECODE_CACHE"])
 
+    def test_bytecode_the_repository_declares_is_not_a_warm_cache(self) -> None:
+        """The narrowing, and why it removed noise rather than strength.
+
+        A gitignored ``__pycache__`` in a working checkout is declared build
+        output. Counting it made the finding total a function of how many
+        modules had been imported, which is why one checkout reported 165 and
+        another 226 from the same tree.
+        """
+        with self.scratch_repo() as root:
+            (root / ".gitignore").write_text("__pycache__/\n*.pyc\n", encoding="utf-8")
+            cache = root / "pkg" / "__pycache__"
+            cache.mkdir(parents=True)
+            (cache / "warm.cpython-312.pyc").write_bytes(b"\x00")
+            self.assertEqual(ci_surface.check_bytecode(RULES, root), [])
+
+    def test_the_stronger_claim_is_still_available_and_still_fires(self) -> None:
+        """What replaced the narrowed rule, at the only point it is a true claim."""
+        with self.scratch_repo() as root:
+            (root / ".gitignore").write_text("__pycache__/\n*.pyc\n", encoding="utf-8")
+            cache = root / "pkg" / "__pycache__"
+            cache.mkdir(parents=True)
+            (cache / "warm.cpython-312.pyc").write_bytes(b"\x00")
+            findings = ci_surface.check_bytecode(RULES, root, require_pristine=True)
+            self.assertEqual(
+                [finding.rule for finding in findings], ["BYTECODE_BEFORE_FIRST_IMPORT"]
+            )
+
+    def test_the_clean_runner_workflow_makes_the_stronger_claim(self) -> None:
+        text = (REPO_ROOT / ".github" / "workflows" / "po03-clean-clone.yml").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("--require-pristine", text)
+
     def test_a_stale_exception_is_detected(self) -> None:
-        with tempfile.TemporaryDirectory() as scratch:
-            root = Path(scratch)
-            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
-            findings = ci_surface.check_bytecode(RULES, root)
+        """The mechanism that forced the retirement, still armed.
+
+        Proved against a stand-in registry rather than the real one, because the
+        real one is empty now. What is asserted is that a registered exception
+        whose defect has gone gets reported -- not that any exception is
+        currently stale.
+        """
+        with self.scratch_repo() as root:
+            rules = json.loads(RULES_PATH.read_text(encoding="utf-8"))
+            rules["bytecode_policy"]["tracked_exceptions"] = ["pkg/__pycache__/gone.pyc"]
+            findings = ci_surface.check_bytecode(rules, root)
             self.assertEqual(
                 sorted({finding.rule for finding in findings}), ["STALE_BYTECODE_EXCEPTION"]
             )
 
-    def test_the_repair_candidate_records_the_inherited_bytecode(self) -> None:
+    def test_the_repair_candidate_records_the_retirement(self) -> None:
         record = json.loads(
             (RUNTIME_DIR / "repair-candidates" / "tracked-bytecode.json").read_text(
                 encoding="utf-8"
             )
         )
-        self.assertEqual(record["disposition"], "PROPOSED_TO_COORDINATOR")
+        self.assertEqual(record["disposition"], "SUPERSEDED_BY_UPSTREAM_FIX")
+        self.assertEqual(record["disposition_detail"]["fixed_upstream_at"], "e19982d")
         self.assertFalse(record["applied_by_this_writer"])
+        self.assertEqual(record["registered_exception"]["status"], "RETIRED, now empty")
         self.assertEqual(
             RULES["bytecode_policy"]["repair_candidate"],
             "workstreams/po03/runtime/repair-candidates/tracked-bytecode.json",
         )
+        retired = {entry["path"] for entry in RULES["bytecode_policy"]["retired_exceptions"]}
+        self.assertEqual(retired, {record["affected_file"], *record["also_affected"]})
+
+    @contextlib.contextmanager
+    def scratch_repo(self):
+        with tempfile.TemporaryDirectory() as scratch:
+            root = Path(scratch)
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            yield root
 
 
 class CommandLineBehaviour(unittest.TestCase):

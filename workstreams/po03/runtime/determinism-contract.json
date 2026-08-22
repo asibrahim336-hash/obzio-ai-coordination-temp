@@ -10,9 +10,39 @@
     {
       "artifact_class": "hermeticity-report",
       "description": "Static analysis output. Contains no time and no entropy, so it must be byte-identical across runs with nothing declared volatile.",
-      "argv": ["{python}", "-I", "-B", "{repo}/workstreams/po03/runtime/hermeticity.py", "--json"],
+      "argv": [
+        "{python}",
+        "-I",
+        "-B",
+        "{repo}/workstreams/po03/runtime/hermeticity.py",
+        "--json"
+      ],
       "capture": "stdout",
-      "volatile_fields": []
+      "volatile_fields": [],
+      "expected_exit_code": "unconstrained",
+      "expected_exit_code_reason": "The prober is a gate over the whole tree, so its exit code says whether the tree currently has findings -- which is a3-u02's business and not a3-u05's. Determinism is byte-identity of the report. Pinning a number here would assert that a defect currently exists and would break the moment the routed findings landed."
+    },
+    {
+      "artifact_class": "hermeticity-report-over-a-fixed-input",
+      "description": "The same prober over the six planted fixtures rather than the tree. Byte-identity of a report whose input cannot change is the stronger claim, because a whole-tree report is trivially identical on a day when the tree is clean.",
+      "argv": [
+        "{python}",
+        "-I",
+        "-B",
+        "{repo}/workstreams/po03/runtime/hermeticity.py",
+        "--json",
+        "{repo}/workstreams/po03/runtime/fixtures/non_portable/absolute_paths.py",
+        "{repo}/workstreams/po03/runtime/fixtures/non_portable/env_dependence.py",
+        "{repo}/workstreams/po03/runtime/fixtures/non_portable/home_dependence.py",
+        "{repo}/workstreams/po03/runtime/fixtures/non_portable/import_path_mutation.py",
+        "{repo}/workstreams/po03/runtime/fixtures/non_portable/network_dependence.py",
+        "{repo}/workstreams/po03/runtime/fixtures/non_portable/temp_state.py"
+      ],
+      "capture": "stdout",
+      "expected_exit_code": 1,
+      "expected_exit_code_reason": "Nineteen planted findings, so the gate exits 1 by construction.",
+      "volatile_fields": [],
+      "argv_note": "Each fixture is named explicitly rather than the directory, because the fixture tree is excluded from discovery and only an explicitly named file bypasses that. Naming them also pins exactly what the determinism claim covers."
     },
     {
       "artifact_class": "path-scope-report",
@@ -123,7 +153,11 @@
         }
       ],
       "expected_verdict": "FAIL",
-      "expected_undeclared_variance": ["run_id", "nested.attempt_token", "items[].salt"]
+      "expected_undeclared_variance": [
+        "run_id",
+        "nested.attempt_token",
+        "items[].salt"
+      ]
     },
     {
       "artifact_class": "planted-deterministic",

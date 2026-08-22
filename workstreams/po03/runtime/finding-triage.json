@@ -1,0 +1,360 @@
+{
+  "schema": "po03-finding-triage-v1",
+  "this_writer": "po03-worker-a3",
+  "unit_ids": [
+    "a3-u02",
+    "a3-u04"
+  ],
+  "why_this_document_exists": "The gates passed on every branch that produced the integrated tree and fail on the tree itself. That is not a contradiction. Each cohort's gate ran over a tree holding only that cohort's files, and a whole-tree property is only testable once the tree is whole. GENUINE and FALSE_POSITIVE are judgements, so they live in a document a reader can argue with rather than inside the prober where they would be invisible.",
+  "observation_pin": {
+    "commit": "0b91b697525e",
+    "ref_at_observation": "origin/cursor/po03-wave-a-transactional-factory-ed20",
+    "why_pinned": "The counts below are observations of one tree at one commit, not properties of the repository. They are recorded at an immutable pin so a reader can reproduce them; nothing asserts that a later recomputation still matches, because it should not -- the point of routing these findings is that they get fixed."
+  },
+  "ci_surface_population": {
+    "note": "The CI-surface population is triaged here rather than left to the live gate, because the fix removed all of it: after the narrowing there is nothing left for the router to route. A verdict that leaves no trace in the tool's output is exactly the kind that needs writing down.",
+    "classes": [
+      {
+        "finding_class": "WARM_BYTECODE_CACHE",
+        "observed_count_coordinator": 163,
+        "observed_count_here": 226,
+        "verdict": "FALSE_POSITIVE",
+        "owner": "none",
+        "justification": "Gitignored, uncommitted __pycache__ files in a working checkout. Declared build output is not a warm cache, and the count measured how many modules had been imported rather than anything about the tree.",
+        "minimal_fix": "done in this cohort: the rule now asks git which paths the repository declares, and fires only on bytecode that is neither committed nor ignored"
+      },
+      {
+        "finding_class": "STALE_BYTECODE_EXCEPTION",
+        "observed_count_coordinator": 2,
+        "observed_count_here": 2,
+        "verdict": "GENUINE",
+        "owner": "po03-worker-a3",
+        "justification": "My own registry held tolerances for two committed .pyc files whose defect was fixed upstream at e19982d.",
+        "minimal_fix": "done in this cohort: bytecode_policy.tracked_exceptions is empty and the two entries moved to retired_exceptions with their retirement commit"
+      }
+    ],
+    "totals": {
+      "coordinator_reported": 165,
+      "genuine": 2,
+      "false_positive": 163,
+      "reproduced_here": 228,
+      "reproduced_here_note": "The 63-finding difference is entirely WARM_BYTECODE_CACHE and is the discrepancy described above.",
+      "reportable_after": 0
+    }
+  },
+  "measured_at": {
+    "hermeticity_findings_before_precision_work": 117,
+    "hermeticity_reportable_after": 17,
+    "hermeticity_exempt_by_role_after": 32,
+    "hermeticity_advisory_after": 68,
+    "hermeticity_accounting": "17 + 32 + 68 = 117. Every original finding is accounted for; none was dropped without a named reason.",
+    "ci_surface_findings_reported_by_coordinator": 165,
+    "ci_surface_findings_reproduced_here": 228,
+    "ci_surface_count_discrepancy_is_itself_a_finding": "The two counts differ because WARM_BYTECODE_CACHE fired once per __pycache__ file present, and how many are present depends on how many modules have been imported since checkout. A gate whose finding count measures how much of the suite has run measures nothing about the tree. That is why the rule was narrowed rather than the number reconciled.",
+    "ci_surface_reportable_after": 0
+  },
+  "per_class": {
+    "SYS_PATH_MUTATION": {
+      "verdict": "FALSE_POSITIVE",
+      "justification": "Downgraded to the advisory class SYS_PATH_ANCHORED. Every mutation in this tree derives its argument from __file__, which names a directory inside the clone, so a clean clone always has it; see sys_path_verdict below for the full reasoning.",
+      "minimal_fix": "none required"
+    },
+    "SYS_PATH_ANCHORED": {
+      "verdict": "FALSE_POSITIVE",
+      "justification": "Advisory only. Portable, but a position-0 insert can shadow the standard library and can change import resolution for every later test in the same discover run.",
+      "minimal_fix": "none required; importlib.util.spec_from_file_location avoids the process-global hazard where a cohort chooses to"
+    },
+    "WARM_BYTECODE_CACHE": {
+      "verdict": "FALSE_POSITIVE",
+      "justification": "The files were gitignored and uncommitted, which is what declared build output looks like; present in a working checkout is not a defect.",
+      "minimal_fix": "none required; the rule now fires only on bytecode that is neither committed nor ignored"
+    },
+    "STALE_BYTECODE_EXCEPTION": {
+      "verdict": "GENUINE",
+      "justification": "My own registry held tolerances for two committed .pyc files whose defect was fixed upstream at e19982d, and a tolerance outliving its defect is a silent hole.",
+      "minimal_fix": "empty bytecode_policy.tracked_exceptions; done in this cohort"
+    },
+    "ABS_PATH_LITERAL": {
+      "verdict": "UNTRIAGED",
+      "justification": "This class is genuine in one file and noise in another, so it is judged per file rather than per class.",
+      "minimal_fix": "NOT_YET"
+    },
+    "TEMP_PATH_LITERAL": {
+      "verdict": "UNTRIAGED",
+      "justification": "Judged per file, as above.",
+      "minimal_fix": "NOT_YET"
+    },
+    "HOME_PATH_LITERAL": {
+      "verdict": "UNTRIAGED",
+      "justification": "Judged per file, as above.",
+      "minimal_fix": "NOT_YET"
+    },
+    "ENV_READ": {
+      "verdict": "UNTRIAGED",
+      "justification": "Judged per file, as above.",
+      "minimal_fix": "NOT_YET"
+    },
+    "NETWORK_IMPORT": {
+      "verdict": "UNTRIAGED",
+      "justification": "Judged per file, as above.",
+      "minimal_fix": "NOT_YET"
+    },
+    "NETWORK_CALL": {
+      "verdict": "UNTRIAGED",
+      "justification": "Judged per file, as above.",
+      "minimal_fix": "NOT_YET"
+    },
+    "HOME_API": {
+      "verdict": "UNTRIAGED",
+      "justification": "Judged per file, as above.",
+      "minimal_fix": "NOT_YET"
+    }
+  },
+  "per_finding": [
+    {
+      "rule": "NETWORK_IMPORT",
+      "path": "workstreams/po03/metrics/probe_telemetry.py",
+      "verdict": "GENUINE",
+      "justification": "The module imports socket and opens one, so whether it finds anything depends on the host rather than on the committed tree.",
+      "minimal_fix": "Record the probe outcome as NOT_OBSERVABLE when the socket is unreachable, so the recorded evidence is identical on every host instead of varying with what happens to be listening.",
+      "disposition": "REPORTED"
+    },
+    {
+      "rule": "NETWORK_CALL",
+      "path": "workstreams/po03/metrics/probe_telemetry.py",
+      "verdict": "GENUINE",
+      "justification": "As above: a socket call whose result is host-dependent, in a module whose output is committed evidence.",
+      "minimal_fix": "Same fix. The call may stay; the recorded result must not depend on the host.",
+      "disposition": "REPORTED"
+    },
+    {
+      "rule": "ABS_PATH_LITERAL",
+      "path": "workstreams/po03/metrics/probe_telemetry.py",
+      "verdict": "GENUINE",
+      "justification": "CANDIDATE_USAGE_PATHS holds seven absolute host locations that the module actually stats, so a developer box and a clean runner produce different metrics from the same commit.",
+      "minimal_fix": "Move CANDIDATE_USAGE_PATHS into a committed JSON data file and record every candidate checked together with its NOT_OBSERVABLE outcome. A table of host locations is configuration, and configuration in code cannot be reviewed as configuration.",
+      "disposition": "REPORTED"
+    },
+    {
+      "rule": "TEMP_PATH_LITERAL",
+      "path": "workstreams/po03/metrics/probe_telemetry.py",
+      "verdict": "GENUINE",
+      "justification": "Two of those seven candidates are under /tmp, which is exactly the state outside the committed tree that the clean-runtime requirement excludes.",
+      "minimal_fix": "Same fix as ABS_PATH_LITERAL in this file.",
+      "disposition": "REPORTED"
+    },
+    {
+      "rule": "ENV_READ",
+      "path": "workstreams/po03/metrics/probe_telemetry.py",
+      "verdict": "GENUINE",
+      "justification": "The module reads ambient environment variables to discover provider telemetry, so its output is not reproducible from source alone.",
+      "minimal_fix": "Same fix: record which variables were consulted and that each was absent, rather than letting presence change the result silently.",
+      "disposition": "REPORTED"
+    },
+    {
+      "rule": "ABS_PATH_LITERAL",
+      "path": "workstreams/po03/packverify/boundary_run.py",
+      "verdict": "GENUINE",
+      "justification": "Low severity but real: /usr/bin:/bin is a platform assumption written by hand where the standard library already supplies the portable value.",
+      "minimal_fix": "os.environ.get(\"PATH\", os.defpath). Identical behaviour on POSIX, correct on any platform, and the finding goes with it.",
+      "disposition": "REPORTED"
+    },
+    {
+      "rule": "ENV_READ",
+      "path": "workstreams/po03/packverify/boundary_run.py",
+      "verdict": "FALSE_POSITIVE",
+      "justification": "The read is how the module builds a clean, fully enumerated child environment; reading PATH in order to control what a subprocess inherits is hermeticity work, not ambient dependence.",
+      "minimal_fix": "none required. Residual imprecision in my gate: there is no local signal separating a read that leaks ambient state from a read that fences it in.",
+      "disposition": "REPORTED"
+    },
+    {
+      "rule": "ABS_PATH_LITERAL",
+      "path": "workstreams/po03/successor/g2/successor.py",
+      "verdict": "FALSE_POSITIVE",
+      "justification": "/anchor is a synthetic prefix used only so os.path.normpath collapses traversal, and it is stripped again before anything touches the filesystem.",
+      "minimal_fix": "none required. Residual imprecision: os.path.join is correctly not a sink, but the sentinel is otherwise indistinguishable from a real absolute path construction without following the value.",
+      "disposition": "REPORTED"
+    },
+    {
+      "rule": "HOME_PATH_LITERAL",
+      "path": "workstreams/po03/tools/validate_contracts.py",
+      "verdict": "FALSE_POSITIVE",
+      "justification": "The ~ at line 227 is the RFC 6901 JSON Pointer escape character in _resolve_local_ref, decoding ~1 to / and ~0 to ~. It has nothing to do with a home directory and there is nothing for a12 to fix.",
+      "minimal_fix": "none required. This one was routed to a12 as genuine before the precision work, which is the clearest evidence available that an imprecise gate does not merely get ignored -- it gets believed, and sends work to a writer who has none to do.",
+      "disposition": "EXEMPT_BY_ROLE"
+    },
+    {
+      "rule": "ABS_PATH_LITERAL",
+      "path": "workstreams/po03/tests/test_control_plane.py",
+      "verdict": "FALSE_POSITIVE",
+      "justification": "Traversal fixture: a table of hostile paths fed to path_in_allowlist and asserted to be refused. A string under test, not a path the code acts on.",
+      "minimal_fix": "none required; now exempt as TEST_FIXTURE",
+      "disposition": "EXEMPT_BY_ROLE"
+    },
+    {
+      "rule": "ABS_PATH_LITERAL",
+      "path": "workstreams/po03/tests/test_a8_g2_changes.py",
+      "verdict": "FALSE_POSITIVE",
+      "justification": "An artifact record carrying an absolute path, submitted so the test can assert it is refused with OUT_OF_ALLOWLIST.",
+      "minimal_fix": "none required; now exempt as TEST_FIXTURE",
+      "disposition": "EXEMPT_BY_ROLE"
+    },
+    {
+      "rule": "ABS_PATH_LITERAL",
+      "path": "workstreams/po03/tests/test_a8_scores.py",
+      "verdict": "FALSE_POSITIVE",
+      "justification": "The literal is the right operand of an `in` test that hunts for /tmp inside a score document, so the file is enforcing the same property my gate does.",
+      "minimal_fix": "none required; now exempt as COMPARISON_OPERAND",
+      "disposition": "EXEMPT_BY_ROLE"
+    },
+    {
+      "rule": "TEMP_PATH_LITERAL",
+      "path": "workstreams/po03/tests/test_a8_scores.py",
+      "verdict": "FALSE_POSITIVE",
+      "justification": "Same literal, same reasoning. The coordinator listed this line as a genuine /tmp literal; it is a detector operand, not a location.",
+      "minimal_fix": "none required; now exempt as COMPARISON_OPERAND",
+      "disposition": "EXEMPT_BY_ROLE"
+    },
+    {
+      "rule": "ABS_PATH_LITERAL",
+      "path": "workstreams/po03/tests/test_a1_support.py",
+      "verdict": "FALSE_POSITIVE",
+      "justification": "assertNotUnderTmp compares a resolved path against /tmp/ to refuse it. Another cohort enforcing the same invariant.",
+      "minimal_fix": "none required; now exempt as COMPARISON_OPERAND",
+      "disposition": "EXEMPT_BY_ROLE"
+    },
+    {
+      "rule": "TEMP_PATH_LITERAL",
+      "path": "workstreams/po03/tests/test_a1_support.py",
+      "verdict": "FALSE_POSITIVE",
+      "justification": "Same literal, same reasoning.",
+      "minimal_fix": "none required; now exempt as COMPARISON_OPERAND",
+      "disposition": "EXEMPT_BY_ROLE"
+    },
+    {
+      "rule": "ABS_PATH_LITERAL",
+      "path": "workstreams/po03/tests/test_a4_real_defects.py",
+      "verdict": "FALSE_POSITIVE",
+      "justification": "The literal is the expected value inside assertIn, matching a /tmp path quoted in a captured stderr. Asserting that a defect's error message names /tmp is not depending on /tmp.",
+      "minimal_fix": "none required; now exempt as ASSERTION_OPERAND",
+      "disposition": "EXEMPT_BY_ROLE"
+    },
+    {
+      "rule": "TEMP_PATH_LITERAL",
+      "path": "workstreams/po03/tests/test_a4_real_defects.py",
+      "verdict": "FALSE_POSITIVE",
+      "justification": "Same literal, same reasoning.",
+      "minimal_fix": "none required; now exempt as ASSERTION_OPERAND",
+      "disposition": "EXEMPT_BY_ROLE"
+    },
+    {
+      "rule": "ABS_PATH_LITERAL",
+      "path": "workstreams/po03/tests/test_a10_control_plane_attacks.py",
+      "verdict": "FALSE_POSITIVE",
+      "justification": "Attack payloads, including /etc/passwd, handed to a historical copy of the normaliser to prove they are refused. Data by construction.",
+      "minimal_fix": "none required; now exempt as TEST_FIXTURE",
+      "disposition": "EXEMPT_BY_ROLE"
+    },
+    {
+      "rule": "ABS_PATH_LITERAL",
+      "path": "workstreams/po03/packverify/portability.py",
+      "verdict": "FALSE_POSITIVE",
+      "justification": "_MACHINE_ROOTS is that module's own table of forbidden prefixes, used only in startswith. A portability detector's pattern table is data, exactly as my own rules are.",
+      "minimal_fix": "none required; now exempt as PATTERN_TABLE",
+      "disposition": "EXEMPT_BY_ROLE"
+    },
+    {
+      "rule": "TEMP_PATH_LITERAL",
+      "path": "workstreams/po03/packverify/portability.py",
+      "verdict": "FALSE_POSITIVE",
+      "justification": "Same table, same reasoning.",
+      "minimal_fix": "none required; now exempt as PATTERN_TABLE",
+      "disposition": "EXEMPT_BY_ROLE"
+    },
+    {
+      "rule": "ABS_PATH_LITERAL",
+      "path": "workstreams/po03/packverify/run_qualification.py",
+      "verdict": "FALSE_POSITIVE",
+      "justification": "Suffix operands to endswith, f-string fragments following an interpolation, and one JSON Pointer in an RFC 6902 patch. None is a path the module opens.",
+      "minimal_fix": "none required; now exempt as COMPARISON_OPERAND, FSTRING_FRAGMENT and JSON_POINTER",
+      "disposition": "EXEMPT_BY_ROLE"
+    },
+    {
+      "rule": "TEMP_PATH_LITERAL",
+      "path": "workstreams/po03/packverify/run_qualification.py",
+      "verdict": "FALSE_POSITIVE",
+      "justification": "The /tmp inside the unified diff is the line the patch removes. A patch that quotes a defective line in order to delete it is the cure, not the disease.",
+      "minimal_fix": "none required; now exempt as DIFF_PAYLOAD",
+      "disposition": "EXEMPT_BY_ROLE"
+    },
+    {
+      "rule": "ABS_PATH_LITERAL",
+      "path": "workstreams/po03/packverify/git_tree.py",
+      "verdict": "FALSE_POSITIVE",
+      "justification": "endswith(\"/MANIFEST.json\") is a suffix pattern that merely begins with a slash.",
+      "minimal_fix": "none required; now exempt as COMPARISON_OPERAND",
+      "disposition": "EXEMPT_BY_ROLE"
+    }
+  ],
+  "sys_path_verdict": {
+    "question": "Is sys.path.insert a portability defect in this repository, or an accepted pattern?",
+    "verdict": "ACCEPTED_PATTERN. Downgraded from SYS_PATH_MUTATION to the advisory class SYS_PATH_ANCHORED when the argument derives from __file__.",
+    "population": "68 findings across 66 files, owned by a1, a4, a5, a6, a7, a8 and a10.",
+    "reasoning": [
+      "There is no installable package here. No pyproject, no setup.py, no __init__.py anywhere in workstreams/po03, and the engineering standard forbids third-party packages. So there is no import mechanism that a cohort declined to use.",
+      "The suite runs under python3 -I, which implies -P. That is the constraint I falsified during a3-u08: a script gets no script directory on sys.path, so a test cannot import a module beside it. Exactly two mechanisms remain -- mutate sys.path, or load by location with importlib.util.spec_from_file_location. Flagging one of two available mechanisms as a defect is not a portability judgement, it is a style preference wearing a gate's clothing.",
+      "The failure mode the rule was written for is an import path that a clean clone might not have: an absolute directory, a vendored sibling, a path read from the environment. Every one of the 68 derives its argument from __file__, transitively through roots such as PO03 = Path(__file__).resolve().parents[1]. A directory computed from __file__ is inside the clone by construction. The clean clone always has it, which is the whole property the rule exists to protect. I verified all 68 rather than sampling.",
+      "Routing 68 no-op fixes would have cost more than the gate is worth. Nineteen cohorts editing nineteen files to change nothing observable is how a gate loses its authority -- not because it was ignored, but because obeying it taught everyone that obeying it accomplishes nothing."
+    ],
+    "what_is_not_dismissed": "sys.path is process-global, so a position-0 insert can shadow a standard-library module of the same name, and it changes import resolution for every later test in the same discover run. That is real, and it is an ordering and shadowing hazard rather than a portability one. It stays reported as SYS_PATH_ANCHORED, which does not fail the gate, so the hazard is visible without being mistaken for the defect it is not.",
+    "how_this_could_be_wrong": "If a cohort ever inserts a directory computed from __file__ that is itself gitignored or generated, the argument is anchored and the directory still absent from a clean clone. The anchoring test would pass and the finding would be downgraded wrongly. Nothing in the tree does this today; the exposure is stated rather than guarded because guarding it means resolving the path at scan time, and a static prober that touches the filesystem to decide is no longer static.",
+    "recall_is_unaffected": "My planted fixture inserts the bare literal \"vendor\", which is unanchored, so SYS_PATH_MUTATION still fires at full severity on the case the rule was built for."
+  },
+  "residual_imprecision": {
+    "count": 4,
+    "note": "Four of the 17 reportable findings are false positives I chose not to suppress, because every mechanism I could find for suppressing them was a value allowlist rather than a structural rule. They are named here so the number is known rather than discovered: boundary_run.py:34 ENV_READ, and successor.py:204 and :207 ABS_PATH_LITERAL. Naming a known false positive is what keeps a gate credible; hiding one behind a forgiven-value list is what ends it."
+  },
+  "what_i_did_not_do": "No file outside workstreams/po03/runtime/, workstreams/po03/control/units/a3/, workstreams/po03/tests/test_a3_*, the two po03- workflows I own and receipts/po03/2026-08-22/ci-clean-clone.json was changed. Every genuine finding in another cohort's file is routed, not fixed.",
+  "role_verdicts": {
+    "COMPARISON_OPERAND": {
+      "verdict": "FALSE_POSITIVE",
+      "justification": "The literal is a pattern matched against or split on, not a location opened.",
+      "minimal_fix": "none required"
+    },
+    "ASSERTION_OPERAND": {
+      "verdict": "FALSE_POSITIVE",
+      "justification": "The literal is the expected value of the thing under test.",
+      "minimal_fix": "none required"
+    },
+    "REGEX_PATTERN": {
+      "verdict": "FALSE_POSITIVE",
+      "justification": "The literal is a regular expression, so its leading slash is a character and not a root.",
+      "minimal_fix": "none required"
+    },
+    "DIFF_PAYLOAD": {
+      "verdict": "FALSE_POSITIVE",
+      "justification": "The literal is a unified diff. A patch quoting a defective line in order to remove it is the cure, not the disease.",
+      "minimal_fix": "none required"
+    },
+    "JSON_POINTER": {
+      "verdict": "FALSE_POSITIVE",
+      "justification": "An RFC 6902 operation addresses a document, not a filesystem.",
+      "minimal_fix": "none required"
+    },
+    "FSTRING_FRAGMENT": {
+      "verdict": "FALSE_POSITIVE",
+      "justification": "A fragment following an interpolation cannot be absolute however it begins.",
+      "minimal_fix": "none required"
+    },
+    "PATTERN_TABLE": {
+      "verdict": "FALSE_POSITIVE",
+      "justification": "A module-level table used only for comparison is a detector's data, not its paths.",
+      "minimal_fix": "none required"
+    },
+    "TEST_FIXTURE": {
+      "verdict": "FALSE_POSITIVE",
+      "justification": "A literal in a test module that reaches no filesystem sink is a value under test.",
+      "minimal_fix": "none required"
+    }
+  }
+}

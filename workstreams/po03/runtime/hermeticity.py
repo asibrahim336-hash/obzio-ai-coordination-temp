@@ -653,7 +653,10 @@ def main(argv: list[str] | None = None) -> int:
         for raw in args.paths:
             candidate = Path(raw)
             if candidate.is_dir():
-                targets.extend(discover(candidate, rules, repo_root))
+                # Resolved first: discover() compares against absolute excluded
+                # directories, so a relative argument silently matched nothing
+                # and pulled the planted fixtures into an ordinary scan.
+                targets.extend(discover(candidate.resolve(), rules, repo_root))
             else:
                 # Explicit files bypass directory exclusions on purpose.
                 targets.append(candidate)

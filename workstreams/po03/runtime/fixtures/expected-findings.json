@@ -1,5 +1,5 @@
 {
-  "schema": "po03-hermeticity-fixture-expectations-v1",
+  "schema": "po03-hermeticity-fixture-expectations-v2",
   "rationale": "Every rule in hermeticity-rules.json has a planted defect here and an exact expected count. The test compares the prober's output to these counts, so a rule that silently stops firing fails the suite instead of quietly reporting a clean tree.",
   "fixture_dir": "workstreams/po03/runtime/fixtures/non_portable",
   "expected_findings": {
@@ -26,6 +26,35 @@
     }
   },
   "total_expected_findings": 19,
+  "expected_advisory": {
+    "workstreams/po03/runtime/fixtures/non_portable/anchored_import_path.py": {
+      "SYS_PATH_ANCHORED": 3
+    }
+  },
+  "total_expected_advisory": 3,
+  "expected_advisory_note": "anchored_import_path.py is the only fixture that must not fail the gate. It plants the accepted form of import-path mutation in all three shapes the tree uses -- direct, through one __file__-derived root, and through a chain of them -- so the downgrade is proved rather than asserted. Its unanchored counterpart in import_path_mutation.py still fires at full severity, which is what stops the downgrade from being a hole.",
+  "precision_fixtures": {
+    "dir": "workstreams/po03/runtime/fixtures/literal_roles",
+    "workstreams/po03/runtime/fixtures/literal_roles/test_strings_under_test.py": {
+      "expected_reportable": 0,
+      "expected_exempt_roles": [
+        "ASSERTION_OPERAND",
+        "COMPARISON_OPERAND",
+        "DIFF_PAYLOAD",
+        "FSTRING_FRAGMENT",
+        "JSON_POINTER",
+        "PATTERN_TABLE",
+        "REGEX_PATTERN",
+        "TEST_FIXTURE"
+      ],
+      "why": "Every literal matches a rule regex and none is a path the program uses. All eight roles must be exercised, because a role that never classifies anything is untested code deciding what to suppress."
+    },
+    "workstreams/po03/runtime/fixtures/literal_roles/test_real_defects_in_a_test.py": {
+      "expected_exempt": 0,
+      "expected_reportable_minimum": 10,
+      "why": "The guard on the TEST_FIXTURE role, which is the widest of the eight. Every literal here sits in an asserting test method in a test_*.py file and every one still fires, because each reaches a filesystem sink. A test module is not a blanket exemption."
+    }
+  },
   "rules_without_a_committed_fixture": ["PARSE_ERROR"],
   "rules_without_a_committed_fixture_note": "PARSE_ERROR is proved with a synthetic unparseable source built inside the test. Committing a file that does not parse would break unrelated tooling that walks the tree."
 }

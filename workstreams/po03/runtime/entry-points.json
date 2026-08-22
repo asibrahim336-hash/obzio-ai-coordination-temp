@@ -7,24 +7,306 @@
   },
   "entry_points": [
     {
+      "id": "ci_surface",
+      "path": "workstreams/po03/runtime/ci_surface.py",
+      "owner": "po03-worker-a3",
+      "invocations": [
+        {
+          "name": "help",
+          "args": [
+            "--help"
+          ],
+          "expected_exit_code": 0
+        },
+        {
+          "name": "check-workflows",
+          "args": [
+            "--skip-bytecode"
+          ],
+          "expected_exit_code": 0,
+          "expect_stdout_contains": "no cache, no install and no secret"
+        },
+        {
+          "name": "bad-rules",
+          "args": [
+            "--rules",
+            "workstreams/po03/runtime/entry-points.json"
+          ],
+          "expected_exit_code": 2,
+          "expect_stderr_contains": "CI_SURFACE_ERROR"
+        }
+      ],
+      "bytecode_note": "The default mode also checks the checkout for warm bytecode. It is not exercised here because the harness runs from a tree in which the suite has already run, so caches exist by then; the workflow runs that mode before anything imports."
+    },
+    {
+      "id": "clean_clone",
+      "path": "workstreams/po03/runtime/clean_clone.sh",
+      "owner": "po03-worker-a3",
+      "interpreter": "sh",
+      "invocations": [
+        {
+          "name": "help",
+          "args": [
+            "--help"
+          ],
+          "expected_exit_code": 0,
+          "expect_stdout_contains": "clone from"
+        },
+        {
+          "name": "unknown-argument",
+          "args": [
+            "--po03-not-an-option"
+          ],
+          "expected_exit_code": 64,
+          "expect_stderr_contains": "unknown argument"
+        }
+      ],
+      "network_note": "Only the argument surface is exercised. A real invocation clones from the remote, which would make this harness network-dependent and slow; the clone is covered by unit a3-u01's committed transcript and by the clean-runner workflow."
+    },
+    {
+      "id": "committed_only",
+      "path": "workstreams/po03/runtime/committed_only.py",
+      "owner": "po03-worker-a3",
+      "invocations": [
+        {
+          "name": "help",
+          "args": [
+            "--help"
+          ],
+          "expected_exit_code": 0
+        },
+        {
+          "name": "manifests",
+          "args": [
+            "--skip-tree",
+            "--manifest-dir",
+            "workstreams/po03/control/units/a3",
+            "--root",
+            "{repo}"
+          ],
+          "expected_exit_code": 0,
+          "expect_stdout_contains": "PASS committed-only gate"
+        }
+      ]
+    },
+    {
+      "id": "determinism",
+      "path": "workstreams/po03/runtime/determinism.py",
+      "owner": "po03-worker-a3",
+      "invocations": [
+        {
+          "name": "help",
+          "args": [
+            "--help"
+          ],
+          "expected_exit_code": 0
+        },
+        {
+          "name": "check",
+          "args": [],
+          "expected_exit_code": 0,
+          "expect_stdout_contains": "byte-identical across 2 runs"
+        },
+        {
+          "name": "fixtures",
+          "args": [
+            "--fixtures"
+          ],
+          "expected_exit_code": 1,
+          "expect_stdout_contains": "UNDECLARED_VARIANCE"
+        }
+      ]
+    },
+    {
+      "id": "hermeticity",
+      "path": "workstreams/po03/runtime/hermeticity.py",
+      "owner": "po03-worker-a3",
+      "invocations": [
+        {
+          "name": "help",
+          "args": [
+            "--help"
+          ],
+          "expected_exit_code": 0
+        },
+        {
+          "name": "scan-owned-paths",
+          "args": [
+            "workstreams/po03/runtime"
+          ],
+          "expected_exit_code": 0,
+          "expect_stdout_contains": "PASS 0 hermeticity findings",
+          "scope_note": "Scoped from the whole tree to my own directory. What this harness proves is that the entry point runs as a separate process and reaches the exit code its contract promises. Pointing it at the whole tree made that claim depend on whether every other cohort's files happen to be clean, so a routed finding in a7's module would read as a process-boundary failure. The whole-tree claim is asserted in test_a3_hermeticity, where it is currently and truthfully red."
+        },
+        {
+          "name": "scan-fixture",
+          "args": [
+            "workstreams/po03/runtime/fixtures/non_portable/temp_state.py"
+          ],
+          "expected_exit_code": 1,
+          "expect_stdout_contains": "TEMP_PATH_LITERAL"
+        }
+      ]
+    },
+    {
+      "id": "offline_check",
+      "path": "workstreams/po03/runtime/offline_check.sh",
+      "owner": "po03-worker-a3",
+      "interpreter": "sh",
+      "invocations": [
+        {
+          "name": "help",
+          "args": [
+            "--help"
+          ],
+          "expected_exit_code": 0,
+          "expect_stdout_contains": "override the sandbox command"
+        },
+        {
+          "name": "foreign-policy",
+          "args": [
+            "--policy",
+            "workstreams/po03/runtime/entry-points.json"
+          ],
+          "expected_exit_code": 66,
+          "expect_stderr_contains": "unexpected policy schema"
+        }
+      ],
+      "network_note": "Same reason as clean_clone: the substantive modes need baseline reachability and a network namespace, both covered by unit a3-u06."
+    },
+    {
+      "id": "path_scope",
+      "path": "workstreams/po03/runtime/path_scope.py",
+      "owner": "po03-worker-a3",
+      "invocations": [
+        {
+          "name": "help",
+          "args": [
+            "--help"
+          ],
+          "expected_exit_code": 0
+        },
+        {
+          "name": "selftest",
+          "args": [
+            "selftest"
+          ],
+          "expected_exit_code": 0,
+          "expect_stdout_contains": "recorded verdicts"
+        },
+        {
+          "name": "reject-fixture",
+          "args": [
+            "paths",
+            "workstreams/po03/runtime/fixtures/path_scope/out-of-allowlist-changed-paths.txt"
+          ],
+          "expected_exit_code": 1,
+          "expect_stdout_contains": "OUT_OF_ALLOWLIST"
+        }
+      ]
+    },
+    {
+      "id": "process_boundary",
+      "path": "workstreams/po03/runtime/process_boundary.py",
+      "owner": "po03-worker-a3",
+      "invocations": [
+        {
+          "name": "help",
+          "args": [
+            "--help"
+          ],
+          "expected_exit_code": 0
+        }
+      ],
+      "recursion_note": "Only --help is exercised. Running the harness inside itself would nest indefinitely, and the harness's substantive behaviour is covered by test_a3_process_boundary.py."
+    },
+    {
+      "id": "route_findings",
+      "path": "workstreams/po03/runtime/route_findings.py",
+      "owner": "po03-worker-a3",
+      "invocations": [
+        {
+          "name": "help",
+          "args": [
+            "--help"
+          ],
+          "expected_exit_code": 0,
+          "expect_stdout_contains": "route PO-03 gate findings to their owners"
+        },
+        {
+          "name": "route",
+          "args": [],
+          "expected_exit_code": 0,
+          "expect_stdout_contains": "genuine by owner"
+        },
+        {
+          "name": "genuine-only",
+          "args": [
+            "--only",
+            "GENUINE"
+          ],
+          "expected_exit_code": 0,
+          "expect_stdout_contains": "GENUINE"
+        }
+      ]
+    },
+    {
       "id": "control_plane",
       "path": "workstreams/po03/tools/control_plane.py",
       "owner": "coordinator",
       "invocations": [
-        {"name": "help", "args": ["--help"], "expected_exit_code": 0, "expect_stdout_contains": "transactional control plane"},
-        {"name": "no-args", "args": [], "expected_exit_code": 2, "expect_stderr_contains": "arguments are required"},
-        {"name": "canary", "args": ["canary", "--worker", "boundary-probe", "--root", "{scratch}"], "expected_exit_code": 0, "expect_stdout_contains": "\"roundtrip_ok\":true"},
-        {"name": "check-paths", "args": ["check-paths", "{scratch}/in-allowlist.txt"], "expected_exit_code": 0, "writes_input": "in-allowlist.txt"}
+        {
+          "name": "help",
+          "args": [
+            "--help"
+          ],
+          "expected_exit_code": 0,
+          "expect_stdout_contains": "transactional control plane"
+        },
+        {
+          "name": "no-args",
+          "args": [],
+          "expected_exit_code": 2,
+          "expect_stderr_contains": "arguments are required"
+        },
+        {
+          "name": "canary",
+          "args": [
+            "canary",
+            "--worker",
+            "boundary-probe",
+            "--root",
+            "{scratch}"
+          ],
+          "expected_exit_code": 0,
+          "expect_stdout_contains": "\"roundtrip_ok\":true"
+        },
+        {
+          "name": "check-paths",
+          "args": [
+            "check-paths",
+            "{scratch}/in-allowlist.txt"
+          ],
+          "expected_exit_code": 0,
+          "writes_input": "in-allowlist.txt"
+        }
       ]
     },
     {
-      "id": "validate_contracts",
-      "path": "workstreams/po03/tools/validate_contracts.py",
-      "owner": "coordinator",
+      "id": "ingest_wave",
+      "path": "workstreams/po03/tools/ingest_wave.py",
+      "owner": "po03-worker-a11",
+      "declared_by": "po03-worker-a3",
+      "declared_by_note": "Declared here, not modified. The manifest is mine and the tool is a11's. A harness that only covers its author's entry points proves nothing about the boundary, so a --help invocation is declared for every committed entry point in the tree. Only the read-only invocation is declared: this tool mutates shared custody state, so running it for real inside a test would be a write no test is entitled to make.",
       "invocations": [
-        {"name": "help", "args": ["--help"], "expected_exit_code": 0},
-        {"name": "validate-a3-u01", "args": ["result", "workstreams/po03/control/units/a3/a3-u01.json"], "expected_exit_code": 0, "expect_stdout_contains": "VALID result"},
-        {"name": "missing-document", "args": ["result", "workstreams/po03/control/units/a3/does-not-exist.json"], "expected_exit_code": 2}
+        {
+          "name": "help",
+          "args": [
+            "--help"
+          ],
+          "expected_exit_code": 0,
+          "expect_stdout_contains": "ingest a wave of subordinate results"
+        }
       ]
     },
     {
@@ -32,7 +314,13 @@
       "path": "workstreams/po03/tools/make_result.py",
       "owner": "coordinator",
       "invocations": [
-        {"name": "help", "args": ["--help"], "expected_exit_code": 0},
+        {
+          "name": "help",
+          "args": [
+            "--help"
+          ],
+          "expected_exit_code": 0
+        },
         {
           "name": "emit",
           "args": [
@@ -52,90 +340,35 @@
       ]
     },
     {
-      "id": "hermeticity",
-      "path": "workstreams/po03/runtime/hermeticity.py",
-      "owner": "po03-worker-a3",
+      "id": "validate_contracts",
+      "path": "workstreams/po03/tools/validate_contracts.py",
+      "owner": "coordinator",
       "invocations": [
-        {"name": "help", "args": ["--help"], "expected_exit_code": 0},
-        {"name": "scan-tree", "args": [], "expected_exit_code": 0, "expect_stdout_contains": "PASS 0 hermeticity findings"},
-        {"name": "scan-fixture", "args": ["workstreams/po03/runtime/fixtures/non_portable/temp_state.py"], "expected_exit_code": 1, "expect_stdout_contains": "TEMP_PATH_LITERAL"}
-      ]
-    },
-    {
-      "id": "path_scope",
-      "path": "workstreams/po03/runtime/path_scope.py",
-      "owner": "po03-worker-a3",
-      "invocations": [
-        {"name": "help", "args": ["--help"], "expected_exit_code": 0},
-        {"name": "selftest", "args": ["selftest"], "expected_exit_code": 0, "expect_stdout_contains": "recorded verdicts"},
-        {"name": "reject-fixture", "args": ["paths", "workstreams/po03/runtime/fixtures/path_scope/out-of-allowlist-changed-paths.txt"], "expected_exit_code": 1, "expect_stdout_contains": "OUT_OF_ALLOWLIST"}
-      ]
-    },
-    {
-      "id": "determinism",
-      "path": "workstreams/po03/runtime/determinism.py",
-      "owner": "po03-worker-a3",
-      "invocations": [
-        {"name": "help", "args": ["--help"], "expected_exit_code": 0},
-        {"name": "check", "args": [], "expected_exit_code": 0, "expect_stdout_contains": "byte-identical across 2 runs"},
-        {"name": "fixtures", "args": ["--fixtures"], "expected_exit_code": 1, "expect_stdout_contains": "UNDECLARED_VARIANCE"}
-      ]
-    },
-    {
-      "id": "committed_only",
-      "path": "workstreams/po03/runtime/committed_only.py",
-      "owner": "po03-worker-a3",
-      "invocations": [
-        {"name": "help", "args": ["--help"], "expected_exit_code": 0},
         {
-          "name": "manifests",
-          "args": ["--skip-tree", "--manifest-dir", "workstreams/po03/control/units/a3", "--root", "{repo}"],
+          "name": "help",
+          "args": [
+            "--help"
+          ],
+          "expected_exit_code": 0
+        },
+        {
+          "name": "validate-a3-u01",
+          "args": [
+            "result",
+            "workstreams/po03/control/units/a3/a3-u01.json"
+          ],
           "expected_exit_code": 0,
-          "expect_stdout_contains": "PASS committed-only gate"
+          "expect_stdout_contains": "VALID result"
+        },
+        {
+          "name": "missing-document",
+          "args": [
+            "result",
+            "workstreams/po03/control/units/a3/does-not-exist.json"
+          ],
+          "expected_exit_code": 2
         }
       ]
-    },
-    {
-      "id": "ci_surface",
-      "path": "workstreams/po03/runtime/ci_surface.py",
-      "owner": "po03-worker-a3",
-      "invocations": [
-        {"name": "help", "args": ["--help"], "expected_exit_code": 0},
-        {"name": "check-workflows", "args": ["--skip-bytecode"], "expected_exit_code": 0, "expect_stdout_contains": "no cache, no install and no secret"},
-        {"name": "bad-rules", "args": ["--rules", "workstreams/po03/runtime/entry-points.json"], "expected_exit_code": 2, "expect_stderr_contains": "CI_SURFACE_ERROR"}
-      ],
-      "bytecode_note": "The default mode also checks the checkout for warm bytecode. It is not exercised here because the harness runs from a tree in which the suite has already run, so caches exist by then; the workflow runs that mode before anything imports."
-    },
-    {
-      "id": "clean_clone",
-      "path": "workstreams/po03/runtime/clean_clone.sh",
-      "owner": "po03-worker-a3",
-      "interpreter": "sh",
-      "invocations": [
-        {"name": "help", "args": ["--help"], "expected_exit_code": 0, "expect_stdout_contains": "clone from"},
-        {"name": "unknown-argument", "args": ["--po03-not-an-option"], "expected_exit_code": 64, "expect_stderr_contains": "unknown argument"}
-      ],
-      "network_note": "Only the argument surface is exercised. A real invocation clones from the remote, which would make this harness network-dependent and slow; the clone is covered by unit a3-u01's committed transcript and by the clean-runner workflow."
-    },
-    {
-      "id": "offline_check",
-      "path": "workstreams/po03/runtime/offline_check.sh",
-      "owner": "po03-worker-a3",
-      "interpreter": "sh",
-      "invocations": [
-        {"name": "help", "args": ["--help"], "expected_exit_code": 0, "expect_stdout_contains": "override the sandbox command"},
-        {"name": "foreign-policy", "args": ["--policy", "workstreams/po03/runtime/entry-points.json"], "expected_exit_code": 66, "expect_stderr_contains": "unexpected policy schema"}
-      ],
-      "network_note": "Same reason as clean_clone: the substantive modes need baseline reachability and a network namespace, both covered by unit a3-u06."
-    },
-    {
-      "id": "process_boundary",
-      "path": "workstreams/po03/runtime/process_boundary.py",
-      "owner": "po03-worker-a3",
-      "invocations": [
-        {"name": "help", "args": ["--help"], "expected_exit_code": 0}
-      ],
-      "recursion_note": "Only --help is exercised. Running the harness inside itself would nest indefinitely, and the harness's substantive behaviour is covered by test_a3_process_boundary.py."
     }
   ],
   "recorded_boundaries": [

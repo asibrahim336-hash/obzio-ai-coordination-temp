@@ -104,7 +104,12 @@ def run_generator(spec: dict[str, Any], scratch: Path) -> Any:
     # the code each one is expected to produce so an unexpected code is a failure
     # rather than a silently accepted difference.
     expected_exit = spec.get("expected_exit_code", 0)
-    if result.returncode != expected_exit:
+    # "unconstrained" is for a generator whose exit code tracks something other
+    # than its own correctness -- a whole-tree gate exits 1 while the tree has
+    # findings, which is another gate's business. Pinning a number there would
+    # be asserting that a defect currently exists, and would break the moment
+    # the routed findings landed.
+    if expected_exit != "unconstrained" and result.returncode != expected_exit:
         raise RuntimeError(
             f"generator for {spec['artifact_class']} exited {result.returncode}, "
             f"expected {expected_exit}: {result.stderr.strip()}"
