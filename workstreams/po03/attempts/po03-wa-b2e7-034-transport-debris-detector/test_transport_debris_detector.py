@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from transport_debris_detector import scan
+from transport_debris_detector import scan, scan_git_tree
 
 
 class TransportDebrisDetectorTests(unittest.TestCase):
@@ -29,6 +29,17 @@ class TransportDebrisDetectorTests(unittest.TestCase):
         report = scan([Path(__file__).parent / "does-not-exist"])
         self.assertEqual(report["artifacts"], [])
         self.assertEqual(len(report["unavailable_roots"]), 1)
+
+    def test_reads_real_pinned_pack_tree_without_checkout(self):
+        report = scan_git_tree(
+            Path(__file__).parents[4],
+            "1e6f53c323f8326d12af213557082a3665991f19",
+            "packs",
+        )
+        self.assertEqual(report["source_commit"], "1e6f53c323f8326d12af213557082a3665991f19")
+        self.assertGreater(len(report["artifacts"]), 0)
+        self.assertEqual(sum(report["counts"].values()), len(report["artifacts"]))
+        self.assertEqual(report["counts"]["debris"], 0)
 
 
 if __name__ == "__main__":
