@@ -1,0 +1,63 @@
+{
+  "receipt_id": "OE-W4-RAW-CURSOR-AGENT-INVENTORY",
+  "captured_by": "lane OE-W4-PLATFORM-ROLES",
+  "captured_at": "2026-08-22T23:02Z",
+  "method": "cursor-cloud list-cloud-agents, limit 40, offset 0",
+  "evidence_label": "DIRECTLY_REPRODUCED",
+  "supports": [
+    "CUR-A2 Cursor is already operating as a multi-agent platform",
+    "AI-19 removal: the unit of dispatch is an agent group, not a single entry agent",
+    "EC-05 the allowlist capacity detector: an agent in ERROR is live in this account now"
+  ],
+  "scope_note": "Top-level cloud agents only. Subagents do not appear in this listing, so the model-configuration count below is a floor for the account, not a ceiling.",
+  "totals": {
+    "agent_count": 9,
+    "has_more": false,
+    "total_matched": 9,
+    "distinct_exact_model_configurations_among_top_level_agents": 4,
+    "distinct_model_families_among_top_level_agents": 2
+  },
+  "distinct_exact_model_configurations": [
+    { "model": "claude-opus-5-thinking-max", "family": "claude", "top_level_agents": 3 },
+    { "model": "gpt-5.6-sol-max-fast", "family": "gpt", "top_level_agents": 4 },
+    { "model": "claude-sonnet-5-thinking-max", "family": "claude", "top_level_agents": 1 },
+    { "model": "gpt-5.6-terra-max-fast", "family": "gpt", "top_level_agents": 1 }
+  ],
+  "additional_configuration_observed_below_top_level": {
+    "model": "gpt-5.6-sol-xhigh",
+    "family": "gpt",
+    "where": "the L3 independent-acceptance lane ran on this configuration as a subagent against a producer on the claude family",
+    "source": "workstreams/so02/control-plane/operating-environment/l3-independent-acceptance/VERDICT.json",
+    "evidence_label": "DOCUMENTED",
+    "why_recorded": "It raises the account's demonstrated distinct-configuration count to 5 when subagents are counted, but it is not visible in this listing and must not be claimed from it."
+  },
+  "status_distribution": {
+    "RUNNING": 1,
+    "IDLE": 7,
+    "ERROR": 1
+  },
+  "error_state_observation": {
+    "bcId": "bc-13b664e4-a9eb-4a06-9b23-3283644e5b31",
+    "status": "ERROR",
+    "setupStatus": "INSTALL_SUCCEEDED",
+    "why_it_matters": "A denylist capacity detector that treats only a named set of states as interference would score this account as non-interfering. EC-05 allowlists the states that mean non-interference, so this ERROR is counted. The state is live, not synthetic.",
+    "boundary_kept": "Recorded from list metadata only. This lane did not call batch-fetch-details, did not read this agent's transcript, and did not touch any po03 branch."
+  },
+  "agents": [
+    { "bcId": "bc-c6f63d58-9611-495a-96f6-2f2dcbef696d", "branchName": "cursor/so02-cur-orch-qual-01", "status": "RUNNING", "originalModelName": "claude-opus-5-thinking-max", "note": "root controller of this lane" },
+    { "bcId": "bc-aa38db59-c61c-4e29-9c26-4424b20f6e19", "branchName": "cursor/po03-wave-a-factory-6e19", "status": "IDLE", "originalModelName": "gpt-5.6-sol-max-fast" },
+    { "bcId": "bc-13b664e4-a9eb-4a06-9b23-3283644e5b31", "branchName": "po03/repository-engineering-portable-runtime-20260822-v001", "status": "ERROR", "originalModelName": "gpt-5.6-sol-max-fast" },
+    { "bcId": "bc-2bb75c2e-66fe-4eee-b456-e1d5e22db2e7", "branchName": "cursor/po03-wave-a-transactional-factory-b2e7", "status": "IDLE", "originalModelName": "claude-opus-5-thinking-max" },
+    { "bcId": "bc-ecd55d9e-0ffe-49e1-897d-929d0a4b5086", "branchName": "cursor/po03-wave-a-transactional-factory-5086", "status": "IDLE", "originalModelName": "claude-sonnet-5-thinking-max" },
+    { "bcId": "bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8", "branchName": "cursor/po03-independent-challenger-70f8", "status": "IDLE", "originalModelName": "gpt-5.6-sol-max-fast" },
+    { "bcId": "bc-b1956656-b897-4889-aeab-82c4556c1a9f", "branchName": "cursor/po03-wave-a-b195-1a9f", "status": "IDLE", "originalModelName": "gpt-5.6-sol-max-fast" },
+    { "bcId": "bc-7137a066-3242-43a2-a30e-9a352047b759", "branchName": null, "status": "IDLE", "originalModelName": "gpt-5.6-terra-max-fast" },
+    { "bcId": "bc-e92c4fa6-3658-4270-ab36-9eb56bf2ed20", "branchName": "cursor/po03-wave-a-transactional-factory-ed20", "status": "IDLE", "originalModelName": "claude-opus-5-thinking-max" }
+  ],
+  "correction_this_receipt_forced": {
+    "what": "An earlier draft of the platform role register claimed five distinct exact model configurations among the nine top-level agents.",
+    "reproduced_value": 4,
+    "action": "The register was corrected to four before commit. The fifth configuration exists in the account but only below the top level, and is recorded separately above rather than folded into the reproduced count.",
+    "why_recorded": "EC-14 disallows evidence that overstates what was reached. A count is evidence, and this one was wrong."
+  }
+}

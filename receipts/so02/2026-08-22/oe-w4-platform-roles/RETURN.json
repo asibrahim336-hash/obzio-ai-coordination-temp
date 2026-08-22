@@ -1,0 +1,91 @@
+{
+  "return_id": "OE-W4-PLATFORM-ROLES-RETURN-20260822-v001",
+  "lane": "OE-W4-PLATFORM-ROLES",
+  "commission_id": "COM-CUR-ENV-01-20260822-v001",
+  "governing_authority": "workstreams/so02/control-plane/operating-environment/FOUNDER-AUTHORITY-20260822T2225Z.json",
+  "branch": "cursor/oe-w4-platform-roles-696d",
+  "base_commit": "3f3ee110cf9b769e60c664f758c437dcc582afd3",
+  "terminal_state": "READY_TO_COMMIT",
+  "is_a_proposal_not_a_binding": true,
+  "binds_company_strategy": false,
+  "names_a_model_or_architecture_as_bound": false,
+  "creates_spend_or_obligation": false,
+  "pull_request_opened_commented_or_modified": false,
+
+  "deliverable_a": {
+    "name": "De-restriction sweep",
+    "structured": "workstreams/so02/control-plane/operating-environment/w4-platform-roles/DE-RESTRICTION-REGISTER-20260822-v001.json",
+    "readable": "workstreams/so02/control-plane/operating-environment/w4-platform-roles/DE-RESTRICTION-SWEEP-20260822-v001.md",
+    "total_classified": 76,
+    "counts": { "FOUNDER_BOUND": 27, "EARNED_CONTROL": 27, "ASSISTANT_IMPOSED": 22 },
+    "excluded_from_denominator_with_reason": 5,
+    "classification_rule": "An agent-invented rule is presumed removable and the burden is on the rule to name the defect it caught. FOUNDER_BOUND requires a founder source; EARNED_CONTROL requires a defect reproduced in this estate; ASSISTANT_IMPOSED requires the locator where it was introduced and a re-inheritance probe."
+  },
+
+  "deliverable_b": {
+    "name": "Platform role architecture",
+    "structured": "workstreams/so02/control-plane/operating-environment/w4-platform-roles/PLATFORM-ROLE-REGISTER-20260822-v001.json",
+    "readable": "workstreams/so02/control-plane/operating-environment/w4-platform-roles/PLATFORM-ROLE-ARCHITECTURE-20260822-v001.md",
+    "platforms": 5,
+    "decision_classes": 36,
+    "functions": 26,
+    "return_route_classes": 8,
+    "overrules_earlier_lanes": 8,
+    "founder_judgment_items": 6,
+    "roles_in_one_line": {
+      "CURSOR": "Execution and acceptance platform of record. Unit of dispatch is an agent group, not one agent.",
+      "CHATGPT": "Discovery, integration and authority capture. Reassigned off evidence review, which used none of its asymmetry.",
+      "GITHUB": "Custody, plus a second execution domain and an unused event substrate.",
+      "SW": "Paused. Planned as a high-fanout producer under acceptance it does not control, never a coordinator.",
+      "OPEN_LOCAL_MODELS": "The substitutability proof behind an adapter boundary, and the second cognition domain for platform-level claims."
+    }
+  },
+
+  "mechanisms_shipped": [
+    { "tool": "derestrictctl.py", "does": "Verifies the register's evidence discipline and scans live routing surfaces for removed restrictions still in force. Negation-aware.", "verify_exit": 0, "scan_exit": 1 },
+    { "tool": "rolectl.py", "does": "Enforces 14 invariants: single-holder decision classes, founder-reserved classes, acceptance independence, runtime-is-not-authority, required substitution route.", "exit": 0 },
+    { "tool": "negative_tests.py", "does": "Mutates both registers to trigger 20 named failure modes (NR1-NR9, NL1-NL5, ND1-ND6) and asserts each is caught.", "exit": 0 },
+    { "tool": "build_manifest.py", "does": "Builds and re-checks the delivery manifest with namespace closure and material claim-input closure.", "exit": 0 }
+  ],
+
+  "open_findings_for_the_holder_of_other_paths": {
+    "why_this_lane_did_not_fix_them": "All three lie outside this lane's write scope, and two are under state/** or commissions/** where a write from this lineage would silently set currentness for every inheriting branch (EC-13). Reporting with exact locators is the correct action; applying the change is the path holder's.",
+    "detector": "python3 tools/derestrictctl.py scan  (exits 1 until these are resolved)",
+    "findings": [
+      { "constraint_id": "AI-06", "still_live_in": "workstreams/so02/control-plane/commissions/CHATGPT-SIR-01.md", "what": "ChatGPT/SO-02 described as a supporting function with no scope attached.", "correct_form": "Retain the scoped version only, which is FB-03: for the founder operating environment specifically, ChatGPT does not select architecture or prescribe a stack." },
+      { "constraint_id": "AI-20", "still_live_in": "workstreams/so02/control-plane/state/control-plane.json#current_founder_actions[FA-SCF01-CURSOR-LAUNCH]", "what": "A stale founder action asking the founder to relay the operating-environment scope to Cursor.", "correct_form": "Close it. Cursor is already executing this commission, so the action asks the founder to perform the relay verb FB-05 forbids." },
+      { "constraint_id": "AI-21", "still_live_in": "workstreams/so02/control-plane/commissions/CURSOR-OPERATING-ENVIRONMENT-01.md#current-boundaries", "what": "The boundaries paragraph read as a bar on inspecting and configuring Ahmed/Obzio-owned surfaces.", "correct_form": "Restore the founder's own envelope: inspect, access, configure, connect, use and optimise are granted; the stop is reserved for genuine owner acts." }
+    ]
+  },
+
+  "founder_judgment_required": [
+    { "id": "FJ-01", "question": "May a ChatGPT connector hold repository write?", "note": "Highest-leverage ChatGPT unlock. Test the cheaper hypothesis first: an existing GitHub connector on the account's plan may reach the canonical store through R1 without a bespoke connector." },
+    { "id": "FJ-02", "question": "Authorise the existing Supabase integration so the Cursor API key already held in Edge Secrets becomes reachable.", "note": "Owner-scoped OAuth consent. Replaces the removed AI-02 request to mint a new key." },
+    { "id": "FJ-03", "question": "Is indefinite provider-side retention of founder-intent material acceptable?", "note": "Risk appetite, not a technical question." },
+    { "id": "FJ-04", "question": "Which competing pointer claim wins, PR #6 or PR #7?", "note": "FB-24. The resolver correctly refuses; three competing blobs across eight branches." },
+    { "id": "FJ-05", "question": "Does the Qwen / Kimi / DeepSeek / Grok allocation still bind, and is the requirement open weights or runnable by us?", "note": "FB-17. Neither silently dropped nor newly bound. The two readings imply different architectures." },
+    { "id": "FJ-06", "question": "Is GitHub acceptable as the sole host of canonical state, or should a second remote exist?", "note": "Concentration risk. A periodic git bundle is the zero-cost interim needing no new account." }
+  ],
+
+  "boundaries_kept": [
+    "Wrote only on cursor/oe-w4-platform-roles-696d, only inside the two permitted namespaces, from an isolated worktree (EC-01), with every push confirmed by git ls-remote (EC-02).",
+    "No pull request opened, commented on, merged or modified.",
+    "SW not messaged, operated or configured. PO-01, PO-03 and MANUS untouched: the ERROR-state agent in the inventory receipt is recorded from list metadata only, with no batch-fetch-details call, no transcript read and no branch access.",
+    "No authentication attempted against ChatGPT or any needsAuth MCP namespace. Reading namespace status is not a credential act.",
+    "No credential value printed or stored. CURSOR_API_KEY absence was established by name census only.",
+    "No company strategy bound. No named model or architecture bound. No spend or obligation created."
+  ],
+
+  "self_reported_defect": {
+    "what": "The first version of derestrictctl.py scan flagged five re-inheritances. Two were supersession statements: sentences whose purpose is to remove the restriction.",
+    "why_it_mattered": "A detector that reads a removal as a re-imposition would tell a future lane to strip the very sentences doing the de-restricting, which is the opposite of this lane's purpose.",
+    "fix": "Negation awareness: a window around each match is checked for supersession markers, and the classes are reported separately as RE_INHERITED and SUPERSESSION_STATEMENT.",
+    "evidence_preserved": "receipts/so02/2026-08-22/oe-w4-platform-roles/raw/derestrict-scan-prefix-negation-defect.txt, retained under FB-23."
+  },
+
+  "correction_made_before_commit": {
+    "what": "Both registers claimed five distinct exact model configurations across the nine top-level cloud agents. Re-running the inventory returns four.",
+    "resolution": "Corrected to four. The fifth configuration, gpt-5.6-sol-xhigh, is real but sits below the top level as the L3 acceptor, so it is recorded separately rather than claimed from that listing.",
+    "why": "EC-14 disallows evidence that overstates what was reached. A count is evidence."
+  }
+}

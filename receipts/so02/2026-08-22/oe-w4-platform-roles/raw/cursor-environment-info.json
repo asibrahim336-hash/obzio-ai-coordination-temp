@@ -1,0 +1,55 @@
+{
+  "receipt_id": "OE-W4-RAW-CURSOR-ENVIRONMENT-INFO",
+  "captured_by": "lane OE-W4-PLATFORM-ROLES",
+  "captured_at": "2026-08-22T23:02Z",
+  "method": "cursor-cloud environment-info and cursor-cloud run-info, no arguments",
+  "evidence_label": "DIRECTLY_REPRODUCED",
+  "run_identity": {
+    "bcId": "bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+    "name": "Primary orchestration route qualification",
+    "branchName": "cursor/so02-cur-orch-qual-01",
+    "repoUrl": "github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+    "status": "RUNNING",
+    "originalModelName": "claude-opus-5-thinking-max",
+    "url": "https://cursor.com/agents/bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+    "owningUserEmail": "[NOT_STORED: owner email is not needed to support any claim in this lane]",
+    "note": "This is the root controller's identity. This lane runs as a subagent inside that run, in its own worktree at /tmp/oe-w4 on its own branch. A subagent has no separate bcId in this surface, which is itself the reason the register treats agent-group composition as unobservable from run metadata alone."
+  },
+  "environment": {
+    "environmentPublicId": "69dbfc52-9df5-11f1-a7d1-d6b4613131ce",
+    "environmentVersionPublicId": "69eb84fe-9df5-11f1-a7d1-d6b4613131ce",
+    "source": "Team",
+    "recordedVia": "RUNTIME_FORWARD_FILL",
+    "environmentJsonPath": null,
+    "environmentJson": null,
+    "environmentJsonNote": "environment.json was found but contained no recognized configuration fields.",
+    "environmentDeleted": false,
+    "url": "https://cursor.com/dashboard/cloud-agents/environments/e/69dbfc52-9df5-11f1-a7d1-d6b4613131ce"
+  },
+  "egress": { "restricted": false },
+  "build": {
+    "buildId": "bld-20260822-015195f7-955b-445d-8b57-78bc58eec228",
+    "snapshotId": "bld-20260822-015195f7-955b-445d-8b57-78bc58eec228",
+    "gitSetup": "reuse_then_checkout",
+    "warmFork": "cold",
+    "resolution": "resolved"
+  },
+  "supports": [
+    {
+      "claim": "The repository's environment.json is inert. The platform found the file and recognised nothing in it, so every agent boots unconfigured.",
+      "field": "environment.environmentJsonNote",
+      "independently_confirms": "l1-cursor-baseline/BASELINE-FINDINGS.md finding 3, which this lane reproduced without reading L1's method",
+      "consequence": "AI-11 removal matters because of this. While the five mutating cursor-cloud tools were self-excluded, this defect could be described but never tested or fixed."
+    },
+    {
+      "claim": "Every agent in this environment pays a cold start.",
+      "field": "build.warmFork = cold",
+      "consequence": "The cost is per-agent and recurring, and it scales with the fanout this architecture calls for, which is what makes the inert environment file a scaling problem rather than a cosmetic one."
+    },
+    {
+      "claim": "Egress is unrestricted, so any HTTPS route the estate needs is reachable without an allowlist change.",
+      "field": "egress.restricted = false",
+      "consequence": "Supports CUR-A7. No network-policy founder action is required for any route this architecture proposes."
+    }
+  ]
+}
