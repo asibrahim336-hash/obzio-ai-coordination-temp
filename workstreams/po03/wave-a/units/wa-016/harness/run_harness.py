@@ -91,12 +91,18 @@ def _write(path: Path, payload: Any) -> dict[str, Any]:
     return {"path": str(path.relative_to(UNIT_ROOT)), "sha256": sha256_bytes(data), "bytes": len(data)}
 
 
-def write_evidence(evidence: dict[str, Any]) -> list[dict[str, Any]]:
-    """Write the evidence files this unit owns."""
+def write_evidence(evidence: dict[str, Any], target: Path | None = None) -> list[dict[str, Any]]:
+    """Write the evidence files this unit owns.
+
+    ``target`` exists so the write-containment test can exercise this function
+    without overwriting the evidence of the full campaign that result.json
+    reports.
+    """
+    directory = target or EVIDENCE_DIR
     written = [
-        _write(EVIDENCE_DIR / "transition-matrix.json", evidence["matrix"]),
+        _write(directory / "transition-matrix.json", evidence["matrix"]),
         _write(
-            EVIDENCE_DIR / "fault-matrix-summary.json",
+            directory / "fault-matrix-summary.json",
             {
                 "machine": evidence["matrix"]["machine"],
                 "cell_count": evidence["matrix"]["cell_count"],
@@ -110,14 +116,15 @@ def write_evidence(evidence: dict[str, Any]) -> list[dict[str, Any]]:
                     for state in sorted({r["final_obzio_state"] for r in evidence["matrix"]["rows"]})
                 },
                 "inapplicable_cell_count": len(evidence["matrix"]["inapplicable"]),
+                "harness_wall_time_seconds": evidence["wall_time_seconds"],
                 "mutants": evidence["mutants"],
                 "fuzz_campaign": {k: v for k, v in evidence["fuzz_campaign"].items() if k != "failing_cases"},
                 "fuzz_comparison": evidence["fuzz_comparison"],
             },
         ),
-        _write(EVIDENCE_DIR / "reproduction-ledger.json", evidence["reproductions"]),
+        _write(directory / "reproduction-ledger.json", evidence["reproductions"]),
         _write(
-            EVIDENCE_DIR / "source-claims.json",
+            directory / "source-claims.json",
             {
                 "retrieved_at": research.RETRIEVED_AT,
                 "retrieval_method": research.RETRIEVAL_METHOD,
@@ -126,10 +133,10 @@ def write_evidence(evidence: dict[str, Any]) -> list[dict[str, Any]]:
                 "seeded_controls_observed": evidence["seeded_controls"],
             },
         ),
-        _write(EVIDENCE_DIR / "hypotheses.json", evidence["hypotheses"]),
-        _write(EVIDENCE_DIR / "mechanism-changes.json", evidence["mechanism_changes"]),
-        _write(EVIDENCE_DIR / "validator-gap-analysis.json", evidence["validator_gaps"]),
-        _write(EVIDENCE_DIR / "frozen-input-resolvability.json", evidence["input_resolvability"]),
+        _write(directory / "hypotheses.json", evidence["hypotheses"]),
+        _write(directory / "mechanism-changes.json", evidence["mechanism_changes"]),
+        _write(directory / "validator-gap-analysis.json", evidence["validator_gaps"]),
+        _write(directory / "frozen-input-resolvability.json", evidence["input_resolvability"]),
     ]
     return written
 

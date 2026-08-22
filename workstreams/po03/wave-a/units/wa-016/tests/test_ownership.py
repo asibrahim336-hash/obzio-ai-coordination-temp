@@ -8,7 +8,9 @@ repository before and after.
 
 from __future__ import annotations
 
+import shutil
 import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -140,14 +142,20 @@ class WriteContainmentTests(unittest.TestCase):
             raise unittest.SkipTest(f"git unavailable: {exc}") from exc
 
     def test_writing_the_evidence_touches_only_the_owned_subtree(self):
+        # Written to a scratch directory so this test cannot overwrite the
+        # evidence of the full campaign that result.json reports.
+        scratch = Path(tempfile.mkdtemp(prefix=".scratch-evidence-", dir=UNIT_ROOT))
+        self.addCleanup(shutil.rmtree, scratch, True)
+
         before = _dirty_paths(self.repo)
         # A small campaign: this test is about where bytes land, not how many.
         evidence = collect(fuzz_cases=12, fuzz_max_faults=3)
-        written = write_evidence(evidence)
+        written = write_evidence(evidence, target=scratch)
         after = _dirty_paths(self.repo)
 
         for path in after - before:
             self.assertTrue(path.startswith(OWNED_PREFIX), f"wrote outside the owned subtree: {path}")
+        self.assertTrue(written)
         for entry in written:
             self.assertTrue((UNIT_ROOT / entry["path"]).exists(), entry["path"])
             self.assertGreater(entry["bytes"], 0)
