@@ -1,0 +1,71 @@
+{
+  "protocol_version": "OBZIO-PORTABLE-PATH-SCAN-CLOSURE-v1",
+  "scanner_protocol_version": "OBZIO-PORTABLE-PATH-SCAN-v1",
+  "root_contract": {
+    "declaration": "One or more positional file or directory roots are mandatory.",
+    "directory_expansion": "Recursive, deterministic lexical order.",
+    "regular_utf8_files": "INCLUDED",
+    "empty_utf8_files": "INCLUDED",
+    "symlink_roots": "ERROR_NOT_FOLLOWED",
+    "symlinks_inside_closure": "ERROR_NOT_FOLLOWED_UNLESS_EXPLICITLY_EXCLUDED",
+    "binary_or_nul_files": "ERROR_UNLESS_EXPLICITLY_EXCLUDED",
+    "non_utf8_files": "ERROR_UNLESS_EXPLICITLY_EXCLUDED",
+    "special_files": "ERROR_UNLESS_EXPLICITLY_EXCLUDED",
+    "missing_roots": "ERROR",
+    "duplicate_files_across_roots": "ERROR"
+  },
+  "exclusion_contract": {
+    "defaults": [],
+    "declaration": "Every exclusion is supplied explicitly with --exclude.",
+    "coordinate_system": "POSIX root-relative paths, independently for each declared directory root.",
+    "syntax": "Python fnmatchcase glob; a terminal /** also excludes the named directory itself and its complete subtree.",
+    "evidence": "Every excluded path and matching pattern is emitted in $.closure.excluded.",
+    "no_implicit_vcs_or_cache_exclusion": true
+  },
+  "detection_contract": {
+    "absolute_posix": "Multi-component slash-rooted tokens and known filesystem roots.",
+    "absolute_windows": "Drive-letter rooted tokens using slash or backslash.",
+    "home_relative": [
+      "~/...",
+      "$HOME/...",
+      "${HOME}/..."
+    ],
+    "temporary": [
+      "/tmp",
+      "/tmp/...",
+      "/var/tmp",
+      "/var/tmp/..."
+    ],
+    "checkout_specific": "Exact or descendant match against each absolute --checkout-root, with component-boundary enforcement.",
+    "file_uri": "file:/// paths are inspected as absolute filesystem paths.",
+    "quoted_spaces": "Single- or double-quoted path values may contain spaces.",
+    "coordinates": "One-based line, start column, and exclusive end column.",
+    "token_reporting": "The matched token is emitted verbatim so a repair can be made without re-scanning."
+  },
+  "false_positive_controls": {
+    "never_interpreted_as_filesystem_paths": [
+      "network URLs whose slash is preceded by scheme syntax",
+      "URI fragments beginning #/",
+      "regex anchors beginning ^/",
+      "versioned service routes beginning /v<digits>/",
+      "templated routes containing braces",
+      "JSON Pointer roots /components, /definitions, /properties, and /schemas",
+      "unknown single-component slash tokens"
+    ],
+    "tradeoff": "These conservative suppressions are explicit false-negative boundaries. Ambiguous multi-component slash-rooted strings remain findings."
+  },
+  "result_contract": {
+    "clean_exit": 0,
+    "finding_exit": 1,
+    "closure_or_configuration_error_exit": 2,
+    "output": "Deterministic JSON on stdout.",
+    "status_precedence": [
+      "ERROR",
+      "FINDINGS",
+      "CLEAN"
+    ],
+    "hashing": "Every scanned file receives SHA-256 and byte accounting.",
+    "timestamps": "None, to preserve deterministic recurrence."
+  },
+  "decision_changed": []
+}
