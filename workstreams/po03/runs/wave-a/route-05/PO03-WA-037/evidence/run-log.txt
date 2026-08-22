@@ -1,0 +1,59 @@
+PO03-WA-037 execution evidence
+captured_at_utc: 2026-08-22T07:16:30Z
+python: Python 3.12.3
+platform: Linux 6.12.94+ x86_64
+worktree_head: 44de68e52a0baa480a8a8c0b95fd5071391dd4a1
+base_commit: 44de68e52a0baa480a8a8c0b95fd5071391dd4a1
+cwd: workstreams/po03/runs/wave-a/route-05/PO03-WA-037
+
+$ python3 -m unittest discover -s tests -p 'test_*.py' -v
+test_apple_double_residue_is_quarantine_recorded (test_transport_debris_disposition.ClassificationTests.test_apple_double_residue_is_quarantine_recorded) ... ok
+test_authored_content_is_not_flagged (test_transport_debris_disposition.ClassificationTests.test_authored_content_is_not_flagged) ... ok
+test_bytecode_cache_is_an_ignore_rule (test_transport_debris_disposition.ClassificationTests.test_bytecode_cache_is_an_ignore_rule) ... ok
+test_conflict_markers_are_detected_by_content_not_name (test_transport_debris_disposition.ClassificationTests.test_conflict_markers_are_detected_by_content_not_name) ... ok
+test_editor_backup_is_quarantine_recorded (test_transport_debris_disposition.ClassificationTests.test_editor_backup_is_quarantine_recorded) ... ok
+test_every_finding_carries_a_digest_and_byte_count (test_transport_debris_disposition.ClassificationTests.test_every_finding_carries_a_digest_and_byte_count) ... ok
+test_merge_leftovers_are_retained_as_evidence (test_transport_debris_disposition.ClassificationTests.test_merge_leftovers_are_retained_as_evidence) ... ok
+test_partial_conflict_marker_set_is_not_a_false_positive (test_transport_debris_disposition.ClassificationTests.test_partial_conflict_marker_set_is_not_a_false_positive) ... ok
+test_platform_metadata_is_an_ignore_rule (test_transport_debris_disposition.ClassificationTests.test_platform_metadata_is_an_ignore_rule) ... ok
+test_symlinks_are_not_classified_or_followed (test_transport_debris_disposition.ClassificationTests.test_symlinks_are_not_classified_or_followed) ... ok
+test_zero_byte_file_requires_review (test_transport_debris_disposition.ClassificationTests.test_zero_byte_file_requires_review) ... ok
+test_clean_tree_exits_zero (test_transport_debris_disposition.CommandLineTests.test_clean_tree_exits_zero) ... ok
+test_debris_present_exits_one_and_reports_zero_deletions (test_transport_debris_disposition.CommandLineTests.test_debris_present_exits_one_and_reports_zero_deletions) ... ok
+test_delete_policy_is_refused_with_exit_three (test_transport_debris_disposition.CommandLineTests.test_delete_policy_is_refused_with_exit_three) ... ok
+test_missing_root_exits_two (test_transport_debris_disposition.CommandLineTests.test_missing_root_exits_two) ... ok
+test_census_detects_a_deletion_when_one_actually_happens (test_transport_debris_disposition.NonDestructivenessTests.test_census_detects_a_deletion_when_one_actually_happens)
+Control case: the census would have caught a destructive run. ... ok
+test_census_detects_creation (test_transport_debris_disposition.NonDestructivenessTests.test_census_detects_creation) ... ok
+test_census_detects_modification (test_transport_debris_disposition.NonDestructivenessTests.test_census_detects_modification) ... ok
+test_census_is_identical_before_and_after_a_scan (test_transport_debris_disposition.NonDestructivenessTests.test_census_is_identical_before_and_after_a_scan) ... ok
+test_module_source_contains_no_deletion_path (test_transport_debris_disposition.NonDestructivenessTests.test_module_source_contains_no_deletion_path) ... ok
+test_self_audit_catches_a_deletion_path_when_present (test_transport_debris_disposition.NonDestructivenessTests.test_self_audit_catches_a_deletion_path_when_present)
+Control case: the static audit is not vacuous. ... ok
+
+----------------------------------------------------------------------
+Ran 21 tests in 0.686s
+
+OK
+[exit code: 0]
+
+$ python3 src/transport_debris_disposition.py --root tree --self-audit
+IGNORE_RULE        ds-store             .DS_Store  (9 bytes, sha256=f010693cbe15a79a...)
+RETAIN_AS_EVIDENCE conflict-markers     conflicted.md  (44 bytes, sha256=ce21ec43e9bf8370...)
+QUARANTINE_RECORD  tilde-backup         draft.md~  (7 bytes, sha256=e19f16fcd9610bca...)
+REVIEW_REQUIRED    zero-byte            empty.log  (0 bytes, sha256=e3b0c44298fc1c14...)
+RETAIN_AS_EVIDENCE merge-orig           notes.md.orig  (21 bytes, sha256=c097ce077006f28e...)
+RETAIN_AS_EVIDENCE merge-rej            patch.rej  (15 bytes, sha256=ce2517fd38d40ab4...)
+IGNORE_RULE        pycache-dir          src/__pycache__/component.cpython-312.pyc  (6 bytes, sha256=bae726e0fb106db1...)
+summary: debris=7 deleted=0 non_destructive=True
+[exit code: 1]
+
+$ python3 src/transport_debris_disposition.py --root tree --policy delete
+DELETION_PROHIBITED: PO-03 disposition never deletes evidence; re-run with --policy record
+[exit code: 3]
+
+$ census comparison before/after both runs
+files_before=8 files_after=8
+census_identical=True
+[exit code: 0]
+
