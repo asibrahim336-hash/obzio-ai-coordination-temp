@@ -30,7 +30,7 @@ class ControlPlaneTests(unittest.TestCase):
 
     def test_project_rebuilds_from_event_head(self) -> None:
         projection = scctl.project(self.root)
-        self.assertEqual(16, projection["event_count"])
+        self.assertEqual(17, projection["event_count"])
         self.assertEqual("ACTIVE_INTERIM", projection["subjects"]["SCF-01/CGPT-01"]["state"])
 
     def test_event_chain_is_valid(self) -> None:
@@ -167,15 +167,17 @@ class ControlPlaneTests(unittest.TestCase):
 
     def test_known_error_controls_have_mechanisms_and_checks(self) -> None:
         controls = scctl.read_json(self.root / "errors/recurrence-controls.json")
-        controls["controls"][0]["executable_check"] = ""
+        enforced = next(item for item in controls["controls"] if item["control_state"] == "ENFORCED")
+        enforced["old_behaviour_probe"] = ""
         errors: list[str] = []
         scctl.validate_controls(controls, errors)
-        self.assertTrue(any("missing executable_check" in item for item in errors))
+        self.assertTrue(any("enforced without old_behaviour_probe" in item for item in errors))
 
-    def test_lost_result_control_reached_live_canary_after_worker_ingestion(self) -> None:
+    def test_open_result_ref_fence_cannot_be_called_enforced(self) -> None:
         controls = scctl.read_json(self.root / "errors/recurrence-controls.json")
         lost_result = next(item for item in controls["controls"] if item["error_id"] == "ERR-LOST-RESULT")
-        self.assertEqual("LIVE_CANARY", lost_result["mechanism_maturity"])
+        self.assertEqual("UNCONTROLLED", lost_result["control_state"])
+        self.assertIn("result-ref fencing remains open", lost_result["uncontrolled_reason"])
 
     def test_po03_collision_remains_durable_after_bounded_isolated_route_reactivation(self) -> None:
         po03 = next(item for item in self.control["protected_workstreams"] if item["workstream_id"] == "PO-03")
@@ -189,13 +191,54 @@ class ControlPlaneTests(unittest.TestCase):
         self.assertIn("INDEPENDENT_PO03_ACCEPTANCE_PENDING", po03["state"])
         controls = scctl.read_json(self.root / "errors/recurrence-controls.json")
         shared_writer = next(item for item in controls["controls"] if item["error_id"] == "ERR-MULTI-PARENT-SHARED-WRITER")
-        self.assertEqual("INDEPENDENTLY_ACCEPTED", shared_writer["mechanism_maturity"])
-        self.assertEqual(
-            "PO03_CONCURRENT_SHARED_WORKTREE_INDEX_BRANCH_COLLISION_OBSERVED",
-            shared_writer["latest_live_defect"]["state"],
-        )
-        self.assertIn("independently verified and reactivated only at the proven two-unit ceiling", shared_writer["latest_live_defect"]["control_not_promoted_reason"])
-        self.assertIn("result-ref fencing remains open", shared_writer["latest_live_defect"]["control_not_promoted_reason"])
+        self.assertEqual("UNCONTROLLED", shared_writer["control_state"])
+        self.assertIn("historical collision", shared_writer["uncontrolled_reason"])
+        self.assertIn("result-ref fencing is open", shared_writer["uncontrolled_reason"])
+
+    def test_typed_maturity_labels_are_rejected(self) -> None:
+        controls = scctl.read_json(self.root / "errors/recurrence-controls.json")
+        controls["controls"][0]["mechanism_maturity"] = "LIVE_CANARY"
+        errors: list[str] = []
+        scctl.validate_controls(controls, errors)
+        self.assertTrue(any("typed maturity is prohibited" in item for item in errors))
+
+    def test_uncontrolled_control_requires_reason_and_next_control(self) -> None:
+        controls = scctl.read_json(self.root / "errors/recurrence-controls.json")
+        uncontrolled = next(item for item in controls["controls"] if item["control_state"] == "UNCONTROLLED")
+        uncontrolled["uncontrolled_reason"] = ""
+        errors: list[str] = []
+        scctl.validate_controls(controls, errors)
+        self.assertTrue(any("uncontrolled without uncontrolled_reason" in item for item in errors))
+
+    def test_strict_external_packet_rejects_identity_bearing_old_behaviour(self) -> None:
+        old = "You are SCF-01/SW-01, Obzio principal. Read workstreams/so02 from asibrahim336-hash. decision_changed: []"
+        self.assertGreater(len(scctl.strict_external_violations(old)), 0)
+        current = (self.root / "launch/SW-LAUNCH-NOW.md").read_text(encoding="utf-8")
+        self.assertEqual([], scctl.strict_external_violations(current))
+
+    def test_cursor_internal_disclosure_classification_is_explicit(self) -> None:
+        current = (self.root / "launch/CURSOR-LAUNCH-NOW.md").read_text(encoding="utf-8")
+        self.assertIn("INTERNAL_AUTHORISED_RUNTIME", current)
+        self.assertIn("do not write PR #9", current)
+
+    def test_repository_native_founder_content_is_complete(self) -> None:
+        errors: list[str] = []
+        scctl.validate_durable_directives(self.root, errors)
+        self.assertEqual([], errors)
+
+    def test_event_triggered_automation_old_behaviour_is_rejected(self) -> None:
+        receipt = scctl.read_json(self.root.parent.parent.parent / "receipts/so02/2026-08-22/po03-automation-reshape-20260822T0924Z.json")
+        receipt["replacement_job"]["trigger"] = "github_pull_request_event"
+        errors: list[str] = []
+        scctl.validate_automation_receipt(receipt, errors)
+        self.assertTrue(any("replacement can still fire per event" in item for item in errors))
+
+    def test_independent_evaluation_file_and_active_lane_prompts_are_required(self) -> None:
+        evaluation = (self.root / "evaluations/INDEPENDENT-PO02-PO03-20260822.md").read_text(encoding="utf-8")
+        lanes = (self.root / "launch/CHATGPT-LANES-NOW.md").read_text(encoding="utf-8")
+        self.assertIn("eight kill positions PASS", evaluation)
+        self.assertIn("seven executable tests PASS", evaluation)
+        self.assertGreaterEqual(lanes.count("## CGPT-"), 12)
 
     def test_strategy_decision_event_requires_founder_binding(self) -> None:
         events = scctl.read_jsonl(self.root / "state/events.jsonl")

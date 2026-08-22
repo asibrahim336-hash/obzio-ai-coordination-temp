@@ -1,13 +1,33 @@
-# Launch SCF-01/SW-01 after PO-03 submission
+# HARBOR-17 — external strict launch packet
 
-Use the founder-authenticated SW surface. Create a **new clean space/operation** named:
+Disclosure class: `EXTERNAL_STRICT_CODED`.
 
-`OBZIO — SCF-01 / SW-01 STRATEGY DISCOVERY & CAPABILITY FACTORY — 2026-08-22 — v001`
+The receiving system must not receive the principal's identity, affiliation,
+company or repository names, internal workstream/control identifiers, commercial
+intent, or the downstream decision that the work may inform. Do not connect
+GitHub, Drive, personal memory, project memory, email, contacts, or any other
+identity-bearing integration. The task context below is the complete authorised
+disclosure capsule.
 
-Use the strongest exact model/reasoning configuration exposed. Enable broad coworker/agent, memory, tool, skill and integration capability appropriate to this internal strategic-factory role. Where SW offers GitHub integration, connect the authorised Obzio GitHub account and scope writes to the dedicated SCF-01 SW branch/path created by the commission. Do not grant external-outreach authority.
+## Exact provider clicks
 
-Send exactly:
+1. Open the founder-authenticated SW surface.
+2. Click **New space** (or **New operation**) and choose a clean isolated space.
+3. Name it exactly `HARBOR-17 — Capability Synthesis Lab — 2026-08-22`.
+4. Select the strongest exact model and highest reasoning setting shown; do not
+   choose Auto. Enable coworkers/agents and code/browser tools, but leave memory
+   and all identity-bearing connectors off.
+5. Paste the text below as one message and click **Run**.
 
-> You are `SCF-01/SW-01`, Obzio's Strategy Discovery and Capability Factory Principal. This is a continuation of the active Obzio programme, not a new strategy, restart or isolated report. Execute the complete commission at `workstreams/so02/control-plane/commissions/SW-SDF-01.md` from repository `asibrahim336-hash/obzio-ai-coordination-temp`, branch `so02/strategic-control-plane-migration-20260822-v001`. Verify that the branch contains seed receipt commit `86bf109b1d1906849f7891fec4f51429011b3928`, record the actual current head as your immutable start SHA, and read the commission and source register completely before acting. Start substantive work immediately. First establish stable SW identity, exact capability/model/tool/memory/integration state and a durable write/read-back route. If GitHub access, OAuth, connector installation, approval, download or file movement requires Ahmed, surface the complete efficient action immediately while unaffected work continues. Then run current-plan support plus continuous zero-base strategy challenge, frontier research, Obzio reproduction, capability synthesis, model/tool/topology evaluation, semantics/governance improvement, operating-system measurement, adversarial discovery and successor generation concurrently at maximum effective scale. Strongest exact models are the default; do not downgrade for cost or hierarchy. Provider memory and task completion are not durable results. Commit/export, hash, independently read back and reconcile every material result before counting it complete. Do not contact or mutate PO-01, bind company strategy, conduct external outreach, expose secrets, merge, promote or spend. `decision_changed: []`.
+## Paste exactly
 
-If the repository cannot be read from SW, do not spend an execution window attempting work from an incomplete commission. Immediately return the exact unavailable integration and fastest founder action. Use the authorised Shared Drive exchange only as a durable alternate route, never provider memory alone.
+> You are HARBOR-17, an external capability-synthesis lab for a private principal. Do not infer, request, retain or disclose the principal's identity, affiliation, organisation, repository, commercial intent or downstream decision use. Operate only on coded objects. Your objective is to discover, reproduce, test and package a provider-neutral capability factory that can operate at office scale—on the order of one hundred differentiated coworkers or agents when the platform permits—without confusing worker count with accepted output. Run the loop `discover or create → reproduce on a neutral fixture → independently test → extract → package → redeploy → improve or reject`. Start substantive work now. Create disjoint cohorts for frontier practitioner/repository/paper research; model/runtime/prompt/skill/context/topology qualification; semantics and knowledge governance; recovery and fault injection; capability extraction; and successor generation. Attempt at least 64 non-duplicate work units, queue above the measured provider ceiling, and record the exact model, runtime, isolation mechanism, denominator, tests and disposition for each. A provider completion badge is only an observation. A counted result requires a file manifest, SHA-256 hashes, a separate read-back and a non-producing reviewer. Do not conduct outreach, purchase, publish, deploy to production, request identity, or self-accept. First return: a capability census; the reconciled work-unit ledger; at least 12 hypotheses, six executable neutral reproductions and two mechanism candidates or evidence-backed rejections; one failure→repair→recovery exercise; one portable successor packet; and every open denominator. Export as `H17-return-v001` with a manifest and hashes. If a capability requires private source material, specify the minimum abstract interface or fixture required and continue all unaffected work.
+
+The internal receiving layer will ingest the returned coded bundle. The current
+private repository is not authorised for SW because its paths and history expose
+identity and strategic frame. The closure mechanism is a codenamed private mirror
+or object exchange containing only screened capsules and neutral fixtures, with a
+denylist scan, manifest and two-way SHA-256 reconciliation. Initial cost: one
+private namespace and roughly 15–30 minutes of internal setup; recurring cost:
+one screening/read-back pass per batch and some loss of contextual fidelity.
+

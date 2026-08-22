@@ -147,7 +147,9 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
     valid_reasons = {
         "provider_ui_model_selection_and_instruction_submission",
         "provider_ui_agent_creation_model_selection_and_instruction_submission",
-        "SW surface requires founder-authenticated client with TLS certificate"
+        "SW surface requires founder-authenticated client with TLS certificate",
+        "founder_held_ops_gate_and_provider_action_approval",
+        "provider_ui_stop_run"
     }
     for action in data.get("current_founder_actions", []):
         prefix = f"founder-action {action.get('action_id')}"
@@ -189,16 +191,74 @@ def validate_controls(data: dict[str, Any], errors: list[str]) -> None:
     add(errors, data.get("decision_changed") == [], "controls: unbound strategy change")
     controls = data.get("controls", [])
     ids = [item.get("error_id") for item in controls]
-    add(errors, len(controls) >= 13, "controls: known error denominator incomplete")
+    add(errors, len(controls) >= 21, "controls: known error denominator incomplete")
     add(errors, len(ids) == len(set(ids)), "controls: duplicate error id")
     for control in controls:
-        for key in ("failure", "live_mechanism", "executable_check", "owner", "mechanism_maturity"):
+        for key in ("failure", "control_state", "owner"):
             add(errors, bool(control.get(key)), f"control {control.get('error_id')}: missing {key}")
-        add(
-            errors,
-            control.get("mechanism_maturity") in {"SPECIFIED_NOT_OPERATIONAL", "UNIT_TESTED_NOT_LIVE", "LIVE_CANARY", "OPERATIONAL", "INDEPENDENTLY_ACCEPTED"},
-            f"control {control.get('error_id')}: invalid mechanism maturity"
-        )
+        add(errors, "mechanism_maturity" not in control, f"control {control.get('error_id')}: typed maturity is prohibited")
+        state = control.get("control_state")
+        add(errors, state in {"ENFORCED", "UNCONTROLLED"}, f"control {control.get('error_id')}: invalid control state")
+        if state == "ENFORCED":
+            for key in ("fail_closed_mechanism", "old_behaviour_probe", "probe_result"):
+                add(errors, bool(control.get(key)), f"control {control.get('error_id')}: enforced without {key}")
+            add(errors, control.get("probe_result") == "PASS_OLD_BEHAVIOUR_REJECTED", f"control {control.get('error_id')}: old behaviour not rejected")
+        if state == "UNCONTROLLED":
+            for key in ("uncontrolled_reason", "next_control"):
+                add(errors, bool(control.get(key)), f"control {control.get('error_id')}: uncontrolled without {key}")
+
+
+STRICT_EXTERNAL_FORBIDDEN = [
+    re.compile(pattern, re.IGNORECASE)
+    for pattern in (
+        r"\bobzio\b",
+        r"asibrahim336-hash",
+        r"\b(?:SCF|SO|PO)-\d+\b",
+        r"decision_changed",
+        r"strategy_snapshot",
+        r"workstreams/",
+    )
+]
+
+
+def strict_external_violations(text: str) -> list[str]:
+    return [pattern.pattern for pattern in STRICT_EXTERNAL_FORBIDDEN if pattern.search(text)]
+
+
+def validate_durable_directives(root: Path, errors: list[str]) -> None:
+    path = root / "state/FOUNDER-OPERATING-DIRECTIVES-20260822.md"
+    add(errors, path.is_file(), "directives: repository-native founder content missing")
+    if not path.is_file():
+        return
+    text = path.read_text(encoding="utf-8")
+    required = [
+        "one hundred coworkers and agents",
+        "discover/create → real-operation test → validate → extract → package → redeploy",
+        "Manus must receive full useful administrative enablement across multiple",
+        "Qwen is locked",
+        "Kimi and DeepSeek",
+        "Grok is qualified on Cursor",
+        "voice-first",
+        "ten working projects",
+        "ten to twenty next operators",
+        "data and knowledge governance office",
+        "founder activation and acquisition package",
+    ]
+    for phrase in required:
+        add(errors, phrase in text, f"directives: missing executable content: {phrase}")
+
+
+def validate_automation_receipt(data: dict[str, Any], errors: list[str]) -> None:
+    add(errors, data.get("decision_changed") == [], "automation: unbound strategy change")
+    old = data.get("old_job", {})
+    replacement = data.get("replacement_job", {})
+    add(errors, old.get("state") == "DISABLED", "automation: event-triggered predecessor still enabled")
+    add(errors, old.get("trigger") == "github_pull_request_event", "automation: old event premise not recorded")
+    add(errors, replacement.get("trigger") == "hourly_schedule", "automation: replacement can still fire per event")
+    add(errors, replacement.get("state") == "ENABLED", "automation: replacement not enabled")
+    add(errors, "at most one" in replacement.get("job_shape", ""), "automation: job fanout not bounded")
+    add(errors, bool(replacement.get("cost_shape")), "automation: cost shape missing")
+    add(errors, data.get("probe_result") == "PASS_OLD_BEHAVIOUR_REJECTED", "automation: old behavior not rejected")
 
 
 def validate_instruction_contracts(root: Path, errors: list[str]) -> None:
@@ -209,6 +269,22 @@ def validate_instruction_contracts(root: Path, errors: list[str]) -> None:
     add(errors, "Multiple Agents" in launch, "cursor launch: multi-agent mode not explicit")
     add(errors, "only writer of shared projections" in launch, "cursor launch: root single-writer rule missing")
     add(errors, "group→parent→child→attempt" in launch, "cursor launch: nested lineage reconciliation missing")
+    add(errors, "INTERNAL_AUTHORISED_RUNTIME" in launch, "cursor launch: disclosure classification missing")
+    add(errors, "do not write PR #9" in launch, "cursor launch: PO-03 write prohibition missing")
+
+    for relative in ("launch/SW-LAUNCH-NOW.md", "commissions/SW-SDF-01.md"):
+        text = (root / relative).read_text(encoding="utf-8")
+        violations = strict_external_violations(text)
+        add(errors, not violations, f"strict external packet {relative}: forbidden disclosure tokens {violations}")
+        add(errors, "EXTERNAL_STRICT_CODED" in text, f"strict external packet {relative}: classification missing")
+
+    lanes = (root / "launch/CHATGPT-LANES-NOW.md").read_text(encoding="utf-8")
+    add(errors, lanes.count("## CGPT-") >= 12, "chatgpt lanes: fewer than twelve launch sheets")
+    add(errors, "Project:" in lanes and "Model/effort:" in lanes and "Acceptance:" in lanes, "chatgpt lanes: launch contract incomplete")
+
+    evaluation = (root / "evaluations/INDEPENDENT-PO02-PO03-20260822.md").read_text(encoding="utf-8")
+    add(errors, "eight kill positions PASS" in evaluation, "evaluation: PO-02 replay absent")
+    add(errors, "seven executable tests PASS" in evaluation, "evaluation: PO-03 replay absent")
 
 
 def validate_events(events: list[dict[str, Any]], errors: list[str]) -> None:
@@ -253,6 +329,9 @@ def validate(root: Path = ROOT) -> list[str]:
     validate_sources(sources, errors)
     validate_plan(plan, errors)
     validate_controls(controls, errors)
+    validate_durable_directives(root, errors)
+    automation = read_json(root.parent.parent.parent / "receipts/so02/2026-08-22/po03-automation-reshape-20260822T0924Z.json")
+    validate_automation_receipt(automation, errors)
     validate_events(events, errors)
     validate_instruction_contracts(root, errors)
     return errors
