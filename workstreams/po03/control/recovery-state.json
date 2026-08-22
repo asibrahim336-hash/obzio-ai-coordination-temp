@@ -12,14 +12,6 @@
       "cohort": 1,
       "expires_at": "2026-08-22T13:13:11Z",
       "fence_token": 1,
-      "lease_id": "lease-po03-wa-002-a01",
-      "state": "LEASED",
-      "task_id": "PO03-WA-002"
-    },
-    {
-      "cohort": 1,
-      "expires_at": "2026-08-22T13:13:11Z",
-      "fence_token": 1,
       "lease_id": "lease-po03-wa-003-a01",
       "state": "LEASED",
       "task_id": "PO03-WA-003"
@@ -521,12 +513,16 @@
       "disposition": "REJECT_MATERIAL",
       "reason": "Synthetic canary changed the controller checkout branch; isolated VM/worktree was not proven.",
       "route": "generalPurpose/environment=cloud"
+    },
+    {
+      "disposition": "REJECT_CONCURRENT_DEFAULT_CHECKOUT",
+      "reason": "Eight concurrent best-of-N dispatches left /workspace on the WA-025 branch with untracked WA-023 and WA-025 files. Individual runners did not uniformly use dedicated worktrees.",
+      "route": "best-of-n-runner without controller-separated and worker-dedicated worktree verification"
     }
   ],
-  "last_event_seq": 150,
+  "last_event_seq": 159,
   "pending_outbox": [
     "outbox-po03-wa-001-dispatch-a01",
-    "outbox-po03-wa-002-dispatch-a01",
     "outbox-po03-wa-003-dispatch-a01",
     "outbox-po03-wa-012-dispatch-a01",
     "outbox-po03-wa-016-dispatch-a01",
@@ -601,21 +597,25 @@
   "retained_routes": [
     {
       "controller_checkout_unchanged": true,
-      "disposition": "RETAIN_MATERIAL",
+      "disposition": "RETAIN_ONLY_WITH_DEDICATED_WORKTREE_AND_CONTROLLER_SEPARATION",
       "evidence": "PO03-WA-ISOLATION-CANARY-001",
       "immutable_remote_readback": "PASS",
-      "route": "best-of-n-runner isolated git worktree"
+      "route": "best-of-n-runner with explicitly verified dedicated git worktree"
     }
   ],
-  "scanned_at": "2026-08-22T07:13:11Z",
+  "scanned_at": "2026-08-22T07:31:05Z",
   "schema_version": "1.0",
   "stale_attempts_blocked": [],
   "wave_a": {
-    "active_provider_runs": 0,
+    "active_provider_runs": 7,
+    "completed_durable": 1,
+    "independently_accepted": 1,
     "next_dispatch_cohort": 1,
-    "observed_safe_concurrency": "PENDING_SATURATION",
+    "observed_provider_concurrency": 8,
+    "observed_safe_concurrency": "NOT_YET_AFTER_SHARED_CHECKOUT_COLLISION",
     "portfolio_sha256": "515cf2325bda326471140aa1a294696f02c6c10effc3bae9022d55934c063ebd",
     "registered": 64,
-    "state": "LEASED_QUEUED_COHORTS"
+    "remaining": 63,
+    "state": "COHORT_1_RUNNING_FURTHER_DISPATCH_FENCED_PENDING_RECONCILIATION"
   }
 }

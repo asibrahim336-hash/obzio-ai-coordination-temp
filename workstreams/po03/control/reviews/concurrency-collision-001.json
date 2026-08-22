@@ -1,0 +1,47 @@
+{
+  "review_id": "PO03-WAVE-A-CONCURRENCY-COLLISION-001",
+  "observed_at": "2026-08-22T07:29:00Z",
+  "controller_run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+  "dispatches_active_at_detection": 8,
+  "controller_expected_branch": "cursor/po03-wave-a-b195-1a9f",
+  "controller_expected_head": "e56eda6e8e4a4e958795f7157839926d93272b30",
+  "shared_checkout_observed_branch": "cursor/po03-wa-025-b195-1a9f",
+  "shared_checkout_observed_head": "af19c50a6611499759a8e4105bb76e3d3e11b51f",
+  "cross_unit_untracked_paths_observed": [
+    "workstreams/po03/wave-a/units/wa-023/",
+    "workstreams/po03/wave-a/units/wa-025/result/"
+  ],
+  "worktree_inventory_at_detection": [
+    {
+      "path": "/workspace",
+      "branch": "cursor/po03-wa-025-b195-1a9f"
+    },
+    {
+      "path": "/tmp/po03-wa-002-1a9f",
+      "branch": "cursor/po03-wa-002-b195-runner-1a9f"
+    },
+    {
+      "path": "/tmp/po03-wa-012-b195-sol-1a9f",
+      "branch": "cursor/po03-wa-012-b195-sol-1a9f"
+    },
+    {
+      "path": "/workspace/workstreams/po03/wave-a/units/wa-023/.runner",
+      "branch": "cursor/po03-wa-023-b195-runner-a01-1a9f"
+    }
+  ],
+  "finding": "The single-run isolation canary did not establish concurrency isolation. Best-of-N runners did not uniformly create or remain in dedicated worktrees.",
+  "immediate_controls": [
+    "Further material dispatch fenced.",
+    "Controller moved to /home/ubuntu/po03-controller-b195 on its own worktree.",
+    "Active workers left running to preserve potentially durable results.",
+    "Each return must be reconciled from an immutable remote branch; shared-checkout bytes are not accepted as custody evidence.",
+    "Future dispatch requires an explicitly named dedicated worktree and post-run controller/worker path verification."
+  ],
+  "false_completion": 0,
+  "result_loss_observed": 0,
+  "path_collision_observed": 1,
+  "disposition": "RETEST",
+  "po01_touched": false,
+  "pull_request_8_touched": false,
+  "decision_changed": []
+}
