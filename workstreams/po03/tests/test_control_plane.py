@@ -9,6 +9,8 @@ import copy
 import hashlib
 import importlib.util
 import json
+import shutil
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -21,25 +23,55 @@ SPEC.loader.exec_module(CP)
 
 COMMISSION = "COM-PO03-TEST"
 OWNED = "workstreams/po03/engine/thing.py"
+GIT_AVAILABLE = shutil.which("git") is not None
+
+
+def git(*args, cwd, check=True):
+    proc = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True, check=False)
+    if check and proc.returncode != 0:
+        raise RuntimeError(f"git {' '.join(args)} failed: {proc.stderr.strip()}")
+    return proc.stdout.strip()
 
 
 class IsolatedControlPlane(unittest.TestCase):
-    """Redirect every control-plane path into a scratch tree."""
+    """Redirect every control-plane path into a scratch tree.
+
+    A durable result is now verified by reading its artifacts back out of the
+    commit they name, so the artifact root is a real throwaway git repository.
+    A fixture that fabricated a commit id could only ever test that a string was
+    non-empty, which is exactly the defect that let an invented locator pass.
+    """
 
     def setUp(self):
+        if not GIT_AVAILABLE:
+            self.skipTest("git is not available: commit resolution cannot be exercised")
         self._tmp = tempfile.TemporaryDirectory()
         self.root = Path(self._tmp.name)
         self.addCleanup(self._tmp.cleanup)
+        self.tree = self.root / "artifact-root"
+        self.tree.mkdir(parents=True, exist_ok=True)
+        git("init", "--quiet", "--initial-branch", "main", cwd=self.tree)
+        git("config", "user.name", "PO03 Control Plane Tests", cwd=self.tree)
+        git("config", "user.email", "po03-tests@example.invalid", cwd=self.tree)
+        git("config", "commit.gpgsign", "false", cwd=self.tree)
 
         self._saved = {
             name: getattr(CP, name)
-            for name in ("LEDGER_PATH", "REGISTRY_PATH", "RECOVERY_PATH", "DISPATCH_DIR", "PATH_OWNERSHIP_PATH")
+            for name in (
+                "LEDGER_PATH",
+                "REGISTRY_PATH",
+                "RECOVERY_PATH",
+                "DISPATCH_DIR",
+                "PATH_OWNERSHIP_PATH",
+                "REPO_ROOT",
+            )
         }
         CP.LEDGER_PATH = self.root / "control/events/ledger.jsonl"
         CP.REGISTRY_PATH = self.root / "control/work-unit-registry.jsonl"
         CP.RECOVERY_PATH = self.root / "control/recovery-state.json"
         CP.DISPATCH_DIR = self.root / "control/dispatch"
         CP.PATH_OWNERSHIP_PATH = self.root / "control/path-ownership.json"
+        CP.REPO_ROOT = self.tree
         for name, value in self._saved.items():
             self.addCleanup(setattr, CP, name, value)
 
@@ -115,14 +147,25 @@ class IsolatedControlPlane(unittest.TestCase):
         return body
 
     def write_artifact(self, relative=OWNED, body=b"payload\n"):
-        target = self.root / relative
+        """Write an artifact into the working tree without committing it."""
+        target = self.tree / relative
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(body)
         return hashlib.sha256(body).hexdigest(), len(body)
 
-    def result_doc(self, unit_id="a1-u01", owner="po03-worker-a1", relative=OWNED, fence=1):
+    def commit_artifact(self, relative=OWNED, body=b"payload\n", message="artifact"):
+        """Write and commit an artifact, returning its real immutable locator."""
+        sha, size = self.write_artifact(relative, body)
+        git("add", "--all", cwd=self.tree)
+        git("commit", "--quiet", "-m", message, cwd=self.tree)
+        return sha, size, git("rev-parse", "HEAD", cwd=self.tree)
+
+    def result_doc(self, unit_id="a1-u01", owner="po03-worker-a1", relative=OWNED, fence=1,
+                   commit=None, artifact_commit=None):
         manifest_sha, acceptance_sha = self._shas
-        sha, size = self.write_artifact(relative)
+        sha, size, real_commit = self.commit_artifact(relative)
+        commit = commit or real_commit
+        artifact_commit = artifact_commit or real_commit
         return {
             "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
             "task_id": unit_id,
@@ -144,20 +187,20 @@ class IsolatedControlPlane(unittest.TestCase):
             "result_transaction": {
                 "result_txn_id": f"{unit_id}-txn",
                 "state": "COMMITTED",
-                "manifest_uri": f"git:branch@sha:{unit_id}",
+                "manifest_uri": f"git:main@{commit}:{unit_id}",
                 "manifest_sha256": CP.sha256_text("manifest"),
                 "artifact_count": 1,
                 "total_bytes": size,
                 "committed_at": "2026-08-22T07:00:01Z",
                 "verified_at": "2026-08-22T07:00:02Z",
                 "parent_ingested_at": None,
-                "result_commit_id": "deadbeef",
+                "result_commit_id": commit,
             },
             "artifacts": [
                 {
                     "artifact_id": f"{unit_id}-art-01",
                     "logical_name": relative.rsplit("/", 1)[-1],
-                    "content_uri": f"git:branch@sha:{relative}",
+                    "content_uri": f"git:main@{artifact_commit}:{relative}",
                     "sha256": sha,
                     "bytes": size,
                     "media_type": "text/x-python",
@@ -169,7 +212,7 @@ class IsolatedControlPlane(unittest.TestCase):
         }
 
     def ingest(self, doc):
-        return CP.ingest_result(doc, artifact_root=self.root)
+        return CP.ingest_result(doc, artifact_root=self.tree, repo=self.tree)
 
 
 class PathScopeTests(unittest.TestCase):
@@ -345,15 +388,33 @@ class IngestionTests(IsolatedControlPlane):
         self.assertTrue(any(r["event"] == "FENCE_REJECTED" for r in CP.ledger_rows()))
 
     def test_missing_artifact_is_refused(self):
+        """An artifact absent from the commit it names is not durable."""
         doc = self.result_doc()
-        (self.root / OWNED).unlink()
+        doc["artifacts"][0]["content_uri"] = doc["artifacts"][0]["content_uri"].replace(
+            OWNED, "workstreams/po03/engine/never-committed.py"
+        )
         with self.assertRaises(CP.ControlPlaneError) as ctx:
             self.ingest(doc)
         self.assertIn("missing on read-back", str(ctx.exception))
 
     def test_corrupted_artifact_is_refused(self):
+        """The bytes in the commit must hash to what the result declared."""
         doc = self.result_doc()
-        (self.root / OWNED).write_bytes(b"payload!")
+        doc["artifacts"][0]["sha256"] = hashlib.sha256(b"payload!").hexdigest()
+        with self.assertRaises(CP.ControlPlaneError) as ctx:
+            self.ingest(doc)
+        self.assertIn("hash mismatch", str(ctx.exception))
+
+    def test_a_later_commit_cannot_invalidate_an_earlier_honest_result(self):
+        """Read-back is anchored to the declared commit, not to the branch tip."""
+        doc = self.result_doc()
+        self.commit_artifact(OWNED, b"a later edit by a later unit\n", message="later work")
+        outcome = self.ingest(doc)
+        self.assertEqual("PARENT_INGESTED", outcome["ingest_event"])
+
+    def test_an_uncommitted_result_is_verified_against_the_working_tree(self):
+        doc = self.failed_doc("PROVIDER_COMPLETED_UNCOMMITTED")
+        (self.tree / OWNED).write_bytes(b"changed after the result was written\n")
         with self.assertRaises(CP.ControlPlaneError) as ctx:
             self.ingest(doc)
         self.assertIn("hash mismatch", str(ctx.exception))

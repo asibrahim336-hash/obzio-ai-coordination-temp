@@ -192,6 +192,10 @@ def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+def sha256_bytes(payload: bytes) -> str:
+    return hashlib.sha256(payload).hexdigest()
+
+
 def sha256_file(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -1166,29 +1170,17 @@ def ingest_result(
     if result_doc["acceptance_contract_sha256"] != dispatch["acceptance_contract_sha256"]:
         raise ControlPlaneError("result does not reference the frozen acceptance contract")
 
-    relative_paths = [artifact["content_uri"].split(":", 2)[-1] for artifact in result_doc["artifacts"]]
+    parsed = [parse_content_uri(artifact["content_uri"]) for artifact in result_doc["artifacts"]]
+    relative_paths = [item[2] for item in parsed]
     outside = check_allowlist(relative_paths)
     if outside:
-        raise ControlPlaneError("artifacts outside the commission allowlist: " + ", ".join(outside))
+        _reject(unit_id, "artifacts outside the commission allowlist: " + ", ".join(outside))
     not_owned = check_ownership(dispatch["owner"], relative_paths)
     if not_owned:
-        raise ControlPlaneError(
-            f"owner {dispatch['owner']} attempted to write paths it does not own: " + ", ".join(not_owned)
+        _reject(
+            unit_id,
+            f"owner {dispatch['owner']} attempted to write paths it does not own: " + ", ".join(not_owned),
         )
-
-    verified: list[dict[str, Any]] = []
-    for artifact in result_doc["artifacts"]:
-        relative = artifact["content_uri"].split(":", 2)[-1]
-        target = artifact_root / relative
-        if not target.exists():
-            raise ControlPlaneError(f"artifact missing on read-back: {relative}")
-        actual_sha = sha256_file(target)
-        actual_bytes = target.stat().st_size
-        if actual_sha != artifact["sha256"]:
-            raise ControlPlaneError(f"artifact hash mismatch on read-back: {relative}")
-        if actual_bytes != artifact["bytes"]:
-            raise ControlPlaneError(f"artifact byte count mismatch on read-back: {relative}")
-        verified.append({"logical_name": artifact["logical_name"], "sha256": actual_sha, "bytes": actual_bytes})
 
     # Ingestion records what the subordinate actually achieved.  A subordinate
     # that honestly reports failure, or work that was never durably committed,
@@ -1198,7 +1190,76 @@ def ingest_result(
     txn = result_doc["result_transaction"]
     commit_id = txn["result_commit_id"]
     has_commit = isinstance(commit_id, str) and bool(commit_id.strip())
-    if incoming_state == "RESULT_COMMITTED" and has_commit:
+    claims_durability = incoming_state == "RESULT_COMMITTED"
+
+    if claims_durability:
+        # A non-empty string was the entire durability test, so an invented
+        # locator passed.  Resolve it, or the claim is not admitted.
+        if not has_commit:
+            _reject(unit_id, "RESULT_COMMITTED without a result_commit_id")
+        if not commit_resolves(commit_id, repo):
+            _reject(
+                unit_id,
+                f"declared result_commit_id {commit_id!r} does not resolve to a commit "
+                "object; the result is not durable",
+                extra={"unresolvable_result_commit_id": commit_id},
+            )
+
+    verified: list[dict[str, Any]] = []
+    for artifact, (_branch, artifact_commit, relative) in zip(result_doc["artifacts"], parsed):
+        if claims_durability:
+            # Read back from the exact commit the artifact names, never from a
+            # branch tip.  Reading from a moving tip is what made an honest
+            # earlier result fail once a later commit touched the same file.
+            if artifact_commit is None:
+                _reject(
+                    unit_id,
+                    f"artifact {relative} declares {artifact['content_uri']!r}, which names no "
+                    "commit; a durable artifact must carry an immutable locator",
+                )
+            if not commit_resolves(artifact_commit, repo):
+                _reject(
+                    unit_id,
+                    f"artifact {relative} names commit {artifact_commit!r}, which does not "
+                    "resolve to a commit object",
+                )
+            raw = read_blob(artifact_commit, relative, repo)
+            if raw is None:
+                _reject(unit_id, f"artifact missing on read-back at {artifact_commit}:{relative}")
+            actual_sha = sha256_bytes(raw)
+            actual_bytes = len(raw)
+            read_from = f"git:{artifact_commit}:{relative}"
+        else:
+            # An uncommitted result has nothing in the object database yet, so
+            # its artifacts are verified where they actually are.
+            target = artifact_root / relative
+            if not target.exists():
+                _reject(unit_id, f"artifact missing on read-back: {relative}")
+            actual_sha = sha256_file(target)
+            actual_bytes = target.stat().st_size
+            read_from = f"file:{relative}"
+        if actual_sha != artifact["sha256"]:
+            _reject(
+                unit_id,
+                f"artifact hash mismatch on read-back: {relative} "
+                f"(declared {artifact['sha256']}, read {actual_sha} from {read_from})",
+            )
+        if actual_bytes != artifact["bytes"]:
+            _reject(
+                unit_id,
+                f"artifact byte count mismatch on read-back: {relative} "
+                f"(declared {artifact['bytes']}, read {actual_bytes} from {read_from})",
+            )
+        verified.append(
+            {
+                "logical_name": artifact["logical_name"],
+                "sha256": actual_sha,
+                "bytes": actual_bytes,
+                "read_from": read_from,
+            }
+        )
+
+    if claims_durability:
         ingest_event = "PARENT_INGESTED"
     elif incoming_state in {"PROVIDER_COMPLETED_UNCOMMITTED", "FAILED_TERMINAL", "CANCELLED"}:
         ingest_event = incoming_state
