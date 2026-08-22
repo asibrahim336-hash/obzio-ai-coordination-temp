@@ -1,0 +1,59 @@
+=== sanitized environment ===
+DRIFT_COMMIT=f5b758f373e8d0cb14660c167f4b0b3673251862
+HOME=/tmp/tmp.M68Ne4u20Y
+LANG=C.UTF-8
+LC_ALL=C.UTF-8
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+PWD=/tmp/wa001/workstreams/po03/attempts/wave-a/wave-a-001-source-lock-reproduction
+PYTHONDONTWRITEBYTECODE=1
+PYTHONHASHSEED=0
+RECEIPT_COMMIT=f5b758f373e8d0cb14660c167f4b0b3673251862
+REPO_ROOT=/tmp/wa001
+TMPDIR=/tmp/tmp.M68Ne4u20Y
+TZ=UTC
+UNIT_DIR=/tmp/wa001/workstreams/po03/attempts/wave-a/wave-a-001-source-lock-reproduction
+=== toolchain ===
+Python 3.12.3 (main, Mar 23 2026, 19:04:32) [GCC 13.3.0]
+git version 2.43.0
+=== unit tests (stdlib unittest, no network, no third-party packages) ===
+test_compare_detects_byte_level_receipt_drift (test_source_lock.CommandLineTest.test_compare_detects_byte_level_receipt_drift) ... PO03_SOURCE_LOCK_BYTE_MISMATCH
+ok
+test_missing_input_returns_usage_error_code (test_source_lock.CommandLineTest.test_missing_input_returns_usage_error_code) ... PO03_SOURCE_LOCK_ERROR: [Errno 2] No such file or directory: '/tmp/tmp.M68Ne4u20Y/tmpcd7sbz1c/absent.json'
+ok
+test_verify_exit_codes_and_report_are_stable (test_source_lock.CommandLineTest.test_verify_exit_codes_and_report_are_stable) ... PO03_SOURCE_LOCK_FAIL findings=2
+ok
+test_receipt_is_canonical_and_loadable (test_source_lock.CommittedReceiptShapeTest.test_receipt_is_canonical_and_loadable) ... ok
+test_at_least_one_case_proves_a_changed_hash_is_detected (test_source_lock.DetectionMatrixTest.test_at_least_one_case_proves_a_changed_hash_is_detected) ... ok
+test_declared_cases_match_recorded_expectations (test_source_lock.DetectionMatrixTest.test_declared_cases_match_recorded_expectations) ... ok
+test_findings_carry_expected_and_actual_values (test_source_lock.DetectionMatrixTest.test_findings_carry_expected_and_actual_values) ... ok
+test_head_sha_mismatch_is_reported (test_source_lock.DetectionMatrixTest.test_head_sha_mismatch_is_reported) ... ok
+test_matching_head_sha_passes (test_source_lock.DetectionMatrixTest.test_matching_head_sha_passes) ... ok
+test_distinguishes_same_length_payloads (test_source_lock.GitBlobIdentityTest.test_distinguishes_same_length_payloads) ... ok
+test_matches_published_git_object_names (test_source_lock.GitBlobIdentityTest.test_matches_published_git_object_names) ... ok
+test_imports_are_within_the_declared_allowlist (test_source_lock.HermeticityTest.test_imports_are_within_the_declared_allowlist) ... ok
+test_no_dynamic_execution (test_source_lock.HermeticityTest.test_no_dynamic_execution) ... ok
+test_no_process_or_network_imports (test_source_lock.HermeticityTest.test_no_process_or_network_imports) ... ok
+test_lock_rejects_empty_source_list (test_source_lock.InputValidationTest.test_lock_rejects_empty_source_list) ... ok
+test_lock_rejects_entry_missing_a_derived_field (test_source_lock.InputValidationTest.test_lock_rejects_entry_missing_a_derived_field) ... ok
+test_spec_rejects_duplicate_paths (test_source_lock.InputValidationTest.test_spec_rejects_duplicate_paths) ... ok
+test_spec_rejects_escaping_and_absolute_paths (test_source_lock.InputValidationTest.test_spec_rejects_escaping_and_absolute_paths) ... ok
+test_spec_rejects_predeclared_derived_sources (test_source_lock.InputValidationTest.test_spec_rejects_predeclared_derived_sources) ... ok
+test_declaration_order_is_preserved (test_source_lock.RegenerationTest.test_declaration_order_is_preserved) ... ok
+test_no_derived_field_is_supplied_by_the_spec (test_source_lock.RegenerationTest.test_no_derived_field_is_supplied_by_the_spec) ... ok
+test_regeneration_is_idempotent (test_source_lock.RegenerationTest.test_regeneration_is_idempotent) ... ok
+test_regeneration_reproduces_committed_fixture_byte_for_byte (test_source_lock.RegenerationTest.test_regeneration_reproduces_committed_fixture_byte_for_byte) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 0.024s
+
+OK
+{"expected_bytes":884,"expected_sha256":"7bb52709d743aaa5b78a0261880d26c0b18a7e7affa3bdb3e9fa3abac93f2b27","identical":true,"regenerated_bytes":884,"regenerated_sha256":"7bb52709d743aaa5b78a0261880d26c0b18a7e7affa3bdb3e9fa3abac93f2b27","status":"PASS"}
+PO03_SOURCE_LOCK_BYTE_IDENTICAL sha256=7bb52709d743aaa5b78a0261880d26c0b18a7e7affa3bdb3e9fa3abac93f2b27
+{"expected_bytes":884,"expected_sha256":"0ce7eff1f0b7e1674ad930e7af589d24119fe4c2344c7fb8c67671954bb775f5","identical":false,"regenerated_bytes":884,"regenerated_sha256":"7bb52709d743aaa5b78a0261880d26c0b18a7e7affa3bdb3e9fa3abac93f2b27","status":"FAIL"}
+PO03_SOURCE_LOCK_PASS sources=4
+=== reproduction against immutable commits ===
+PO03_REPRODUCTION_OUTCOME SUPPORTED_WITH_BOUNDARY
+PO03_REPRODUCTION_E1 PASS byte_identical=True
+PO03_REPRODUCTION_E2 PASS findings=0
+PO03_REPRODUCTION_E3 FAIL drifted=['.github/workflows/po03-contracts.yml', 'workstreams/po03/tests/test_validate_contracts.py', 'workstreams/po03/tools/validate_contracts.py']
+=== done ===
