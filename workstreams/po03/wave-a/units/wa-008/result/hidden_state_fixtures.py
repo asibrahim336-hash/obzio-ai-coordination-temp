@@ -133,6 +133,20 @@ sys.stdout.write("PURE digest={}\\n".format(hashlib.sha256(data).hexdigest()))
 raise SystemExit(0)
 '''
 
+# Emits a fresh duration and wall-clock timestamp on every run. Neither is
+# hidden state, so the runner must not report a dependency.
+WORKLOAD_VOLATILE_OUTPUT = '''\
+import datetime
+import sys
+import time
+
+start = time.perf_counter()
+total = sum(range(2000))
+sys.stdout.write("started at {}\\n".format(datetime.datetime.now().isoformat()))
+sys.stdout.write("total={} elapsed {:.6f}s\\n".format(total, time.perf_counter() - start))
+raise SystemExit(0)
+'''
+
 WORKLOAD_INTERACTION = '''\
 import json
 import os
@@ -433,6 +447,29 @@ class FixtureFactory:
             "notes": "Presence of hidden state must not by itself produce a dependency finding.",
         }
 
+    def _build_clean_control_volatile_output(self, fixture_id):
+        base, repo, warm, home, tmp, cache = self._space(fixture_id)
+        commit = _init_repo(repo, {"workload.py": WORKLOAD_VOLATILE_OUTPUT})
+        materialise_clean_checkout(repo, commit, warm)
+        return {
+            "fixture_id": fixture_id,
+            "title": "Clean control whose output carries a fresh duration and timestamp",
+            "class_under_test": None,
+            "repo": repo,
+            "commit": commit,
+            "command": [sys.executable, "workload.py"],
+            "warm_checkout": warm,
+            "warm_env": self._warm_env(home, tmp, cache),
+            "warm_cache_root": cache,
+            "expected_verdict": VERDICT_CLEAN,
+            "expected_classes": [],
+            "expected_warm_exit_code": 0,
+            "expected_clean_exit_code": 0,
+            "warm_only_green": False,
+            "known_false_negative": False,
+            "notes": "Volatile durations and timestamps must be scrubbed, not treated as divergence.",
+        }
+
     # --- adversarial fixtures ------------------------------------------
 
     def _build_interaction_untracked_and_environment(self, fixture_id):
@@ -575,6 +612,7 @@ FIXTURE_IDS = (
     "warm-cache-external-home",
     "clean-control-pure",
     "clean-control-contaminated-but-unused",
+    "clean-control-volatile-output",
     "interaction-untracked-and-environment",
     "nondeterministic-command",
     "silent-hidden-state-dependency",
