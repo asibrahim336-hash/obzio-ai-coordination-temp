@@ -540,7 +540,13 @@ def advance_task(
             raise FactoryError(f"stale fence token {fence_token}; current is {current_fence}")
     owner = _lease_owner(events)
     if state in PRODUCER_STATES and actor != owner:
-        raise FactoryError("only the active leased worker may advance producer states")
+        controller_pre_dispatch = (
+            state == "RUNNING"
+            and actor == "integration-controller"
+            and bool((details or {}).get("controller_pre_dispatch"))
+        )
+        if not controller_pre_dispatch:
+            raise FactoryError("only the active leased worker may advance producer states")
     if state in CONTROLLER_STATES and actor != "integration-controller":
         raise FactoryError("only integration-controller may advance custody and recovery states")
     event_details = dict(details or {})

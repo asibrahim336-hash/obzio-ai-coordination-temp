@@ -105,6 +105,31 @@ class TransactionalFactoryTests(unittest.TestCase):
         event.write_text(json.dumps(document), encoding="utf-8")
         self.assertTrue(any("event hash mismatch" in error for error in MODULE.verify_chain("po03-test-task")))
 
+    def test_controller_predispatch_transition_requires_explicit_marker(self):
+        self._create_task()
+        MODULE.advance_task(
+            "po03-test-task",
+            state="LEASED",
+            actor="integration-controller",
+            fence_token=1,
+            details={"worker_id": "worker-1", "provider_run_id": "reserved-run-1"},
+        )
+        with self.assertRaises(MODULE.FactoryError):
+            MODULE.advance_task(
+                "po03-test-task",
+                state="RUNNING",
+                actor="integration-controller",
+                fence_token=1,
+            )
+        MODULE.advance_task(
+            "po03-test-task",
+            state="RUNNING",
+            actor="integration-controller",
+            fence_token=1,
+            details={"controller_pre_dispatch": True, "provider_run_id": "reserved-run-1"},
+        )
+        self.assertEqual("RUNNING", MODULE.task_events("po03-test-task")[-1]["state"])
+
     def test_duplicate_task_with_changed_acceptance_fails_closed(self):
         self._create_task()
         with self.assertRaises(FileExistsError):
