@@ -1,0 +1,102 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-sol-xhigh",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-008-warm-checkout-adversarial",
+  "cohort": "c1",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c1",
+  "unit_role": "ADVERSARIAL - exists specifically to prove the unit-001 clean-clone runner is not vacuous",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "a0c20a105d8401910c38a602fd508b20dcf8b640623242082ab00d72013c81c8",
+  "frozen_hypothesis": "A gate that only passes because of a warm checkout must be caught by the clean-clone runner rather than reported green.",
+  "frozen_required_deliverable": "A deliberately warm-checkout-dependent fixture plus the assertion that the clean-clone runner fails on it, proving the runner has real detection power and is not vacuous.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -I (CPython 3.12.3)",
+    "setup_note": "This unit's tests reference unit 001's runner at a SIBLING subtree path (HERE.parent / 'po03-wa-b2e7-001-clean-clone-runner' / 'clean_clone_runner.py'), so it cannot be executed from an isolated single-unit extraction. I extracted the whole cohort tree with 'git archive refs/heads/po03/wa-b2e7-c1 | tar -x' and ran it from there. This is a virtue for the unit's purpose - it exercises the REAL runner rather than a copy - but it does mean the unit is not self-contained.",
+    "producer_test_command": "python3 -I test_warm_checkout_adversarial.py -v",
+    "producer_test_output_verbatim": "test_missing_required_fixture_fails_closed ... ok\ntest_real_clean_clone_runner_catches_warm_only_gate ... ok\ntest_vacuous_green_runner_is_rejected ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 15.620s\n\nOK",
+    "producer_test_exit_code": 0
+  },
+
+  "detection_power_assessment": {
+    "detector_fires_on_the_positive_case": true,
+    "detector_fires_on_the_negative_control": false,
+    "evidence": "Reproduced by me: with the real unit-001 runner and the real warm-only fixture, warm_checkout_dependence_caught is true, warm_returncode is 0, warm_marker_tracked is false, the clean run returns nonzero, and failed_tests is exactly ['workstreams/po03/tests/test_warm_only.py']. Against three separate negative controls (HC-A, HC-B, HC-C) it correctly does not fire. This is what an adversarial unit is supposed to establish, and it establishes it."
+  },
+
+  "vacuity_probe": {
+    "method": "Mutated the four-clause 'caught' conjunction three ways, re-running the producer's own tests each time.",
+    "stub_caught_always_true": {"mutation": "caught = True", "producer_tests_exit_code": 1, "failures": 1, "tests_detected_stub": true},
+    "stub_caught_always_false": {"mutation": "caught = False", "producer_tests_exit_code": 1, "failures": 1, "tests_detected_stub": true},
+    "stub_drop_path_specificity": {"mutation": "removed the clause 'and expected_path in clean_report.get(\"failed_tests\", [])'", "producer_tests_exit_code": 0, "failures": 0, "tests_detected_stub": false},
+    "vacuous_test_finding": "PARTIAL",
+    "conclusion": "The suite pins the caught flag in both directions, so it is not vacuous overall. But one of the four clauses - the path-specificity clause - is NOT pinned: deleting it leaves the producer's tests fully green. The clause is still asserted indirectly, because test_real_clean_clone_runner_catches_warm_only_gate checks clean_runner_report['failed_tests'] equals the exact expected list; it is simply not pinned through the 'caught' decision itself. I closed that hole myself with HC-B and the underlying mechanism is correct, so I record this as a partial test-coverage gap rather than a vacuous test."
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-A",
+      "rationale": "The producer's negative control fakes the RUNNER. Nobody tested the other side: a fixture with no warm dependence at all. If the harness reported 'caught' for that, its positive result would be meaningless.",
+      "construction": "--fixture pointing at a test that unconditionally asserts True, with the real unit-001 runner.",
+      "observed_output_verbatim": "HC-A exit: 1 caught: False | clean_runner_rc: 0 failed_tests: []",
+      "component_survived": true,
+      "interpretation": "Correct true negative on the fixture side. A gate with no warm dependence produces caught=false and exit 1, so the harness is not simply reporting 'caught' for anything it is handed."
+    },
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "The producer's vacuous-runner control exits 0. The subtler cheat is a runner that fails with a nonzero code but blames the wrong file - it would satisfy 'clean.returncode != 0' while proving nothing.",
+      "construction": "fake runner printing {'failed_tests': ['workstreams/po03/tests/test_something_else.py']} and exiting 3, with the real warm-only fixture.",
+      "observed_output_verbatim": "HC-B exit: 1 caught: False | nonzero-but-wrong-file runner correctly rejected: True",
+      "component_survived": true,
+      "interpretation": "Correctly rejected. This is precisely the case the unpinned path-specificity clause protects against, and the real code does enforce it - so the clause is live even though the producer's tests do not pin it."
+    },
+    {
+      "hidden_case_id": "HC-C",
+      "rationale": "A runner that crashes with no parseable JSON should not be credited, and the harness should record the unparseable output honestly rather than hiding it.",
+      "construction": "fake runner writing 'boom' to stderr and exiting 1, with the real warm-only fixture.",
+      "observed_output_verbatim": "HC-C exit: 1 caught: False | unparseable captured: True",
+      "component_survived": true,
+      "interpretation": "Correctly rejected, and the harness preserves the unparseable stdout under an explicit 'unparseable_stdout' key instead of silently swallowing it. That is honest failure handling."
+    }
+  ],
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "MET - 3/3 reproduced from a pristine cohort export.",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET - 4 artifacts, all hashes and byte counts recomputed and matched.",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - acceptance_contract_sha256 equals my pre-disclosure hash a0c20a10...",
+    "result is committed and read back by a different process from an immutable object id": "MET - artifact_commit 124f2f37d11355c7e3ed1bd53335a18c811c255c.",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - PASS.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "NOT_APPLICABLE - not refuted.",
+    "no value, hash, metric or provider capability is invented": "MET - the evidence narrative matches what I observed exactly, including the specific claim that the runner 'returned 3 and listed test_warm_only.py as failed'."
+  },
+
+  "scope_honesty_assessment": {
+    "producer_declared_limitations": [
+      "Synthetic marker dependence demonstrates detection power but does not enumerate every hidden-state channel."
+    ],
+    "assessment": "Correctly scoped. This is the honest way to state what an adversarial fixture proves: it establishes the runner is not vacuous against one concrete channel, and explicitly declines to claim exhaustive channel coverage. The producer also did the right structural thing by wiring the test to unit 001's REAL runner rather than a copied stub, which is what makes the non-vacuity claim mean anything. Cross-referencing my own review of unit 001, my independent HC-A there (a committed test depending on an uncommitted helper) reached the same conclusion by a different route, so the two units corroborate each other."
+  },
+
+  "verification_commands": {
+    "artifact_verification_verbatim": "artifacts: [('evidence.md', 1596), ('test_warm_checkout_adversarial.py', 2453), ('warm_checkout_adversarial.py', 4016), ('warm_only_fixture.py', 416)]\nALL_VERIFY: True"
+  },
+
+  "nonportable_artifacts_in_subtree": [],
+  "reproducibility_check": "Run from a fresh 'git archive' export of the cohort ref in fresh python3 -I processes; all three producer tests and all three of my hidden cases reproduced identically on repeat.",
+
+  "reviewer_independent_verdict": "PASS",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "AGREE",
+  "divergence_reason": null,
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "This adversarial unit does the job it exists to do, and I confirmed it independently rather than taking the narrative. The detector fires on the real positive case using unit 001's actual runner, and it declines to fire on three separate negative controls I constructed: a fixture with no warm dependence, a cheat runner that fails with a nonzero code but blames the wrong file, and a runner that crashes without parseable output. Both directions of the 'caught' decision are pinned by the producer's own tests. All eight frozen criteria are met and every hash recomputes. One honest caveat is logged: the path-specificity clause of the four-part conjunction can be deleted without any producer test failing, so that clause is unpinned - though I verified with HC-B that the clause is live in the real code, and the surrounding test does assert the exact failed_tests list.",
+  "followups_for_coordinator": [
+    "Add a test that pins the path-specificity clause of 'caught' directly, using a fake runner that exits nonzero while naming a different file. Reviewer-observed: deleting 'and expected_path in clean_report.get(\"failed_tests\", [])' leaves all three producer tests green.",
+    "Minor: the unit is not self-contained - its tests resolve unit 001's runner through a hardcoded sibling subtree path, so it cannot be executed from a single-unit extraction. This is deliberate and correct for proving non-vacuity against the real runner, but it should be documented as a cohort-level execution dependency."
+  ]
+}

@@ -1,0 +1,96 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-sol-xhigh",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-006-interpreter-flag-portability",
+  "cohort": "c1",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c1",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "9ed2320dd73b5333dcb87d5fddbfbabda3087c8972ffd031022e990c9b974fd4",
+  "frozen_hypothesis": "The PO-03 suite passes under isolated interpreter flags with no third-party packages available.",
+  "frozen_required_deliverable": "A matrix runner over python -I and python -I -S that proves the suite is dependency-free and records any import that escapes the standard library.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -I (CPython 3.12.3)",
+    "producer_test_command": "python3 -I test_interpreter_matrix.py -v",
+    "producer_test_output_verbatim": "test_missing_external_import_is_recorded ... ok\ntest_nonimmutable_commit_is_rejected ... ok\ntest_standard_library_test_passes_both_matrices ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 13.609s\n\nOK",
+    "producer_test_exit_code": 0
+  },
+
+  "vacuity_probe": {
+    "method": "Three mechanism removals re-run against the producer's own tests.",
+    "stub_only_I_matrix": {"mutation": "MATRICES reduced to (('-I',),) - the -S row removed", "producer_tests_exit_code": 1, "failures": 2, "tests_detected_stub": true},
+    "stub_no_import_capture": {"mutation": "MISSING_IMPORT.findall replaced with []", "producer_tests_exit_code": 1, "failures": 1, "tests_detected_stub": true},
+    "stub_always_pass": {"mutation": "return 0 unconditionally", "producer_tests_exit_code": 1, "failures": 1, "tests_detected_stub": true},
+    "vacuous_test_finding": false,
+    "conclusion": "Not vacuous. Critically, removing the -S row breaks two tests, so the tests pin the two-matrix requirement of the frozen deliverable rather than accepting a single-flag run."
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-A",
+      "rationale": "Independent full-matrix run against the real repository at the cohort head, a larger commit than the producer used.",
+      "construction": "python3 -I interpreter_matrix.py --source /home/ubuntu/po03-worktrees/c1 --commit 5c0dfcd8ced545cf122d0ab2d8541dd4f4e561af --workspace <fresh>",
+      "observed_output_verbatim": "HC-A exit=0\ncommit: \"5c0dfcd8ced545cf122d0ab2d8541dd4f4e561af\"\ntest_file_count: 12\nmatrix_case_count: 24\nmatrices: [[\"-I\"], [\"-I\", \"-S\"]]\nfailed_cases: []\nimports_escaping_standard_environment: []\nclean_after_run: true",
+      "component_survived": true,
+      "interpretation": "Independent confirmation of the frozen hypothesis on real artifacts: 12 test files x 2 matrices = 24 cases, zero failures, zero escaping imports, clean tree."
+    },
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "The producer proved the escaping-import detector only against a package name that exists nowhere ('definitely_missing_vendor_package'). That does not prove the -S row is load-bearing, because such a name fails under -I too. The real question is whether a genuinely INSTALLED third-party package is caught. This host has numpy 2.4.4 in /usr/local/lib/python3.12/dist-packages.",
+      "construction": "committed test containing 'import numpy; print(numpy.__name__)'",
+      "observed_output_verbatim": "HC-B exit: 1\n   flags ['-I'] rc= 0 | stderr tail: ''\n   flags ['-I', '-S'] rc= 1 | stderr tail: \"ModuleNotFoundError: No module named 'numpy'\"\n   escaping imports: [{\"flags\": \"-I -S\", \"module\": \"numpy\", \"path\": \"workstreams/po03/tests/test_f.py\"}]",
+      "component_survived": true,
+      "interpretation": "This is the strongest result in the unit and the producer did not obtain it. A real installed third-party dependency PASSES under -I and is caught only by the -I -S row, which is then correctly attributed in imports_escaping_standard_environment with the right flags, path and module name. The matrix therefore has genuine dependency-freeness detection power, and the -S row is doing real work rather than being decorative."
+    },
+    {
+      "hidden_case_id": "HC-C",
+      "rationale": "Adversarial false-negative probe: a suite can hide a third-party dependency by skipping instead of failing when the import is unavailable.",
+      "construction": "committed test with try/except ImportError around 'import numpy' plus @unittest.skipUnless(HAVE, 'numpy absent')",
+      "observed_output_verbatim": "HC-C exit: 0 failed_cases: [] escaping: []\n   flags ['-I'] rc= 0 stderr: '.|---...|Ran 1 test in 0.0'\n   flags ['-I', '-S'] rc= 0 stderr: 's|---...|Ran 1 test in 0.0'",
+      "component_survived": false,
+      "interpretation": "FALSE NEGATIVE. The matrix reports exit 0, no failed cases and no escaping imports, so it declares the suite dependency-free - while under -S the test silently skipped rather than ran. The only trace is the unittest status character ('.' under -I versus 's' under -I -S), which is present in the captured output but never surfaced as a finding. A suite could thus lose real coverage under -S and still be reported portable."
+    }
+  ],
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "MET - 3/3 reproduced, plus an independent 24-case real-repository matrix run.",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET - 3 artifacts, all hashes and byte counts recomputed and matched.",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - acceptance_contract_sha256 equals my pre-disclosure hash 9ed2320d...",
+    "result is committed and read back by a different process from an immutable object id": "MET - artifact_commit e8913247999b2072b211deeb5e74e97af0358601.",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - PASS.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "NOT_APPLICABLE - not refuted; independently confirmed.",
+    "no value, hash, metric or provider capability is invented": "MET, specifically checked: the producer cites commit 4f47d80576ba29c05f2ee4e421bcd026994f0306 with '9 recursive test files' and '18 passing cases'. That commit exists ('po03: po03-wa-b2e7-005-deterministic-rerun-equivalence result') and I counted exactly 9 committed test_*.py files under workstreams/po03 at it, so 9 x 2 matrices = 18 is arithmetically and factually correct."
+  },
+
+  "scope_honesty_assessment": {
+    "producer_declared_limitations": [
+      "Explicit absolute-path loading of vendored code is not excluded by interpreter flags; this result proves observed suite behavior under the matrix."
+    ],
+    "assessment": "The declared limitation is accurate and non-obvious - it correctly notes that -I -S constrains sys.path but not explicit file loading. The producer did not declare the HC-C silent-skip false negative, and its own positive control for the escaping-import detector was weak (a package that exists nowhere, which -I alone would also catch). My HC-B supplies the stronger proof the producer should have obtained, and it succeeds, so the weak control understated rather than overstated the component's power."
+  },
+
+  "verification_commands": {
+    "artifact_verification_verbatim": "artifacts: 3 ALL_VERIFY: True",
+    "cited_commit_verification_verbatim": "4f47d80 po03: po03-wa-b2e7-005-deterministic-rerun-equivalence result\n9",
+    "installed_third_party_evidence_verbatim": "['/usr/local/lib/python3.12/dist-packages', '/usr/lib/python3/dist-packages', '/usr/lib/python3.12/dist-packages']\n  certifi\n  charset_normalizer\n  idna\n  jwcrypto\n  numpy\n  numpy-2.4.4.dist-info"
+  },
+
+  "nonportable_artifacts_in_subtree": [],
+  "reproducibility_check": "The 24-case real-repository matrix was run in a fresh python3 -I process and reported clean_after_run=true; the run is self-cleaning (workspace removed in a finally block) and repeated invocations reproduced the same counts.",
+
+  "reviewer_independent_verdict": "PASS",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "AGREE",
+  "divergence_reason": null,
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "The PASS is justified and I could strengthen rather than weaken it. All eight frozen criteria are independently met, hashes and byte counts recompute exactly, and the producer's cited commit and its 9-file/18-case arithmetic are factually correct rather than asserted. I reproduced the frozen hypothesis on real artifacts at a larger commit (24 cases, zero failures, zero escaping imports). Most importantly, HC-B supplies the load-bearing proof the producer's own weak control did not: a genuinely installed third-party package (numpy 2.4.4) passes under -I and is caught only by the -I -S row, correctly attributed with flags, path and module. The tests also reject a stub that deletes the -S row entirely. One false negative is logged for follow-up (HC-C silent skip), which understates coverage loss but does not undermine the confirmed result.",
+  "followups_for_coordinator": [
+    "The matrix cannot distinguish 'passed under -I -S' from 'silently skipped under -I -S'. Reviewer-observed: a test using try/except ImportError plus @unittest.skipUnless reports exit 0, no failed_cases and no escaping imports under both matrices, while actually skipping under -S. Comparing unittest status characters or skip counts between the two matrix rows would close this.",
+    "The producer's escaping-import control used a package name that exists nowhere, which -I alone also rejects. Future runs should use a genuinely installed third-party package as the control, as in HC-B."
+  ]
+}

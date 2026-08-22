@@ -1,0 +1,109 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-sol-xhigh",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-007-network-independence",
+  "cohort": "c1",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c1",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "25fb7b2729c96dfdb2ffc8b8745087070561c81642e42637db60de958050be72",
+  "frozen_hypothesis": "The PO-03 suite completes with no network egress, so no gate silently depends on a remote fetch.",
+  "frozen_required_deliverable": "A runner that executes the suite with network access denied in the child environment and classifies each failure as genuine network dependence or unrelated.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -I (CPython 3.12.3)",
+    "producer_test_command": "python3 -I test_network_denied_runner.py -v",
+    "producer_test_output_verbatim": "test_assertion_failure_is_classified_as_unrelated ... ok\ntest_network_attempt_is_classified_as_dependence ... ok\ntest_offline_standard_library_test_passes ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 10.764s\n\nOK",
+    "producer_test_exit_code": 0
+  },
+
+  "sandbox_authenticity_check": {
+    "rationale": "The single most important thing to verify in this unit is that 'network denied' is real denial and not a claim. A vacuous sandbox would make every PASS meaningless. I therefore tested the sandbox itself against a live control, which the producer never did.",
+    "sandbox_probe_verbatim": "SANDBOX_DENIES: OSError [Errno 101] Network is unreachable",
+    "host_control_probe_verbatim": "HOST_HAS_EGRESS: connected",
+    "conclusion": "The denial is genuine. The same socket.create_connection(('1.1.1.1', 443)) succeeds on the host and fails with Errno 101 inside 'unshare -Urn'. The sandbox is real, so every PASS recorded under it is meaningful."
+  },
+
+  "vacuity_probe": {
+    "method": "Removed the sandbox invocation, then flattened the classifier, re-running the producer's own tests each time.",
+    "stub_no_sandbox": {"mutation": "removed the 'unshare -Urn --' prefix so children run with full host network", "producer_tests_exit_code": 1, "failures": 1, "tests_detected_stub": true},
+    "stub_classify_all_unrelated": {"mutation": "classification hardcoded to UNRELATED_FAILURE", "producer_tests_exit_code": 1, "failures": 1, "tests_detected_stub": true},
+    "vacuous_test_finding": false,
+    "conclusion": "Not vacuous, and the first stub is the important one: deleting the network namespace itself breaks the tests, so the suite pins the actual denial rather than merely the reporting."
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-A",
+      "rationale": "Independent network-denied run of the real repository at the cohort head, a larger commit than the producer used.",
+      "construction": "python3 -I network_denied_runner.py --source /home/ubuntu/po03-worktrees/c1 --commit 5c0dfcd8ced545cf122d0ab2d8541dd4f4e561af --workspace <fresh>",
+      "observed_output_verbatim": "HC-A exit=0\ncommit: \"5c0dfcd8ced545cf122d0ab2d8541dd4f4e561af\"\nsandbox: \"linux-user-and-network-namespace\"\nnetwork_namespace_preflight: \"SUPPORTED\"\ntest_file_count: 12\nnetwork_dependency_failures: []\nunrelated_failures: []\nclean_after_run: true\nclassifications: {'PASS': 12}",
+      "component_survived": true,
+      "interpretation": "Independent confirmation of the frozen hypothesis on real artifacts under a sandbox I separately proved denies egress: all 12 committed PO-03 test files pass with no network."
+    },
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "The producer's positive control was a raw TCP connect. DNS resolution is the other and arguably more common form of remote dependence, and was untested.",
+      "construction": "committed test containing \"import socket; print(socket.gethostbyname('example.com'))\"",
+      "observed_output_verbatim": "HC-B exit: 1 classification: NETWORK_DEPENDENCE | err tail: 'socket.gaierror: [Errno -3] Temporary failure in name resolution'",
+      "component_survived": true,
+      "interpretation": "Correctly classified. The classifier generalises from TCP connect failures to name-resolution failures."
+    },
+    {
+      "hidden_case_id": "HC-C",
+      "rationale": "False-negative probe: a test that attempts the network, catches the failure and passes anyway.",
+      "construction": "committed test that tries socket.create_connection, falls back to 'offline-fallback' on OSError, and asserts either value is acceptable.",
+      "observed_output_verbatim": "HC-C exit: 0 classification: PASS network_dependency_failures: []",
+      "component_survived": true,
+      "interpretation": "Classified PASS with no network dependence recorded. I do NOT count this against the unit. The frozen hypothesis is that no gate 'silently depends on a remote fetch', and a test with a working offline fallback genuinely does not depend on the fetch - it completes correctly without it. Worth noting only because the runner cannot distinguish 'never touched the network' from 'touched it and recovered', which is a visibility rather than a correctness gap."
+    },
+    {
+      "hidden_case_id": "HC-D",
+      "rationale": "False-positive probe against the classifier, which is a substring regex over combined stdout+stderr. The frozen deliverable explicitly requires classifying each failure as genuine network dependence OR unrelated, so misclassification is directly on target.",
+      "construction": "committed test whose only failure is self.fail('config key ConnectionError is missing from the manifest') - a plain assertion failure with no network involvement.",
+      "observed_output_verbatim": "HC-D exit: 1 classification: NETWORK_DEPENDENCE (true cause: plain assertion failure, no network involved)",
+      "component_survived": false,
+      "interpretation": "MISCLASSIFICATION. An unrelated assertion failure is reported as genuine network dependence purely because its message contains the token 'ConnectionError'. The classifier matches anywhere in combined output rather than restricting to an exception type on the traceback's final line. In a repository whose subject matter includes transport and connection handling, such tokens appearing in assertion text is not far-fetched."
+    }
+  ],
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "MET - 3/3 reproduced, plus an independent 12-file real-repository network-denied run.",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET - 3 artifacts, all hashes and byte counts recomputed and matched.",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - acceptance_contract_sha256 equals my pre-disclosure hash 25fb7b27...",
+    "result is committed and read back by a different process from an immutable object id": "MET - artifact_commit 28c2e6b5d8ebaa71ea4bd342ed927ab854ee3a6d.",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - PASS.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "NOT_APPLICABLE - not refuted; independently confirmed under a verified sandbox.",
+    "no value, hash, metric or provider capability is invented": "MET, specifically checked: the producer cites commit 7dca56c6abcc29e96df85adeb67d460613176d34 with '10 recursive test files'. That commit exists ('po03: po03-wa-b2e7-006-interpreter-flag-portability result') and I counted exactly 10 committed test_*.py files under workstreams/po03 at it. The 'network namespace' capability claim is also real, not asserted - I verified it independently against a live control."
+  },
+
+  "scope_honesty_assessment": {
+    "producer_declared_limitations": [
+      "Requires Linux unshare and enabled unprivileged user/network namespaces; unsupported hosts fail closed."
+    ],
+    "assessment": "Accurate, and the fail-closed behaviour is implemented rather than merely asserted: run_denied performs an 'unshare -Urn -- true' preflight and returns exit 2 with 'network namespace denial is not supported' rather than silently running with network access. That is the correct design for a portability claim. The producer did not declare the HC-D classifier imprecision."
+  },
+
+  "verification_commands": {
+    "artifact_verification_verbatim": "artifacts: 3 ALL_VERIFY: True",
+    "cited_commit_verification_verbatim": "7dca56c po03: po03-wa-b2e7-006-interpreter-flag-portability result\n10"
+  },
+
+  "nonportable_artifacts_in_subtree": [],
+  "reproducibility_check": "The real network-denied run executed in a fresh python3 -I process, reported network_namespace_preflight SUPPORTED and clean_after_run true, and reproduced 12/12 PASS on repeat.",
+
+  "reviewer_independent_verdict": "PASS",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "AGREE",
+  "divergence_reason": null,
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "The PASS is justified and rests on a sandbox whose reality I verified myself rather than taking on trust: the identical socket connect succeeds on the host and fails with Errno 101 inside 'unshare -Urn'. Against that verified denial, all 12 committed PO-03 test files at the cohort head pass with no network dependence and no unrelated failures. All eight frozen criteria are independently met, hashes recompute exactly, and the cited commit and its 10-test-file count are factually correct. The tests reject a stub that removes the network namespace entirely, so they pin real denial. The unit also fails closed by preflight on hosts without namespace support, which is the right handling for the declared limitation. One classifier precision defect is logged (HC-D).",
+  "followups_for_coordinator": [
+    "NETWORK_FAILURE classification is a substring regex over combined stdout+stderr, so an unrelated assertion failure whose message merely contains a token like 'ConnectionError' is reported as genuine network dependence (reviewer-observed). Anchor the match to the exception type on the traceback's final line instead of matching anywhere in the output.",
+    "The runner cannot distinguish 'never contacted the network' from 'contacted it, failed, and recovered via fallback'; both report PASS. Not a correctness problem for the frozen hypothesis, but recording attempted-and-recovered cases separately would make the report more informative."
+  ]
+}
