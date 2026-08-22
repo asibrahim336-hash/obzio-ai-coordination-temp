@@ -38,13 +38,13 @@
       "a5",
       "a6",
       "a7",
+      "a8",
       "a9",
       "a10",
       "a12"
     ],
     "cohorts_in_flight": [
       "a3",
-      "a8",
       "a11",
       "a13"
     ]
@@ -92,7 +92,7 @@
       "defect": "The ingestion driver materialises a subordinate branch at HEAD rather than at the commit each result declares, so it was not reading back by immutable SHA. Unit a2-u01 was rejected for a fault_lab.py hash mismatch caused solely by a later commit on the same branch, not by any dishonesty.",
       "remediation_unit": "a11-u05",
       "state": "OPEN_UNDER_REMEDIATION",
-      "live_recurrences": 5,
+      "live_recurrences": 7,
       "fixtures_for_remediation": [
         {
           "unit": "a2-u01",
@@ -366,5 +366,45 @@
       "a5-u12 recurrence testing was independent-process and independent-seed but not different-owner as the frozen acceptance literally required, recorded as an explicit NOT_YET boundary rather than silently satisfied"
     ],
     "coordinator_action": "The different-owner boundary is closed by a6-u07 and the time-bound NOT_YET by a5-u13. Neither was accepted as-is."
+  },
+  "successor_generation_result": {
+    "preregistered_metric": "holdout_pass_rate, frozen at workstreams/po03/successor/suite/lift-preregistration.json before G2 existed in the tree and before any generation was scored, with six guard conditions",
+    "scores": {
+      "G0": {
+        "public": "3/31",
+        "holdout": "0/10",
+        "false_completions": "3 public, 3 holdout"
+      },
+      "G1": {
+        "public": "21/31",
+        "holdout": "7/10",
+        "false_completions": "1 public, 2 holdout"
+      },
+      "G2": {
+        "public": "31/31",
+        "holdout": "10/10",
+        "false_completions": "0, 0"
+      }
+    },
+    "verdict_g1_to_g2": "PASS, lift 0.30 on holdout, every preregistered guard held",
+    "verdict_g0_to_g1": "NOT_YET despite larger raw lift of 0.58 public and 0.70 holdout, because it fails the no-false-completion and critical-correctness guards",
+    "why_that_matters": "The guards demonstrably bite. A raw improvement larger than the one that passed was refused because the generation still admitted false completions. That is the difference between a preregistered metric and a headline number.",
+    "reproducible_by": "python3 -I workstreams/po03/successor/score_generations.py --check",
+    "lessons": "14 recorded, 10 with independent support and a live mechanism against a threshold of 3, support pinned by owner, branch, commit, blob id and digest",
+    "all_five_dispositions_used": true,
+    "notable_reject": "a8 rejected a single weighted headline score on executed evidence: applied to a real score pair it reports progress for a change that reintroduces a false completion",
+    "notable_delete": "a8 deleted its own belief that its units were quality-deficient, withdrawn on a6's correction reclassifying them as availability boundaries",
+    "outstanding_boundaries": [
+      "G2 is a proposal, not a deployment. control_plane.py is coordinator-owned and untouched, so the live control plane still carries the defects G2 fixes.",
+      "a8's recurrence tests are authored by a8 itself, not by a different owner as its frozen acceptance requires. Recorded NOT_YET and routed to a6-u07.",
+      "No a8 unit has been independently accepted; a6 scored while a8's branch was absent from its fetch. Absence of an adverse finding is not acceptance.",
+      "The holdout was sourced from a6's cases but selected and bound by the generation author, which is weaker independence than authorship by a non-author. a13 is authoring a genuinely blind holdout to close this."
+    ],
+    "a8_self_audit": {
+      "finding": "a8 ran a6's read-back audit inward and found all six of its own result records fail their declared result_commit_id locator, because make_result.py resolves HEAD before the record is written.",
+      "sharper_than_a6": "Two records are worse than absent: a record does exist at the declared commit but is a stale earlier version of itself, so an existence check would accept it.",
+      "coordinator_verification": "All 17 artifacts across the two rejected a8 units verify byte-exact at the commit named in each artifact's own content_uri, and several differ at branch HEAD. Neither a single declared commit nor branch HEAD is a correct verification root: it must be per artifact at its own commit, with a HEAD comparison used to flag supersession. DEF-05 and DEF-16 are the two halves of this and a11-u13 must implement both.",
+      "disposition": "a8's L-13 custody-hygiene lesson can move off RETEST: zero tracked bytecode remains, its claim reflected pre-cleanup state inherited from the coordinator."
+    }
   }
 }
