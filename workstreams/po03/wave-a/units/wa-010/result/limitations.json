@@ -96,8 +96,15 @@
     {
       "id": "L12",
       "severity": "MINOR",
-      "title": "Deterministic regeneration excludes one artifact",
-      "detail": "result/build_evidence.py regenerates every JSON artifact byte-identically, but test-output.txt embeds unittest's wall-clock duration line and so differs between runs. The pass/fail content and test count are stable.",
+      "title": "Two artifacts do not regenerate byte-identically",
+      "detail": "Regeneration was measured from a fresh clone of the pushed branch rather than assumed. Exactly two artifacts drift. test-output.txt embeds unittest's wall-clock duration line, though its pass/fail content and test count are stable. source-claims.json drifts by one line, producer_head_commit_at_generation, which by design records the HEAD present when the artifact was generated and therefore changes as the branch advances. registry-audit.json, overlap-detection.json, denial-matrix.json and reproduction-result.json were byte-identical across the two runs.",
+      "measured": {
+        "method": "clone the pushed branch into a fresh directory, run result/build_evidence.py, then 'git status --porcelain'",
+        "artifacts_regenerated": 6,
+        "byte_identical": 4,
+        "drifted": ["result/test-output.txt", "result/source-claims.json"],
+        "drift_lines_in_source_claims": 1
+      },
       "state": "PARTIAL"
     }
   ],

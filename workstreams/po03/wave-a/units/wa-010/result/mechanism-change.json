@@ -78,6 +78,14 @@
       "detail": "source-claims.json first recorded the producer's own HEAD under the key 'immutable_controller_base_commit'.",
       "resolution": "Split into immutable_controller_base_commit (the pinned f2bdb4908026f66e8450802bb15921be1f3c338d), an executed merge-base ancestry check, and producer_head_commit_at_generation.",
       "mechanism_changed": false
+    },
+    {
+      "defect_id": "DEF-PO03-WA-010-04",
+      "kind": "PRODUCER_LIMITATION_CLAIM_IMPRECISE",
+      "detail": "limitations.json entry L12 first claimed that result/build_evidence.py regenerates every JSON artifact byte-identically and that only test-output.txt drifts. Running the regeneration from a fresh clone of the pushed branch showed source-claims.json also drifts, by the single producer_head_commit_at_generation line.",
+      "found_by": "Executing the determinism claim instead of asserting it: clone the pushed branch, re-run build_evidence.py, then 'git status --porcelain'.",
+      "resolution": "L12 rewritten to name both drifting artifacts, to state that four of six regenerated artifacts were byte-identical, and to carry the measurement method. This correction is the reason for the second payload and return commit on this branch.",
+      "mechanism_changed": false
     }
   ],
   "design_decisions": [
