@@ -84,13 +84,28 @@ def expand(tokens: list[str], scratch: Path) -> list[str]:
     ]
 
 
+def launcher(entry: dict[str, Any]) -> list[str]:
+    """The command prefix for an entry point.
+
+    Two PO-03 entry points are POSIX shell, not Python. Declaring the
+    interpreter keeps them in the same manifest rather than in a second one that
+    could quietly stop being run.
+    """
+    interpreter = entry.get("interpreter", "python")
+    if interpreter == "python":
+        return [sys.executable, "-I", "-B"]
+    if interpreter == "sh":
+        return ["sh"]
+    raise ValueError(f"unsupported interpreter: {interpreter!r}")
+
+
 def run_as_subprocess(entry: dict[str, Any], invocation: dict[str, Any]) -> dict[str, Any]:
     with tempfile.TemporaryDirectory(prefix="po03-boundary-") as raw_scratch:
         scratch = Path(raw_scratch)
         (scratch / "home").mkdir()
         (scratch / "tmp").mkdir()
         materialise_inputs(invocation, scratch)
-        argv = [sys.executable, "-I", "-B", str(REPO_ROOT / entry["path"])] + expand(
+        argv = launcher(entry) + [str(REPO_ROOT / entry["path"])] + expand(
             invocation["args"], scratch
         )
         completed = subprocess.run(
@@ -172,7 +187,11 @@ def run_harness(manifest: dict[str, Any], compare: bool = False) -> dict[str, An
                 "subprocess_failures": subprocess_failures,
                 "verdict": "FAIL" if subprocess_failures else "PASS",
             }
-            if compare:
+            if compare and entry.get("interpreter", "python") != "python":
+                # A shell script has no in-process form at all, so comparing the
+                # two modes is not meaningful rather than merely failing.
+                record["in_process_comparison"] = "NOT_APPLICABLE_not_python"
+            elif compare:
                 in_process_outcome = run_in_process(entry, invocation)
                 in_process_failures = judge(invocation, in_process_outcome)
                 record["in_process_exit_code"] = in_process_outcome["exit_code"]

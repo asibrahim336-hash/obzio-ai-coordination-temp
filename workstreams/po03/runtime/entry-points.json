@@ -96,6 +96,39 @@
       ]
     },
     {
+      "id": "ci_surface",
+      "path": "workstreams/po03/runtime/ci_surface.py",
+      "owner": "po03-worker-a3",
+      "invocations": [
+        {"name": "help", "args": ["--help"], "expected_exit_code": 0},
+        {"name": "check-workflows", "args": ["--skip-bytecode"], "expected_exit_code": 0, "expect_stdout_contains": "no cache, no install and no secret"},
+        {"name": "bad-rules", "args": ["--rules", "workstreams/po03/runtime/entry-points.json"], "expected_exit_code": 2, "expect_stderr_contains": "CI_SURFACE_ERROR"}
+      ],
+      "bytecode_note": "The default mode also checks the checkout for warm bytecode. It is not exercised here because the harness runs from a tree in which the suite has already run, so caches exist by then; the workflow runs that mode before anything imports."
+    },
+    {
+      "id": "clean_clone",
+      "path": "workstreams/po03/runtime/clean_clone.sh",
+      "owner": "po03-worker-a3",
+      "interpreter": "sh",
+      "invocations": [
+        {"name": "help", "args": ["--help"], "expected_exit_code": 0, "expect_stdout_contains": "clone from"},
+        {"name": "unknown-argument", "args": ["--po03-not-an-option"], "expected_exit_code": 64, "expect_stderr_contains": "unknown argument"}
+      ],
+      "network_note": "Only the argument surface is exercised. A real invocation clones from the remote, which would make this harness network-dependent and slow; the clone is covered by unit a3-u01's committed transcript and by the clean-runner workflow."
+    },
+    {
+      "id": "offline_check",
+      "path": "workstreams/po03/runtime/offline_check.sh",
+      "owner": "po03-worker-a3",
+      "interpreter": "sh",
+      "invocations": [
+        {"name": "help", "args": ["--help"], "expected_exit_code": 0, "expect_stdout_contains": "override the sandbox command"},
+        {"name": "foreign-policy", "args": ["--policy", "workstreams/po03/runtime/entry-points.json"], "expected_exit_code": 66, "expect_stderr_contains": "unexpected policy schema"}
+      ],
+      "network_note": "Same reason as clean_clone: the substantive modes need baseline reachability and a network namespace, both covered by unit a3-u06."
+    },
+    {
       "id": "process_boundary",
       "path": "workstreams/po03/runtime/process_boundary.py",
       "owner": "po03-worker-a3",

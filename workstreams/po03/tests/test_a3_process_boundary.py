@@ -63,7 +63,12 @@ class EveryEntryPointRunsAsACommand(unittest.TestCase):
         )
 
     def test_every_committed_entry_point_is_declared(self) -> None:
-        """A harness that misses an entry point silently proves less than it claims."""
+        """A harness that misses an entry point silently proves less than it claims.
+
+        This check has earned its keep: it caught ci_surface.py the moment that
+        module was committed, and adding shell coverage caught clean_clone.sh and
+        offline_check.sh, neither of which the Python-only version could see.
+        """
         declared = {entry["path"] for entry in MANIFEST["entry_points"]}
         tracked = subprocess.run(
             ["git", "ls-files", "workstreams/po03/tools", "workstreams/po03/runtime"],
@@ -72,14 +77,24 @@ class EveryEntryPointRunsAsACommand(unittest.TestCase):
             text=True,
             check=True,
         ).stdout.split()
-        executable_modules = set()
+        executable = set()
         for path in tracked:
             parts = Path(path).parts
-            if not path.endswith(".py") or "fixtures" in parts or "__pycache__" in parts:
+            if "fixtures" in parts or "__pycache__" in parts:
+                continue
+            if path.endswith(".sh"):
+                executable.add(path)
+                continue
+            if not path.endswith(".py"):
                 continue
             if '__name__ == "__main__"' in (REPO_ROOT / path).read_text(encoding="utf-8"):
-                executable_modules.add(path)
-        self.assertEqual(executable_modules - declared, set())
+                executable.add(path)
+        self.assertEqual(executable - declared, set())
+
+    def test_shell_entry_points_declare_their_interpreter(self) -> None:
+        for entry in MANIFEST["entry_points"]:
+            expected = "sh" if entry["path"].endswith(".sh") else "python"
+            self.assertEqual(entry.get("interpreter", "python"), expected, entry["path"])
 
     def test_declared_entry_points_all_exist(self) -> None:
         for entry in MANIFEST["entry_points"]:
