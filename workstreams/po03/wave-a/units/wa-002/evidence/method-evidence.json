@@ -1,0 +1,94 @@
+{
+  "current_method_hypotheses": [
+    {
+      "evidence": [
+        "evidence/sanitized-obzio-compilation.json",
+        "tests/test_current_source_compiler.py::CompilerCliTests.test_superseded_source_is_classified_but_not_selected",
+        "tests/test_current_source_compiler.py::CompilerCliTests.test_source_byte_tamper_is_rejected"
+      ],
+      "hypothesis": "An explicit pointer whose candidate declarations agree with hash-bound source declarations can select exactly one current source while preserving a superseded source as non-selected evidence.",
+      "hypothesis_id": "WA002-METHOD-H1",
+      "outcome": "SUPPORTED",
+      "prediction": "The sanitized supersession fixture resolves source-current-v2 and classifies, but never selects, source-legacy-v1.",
+      "state": "HYPOTHESIS"
+    },
+    {
+      "evidence": [
+        "evidence/ambiguous-rejection.json",
+        "tests/test_current_source_compiler.py::CompilerCliTests.test_ambiguous_current_sources_fail_closed_without_output",
+        "tests/test_current_source_compiler.py::CompilerCliTests.test_rejection_does_not_overwrite_existing_output"
+      ],
+      "hypothesis": "Requiring exactly one current candidate per logical source makes ambiguous currentness observable and prevents publication of a compilation.",
+      "hypothesis_id": "WA002-METHOD-H2",
+      "outcome": "SUPPORTED",
+      "prediction": "Two current candidates produce exit code 2, AMBIGUOUS_CURRENT_SOURCE, and no new or replaced output.",
+      "state": "HYPOTHESIS"
+    }
+  ],
+  "mechanism_changes": [
+    {
+      "change_id": "WA002-MC-001",
+      "description": "Introduced a dependency-free compiler that cross-checks normalized repository paths, exact bytes, pointer claims, source claims, one-current cardinality, and supersession edges before an atomic output write.",
+      "executable": "current_source_compiler.py",
+      "independent_disposition": "NOT_YET",
+      "independent_test_interface": {
+        "boundary": "Black-box subprocess invocation; tests do not import compiler internals.",
+        "command": "PYTHONDONTWRITEBYTECODE=1 python3 -B -I -m unittest discover -s workstreams/po03/wave-a/units/wa-002/tests -p 'test_*.py' -v",
+        "fixture_contract": "fixtures/{current,superseded,ambiguous}/pointer.json",
+        "test_path": "tests/test_current_source_compiler.py"
+      },
+      "producer_test_outcome": "PASS",
+      "state": "MECHANISM_CHANGE"
+    }
+  ],
+  "protocol_version": "OBZIO-WA002-METHOD-EVIDENCE-v1",
+  "reproductions": [
+    {
+      "command": "python3 -I workstreams/po03/wave-a/units/wa-002/current_source_compiler.py workstreams/po03/wave-a/units/wa-002/fixtures/superseded/pointer.json --repository workstreams/po03/wave-a/units/wa-002/fixtures/superseded --output workstreams/po03/wave-a/units/wa-002/evidence/sanitized-obzio-compilation.json",
+      "fixture": "fixtures/superseded",
+      "production_data_used": false,
+      "reproduction_id": "WA002-REP-001",
+      "result": "Resolved source-current-v2 and classified source-legacy-v1 as superseded.",
+      "result_artifact": "evidence/sanitized-obzio-compilation.json",
+      "sanitization": "Synthetic instruction IDs and routes only; no secrets, accounts, PO-01 material, or external effects.",
+      "state": "REPRODUCTION",
+      "status": "PASS"
+    },
+    {
+      "command": "python3 -I workstreams/po03/wave-a/units/wa-002/current_source_compiler.py workstreams/po03/wave-a/units/wa-002/fixtures/ambiguous/pointer.json --repository workstreams/po03/wave-a/units/wa-002/fixtures/ambiguous",
+      "fixture": "fixtures/ambiguous",
+      "production_data_used": false,
+      "reproduction_id": "WA002-REP-002",
+      "result": "Rejected two current candidates with exit code 2 and no output mutation.",
+      "result_artifact": "evidence/ambiguous-rejection.json",
+      "sanitization": "Synthetic conflicting candidates only; no secrets, accounts, PO-01 material, or external effects.",
+      "state": "REPRODUCTION",
+      "status": "PASS"
+    }
+  ],
+  "source_claims": [
+    {
+      "claim": "The current operator route is selected by explicit current pointers; filename resemblance does not make a historical source active.",
+      "claim_id": "WA002-SC-001",
+      "evidence_paths": [
+        "operations/README.md",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+        "state/operator-system/ACTIVE_INSTRUCTION_STACK.json"
+      ],
+      "source_commit": "e56eda6e8e4a4e958795f7157839926d93272b30",
+      "state": "SOURCE_CLAIM"
+    },
+    {
+      "claim": "WA-002 must test exact current-versus-superseded resolution, fail closed on ambiguity, and leave executable fixtures and tests.",
+      "claim_id": "WA002-SC-002",
+      "evidence_paths": [
+        "workstreams/po03/control/inputs/wave-a/wa-002.json",
+        "workstreams/po03/control/acceptance/wave-a-material-v1.json"
+      ],
+      "source_commit": "e56eda6e8e4a4e958795f7157839926d93272b30",
+      "state": "SOURCE_CLAIM"
+    }
+  ],
+  "strategy_proposals": [],
+  "task_id": "PO03-WA-002"
+}
