@@ -66,6 +66,24 @@ def committed_path_sha(repo: Path, commit: str, path: str) -> str:
     return digest(data)
 
 
+def normalize_repo_uri(repo: Path, uri: str) -> str:
+    """Resolve a producer URI without mutating its immutable staged artifact."""
+    if (repo / uri).is_file():
+        return uri
+    if uri.startswith("po03/"):
+        corrected = f"workstreams/{uri}"
+        if (repo / corrected).is_file():
+            return corrected
+    raise ValueError(f"producer URI does not resolve to a repository file: {uri}")
+
+
+def task_evidence_commit(repo: Path, producer_tip: str, result_uri: str) -> str:
+    commits = git(repo, "log", "-n", "1", "--format=%H", producer_tip, "--", result_uri)
+    if not commits:
+        raise ValueError(f"no evidence commit contains {result_uri}")
+    return commits.splitlines()[0]
+
+
 def ingest(
     repo: Path,
     route_id: str,
@@ -76,6 +94,7 @@ def ingest(
     route = repo / f"workstreams/po03/runs/wave-a/{route_id}"
     nested_route_metadata = (route / "_route/route-manifest.json").exists()
     uppercase_route_metadata = (route / "MANIFEST.json").exists()
+    route_receipt_metadata = uppercase_route_metadata and (route / "ROUTE-RECEIPT.json").exists()
     metadata_root = route / "_route" if nested_route_metadata else route
     route_manifest_path = (
         route / "MANIFEST.json"
@@ -83,7 +102,7 @@ def ingest(
         else metadata_root / "route-manifest.json"
     )
     execution_receipt_path = (
-        route / "RECEIPT.json"
+        route / ("ROUTE-RECEIPT.json" if route_receipt_metadata else "RECEIPT.json")
         if uppercase_route_metadata
         else metadata_root / "execution-receipt.json"
     )
@@ -92,7 +111,22 @@ def ingest(
 
     if execution.get("route_id") != route_id:
         raise ValueError("execution receipt route mismatch")
-    if uppercase_route_metadata:
+    if route_receipt_metadata:
+        material_attempts = execution.get("material_attempts")
+        if not isinstance(material_attempts, list) or not material_attempts:
+            raise ValueError("route material attempt records missing")
+        producer_state = execution.get("state")
+        staged_state = (
+            "RESULT_STAGED"
+            if all(item.get("obzio_state") == "RESULT_STAGED" for item in material_attempts)
+            else None
+        )
+        acceptance_claimed = execution.get("independent_review", {}).get(
+            "terminal_acceptance_claimed"
+        )
+        if any(item.get("independent_acceptance") != "NOT_TESTED" for item in material_attempts):
+            raise ValueError("material attempt claimed independent acceptance")
+    elif uppercase_route_metadata:
         producer_state = execution.get("custody_state", {}).get("producer_terminal_report")
         staged_state = execution.get("custody_state", {}).get("obzio_state_per_task")
         acceptance_claimed = execution.get("custody_state", {}).get(
@@ -127,14 +161,34 @@ def ingest(
     if outside:
         raise ValueError(f"producer wrote outside route ownership: {outside}")
 
-    if uppercase_route_metadata:
+    if route_receipt_metadata:
+        expected_route_sha = execution["route_manifest_sha256"]
+        expected_route_bytes = route_manifest_path.stat().st_size
+        if execution.get("route_manifest_uri") != route_manifest_path.relative_to(repo).as_posix():
+            raise ValueError("route manifest URI mismatch")
+    elif uppercase_route_metadata:
         expected_route_sha = execution["route_manifest_sha256"]
         expected_route_bytes = execution["route_manifest_bytes"]
     else:
         expected_route_sha = execution["route_manifest"]["sha256"]
         expected_route_bytes = execution["route_manifest"]["bytes"]
     verify_bytes(route_manifest_path, expected_route_sha, expected_route_bytes)
-    if uppercase_route_metadata:
+    if route_receipt_metadata:
+        tasks = execution.get("material_attempts")
+        if not isinstance(tasks, list) or len(tasks) != 8:
+            raise ValueError("route material task count mismatch")
+        artifacts = [
+            {
+                "path": item["content_uri"],
+                "sha256": item["sha256"],
+                "bytes": item["bytes"],
+                "committed_blob_sha256": item.get("committed_blob_sha256"),
+                "immutable_readback_match": item.get("immutable_readback_match"),
+            }
+            for item in route_manifest.get("artifacts", [])
+        ]
+        expected_artifact_count = route_manifest.get("artifact_count")
+    elif uppercase_route_metadata:
         tasks = route_manifest.get("tasks")
         if not isinstance(tasks, list) or route_manifest.get("task_count") != len(tasks):
             raise ValueError("route task count mismatch")
@@ -197,6 +251,13 @@ def ingest(
             raise ValueError(f"artifact outside route ownership: {path_text}")
         path = repo / path_text
         verify_bytes(path, artifact["sha256"], artifact["bytes"])
+        if committed_path_sha(repo, producer_tip, path_text) != artifact["sha256"]:
+            raise ValueError(f"{path_text}: producer tip does not contain claimed bytes")
+        if route_receipt_metadata and (
+            artifact["committed_blob_sha256"] != artifact["sha256"]
+            or artifact["immutable_readback_match"] is not True
+        ):
+            raise ValueError(f"{path_text}: immutable readback claim mismatch")
         if artifact.get("git_blob_sha") and git(repo, "hash-object", path_text) != artifact["git_blob_sha"]:
             raise ValueError(f"{path_text}: git blob mismatch")
 
@@ -212,12 +273,26 @@ def ingest(
     new_metrics: list[dict[str, Any]] = []
     generated: list[dict[str, Any]] = []
     route_function = execution.get("function", route_manifest.get("function", "research-reproduction"))
-    exact_model = execution.get(
-        "exact_model_configuration", route_manifest["exact_model_configuration"]
+    exact_model = execution.get("exact_model_configuration") or route_manifest.get(
+        "exact_model_configuration"
     )
+    if not exact_model:
+        raise ValueError("exact model configuration missing")
     reasoning = "high" if exact_model.startswith("claude-") else "xhigh"
-    route_collision_events = execution.get("collision_events", execution.get("execution_collision_events", []))
-    route_recovery_events = execution.get("recovery_events", execution.get("execution_recovery_events", []))
+    route_collision_events = execution.get(
+        "collision_events",
+        execution.get(
+            "execution_collision_events",
+            execution.get("custody_events", {}).get("collision_events", []),
+        ),
+    )
+    route_recovery_events = execution.get(
+        "recovery_events",
+        execution.get(
+            "execution_recovery_events",
+            execution.get("custody_events", {}).get("recovery_events", []),
+        ),
+    )
 
     for task in tasks:
         task_id = task["task_id"]
@@ -236,17 +311,24 @@ def ingest(
             task.get("result_bytes", staged_path.stat().st_size),
         )
 
-        evidence_commit = (
-            task["result_commit_id"]
-            if nested_route_metadata or uppercase_route_metadata
-            else task["evidence_commit"]
-        )
+        if route_receipt_metadata:
+            evidence_commit = task_evidence_commit(
+                repo, producer_tip, staged_path.relative_to(repo).as_posix()
+            )
+        else:
+            evidence_commit = (
+                task["result_commit_id"]
+                if nested_route_metadata or uppercase_route_metadata
+                else task["evidence_commit"]
+            )
         git(repo, "cat-file", "-e", f"{evidence_commit}^{{commit}}")
         result_path_text = staged_path.relative_to(repo).as_posix()
         if committed_path_sha(repo, evidence_commit, result_path_text) != task["result_sha256"]:
             raise ValueError(f"{task_id}: evidence commit does not contain staged result")
 
-        if uppercase_route_metadata:
+        if route_receipt_metadata:
+            task_manifest_path = task_dir / "manifest.json"
+        elif uppercase_route_metadata:
             task_manifest_path = repo / task["manifest_uri"]
         else:
             task_manifest_path = task_dir / (
@@ -261,7 +343,11 @@ def ingest(
                 else task["artifact_manifest_sha256"]
             ),
             (
-                task["manifest_bytes"]
+                (
+                    task_manifest_path.stat().st_size
+                    if route_receipt_metadata
+                    else task["manifest_bytes"]
+                )
                 if nested_route_metadata or uppercase_route_metadata
                 else task["artifact_manifest_bytes"]
             ),
@@ -273,12 +359,14 @@ def ingest(
             manifest_uri = item.get("repository_uri", item.get("content_uri"))
             if not manifest_uri:
                 raise ValueError(f"{task_id}: artifact has no repository URI")
-            verify_bytes(repo / manifest_uri, item["sha256"], item["bytes"])
+            verify_bytes(repo / normalize_repo_uri(repo, manifest_uri), item["sha256"], item["bytes"])
 
         parent_artifacts = []
         for artifact in staged["artifacts"]:
-            verify_bytes(repo / artifact["content_uri"], artifact["sha256"], artifact["bytes"])
+            corrected_uri = normalize_repo_uri(repo, artifact["content_uri"])
+            verify_bytes(repo / corrected_uri, artifact["sha256"], artifact["bytes"])
             verified = dict(artifact)
+            verified["content_uri"] = corrected_uri
             verified["readback_verified_at"] = ingested_at
             parent_artifacts.append(verified)
 
@@ -290,6 +378,9 @@ def ingest(
             "artifacts": parent_artifacts,
             "result_transaction": {
                 **staged["result_transaction"],
+                "manifest_uri": normalize_repo_uri(
+                    repo, staged["result_transaction"]["manifest_uri"]
+                ),
                 "state": "INGESTED",
                 "committed_at": committed_at,
                 "verified_at": ingested_at,
