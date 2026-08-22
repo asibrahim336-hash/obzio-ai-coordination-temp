@@ -2,8 +2,8 @@
   "receipt_version": "PO03-CLEAN-CLONE-REPRODUCTION-v1",
   "repository": "github.com/asibrahim336-hash/obzio-ai-coordination-temp",
   "branch": "cursor/po03-independent-challenger-70f8",
-  "immutable_commit_sha": "f5ce031f3efb3e6218a6df9de7001010fbb01fac",
-  "observed_at": "2026-08-22T06:58:43Z",
+  "immutable_commit_sha": "b41c7b6a1b3f2a35e6b2bdde4ec99c4c6f775483",
+  "observed_at": "2026-08-22T07:00:24Z",
   "runtime": {
     "python": "python3",
     "dependency_policy": "standard-library-only",
@@ -16,23 +16,23 @@
   "checks": [
     {
       "name": "PO-03 changed-path boundary",
-      "command": "python3 -I workstreams/po03/tools/check_path_scope.py --base 5db7affeb7f00763e148e6d98a33ee6b751f2def --head HEAD",
+      "command": "python3 -B -I workstreams/po03/tools/check_path_scope.py --base 5db7affeb7f00763e148e6d98a33ee6b751f2def --head HEAD",
       "result": "PASS",
-      "observed": "PO03_PATH_SCOPE_PASS changed_paths=30"
+      "observed": "PO03_PATH_SCOPE_PASS changed_paths=31"
     },
     {
       "name": "seeded and controller tests",
-      "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+      "command": "python3 -B -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
       "result": "PASS",
       "tests_run": 37,
-      "elapsed_seconds": 0.044
+      "elapsed_seconds": 0.043
     },
     {
       "name": "adversarial cohort tests",
-      "command": "python3 -I -m unittest discover -s workstreams/po03/attempts/wave-a/bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8/tests -p 'test_*.py' -v",
+      "command": "python3 -B -I -m unittest discover -s workstreams/po03/attempts/wave-a/bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8/tests -p 'test_*.py' -v",
       "result": "PASS",
       "tests_run": 9,
-      "elapsed_seconds": 0.109
+      "elapsed_seconds": 0.116
     },
     {
       "name": "transaction-created validation",
@@ -56,10 +56,17 @@
     },
     {
       "name": "repository operator taxonomy",
-      "command": "python3 scripts/check_operator_taxonomy.py",
+      "command": "python3 -B scripts/check_operator_taxonomy.py",
       "result": "PASS"
     }
   ],
-  "failures": [],
+  "failures": [
+    {
+      "state": "REPAIRED_AND_RETESTED",
+      "observed": "The first clean-clone test invocation generated transient __pycache__ files outside the worker-owned subtree.",
+      "repair": "Set sys.dont_write_bytecode in the harness and execute all clean-clone Python commands with -B.",
+      "recurrence_test": "The repaired clean clone completed with git status --porcelain empty and no workstreams/po03/tools/__pycache__ directory."
+    }
+  ],
   "decision_changed": []
 }
