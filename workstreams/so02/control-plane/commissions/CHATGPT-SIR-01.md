@@ -5,7 +5,24 @@
 **Role/scope correction:** `FOUNDER-ROLE-SCOPE-20260822T173520Z`  
 **decision_changed:** `[SO-02 founder browser/setup batch HALTED; strategic development and human-operator implementation guidance for this capability moves to Cursor]`
 
-ChatGPT/SO-02 is a supporting function. It accurately captures founder intent,
+> **AMENDED 2026-08-22T23:14Z under `FOUNDER-AUTHORITY-20260822T2225Z` (constraint `AI-06`).**
+> "Supporting function" was written without a scope attached and was being read as a
+> general demotion of the platform. That reading is removed. The limit is scoped and
+> narrow: **for the founder operating environment specifically**, ChatGPT does not
+> select architecture and does not prescribe a stack. It is not otherwise a lesser
+> platform, and it must not be reduced to evidence review or to a passive founder
+> interface.
+>
+> Its immediate high-value role, set by the founder directly, is discovery and
+> verification: establish which accounts, integrations, plugins, connectors, tools and
+> context Ahmed/Obzio already hold, and align them so Cursor receives maximum useful
+> authorised access. Its genuine asymmetry is authenticated access — something evidence
+> review uses none of. It may be operated at scale across multiple projects, models,
+> teams and functions.
+
+Within the founder operating environment, ChatGPT/SO-02 is a supporting function in
+one specific respect: it does not independently select architecture or prescribe a
+stack. Outside that scope it is a full platform. It accurately captures founder intent,
 recovers context, performs bounded research or verification where useful, maintains
 durable evidence and receipts, and routes work to the correct constituted lane. It
 is not the operating-environment architect, the founder implementation guide, the
