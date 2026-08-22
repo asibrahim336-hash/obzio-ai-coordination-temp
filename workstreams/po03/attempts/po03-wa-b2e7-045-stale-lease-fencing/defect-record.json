@@ -1,0 +1,91 @@
+{
+  "defect_id": "DEF-PO03-C6-045-FENCING-INCOMPLETE",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "cohort": "c6",
+  "task_id": "po03-wa-b2e7-045-stale-lease-fencing",
+  "function": "transactional-recovery-and-fault-injection",
+  "falsifiable_hypothesis": "An expired or superseded worker cannot commit after ownership transfers.",
+  "required_deliverable": "Lease-expiry and fencing tests asserting a stale fence token is refused at ingestion and the transferred holder succeeds.",
+  "verdict": "FAIL",
+  "verdict_split": {
+    "superseded_worker_clause": "PASS",
+    "transferred_holder_clause": "PASS",
+    "lease_expiry_clause": "FAIL",
+    "fence_authenticity_boundary": "FAIL",
+    "fence_allocation_uniqueness": "FAIL"
+  },
+  "severity": "AUTHORISED_CUSTODY_GAP_NOT_A_FALSE_COMPLETION",
+  "mechanism_under_test": "workstreams/po03/tools/transactional_factory.py",
+  "fault_classes": [
+    {
+      "fault_class": "SUPERSEDED_WORKER_COMMITS_AFTER_OWNERSHIP_TRANSFER",
+      "injected_at_state_transition": "LEASED (transferred) -> RESULT_COMMITTED",
+      "observed_behaviour": "the transfer advanced the fence from 1 to 2; the old holder's result was refused with 'fence 1 is stale; active fence is 2' and classified RECOVERY_REQUIRED; the transferred holder's identical result reached PARENT_INGESTED with zero errors; false_completion_count 0",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "EXPIRED_LEASE_WITHOUT_OWNERSHIP_TRANSFER",
+      "injected_at_state_transition": "LEASED (expired) -> RESULT_COMMITTED",
+      "observed_behaviour": "a lease granted with lease_seconds 0 was already expired, yet the holder's result reached PARENT_INGESTED with zero errors; source inspection of assert_fence_current and ingest_result found no reference to lease_seconds or granted_at, so the recorded lifetime is never read",
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "NEVER_ALLOCATED_HIGHER_FENCE_TOKEN",
+      "injected_at_state_transition": "LEASED -> RESULT_COMMITTED",
+      "observed_behaviour": "with the active fence at 1, a worker presenting fence 1001 was not refused by assert_fence_current and its result reached PARENT_INGESTED; the guard rejects only tokens lower than the active fence, so a token that was never allocated passes",
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "INTERLEAVED_FENCE_ALLOCATION",
+      "injected_at_state_transition": "CREATED -> LEASED (fence allocation)",
+      "observed_behaviour": "suspending one allocation inside its read-modify-write window while a second allocation completed returned token 1 to both allocators; the exclusive-creation candidate returned 1 and 2 under the identical interleaving",
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "CONCURRENT_FENCE_ALLOCATION_ACROSS_REAL_PROCESSES",
+      "injected_at_state_transition": "CREATED -> LEASED (fence allocation)",
+      "observed_behaviour": "eight real processes taking six tokens each received 48 tokens with only 14 distinct values (34 duplicates) from the live allocator, and 48 tokens with 48 distinct values (0 duplicates) from the candidate",
+      "verdict": "OBSERVATION_ONLY",
+      "note": "duplicate counts from a genuine race are timing dependent, so this class is reported rather than asserted; the deterministic interleaving above is the assertable form"
+    }
+  ],
+  "why_this_is_a_defect": "Fencing is only as strong as the identity of the token. Because allocation is a read-modify-write, two live workers can hold the same token, and because the guard accepts anything not lower than the active fence, a worker can present a token it was never granted. Either path lets a worker whose ownership the coordinator did not authorise write a result. Separately, lease_seconds and granted_at are recorded on every lease and never read, so the lease has no lifetime in practice and the deliverable's lease-expiry assertion has nothing to assert against.",
+  "false_completion_impact": "none observed. Every accepted result still had to pass the seeded contract and full artifact read-back by immutable object id, so an unauthorised writer cannot produce a completion without durable bytes. false_completion_count stayed 0 in every class.",
+  "what_the_mechanism_does_hold": [
+    "a superseded worker is refused at ingestion with an explicit stale-fence error",
+    "the transferred holder succeeds immediately afterwards",
+    "a lease transfer always advances the fence",
+    "no fault class produced a COMPLETED state or a false completion",
+    "no founder relay is involved in any part of the observed path"
+  ],
+  "repair_candidate": {
+    "path": "workstreams/po03/attempts/po03-wa-b2e7-045-stale-lease-fencing/repair_candidate_fencing.py",
+    "entry_points": ["allocate_fence_exclusive", "assert_fence_exact", "assert_lease_live", "guarded_ingest"],
+    "approach": "allocate tokens by exclusive file creation so uniqueness is a filesystem property rather than a timing property; require the presented fence to equal the active fence exactly and refuse any fence when no lease is held; enforce granted_at plus lease_seconds against an explicit observation time; apply both checks in front of the unmodified ingest_result",
+    "evidence_it_closes_the_gap": [
+      "test_candidate_allocation_stays_unique_under_the_same_interleaving",
+      "test_real_concurrent_allocation_is_unique_only_with_the_candidate",
+      "test_candidate_requires_the_exact_active_fence",
+      "test_candidate_refuses_any_fence_when_no_lease_is_held",
+      "test_candidate_refuses_an_expired_holder",
+      "test_candidate_accepts_a_holder_inside_its_lifetime"
+    ],
+    "adopted_by_live_mechanism": false,
+    "adoption_note": "assert_fence_exact is stricter than the seeded behaviour that test_unleased_task_accepts_any_fence in workstreams/po03/tests/test_factory_custody.py records as intended. Adopting exact fencing is therefore a deliberate coordinator decision about that seeded contract, not a silent bug fix, and this producer did not make it.",
+    "adoption_authority": "coordinator only; a subordinate producer may not modify workstreams/po03/tools/** or workstreams/po03/tests/**"
+  },
+  "reproduction": {
+    "component": "workstreams/po03/attempts/po03-wa-b2e7-045-stale-lease-fencing/lease_fencing_injector.py",
+    "concurrency_child": "workstreams/po03/attempts/po03-wa-b2e7-045-stale-lease-fencing/fence_child.py",
+    "command": "python3 -I workstreams/po03/attempts/po03-wa-b2e7-045-stale-lease-fencing/lease_fencing_injector.py",
+    "exit_code_observed": 1,
+    "report": "workstreams/po03/attempts/po03-wa-b2e7-045-stale-lease-fencing/injection-report.json",
+    "test_command": "python3 -I -m unittest discover -s workstreams/po03/attempts/po03-wa-b2e7-045-stale-lease-fencing -p 'test_*.py' -v",
+    "test_outcome": "13 tests, OK",
+    "test_output": "workstreams/po03/attempts/po03-wa-b2e7-045-stale-lease-fencing/test-output.txt"
+  },
+  "test_weakening_check": "no assertion was relaxed to obtain a pass; the three defect tests assert the current accepting behaviour and will fail once the mechanism is tightened, at which point the candidate tests become the live contract",
+  "obzio_state_claim": "READY_TO_COMMIT",
+  "producer_may_not_accept_own_work": true,
+  "decision_changed": []
+}

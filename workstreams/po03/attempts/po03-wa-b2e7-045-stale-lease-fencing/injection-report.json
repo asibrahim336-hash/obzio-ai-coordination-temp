@@ -1,0 +1,98 @@
+{
+  "false_completions_observed": 0,
+  "fault_classes": 5,
+  "hypothesis_clause_superseded_worker_refused": true,
+  "results": [
+    {
+      "fault_class": "SUPERSEDED_WORKER_COMMITS_AFTER_OWNERSHIP_TRANSFER",
+      "injected_at_state_transition": "LEASED (transferred) -> RESULT_COMMITTED",
+      "observed": {
+        "false_completion_count": 0,
+        "fence_advanced_on_transfer": true,
+        "first_fence": 1,
+        "second_fence": 2,
+        "stale_holder_errors": [
+          "po03-c6-045-sandbox-unit: fence 1 is stale; active fence is 2"
+        ],
+        "stale_holder_state": "RECOVERY_REQUIRED",
+        "transferred_holder_errors": [],
+        "transferred_holder_state": "PARENT_INGESTED"
+      },
+      "verdict": "PASS"
+    },
+    {
+      "expiry_enforced_by_live_mechanism": false,
+      "fault_class": "EXPIRED_LEASE_WITHOUT_OWNERSHIP_TRANSFER",
+      "injected_at_state_transition": "LEASED (expired) -> RESULT_COMMITTED",
+      "observed": {
+        "expiry_referenced_in_fence_check": false,
+        "expiry_referenced_in_ingestion": false,
+        "lease_seconds_recorded": 0,
+        "live_ingestion_errors": [],
+        "live_ingestion_state": "PARENT_INGESTED",
+        "repair_candidate_errors": [
+          "po03-c6-045-sandbox-unit: lease lease-po03-c6-045-sandbox-unit-1 expired at 2026-08-22T07:44:47+00:00"
+        ],
+        "repair_candidate_state": "RECOVERY_REQUIRED"
+      },
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "NEVER_ALLOCATED_HIGHER_FENCE_TOKEN",
+      "injected_at_state_transition": "LEASED -> RESULT_COMMITTED",
+      "observed": {
+        "active_fence": 1,
+        "forged_fence_presented": 1001,
+        "forged_fence_refused_by_live_guard": false,
+        "live_ingestion_errors": [],
+        "live_ingestion_state": "PARENT_INGESTED",
+        "repair_candidate_errors": [
+          "po03-c6-045-sandbox-unit: fence 1001 is not the active fence 1"
+        ],
+        "repair_candidate_state": "RECOVERY_REQUIRED"
+      },
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "INTERLEAVED_FENCE_ALLOCATION",
+      "injected_at_state_transition": "CREATED -> LEASED (fence allocation)",
+      "method": "the outer allocation is suspended inside its read-modify-write window while a second allocator completes, which is the interleaving two live workers can reach without any injection",
+      "observed": {
+        "candidate_inner_token": 1,
+        "candidate_outer_token": 2,
+        "candidate_tokens_collided": false,
+        "live_inner_token": 1,
+        "live_outer_token": 1,
+        "live_tokens_collided": true
+      },
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "CONCURRENT_FENCE_ALLOCATION_ACROSS_REAL_PROCESSES",
+      "injected_at_state_transition": "CREATED -> LEASED (fence allocation)",
+      "note": "duplicate counts from a genuine race are timing dependent and are reported, not asserted; the deterministic interleaving above is the assertable form",
+      "observed": {
+        "LIVE": {
+          "allocations_per_worker": 6,
+          "child_failures": [],
+          "distinct_tokens": 29,
+          "duplicate_tokens": 19,
+          "tokens_handed_out": 48,
+          "workers": 8
+        },
+        "REPAIR_CANDIDATE": {
+          "allocations_per_worker": 6,
+          "child_failures": [],
+          "distinct_tokens": 48,
+          "duplicate_tokens": 0,
+          "tokens_handed_out": 48,
+          "workers": 8
+        }
+      },
+      "verdict": "OBSERVATION_ONLY"
+    }
+  ],
+  "unit": "po03-wa-b2e7-045-stale-lease-fencing",
+  "verdict": "FAIL",
+  "verdict_basis": "the stated clause holds: a superseded worker is refused and the transferred holder succeeds. The deliverable's lease-expiry clause fails because lease_seconds and granted_at are recorded and never read, a fence token that was never allocated is accepted because the guard only rejects lower tokens, and the allocator's read-modify-write window hands the same token to two allocators"
+}
