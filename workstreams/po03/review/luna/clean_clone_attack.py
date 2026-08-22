@@ -43,12 +43,19 @@ def probe(ref: str) -> dict:
         "runner_uses_external_default_scratch": 'SCRATCH=$(mktemp -d)' in text,
     }
     missing = [label for label, item in objects.items() if not item["present"]]
+    tree_code, tree_output, _ = git("ls-tree", "-r", "--name-only", ref)
+    tracked_generated = [
+        path
+        for path in tree_output.decode("utf-8", errors="replace").splitlines()
+        if "__pycache__/" in path or path.endswith(".pyc")
+    ]
     return {
         "ref": ref,
         "objects": objects,
         "runner_checks": checks,
+        "tracked_generated_files": tracked_generated,
         "missing_required_objects": missing,
-        "status": "ESCAPE_FOUND" if missing else "NO_ESCAPE_IN_PROBES",
+        "status": "ESCAPE_FOUND" if missing or tracked_generated else "NO_ESCAPE_IN_PROBES",
         "stderr": stderr.decode("utf-8", errors="replace") if code else "",
     }
 

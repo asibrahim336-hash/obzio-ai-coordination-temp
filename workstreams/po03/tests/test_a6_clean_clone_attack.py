@@ -18,6 +18,10 @@ class CleanCloneAttackTests(unittest.TestCase):
         self.assertTrue(result["objects"]["runner"]["present"])
         self.assertTrue(result["objects"]["tests"]["present"])
         self.assertFalse(result["objects"]["transcript"]["present"])
+        self.assertIn(
+            "workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            result["tracked_generated_files"],
+        )
         self.assertTrue(result["runner_checks"]["runner_shell_syntax"])
         self.assertTrue(result["runner_checks"]["runner_clones_remote"])
         self.assertTrue(result["runner_checks"]["runner_strips_environment"])
