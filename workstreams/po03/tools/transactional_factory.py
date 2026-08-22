@@ -967,7 +967,7 @@ def _result_manifest_declaration(
     task_id: str,
     normalized_slot: str,
 ) -> tuple[list[Any], int | None]:
-    """Normalize the two frozen Wave A manifest envelopes without weakening scope checks."""
+    """Normalize frozen Wave A manifest envelopes without weakening scope checks."""
     if manifest.get("task_id") != task_id:
         raise FactoryError("result manifest task_id does not match custody task")
     if manifest.get("decision_changed", []) != []:
@@ -976,10 +976,40 @@ def _result_manifest_declaration(
     if isinstance(manifest.get("artifacts"), list):
         if str(manifest.get("result_slot", "")).rstrip("/") != normalized_slot:
             raise FactoryError("result manifest slot does not match frozen task ownership")
-        declared = manifest["artifacts"]
-        if manifest.get("artifact_count") != len(declared):
+        raw_declared = manifest["artifacts"]
+        if manifest.get("artifact_count") != len(raw_declared):
             raise FactoryError("result manifest artifact_count does not match declared artifacts")
-        declared_total = manifest.get("total_artifact_bytes_excluding_manifest")
+        if all(isinstance(item, dict) and "path" in item for item in raw_declared):
+            declared = raw_declared
+            declared_total = manifest.get("total_artifact_bytes_excluding_manifest")
+        elif (
+            isinstance(manifest.get("manifest_version"), str)
+            and manifest["manifest_version"].startswith("PO03-WAVE-A-")
+            and all(
+                isinstance(item, dict)
+                and _nonempty(item.get("logical_name"))
+                and _nonempty(item.get("repository_path"))
+                for item in raw_declared
+            )
+        ):
+            declared = []
+            for item in raw_declared:
+                logical_name = _canonical_result_relative_path(item["logical_name"])
+                expected_repository_path = f"{normalized_slot}/{logical_name}"
+                if item["repository_path"] != expected_repository_path:
+                    raise FactoryError(
+                        "result manifest repository_path does not match its logical_name"
+                    )
+                declared.append(
+                    {
+                        "path": logical_name,
+                        "sha256": item.get("sha256"),
+                        "bytes": item.get("bytes"),
+                    }
+                )
+            declared_total = manifest.get("total_bytes")
+        else:
+            raise FactoryError("result manifest artifacts use an unsupported path envelope")
         if not isinstance(declared_total, int) or declared_total < 0:
             raise FactoryError("result manifest total artifact bytes must be a non-negative integer")
         return declared, declared_total

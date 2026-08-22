@@ -66,7 +66,15 @@ class TransactionalFactoryTests(unittest.TestCase):
             text=True,
         ).stdout.strip()
 
-    def _committed_ready_result(self, *, include_scope_escape=False, source_manifest=False):
+    def _committed_ready_result(
+        self,
+        *,
+        include_scope_escape=False,
+        source_manifest=False,
+        review_manifest=False,
+    ):
+        if source_manifest and review_manifest:
+            raise ValueError("test manifest dialects are mutually exclusive")
         self._create_task()
         MODULE.advance_task(
             "po03-test-task",
@@ -109,6 +117,25 @@ class TransactionalFactoryTests(unittest.TestCase):
                 "unit_root": "workstreams/po03/attempts/test",
                 "self_excluded": "manifest.json",
                 "sources": [artifact],
+                "decision_changed": [],
+            }
+        elif review_manifest:
+            manifest = {
+                "manifest_version": "PO03-WAVE-A-TEST-MANIFEST-v1",
+                "task_id": "po03-test-task",
+                "result_slot": "workstreams/po03/attempts/test",
+                "artifact_count": 1,
+                "total_bytes": len(artifact_bytes),
+                "artifacts": [
+                    {
+                        "logical_name": artifact_path,
+                        "repository_path": (
+                            f"workstreams/po03/attempts/test/{artifact_path}"
+                        ),
+                        "sha256": artifact["sha256"],
+                        "bytes": artifact["bytes"],
+                    }
+                ],
                 "decision_changed": [],
             }
         else:
@@ -576,6 +603,24 @@ class TransactionalFactoryTests(unittest.TestCase):
         self.assertEqual(
             transaction["artifacts"][1]["bytes"],
             transaction["result_transaction"]["total_bytes"],
+        )
+
+    def test_wave_review_manifest_with_repository_paths_is_ingested(self):
+        result_base_commit, result_commit_id = self._committed_ready_result(review_manifest=True)
+        result = MODULE.ingest_committed_result(
+            "po03-test-task",
+            result_commit_id=result_commit_id,
+            result_base_commit_id=result_base_commit,
+            result_ref="HEAD",
+            provider_run_id="provider-execution-1",
+        )
+        transaction = json.loads(
+            (MODULE.CONTROL_ROOT / "tasks" / "po03-test-task" / "transaction-ingested.json").read_text()
+        )
+        self.assertEqual("PARENT_INGESTED", result["status"])
+        self.assertEqual(
+            "result.json",
+            transaction["artifacts"][0]["logical_name"],
         )
 
     def test_ingestion_rejects_commit_that_escapes_owned_result_slot(self):
