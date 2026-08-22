@@ -273,6 +273,34 @@ def inventory_worktree_extras(worktree: Path, tracked: frozenset, cache_globs: G
     return untracked, cache
 
 
+def inventory_modified_tracked(worktree: Path, commit: str) -> dict:
+    """Tracked paths whose working-tree content differs from the target commit.
+
+    Modified tracked content is hidden state, but it is outside the three classes
+    named by H-PO03-WA-008, so it is reported as an observation and never
+    attributed. Reporting it keeps an unattributable divergence from looking
+    unexplained.
+    """
+    if run_git(["rev-parse", "--git-dir"], cwd=worktree, check=False).returncode != 0:
+        return {
+            "measured": False,
+            "reason": "warm checkout is not a git working tree",
+            "paths": [],
+        }
+    completed = run_git(["diff", "--name-only", commit, "--"], cwd=worktree, check=False)
+    if completed.returncode != 0:
+        return {
+            "measured": False,
+            "reason": "target commit is not present in the warm checkout",
+            "paths": [],
+        }
+    return {
+        "measured": True,
+        "reason": None,
+        "paths": sorted(line for line in completed.stdout.splitlines() if line),
+    }
+
+
 def inventory_external_cache(cache_root):
     if cache_root is None:
         return []
@@ -489,6 +517,7 @@ class DifferentialRun:
             self.warm_checkout, tracked, self.cache_globs
         )
         external_cache = inventory_external_cache(self.warm_cache_root)
+        modified_tracked = inventory_modified_tracked(self.warm_checkout, self.commit)
 
         sandbox = self._new_sandbox()
 
@@ -528,6 +557,15 @@ class DifferentialRun:
                 CLASS_ENVIRONMENT: bool(env_delta),
                 CLASS_WARM_CACHE: bool(warm_cache) or bool(external_cache),
             },
+            "out_of_scope_state": {
+                "modified_tracked_paths": modified_tracked["paths"],
+                "modified_tracked_measured": modified_tracked["measured"],
+                "modified_tracked_not_measured_reason": modified_tracked["reason"],
+                "note": (
+                    "Modified tracked content and checkout ref state are hidden state outside the "
+                    "three classes named by H-PO03-WA-008; they are reported, never attributed."
+                ),
+            },
         }
 
         report = {
@@ -564,8 +602,9 @@ class DifferentialRun:
 
         report["timing"] = {"wall_time_seconds": round(time.monotonic() - started_wall, 6)}
         report["classification_digest"] = classification_digest(report)
+        # Only the token is recorded: a committed report must not carry the
+        # runtime temporary path it happened to execute in.
         report["sandbox_root"] = "<SANDBOX>"
-        report["sandbox_root_actual_excluded_from_digest"] = str(sandbox)
         return report
 
     def _apply(self, target, classes, warm_untracked, warm_cache, external_cache, env_delta):
@@ -685,6 +724,11 @@ class DifferentialRun:
                 "no declared hidden-state class, alone or in combination, reproduced the warm "
                 "outcome in an independently materialised checkout"
             )
+            out_of_scope = report["hidden_state_inventory"]["out_of_scope_state"]
+            candidates = ["CHECKOUT_REF_STATE", "ABSOLUTE_PATH_OR_HOST_DEPENDENCE"]
+            if out_of_scope["modified_tracked_paths"]:
+                candidates.insert(0, "MODIFIED_TRACKED_CONTENT")
+            report["out_of_scope_candidates"] = candidates
 
     def cleanup(self) -> None:
         if self._owns_sandbox and self._sandbox is not None and self._sandbox.is_dir():
@@ -724,6 +768,7 @@ def classification_digest(report: dict) -> str:
         "cache_paths": [record["path"] for record in inventory["cache_paths"]],
         "external_cache_paths": [record["path"] for record in inventory["external_cache_paths"]],
         "environment_delta_keys": [record["key"] for record in inventory["environment_delta"]],
+        "modified_tracked_paths": inventory["out_of_scope_state"]["modified_tracked_paths"],
         "probes": [
             {
                 "applied_classes": probe["applied_classes"],

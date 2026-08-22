@@ -1,0 +1,65 @@
+{
+  "protocol_version": "OBZIO-HYPOTHESES-v1",
+  "task_id": "PO03-WA-008",
+  "state": "FROZEN_HYPOTHESIS",
+  "state_note": "Hypotheses are recorded separately from the source claims that motivated them and from the reproductions that tested them. Each derived hypothesis and every fixture expectation was written into hidden_state_fixtures.py before the first fixture-matrix execution.",
+  "frozen_before_first_execution": true,
+  "frozen_at": "2026-08-22T08:33:00Z",
+  "frozen_at_precision": "MINUTE_FROM_SHELL_TIMESTAMPS_BEFORE_FIRST_MATRIX_RUN",
+  "primary": {
+    "hypothesis_id": "H-PO03-WA-008",
+    "source": "immutable task input wa-008-a02.json",
+    "statement": "A two-checkout differential run can expose dependencies on untracked files, environment leakage, or warm caches.",
+    "exact_falsifier": "For any of the three classes, a workload whose outcome depends on that class alone produces identical normalised outcomes in the warm and clean checkouts, or the runner cannot say which class caused an observed divergence.",
+    "outcome": "SUPPORTED",
+    "outcome_evidence": "Six warm-only green mutants across the three classes were each detected and attributed to the correct single class, with the interaction case attributed to both necessary classes; see fixture-matrix-result.json and reproduction-result.json."
+  },
+  "derived": [
+    {
+      "hypothesis_id": "HD-PO03-WA-008-01",
+      "statement": "Replaying the clean checkout with exactly one class of the warm checkout's hidden state re-applied is sufficient to attribute a divergence to that class.",
+      "exact_falsifier": "A single-class replay fails to reproduce the warm outcome digest for a workload that depends on that class alone, or reproduces it for a class the workload does not use.",
+      "outcome": "SUPPORTED",
+      "evidence": "untracked-file-dependency, environment-leakage, warm-cache-repo-local and warm-cache-external-home each produced a sufficient-alone single-class probe; the two clean controls produced no finding at all."
+    },
+    {
+      "hypothesis_id": "HD-PO03-WA-008-02",
+      "statement": "Presence of hidden state is not itself evidence of dependence, so a workload that ignores present hidden state must produce no finding.",
+      "exact_falsifier": "The clean-control fixture with all three classes present reports any attributed class or any divergence.",
+      "outcome": "SUPPORTED",
+      "evidence": "clean-control-contaminated-but-unused reports class_present true for all three classes and verdict NO_HIDDEN_STATE_DEPENDENCY_DETECTED with zero attributed classes."
+    },
+    {
+      "hypothesis_id": "HD-PO03-WA-008-03",
+      "statement": "Intrinsic nondeterminism is separable from hidden-state dependence by repeating the command within each side before comparing sides.",
+      "exact_falsifier": "A workload that is nondeterministic in both checkouts is reported as depending on a hidden-state class.",
+      "outcome": "SUPPORTED_WITH_A_STATED_CONDITION",
+      "evidence": "nondeterministic-command yields NONDETERMINISTIC_COMMAND with no probes at repeats>=2. The condition is measured, not assumed: at repeats=1 the control is blind, which test_determinism_control_requires_more_than_one_run_per_side asserts rather than hides."
+    },
+    {
+      "hypothesis_id": "HD-PO03-WA-008-04",
+      "statement": "Outcome-differential detection cannot observe hidden state that is read without changing the observable outcome.",
+      "exact_falsifier": "The silent-read fixture is reported as a hidden-state dependency.",
+      "outcome": "SUPPORTED",
+      "evidence": "silent-hidden-state-dependency reads an untracked file, writes a scratch file and returns the same stdout and exit code on both sides; the verdict is NO_HIDDEN_STATE_DEPENDENCY_DETECTED. This is recorded as a bound of the mechanism, not as a pass."
+    },
+    {
+      "hypothesis_id": "HD-PO03-WA-008-05",
+      "statement": "For deterministic workloads the classification is itself deterministic, so an independent rerun yields the same classification digest.",
+      "exact_falsifier": "Two independent matrix runs disagree on any verdict, or disagree on the classification digest of any deterministic fixture.",
+      "outcome": "SUPPORTED",
+      "evidence": "Two full matrix runs agreed on all 11 verdicts and on 10 of 11 classification digests; the single differing digest is the nondeterministic fixture, whose outcome digest cannot be stable by construction and whose verdict still recurred."
+    },
+    {
+      "hypothesis_id": "HD-PO03-WA-008-06",
+      "statement": "A divergence caused by state outside the three declared classes must be reported as unattributed rather than blamed on a present-but-innocent class.",
+      "exact_falsifier": "A divergence caused by checkout ref state or modified tracked content is attributed to untracked files, environment or cache.",
+      "outcome": "SUPPORTED",
+      "evidence": "unattributed-git-ref-state carries a decoy untracked file and still returns HIDDEN_STATE_DEPENDENCY_UNATTRIBUTED with an empty attribution and a failed closure probe; unattributed-modified-tracked-file returns the same verdict and names MODIFIED_TRACKED_CONTENT as an out-of-scope candidate."
+    }
+  ],
+  "derived_count": 6,
+  "current_method_hypothesis_count": 0,
+  "current_method_hypothesis_note": "The immutable input sets minimum_current_method_hypotheses to 0 for this attempt and no external retrieval route was exposed, so no current-frontier external-method hypothesis is claimed. Fabricating external sources to satisfy a portfolio count is refused.",
+  "decision_changed": []
+}

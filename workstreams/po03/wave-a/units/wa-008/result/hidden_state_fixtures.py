@@ -541,6 +541,33 @@ class FixtureFactory:
         }
 
 
+    def _build_unattributed_modified_tracked_file(self, fixture_id):
+        base, repo, warm, home, tmp, cache = self._space(fixture_id)
+        commit = _init_repo(
+            repo, {"workload.py": WORKLOAD_PURE, "data.txt": "po03-wa-008 committed payload\n"}
+        )
+        materialise_clean_checkout(repo, commit, warm)
+        (warm / "data.txt").write_text("po03-wa-008 locally edited payload\n", encoding="utf-8")
+        return {
+            "fixture_id": fixture_id,
+            "title": "Uncommitted edit to tracked content, outside the declared classes",
+            "class_under_test": "OUTSIDE_DECLARED_CLASSES",
+            "repo": repo,
+            "commit": commit,
+            "command": [sys.executable, "workload.py"],
+            "warm_checkout": warm,
+            "warm_env": self._warm_env(home, tmp, cache),
+            "warm_cache_root": cache,
+            "expected_verdict": VERDICT_UNATTRIBUTED,
+            "expected_classes": [],
+            "expected_warm_exit_code": 0,
+            "expected_clean_exit_code": 0,
+            "warm_only_green": False,
+            "known_false_negative": False,
+            "notes": "Must be reported as out-of-scope modified tracked content, not attributed.",
+        }
+
+
 FIXTURE_IDS = (
     "untracked-file-dependency",
     "environment-leakage",
@@ -552,6 +579,7 @@ FIXTURE_IDS = (
     "nondeterministic-command",
     "silent-hidden-state-dependency",
     "unattributed-git-ref-state",
+    "unattributed-modified-tracked-file",
 )
 
 

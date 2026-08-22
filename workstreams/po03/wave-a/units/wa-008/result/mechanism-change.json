@@ -1,0 +1,73 @@
+{
+  "protocol_version": "OBZIO-MECHANISM-CHANGE-v1",
+  "task_id": "PO03-WA-008",
+  "hypothesis_id": "H-PO03-WA-008",
+  "state": "LIVE_MECHANISM_CHANGE",
+  "state_note": "These are changes to the executable mechanism in this unit's owned subtree, each caused by a failing observation and each retained only after an independent recurrence test. They are distinct from source claims, from hypotheses and from the unbound strategy proposals.",
+  "changes": [
+    {
+      "change_id": "MC-PO03-WA-008-01",
+      "trigger": "FIRST_PASS_TEST_FAILURE",
+      "observation": "The first execution of the focused suite failed test_differing_checkout_locations_do_not_create_a_false_positive. Output normalisation used one shared replacement table, so the warm checkout collapsed to <WARM_CHECKOUT> while the clean checkout collapsed to a sandbox path token. A workload that merely printed its working directory therefore diverged, and the runner reported HIDDEN_STATE_DEPENDENCY_UNATTRIBUTED for a workload with no hidden-state dependency.",
+      "defect_class": "FALSE_POSITIVE_FROM_COMPARISON_ARTEFACT",
+      "change": "Normalisation became per side: each side's own checkout, HOME, TMPDIR and cache root collapse to the same tokens <CHECKOUT>, <HOME>, <TMPDIR> and <CACHE>, applied longest-needle-first so nested roots do not shadow each other.",
+      "implemented_in": "differential_run.py DifferentialRun._side_replacements",
+      "recurrence_test": "test_differential_run.AdversarialBoundTests.test_differing_checkout_locations_do_not_create_a_false_positive",
+      "recurrence_assertion": "Both sides must print exactly 'CWD <CHECKOUT>' and share one outcome digest, and the verdict must be NO_HIDDEN_STATE_DEPENDENCY_DETECTED.",
+      "independently_reexecuted": true,
+      "disposition": "RETAIN",
+      "cost": "Location-only differences are deliberately invisible, which is recorded as limitation LIM-PO03-WA-008-03 rather than left implicit."
+    },
+    {
+      "change_id": "MC-PO03-WA-008-02",
+      "trigger": "SELF_ADVERSARIAL_REVIEW_DURING_REPOSITORY_NATIVE_REPRODUCTION",
+      "observation": "The read-only census of the live controller checkout classified working-tree files by path membership in the commit tree only. A tracked file edited in place is hidden state, yet it was invisible to both the census and the inventory, so an unattributed divergence would have looked unexplained.",
+      "defect_class": "UNREPORTED_STATE_OUTSIDE_THE_DECLARED_CLASSES",
+      "change": "The runner now records modified tracked content via git diff --name-only <commit> as hidden_state_inventory.out_of_scope_state, includes those paths in the classification digest, and lists MODIFIED_TRACKED_CONTENT, CHECKOUT_REF_STATE and ABSOLUTE_PATH_OR_HOST_DEPENDENCE as out_of_scope_candidates whenever a divergence is unattributed. The scope of attribution is unchanged: the three classes named by the frozen hypothesis remain the only attributable classes.",
+      "implemented_in": "differential_run.py inventory_modified_tracked, DifferentialRun.execute, DifferentialRun._attribute, classification_digest",
+      "recurrence_test": "test_differential_run.AdversarialBoundTests.test_modified_tracked_content_is_reported_as_out_of_scope plus fixture unattributed-modified-tracked-file in the matrix",
+      "recurrence_assertion": "A warm checkout whose tracked data.txt was edited must yield HIDDEN_STATE_DEPENDENCY_UNATTRIBUTED, no attributed class, modified_tracked_paths == ['data.txt'] and MODIFIED_TRACKED_CONTENT among the out-of-scope candidates.",
+      "independently_reexecuted": true,
+      "disposition": "RETAIN"
+    },
+    {
+      "change_id": "MC-PO03-WA-008-03",
+      "trigger": "ARTEFACT_HYGIENE_REVIEW_BEFORE_COMMIT",
+      "observation": "The report carried the absolute runtime sandbox path in sandbox_root_actual_excluded_from_digest, so a committed report would have embedded a /tmp location that cannot exist in a clean clone.",
+      "defect_class": "RUNTIME_PATH_LEAKAGE_INTO_A_DURABLE_ARTEFACT",
+      "change": "The field was removed; the report keeps only the <SANDBOX> token. Live-checkout observations, which necessarily name a runtime location, moved out of reproduction-result.json into the separate live-checkout-census.json so the reproduction result stays clean-clone reproducible.",
+      "implemented_in": "differential_run.py DifferentialRun.execute and reproduce_obzio_workload.py run",
+      "recurrence_test": "test_differential_run.IsolationTests.test_report_carries_no_runtime_temporary_paths",
+      "recurrence_assertion": "A serialised report must contain no path under the platform temporary directory, and sandbox_root and repo must be the tokens <SANDBOX> and <REPO>.",
+      "independently_reexecuted": true,
+      "disposition": "RETAIN",
+      "verified_on_artifacts": "grep for the temporary-directory prefix in reproduction-result.json, fixture-matrix-result.json and test-output.txt returns zero matches."
+    }
+  ],
+  "change_count": 3,
+  "rejections": [
+    {
+      "rejection_id": "RJ-PO03-WA-008-01",
+      "candidate": "Attribute a divergence to whichever hidden-state class happens to be present when no probe reproduces the warm outcome.",
+      "reason": "Two fixtures show a divergence caused by state outside the declared classes while a decoy untracked file is present; a presence-based heuristic would have produced a confident wrong attribution.",
+      "evidence": "unattributed-git-ref-state and unattributed-modified-tracked-file both keep attributed_classes empty.",
+      "disposition": "REJECT"
+    },
+    {
+      "rejection_id": "RJ-PO03-WA-008-02",
+      "candidate": "Compare the two sides with a single run each, to halve the runtime.",
+      "reason": "Without a within-side repetition control, an intrinsically nondeterministic command diverges across sides and is reported as a hidden-state dependency.",
+      "evidence": "test_determinism_control_requires_more_than_one_run_per_side shows the nondeterministic fixture is not classified NONDETERMINISTIC_COMMAND at repeats=1 and is at repeats=2.",
+      "disposition": "REJECT"
+    },
+    {
+      "rejection_id": "RJ-PO03-WA-008-03",
+      "candidate": "Record leaked environment values in the report so a reviewer can inspect them.",
+      "reason": "An ambient environment can carry credentials; a committed artefact must not become a secret sink. Key names, value digests and value lengths are sufficient for attribution and for reviewer diffing.",
+      "evidence": "test_environment_values_are_never_written_to_the_report asserts a credential-shaped value is absent from the serialised report while its SHA-256 is present.",
+      "disposition": "REJECT"
+    }
+  ],
+  "rejection_count": 3,
+  "decision_changed": []
+}
