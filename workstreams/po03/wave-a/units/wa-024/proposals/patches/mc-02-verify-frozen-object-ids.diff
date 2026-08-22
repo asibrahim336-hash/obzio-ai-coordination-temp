@@ -1,0 +1,78 @@
+diff --git a/workstreams/po03/tools/prepare_wave_a.py b/workstreams/po03/tools/prepare_wave_a.py
+index fcc928c..c565330 100644
+--- a/workstreams/po03/tools/prepare_wave_a.py
++++ b/workstreams/po03/tools/prepare_wave_a.py
+@@ -12,6 +12,7 @@ from __future__ import annotations
+ import hashlib
+ import json
+ import re
++import subprocess
+ from pathlib import Path
+ from typing import Any
+ 
+@@ -22,10 +23,11 @@ LEASE_EXPIRES_AT = "2026-08-22T13:13:11Z"
+ COMMISSION_ID = "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001"
+ CONTROLLER_RUN_ID = "bc-b1956656-b897-4889-aeab-82c4556c1a9f"
+ COMMISSION_COMMIT = "552b12eacee637716451492a98980fb0da19ff3e"
+-PROTOCOL_ANCESTOR = "100bc20ad5eec62a4f35b60921423135cc0b9d9a"
++PROTOCOL_ANCESTOR = "100bc2079cedc193af3524234ab833cc9f9f4669"
+ ACCEPTANCE_REL = "control/acceptance/wave-a-material-v1.json"
+ EXPECTED_ACCEPTANCE_SHA = "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a"
+ MATERIAL_TASK_RE = re.compile(r"^PO03-WA-\d{3}$")
++FULL_OBJECT_ID_RE = re.compile(r"^[0-9a-f]{40}$")
+ 
+ SOURCE_HASHES = {
+     "commission_sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+@@ -171,10 +173,52 @@ def _write_jsonl(relative: str, rows: list[dict[str, Any]]) -> None:
+     )
+ 
+ 
++def _git(*args: str) -> tuple[int, str]:
++    completed = subprocess.run(
++        ("git", "-C", str(ROOT), *args),
++        capture_output=True,
++        text=True,
++        check=False,
++    )
++    return completed.returncode, completed.stdout.strip()
++
++
++def verify_frozen_object_ids() -> None:
++    """Refuse to freeze provenance that names no object in this repository.
++
++    A forty-character identifier with a wrong tail still resolves through its
++    own abbreviation, so a warm full-history checkout makes it look valid and a
++    lenient ancestry check passes.  Only the exact identifier catches it.
++    """
++    if _git("rev-parse", "--is-shallow-repository")[1] == "true":
++        raise ValueError(
++            "refusing to freeze provenance from a shallow checkout: object "
++            "identifiers are unverifiable here; re-run with full history"
++        )
++    for name, object_id in (
++        ("COMMISSION_COMMIT", COMMISSION_COMMIT),
++        ("PROTOCOL_ANCESTOR", PROTOCOL_ANCESTOR),
++    ):
++        if not FULL_OBJECT_ID_RE.fullmatch(object_id):
++            raise ValueError(f"{name}: must be a full lowercase commit id")
++        if _git("cat-file", "-e", f"{object_id}^{{commit}}")[0] == 0:
++            continue
++        code, resolved = _git("rev-parse", "--verify", "--quiet", f"{object_id[:7]}^{{commit}}")
++        hint = ""
++        if code == 0 and resolved:
++            hint = (
++                f"; its abbreviation {object_id[:7]} resolves to {resolved}, so the "
++                "recorded identifier is prefix-only-correct"
++            )
++        raise ValueError(f"{name} {object_id} names no commit in this repository{hint}")
++
++
+ def main() -> int:
+     if len(TASKS) != 64 or {item["number"] for item in TASKS} != set(range(1, 65)):
+         raise ValueError("Wave A must contain exactly 64 uniquely numbered tasks")
+ 
++    verify_frozen_object_ids()
++
+     acceptance_path = ROOT / ACCEPTANCE_REL
+     acceptance_sha = _sha(acceptance_path.read_bytes())
+     if acceptance_sha != EXPECTED_ACCEPTANCE_SHA:

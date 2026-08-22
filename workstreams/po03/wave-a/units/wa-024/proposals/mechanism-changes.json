@@ -1,0 +1,94 @@
+{
+  "protocol_version": "PO03-WA-024-MECHANISM-CHANGES-v1",
+  "task_id": "PO03-WA-024",
+  "state": "MECHANISM_CHANGE_PROPOSAL",
+  "state_note": "This file records proposed mechanism changes only. It is not a source claim, not a hypothesis, not a reproduction result and not a strategy proposal; those live in sources/source-claims.json, hypotheses/hypotheses.json, result/probe-report.json and proposals/strategy-proposals.json.",
+  "proposed_at": "2026-08-22T07:55:00Z",
+  "applied_by_this_unit": false,
+  "applied_by_this_unit_note": "Every target path is read-only for this unit, so each change ships as a patch plus an executable verifier rather than as an edit. The verifier clones the repository, applies the patch inside the clone and never writes to the repository under test. Applying these patches for real is a coordinator decision.",
+  "verifier": {
+    "path": "workstreams/po03/wave-a/units/wa-024/proposals/verify_mechanism_changes.py",
+    "command": "python3 -B workstreams/po03/wave-a/units/wa-024/proposals/verify_mechanism_changes.py --repo <path-or-url> --json <out>",
+    "design": "Each change carries a matched before/after pair: the defect must be observable on the unpinned tree and absent after the patch. A check that only passes after the patch would prove nothing on its own, so MC-01 and MC-02 additionally carry adversarial cases establishing that the new guard rejects the very defect it was written for and is therefore not vacuous.",
+    "exit_status": "0 when every check holds, 1 otherwise"
+  },
+  "mechanism_changes": [
+    {
+      "change_id": "MC-01-CONTRACT-TESTS-LEAVE-NO-BYTECODE",
+      "patch": "workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-01-contract-tests-leave-no-bytecode.diff",
+      "patch_sha256": "0b2ba91d63d05ae85d418cbf96dc7b24ad86bc273dcb813524c3d471ec234e11",
+      "patch_bytes": 895,
+      "targets": [".github/workflows/po03-contracts.yml"],
+      "addresses_hypotheses": ["H-WA024-02", "H-WA024-02B"],
+      "defect": "The declared PO-03 contract-test command writes CPython bytecode caches into workstreams/po03/tests, so the step leaves untracked paths inside a read-only PO-03 directory. Nothing in the job notices, because a hosted runner discards the workspace with the virtual machine.",
+      "why_a_warm_checkout_hides_it": "A clean runner throws the contamination away, so the defect never surfaces in CI. In a reused checkout the caches persist, and any later ownership or changed-path validation sees untracked paths that no producer created.",
+      "change": "Add -B to the contract-test command so CPython writes no bytecode, and add a following step that fails the job if the test step left the checkout dirty.",
+      "independent_test": "verify_mechanism_changes.py MC-01: the declared command is shown to contaminate the tree before the patch and to leave it byte-identical after; the new gate is shown to pass on a clean tree and to exit 1 once a bytecode cache is planted.",
+      "adversarial_case": "PYTHONDONTWRITEBYTECODE=1, the remediation most commonly recommended for this symptom, is shown to be ineffective here because the declared command runs CPython in isolated mode and isolated mode ignores every PYTHON* variable. An operator applying that fix would see no change and would look for a different cause.",
+      "blast_radius": "Changes the digest recorded as source_base.workflow_sha256 in all 64 Wave A immutable inputs.",
+      "reversibility": "Fully reversible; the patch touches one workflow file and adds no dependency.",
+      "verification_disposition": "PASS"
+    },
+    {
+      "change_id": "MC-02-VERIFY-FROZEN-OBJECT-IDS",
+      "patch": "workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-02-verify-frozen-object-ids.diff",
+      "patch_sha256": "9e56ec26fea03e539c1703dc334e1be06fab3c2b7730ce8b06fa041efb3fdd55",
+      "patch_bytes": 3318,
+      "targets": ["workstreams/po03/tools/prepare_wave_a.py"],
+      "addresses_hypotheses": ["H-WA024-04"],
+      "defect": "PROTOCOL_ANCESTOR is the literal 100bc20ad5eec62a4f35b60921423135cc0b9d9a, which names no object in this repository. The commit it was meant to name is 100bc2079cedc193af3524234ab833cc9f9f4669. The generator verifies the acceptance-contract digest but never checks that a recorded commit id exists, so the wrong identifier was frozen into all 64 Wave A inputs.",
+      "why_a_warm_checkout_hides_it": "The recorded identifier is prefix-only-correct. Any check that abbreviates it, or any human comparing the first seven characters, resolves 100bc20 successfully in a full-history checkout and concludes the provenance is sound. Only the exact forty-character identifier reveals that it names nothing.",
+      "change": "Correct the literal to the real commit and add verify_frozen_object_ids(), which refuses to freeze provenance unless every recorded identifier is a full lowercase id naming a real commit, and refuses outright to run from a shallow checkout where the question cannot be answered.",
+      "independent_test": "verify_mechanism_changes.py MC-02: the recorded identifier is shown to resolve only through its abbreviation before the patch, and to name a real commit that is an ancestor of the pinned commit after it.",
+      "adversarial_case": "The guard is shown to reject the original prefix-only-correct identifier with that diagnosis, to reject an identifier whose prefix resolves to nothing, to reject an abbreviation offered in place of a full id, and to refuse to certify anything at all from a depth-1 clone rather than passing vacuously.",
+      "side_effect_checked": "Both the wrong and the correct identifier abbreviate to 100bc20, so every idempotency key of the form po03:100bc20:<slug>:a01 is byte-identical after the fix. No attempt identity changes.",
+      "blast_radius": "Regenerating the inputs would change source_base.minimum_protocol_ancestor in all 64 files, and therefore each input digest and portfolio.sha256. Attempt identity and lease identity are unaffected.",
+      "reversibility": "The guard is reversible. Correcting the literal is a provenance correction and should be recorded as such rather than silently rewritten.",
+      "verification_disposition": "PASS"
+    },
+    {
+      "change_id": "MC-03-CUSTODY-READBACK-NEEDS-A-FETCHABLE-REF",
+      "patch": "workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-03-custody-readback-needs-a-fetchable-ref.diff",
+      "patch_sha256": "43d43f4bac030158009cb85e5d937e313d3a539f98917184a78efdd9dc575c19",
+      "patch_bytes": 7450,
+      "targets": [
+        "workstreams/po03/tools/validate_contracts.py",
+        "workstreams/po03/contracts/transactional-result.schema.json",
+        "workstreams/po03/tests/test_validate_contracts.py"
+      ],
+      "addresses_hypotheses": ["H-WA024-07"],
+      "defect": "The protocol requires a distinct process to read every artifact back from an immutable result commit, but a producer result commit is reachable only from that producer's own branch. The validator requires result_commit_id and never asks how a reader would obtain it, so a record can satisfy every custody rule and still be unverifiable.",
+      "why_a_warm_checkout_hides_it": "A developer clone carries every branch, so git cat-file resolves those commits and the custody chain looks verifiable. A single-ref checkout of the kind actions/checkout produces cannot resolve them at any depth. Depth is not the variable here; reachability is.",
+      "change": "Require, for ingested and completed records, that a fetchable ref accompany the commit: either an explicit result_commit_ref or a git:<ref>@<commit>:<path> manifest locator whose commit agrees with result_commit_id. Expose readback_ref() so a verifier can fetch the ref before reading. Admit the new field in the schema, and extend the seeded suite to cover the rule.",
+      "independent_test": "verify_mechanism_changes.py MC-03: the unpatched validator is shown to accept an ingested record with no fetchable ref and to accept a locator whose commit disagrees with result_commit_id; the patched validator rejects both, still accepts both real control result files unchanged, and recovers the ref a verifier must fetch for each.",
+      "adversarial_case": "A declared result_commit_ref that disagrees with the manifest locator is rejected, so the two sources of the ref cannot silently diverge. A bare-path manifest_uri is still accepted before ingestion, so the rule constrains coordinator-owned records without breaking producer-owned ones.",
+      "observation": "Both existing control result files already embed the branch in manifest_uri, so nothing needed backfilling. The information was present and simply unvalidated and unused.",
+      "blast_radius": "Changes the digests recorded as source_base.validator_sha256, source_base.transactional_schema_sha256 and source_base.seed_tests_sha256 in all 64 Wave A immutable inputs. The seeded fixture also had to move from placeholder identifiers to real-shaped ones, which is why the seeded test file is part of this patch.",
+      "reversibility": "Reversible. The new field is optional wherever the locator already carries the ref.",
+      "verification_disposition": "PASS"
+    }
+  ],
+  "rejected_candidates": [
+    {
+      "candidate": "Export PYTHONDONTWRITEBYTECODE=1 for the contracts job.",
+      "disposition": "REJECTED",
+      "evidence": "Measured ineffective. The declared command runs CPython with -I, and isolated mode ignores every PYTHON* environment variable (SC-WA024-06). Probes p06 and p07 show the checkout still contaminated with the variable set; p08 and p09 show the variable working only once isolated mode is dropped. Recorded because this is the remediation an operator is most likely to reach for."
+    },
+    {
+      "candidate": "Add fetch-depth: 0 to the operator-taxonomy workflow.",
+      "disposition": "REJECTED",
+      "evidence": "No defect to fix. scripts/check_operator_taxonomy.py resolves its root from __file__ and reads no history, and probes p10 and p11 show it passing from both the repository root and a nested working directory in all three environments. Deepening that checkout would cost clone time and fix nothing."
+    },
+    {
+      "candidate": "Replace bare 'python' with 'python3' in both workflows.",
+      "disposition": "REJECTED",
+      "evidence": "The workflows are correct as written, because actions/setup-python places 'python' on PATH in the same job (SC-WA024-05). The bare spelling is a portability limit for anyone running the commands outside Actions, not a CI defect, so it is recorded as a limitation and as strategy proposal SP-03 rather than patched."
+    },
+    {
+      "candidate": "Make the contract-test command working-directory independent.",
+      "disposition": "NOT_PROPOSED",
+      "evidence": "Probe p12 shows the declared command fails from a nested directory identically in all three environments. The behaviour is real but it is not a clean-versus-warm difference, so it falls outside this unit's hypothesis. Recorded as an observation for a successor unit rather than patched here."
+    }
+  ],
+  "decision_changed": []
+}

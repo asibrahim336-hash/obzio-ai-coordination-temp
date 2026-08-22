@@ -1,0 +1,19 @@
+diff --git a/.github/workflows/po03-contracts.yml b/.github/workflows/po03-contracts.yml
+index 2e04934..759fa71 100644
+--- a/.github/workflows/po03-contracts.yml
++++ b/.github/workflows/po03-contracts.yml
+@@ -28,4 +28,13 @@ jobs:
+         with:
+           python-version: "3.12"
+       - name: Run dependency-free contract tests
+-        run: python -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v
++        run: python -B -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v
++      - name: Fail if the contract-test step left the checkout dirty
++        run: |
++          dirty="$(git status --porcelain --untracked-files=all)"
++          if [ -n "$dirty" ]; then
++            echo "the contract-test step contaminated the checkout:"
++            echo "$dirty"
++            exit 1
++          fi
++          echo "checkout is unchanged after the contract tests"

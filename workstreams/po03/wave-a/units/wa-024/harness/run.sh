@@ -105,7 +105,7 @@ unset PYTHONPATH PYTHONHOME PYTHONSTARTUP PYTHONDONTWRITEBYTECODE VIRTUAL_ENV ||
 STATUS=0
 
 echo
-echo "== 1/3 focused tests"
+echo "== 1/4 focused tests"
 if ( cd "$CLONE" && python3 -B -I -m unittest discover -s "$UNIT_REL/tests" -p 'test_*.py' -v ) \
     >"$OUT/tests-output.txt" 2>&1; then
   echo "   tests: PASS"
@@ -116,7 +116,7 @@ fi
 tail -n 5 "$OUT/tests-output.txt"
 
 echo
-echo "== 2/3 static local-state control"
+echo "== 2/4 static local-state control"
 LINT_STATUS=0
 ( cd "$CLONE" && python3 -B "$UNIT_REL/harness/local_state_lint.py" \
     --repo . --commit "$COMMIT" --json "$OUT/lint-report.json" \
@@ -126,7 +126,7 @@ echo "   lint exit status: $LINT_STATUS (1 means findings at or above the error 
 tail -n 3 "$OUT/lint-output.txt"
 
 echo
-echo "== 3/3 clean-runner differential harness"
+echo "== 3/4 clean-runner differential harness"
 PROBE_STATUS=0
 ( cd "$CLONE" && python3 -B "$UNIT_REL/harness/clean_runner_probe.py" \
     --repo . --commit "$COMMIT" --probes "$UNIT_REL/harness/probes.json" \
@@ -135,6 +135,18 @@ PROBE_STATUS=0
 echo "   probe exit status: $PROBE_STATUS (non-zero means a binding expectation was not met)"
 tail -n 12 "$OUT/probe-output.txt"
 if [ "$PROBE_STATUS" -ne 0 ]; then
+  STATUS=1
+fi
+
+echo
+echo "== 4/4 mechanism-change verification"
+MECHANISM_STATUS=0
+( cd "$CLONE" && python3 -B "$UNIT_REL/proposals/verify_mechanism_changes.py" \
+    --repo . --commit "$COMMIT" --json "$OUT/mechanism-verification.json" ) \
+  >"$OUT/mechanism-output.txt" 2>&1 || MECHANISM_STATUS=$?
+echo "   mechanism exit status: $MECHANISM_STATUS (non-zero means a proposed change did not verify)"
+tail -n 3 "$OUT/mechanism-output.txt"
+if [ "$MECHANISM_STATUS" -ne 0 ]; then
   STATUS=1
 fi
 
