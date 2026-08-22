@@ -125,7 +125,9 @@ class WorktreeIsolationProbeTests(unittest.TestCase):
                 check=False,
             )
             self.assertNotEqual(0, blocked.returncode)
-            self.assertIn("already checked out", blocked.stderr)
+            self.assertRegex(
+                blocked.stderr, r"already (?:checked out|used by worktree)"
+            )
             self.assertFalse(second.exists())
 
 
