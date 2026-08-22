@@ -1,0 +1,25 @@
+$ python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-005/tests -p 'test_*.py' -v
+Ran 27 tests in 0.021s
+OK
+
+$ python3 -B -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v
+Ran 37 tests in 0.844s
+OK
+
+$ PYTHONDONTWRITEBYTECODE=1 python3 scripts/check_operator_taxonomy.py
+OPERATOR TAXONOMY CHECK: PASS
+active function: obzio.function.strategic-operations-orchestration
+active appointment: obzio.appointment.strategic-operations-orchestration.20260819.001
+classified aliases: 9
+
+$ python3 repository_debris_detector.py scan fixtures/positive/inventory.json --output evidence/reproductions/positive.json
+CLASSIFIED artifacts=2 protected=1 removal_candidates=1
+
+$ python3 repository_debris_detector.py scan fixtures/negative/inventory.json --output evidence/reproductions/negative.json
+CLASSIFIED artifacts=1 protected=1 removal_candidates=0
+
+$ python3 repository_debris_detector.py scan fixtures/superseded/inventory.json --output evidence/reproductions/superseded.json
+CLASSIFIED artifacts=2 protected=1 removal_candidates=1
+
+$ python3 repository_debris_detector.py scan fixtures/unique-evidence/inventory.json --output evidence/reproductions/unique-evidence.json
+CLASSIFIED artifacts=2 protected=2 removal_candidates=0

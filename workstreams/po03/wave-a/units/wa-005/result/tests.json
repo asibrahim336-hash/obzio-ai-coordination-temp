@@ -1,0 +1,84 @@
+{
+  "adversarial_cases": [
+    "absolute and traversal paths rejected",
+    "backslash path rejected",
+    "duplicate artifact IDs and paths rejected",
+    "invalid SHA-256 and boolean byte count rejected",
+    "hash mismatch retained pending review",
+    "missing successor retained pending review",
+    "supersession cycle retained pending review",
+    "artifact symlink refused without following",
+    "parent-directory symlink escape refused",
+    "existing output never overwritten",
+    "output inside inventoried root refused",
+    "tampered unique-evidence disposition rejected",
+    "detector AST contains no deletion primitive",
+    "fixture bytes unchanged after scan and CLI execution"
+  ],
+  "commands": [
+    {
+      "command": "python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-005/tests -p 'test_*.py' -v",
+      "exit_code": 0,
+      "outcome": "PASS",
+      "result": "Ran 27 tests in 0.021s; OK",
+      "test_count": 27
+    },
+    {
+      "command": "python3 -B -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+      "exit_code": 0,
+      "outcome": "PASS",
+      "read_only": true,
+      "result": "Ran 37 tests in 0.844s; OK",
+      "test_count": 37
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/check_operator_taxonomy.py",
+      "exit_code": 0,
+      "outcome": "PASS",
+      "result": "OPERATOR TAXONOMY CHECK: PASS; classified aliases: 9"
+    },
+    {
+      "command": "python3 -c <changed-path ownership check over base..HEAD, worktree, index, and untracked files>",
+      "exit_code": 0,
+      "outcome": "PASS",
+      "result": "OWNERSHIP PASS changed=25 inside=25 outside=0"
+    }
+  ],
+  "critical_correctness": "100_PERCENT",
+  "executable_evidence": [
+    {
+      "command_result": "CLASSIFIED artifacts=2 protected=1 removal_candidates=1",
+      "fixture": "positive",
+      "outcome": "PASS",
+      "output": "workstreams/po03/wave-a/units/wa-005/evidence/reproductions/positive.json"
+    },
+    {
+      "command_result": "CLASSIFIED artifacts=1 protected=1 removal_candidates=0",
+      "fixture": "negative",
+      "outcome": "PASS",
+      "output": "workstreams/po03/wave-a/units/wa-005/evidence/reproductions/negative.json"
+    },
+    {
+      "command_result": "CLASSIFIED artifacts=2 protected=1 removal_candidates=1",
+      "fixture": "superseded",
+      "outcome": "PASS",
+      "output": "workstreams/po03/wave-a/units/wa-005/evidence/reproductions/superseded.json"
+    },
+    {
+      "command_result": "CLASSIFIED artifacts=2 protected=2 removal_candidates=0",
+      "fixture": "unique-evidence",
+      "outcome": "PASS",
+      "output": "workstreams/po03/wave-a/units/wa-005/evidence/reproductions/unique-evidence.json"
+    }
+  ],
+  "first_pass_outcome": "PASS",
+  "focused_test_count": 27,
+  "immutable_remote_readback": {
+    "outcome": "PENDING_RESULT_COMMIT",
+    "reason": "An immutable commit does not yet contain this result envelope."
+  },
+  "protocol_version": "OBZIO-WA005-TESTS-v1",
+  "seeded_contract_test_count": 37,
+  "task_id": "PO03-WA-005",
+  "test_count": 64
+}
