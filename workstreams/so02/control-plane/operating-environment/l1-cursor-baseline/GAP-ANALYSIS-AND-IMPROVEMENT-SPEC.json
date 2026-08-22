@@ -71,10 +71,22 @@
         "observed": "All five lanes of this group are subagents in ONE VM sharing ONE git repository at /workspace. L2, L3, L4 and the root controller each created a separate `git worktree` under /tmp and were isolated. This lane and L5 both used the shared /workspace checkout, whose HEAD was detached at 20:20:34Z. Three commits from two different lanes then interleaved on that one detached HEAD, so this lane's second commit carries an L5 commit as an ancestor. Both lanes' branch refs stayed at the immutable base, because a commit on a detached HEAD advances no branch. `git push -u origin cursor/oe-l1-cursor-baseline-696d` then pushed the stale ref, printed 'Everything up-to-date' and exited 0."
       },
       "why_it_matters_for_this_operation": "This is F4 and F1 reproduced live, in the very group that was dispatched to diagnose them. A manifest declaring five isolated branches did not produce five isolated branches, and the failure is silent and exit-code-zero. A lane trusting its push would report READY_TO_COMMIT while the reconciling controller reads an empty branch — which is exactly how a declared denominator diverges from an actual one. Every commit is also authored by 'Cursor Agent', so nothing in git metadata attributes work to a lane.",
-      "exact_change": "Two parts. First, dispatch must create a worktree per lane: `git worktree add /tmp/<lane> -b <lane-branch> <immutable-base-sha>`. Second, the staged guard now refuses a commit or push on a detached HEAD (DETACHED-HEAD) and refuses a push whose target ref does not contain HEAD (PUSH-REF-BEHIND-HEAD). Both were added after reproducing this failure and are verified across six cases.",
-      "risk": "The guard makes the failure loud, not impossible. Two lanes sharing a checkout still interleave; they are simply refused at commit time. Only the per-lane worktree prevents it.",
+      "exact_change": "Two parts. First, dispatch must give every lane its own checkout: `git worktree add /tmp/<lane> -b <lane-branch> <immutable-base-sha>`. That is the only part that prevents the collision. Second, the staged guard now refuses a commit on a detached HEAD (DETACHED-HEAD) and refuses a push whose target branch sits on HEAD's lineage behind it (PUSH-REF-BEHIND-HEAD), which converts the silent success into a refusal when the first part was not done.",
+      "risk": "The guard makes the failure loud, not impossible. Two lanes sharing a checkout still interleave; they are simply refused at commit time. Only the per-lane worktree prevents it. The stale-ref rule also has a residual false positive — deliberately pushing a branch that sits behind your current HEAD on the same lineage is refused — which is why it is narrowed to that lineage and carries an opt-out.",
       "delegability": "delegable_to_cursor_in_repo",
-      "founder_action_required": false
+      "founder_action_required": false,
+      "recovery_actually_performed_by_this_lane": {
+        "label": "DIRECTLY_REPRODUCED",
+        "statement": "This lane hit the failure and recovered from it inside the same run, which is why the remedy below is a procedure rather than a suggestion.",
+        "steps": [
+          "git worktree add /tmp/oe-l1 cursor/oe-l1-cursor-baseline-696d",
+          "git cherry-pick 9851d988 && git cherry-pick 96af4244   # L5's fe934462 deliberately skipped",
+          "copy the uncommitted working state of the lane's own namespaces into the worktree",
+          "commit and push from /tmp/oe-l1, where HEAD is attached to the lane branch"
+        ],
+        "verified": "2 commits above base, L5's commit not an ancestor of HEAD, and 0 changed paths outside this lane's two allowed namespaces.",
+        "raw_evidence": "receipts/so02/2026-08-22/oe-l1-cursor-baseline/raw/shared-worktree-collision.txt"
+      }
     },
     {
       "id": "G1",
@@ -86,7 +98,7 @@
         "observed": "There is no .cursor/hooks.json anywhere in the repository. AGENTS.md instruction 10 requires `python scripts/check_operator_taxonomy.py` before commit; nothing runs it. core.hooksPath is already redirected to Cursor's dispatcher, which would run a repository pre-commit hook of the same name if one existed, and none does. The only enforcement is a CI workflow that runs after the commit already exists."
       },
       "why_it_matters_for_this_operation": "F6 is the meta-failure: this estate reliably notices its own failures and reliably records them as lessons rather than as mechanisms. Hooks are the only surface in this runtime that converts a written rule into a refusal. Everything else — AGENTS.md, rules, skills — is advice a model may or may not follow. A hook is not advice.",
-      "exact_change": "Apply proposed-cursor-config/dot-cursor/hooks.json plus the three scripts in dot-cursor/hooks/ and dot-cursor/write-scope.json, following proposed-cursor-config/APPLY.md.",
+      "exact_change": "Apply proposed-cursor-config/dot-cursor/hooks.json, the three hook scripts and verify_hooks.py in dot-cursor/hooks/, and dot-cursor/write-scope.json, following proposed-cursor-config/APPLY.md.",
       "documented_basis": {
         "label": "DOCUMENTED",
         "source": "https://cursor.com/docs/hooks.md",
@@ -98,38 +110,48 @@
       },
       "what_was_actually_reproduced": {
         "label": "DIRECTLY_REPRODUCED",
-        "statement": "The three hook scripts were executed standalone against synthetic stdin in three throwaway git sandboxes and behave correctly across 39 cases.",
-        "guard_cases_passed": 28,
+        "statement": "The three hook scripts were executed as the platform executes them — a JSON payload on stdin, the decision read from stdout — against throwaway git repositories, and all 69 cases pass. The harness is shipped with the hooks as .cursor/hooks/verify_hooks.py so the claim is re-checkable rather than a sentence in a document, and it loads the real write-scope.json with only the currentness command stubbed, so the branch globs and refusal patterns it exercises are the ones that actually ship.",
+        "command": "python3 .cursor/hooks/verify_hooks.py",
+        "raw_evidence": "receipts/so02/2026-08-22/oe-l1-cursor-baseline/raw/hook-verification.txt",
+        "cases_passed_total": 69,
+        "guard_cases_passed": 47,
         "guard_coverage": [
-          "allows benign git status and gh pr list",
-          "allows push and commit on a lane branch",
-          "denies push to main, so02/*, soo/*, packs/*, cursor/po03-*, cursor/so02-cur-orch-qual-01 and cursor/operating-environment-return-*",
-          "resolves SRC:DST refspecs and refs/heads/ prefixes to the destination branch",
+          "allows git status, gh pr list, unrelated shell, and commit and push on a lane branch",
+          "denies push to each of the nine protected globs, including main, so02/*, po03/*, soo/*, packs/*, cursor/po03-*, cursor/so02-cur-orch-qual-01 and cursor/operating-environment-return-*",
+          "resolves SRC:DST refspecs, refs/heads/ destinations and the + force-refspec prefix",
           "treats a bare `git push` as targeting the current branch",
           "denies commit while HEAD is a protected branch",
-          "denies gh pr create/merge and gh issue create",
-          "denies --force but allows --force-with-lease",
+          "denies gh pr create, gh pr merge and gh issue create",
+          "denies gh api writes in both the -X and --method spellings and in lower case, while allowing gh api GET and an explicit -X GET",
+          "denies --force and -f but allows --force-with-lease",
           "denies rebase, filter-branch, reset --hard and commit --amend",
-          "denies commit when the currentness check exits non-zero, quoting the check output",
-          "denies commit and push while HEAD is detached",
-          "denies a push whose target ref does not contain HEAD, verified independently with HEAD attached",
-          "honours a refuse_detached_head:false opt-out in write-scope.json",
-          "fails open on malformed stdin and on a missing write-scope.json"
+          "denies commit when the currentness check exits non-zero, quoting the check's own output back, while leaving non-commit commands alone",
+          "denies commit on a detached HEAD, and denies pushing the lane ref that was left behind at base — the exact collision reproduced live in this run",
+          "fires the stale-ref rule with HEAD attached, and spares a divergent branch and a branch that does not exist locally, so pushing a different branch on purpose is not refused",
+          "honours the refuse_detached_head and refuse_stale_ref_push opt-outs",
+          "fails open on malformed stdin and on a missing write-scope.json",
+          "writes an append-only audit line per decision"
         ],
-        "stop_gate_cases_passed": 8,
+        "stop_gate_cases_passed": 12,
         "stop_gate_coverage": [
-          "fires on a COMPLETED claim with no receipt manifest",
-          "stays silent once a MANIFEST.json with bundle_sha256 exists",
-          "fires on an ACCEPTED claim with a self-written acceptor",
-          "fires when a pull request or a handover archive is described as completion or delivery",
-          "stays silent on an honest READY_TO_COMMIT / REQUESTED_NOT_GRANTED artifact",
-          "stays silent when the turn status is aborted",
-          "stays silent on malformed stdin"
+          "stays silent when the turn changed nothing, when the turn did not complete, and on non-text artifacts",
+          "fires on COMPLETED and on QUALIFIED with no receipt manifest, and names bundle_sha256 as the specific missing evidence",
+          "stays silent once a MANIFEST.json carrying bundle_sha256 exists",
+          "fires when a run writes its own non-null acceptor, and names REQUESTED_NOT_GRANTED as the state that claim actually sits in",
+          "treats an explicitly null acceptor as an honest not-yet-accepted and stays silent",
+          "fires when a pull request is described as completion, and explains that a pull request is a projection"
         ],
-        "ledger_verified": "records subagent type, id, the top-level agent id, the checked-out branch and the raw input key set, and distinguishes turn_source live / boot_snapshot / unavailable"
+        "ledger_cases_passed": 10,
+        "ledger_coverage": [
+          "appends one line per lifecycle event and records the phase",
+          "records subagent type and id — the only identity a subagent exposes — plus the checked-out branch",
+          "marks turn metadata unavailable rather than inventing a value, and falls back to the boot snapshot while saying which source it used",
+          "treats the metadata service's 404 JSON error body as absence, never as a value",
+          "exits 0 on malformed stdin"
+        ]
       },
-      "honest_gap": "Standalone script correctness is reproduced. Hook FIRING in this runtime is DOCUMENTED only — no hook was installed or fired during this lane, because writing .cursor/hooks.json is outside this lane's namespace. APPLY.md specifies the one-command firing probe that must be run immediately after applying, and states that nothing should be relied upon until that probe refuses something actually typed.",
-      "risk": "The guard runs on every git and gh command in every lane. Too broad a pattern blocks legitimate work. Mitigated by failing open on every unexpected condition, which is a deliberate trade: a silently broken guard protects nothing, which is why the firing probe is mandatory rather than advisory.",
+      "honest_gap": "Script correctness is reproduced; hook FIRING in this runtime is DOCUMENTED only. No hook was installed or fired during this lane, because writing .cursor/hooks.json is outside this lane's namespace. APPLY.md specifies the firing probe that must be run immediately after applying, and nothing here should be relied upon until that probe refuses a command someone actually typed.",
+      "risk": "The guard runs on every git and gh command in every lane, so an over-broad pattern blocks legitimate work. Two mitigations, both reproduced: every unexpected condition fails open, and the stale-ref rule was deliberately narrowed to refs on HEAD's own lineage after the first version would have refused pushing an unrelated older branch. Failing open is a deliberate trade — a silently broken guard protects nothing — which is why the firing probe is mandatory rather than advisory.",
       "delegability": "delegable_to_cursor_in_repo",
       "founder_action_required": false
     },

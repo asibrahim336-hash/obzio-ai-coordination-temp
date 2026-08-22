@@ -164,14 +164,20 @@ def main() -> None:
         except re.error:
             continue
 
-    # 2. Detached HEAD, and pushes of a branch ref that does not contain HEAD.
+    # 2. Detached HEAD, and pushes of a branch ref that is strictly behind HEAD.
     #
     # Added after reproducing the failure it prevents: sibling lanes sharing one
     # /workspace checkout committed onto a detached HEAD, so their branch refs
     # stayed at the base commit. `git push -u origin <lane-branch>` then pushed
     # the stale ref, printed "Everything up-to-date" and exited 0. A lane that
     # trusted that exit code would report work it had not published.
-    if re.search(r"\bgit\s+(commit|push)\b", command) and config.get("refuse_detached_head", True):
+    #
+    # The two halves are deliberately narrow. Commit is refused on a detached
+    # HEAD because that is the root cause. Push is refused only when the target
+    # ref sits on HEAD's own lineage and behind it, which is the exact signature
+    # of the silent no-op; a divergent or unrelated branch is somebody pushing a
+    # different branch on purpose and is allowed.
+    if re.search(r"\bgit\s+commit\b", command) and config.get("refuse_detached_head", True):
         branch = current_branch(cwd)
         if branch == "HEAD":
             audit(config, {"decision": "deny", "rule": "DETACHED-HEAD", "command": command})
@@ -188,21 +194,30 @@ def main() -> None:
                 ),
             )
 
-    if re.search(r"\bgit\s+push\b", command) and config.get("refuse_detached_head", True):
+    if re.search(r"\bgit\s+push\b", command) and config.get("refuse_stale_ref_push", True):
         head_sha = _rev_parse(cwd, "HEAD")
         for target in push_targets(command, cwd):
             ref_sha = _rev_parse(cwd, target)
-            if head_sha and ref_sha and head_sha != ref_sha and not _contains(cwd, target, head_sha):
+            if not head_sha or not ref_sha or head_sha == ref_sha:
+                continue
+            strictly_behind = (
+                _contains(cwd, "HEAD", ref_sha) and not _contains(cwd, target, head_sha)
+            )
+            if strictly_behind:
                 audit(config, {"decision": "deny", "rule": "PUSH-REF-BEHIND-HEAD",
                                "branch": target, "command": command})
                 emit(
                     "deny",
-                    user_message=f"Refused: '{target}' does not contain your current HEAD.",
+                    user_message=f"Refused: '{target}' is behind your current HEAD.",
                     agent_message=(
-                        f"Refused before execution: branch '{target}' is at {ref_sha[:12]} but HEAD "
-                        f"is {head_sha[:12]}, and '{target}' does not contain it.\n\n"
-                        "Pushing now would publish the branch's old position and report success. "
-                        "Move the ref to the work you actually mean to publish first, then push."
+                        f"Refused before execution: branch '{target}' is at {ref_sha[:12]}, HEAD is "
+                        f"at {head_sha[:12]}, and '{target}' sits on HEAD's own lineage behind it.\n\n"
+                        "Pushing now would publish that older position, print 'Everything "
+                        "up-to-date' and exit 0, so the exit code would not mean your work was "
+                        "published. Move the ref onto the work you mean to publish first.\n\n"
+                        "If your commits are on a detached HEAD, take your own worktree:\n"
+                        "  git worktree add /tmp/<lane> <lane-branch>\n"
+                        "then cherry-pick your commits onto the branch there and push from it."
                     ),
                 )
 

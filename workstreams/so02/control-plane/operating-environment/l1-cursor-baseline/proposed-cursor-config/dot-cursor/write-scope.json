@@ -25,8 +25,8 @@
     },
     {
       "id": "ISSUE-WRITE",
-      "pattern": "^gh\\s+(issue|release|secret|variable|workflow|api\\s+(-X\\s+)?(POST|PATCH|PUT|DELETE))\\b",
-      "reason": "This route's GitHub credential is read-only for everything except git contents. A write attempt here fails at GitHub anyway; refusing locally makes the boundary explicit instead of producing a confusing 403."
+      "pattern": "^gh\\s+(issue|release|secret|variable|workflow)\\b|^gh\\s+api\\b[^|;&]*(?:-X|--method)[= ]\\s*(?i:POST|PATCH|PUT|DELETE)\\b",
+      "reason": "This route's GitHub credential is read-only for everything except git contents. A write attempt here fails at GitHub anyway; refusing locally makes the boundary explicit instead of producing a confusing 403. Both -X and --method are matched, in either case, because a boundary that only catches one spelling is not a boundary."
     },
     {
       "id": "FORCE-PUSH",
@@ -41,5 +41,12 @@
   ],
   "require_currentness_check_before_commit": true,
   "currentness_command": ["python3", "scripts/check_operator_taxonomy.py"],
+
+  "_comment_detached_head": "Refuse `git commit` while HEAD is detached. A commit on a detached HEAD advances no branch, which is how a lane's branch ref silently stays at the base while the lane believes it has committed.",
+  "refuse_detached_head": true,
+
+  "_comment_stale_ref_push": "Refuse `git push <branch>` when that branch sits on HEAD's own lineage and behind it. That is the exact signature of the silent no-op: git prints 'Everything up-to-date' and exits 0, so the exit code stops meaning the work was published. A divergent or unrelated branch is not refused, because pushing a different branch on purpose is legitimate.",
+  "refuse_stale_ref_push": true,
+
   "audit_log": ".cursor/.run/write-scope-audit.jsonl"
 }

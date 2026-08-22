@@ -30,6 +30,7 @@ proposed-cursor-config/dot-cursor/<path>   →   <repository-root>/.cursor/<path
 | `.cursor/hooks/guard_write_scope.py` | New. Refuses protected-branch writes, PR writes, history rewrites, and commits over a failing currentness check. | Every shell command matching `git` or `gh `. |
 | `.cursor/hooks/gate_claim_state.py` | New. Enqueues one follow-up turn when a terminal claim lacks its evidence. | Every turn that ends with `status: completed`. |
 | `.cursor/hooks/ledger_subagent.py` | New. Append-only local ledger of subagent start/stop. | Observation only; writes to `.cursor/.run/`. |
+| `.cursor/hooks/verify_hooks.py` | New. Executable proof of the three hooks above. Never registered in `hooks.json`, so it never runs on a turn. | None until run by hand. Writes only to a temporary directory. |
 | `.cursor/write-scope.json` | New. The single declarative source for protected branches and paths. | Read by the guard. Editing it is the only way to change what is refused. |
 | `.cursor/rules/00-claim-states.mdc` | New. `alwaysApply: true`. | Prepended to every agent turn's context. |
 | `.cursor/rules/10-currentness-and-write-scope.mdc` | New. `alwaysApply: true`. | Prepended to every agent turn's context. |
@@ -85,14 +86,15 @@ python3 -m py_compile .cursor/hooks/*.py
 bash -n .cursor/install.sh .cursor/start.sh .cursor/terminals/validators-watch.sh
 python3 -c "import json;[json.load(open(f)) for f in ['.cursor/hooks.json','.cursor/write-scope.json']];print('json ok')"
 
-# The guard must refuse a protected push and allow a lane push.
-echo '{"command":"git push origin main","cwd":"'$PWD'"}' \
-  | python3 .cursor/hooks/guard_write_scope.py | python3 -c 'import json,sys;print("main  ->",json.load(sys.stdin)["permission"])'
-echo '{"command":"git status","cwd":"'$PWD'"}' \
-  | python3 .cursor/hooks/guard_write_scope.py | python3 -c 'import json,sys;print("status->",json.load(sys.stdin)["permission"])'
+# Behaviour. This is the whole case table, not a spot check: it loads the real
+# write-scope.json with only the currentness command stubbed, so the branch
+# globs and refusal patterns it exercises are the ones that just got installed.
+python3 .cursor/hooks/verify_hooks.py
 ```
 
-Expected: `main -> deny`, `status-> allow`.
+Expected: `69/69 cases passed` and exit 0. Any failure means the installed
+configuration and the behaviour described here have diverged; fix that before
+committing rather than after.
 
 ### The one thing that is not verifiable before applying
 
@@ -100,8 +102,9 @@ Whether Cursor actually loads and fires `.cursor/hooks.json` in this runtime is
 `DOCUMENTED`, not reproduced. Cursor's documentation states that cloud agents
 run project hooks and that exit code 2 blocks the action; no hook was installed
 or fired during the lane that produced this. Every script here has been
-executed standalone against synthetic input and behaves correctly — that is
-reproduced — but standalone correctness and hook-firing are different claims.
+executed against synthetic input and behaves correctly across 69 cases — that
+is reproduced — but standalone correctness and hook-firing are different
+claims, and only the first one has evidence.
 
 Prove the second one immediately after applying, on a throwaway branch:
 
