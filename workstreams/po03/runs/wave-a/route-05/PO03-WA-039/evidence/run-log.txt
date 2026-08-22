@@ -1,0 +1,51 @@
+PO03-WA-039 execution evidence
+captured_at_utc: 2026-08-22T07:16:32Z
+python: Python 3.12.3
+platform: Linux 6.12.94+ x86_64
+worktree_head: 44de68e52a0baa480a8a8c0b95fd5071391dd4a1
+base_commit: 44de68e52a0baa480a8a8c0b95fd5071391dd4a1
+cwd: workstreams/po03/runs/wave-a/route-05/PO03-WA-039
+
+$ python3 -m unittest discover -s tests -p 'test_*.py' -v
+test_no_staging_files_are_left_behind (test_disjoint_writer_arbiter.ClaimEnforcementTests.test_no_staging_files_are_left_behind) ... ok
+test_second_write_to_the_same_path_is_a_collision_not_an_overwrite (test_disjoint_writer_arbiter.ClaimEnforcementTests.test_second_write_to_the_same_path_is_a_collision_not_an_overwrite) ... ok
+test_traversal_out_of_claim_is_rejected (test_disjoint_writer_arbiter.ClaimEnforcementTests.test_traversal_out_of_claim_is_rejected) ... ok
+test_unknown_writer_is_rejected (test_disjoint_writer_arbiter.ClaimEnforcementTests.test_unknown_writer_is_rejected) ... ok
+test_write_inside_claim_succeeds (test_disjoint_writer_arbiter.ClaimEnforcementTests.test_write_inside_claim_succeeds) ... ok
+test_write_outside_claim_is_rejected_and_creates_nothing (test_disjoint_writer_arbiter.ClaimEnforcementTests.test_write_outside_claim_is_rejected_and_creates_nothing) ... ok
+test_absolute_claim_is_refused (test_disjoint_writer_arbiter.ClaimOverlapTests.test_absolute_claim_is_refused) ... ok
+test_all_eight_wave_a_route_claims_are_disjoint (test_disjoint_writer_arbiter.ClaimOverlapTests.test_all_eight_wave_a_route_claims_are_disjoint) ... ok
+test_arbiter_refuses_to_start_with_overlapping_claims (test_disjoint_writer_arbiter.ClaimOverlapTests.test_arbiter_refuses_to_start_with_overlapping_claims) ... ok
+test_double_star_and_trailing_slash_spellings_are_equivalent (test_disjoint_writer_arbiter.ClaimOverlapTests.test_double_star_and_trailing_slash_spellings_are_equivalent) ... ok
+test_escaping_claim_is_refused (test_disjoint_writer_arbiter.ClaimOverlapTests.test_escaping_claim_is_refused) ... ok
+test_identical_claims_are_flagged (test_disjoint_writer_arbiter.ClaimOverlapTests.test_identical_claims_are_flagged) ... ok
+test_lexical_prefix_without_component_boundary_is_disjoint (test_disjoint_writer_arbiter.ClaimOverlapTests.test_lexical_prefix_without_component_boundary_is_disjoint)
+`route-05` and `route-050` share a string prefix but not a subtree. ... ok
+test_nested_claims_are_flagged (test_disjoint_writer_arbiter.ClaimOverlapTests.test_nested_claims_are_flagged) ... ok
+test_sibling_routes_are_disjoint (test_disjoint_writer_arbiter.ClaimOverlapTests.test_sibling_routes_are_disjoint) ... ok
+test_disjoint_claims_exit_zero (test_disjoint_writer_arbiter.CommandLineTests.test_disjoint_claims_exit_zero) ... ok
+test_malformed_claim_exits_two (test_disjoint_writer_arbiter.CommandLineTests.test_malformed_claim_exits_two) ... ok
+test_nested_claims_exit_one (test_disjoint_writer_arbiter.CommandLineTests.test_nested_claims_exit_one) ... ok
+test_colliding_concurrent_writers_produce_exactly_one_success (test_disjoint_writer_arbiter.ConcurrencyTests.test_colliding_concurrent_writers_produce_exactly_one_success) ... ok
+test_disjoint_concurrent_writers_all_succeed (test_disjoint_writer_arbiter.ConcurrencyTests.test_disjoint_concurrent_writers_all_succeed) ... ok
+test_journal_accounts_for_every_attempt (test_disjoint_writer_arbiter.ConcurrencyTests.test_journal_accounts_for_every_attempt) ... ok
+test_unguarded_concurrent_writes_lose_data_silently (test_disjoint_writer_arbiter.ConcurrencyTests.test_unguarded_concurrent_writes_lose_data_silently)
+Control case: plain writes give no signal that a collision occurred. ... ok
+
+----------------------------------------------------------------------
+Ran 22 tests in 0.590s
+
+OK
+[exit code: 0]
+
+$ python3 src/disjoint_writer_arbiter.py --claim route-01=... (x8)
+summary: claims=8 overlaps=0 disjoint=True
+[exit code: 0]
+
+$ python3 src/disjoint_writer_arbiter.py --claim route-05=... --claim task=.../PO03-WA-039 --claim shadow=...
+FAIL NESTED_CLAIM       route-05 (workstreams/po03/runs/wave-a/route-05) ~ task (workstreams/po03/runs/wave-a/route-05/PO03-WA-039): workstreams/po03/runs/wave-a/route-05/PO03-WA-039 is nested inside workstreams/po03/runs/wave-a/route-05
+FAIL IDENTICAL_CLAIM    route-05 (workstreams/po03/runs/wave-a/route-05) ~ shadow (workstreams/po03/runs/wave-a/route-05): two writers claim the same subtree
+FAIL NESTED_CLAIM       task (workstreams/po03/runs/wave-a/route-05/PO03-WA-039) ~ shadow (workstreams/po03/runs/wave-a/route-05): workstreams/po03/runs/wave-a/route-05/PO03-WA-039 is nested inside workstreams/po03/runs/wave-a/route-05
+summary: claims=3 overlaps=3 disjoint=False
+[exit code: 1]
+
