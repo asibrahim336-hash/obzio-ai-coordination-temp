@@ -1,0 +1,920 @@
+{
+  "protocol_version": "OBZIO-PO03-HOLDOUT-SUITE-v1",
+  "suite_id": "PO03-A13-HOLDOUT-20260822-v001",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "commission_revision": "v002",
+  "authorship": {
+    "owner": "po03-worker-a13",
+    "generation_owner": "po03-worker-a8",
+    "blind_during_authorship": true,
+    "decision_changed": []
+  },
+  "cases": [
+    {
+      "id": "H01",
+      "title": "Provider completion with verified staging but unpublished commit",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "Provider COMPLETED is merely an observation. If no verified durable result commit exists, Obzio state is PROVIDER_COMPLETED_UNCOMMITTED, never COMPLETED.",
+        "source_defects": ["DEF-04"],
+        "novelty": "Combines a valid staged manifest and locally resolvable commit with absence from the declared remote; mere non-empty or local commit checks fail."
+      },
+      "input": {
+        "logical_clock": 100,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h01", "input_sha256": "0101010101010101010101010101010101010101010101010101010101010101", "acceptance_sha256": "a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1"},
+          {"id": "l1", "op": "lease", "lease_id": "lease-h01", "fence": 4},
+          {"id": "s1", "op": "stage", "manifest": "manifest-a", "artifacts": [{"path": "workstreams/po03/holdout-artifact.txt", "bytes": "alpha"}]},
+          {"id": "c1", "op": "commit", "commit": "commit-local-only", "publish": false},
+          {"id": "p1", "op": "provider_state", "state": "COMPLETED"},
+          {"id": "cb1", "op": "callback", "lease_id": "lease-h01", "fence": 4, "commit": "commit-local-only"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/cb1", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/reasons/cb1", "op": "eq", "value": "COMMIT_NOT_DURABLE"},
+        {"path": "/observation/final/unit_state", "op": "eq", "value": "PROVIDER_COMPLETED_UNCOMMITTED"},
+        {"path": "/observation/counts/COMPLETED", "op": "eq", "value": 0},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H02",
+      "title": "Published commit whose manifest belongs to a sibling tree",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "another process reads every artifact back by immutable SHA",
+        "source_defects": ["DEF-04", "DEF-05"],
+        "novelty": "The artifact bytes and manifest hash are each valid, but the manifest is not contained by the declared result commit."
+      },
+      "input": {
+        "logical_clock": 110,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h02", "input_sha256": "0202020202020202020202020202020202020202020202020202020202020202", "acceptance_sha256": "a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2"},
+          {"id": "l1", "op": "lease", "lease_id": "lease-h02", "fence": 2},
+          {"id": "s1", "op": "stage", "manifest": "manifest-sibling", "artifacts": [{"path": "workstreams/po03/a.txt", "bytes": "same-bytes"}]},
+          {"id": "c1", "op": "commit", "commit": "commit-declared", "publish": true, "contains_manifest": false, "sibling_commit_contains_manifest": true},
+          {"id": "cb1", "op": "callback", "lease_id": "lease-h02", "fence": 2, "commit": "commit-declared"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/cb1", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/reasons/cb1", "op": "eq", "value": "MANIFEST_NOT_IN_DECLARED_COMMIT"},
+        {"path": "/observation/counts/PARENT_INGESTED", "op": "eq", "value": 0},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H03",
+      "title": "Mixed current and superseded artifacts at a declared pin",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "hashes and byte counts are verified; another process reads every artifact back by immutable SHA",
+        "source_defects": ["DEF-05", "DEF-16"],
+        "novelty": "Requires the declared pin to verify cleanly while separately refusing a two-artifact result whose mutable ref superseded only one artifact."
+      },
+      "input": {
+        "logical_clock": 120,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h03", "input_sha256": "0303030303030303030303030303030303030303030303030303030303030303", "acceptance_sha256": "a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3"},
+          {"id": "l1", "op": "lease", "lease_id": "lease-h03", "fence": 9},
+          {"id": "s1", "op": "stage", "manifest": "manifest-old", "artifacts": [{"path": "workstreams/po03/a.txt", "bytes": "old-a"}, {"path": "workstreams/po03/b.txt", "bytes": "stable-b"}]},
+          {"id": "c1", "op": "commit", "commit": "commit-old", "publish": true, "contains_manifest": true},
+          {"id": "m1", "op": "advance_ref", "ref": "result-branch", "changes": [{"path": "workstreams/po03/a.txt", "bytes": "new-a"}]},
+          {"id": "cb1", "op": "callback", "lease_id": "lease-h03", "fence": 9, "commit": "commit-old"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/cb1", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/reasons/cb1", "op": "eq", "value": "ATTESTATION_SUPERSEDED"},
+        {"path": "/observation/flags", "op": "contains", "value": "DECLARED_PIN_VERIFIED"},
+        {"path": "/observation/flags", "op": "contains", "value": "MUTABLE_REF_DIVERGED"},
+        {"path": "/observation/counts/PARENT_INGESTED", "op": "eq", "value": 0},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H04",
+      "title": "Identical terminal callback replay after controller restart",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "Lost callbacks must replay. Duplicate callbacks must be harmless.",
+        "source_defects": ["DEF-17"],
+        "novelty": "Replays an already completed identical callback only after process loss, forcing idempotency to survive memory loss."
+      },
+      "input": {
+        "logical_clock": 130,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h04", "input_sha256": "0404040404040404040404040404040404040404040404040404040404040404", "acceptance_sha256": "a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4"},
+          {"id": "l1", "op": "lease", "lease_id": "lease-h04", "fence": 1},
+          {"id": "s1", "op": "stage", "manifest": "manifest-a", "artifacts": [{"path": "workstreams/po03/a.txt", "bytes": "alpha"}]},
+          {"id": "c1", "op": "commit", "commit": "commit-a", "publish": true, "contains_manifest": true},
+          {"id": "cb1", "op": "callback", "lease_id": "lease-h04", "fence": 1, "commit": "commit-a"},
+          {"id": "done1", "op": "transition", "state": "COMPLETED", "actor": "coordinator"},
+          {"id": "loss", "op": "fault", "kind": "CONTROLLER_PROCESS_LOSS"},
+          {"id": "cb2", "op": "callback", "lease_id": "lease-h04", "fence": 1, "commit": "commit-a"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/cb2", "op": "eq", "value": "IDEMPOTENT_REPLAY"},
+        {"path": "/observation/final/unit_state", "op": "eq", "value": "COMPLETED"},
+        {"path": "/observation/counts/COMPLETED", "op": "eq", "value": 1},
+        {"path": "/observation/counts/PARENT_INGESTED", "op": "eq", "value": 1},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H05",
+      "title": "Non-identical terminal resubmission after controller restart",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "Duplicate callbacks must be harmless.",
+        "source_defects": ["DEF-17"],
+        "novelty": "Pairs a durable restart with a callback retaining the same unit and idempotency key but changing both commit and artifact set."
+      },
+      "input": {
+        "logical_clock": 140,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h05", "idempotency_key": "stable-key-h05", "input_sha256": "0505050505050505050505050505050505050505050505050505050505050505", "acceptance_sha256": "a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5"},
+          {"id": "l1", "op": "lease", "lease_id": "lease-h05", "fence": 3},
+          {"id": "s1", "op": "stage", "manifest": "manifest-a", "artifacts": [{"path": "workstreams/po03/a.txt", "bytes": "alpha"}]},
+          {"id": "c1", "op": "commit", "commit": "commit-a", "publish": true, "contains_manifest": true},
+          {"id": "cb1", "op": "callback", "idempotency_key": "stable-key-h05", "lease_id": "lease-h05", "fence": 3, "commit": "commit-a"},
+          {"id": "done1", "op": "transition", "state": "COMPLETED", "actor": "coordinator"},
+          {"id": "loss", "op": "fault", "kind": "CONTROLLER_PROCESS_LOSS"},
+          {"id": "s2", "op": "stage", "manifest": "manifest-b", "artifacts": [{"path": "workstreams/po03/a.txt", "bytes": "beta"}]},
+          {"id": "c2", "op": "commit", "commit": "commit-b", "publish": true, "contains_manifest": true},
+          {"id": "cb2", "op": "callback", "idempotency_key": "stable-key-h05", "lease_id": "lease-h05", "fence": 3, "commit": "commit-b"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/cb2", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/reasons/cb2", "op": "eq", "value": "TERMINAL_RESULT_CONFLICT"},
+        {"path": "/observation/values/accepted_commit", "op": "eq", "value": "commit-a"},
+        {"path": "/observation/counts/COMPLETED", "op": "eq", "value": 1},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H06",
+      "title": "Terminal regression followed by a second completion",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "Every material unit follows CREATED through COMPLETED through ACCEPTED or REJECTED.",
+        "source_defects": ["DEF-17"],
+        "novelty": "Attempts a generic state regression before changing the commit, so a guard only on callback ingestion or current state is insufficient."
+      },
+      "input": {
+        "logical_clock": 150,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h06", "input_sha256": "0606060606060606060606060606060606060606060606060606060606060606", "acceptance_sha256": "a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6"},
+          {"id": "l1", "op": "lease", "lease_id": "lease-h06", "fence": 8},
+          {"id": "s1", "op": "stage", "manifest": "manifest-a", "artifacts": [{"path": "workstreams/po03/a.txt", "bytes": "a"}]},
+          {"id": "c1", "op": "commit", "commit": "commit-a", "publish": true, "contains_manifest": true},
+          {"id": "cb1", "op": "callback", "lease_id": "lease-h06", "fence": 8, "commit": "commit-a"},
+          {"id": "done1", "op": "transition", "state": "COMPLETED", "actor": "coordinator"},
+          {"id": "regress", "op": "transition", "state": "RUNNING", "actor": "worker"},
+          {"id": "done2", "op": "transition", "state": "COMPLETED", "actor": "coordinator", "commit": "commit-b"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/regress", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/reasons/regress", "op": "eq", "value": "TERMINAL_STATE_IMMUTABLE"},
+        {"path": "/observation/outcomes/done2", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/counts/COMPLETED", "op": "eq", "value": 1},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H07",
+      "title": "Stale lease with fresh idempotency key after transfer",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "An expired/stale worker must not commit after ownership transfers.",
+        "source_defects": ["DEF-03"],
+        "novelty": "The stale worker changes its idempotency key after transfer, defeating implementations that confuse callback deduplication with fencing."
+      },
+      "input": {
+        "logical_clock": 160,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h07", "input_sha256": "0707070707070707070707070707070707070707070707070707070707070707", "acceptance_sha256": "a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7"},
+          {"id": "l1", "op": "lease", "lease_id": "lease-old", "fence": 4},
+          {"id": "x1", "op": "expire", "lease_id": "lease-old", "at": 170},
+          {"id": "l2", "op": "lease", "lease_id": "lease-new", "fence": 5},
+          {"id": "c1", "op": "commit", "commit": "commit-old-worker", "publish": true, "contains_manifest": true},
+          {"id": "cb1", "op": "callback", "idempotency_key": "fresh-key-from-old-worker", "lease_id": "lease-old", "fence": 4, "commit": "commit-old-worker"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/cb1", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/reasons/cb1", "op": "eq", "value": "STALE_FENCE"},
+        {"path": "/observation/values/current_lease_id", "op": "eq", "value": "lease-new"},
+        {"path": "/observation/counts/PARENT_INGESTED", "op": "eq", "value": 0},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H08",
+      "title": "Guessed higher fence with a plausible current lease identifier",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "Before dispatch, durably write lease and fence token.",
+        "source_defects": ["DEF-03"],
+        "novelty": "Uses a higher token and correctly formatted guessed lease identifier; comparison-only fencing accepts it."
+      },
+      "input": {
+        "logical_clock": 180,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h08", "input_sha256": "0808080808080808080808080808080808080808080808080808080808080808", "acceptance_sha256": "a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8a8"},
+          {"id": "l1", "op": "lease", "lease_id": "lease-issued-11", "fence": 11},
+          {"id": "c1", "op": "commit", "commit": "commit-guessed", "publish": true, "contains_manifest": true},
+          {"id": "cb1", "op": "callback", "lease_id": "lease-issued-99", "fence": 99, "commit": "commit-guessed"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/cb1", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/reasons/cb1", "op": "eq", "value": "FENCE_NOT_ISSUED"},
+        {"path": "/observation/values/current_fence", "op": "eq", "value": 11},
+        {"path": "/observation/counts/PARENT_INGESTED", "op": "eq", "value": 0},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H09",
+      "title": "Current lease submitting output for superseded immutable input",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "Before dispatch, durably write immutable task input, configuration, source hashes, acceptance hashes.",
+        "source_defects": ["DEF-15"],
+        "novelty": "All lease fields are current; only the result's immutable-input identity belongs to the previous attempt."
+      },
+      "input": {
+        "logical_clock": 190,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h09", "input_sha256": "0909090909090909090909090909090909090909090909090909090909090909", "acceptance_sha256": "a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9a9"},
+          {"id": "l1", "op": "lease", "lease_id": "lease-current", "fence": 7},
+          {"id": "c1", "op": "commit", "commit": "commit-stale-input", "publish": true, "contains_manifest": true},
+          {"id": "cb1", "op": "callback", "lease_id": "lease-current", "fence": 7, "commit": "commit-stale-input", "input_sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/cb1", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/reasons/cb1", "op": "eq", "value": "IMMUTABLE_INPUT_MISMATCH"},
+        {"path": "/observation/counts/PARENT_INGESTED", "op": "eq", "value": 0},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H10",
+      "title": "Lost ingestion acknowledgement and triple callback replay",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "Lost callbacks must replay. Duplicate callbacks must be harmless.",
+        "source_defects": ["DEF-02", "DEF-07"],
+        "novelty": "Drops the first acknowledgement and sends two concurrent replays, testing durable idempotency and append serialization together."
+      },
+      "input": {
+        "logical_clock": 200,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h10", "input_sha256": "1010101010101010101010101010101010101010101010101010101010101010", "acceptance_sha256": "b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0"},
+          {"id": "l1", "op": "lease", "lease_id": "lease-h10", "fence": 6},
+          {"id": "c1", "op": "commit", "commit": "commit-h10", "publish": true, "contains_manifest": true},
+          {"id": "cb1", "op": "callback", "lease_id": "lease-h10", "fence": 6, "commit": "commit-h10", "fault_after_durable_append": "DROP_ACK"},
+          {"id": "race", "op": "concurrent", "operations": [
+            {"id": "cb2", "op": "callback", "lease_id": "lease-h10", "fence": 6, "commit": "commit-h10"},
+            {"id": "cb3", "op": "callback", "lease_id": "lease-h10", "fence": 6, "commit": "commit-h10"}
+          ]}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/cb2", "op": "eq", "value": "IDEMPOTENT_REPLAY"},
+        {"path": "/observation/outcomes/cb3", "op": "eq", "value": "IDEMPOTENT_REPLAY"},
+        {"path": "/observation/counts/PARENT_INGESTED", "op": "eq", "value": 1},
+        {"path": "/observation/flags", "op": "contains", "value": "LEDGER_CHAIN_VALID"},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H11",
+      "title": "Idempotency-key collision with non-identical callback bytes",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "Duplicate callbacks must be harmless.",
+        "source_defects": ["DEF-17"],
+        "novelty": "The second callback reuses the exact key and commit label while changing the manifest payload, requiring byte-level conflict detection."
+      },
+      "input": {
+        "logical_clock": 210,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h11", "idempotency_key": "key-h11", "input_sha256": "1111111111111111111111111111111111111111111111111111111111111111", "acceptance_sha256": "b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1"},
+          {"id": "l1", "op": "lease", "lease_id": "lease-h11", "fence": 12},
+          {"id": "c1", "op": "commit", "commit": "commit-h11", "publish": true, "contains_manifest": true},
+          {"id": "cb1", "op": "callback", "idempotency_key": "key-h11", "lease_id": "lease-h11", "fence": 12, "commit": "commit-h11", "manifest": "manifest-one"},
+          {"id": "cb2", "op": "callback", "idempotency_key": "key-h11", "lease_id": "lease-h11", "fence": 12, "commit": "commit-h11", "manifest": "manifest-two"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/cb2", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/reasons/cb2", "op": "eq", "value": "IDEMPOTENCY_COLLISION"},
+        {"path": "/observation/counts/PARENT_INGESTED", "op": "eq", "value": 1},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H12",
+      "title": "Barrier race between current and stale fenced commits",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "Use an append-only ledger, transactional outbox, leases, fencing.",
+        "source_defects": ["DEF-02", "DEF-03"],
+        "novelty": "Current and stale callbacks cross one execution barrier; sequential tests cannot expose check-then-append races."
+      },
+      "input": {
+        "logical_clock": 220,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h12", "input_sha256": "1212121212121212121212121212121212121212121212121212121212121212", "acceptance_sha256": "b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2"},
+          {"id": "l1", "op": "lease", "lease_id": "lease-old", "fence": 20},
+          {"id": "x1", "op": "expire", "lease_id": "lease-old", "at": 230},
+          {"id": "l2", "op": "lease", "lease_id": "lease-new", "fence": 21},
+          {"id": "race", "op": "concurrent", "operations": [
+            {"id": "old", "op": "callback", "lease_id": "lease-old", "fence": 20, "commit": "commit-old"},
+            {"id": "new", "op": "callback", "lease_id": "lease-new", "fence": 21, "commit": "commit-new"}
+          ]}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/old", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/outcomes/new", "op": "eq", "value": "ACCEPTED"},
+        {"path": "/observation/values/accepted_commit", "op": "eq", "value": "commit-new"},
+        {"path": "/observation/counts/PARENT_INGESTED", "op": "eq", "value": 1},
+        {"path": "/observation/flags", "op": "contains", "value": "LEDGER_SEQUENCE_UNIQUE"},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H13",
+      "title": "Tail truncation followed by a newly valid-looking suffix",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "Use an append-only ledger.",
+        "source_defects": ["DEF-13"],
+        "novelty": "The attacker truncates a sealed tail and appends a different internally valid suffix, so row-chain verification alone remains green."
+      },
+      "input": {
+        "logical_clock": 230,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h13", "input_sha256": "1313131313131313131313131313131313131313131313131313131313131313", "acceptance_sha256": "b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3"},
+          {"id": "e1", "op": "checkpoint", "seq": 1},
+          {"id": "e2", "op": "checkpoint", "seq": 2},
+          {"id": "seal", "op": "fault", "kind": "SEAL_LEDGER_HEAD", "label": "external-anchor-h13"},
+          {"id": "tamper", "op": "fault", "kind": "TRUNCATE_TAIL_AND_APPEND_VALID_SUFFIX", "remove_rows": 1, "append_events": [{"kind": "CHECKPOINTED", "seq": 99}]},
+          {"id": "verify", "op": "recover", "mode": "VERIFY_LEDGER"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/verify", "op": "eq", "value": "TAMPER_DETECTED"},
+        {"path": "/observation/flags", "op": "contains", "value": "SEALED_HEAD_MISMATCH"},
+        {"path": "/observation/values/internal_row_chain_valid", "op": "eq", "value": true},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H14",
+      "title": "Historical mutation with complete cascade rehash",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "Use an append-only ledger.",
+        "source_defects": ["DEF-13", "DEF-18"],
+        "novelty": "Mutates a non-tail row and recomputes every descendant digest while preserving valid JSON and sequence numbers."
+      },
+      "input": {
+        "logical_clock": 240,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h14", "input_sha256": "1414141414141414141414141414141414141414141414141414141414141414", "acceptance_sha256": "b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4"},
+          {"id": "e1", "op": "checkpoint", "seq": 1},
+          {"id": "e2", "op": "checkpoint", "seq": 2},
+          {"id": "e3", "op": "checkpoint", "seq": 3},
+          {"id": "seal", "op": "fault", "kind": "SEAL_LEDGER_HEAD", "label": "external-anchor-h14"},
+          {"id": "tamper", "op": "fault", "kind": "MUTATE_ROW_AND_CASCADE_REHASH", "row": 2, "replacement_seq": 77},
+          {"id": "verify", "op": "recover", "mode": "VERIFY_LEDGER"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/verify", "op": "eq", "value": "TAMPER_DETECTED"},
+        {"path": "/observation/flags", "op": "contains", "value": "SEALED_HEAD_MISMATCH"},
+        {"path": "/observation/values/internal_row_chain_valid", "op": "eq", "value": true},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H15",
+      "title": "Two valid suffixes forked from one sealed predecessor",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "Use an append-only ledger, transactional outbox.",
+        "source_defects": ["DEF-02", "DEF-13"],
+        "novelty": "Presents two individually valid branches sharing sequence and parent hash, requiring equivocation detection rather than local chain validation."
+      },
+      "input": {
+        "logical_clock": 250,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h15", "input_sha256": "1515151515151515151515151515151515151515151515151515151515151515", "acceptance_sha256": "b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5"},
+          {"id": "seal", "op": "fault", "kind": "SEAL_LEDGER_HEAD", "label": "external-anchor-h15"},
+          {"id": "fork", "op": "fault", "kind": "CREATE_VALID_FORKS", "forks": [{"event": "RESULT_VERIFIED"}, {"event": "FAILED_TERMINAL"}]},
+          {"id": "verify", "op": "recover", "mode": "RECONCILE_LEDGER_REPLICAS"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/verify", "op": "eq", "value": "TAMPER_DETECTED"},
+        {"path": "/observation/flags", "op": "contains", "value": "LEDGER_EQUIVOCATION"},
+        {"path": "/observation/values/accepted_fork_count", "op": "eq", "value": 0},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H16",
+      "title": "Producer self-review through a second display name",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "a different producer may then accept or reject it",
+        "source_defects": ["DEF-18"],
+        "novelty": "Producer and reviewer strings differ while both resolve to the same authenticated principal and appointment."
+      },
+      "input": {
+        "logical_clock": 260,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h16", "producer_principal": "principal-17", "producer_label": "worker-alpha", "input_sha256": "1616161616161616161616161616161616161616161616161616161616161616", "acceptance_sha256": "b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6"},
+          {"id": "done", "op": "transition", "state": "COMPLETED", "actor": "coordinator", "preconditions_satisfied": true},
+          {"id": "review", "op": "review", "decision": "ACCEPTED", "reviewer_principal": "principal-17", "reviewer_label": "independent-beta"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/review", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/reasons/review", "op": "eq", "value": "SAME_AUTHENTICATED_PRINCIPAL"},
+        {"path": "/observation/final/review_state", "op": "eq", "value": "PENDING"},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H17",
+      "title": "Independent review attempted before completion then replayed",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "only the coordinator sets COMPLETED; a different producer may then accept or reject it",
+        "source_defects": ["DEF-18"],
+        "novelty": "A legitimate independent principal reviews too early, then retries the same signed review after completion."
+      },
+      "input": {
+        "logical_clock": 270,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h17", "producer_principal": "principal-a", "input_sha256": "1717171717171717171717171717171717171717171717171717171717171717", "acceptance_sha256": "b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7"},
+          {"id": "ingest", "op": "transition", "state": "PARENT_INGESTED", "actor": "coordinator", "preconditions_satisfied": true},
+          {"id": "review1", "op": "review", "decision": "ACCEPTED", "reviewer_principal": "principal-b", "review_receipt": "receipt-17"},
+          {"id": "done", "op": "transition", "state": "COMPLETED", "actor": "coordinator"},
+          {"id": "review2", "op": "review", "decision": "ACCEPTED", "reviewer_principal": "principal-b", "review_receipt": "receipt-17"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/review1", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/reasons/review1", "op": "eq", "value": "UNIT_NOT_COMPLETED"},
+        {"path": "/observation/outcomes/review2", "op": "eq", "value": "ACCEPTED"},
+        {"path": "/observation/final/review_state", "op": "eq", "value": "ACCEPTED"},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H18",
+      "title": "Plausible commit attached to an honest terminal failure",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "result, logs, tests, limitations and complete artifact manifest are written before Obzio completion",
+        "source_defects": ["DEF-11"],
+        "novelty": "The failed result includes a real published diagnostic commit; commit existence must not promote the failed outcome."
+      },
+      "input": {
+        "logical_clock": 280,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h18", "input_sha256": "1818181818181818181818181818181818181818181818181818181818181818", "acceptance_sha256": "b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8"},
+          {"id": "c1", "op": "commit", "commit": "diagnostic-commit", "publish": true, "contains_manifest": true},
+          {"id": "p1", "op": "provider_state", "state": "FAILED"},
+          {"id": "cb1", "op": "callback", "reported_obzio_state": "FAILED_TERMINAL", "commit": "diagnostic-commit"},
+          {"id": "recover", "op": "recover", "mode": "SCAN"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/cb1", "op": "eq", "value": "RECORDED_FAILURE"},
+        {"path": "/observation/final/unit_state", "op": "eq", "value": "FAILED_TERMINAL"},
+        {"path": "/observation/counts/PARENT_INGESTED", "op": "eq", "value": 0},
+        {"path": "/observation/counts/COMPLETED", "op": "eq", "value": 0},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H19",
+      "title": "Validator invoked from a tools-only process boundary",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Successor-generation test",
+        "quote": "clean-clone reproduction without provider memory, /tmp, uncommitted files or a warm checkout",
+        "source_defects": ["DEF-19"],
+        "novelty": "Imports and invokes the validator with its schema deliberately absent, distinguishing a controlled validation failure from an import-time crash."
+      },
+      "input": {
+        "logical_clock": 290,
+        "operations": [
+          {"id": "v1", "op": "validate", "boundary": "TOOLS_ONLY_COPY", "schema_present": false, "document": {"protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1"}}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/v1", "op": "eq", "value": "VALIDATION_FAILED"},
+        {"path": "/observation/reasons/v1", "op": "eq", "value": "SCHEMA_UNAVAILABLE"},
+        {"path": "/observation/values/import_succeeded", "op": "eq", "value": true},
+        {"path": "/observation/values/process_exit_code", "op": "eq", "value": 2},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H20",
+      "title": "Recovery after durable result commit but before callback",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "100% recovery of committed results",
+        "source_defects": ["DEF-08", "DEF-09"],
+        "novelty": "The provider runtime disappears after remote publication and before any callback, requiring remote discovery without rerunning production."
+      },
+      "input": {
+        "logical_clock": 300,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h20", "result_slot": "refs/heads/result-h20", "input_sha256": "2020202020202020202020202020202020202020202020202020202020202020", "acceptance_sha256": "c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0"},
+          {"id": "l1", "op": "lease", "lease_id": "lease-h20", "fence": 2},
+          {"id": "run", "op": "provider_state", "state": "RUNNING", "external_effect_key": "effect-h20"},
+          {"id": "c1", "op": "commit", "commit": "commit-h20", "publish": true, "contains_manifest": true, "ref": "refs/heads/result-h20"},
+          {"id": "loss", "op": "fault", "kind": "ENTIRE_PROVIDER_RUNTIME_LOSS"},
+          {"id": "recover", "op": "recover", "mode": "FRESH_CONTROLLER"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/recover", "op": "eq", "value": "COMMITTED_RESULT_RECOVERED"},
+        {"path": "/observation/final/unit_state", "op": "eq", "value": "PARENT_INGESTED"},
+        {"path": "/observation/values/accepted_commit", "op": "eq", "value": "commit-h20"},
+        {"path": "/observation/counts/producer_runs", "op": "eq", "value": 1},
+        {"path": "/observation/counts/external_effects", "op": "eq", "value": 1},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H21",
+      "title": "Recovery after external effect but before result commit",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "automatic resume/rerun of uncommitted tasks from immutable input, zero duplicate external effects",
+        "source_defects": ["DEF-08"],
+        "novelty": "Crashes after the idempotent external effect is durable but before result staging, then requires an immutable-input rerun with no second effect."
+      },
+      "input": {
+        "logical_clock": 310,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h21", "idempotency_key": "effect-key-h21", "input_sha256": "2121212121212121212121212121212121212121212121212121212121212121", "acceptance_sha256": "c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1"},
+          {"id": "l1", "op": "lease", "lease_id": "lease-h21-a", "fence": 1},
+          {"id": "effect", "op": "provider_state", "state": "RUNNING", "external_effect_key": "effect-key-h21", "effect_committed": true},
+          {"id": "loss", "op": "fault", "kind": "PROCESS_LOSS_BEFORE_RESULT_STAGING"},
+          {"id": "recover", "op": "recover", "mode": "RERUN_FROM_IMMUTABLE_INPUT"},
+          {"id": "c1", "op": "commit", "commit": "commit-h21", "publish": true, "contains_manifest": true}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/recover", "op": "eq", "value": "RERUN_SCHEDULED"},
+        {"path": "/observation/values/rerun_input_sha256", "op": "eq", "value": "2121212121212121212121212121212121212121212121212121212121212121"},
+        {"path": "/observation/counts/producer_runs", "op": "eq", "value": 2},
+        {"path": "/observation/counts/external_effects", "op": "eq", "value": 1},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H22",
+      "title": "Checkpoint rollback replay after recovery",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "Use monotonic checkpoints and a recovery scanner.",
+        "source_defects": ["DEF-15"],
+        "novelty": "Replays an old checkpoint from the same valid lease after restart, so lease validation alone cannot preserve monotonicity."
+      },
+      "input": {
+        "logical_clock": 320,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h22", "input_sha256": "2222222222222222222222222222222222222222222222222222222222222222", "acceptance_sha256": "c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2"},
+          {"id": "l1", "op": "lease", "lease_id": "lease-h22", "fence": 8},
+          {"id": "cp5", "op": "checkpoint", "seq": 5, "lease_id": "lease-h22", "fence": 8},
+          {"id": "loss", "op": "fault", "kind": "CONTROLLER_PROCESS_LOSS"},
+          {"id": "cp3", "op": "checkpoint", "seq": 3, "lease_id": "lease-h22", "fence": 8}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/cp3", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/reasons/cp3", "op": "eq", "value": "CHECKPOINT_NOT_MONOTONIC"},
+        {"path": "/observation/values/checkpoint_seq", "op": "eq", "value": 5},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H23",
+      "title": "Heartbeat and expiry scanner share one logical-time boundary",
+      "critical": false,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "Use leases, fencing, monotonic checkpoints and a recovery scanner.",
+        "source_defects": ["DEF-14"],
+        "novelty": "A heartbeat and expiry scan race at the original deadline; the durable heartbeat must win and prevent a false lease transfer."
+      },
+      "input": {
+        "logical_clock": 330,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h23", "input_sha256": "2323232323232323232323232323232323232323232323232323232323232323", "acceptance_sha256": "c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3"},
+          {"id": "l1", "op": "lease", "lease_id": "lease-h23", "fence": 4, "expires_at": 340},
+          {"id": "race", "op": "concurrent", "operations": [
+            {"id": "hb", "op": "heartbeat", "lease_id": "lease-h23", "fence": 4, "at": 340, "new_expires_at": 350},
+            {"id": "scan", "op": "expire", "lease_id": "lease-h23", "at": 340}
+          ]}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/hb", "op": "eq", "value": "ACCEPTED"},
+        {"path": "/observation/outcomes/scan", "op": "eq", "value": "LEASE_STILL_ACTIVE"},
+        {"path": "/observation/values/current_lease_id", "op": "eq", "value": "lease-h23"},
+        {"path": "/observation/values/current_fence", "op": "eq", "value": 4},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H24",
+      "title": "Normalized traversal and symlink escape in one write set",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Successor-generation test",
+        "quote": "zero out-of-allowlist writes",
+        "source_defects": ["DEF-10"],
+        "novelty": "Combines dot-segment traversal with an in-allowlist symlink whose target is outside, requiring canonical target checks before any write."
+      },
+      "input": {
+        "logical_clock": 340,
+        "operations": [
+          {"id": "setup", "op": "fault", "kind": "CREATE_SANDBOX_SYMLINK", "path": "workstreams/po03/link", "target": "../../packs"},
+          {"id": "w1", "op": "write", "path": "workstreams/po03/../../packs/escape-a.txt", "bytes": "blocked-a"},
+          {"id": "w2", "op": "write", "path": "workstreams/po03/link/escape-b.txt", "bytes": "blocked-b"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/w1", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/outcomes/w2", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/reasons/w1", "op": "eq", "value": "OUTSIDE_ALLOWLIST"},
+        {"path": "/observation/reasons/w2", "op": "eq", "value": "SYMLINK_ESCAPE"},
+        {"path": "/observation/writes", "op": "eq", "value": []},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H25",
+      "title": "Workflow allowlist basename boundary with dot prefix",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Collision boundary",
+        "quote": "Wave-one writes remain restricted to .github/workflows/po03-*.yml and the PO-03 namespaces.",
+        "source_defects": ["DEF-10"],
+        "novelty": "One batch contains a dot-prefixed valid workflow and a lookalike invalid basename, exposing character stripping and substring matching."
+      },
+      "input": {
+        "logical_clock": 350,
+        "operations": [
+          {"id": "w1", "op": "write", "path": "./.github/workflows/po03-holdout.yml", "bytes": "name: allowed"},
+          {"id": "w2", "op": "write", "path": ".github/workflows/xpo03-holdout.yml", "bytes": "name: blocked"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/w1", "op": "eq", "value": "ACCEPTED"},
+        {"path": "/observation/outcomes/w2", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/reasons/w2", "op": "eq", "value": "OUTSIDE_ALLOWLIST"},
+        {"path": "/observation/writes", "op": "eq", "value": [".github/workflows/po03-holdout.yml"]},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H26",
+      "title": "Clean clone with poisoned matching temporary state",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Successor-generation test",
+        "quote": "clean-clone reproduction without provider memory, /tmp, uncommitted files or a warm checkout",
+        "source_defects": ["DEF-09", "DEF-19"],
+        "novelty": "Runs from a fresh clone while a poisoned /tmp object has the exact expected filename; use of hidden state yields a deterministic wrong marker."
+      },
+      "input": {
+        "logical_clock": 360,
+        "operations": [
+          {"id": "poison", "op": "fault", "kind": "CREATE_FORBIDDEN_TEMP_STATE", "name": "po03-generation-state.json", "marker": "POISON"},
+          {"id": "clone", "op": "fault", "kind": "FRESH_CLONE", "exclude_uncommitted": true, "exclude_warm_refs": true},
+          {"id": "run", "op": "recover", "mode": "BOOTSTRAP_FROM_COMMITTED_STATE"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/run", "op": "eq", "value": "BOOTSTRAP_SUCCEEDED"},
+        {"path": "/observation/values/state_source", "op": "eq", "value": "COMMITTED_REPOSITORY"},
+        {"path": "/observation/values/poison_marker_observed", "op": "eq", "value": false},
+        {"path": "/observation/flags", "op": "contains", "value": "NO_FORBIDDEN_TEMP_READ"},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H27",
+      "title": "Corrupt artifact rejection survives restart into recovery",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "corrupt or missing artifact; acceptance requires automatic resume/rerun of uncommitted tasks",
+        "source_defects": ["DEF-07", "DEF-08"],
+        "novelty": "Requires a durable rejection record, restarts the controller, and then checks that the scanner schedules recovery rather than forgetting or ingesting."
+      },
+      "input": {
+        "logical_clock": 370,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h27", "input_sha256": "2727272727272727272727272727272727272727272727272727272727272727", "acceptance_sha256": "c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7"},
+          {"id": "c1", "op": "commit", "commit": "commit-h27", "publish": true, "contains_manifest": true},
+          {"id": "corrupt", "op": "fault", "kind": "CORRUPT_DECLARED_ARTIFACT", "commit": "commit-h27"},
+          {"id": "cb1", "op": "callback", "commit": "commit-h27"},
+          {"id": "loss", "op": "fault", "kind": "CONTROLLER_PROCESS_LOSS"},
+          {"id": "recover", "op": "recover", "mode": "SCAN"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/cb1", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/reasons/cb1", "op": "eq", "value": "ARTIFACT_HASH_MISMATCH"},
+        {"path": "/observation/outcomes/recover", "op": "eq", "value": "RERUN_SCHEDULED"},
+        {"path": "/observation/flags", "op": "contains", "value": "REJECTION_DURABLE"},
+        {"path": "/observation/counts/PARENT_INGESTED", "op": "eq", "value": 0},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H28",
+      "title": "Decorative attempt metadata conflicts with durable lease state",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "Before dispatch, durably write idempotency key, lease and fence token.",
+        "source_defects": ["DEF-15"],
+        "novelty": "The result's checkpoint equals artifact count and its lease fields are plausible defaults, while the durable attempt has different values."
+      },
+      "input": {
+        "logical_clock": 380,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h28", "input_sha256": "2828282828282828282828282828282828282828282828282828282828282828", "acceptance_sha256": "c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8"},
+          {"id": "l1", "op": "lease", "lease_id": "durable-lease", "fence": 13},
+          {"id": "cp", "op": "checkpoint", "seq": 7, "lease_id": "durable-lease", "fence": 13},
+          {"id": "c1", "op": "commit", "commit": "commit-h28", "publish": true, "contains_manifest": true},
+          {"id": "cb1", "op": "callback", "commit": "commit-h28", "artifact_count": 2, "attempt": {"lease_id": "lease-default", "fence": 1, "checkpoint_seq": 2}}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/cb1", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/reasons/cb1", "op": "eq", "value": "ATTEMPT_METADATA_MISMATCH"},
+        {"path": "/observation/values/checkpoint_seq", "op": "eq", "value": 7},
+        {"path": "/observation/counts/PARENT_INGESTED", "op": "eq", "value": 0},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H29",
+      "title": "Commit resolves in an undeclared remote only",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "the result is committed to a deterministic po03/* remote branch",
+        "source_defects": ["DEF-04", "DEF-09"],
+        "novelty": "The SHA is real and fetchable from a different remote, but absent from the immutable result slot declared before dispatch."
+      },
+      "input": {
+        "logical_clock": 390,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h29", "result_slot": "origin/po03/result-h29", "input_sha256": "2929292929292929292929292929292929292929292929292929292929292929", "acceptance_sha256": "c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9"},
+          {"id": "c1", "op": "commit", "commit": "commit-real-elsewhere", "publish": true, "contains_manifest": true, "remote": "attacker", "ref": "po03/result-h29"},
+          {"id": "cb1", "op": "callback", "commit": "commit-real-elsewhere", "declared_slot": "origin/po03/result-h29"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/cb1", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/reasons/cb1", "op": "eq", "value": "COMMIT_NOT_IN_DECLARED_RESULT_SLOT"},
+        {"path": "/observation/counts/PARENT_INGESTED", "op": "eq", "value": 0},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H30",
+      "title": "Unauthorized completion then valid coordinator completion",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "only the coordinator sets COMPLETED",
+        "source_defects": ["DEF-01"],
+        "novelty": "A worker first presents a real verified commit, then the coordinator repeats the transition; refusal must not poison the later authorized path."
+      },
+      "input": {
+        "logical_clock": 400,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h30", "input_sha256": "3030303030303030303030303030303030303030303030303030303030303030", "acceptance_sha256": "d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0d0"},
+          {"id": "ingest", "op": "transition", "state": "PARENT_INGESTED", "actor": "coordinator", "preconditions_satisfied": true, "commit": "verified-commit-h30"},
+          {"id": "worker_done", "op": "transition", "state": "COMPLETED", "actor": "worker", "commit": "verified-commit-h30"},
+          {"id": "coord_done", "op": "transition", "state": "COMPLETED", "actor": "coordinator", "commit": "verified-commit-h30"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/worker_done", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/reasons/worker_done", "op": "eq", "value": "ACTOR_NOT_AUTHORIZED"},
+        {"path": "/observation/outcomes/coord_done", "op": "eq", "value": "ACCEPTED"},
+        {"path": "/observation/final/unit_state", "op": "eq", "value": "COMPLETED"},
+        {"path": "/observation/counts/COMPLETED", "op": "eq", "value": 1},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H31",
+      "title": "Artifact mutates between verification and commit publication",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Transactional result custody",
+        "quote": "hashes and byte counts are verified; result is committed; another process reads every artifact back by immutable SHA",
+        "source_defects": ["DEF-05", "DEF-07"],
+        "novelty": "Injects a time-of-check/time-of-use mutation after RESULT_VERIFIED but before the commit is constructed."
+      },
+      "input": {
+        "logical_clock": 410,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h31", "input_sha256": "3131313131313131313131313131313131313131313131313131313131313131", "acceptance_sha256": "d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1"},
+          {"id": "s1", "op": "stage", "manifest": "manifest-h31", "artifacts": [{"path": "workstreams/po03/a.txt", "bytes": "verified"}]},
+          {"id": "verify", "op": "transition", "state": "RESULT_VERIFIED", "actor": "controller"},
+          {"id": "mutate", "op": "fault", "kind": "MUTATE_STAGED_ARTIFACT", "path": "workstreams/po03/a.txt", "bytes": "changed"},
+          {"id": "c1", "op": "commit", "commit": "commit-h31", "publish": true},
+          {"id": "cb1", "op": "callback", "commit": "commit-h31"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/c1", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/reasons/c1", "op": "eq", "value": "POST_VERIFY_ARTIFACT_MUTATION"},
+        {"path": "/observation/outcomes/cb1", "op": "eq", "value": "REFUSED"},
+        {"path": "/observation/counts/PARENT_INGESTED", "op": "eq", "value": 0},
+        {"path": "/observation/counts/COMPLETED", "op": "eq", "value": 0},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    },
+    {
+      "id": "H32",
+      "title": "Scanner detects a hidden historical duplicate completion",
+      "critical": true,
+      "requirement": {
+        "commission_section": "Operating-system measurement",
+        "quote": "Report false-complete counts.",
+        "source_defects": ["DEF-17"],
+        "novelty": "The projected current state and latest commit look valid; only scanning complete event history reveals that the unit completed twice."
+      },
+      "input": {
+        "logical_clock": 420,
+        "operations": [
+          {"id": "r1", "op": "register", "unit": "u-h32", "input_sha256": "3232323232323232323232323232323232323232323232323232323232323232", "acceptance_sha256": "d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2"},
+          {"id": "inject", "op": "fault", "kind": "LOAD_SYNTHETIC_LEDGER", "events": [
+            {"kind": "PARENT_INGESTED", "commit": "commit-a"},
+            {"kind": "COMPLETED", "commit": "commit-a"},
+            {"kind": "PARENT_INGESTED", "commit": "commit-b"},
+            {"kind": "COMPLETED", "commit": "commit-b"}
+          ]},
+          {"id": "scan", "op": "recover", "mode": "SCAN_FALSE_COMPLETIONS"}
+        ]
+      },
+      "assertions": [
+        {"path": "/observation/outcomes/scan", "op": "eq", "value": "DEFECT_DETECTED"},
+        {"path": "/observation/flags", "op": "contains", "value": "DUPLICATE_COMPLETION_HISTORY"},
+        {"path": "/observation/counts/COMPLETED", "op": "eq", "value": 2},
+        {"path": "/observation/values/detected_false_completions", "op": "eq", "value": 1},
+        {"path": "/observation/counts/false_completions", "op": "eq", "value": 0}
+      ]
+    }
+  ]
+}
