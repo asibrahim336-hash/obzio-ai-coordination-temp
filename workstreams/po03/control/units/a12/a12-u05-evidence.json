@@ -1,0 +1,67 @@
+{
+  "unit_id": "a12-u05",
+  "fence_token": 2,
+  "outcome": "READY_TO_COMMIT",
+  "pre_fix": {
+    "command": "python3 -I workstreams/po03/tests/test_a12_validator_self_contained.py SelfContainedValidatorTests.test_executes_with_only_its_own_file_and_no_sibling_schema",
+    "exit_code": 1,
+    "output_summary": "Ran 1 test in 0.122s; FAILED (failures=1)",
+    "failure": "FileNotFoundError while importing the copied validator because contracts/transactional-result.schema.json was absent"
+  },
+  "post_fix": {
+    "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a12_validator_self_contained.py'",
+    "exit_code": 0,
+    "output": "Ran 2 tests in 0.122s; OK"
+  },
+  "self_containment": {
+    "mechanism": "validate_contracts.py embeds the exact seeded transactional-result.schema.json bytes and parses that in-memory value; it performs no schema filesystem read at import or validation time.",
+    "process_boundary": "The regression test copies only validate_contracts.py into an owned scratch directory, executes it under python3 -I -B, validates one admissible and one schema-invalid document, and confirms no sibling or generated file exists."
+  },
+  "schema_parity": {
+    "assertion": "The on-disk seeded schema bytes equal EMBEDDED_RESULT_SCHEMA_BYTES exactly, and parsing both yields RESULT_SCHEMA exactly.",
+    "effect": "Any byte-level schema change or embedded-rule change fails the parity gate instead of silently creating a second contract."
+  },
+  "suggested_authoritative_subjects": [
+    {
+      "path": ".github/workflows/po03-contracts.yml",
+      "sha": "a23583f32cddf5bafd146b2d0ebf074f60540443",
+      "subject": "po03: fire the contract gate on this run's working branches"
+    },
+    {
+      "path": "workstreams/po03/control/model-capability-register.json",
+      "sha": "a2298fe49b81657cda96baa19839ae36c07e5715",
+      "subject": "po03: record amendment activation, scale ladder and model allocation"
+    },
+    {
+      "path": "workstreams/po03/control/path-ownership.json",
+      "sha": "dd2fcc63694bea365153a5930472816037b6e4ff",
+      "subject": "po03: add deterministic result emitter for subordinate units"
+    },
+    {
+      "path": "workstreams/po03/control/path-ownership.json",
+      "sha": "a23583f32cddf5bafd146b2d0ebf074f60540443",
+      "subject": "po03: fire the contract gate on this run's working branches"
+    },
+    {
+      "path": "workstreams/po03/control/path-ownership.json",
+      "sha": "075e8544d7c9a29e67c1340f76cb2437c8f82d76",
+      "subject": "po03: stop ingestion promoting honest failure into a committed state"
+    },
+    {
+      "path": "workstreams/po03/control/path-ownership.json",
+      "sha": "b7b1888ad17eb232b9f284c753df79da3c0633ba",
+      "subject": "po03: register custody remediation cohort from a2 and a6 findings"
+    },
+    {
+      "path": "workstreams/po03/tools/control_plane.py",
+      "sha": "6f5e3861a8a4f922a6625db2245c57cbd1e7f9fa",
+      "subject": "po03: fix allowlist path normalisation and cover custody invariants"
+    },
+    {
+      "path": "workstreams/po03/tools/control_plane.py",
+      "sha": "075e8544d7c9a29e67c1340f76cb2437c8f82d76",
+      "subject": "po03: stop ingestion promoting honest failure into a committed state"
+    }
+  ],
+  "remaining_boundary": "An unreadable, syntactically corrupted, or Python-version-incompatible validator source can still fail during import before its own main() can print INVALID. Callers must treat any import or subprocess failure as a hard validation failure and must not swallow it. The parity guarantee also depends on running the committed test gate; an independently modified vendored copy must be content-hash verified."
+}
