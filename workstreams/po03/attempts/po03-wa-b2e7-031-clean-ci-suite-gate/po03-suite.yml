@@ -1,0 +1,126 @@
+# PO-03 aggregate suite gate, staged for controller installation.
+#
+# INSTALL AS: .github/workflows/po03-suite.yml
+#
+# This file is deliberately NOT written to .github/ by its producer, which has no
+# authority over that path.  A controller installs it verbatim at the path above,
+# which is inside the commissioned allowlist glob `.github/workflows/po03-*.yml`
+# and is therefore accepted by the path-scope guard the workflow itself runs.
+#
+# It must be installed on a ref that contains the c4 unit subtrees under
+# workstreams/po03/attempts/, because it runs the guards and fixtures those units
+# built.  Every `run:` block is plain shell with no GitHub expressions, so each
+# step is executable locally and byte-identically by
+# workstreams/po03/attempts/po03-wa-b2e7-031-clean-ci-suite-gate/validate_workflow.py.
+
+name: PO-03 aggregate suite
+
+on:
+  pull_request:
+    paths:
+      - "workstreams/po03/**"
+      - "receipts/po03/**"
+      - ".github/workflows/po03-*.yml"
+  push:
+    branches:
+      - "po03/**"
+    paths:
+      - "workstreams/po03/**"
+      - "receipts/po03/**"
+      - ".github/workflows/po03-*.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: po03-suite-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  suite:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Record the runtime that produced this result
+        run: |
+          python -I -VV
+          git --version
+      - name: Enforce the immutable PO-03 path boundary
+        run: |
+          python -I workstreams/po03/tools/check_path_scope.py
+      # The base below is the same PINNED_BASE_SHA that check_path_scope.py uses as
+      # its own default, so both guards judge an identical changed-path set and any
+      # disagreement between them is a guard difference rather than a range
+      # difference.  fetch-depth: 0 above is what makes this commit reachable.
+      - name: Enforce the hardened PO-03 path boundary
+        run: |
+          python -I workstreams/po03/attempts/po03-wa-b2e7-028-path-guard-hardening/hardened_path_scope.py \
+            --repo . \
+            --base 5db7affeb7f00763e148e6d98a33ee6b751f2def \
+            --head HEAD
+      - name: Run the dependency-free contract suite
+        run: |
+          python -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v
+      - name: Run every counted unit's own tests
+        run: |
+          set -eu
+          ran=0
+          for unit in workstreams/po03/attempts/*/; do
+            if ls "$unit"test_*.py >/dev/null 2>&1; then
+              echo "::group::$unit"
+              python -I -m unittest discover -s "$unit" -t "$unit" -p 'test_*.py' -v
+              echo "::endgroup::"
+              ran=$((ran + 1))
+            fi
+          done
+          if [ "$ran" -eq 0 ]; then
+            echo "PO03_SUITE_ERROR: no counted unit tests were discovered" >&2
+            exit 1
+          fi
+          echo "PO03_SUITE units_tested=$ran"
+      - name: Prove the path-scope guard rejects an out-of-allowlist mutation
+        run: |
+          python -I workstreams/po03/attempts/po03-wa-b2e7-027-changed-path-rejection-fixture/rejection_fixture.py
+      - name: Prove tampering with committed custody is evident
+        run: |
+          python -I workstreams/po03/attempts/po03-wa-b2e7-030-tamper-evidence/tamper_harness.py
+      - name: Audit hash and byte coverage of every manifested slot
+        run: |
+          set -eu
+          audited=0
+          for slot in workstreams/po03/attempts/*/; do
+            if [ -f "$slot"manifest.json ]; then
+              task=$(basename "$slot")
+              python -I workstreams/po03/attempts/po03-wa-b2e7-029-hash-coverage-completeness/coverage_assert.py \
+                --repo-root . --commit HEAD --task-id "$task"
+              audited=$((audited + 1))
+            fi
+          done
+          if [ "$audited" -eq 0 ]; then
+            echo "PO03_SUITE_ERROR: no manifested slot was audited" >&2
+            exit 1
+          fi
+          echo "PO03_SUITE slots_audited=$audited"
+      - name: Root every manifested slot in its immutable capsule
+        run: |
+          set -eu
+          rooted=0
+          for slot in workstreams/po03/attempts/*/; do
+            if [ -f "$slot"result.json ]; then
+              task=$(basename "$slot")
+              python -I workstreams/po03/attempts/po03-wa-b2e7-026-provenance-chain/provenance_walker.py \
+                --repo-root . --commit HEAD --task-id "$task"
+              rooted=$((rooted + 1))
+            fi
+          done
+          if [ "$rooted" -eq 0 ]; then
+            echo "PO03_SUITE_ERROR: no result was rooted" >&2
+            exit 1
+          fi
+          echo "PO03_SUITE slots_rooted=$rooted"
