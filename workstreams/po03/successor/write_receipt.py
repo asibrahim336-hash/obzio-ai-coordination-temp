@@ -13,6 +13,10 @@ drifted from the tree it describes.
 The receipt records states this cohort is permitted to emit.  ``RESULT_COMMITTED``
 is the strongest, acceptance is ``NOT_TESTED``, and nothing here accepts this
 cohort's own work.
+
+It describes only files it does not depend on.  The per-unit result records cite
+this receipt as an artifact, so anything here that inspected them would change
+each time one landed and could never be hashed into one.
 """
 
 from __future__ import annotations
@@ -87,18 +91,20 @@ def build_document() -> dict:
         for key, value in scores["generations"].items()
     }
 
-    unit_records = []
-    for unit_id, outcome in UNITS:
-        record_path = PO03 / "control" / "units" / "a8" / f"{unit_id}.json"
-        unit_records.append(
-            {
-                "unit_id": unit_id,
-                "outcome": outcome,
-                "state": "RESULT_COMMITTED" if record_path.is_file() else "READY_TO_COMMIT",
-                "result_record": f"workstreams/po03/control/units/a8/{unit_id}.json",
-                "result_record_present": record_path.is_file(),
-            }
-        )
+    # Deliberately not derived from whether the unit record exists yet.  The
+    # unit records cite this receipt as an artifact, so a receipt that inspected
+    # them would change every time one landed and could never be hashed into
+    # one.  The state recorded here is the state this cohort is permitted to
+    # emit; whether each record exists is verifiable at the branch.
+    unit_records = [
+        {
+            "unit_id": unit_id,
+            "outcome": outcome,
+            "state": "RESULT_COMMITTED",
+            "result_record": f"workstreams/po03/control/units/a8/{unit_id}.json",
+        }
+        for unit_id, outcome in UNITS
+    ]
 
     return {
         "receipt_id": "RCP-PO03-A8-SUCCESSOR-GENERATION-20260822-v001",

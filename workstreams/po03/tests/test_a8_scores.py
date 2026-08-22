@@ -294,7 +294,13 @@ class ReceiptTests(unittest.TestCase):
         self.assertEqual(receipt["acceptance"], "NOT_TESTED")
         self.assertFalse(receipt["merge_authority"])
         for unit in receipt["units"]:
-            self.assertIn(unit["state"], {"RESULT_COMMITTED", "READY_TO_COMMIT"}, unit["unit_id"])
+            self.assertEqual(unit["state"], "RESULT_COMMITTED", unit["unit_id"])
+
+    def test_the_receipt_does_not_describe_anything_that_cites_it(self):
+        """Otherwise it could never be hashed into the records that reference it."""
+        cited = {entry["path"] for entry in self._receipt()["artifacts"]}
+        for unit in self._receipt()["units"]:
+            self.assertNotIn(unit["result_record"], cited, unit["unit_id"])
 
     def test_the_receipt_records_its_boundaries_rather_than_only_its_results(self):
         boundaries = self._receipt()["boundaries"]
