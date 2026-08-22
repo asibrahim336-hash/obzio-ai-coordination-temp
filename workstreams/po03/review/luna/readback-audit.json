@@ -1,0 +1,43 @@
+{
+  "unit_id": "a6-u05",
+  "auditor": "po03-worker-a6",
+  "method": {
+    "command": "python3 -I workstreams/po03/review/luna/readback_audit.py --target REF:RESULT_RECORD",
+    "verification": "For each result record, read its content_uri commit/path with git cat-file blob, hash returned bytes, compare declared SHA and byte count, and test whether the result record exists at result_commit_id.",
+    "coordinator_ingestion_record_used": false
+  },
+  "scoring_snapshot": {
+    "remote_refs_fetched": {
+      "a3": "cursor/po03-a3-portable-runtime-ed20@61f1d8df6ca19607521112737d36045f33422416",
+      "a7": "cursor/po03-a7-os-metrics-ed20@144b4687701a4ad6aace73195fd21a353f42e830",
+      "a1": "NOT_YET: remote ref absent",
+      "a5": "NOT_YET: remote ref absent",
+      "a8": "NOT_YET: remote ref absent"
+    },
+    "producer_result_records": {
+      "audited": ["a7-u01"],
+      "unavailable": [
+        "a1-u01..a1-u06: branch absent",
+        "a3-u01..a3-u06: branch present but result records absent",
+        "a5-u01..a5-u06: branch absent",
+        "a8-u01..a8-u06: branch absent"
+      ]
+    },
+    "evaluator_records_also_audited": ["a6-u01", "a6-u02", "a6-u03", "a6-u04"]
+  },
+  "aggregate": {
+    "result_records_audited": 5,
+    "artifact_claims_audited": 13,
+    "missing_artifact_objects": 0,
+    "hash_mismatches": 0,
+    "byte_count_mismatches": 0,
+    "result_record_missing_at_declared_result_commit": 5,
+    "result": "DISCREPANCY_FOUND"
+  },
+  "discrepancy": {
+    "class": "result_record_not_at_declared_commit",
+    "reproducer": "For every audited record, result_transaction.result_commit_id names the pre-result artifact commit; git cat-file -e <result_commit_id>:<record_path> fails, while the branch head contains the result record.",
+    "impact": "The artifact bytes are independently recoverable, but the declared result commit is not a self-contained immutable locator for the result record. Parent ingestion must use the later branch commit or a separate immutable record locator."
+  },
+  "limitation": "The audit covers only result records present at the scoring snapshot. It does not infer or score units whose producer branches or result records were not published."
+}
