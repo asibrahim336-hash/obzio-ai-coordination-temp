@@ -1,3 +1,12 @@
+> **SUPERSEDED IN PART — 2026-08-22T23:05Z.** Read `FOUNDER-AUTHORITY-20260822T2225Z.json` first; it governs.
+>
+> - **OA-A is withdrawn.** A Cursor API key already exists in Supabase Edge Secrets. Verify and reuse it; do not mint a duplicate. A name census confirms `CURSOR_API_KEY` is absent from the Cloud Agent namespace, so the remaining work is to bridge the existing key across once the Supabase integration is authenticated.
+> - **The tranche-02 stage gate is removed** as a blocking gate. Work not resting on an unverified assumption proceeds immediately.
+> - **The per-wave founder touch-point budget (Q7) is withdrawn.** It conflated not overburdening the founder with not sending him routine relay work; those are different axes.
+> - **One action was missing.** Authenticating MCP integrations is not the whole of the environment work. This environment is database-managed, established positively rather than inferred, so the applied `environment.json` is valid and inert until the environment record points at the repository file. That is a separate and prior action.
+>
+> Everything below is retained as written except where the notes above override it.
+
 # Founder tranche 01 — unblock programmatic control
 
 **Stage gate:** nothing beyond this tranche is prescribed until it is evaluated.

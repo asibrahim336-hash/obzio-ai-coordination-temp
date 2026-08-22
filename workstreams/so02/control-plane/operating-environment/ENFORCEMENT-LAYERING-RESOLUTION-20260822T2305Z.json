@@ -1,0 +1,81 @@
+{
+  "record_id": "ENFORCEMENT-LAYERING-RESOLUTION-20260822T2305Z",
+  "decision_changed": [],
+  "recorded_at": "2026-08-22T23:05:00Z",
+  "decided_by": "root controller bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+  "authority": "operating decision under FOUNDER-AUTHORITY-20260822T2225Z; binds no strategy and no named product",
+
+  "conflict_reported": {
+    "reported_by": "OE-W2-CURSOR-CONFIG-APPLY",
+    "finding_class": "DIRECTLY_REPRODUCED",
+    "statement": "Lane worktree isolation and project hooks conflict as written. Cursor loads project hooks from <project-root>/.cursor/hooks.json, and the project root on this VM is /workspace, confirmed because core.hooksPath resolves to a directory whose base64 component decodes to /workspace. A lane working in its own worktree therefore places hooks outside the only directory Cursor reads them from, so they never fire for that lane.",
+    "evidence": "A benign command appended no line to the guard's audit log, and two commands matching the git|gh matcher executed instead of being refused. The installed guard denied the same commands when fed to it directly, establishing the control.",
+    "why_the_lane_did_not_resolve_it": "Writing hooks into /workspace would have altered every concurrently running sibling lane's turns mid-flight — the exact collision class worktree isolation exists to prevent. Refusing to fix one control by breaking another was the correct call."
+  },
+
+  "resolution": {
+    "verdict": "NOT_A_CONTRADICTION_BUT_A_LAYERING_FACT_WITH_ONE_RESIDUAL_GAP",
+    "reasoning": [
+      "Hooks are a repository control bound to the project root. On any fresh agent run the platform clones the selected branch to /workspace, so a branch carrying .cursor/hooks.json puts those hooks at the project root automatically and they fire for that run's primary agent. Hooks are therefore effective going forward without anyone hand-installing them.",
+      "Worktrees are a concurrency control for parallel lanes inside one already-running VM. They exist because the contended resource is the working directory, which was proven by a live collision.",
+      "The two controls operate at different layers and address different failure modes. Treating them as competing was the error; they compose."
+    ],
+    "layers": [
+      {
+        "layer": "prevention",
+        "control": ".cursor/hooks.json at the project root",
+        "scope": "the primary agent of any run that checks out a branch containing it",
+        "acts": "before a bad command executes",
+        "status": "applied on the W2 branch; effective on future runs booting from a branch that carries it"
+      },
+      {
+        "layer": "detection",
+        "control": "lane_guard.py plus evidence_integrity.py at integration",
+        "scope": "every lane candidate, including worktree lanes hooks cannot reach",
+        "acts": "before a candidate is admitted to shared state",
+        "status": "in force now, 30 tests, wired into CI"
+      }
+    ],
+    "residual_gap": {
+      "statement": "A lane running in an in-VM worktree can perform an act a hook would have refused. Only integration catches it, so for that population the control is detect-not-prevent.",
+      "severity": "MEDIUM",
+      "why_it_is_acceptable_for_now": "Lane writes are confined to isolated branches that reach shared state only through the root controller, and the guard rejects cross-namespace writes, contested paths, non-descendant heads and protected-ref drift before admission. The gap allows a wasted lane, not a corrupted estate.",
+      "what_would_close_it": "Installing hooks at /workspace/.cursor before dispatching lanes, so every lane inherits prevention as well as detection.",
+      "why_that_is_deferred": "Two sibling lanes are running now. Installing hooks into the shared project root mid-flight would change their turns underneath them.",
+      "trigger_to_close": "Install at the shared project root at the next quiescent point, when no lane is executing, and verify firing with the re-runnable probe the lane shipped rather than by assumption."
+    }
+  },
+
+  "second_finding_changes_a_founder_action": {
+    "finding": "This environment is database-managed, not repository-file managed. The lane established it positively rather than by inference: the environment-build override was accepted, and the tool contract states an override is rejected for repo-file managed environments.",
+    "consequence": "The applied .cursor/environment.json is correct, schema-valid against the live Draft 2019-09 schema, and inert. Its proven-working install script has no effect until the environment record points at it.",
+    "supersedes": "The earlier founder guidance treated authenticating MCP integrations as the whole of the environment work. It is not. Making environment.json govern is a separate action and is a precondition for warm starts.",
+    "corrected_founder_action": "At the environment dashboard, either point the environment at the repository file so git becomes the configuration source — recommended, because it keeps configuration versioned and reviewable — or paste the configuration into the saved record. The first option is strictly better for portability and matches the standing rule that no logic or state should be trapped in a provider."
+  },
+
+  "third_finding_corrects_a_shipped_procedure": {
+    "finding": "The documented revert procedure in the staged APPLY.md does not work, reproduced against the applied tree.",
+    "why_it_fails": "The apply is what creates .gitignore, so it does not exist at the revert SHA; git checkout with a pathspec is atomic and exits 1 having reverted nothing. Even with a valid pathspec it would be incomplete, because restoring only paths present in the base tree leaves the twelve newly added files behind.",
+    "working_procedure_verified_end_to_end_in_a_disposable_worktree": [
+      "git rm -r -q --cached --ignore-unmatch .cursor .gitignore .cursorignore",
+      "rm -rf .cursor .gitignore .cursorignore",
+      "git checkout 3f3ee110cf9b769e60c664f758c437dcc582afd3 -- .cursor"
+    ],
+    "verification": "git diff --cached and git diff against the base tree both print nothing, and .cursor/environment.json hashes to af09d9f4d242d95e7f8701a817218178346b2ead32cbe085059d28e8fc85b2d6",
+    "significance": "A revert procedure that was written down but never executed is the same defect class as a lesson documented without changing the mechanism. Executing it before publishing it is the standard."
+  },
+
+  "closure_defect_finally_fixed": {
+    "history": "An independent acceptor refused CUR-ORCH-QUAL-01 partly because its read-back record sat outside its own manifest, unbound by any hash. A later lane reproduced the same exclusion, having reasoned its way to it independently.",
+    "now": "This lane included READ-BACK.json inside the hashed entries and bound it again in a named field, leaving only MANIFEST.json excluded on the sound ground that a file cannot contain its own digest, and declaring that exclusion with the command to verify it.",
+    "root_controller_confirmation": "Verified by recomputation: 28 entries, bundle digest reproduces, zero uncovered files, zero paths outside scope.",
+    "lesson": "The correction only propagated once it travelled with the dispatch contract. Shipping a control after the workers have launched catches defects; it does not prevent them."
+  },
+
+  "carried_hypothesis": {
+    "statement": "Whether .cursor/start.sh runs on a real agent run is untested. Install provably ran during the draft build; start did not, and the absence is meaningful because install's own echoes appear in the same log.",
+    "declared_by": "OE-W2-CURSOR-CONFIG-APPLY",
+    "nothing_is_built_on_it": true,
+    "how_it_gets_settled": "Observe a fresh agent run booting from a branch carrying the configuration, once the environment record points at the repository file."
+  }
+}
