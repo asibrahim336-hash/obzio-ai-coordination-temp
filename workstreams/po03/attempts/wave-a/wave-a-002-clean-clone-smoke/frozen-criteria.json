@@ -1,0 +1,21 @@
+{
+  "criteria_version": "PO03-WAVE-A-002-FROZEN-CRITERIA-v1",
+  "task_id": "wave-a-002-clean-clone-smoke",
+  "immutable_input_sha256": "2284d25e799760ad17f16b618ead3aba51c4cd987c62dc0ebae61f55349c01cf",
+  "acceptance_contract_sha256": "42cb638bc88cb69a23b942706b0203207e0378d30805096627e583cfcffcec02",
+  "falsifiable_hypothesis": "The PO-03 validator suite can run in a fresh checkout using only Python standard library dependencies.",
+  "pass_conditions": [
+    "The source checkout has no tracked, untracked, or ignored state outside its immutable commit.",
+    "A no-local, no-hardlink clone checks out the exact requested commit in detached state.",
+    "The PO-03 tests pass under Python -I -S -B with an isolated HOME and TMPDIR.",
+    "The validator run leaves no tracked, untracked, or ignored state in the fresh clone.",
+    "Frozen untracked and ignored provider-state fixtures are rejected before clone execution."
+  ],
+  "fail_conditions": [
+    "The source or child checkout contains hidden state.",
+    "The requested revision is not an immutable commit.",
+    "The isolated validator command exits nonzero or times out.",
+    "The validator creates undeclared checkout state."
+  ],
+  "decision_changed": []
+}

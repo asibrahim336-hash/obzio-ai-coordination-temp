@@ -1,0 +1,15 @@
+{
+  "limitations_version": "PO03-WAVE-A-LIMITATIONS-v1",
+  "task_id": "wave-a-002-clean-clone-smoke",
+  "outcome_scope": "The attempt tests clean Git materialization and Python standard-library isolation for the PO-03 validator suite.",
+  "limitations": [
+    "The reproduction uses a fresh local Git clone on the same host; it does not prove separate-VM or network-clone behavior.",
+    "Python -S excludes site initialization and -I excludes user environment injection, but this attempt does not independently attest the operating-system Python binary.",
+    "The hidden-state fixture covers tracked, untracked, and ignored checkout entries; it does not inspect state outside the Git checkout.",
+    "This producer result is not independently accepted, parent-ingested, completed, merged, or promoted."
+  ],
+  "negative_observations": [
+    "Route verification in a single-branch clone initially lacked the immutable canary result objects and failed closed; fetching the two established canary refs restored verification without changing the checkout."
+  ],
+  "decision_changed": []
+}
