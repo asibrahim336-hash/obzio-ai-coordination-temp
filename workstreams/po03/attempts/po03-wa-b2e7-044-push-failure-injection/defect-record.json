@@ -1,0 +1,83 @@
+{
+  "defect_id": "DEF-PO03-C6-044-PUSH-BOUNDARY-NOT-DISTINGUISHED-OR-RECOVERED",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "cohort": "c6",
+  "task_id": "po03-wa-b2e7-044-push-failure-injection",
+  "function": "transactional-recovery-and-fault-injection",
+  "falsifiable_hypothesis": "A failure before or after push is distinguishable and recoverable, and a pushed-but-unreported result is not lost.",
+  "verdict": "FAIL",
+  "severity": "COHORT_BAR_BREACH",
+  "cohort_bar_clause_breached": "100 percent recovery of committed results",
+  "mechanism_under_test": "workstreams/po03/tools/transactional_factory.py",
+  "topology": "one bare remote, one producer clone that commits and pushes, one separate controller clone that ingests",
+  "fault_classes": [
+    {
+      "fault_class": "PRE_PUSH_FAILURE_COMMIT_LOCAL_ONLY",
+      "injected_at_state_transition": "RESULT_COMMITTED -> (push never executed)",
+      "observed_behaviour": "the commit was absent from the remote; ingestion returned RECOVERY_REQUIRED with a read-back failure; the 53 committed bytes remained byte-identical in the producer clone; false_completion_count 0",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "POST_PUSH_REPORT_LOST_CONTROLLER_ALREADY_FETCHED",
+      "injected_at_state_transition": "RESULT_COMMITTED -> pushed -> (report lost)",
+      "observed_behaviour": "push succeeded, the controller had fetched, and ingestion of the recovered document returned PARENT_INGESTED with zero errors, a matching artifact read-back and AWAIT_COORDINATOR_COMPLETION from the scanner",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "POST_PUSH_REPORT_LOST_CONTROLLER_NOT_FETCHED",
+      "injected_at_state_transition": "RESULT_COMMITTED -> pushed -> (report lost, no fetch)",
+      "observed_behaviour": "the commit was verified present on the remote, yet ingestion returned RECOVERY_REQUIRED; the mechanism made no fetch attempt and the scanner prescribed a rerun",
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "PUSH_REJECTED_NON_FAST_FORWARD",
+      "injected_at_state_transition": "RESULT_COMMITTED -> push refused",
+      "observed_behaviour": "git rejected the push (exit 1, stderr contained a rejection), the remote tip still pointed at the competing worker's commit, the producer's own bytes stayed byte-identical locally, ingestion returned RECOVERY_REQUIRED and no false completion appeared",
+      "verdict": "PASS"
+    }
+  ],
+  "indistinguishability_evidence": {
+    "normalisation": "commit object ids and per-run task names replaced with placeholders so only the failure mode differs",
+    "pre_push_error_signature": [
+      "artifact <task>001: read-back failed (Command '('git', 'cat-file', 'blob', '<object-id>:workstreams/po03/attempts/<task>/component.json')' returned non-zero exit status 128.)"
+    ],
+    "post_push_unfetched_error_signature": [
+      "artifact <task>001: read-back failed (Command '('git', 'cat-file', 'blob', '<object-id>:workstreams/po03/attempts/<task>/component.json')' returned non-zero exit status 128.)"
+    ],
+    "signatures_are_identical": true
+  },
+  "why_this_is_a_defect": "ingest_result reads every artifact with git cat-file inside the coordinator's own repository and never consults the remote. A result that is durable on the remote but not yet fetched therefore produces exactly the same error as a result that was never pushed, so the coordinator can neither tell the two apart nor recover the durable one. The pushed result is not lost in the object store, but it is lost to the recovery path, which is what the cohort bar measures.",
+  "what_the_mechanism_does_hold": [
+    "no push fault class produced a false completion",
+    "a fetched result is ingested with full artifact read-back by immutable object id",
+    "a rejected non-fast-forward push leaves the competing worker's commit on the remote untouched, so no result is overwritten",
+    "no founder relay is involved in any part of the observed path"
+  ],
+  "repair_candidate": {
+    "path": "workstreams/po03/attempts/po03-wa-b2e7-044-push-failure-injection/repair_candidate_remote_recovery.py",
+    "entry_points": ["object_present_locally", "object_present_on_remote", "classify_missing_result", "recover_from_remote"],
+    "approach": "before declaring a result unrecoverable, ask the remote for the exact object; classify the outcome as PRESENT_LOCALLY, PRESENT_ON_REMOTE_NOT_FETCHED or ABSENT_EVERYWHERE, and in the middle case fetch the object and re-ingest through the unmodified ingest_result so every existing custody check still applies",
+    "evidence_it_closes_the_gap": [
+      "test_candidate_classifies_a_pushed_but_unfetched_result",
+      "test_candidate_classifies_a_result_that_was_never_pushed",
+      "test_candidate_recovers_the_pushed_result_from_the_remote",
+      "test_candidate_refuses_to_ingest_a_result_that_is_absent_everywhere",
+      "test_candidate_never_completes_a_unit"
+    ],
+    "adopted_by_live_mechanism": false,
+    "adoption_authority": "coordinator only; a subordinate producer may not modify workstreams/po03/tools/**"
+  },
+  "reproduction": {
+    "component": "workstreams/po03/attempts/po03-wa-b2e7-044-push-failure-injection/push_boundary_injector.py",
+    "command": "python3 -I workstreams/po03/attempts/po03-wa-b2e7-044-push-failure-injection/push_boundary_injector.py",
+    "exit_code_observed": 1,
+    "report": "workstreams/po03/attempts/po03-wa-b2e7-044-push-failure-injection/injection-report.json",
+    "test_command": "python3 -I -m unittest discover -s workstreams/po03/attempts/po03-wa-b2e7-044-push-failure-injection -p 'test_*.py' -v",
+    "test_outcome": "11 tests, OK",
+    "test_output": "workstreams/po03/attempts/po03-wa-b2e7-044-push-failure-injection/test-output.txt"
+  },
+  "test_weakening_check": "no assertion was relaxed to obtain a pass; test_pushed_result_is_not_recovered_when_the_controller_has_not_fetched and test_pre_and_post_push_failures_are_indistinguishable_to_the_mechanism assert the defect and will fail once it is repaired",
+  "obzio_state_claim": "READY_TO_COMMIT",
+  "producer_may_not_accept_own_work": true,
+  "decision_changed": []
+}

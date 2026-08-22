@@ -1,0 +1,85 @@
+{
+  "false_completions_observed": 0,
+  "fault_classes": 4,
+  "post_push_unfetched_error_signature": [
+    "artifact <task>001: read-back failed (Command '('git', 'cat-file', 'blob', '<object-id>:workstreams/po03/attempts/<task>/component.json')' returned non-zero exit status 128.)"
+  ],
+  "pre_and_post_push_failures_distinguishable_by_the_mechanism": false,
+  "pre_push_error_signature": [
+    "artifact <task>001: read-back failed (Command '('git', 'cat-file', 'blob', '<object-id>:workstreams/po03/attempts/<task>/component.json')' returned non-zero exit status 128.)"
+  ],
+  "results": [
+    {
+      "error_signature": [
+        "artifact <task>001: read-back failed (Command '('git', 'cat-file', 'blob', '<object-id>:workstreams/po03/attempts/<task>/component.json')' returned non-zero exit status 128.)"
+      ],
+      "fault_class": "PRE_PUSH_FAILURE_COMMIT_LOCAL_ONLY",
+      "injected_at_state_transition": "RESULT_COMMITTED -> (push never executed)",
+      "observed": {
+        "commit_present_on_remote": false,
+        "false_completion_count": 0,
+        "ingestion_errors": [
+          "artifact po03-c6-044-pre-push-artifact-001: read-back failed (Command '('git', 'cat-file', 'blob', '7671d0d3007d8896d07c9ccf949c82d51a3193e6:workstreams/po03/attempts/po03-c6-044-pre-push/component.json')' returned non-zero exit status 128.)"
+        ],
+        "ingestion_state": "RECOVERY_REQUIRED",
+        "producer_local_bytes": 53,
+        "producer_local_bytes_match_committed": true,
+        "recovery_action": "RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT"
+      },
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "POST_PUSH_REPORT_LOST_CONTROLLER_ALREADY_FETCHED",
+      "injected_at_state_transition": "RESULT_COMMITTED -> pushed -> (report lost)",
+      "observed": {
+        "artifact_readback_match": [
+          true
+        ],
+        "false_completion_count": 0,
+        "ingestion_errors": [],
+        "ingestion_state": "PARENT_INGESTED",
+        "push_returncode": 0,
+        "recovery_action": "AWAIT_COORDINATOR_COMPLETION",
+        "scanner_sees_ingested_result": true
+      },
+      "verdict": "PASS"
+    },
+    {
+      "error_signature": [
+        "artifact <task>001: read-back failed (Command '('git', 'cat-file', 'blob', '<object-id>:workstreams/po03/attempts/<task>/component.json')' returned non-zero exit status 128.)"
+      ],
+      "fault_class": "POST_PUSH_REPORT_LOST_CONTROLLER_NOT_FETCHED",
+      "injected_at_state_transition": "RESULT_COMMITTED -> pushed -> (report lost, no fetch)",
+      "observed": {
+        "commit_present_on_remote": true,
+        "controller_fetched": false,
+        "false_completion_count": 0,
+        "ingestion_errors": [
+          "artifact po03-c6-044-post-push-unfetched-artifact-001: read-back failed (Command '('git', 'cat-file', 'blob', '8f2d44e7b5c8b2be5f84f7af100858ddaf352676:workstreams/po03/attempts/po03-c6-044-post-push-unfetched/component.json')' returned non-zero exit status 128.)"
+        ],
+        "ingestion_state": "RECOVERY_REQUIRED",
+        "mechanism_attempted_a_fetch": false,
+        "push_returncode": 0,
+        "recovery_action": "RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT"
+      },
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "PUSH_REJECTED_NON_FAST_FORWARD",
+      "injected_at_state_transition": "RESULT_COMMITTED -> push refused",
+      "observed": {
+        "false_completion_count": 0,
+        "ingestion_state": "RECOVERY_REQUIRED",
+        "producer_bytes_intact_locally": true,
+        "push_rejected": true,
+        "push_returncode": 1,
+        "recovery_action": "RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT",
+        "remote_tip_is_competitor_commit": true
+      },
+      "verdict": "PASS"
+    }
+  ],
+  "unit": "po03-wa-b2e7-044-push-failure-injection",
+  "verdict": "FAIL",
+  "verdict_basis": "ingest_result reads artifacts with git cat-file in the coordinator's own repository and never fetches; a result that is durable on the remote but absent locally fails with the same error as a result that was never pushed at all"
+}
