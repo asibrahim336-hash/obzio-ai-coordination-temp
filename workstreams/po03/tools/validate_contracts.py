@@ -405,9 +405,6 @@ def validate_result(doc: dict[str, Any], context: dict[str, Any] | None = None) 
                     "$.result_transaction.parent_ingested_at: must not precede verified_at"
                 )
     if state in {
-        "RESULT_STAGING",
-        "RESULT_STAGED",
-        "RESULT_VERIFIED",
         "RESULT_COMMITTED",
         "PARENT_INGESTED",
         "COMPLETED",
