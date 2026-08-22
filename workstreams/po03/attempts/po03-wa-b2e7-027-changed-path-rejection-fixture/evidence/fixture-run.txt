@@ -1,0 +1,30 @@
+# CI-callable rejection fixture against the live guard
+# guard: workstreams/po03/tools/check_path_scope.py
+# repo HEAD: d2b0421befd234ea74a5fec0ee0a205c8b91462a
+
+$ python3 -I rejection_fixture.py --include-repo-scope 5ef49cb148f5186397acf1303f325f726bb58543
+OK       synthetic-in-allowlist-control expected_exit=0 actual_exit=0 marker=present
+OK       synthetic-rejected:state/PO03-SHOULD-NOT-WRITE.json expected_exit=1 actual_exit=1 marker=present
+OK       synthetic-rejected:workstreams/po01/producer-result.json expected_exit=1 actual_exit=1 marker=present
+OK       synthetic-rejected:.cursor/environment.json expected_exit=1 actual_exit=1 marker=present
+OK       synthetic-rejected:packs/pack-a/manifest.json expected_exit=1 actual_exit=1 marker=present
+OK       synthetic-rejected:modules/module-a/index.js expected_exit=1 actual_exit=1 marker=present
+OK       synthetic-rejected:_transport/spool/message.json expected_exit=1 actual_exit=1 marker=present
+OK       synthetic-rejected:dispatch/queue.json expected_exit=1 actual_exit=1 marker=present
+OK       synthetic-rejected:COMMISSION.md expected_exit=1 actual_exit=1 marker=present
+OK       synthetic-rejected:.github/workflows/not-po03.yml expected_exit=1 actual_exit=1 marker=present
+OK       synthetic-rejected:README.md expected_exit=1 actual_exit=1 marker=present
+OK       synthetic-one-bad-path-among-many-good expected_exit=1 actual_exit=1 marker=present
+OK       scratch-repo-in-allowlist-control expected_exit=0 actual_exit=0 marker=present
+OK       scratch-repo-out-of-allowlist-mutation expected_exit=1 actual_exit=1 marker=present
+OK       scratch-repo-out-of-allowlist-deletion expected_exit=1 actual_exit=1 marker=present
+OK       unresolvable-base-fails-closed expected_exit=2 actual_exit=2 marker=present
+OK       real-repository-scope:5ef49cb148f5186397acf1303f325f726bb58543..HEAD expected_exit=0 actual_exit=0 marker=present
+PO03_FIXTURE_PASS scenarios=17 rejecting=14 passing=3 guard=check_path_scope.py
+exit=0
+
+$ git status --porcelain   # after the fixture ran, the repository under test is untouched
+?? workstreams/po03/attempts/po03-wa-b2e7-027-changed-path-rejection-fixture/__pycache__/
+?? workstreams/po03/attempts/po03-wa-b2e7-027-changed-path-rejection-fixture/evidence/
+?? workstreams/po03/tools/__pycache__/
+(empty output above means no working-tree change)
