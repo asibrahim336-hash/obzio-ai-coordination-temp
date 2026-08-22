@@ -1,0 +1,66 @@
+{
+  "decision_changed": [],
+  "dispositions": [
+    {
+      "bounded_result": "PASS",
+      "evidence": {
+        "locked_lost_writes": 0,
+        "locked_retained_writes": 240,
+        "unprotected_lost_writes": 210,
+        "unprotected_lossy_trials": 30,
+        "unprotected_retained_writes": 30
+      },
+      "external_claim_scope": "LangGraph issue #8115 and current pinned put_writes code shape",
+      "factory_action": "Retain the executable fixture as a recurrence test candidate; require expected-write-set equality and one atomic critical section for any shared in-process result collector.",
+      "mechanism_id": "MECH-001",
+      "mechanism": "Parallel writers publish stale snapshots by read-filter-rebind-append and silently erase sibling checkpoint writes.",
+      "status": "RETEST",
+      "why": "The abstract pattern is deterministically reproduced and the locked control passes, but this unit did not establish current LangGraph's actual concurrent call path or run an end-to-end LangGraph graph."
+    },
+    {
+      "bounded_result": "PASS",
+      "evidence": {
+        "atomic_hash_verified_readbacks": 12,
+        "atomic_provider_completed_receipts": 12,
+        "ephemeral_durable_readbacks": 0,
+        "ephemeral_false_greens_if_receipt_sufficient": 12,
+        "ephemeral_provider_completed_receipts": 12
+      },
+      "external_claim_scope": "LangGraph persistence documentation, Anthropic engineering retrospective, and GitHub workflow artifact documentation",
+      "factory_action": "Retain the existing PO-03 rule that provider completion cannot advance custody without a durable result plus hash verification and immutable read-back. This subordinate made no shared-control edit.",
+      "mechanism_id": "MECH-002",
+      "mechanism": "A worker reports completion while its result exists only in process-local memory; process loss removes the result although the completion receipt survives.",
+      "status": "RETAIN",
+      "why": "The memory-only path produced 12 provider-completed receipts and zero durable read-backs; the atomic-file control produced 12 of 12 hash-verified read-backs."
+    },
+    {
+      "bounded_result": "NOT_SUPPORTED",
+      "evidence": {
+        "incident_id": "tp690gjy8prx",
+        "published_root_cause": false,
+        "published_result_loss_evidence": false
+      },
+      "external_claim_scope": "Cursor 2026-08-18 GitHub-connected Cloud Agent workflow incident",
+      "factory_action": "Use only as current provider-failure context; do not use it to infer result loss or a recovery mechanism.",
+      "mechanism_id": "MECH-003",
+      "mechanism": "Provider incident caused completed-result loss.",
+      "status": "REJECT",
+      "why": "The incident reports failures and rate-limit errors but no root cause, completed-result loss, or custody read-back evidence."
+    }
+  ],
+  "hypothesis_disposition": {
+    "disposition": "SUPPORTED_BOUNDED",
+    "statement": "Published sources reveal at least two result-loss mechanisms reproducible as sanitized local factory invariants: stale concurrent rebind can erase writes, and provider completion without durable storage can leave no recoverable result. The sources do not establish provider- or framework-level incidence rates.",
+    "tested_claims": [
+      "BHC-01",
+      "BHC-02"
+    ]
+  },
+  "live_mechanism_change": {
+    "artifact": "reproduce.py and test_reproduction.py",
+    "scope": "OWNED_SUBTREE_ONLY",
+    "shared_factory_mutation": false,
+    "type": "EXECUTABLE_RECURRENCE_FIXTURE"
+  },
+  "schema_version": "1.0"
+}
