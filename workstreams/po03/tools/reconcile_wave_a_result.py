@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -15,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 COMMISSION_ID = "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001"
 CONTROLLER_ID = "bc-b1956656-b897-4889-aeab-82c4556c1a9f"
 PROTOCOL_ANCESTOR = "e56eda6e8e4a4e958795f7157839926d93272b30"
+ATTEMPT_ID_RE = re.compile(r"^(PO03-WA-\d{3})-(A\d{2})$")
 
 
 def _git(*args: str) -> bytes:
@@ -72,6 +74,45 @@ def _write_jsonl(relative: str, rows: list[dict[str, Any]]) -> None:
 
 def _commit_time(commit: str) -> str:
     return _git("show", "-s", "--format=%cI", commit).decode().strip()
+
+
+def _attempt_projection(
+    task_id: str, slug: str, attempt: dict[str, Any]
+) -> tuple[str, str]:
+    attempt_id = attempt.get("attempt_id")
+    match = ATTEMPT_ID_RE.fullmatch(str(attempt_id))
+    if match is None or match.group(1) != task_id:
+        raise ValueError(f"invalid active attempt identity: {attempt_id!r}")
+    suffix = match.group(2).lower()
+    input_name = f"{slug}.json" if suffix == "a01" else f"{slug}-{suffix}.json"
+    return (
+        f"control/inputs/wave-a/{input_name}",
+        f"outbox-po03-{slug}-dispatch-{suffix}",
+    )
+
+
+def _validate_producer_attempt(
+    task_id: str,
+    control_attempt: dict[str, Any],
+    ready: dict[str, Any],
+    producer_result: dict[str, Any],
+) -> None:
+    expected = {
+        field: control_attempt.get(field)
+        for field in ("attempt_id", "idempotency_key", "lease_id", "fence_token")
+    }
+    for label, document in (
+        ("producer return", ready),
+        ("producer result", producer_result),
+    ):
+        observed = document.get("attempt")
+        if not isinstance(observed, dict):
+            raise ValueError(f"{label} lacks an attempt envelope")
+        for field, value in expected.items():
+            if observed.get(field) != value:
+                raise ValueError(
+                    f"{label} is stale or divergent for {task_id}: {field}"
+                )
 
 
 def _args() -> argparse.Namespace:
@@ -206,6 +247,17 @@ def main() -> int:
     control_result_rel = f"control/results/wave-a/{slug}.json"
     control_result = _read_json(control_result_rel)
     attempt = control_result["attempt"]
+    _validate_producer_attempt(task_id, attempt, ready, producer_result)
+    input_rel, outbox_id = _attempt_projection(task_id, slug, attempt)
+    input_bytes = (ROOT / input_rel).read_bytes()
+    input_doc = json.loads(input_bytes)
+    if _sha(input_bytes) != control_result["immutable_input_manifest_sha256"]:
+        raise ValueError("active immutable input digest mismatch")
+    if (
+        ready.get("immutable_input_manifest_sha256")
+        != control_result["immutable_input_manifest_sha256"]
+    ):
+        raise ValueError("producer return references a stale immutable input")
     control_result.update(
         provider_state="COMPLETED",
         obzio_state="COMPLETED",
@@ -279,16 +331,11 @@ def main() -> int:
                 producer_result.get("source_claims", {}).get("count", 0),
             )
         ),
-        "model_requested": _read_json(f"control/inputs/wave-a/{slug}.json")[
-            "configuration"
-        ]["model_slug"],
+        "model_requested": input_doc["configuration"]["model_slug"],
         "model_observed": args.model_observed,
         "exact_model_mapping": (
             "PASS"
-            if _read_json(f"control/inputs/wave-a/{slug}.json")[
-                "configuration"
-            ]["model_slug"]
-            in args.model_observed
+            if input_doc["configuration"]["model_slug"] in args.model_observed
             else "NOT_SUPPORTED"
         ),
         "route_disposition": args.route_disposition,
@@ -323,7 +370,6 @@ def main() -> int:
     _write_jsonl("control/work-unit-registry.jsonl", registry)
 
     outbox = _read_jsonl("control/outbox.jsonl")
-    outbox_id = f"outbox-po03-{slug}-dispatch-a01"
     found = False
     for row in outbox:
         if row.get("outbox_id") == outbox_id:
@@ -413,7 +459,6 @@ def main() -> int:
     )
     _write_json("control/recovery-state.json", recovery)
 
-    input_doc = _read_json(f"control/inputs/wave-a/{slug}.json")
     metrics = [
         row for row in _read_jsonl("metrics/work-unit-runs.jsonl")
         if row.get("task_id") != task_id
