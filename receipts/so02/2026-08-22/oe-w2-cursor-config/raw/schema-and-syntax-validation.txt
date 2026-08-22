@@ -1,0 +1,35 @@
+SCHEMA VALIDATION — .cursor/environment.json against the LIVE Cursor schema
+run at: 2026-08-22T22:46:20Z
+
+$ curl -sSL https://cursor.com/schemas/environment.schema.json
+  HTTP 200, 6535 bytes
+  sha256(schema) = 5683735c6227f1316aa141587ba57b4bddde98c54417f1797ff20e7c2f176341
+
+  schema $schema            : https://json-schema.org/draft/2019-09/schema
+  root unevaluatedProperties: False
+  allowed root properties   : ['agentCanUpdateSnapshot', 'build', 'disableAllMcpServers', 'install', 'mcpServerAllowlist', 'name', 'ports', 'repositoryDependencies', 'snapshot', 'start', 'terminals', 'user']
+
+  document under test       : .cursor/environment.json
+  document keys             : ['disableAllMcpServers', 'install', 'name', 'start', 'terminals']
+
+  RESULT: VALID (0 errors)
+
+  NOTE: validated against the fetched live schema, never a remembered field list.
+  unevaluatedProperties:false means one stray key would invalidate the whole file.
+
+$ python3 -m py_compile .cursor/hooks/*.py
+  exit=0
+$ bash -n .cursor/install.sh .cursor/start.sh .cursor/terminals/validators-watch.sh
+  exit=0
+$ strict json parse of every .cursor json
+  parsed OK: .cursor/environment.json
+  parsed OK: .cursor/hooks.json
+  parsed OK: .cursor/mcp.json
+  parsed OK: .cursor/write-scope.json
+
+$ python3 scripts/check_operator_taxonomy.py
+OPERATOR TAXONOMY CHECK: PASS
+active function: obzio.function.strategic-operations-orchestration
+active appointment: obzio.appointment.strategic-operations-orchestration.20260819.001
+classified aliases: 9
+  exit=0

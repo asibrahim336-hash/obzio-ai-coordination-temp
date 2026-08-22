@@ -1,0 +1,252 @@
+{
+  "record_id": "OE-W2-APPLY-VERIFY-RECORD-20260822-v001",
+  "lane_id": "OE-W2-CURSOR-CONFIG-APPLY",
+  "commission": "COM-CUR-ENV-01-20260822-v001",
+  "terminal_state": "READY_TO_COMMIT",
+  "not_claimed": "Not completed and not accepted. This lane produced artifacts and stopped at its own boundary. Only the root controller integrates and only an independent lane accepts.",
+
+  "authority": {
+    "basis": "workstreams/so02/control-plane/operating-environment/FOUNDER-AUTHORITY-20260822T2225Z.json at commit 3f3ee110cf9b769e60c664f758c437dcc582afd3",
+    "clause_relied_on": "Staged Cursor configuration held outside .cursor/ pending an explicit founder act -> AUTHORISED TO APPLY on non-protected branches under the granted configure-and-optimise authority.",
+    "approval_not_requested": "Per standing_operating_rules_now_in_force.do_not_request_repeated_approval, no approval was sought for anything this authority already covers.",
+    "controls_retained": "Write-scope discipline, manifest closure, read-back by recomputation and independent acceptance are Obzio's own controls and were kept."
+  },
+
+  "isolation": {
+    "label": "DIRECTLY_REPRODUCED",
+    "worktree": "/tmp/oe-w2",
+    "branch": "cursor/oe-w2-cursor-config-696d",
+    "base": "3f3ee110cf9b769e60c664f758c437dcc582afd3",
+    "command": "git -C /workspace worktree add -f /tmp/oe-w2 -b cursor/oe-w2-cursor-config-696d origin/cursor/operating-environment-return-20260822-v001",
+    "why": "G0. The shared /workspace checkout was observed at a detached HEAD with three uncommitted modifications from sibling lanes at 22:29Z. Nothing in this lane was done there.",
+    "publication_check": "Every push was confirmed against `git ls-remote` rather than trusting the push exit code, because a zero exit from git push is not evidence of publication in this configuration."
+  },
+
+  "step_2_apply": {
+    "procedure_followed": "workstreams/so02/control-plane/operating-environment/l1-cursor-baseline/proposed-cursor-config/APPLY.md",
+    "revert_sha_recorded_first": "3f3ee110cf9b769e60c664f758c437dcc582afd3",
+    "files_copied": 13,
+    "byte_identical_on_copy": {
+      "label": "DIRECTLY_REPRODUCED",
+      "command": "cmp -s dot-cursor/<f> .cursor/<f> for every staged file",
+      "result": "13 of 13 IDENTICAL, 0 mismatches, before any later edit",
+      "evidence": "receipts/so02/2026-08-22/oe-w2-cursor-config/raw/apply-inventory.txt"
+    },
+    "mcp_json_excluded": {
+      "label": "DIRECTLY_REPRODUCED",
+      "result": "ls .cursor/mcp.json -> No such file or directory immediately after the copy",
+      "why": "APPLY.md marks dot-cursor/mcp.json DO NOT COPY: empty mcpServers plus _comment keys a strict parser may reject."
+    },
+    "gitignore": {
+      "label": "DIRECTLY_REPRODUCED",
+      "added": ".cursor/.run/",
+      "note": "No .gitignore existed at the base commit; this created it.",
+      "verified": "git check-ignore -v .cursor/.run/write-scope-audit.jsonl -> .gitignore:1:.cursor/.run/"
+    },
+    "deliberate_divergences_from_byte_identical": [
+      {
+        "path": ".cursor/environment.json",
+        "change": "added \"disableAllMcpServers\": false",
+        "traces_to": "G9 — repository MCP policy stated rather than silently inherited",
+        "revalidated": "VALID against the live schema with the field present"
+      },
+      {
+        "path": ".cursor/write-scope.json",
+        "change": "added \"_comment_protected_path_globs\" labelling that key advisory and unenforced",
+        "traces_to": "reproduced defect DEF-3 below",
+        "safety": "protected_branch_globs and refused_commands were not touched, so verify_hooks.py still exercises the shipped globs and patterns; re-ran 69/69 after the edit"
+      }
+    ],
+    "added_beyond_the_staged_set": [
+      {
+        "path": ".cursor/mcp.json",
+        "why": "Step 4 of the brief and G9. Real, strict-parseable, no underscore-comment keys.",
+        "content": "{\"mcpServers\": {}}"
+      },
+      {
+        "path": ".cursor/hooks/probe_hook_firing.py",
+        "why": "reproduced defect DEF-2 — APPLY.md's firing probe is unsafe by construction",
+        "registered_in_hooks_json": false
+      }
+    ]
+  },
+
+  "step_3_verification": {
+    "schema": {
+      "label": "DIRECTLY_REPRODUCED",
+      "schema_url": "https://cursor.com/schemas/environment.schema.json",
+      "fetched_bytes": 6535,
+      "schema_sha256": "5683735c6227f1316aa141587ba57b4bddde98c54417f1797ff20e7c2f176341",
+      "schema_dialect": "https://json-schema.org/draft/2019-09/schema",
+      "root_unevaluatedProperties": false,
+      "validator": "jsonschema 4.26.0 Draft201909Validator",
+      "document_keys": ["disableAllMcpServers", "install", "name", "start", "terminals"],
+      "result": "VALID, 0 errors",
+      "method_note": "Validated against the fetched live schema, never against a remembered field list. The live schema's allowed root properties are agentCanUpdateSnapshot, build, disableAllMcpServers, install, mcpServerAllowlist, name, ports, repositoryDependencies, snapshot, start, terminals, user.",
+      "evidence": "receipts/so02/2026-08-22/oe-w2-cursor-config/raw/schema-and-syntax-validation.txt"
+    },
+    "syntax": {
+      "label": "DIRECTLY_REPRODUCED",
+      "py_compile": "exit 0 over .cursor/hooks/*.py",
+      "bash_n": "exit 0 over install.sh, start.sh, terminals/validators-watch.sh",
+      "json_parse": "environment.json, hooks.json, mcp.json, write-scope.json all parse strictly",
+      "currentness": "python3 scripts/check_operator_taxonomy.py -> PASS, exit 0"
+    },
+    "hook_scripts": {
+      "label": "DIRECTLY_REPRODUCED",
+      "command": "python3 .cursor/hooks/verify_hooks.py",
+      "cases_passed": 69,
+      "cases_total": 69,
+      "exit_code": 0,
+      "independent_count": "69 lines matching '^  PASS ' counted separately from the harness's own summary line",
+      "l1_reported": 69,
+      "agrees_with_l1": true,
+      "re_run_after_edits": "69/69 again after the write-scope.json annotation",
+      "evidence": "receipts/so02/2026-08-22/oe-w2-cursor-config/raw/hook-verification.txt"
+    },
+    "hook_firing": {
+      "settled": true,
+      "verdict": "PROJECT HOOKS DO NOT FIRE IN THIS WORKTREE",
+      "label": "DIRECTLY_REPRODUCED",
+      "why_this_is_a_real_answer_and_not_an_absence": "A control was established first: the installed guard was fed the same commands by hand and denied them. Without that control, a non-refusal is ambiguous between 'the hook did not fire' and 'the command never matched a rule'.",
+      "probes": [
+        {"id": "A", "kind": "control, by hand", "command": "gh workflow list", "observed": "permission deny, rule ISSUE-WRITE"},
+        {"id": "A", "kind": "control, by hand", "command": "git rebase --abort", "observed": "permission deny, rule HISTORY-REWRITE"},
+        {"id": "A", "kind": "control, by hand", "command": "git status", "observed": "permission allow, and an audit line was written"},
+        {"id": "B", "kind": "live, allow path", "command": "git status --porcelain", "observed": "executed; audit log unchanged at 3 lines, sha256 identical -> no hook ran"},
+        {"id": "C", "kind": "live, deny path, git", "command": "git rebase --abort", "observed": "EXECUTED, exit 128 'No rebase in progress?' -> not refused"},
+        {"id": "D", "kind": "live, deny path, gh", "command": "gh workflow list", "observed": "EXECUTED, exit 0, listed workflows -> not refused"}
+      ],
+      "probe_safety": "Every live probe is inert. `git rebase --abort` with no rebase running changes nothing; `gh workflow list` is read-only. APPLY.md's own probe, `git push origin main`, was NOT run: it tests for a safety net by running the command the net exists to catch, so the case where hooks are not firing is the case where the push reaches main.",
+      "documented_reason": {
+        "label": "DOCUMENTED",
+        "source": "https://cursor.com/docs/hooks.md",
+        "quotes": [
+          "Cloud agents run command-based hooks from your repository. If you have hooks defined in `.cursor/hooks.json` at the root of your project, cloud agents pick them up and run them during their work.",
+          "Project hooks (`.cursor/hooks.json` in a repository): Run from the project root",
+          "Priority order (highest to lowest): Enterprise -> Team -> Project -> User"
+        ]
+      },
+      "project_root_evidence": {
+        "label": "DIRECTLY_REPRODUCED",
+        "core_hooksPath": "/home/ubuntu/.cursor/agent-hooks/L3dvcmtzcGFjZQ",
+        "base64_decodes_to": "/workspace",
+        "workspace_cursor_dir_contents": ["environment.json"],
+        "no_hooks_json_at_project_root": true,
+        "corroboration": "The draft build log shows [GIT:gitCloneCheckout:stderr] Cloning into '/workspace', and the runtime terminals folder is /home/ubuntu/.cursor/projects/workspace/terminals."
+      },
+      "consequence": "G0 and G1 are in tension as written. G0 requires every lane to take a git worktree under /tmp; G1's enforcement only loads from the project root. The isolation G0 mandates places the hooks G1 installs outside the only directory Cursor reads them from. The guard will govern a future agent whose project root is a checkout of this branch; it does not govern a lane working in a worktree, which is every lane in this group.",
+      "not_settled_and_why": "Whether hooks fire when .cursor/hooks.json is present at /workspace. Settling it requires writing into the shared checkout, which is outside this lane's write scope and would alter every concurrently running sibling lane's turns in the same VM — the exact collision class that produced G0. The instrument that settles it is a fresh cloud agent run booted with this branch at /workspace, running probe_hook_firing.py --arm, the three printed commands, then --check.",
+      "evidence": "receipts/so02/2026-08-22/oe-w2-cursor-config/raw/hook-firing-probe.txt"
+    },
+    "environment_effect": {
+      "instrument": "cursor-cloud trigger-environment-build, DRAFT",
+      "build_id": "bld-20260822-f72bf7be-cef7-425f-bc38-e86ae43d5e47",
+      "environment_public_id": "69dbfc52-9df5-11f1-a7d1-d6b4613131ce",
+      "ref_built": "cursor/oe-w2-cursor-config-696d",
+      "status": "SUCCEEDED",
+      "failure_type": null,
+      "source": "AGENT",
+      "trigger_type": "MANUAL",
+      "wall_seconds": 47,
+      "is_draft": true,
+      "promotable": false,
+      "significance": "L1 recorded twelve builds, eleven SYSTEM/RECURRING and SKIPPED, one permanent baseline, and zero agent-requested. This is the first AGENT/MANUAL build in this environment.",
+      "override_schema_is_a_subset": {
+        "label": "DIRECTLY_REPRODUCED",
+        "observed": "trigger-environment-build's environmentJson accepts only install, start and snapshot under additionalProperties:false. Submitting the applied file was rejected with {\"code\":\"unrecognized_keys\",\"keys\":[\"name\",\"terminals\"]} and no build started.",
+        "consequence": "A draft build cannot test `terminals` at all."
+      },
+      "install": {
+        "label": "DIRECTLY_REPRODUCED",
+        "result": "RUNS",
+        "log_evidence": [">>> obzio install: begin", "Python 3.12.3", "git version 2.43.0", "OPERATOR TAXONOMY CHECK: PASS", ">>> obzio install: complete", "[INSTALL] Exit code: 0"],
+        "settles": "G3's residual uncertainty for the install phase. L1 observed the opposite state: a generated wrapper that only echoed 'Started from stale build ... skipping install script'.",
+        "non_fatal_defect_surfaced": "pip installs the jsonschema console script to /home/ubuntu/.local/bin, which is not on PATH. The Python import is what start.sh and the validators use and it works, so nothing is broken. Recorded because it is a real warning in a real log."
+      },
+      "start": {
+        "label": "DIRECTLY_REPRODUCED",
+        "result": "DID NOT RUN DURING THE BUILD",
+        "evidence": "The 28266-byte log contains no '>>> obzio start: begin'. The only start spans are platform-internal and detached (start:core-dumps, start:desktop-init, start:exec-daemon), followed immediately by 'Install finished. Preparing snapshot…'.",
+        "why_absence_is_meaningful": "install.sh's own echoes DO appear in the same log, so the pipeline captures repository script stdout. This matches install.sh's header ('Must not start any process — Builds preserve disk state only') and start.sh's ('Runs at the start of every agent run').",
+        "honest_limit": "This shows start did not run IN A BUILD. A build is not an agent run, so it does not show whether start runs on an agent run."
+      },
+      "terminals": {
+        "label": "DIRECTLY_REPRODUCED",
+        "result": "NOT TESTABLE BY THIS INSTRUMENT",
+        "evidence": "the unrecognized_keys rejection above"
+      },
+      "draft_safety": {
+        "label": "DIRECTLY_REPRODUCED",
+        "log_line": "Warming skipped (draft).",
+        "meaning": "A draft build skips warm-pool seeding, so it never becomes what new agents boot from. take-environment-snapshot and propose-environment-json were not called."
+      },
+      "evidence": "receipts/so02/2026-08-22/oe-w2-cursor-config/raw/draft-environment-build.txt"
+    }
+  },
+
+  "reproduced_defects": [
+    {
+      "id": "DEF-1",
+      "title": "APPLY.md's documented revert command reverts nothing",
+      "label": "DIRECTLY_REPRODUCED",
+      "observed": "`git checkout <SHA> -- .cursor .gitignore` exits 1 with \"error: pathspec '.gitignore' did not match any file(s) known to git\", because .gitignore does not exist at the revert SHA — the apply step is what creates it. git checkout with a pathspec is atomic, so it aborts before touching anything: run against the applied tree, .cursor still held 15 files where the base has 1, and .gitignore was still present.",
+      "second_defect_in_the_same_command": "Even with a valid pathspec, `git checkout <SHA> -- .cursor` restores only paths present in that tree. The twelve added files are not in it, so they would survive the revert.",
+      "third_defect_nearby": "APPLY.md's optional backup calls `date -u +%Y%m%dT%H%M%SZ` twice, once to name the directory and once to name the copy target. If the two calls straddle a second boundary the copy target does not exist, and the failure is swallowed by `2>/dev/null || true`, leaving an empty backup directory that looks like a backup.",
+      "corrected_procedure": "workstreams/so02/control-plane/operating-environment/w2-cursor-config/W2-REVERT-PROCEDURE-20260822-v001.md",
+      "corrected_procedure_tested": true,
+      "evidence": "receipts/so02/2026-08-22/oe-w2-cursor-config/raw/revert-test.txt"
+    },
+    {
+      "id": "DEF-2",
+      "title": "APPLY.md's hook-firing probe is unsafe by construction",
+      "label": "DIRECTLY_REPRODUCED",
+      "observed": "APPLY.md instructs `git push origin main` to prove the guard refuses it. Hook firing was measured in this runtime as NOT firing. Had that instruction been followed here, nothing would have intercepted the command and it would have attempted a push to main — a protected branch under this lane's hard boundaries and under write-scope.json itself.",
+      "why_it_matters": "A probe for a safety net must not be the thing the net was installed to catch. The failing branch of the test is the branch that causes the harm.",
+      "mechanism_supplied": ".cursor/hooks/probe_hook_firing.py, which establishes a control, uses the guard's own audit log as an allow-path witness, and offers only inert deny-path commands. Run --arm, run the printed commands, run --check."
+    },
+    {
+      "id": "DEF-3",
+      "title": "write-scope.json declares protected_path_globs and nothing reads it",
+      "label": "DIRECTLY_REPRODUCED",
+      "observed": "A repository-wide search for the identifier returns exactly one hit, its own definition in write-scope.json. guard_write_scope.py inspects the command string and the branch, never the staged paths.",
+      "why_it_matters": "It is a key that looks like a boundary and refuses nothing — the same shape as F6, a lesson recorded without a mechanism, inside the very file whose purpose is to be the single enforced statement of scope. A reader checking whether .cursor/** or state/** is protected would conclude yes.",
+      "action_taken": "Labelled advisory and unenforced in place, with the reasoning, rather than deleted or enforced.",
+      "why_not_enforced": "Enforcing it would refuse commits touching .cursor/** and state/**, which are exactly the paths configuration and control-plane lanes legitimately write — including this lane. An over-broad guard blocking legitimate work is the first risk APPLY.md names.",
+      "why_not_deleted": "It records which surfaces a reviewer should look at, which is worth keeping as long as it is not mistaken for protection."
+    },
+    {
+      "id": "DEF-4",
+      "title": "The repository environment.json is not this environment's configuration source",
+      "label": "DIRECTLY_REPRODUCED observation with a DOCUMENTED tool contract",
+      "observed": "environment-info reports environmentJsonPath: null and source: Team. trigger-environment-build's contract states the environmentJson override 'is not supported for repo-file managed environments (see environmentJsonPath in environment-info) and is rejected for them'. This environment accepted the override and built successfully.",
+      "conclusion": "This environment is db-managed, not repo-file managed. Committing .cursor/environment.json therefore does not by itself change what this estate's agents run.",
+      "settles": "The first open item in L1's could_not_verify table — whether the saved Team environment record is empty or holds config the repository file loses to. It is db-backed, and the repository file is not read as its source.",
+      "consequence": "The applied environment.json is correct, schema-valid and proven to work when the platform is handed its content, and it is inert until the environment record itself is changed. That is a founder action, specified in W2-FOUNDER-ACTIONS."
+    }
+  ],
+
+  "hypotheses": [
+    {
+      "id": "HYP-1",
+      "label": "HYPOTHESIS",
+      "statement": "start.sh would execute on a fresh agent run booted from this configuration, as opposed to during a build.",
+      "basis": "The build log shows start did not run during a build, and both scripts' own headers describe that split. Nothing here tested an agent run.",
+      "nothing_is_built_on_it": true,
+      "instrument_that_would_settle_it": "A fresh cloud agent run booted from this configuration: check for /tmp/cursor/start-user/ and for the files start.sh writes into .cursor/.run/ (runtime-binding.json and secret-names.json)."
+    }
+  ],
+  "hypothesis_count": 1,
+
+  "boundaries_kept": {
+    "branches_written": ["cursor/oe-w2-cursor-config-696d"],
+    "protected_branches_untouched": ["main", "so02/strategic-control-plane-migration-20260822-v001", "cursor/operating-environment-return-20260822-v001", "cursor/so02-cur-orch-qual-01", "po03/*", "cursor/po03-*", "soo/*", "packs/*"],
+    "shared_checkout": "/workspace was read for git plumbing and inspected read-only. Nothing was written there, and no file in it was modified.",
+    "pull_requests": "None opened, commented on, merged or modified. `gh workflow list` was run read-only as a hook probe and returned workflow names only.",
+    "po03_and_others": "No PO-03 thread, transcript, branch or path was opened. batch-fetch-details was not called at all. SW, PO-01 and MANUS were not messaged, operated or configured.",
+    "forbidden_tools_not_called": ["take-environment-snapshot", "propose-environment-json", "request-environment-setup-actions", "batch-fetch-details"],
+    "cursor_cloud_tools_called": ["environment-info", "trigger-environment-build", "list-environment-builds", "environment-build-logs"],
+    "credentials": "No credential value was printed, echoed into an argument vector, or stored. Secret state appears by name and set/unset only.",
+    "spend": "One draft environment build, 47 seconds, on the existing team environment. No purchase, no external outreach, no account setting changed."
+  }
+}
