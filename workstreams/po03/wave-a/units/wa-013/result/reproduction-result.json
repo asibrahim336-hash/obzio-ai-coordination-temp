@@ -1,0 +1,194 @@
+{
+  "protocol_version": "OBZIO-REPRODUCTION-RESULT-v1",
+  "task_id": "PO03-WA-013",
+  "attempt_id": "PO03-WA-013-A02",
+  "separation_note": "Executed reproductions only. Hypotheses are frozen separately in hypotheses.json; proposed mechanism changes are in mechanism-change.json; unbound proposals are in strategy-proposals.json.",
+  "workload_sanitization": {
+    "policy": "The live ledger is read only. Every injected-fault reproduction runs against synthetic fixtures in a PO03-FX-* namespace with identifiers derived by SHA-256 over fixture labels.",
+    "live_identifiers_in_fixtures": 0,
+    "asserted_by": "test_fixtures_carry_no_live_identifiers",
+    "external_effects": "NONE"
+  },
+  "reproductions": [
+    {
+      "reproduction_id": "R-PO03-WA-013-001",
+      "name": "Live ledger reconstruction",
+      "kind": "SANITIZED_READ_ONLY_LIVE_WORKLOAD",
+      "design": "Scan the repository's own append-only ledger at the immutable controller base with a pinned evaluation instant, and reconstruct current Obzio state for every task identifier it names.",
+      "input": {
+        "path": "workstreams/po03/control/events/ledger.jsonl",
+        "sha256": "1b84241ecdc2c0eee9c9271d035b5e74a957691ec0ba82472d24b4f3d6f7809c",
+        "bytes": 212922,
+        "evaluation_instant": "2026-08-22T08:51:42Z"
+      },
+      "observed": {
+        "events_parsed": 508,
+        "events_applied": 508,
+        "events_refused": 0,
+        "task_count": 66,
+        "unreconstructable_tasks": 0,
+        "integrity": "CLEAN",
+        "severity_counts": { "CRITICAL": 0, "DEFECT": 0, "ADVISORY": 60 },
+        "advisories": {
+          "ANNOTATION_EVENT": 55,
+          "DUPLICATE_TRANSITION_IGNORED": 2,
+          "FROM_STATE_MISMATCH": 2,
+          "TIMESTAMP_NOT_MONOTONIC_WITH_SEQ": 1
+        },
+        "state_histogram": {
+          "ACCEPTED": 9,
+          "AWAITING_DISPATCH": 50,
+          "IN_FLIGHT": 5,
+          "RECOVERY_REQUIRED": 1,
+          "REJECTED": 1
+        },
+        "report_sha256": "eb27afa967f36badee84b59aec1a35d2fb760d6a77eea9656a55022922652a04",
+        "exit_code": 1
+      },
+      "outcome": "PASS",
+      "artifact": "workstreams/po03/wave-a/units/wa-013/result/live-ledger-scan.json",
+      "log": "workstreams/po03/wave-a/units/wa-013/result/logs/live-ledger-scan.txt"
+    },
+    {
+      "reproduction_id": "R-PO03-WA-013-002",
+      "name": "Self-lineage reconstruction",
+      "kind": "SANITIZED_READ_ONLY_LIVE_WORKLOAD",
+      "design": "Without reading its own immutable task input, check whether the scanner reconstructs this attempt's identity from the event stream alone, then compare the reconstruction to the dispatch record.",
+      "observed": {
+        "reconstructed_live_attempt_id": "PO03-WA-013-A02",
+        "reconstructed_fence_token": 2,
+        "reconstructed_lease_id": "lease-po03-wa-013-a02",
+        "reconstructed_state": "LEASED",
+        "classified_obzio_state": "AWAITING_DISPATCH",
+        "reconstructed_superseded_attempt_id": "PO03-WA-013-A01",
+        "reconstructed_superseded_state": "SUPERSEDED_BEFORE_DISPATCH",
+        "agrees_with_immutable_task_input_on": [
+          "attempt_id",
+          "fence_token",
+          "lease_id",
+          "superseded attempt identity"
+        ]
+      },
+      "outcome": "PASS",
+      "note": "AWAITING_DISPATCH is the correct reconstruction of the ledger as committed at the controller base. It is also a live finding: no DISPATCH_DELIVERED or RUNNING event for this attempt exists at that commit even though the attempt is executing. See limitations.json L-05.",
+      "asserted_by": "test_scanner_reconstructs_its_own_attempt_lineage"
+    },
+    {
+      "reproduction_id": "R-PO03-WA-013-003",
+      "name": "Independent cross-check against the controller's own recovery projection",
+      "kind": "SANITIZED_READ_ONLY_LIVE_WORKLOAD",
+      "design": "Ledger reconstruction is an independent derivation of state; recovery-state.json is a separately maintained projection. For every lease the projection declares LEASED or RUNNING, compare reconstructed state, lease_id and fence_token.",
+      "observed": {
+        "leases_compared": 55,
+        "state_disagreements": 0,
+        "lease_id_disagreements": 0,
+        "fence_token_disagreements": 0
+      },
+      "outcome": "PASS",
+      "significance": "Two independently maintained views of the same fleet agree exactly, which is the property a recovery scanner must have before it is trusted to drive replay.",
+      "asserted_by": "test_reconstruction_agrees_with_the_controller_recovery_state_on_leases"
+    },
+    {
+      "reproduction_id": "R-PO03-WA-013-004",
+      "name": "Committed-not-ingested detection under a lost return callback",
+      "kind": "SANITIZED_FAULT_INJECTION",
+      "fixture": "fx-02-committed-not-ingested.jsonl",
+      "fault_injected": "LOST_RETURN_CALLBACK_AFTER_DURABLE_COMMIT",
+      "observed": {
+        "obzio_state": "COMMITTED_NOT_INGESTED",
+        "recovery_action": "REPLAY_PARENT_INGESTION",
+        "replay_directive_operation": "PARENT_INGEST",
+        "replay_directive_idempotent": true,
+        "carries_existing_result_commit": true,
+        "rerun_proposed": false,
+        "exit_code": 1
+      },
+      "outcome": "PASS"
+    },
+    {
+      "reproduction_id": "R-PO03-WA-013-005",
+      "name": "Provider-completed-uncommitted detection (PO-02 Code-2 structural analogue)",
+      "kind": "SANITIZED_FAULT_INJECTION",
+      "fixture": "fx-03-provider-completed-uncommitted.jsonl",
+      "fault_injected": "PROVIDER_REPORTS_COMPLETED_WITH_NO_DURABLE_RESULT_COMMIT",
+      "observed": {
+        "obzio_state": "PROVIDER_COMPLETED_UNCOMMITTED",
+        "recovery_action": "RERUN_FROM_IMMUTABLE_INPUT",
+        "required_fence_token": 2,
+        "replay_carries_immutable_input_uri": true,
+        "completed_claimed": false,
+        "without_provider_observation_state": "IN_FLIGHT"
+      },
+      "outcome": "PASS",
+      "significance": "The classification depends on fusing the ledger with the provider observation. The ledger alone cannot distinguish a silently dead run from a live one before its lease expires, which is recorded as limitation L-02."
+    },
+    {
+      "reproduction_id": "R-PO03-WA-013-006",
+      "name": "Mixed fleet separated in one pass",
+      "kind": "SANITIZED_FAULT_INJECTION",
+      "fixture": "fx-16-mixed-fleet.jsonl",
+      "fault_injected": "SEVEN_UNITS_SIX_DISPOSITIONS_INCLUDING_A_FENCED_AND_SUPERSEDED_FIRST_ATTEMPT",
+      "observed": {
+        "integrity": "CLEAN",
+        "committed_not_ingested": ["PO03-FX-102", "PO03-FX-107"],
+        "provider_completed_uncommitted": ["PO03-FX-103"],
+        "orphaned_lease_expired": ["PO03-FX-104"],
+        "ingested_not_completed": ["PO03-FX-105"],
+        "awaiting_dispatch": ["PO03-FX-106"],
+        "accepted": ["PO03-FX-101"],
+        "false_completion_admitted": [],
+        "provider_completed_observation_did_not_override_durable_commit": true,
+        "superseded_attempt_retained_not_lost": true
+      },
+      "outcome": "PASS",
+      "significance": "This is the falsifier for the primary hypothesis' conflation clause: the two target dispositions are separated, in the presence of four other dispositions, with provider COMPLETED observations present on units that do hold durable commits."
+    },
+    {
+      "reproduction_id": "R-PO03-WA-013-007",
+      "name": "Fault matrix across the remaining injected classes",
+      "kind": "SANITIZED_FAULT_INJECTION",
+      "design": "Each remaining fixture injects one fault after a state transition and asserts the required refusal or classification.",
+      "cases": [
+        { "fixture": "fx-01-clean-full-lifecycle.jsonl", "fault": "NONE_CONTROL", "expected": "ACCEPTED with no recovery action", "outcome": "PASS" },
+        { "fixture": "fx-04-false-completion.jsonl", "fault": "COMPLETED_ASSERTED_WITHOUT_DURABLE_COMMIT", "expected": "refused, CRITICAL, false_completion_admitted empty", "outcome": "PASS" },
+        { "fixture": "fx-05-stale-lease-commit.jsonl", "fault": "STALE_LEASE_COMMIT_AFTER_OWNERSHIP_TRANSFER", "expected": "both stale events refused, no result commit retained", "outcome": "PASS" },
+        { "fixture": "fx-06-duplicate-callback.jsonl", "fault": "DUPLICATE_CALLBACK_AT_LEAST_ONCE_DELIVERY", "expected": "harmless, state identical to deduplicated prefix", "outcome": "PASS" },
+        { "fixture": "fx-07-torn-tail.jsonl", "fault": "PARTIAL_WRITE_PROCESS_LOSS_MID_APPEND", "expected": "recoverable advisory, durable prefix reconstructs", "outcome": "PASS" },
+        { "fixture": "fx-08-corrupt-interior-line.jsonl", "fault": "CORRUPT_INTERIOR_LINE", "expected": "CRITICAL, exit code 2", "outcome": "PASS" },
+        { "fixture": "fx-09-checkpoint-regression.jsonl", "fault": "NON_MONOTONIC_CHECKPOINT", "expected": "DEFECT, retained checkpoint does not regress", "outcome": "PASS" },
+        { "fixture": "fx-10-orphaned-lease-expired.jsonl", "fault": "ENTIRE_PROVIDER_RUNTIME_LOSS", "expected": "ORPHANED_LEASE_EXPIRED, redispatch at a raised fence", "outcome": "PASS" },
+        { "fixture": "fx-11-event-id-conflict.jsonl", "fault": "EVENT_ID_REUSED_WITH_DIFFERENT_CONTENT", "expected": "CRITICAL, rewritten event refused", "outcome": "PASS" },
+        { "fixture": "fx-12-unauthorized-completion-actor.jsonl", "fault": "PRODUCER_RECORDS_ITS_OWN_COMPLETION", "expected": "refused, state remains INGESTED_NOT_COMPLETED", "outcome": "PASS" },
+        { "fixture": "fx-13-producer-self-acceptance.jsonl", "fault": "PRODUCER_ACCEPTS_ITS_OWN_RESULT", "expected": "refused, review_state remains null", "outcome": "PASS" },
+        { "fixture": "fx-14-file-order-shuffled.jsonl", "fault": "STORAGE_REORDERING", "expected": "DEFECT reported, lifecycle still correct under event_seq", "outcome": "PASS" },
+        { "fixture": "fx-15-committed-artifact-missing.jsonl", "fault": "MISSING_ARTIFACT_BEHIND_A_DURABLE_COMMIT", "expected": "CRITICAL, commit not offered for ingestion replay", "outcome": "PASS" }
+      ],
+      "outcome": "PASS"
+    },
+    {
+      "reproduction_id": "R-PO03-WA-013-008",
+      "name": "Parent-restart idempotence and determinism",
+      "kind": "SANITIZED_FAULT_INJECTION",
+      "design": "Simulate parent restart by rescanning each fixture three times and comparing canonical report digests; separately rewrite every ledger line with reversed key order and different JSON spacing and compare the reconstruction.",
+      "observed": {
+        "fixtures_rescanned": 16,
+        "distinct_digests_per_fixture": 1,
+        "live_ledger_rescan_digest_stable": true,
+        "key_order_rewrite_changes_reconstruction": false,
+        "key_order_rewrite_changes_ledger_digest": true
+      },
+      "outcome": "PASS"
+    },
+    {
+      "reproduction_id": "R-PO03-WA-013-009",
+      "name": "Clean-clone recurrence",
+      "kind": "CLEAN_CLONE_RECURRENCE",
+      "design": "From a fresh clone made with --no-hardlinks at the immutable result commit, read every manifest artifact back by digest and byte count, then rerun the fixture, focused, seeded and taxonomy checks against expectations frozen beforehand.",
+      "observed": "See recurrence-evidence.json and readback-verification.json for the executed values.",
+      "outcome": "PASS"
+    }
+  ],
+  "sanitized_obzio_reproduction_count": 9,
+  "reproduction_count_required_by_input": 0,
+  "decision_changed": []
+}

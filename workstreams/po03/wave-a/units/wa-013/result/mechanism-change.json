@@ -1,0 +1,99 @@
+{
+  "protocol_version": "OBZIO-MECHANISM-CHANGE-v1",
+  "task_id": "PO03-WA-013",
+  "attempt_id": "PO03-WA-013-A02",
+  "separation_note": "A mechanism change here is a change to executable behaviour inside this unit's owned subtree, already tested. Changes proposed for shared PO-03 paths are not applied by this unit and are recorded as unbound proposals in strategy-proposals.json, because workstreams/po03/tools/** and workstreams/po03/control/** are read-only to this attempt.",
+  "write_boundary": "workstreams/po03/wave-a/units/wa-013/**",
+  "changes": [
+    {
+      "change_id": "MC-PO03-WA-013-01",
+      "title": "Recovery scanner added as an executable event-stream control",
+      "layer": "NEW_EXECUTABLE_COMPONENT_IN_OWNED_SUBTREE",
+      "before": "The commission requires a recovery scanner. The repository contained an append-only ledger, an outbox, a materialised recovery-state.json and a document-level validator, but no executable that derives current state from the event stream. Recovery state was maintained by the controller in parallel with the ledger rather than reconstructed from it.",
+      "after": "recovery_scan.py reconstructs current Obzio state for every task from the ledger alone, enforces the commission's refusal rules at the event layer, classifies each unit into a recovery disposition, and emits an idempotent replay directive per unit.",
+      "why_the_event_layer_matters": "The seeded validator sees one already-written result document and cannot detect a unit whose result was committed but never ingested, because no document is produced for a lost callback. That failure is only visible in the event stream.",
+      "tested_by": "test_recovery_scan.py, 73 tests, PASS",
+      "disposition": "RETAIN",
+      "recurrence_test": "run_recurrence.py, 151 pinned checks, rerun from a fresh no-hardlink clone"
+    },
+    {
+      "change_id": "MC-PO03-WA-013-02",
+      "title": "Attempt identity normalised across three naming conventions",
+      "layer": "SCANNER_RECONSTRUCTION_RULE",
+      "discovered_by": "Executing the first scanner build against the live ledger rather than against fixtures.",
+      "before": "Keying attempts on attempt_id alone, falling back to the idempotency-key suffix, split one logical attempt into two whenever the live ledger named it both ways. This produced 55 spurious ILLEGAL_TRANSITION_REFUSED defects on a ledger that is in fact clean, and left 55 of 508 events unapplied.",
+      "after": "attempt_id, the trailing segment of the idempotency key, and inheritance from the task's live attempt all normalise to one task-scoped key. All 508 live events apply and integrity is CLEAN.",
+      "measured_effect": {
+        "events_applied_before": 453,
+        "events_applied_after": 508,
+        "spurious_defects_before": 55,
+        "spurious_defects_after": 0
+      },
+      "tested_by": "test_attempt_identity_is_unified_across_id_and_idempotency_key",
+      "disposition": "RETAIN",
+      "lesson": "A recovery scanner validated only against fixtures its own author generated will encode the author's naming assumptions. Running against the live stream before writing the fixtures is what exposed this."
+    },
+    {
+      "change_id": "MC-PO03-WA-013-03",
+      "title": "False-completion guard placed above lifecycle legality",
+      "layer": "SCANNER_REFUSAL_RULE",
+      "before": "COMPLETED was refused only when it violated the transition table, so a COMPLETED event arriving at a structurally legal position with no durable commit behind it would have been admitted. The summary also reported no false completion when the guard had in fact fired, because a refused event leaves completed false.",
+      "after": "A COMPLETED assertion is refused whenever the attempt holds no verified durable result commit, whatever its lifecycle position and whatever the actor. The report separates false_completion_admitted, which must always be empty, from false_completion_refused, which records the guard firing so the controller can still investigate.",
+      "tested_by": "test_fx04_false_completion_is_refused_not_admitted, test_fx12_producer_cannot_record_completed",
+      "disposition": "RETAIN"
+    },
+    {
+      "change_id": "MC-PO03-WA-013-04",
+      "title": "Duplicate redelivery no longer misreported as storage reordering",
+      "layer": "SCANNER_FINDING_RULE",
+      "before": "The file-order check compared every line's event_seq, so an at-least-once transport re-appending an earlier event late in the file raised a spurious FILE_ORDER_NOT_SEQ_ORDER defect and turned integrity DEFECTIVE. A correctly functioning retry path therefore looked like disk corruption.",
+      "after": "The check considers only the first occurrence of each event_id, so legitimate redelivery is silent while genuine reordering is still reported. fx-06 is CLEAN and fx-14 remains DEFECTIVE.",
+      "tested_by": "test_fx06_duplicate_callbacks_are_harmless, test_fx14_storage_reordering_still_reconstructs_correctly",
+      "disposition": "RETAIN"
+    },
+    {
+      "change_id": "MC-PO03-WA-013-05",
+      "title": "Scan survives a task whose every event is refused",
+      "layer": "SCANNER_ROBUSTNESS",
+      "discovered_by": "Adversarial test with an invalid fence token on a task's only event.",
+      "before": "The scan raised ValueError: max() iterable argument is empty. A single malformed event could crash the recovery scanner, which is the exact circumstance in which recovery is needed.",
+      "after": "Such tasks are named in unreconstructable_tasks and the scan completes. A task is never silently dropped: either it appears in tasks with a reconstruction, or it appears in unreconstructable_tasks with its refusals recorded as findings.",
+      "tested_by": "test_invalid_fence_token_is_critical, test_a_task_whose_events_are_all_refused_is_never_silently_dropped",
+      "disposition": "RETAIN"
+    },
+    {
+      "change_id": "MC-PO03-WA-013-06",
+      "title": "Calendar validation added to instant parsing",
+      "layer": "SCANNER_INPUT_VALIDATION",
+      "discovered_by": "Adversarial test asserting that 2026-13-01T00:00:00Z is unparseable.",
+      "before": "The regular expression accepted any two-digit month and day, so month 13 or day 32 produced a plausible epoch value. A malformed lease_expires_at could therefore silently shift an orphan decision.",
+      "after": "Month, day with leap-year handling, hour, minute and second are range-checked, and an out-of-range instant returns None so a lease with an invalid expiry is treated as having no parseable expiry rather than a fabricated one.",
+      "tested_by": "test_zulu_and_numeric_offsets_are_equivalent",
+      "disposition": "RETAIN"
+    },
+    {
+      "change_id": "MC-PO03-WA-013-07",
+      "title": "Producer self-acceptance diagnosed before the generic actor-prefix rule",
+      "layer": "SCANNER_REFUSAL_ORDERING",
+      "before": "The generic unauthorized-reviewer check ran first, so a producer accepting its own result was reported as UNAUTHORIZED_REVIEW_ACTOR and the more specific PRODUCER_SELF_ACCEPTANCE branch was unreachable. The refusal was correct; the diagnosis was wrong, which matters because the two faults call for different controller responses.",
+      "after": "Self-acceptance is checked against the attempt's recorded producer actors first, so the specific fault is named. A reviewer that did not produce the attempt is still accepted normally.",
+      "tested_by": "test_fx13_producer_cannot_accept_its_own_result",
+      "disposition": "RETAIN"
+    },
+    {
+      "change_id": "MC-PO03-WA-013-08",
+      "title": "Fenced attempt with no successor no longer reported as handed over",
+      "layer": "SCANNER_CLASSIFICATION_RULE",
+      "before": "Any FENCED or SUPERSEDED_BEFORE_DISPATCH attempt was classified as NONE_SUCCESSOR_CARRIES_WORK, which asserts a successor exists. For a fenced attempt with no successor recorded this silently retires live work with no recovery action, which is a result-loss path.",
+      "after": "The successor claim is made only when successor_attempt_id is present. Otherwise the unit is ATTEMPT_FENCED_NO_SUCCESSOR with REDISPATCH_UNDER_NEW_FENCE.",
+      "tested_by": "test_fx05_stale_worker_cannot_commit_after_ownership_transfer",
+      "disposition": "RETAIN"
+    }
+  ],
+  "mechanism_change_count": 8,
+  "mechanism_change_required_by_input": false,
+  "all_changes_tested_before_retention": true,
+  "shared_path_mechanism_changes_applied": 0,
+  "shared_path_mechanism_changes_proposed": "See strategy-proposals.json",
+  "decision_changed": []
+}

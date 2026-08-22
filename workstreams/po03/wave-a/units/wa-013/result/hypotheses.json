@@ -1,0 +1,77 @@
+{
+  "protocol_version": "OBZIO-HYPOTHESIS-FREEZE-v1",
+  "task_id": "PO03-WA-013",
+  "attempt_id": "PO03-WA-013-A02",
+  "frozen_at": "2026-08-22T08:55:00Z",
+  "frozen_before_any_reproduction_was_run": true,
+  "separation_note": "These are hypotheses only. Their executed outcomes are in reproduction-result.json and tests.json; a hypothesis listed here is not a finding.",
+  "primary": {
+    "hypothesis_id": "H-PO03-WA-013",
+    "source": "workstreams/po03/control/inputs/wave-a/wa-013-a02.json",
+    "statement": "A scanner can reconstruct current task state from events and identify committed-not-ingested and provider-completed-uncommitted units.",
+    "exact_falsifier": "Any of: the scanner cannot reconstruct the live 508-event ledger without defect; a unit holding a durable result commit with no PARENT_INGESTED event is not classified COMMITTED_NOT_INGESTED; a unit whose provider reported completion with no verified durable result commit is not classified PROVIDER_COMPLETED_UNCOMMITTED; or the two are conflated so that one recovery directive is issued for both.",
+    "outcome": "SUPPORTED",
+    "outcome_evidence": "reproduction-result.json, tests.json, recurrence-evidence.json"
+  },
+  "derived": [
+    {
+      "hypothesis_id": "H-PO03-WA-013-D1",
+      "statement": "event_seq, not the wall-clock at field, must be the ordering authority, because the live ledger's timestamps are written by several actors and are not monotonic with append order.",
+      "exact_falsifier": "The live ledger shows zero timestamp inversions relative to event_seq, making the distinction moot; or ordering by timestamp reconstructs the same states as ordering by event_seq on an adversarial ledger.",
+      "outcome": "SUPPORTED",
+      "measured": "16 timestamp inversions observed in the live 508-event ledger. An adversarial fixture with back-dated and forward-dated events reconstructs correctly under event_seq ordering and is asserted in test_timestamps_cannot_reorder_the_lifecycle."
+    },
+    {
+      "hypothesis_id": "H-PO03-WA-013-D2",
+      "statement": "A durable result commit with no ingestion is recoverable without rerunning the producer, whereas provider completion with no durable commit is not. The two therefore require different recovery directives, and collapsing them into one action either loses committed work or duplicates it.",
+      "exact_falsifier": "The scanner emits the same recovery action for fx-02 and fx-03, or emits RERUN_FROM_IMMUTABLE_INPUT for a unit that already holds a durable result commit.",
+      "outcome": "SUPPORTED",
+      "measured": "fx-02 yields REPLAY_PARENT_INGESTION carrying the existing result commit; fx-03 yields RERUN_FROM_IMMUTABLE_INPUT with required_fence_token raised to 2. test_fx02_never_proposes_rerunning_a_committed_producer asserts the absence of RERUN for a committed unit."
+    },
+    {
+      "hypothesis_id": "H-PO03-WA-013-D3",
+      "statement": "A torn final line and a corrupt interior line are different faults and must be treated differently: the first is the expected signature of a crash mid-append and is safely truncatable, the second cannot be explained by a crash and indicates append-only integrity loss.",
+      "exact_falsifier": "The scanner treats both identically, or refuses to scan a ledger with a torn tail and so cannot recover the durable prefix.",
+      "outcome": "SUPPORTED",
+      "measured": "fx-07 yields one ADVISORY TORN_TAIL, integrity CLEAN, and still reconstructs COMMITTED_NOT_INGESTED from the durable prefix. fx-08 yields CRITICAL CORRUPT_INTERIOR_LINE and exit code 2."
+    },
+    {
+      "hypothesis_id": "H-PO03-WA-013-D4",
+      "statement": "Task-scoped fence monotonicity alone is sufficient to stop an evicted worker committing after ownership transfer, without needing worker identity or lease-expiry arithmetic at the event layer.",
+      "exact_falsifier": "A stale-fence RESULT_COMMITTED or PARENT_INGESTED event is admitted, or the reconstructed state after refusal reports a result commit.",
+      "outcome": "SUPPORTED",
+      "measured": "fx-05 refuses both stale events and reports result_commit_id null; test_fence_downgrade_cannot_reopen_a_fenced_attempt refuses three successive forged downgrades at tokens 6, 3 and 1 after a fence to token 7."
+    },
+    {
+      "hypothesis_id": "H-PO03-WA-013-D5",
+      "statement": "Idempotent replay is achievable by deduplicating on event_id, and reusing an event_id with different content must be a distinct critical fault rather than an absorbed duplicate.",
+      "exact_falsifier": "A ledger containing verbatim duplicates reconstructs to a different state than its deduplicated prefix, or an event_id reused with different content is silently ignored.",
+      "outcome": "SUPPORTED",
+      "measured": "fx-06 reconstructs an attempt record byte-identical to its deduplicated prefix, asserted in test_fx06_duplicates_yield_the_same_state_as_the_deduplicated_prefix. fx-11 raises CRITICAL EVENT_ID_CONFLICT and refuses the rewritten event."
+    },
+    {
+      "hypothesis_id": "H-PO03-WA-013-D6",
+      "statement": "A scan must be a pure function of ledger bytes, provider observations, artifact probe and a pinned evaluation instant, otherwise recurrence cannot be asserted by digest from a clean clone.",
+      "exact_falsifier": "Two scans of identical input produce different report digests, or the report embeds a host path or wall-clock reading.",
+      "outcome": "SUPPORTED",
+      "measured": "All 16 fixtures produce a single stable digest across three consecutive scans. The live-ledger report digest eb27afa967f36badee84b59aec1a35d2fb760d6a77eea9656a55022922652a04 is pinned in recurrence-expectations.json and reproduced from a fresh clone. test_report_leaks_no_host_state asserts the absence of host paths and wall-clock readings."
+    },
+    {
+      "hypothesis_id": "H-PO03-WA-013-D7",
+      "statement": "The live ledger already contains at least one structural irregularity that a naive per-task state machine would misread as an illegal transition.",
+      "exact_falsifier": "A naive attempt-keying strategy reconstructs the live ledger with zero refused events.",
+      "outcome": "SUPPORTED",
+      "measured": "Keying attempts on attempt_id alone split 55 attempts in two, because the live ledger names one attempt as PO03-WA-005-A01 on some events and only as the trailing a01 segment of po03:100bc20:wa-005:a01 on others. This produced 55 spurious ILLEGAL_TRANSITION_REFUSED defects before normalisation, and zero after. The regression is pinned in test_attempt_identity_is_unified_across_id_and_idempotency_key."
+    },
+    {
+      "hypothesis_id": "H-PO03-WA-013-D8",
+      "statement": "A durable result commit is not by itself sufficient evidence of a recoverable result: the artifacts it names must still read back, so an artifact probe changes the recovery directive.",
+      "exact_falsifier": "A committed result whose manifest is absent at read-back is still classified COMMITTED_NOT_INGESTED and offered for ingestion replay.",
+      "outcome": "SUPPORTED",
+      "measured": "fx-15 with an empty artifact root yields RESULT_COMMITTED_ARTIFACTS_UNVERIFIABLE and REVERIFY_THEN_RERUN_FROM_IMMUTABLE_INPUT; with a matching manifest it yields COMMITTED_NOT_INGESTED and integrity CLEAN."
+    }
+  ],
+  "hypothesis_count": 9,
+  "current_method_hypothesis_count_required_by_input": 0,
+  "decision_changed": []
+}

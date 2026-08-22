@@ -1,0 +1,69 @@
+{
+  "protocol_version": "OBZIO-STRATEGY-PROPOSAL-v1",
+  "task_id": "PO03-WA-013",
+  "attempt_id": "PO03-WA-013-A02",
+  "status": "UNBOUND_PROPOSAL",
+  "binding_note": "None of these is applied. Each touches a shared PO-03 path that is read-only to this attempt, or asks for a controller behaviour change. They remain proposals until the coordinator adopts them and, where they affect company strategy, until the founder interlock binds them. decision_changed is [].",
+  "proposals": [
+    {
+      "proposal_id": "SP-PO03-WA-013-01",
+      "title": "Promote the recovery scanner from a unit artifact to a shared PO-03 tool with a CI gate",
+      "target_path_not_written": "workstreams/po03/tools/recovery_scan.py and .github/workflows/po03-contracts.yml",
+      "proposal": "Move recovery_scan.py to workstreams/po03/tools/ and add a CI step that scans workstreams/po03/control/events/ledger.jsonl on every PO-03 push, failing the build on integrity CRITICAL_VIOLATION and surfacing committed_not_ingested and provider_completed_uncommitted as build output.",
+      "evidence": "The scanner already reconstructs the live 508-event ledger CLEAN with zero unapplied events, and its report is a pure function of ledger bytes plus a pinned instant, so it is deterministic enough to gate on.",
+      "why_not_applied": "workstreams/po03/tools/** and .github/workflows/** are outside this attempt's write boundary.",
+      "risk": "Gating on exit code 1 would fail CI whenever any unit legitimately awaits dispatch. The gate should fail only on exit code 2.",
+      "requires": "COORDINATOR_DECISION"
+    },
+    {
+      "proposal_id": "SP-PO03-WA-013-02",
+      "title": "Derive recovery-state.json from the ledger instead of maintaining it in parallel",
+      "target_path_not_written": "workstreams/po03/control/recovery-state.json",
+      "proposal": "Generate the active-lease section of recovery-state.json from a scan of the ledger, so the projection cannot drift from the event stream, and keep only counters and operator commentary as hand-maintained fields.",
+      "evidence": "The two views agree today: 55 declared active leases match reconstruction exactly on state, lease_id and fence_token. Agreement today is the argument for collapsing them before they diverge, not evidence that divergence is impossible.",
+      "counting_scope_reconciliation": "The projection records wave_a.independently_accepted as 8 while ledger reconstruction yields 9 ACCEPTED task identifiers. The single difference is PO03-WA-ISOLATION-CANARY-001, an accepted canary rather than a material Wave A unit; excluding both canary identifiers gives exactly 8. This is fully reconciled and is not a drift defect, but the reconciliation had to be done by hand because the projection does not state its counting scope. A derived projection would carry that scope explicitly.",
+      "why_not_applied": "workstreams/po03/control/** is read-only to this attempt, and shared controller state must not be written by a subordinate producer.",
+      "requires": "COORDINATOR_DECISION"
+    },
+    {
+      "proposal_id": "SP-PO03-WA-013-03",
+      "title": "Append a DISPATCH_DELIVERED event before the child begins material work",
+      "target_path_not_written": "workstreams/po03/control/events/ledger.jsonl",
+      "proposal": "Have the controller append the RUNNING or DISPATCH_DELIVERED transition at dispatch time rather than after the fact, and have the child append its own first checkpoint early.",
+      "evidence": "At the immutable controller base this attempt reconstructs as AWAITING_DISPATCH while it is in fact executing. Any scan taken during that window would classify a live unit as undispatched, and if the runtime were lost in that window the ledger would carry no evidence the attempt ever ran.",
+      "why_this_matters_for_the_hypothesis": "It is the one gap the scanner cannot close from the ledger alone: absence of a dispatch event is indistinguishable from absence of a dispatch. Recorded as limitation L-05.",
+      "why_not_applied": "The ledger is controller-owned and append-only; a producer writing it would itself be a custody violation.",
+      "requires": "COORDINATOR_DECISION"
+    },
+    {
+      "proposal_id": "SP-PO03-WA-013-04",
+      "title": "Add a monotonic heartbeat so a dead run is distinguishable from a slow one before its lease expires",
+      "target_path_not_written": "workstreams/po03/control/events/ledger.jsonl and the dispatch contract",
+      "proposal": "Require producers to append a heartbeat or checkpoint event at a bounded interval, and let the scanner treat a heartbeat gap exceeding that bound as PROVIDER_SUSPECTED_LOST without waiting for lease expiry.",
+      "evidence": "Today PROVIDER_COMPLETED_UNCOMMITTED is only reachable by fusing an external provider observation, or by waiting for the lease to expire. On the live ledger, five units are IN_FLIGHT with leases valid for hours; a run that died one minute after starting is indistinguishable from one working normally for that entire window.",
+      "measured_cost_of_the_gap": "Up to the full lease duration of undetected loss. The live leases at the pinned instant expire around six hours after issue.",
+      "why_not_applied": "Requires a controller-side contract change and a ledger schema addition, both outside this write boundary.",
+      "requires": "COORDINATOR_DECISION"
+    },
+    {
+      "proposal_id": "SP-PO03-WA-013-05",
+      "title": "Give the ledger a hash chain so interior corruption and rewriting are detectable rather than inferred",
+      "target_path_not_written": "workstreams/po03/control/events/ledger.jsonl",
+      "proposal": "Add a prev_event_sha256 field so each event commits to its predecessor, making the ledger tamper-evident end to end.",
+      "evidence": "This unit can detect a malformed interior line and an event_id reused with different content, but it cannot detect a well-formed rewrite of an existing event, because nothing in the current format binds an event to its predecessor. Recorded as limitation L-01.",
+      "why_not_applied": "Changes the shared ledger format; must be adopted by the controller and every writer at once.",
+      "requires": "COORDINATOR_DECISION"
+    },
+    {
+      "proposal_id": "SP-PO03-WA-013-06",
+      "title": "Treat the timestamp field as advisory in the ledger contract and say so explicitly",
+      "target_path_not_written": "workstreams/po03/contracts/",
+      "proposal": "State in the contract that event_seq is the sole ordering authority and that at is advisory, and record the mixed Z and +00:00 forms as both permitted.",
+      "evidence": "The live ledger contains 16 events whose wall-clock stamp precedes a lower-sequence predecessor, and two timestamp formats. Any future consumer that sorts by at would silently reorder lifecycles; nothing currently warns it not to.",
+      "why_not_applied": "workstreams/po03/contracts/** is read-only to this attempt.",
+      "requires": "COORDINATOR_DECISION"
+    }
+  ],
+  "proposal_count": 6,
+  "decision_changed": []
+}

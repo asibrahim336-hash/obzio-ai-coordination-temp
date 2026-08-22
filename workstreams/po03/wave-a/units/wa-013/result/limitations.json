@@ -1,0 +1,115 @@
+{
+  "protocol_version": "OBZIO-UNIT-LIMITATIONS-v1",
+  "task_id": "PO03-WA-013",
+  "attempt_id": "PO03-WA-013-A02",
+  "limitations": [
+    {
+      "id": "L-00",
+      "severity": "HIGH",
+      "class": "DISPATCH_INPUT_INTEGRITY",
+      "statement": "The dispatch-supplied SHA-256 for the immutable task input does not match the file. Supplied 0adf6ed3291f356993c373830b463fe2a463ea912e618a8bbab19fc5b96748df; the exact 4509 bytes at workstreams/po03/control/inputs/wave-a/wa-013-a02.json at the immutable controller base hash to 43a460d2acc02badd9235509418715bfb531657e0acf9c995748944ccda43db3.",
+      "fail_closed_action": "The supplied digest was recorded as a FAILED verification gate. No artifact in this unit claims it verified. Every reference to the input uses the observed digest.",
+      "why_work_still_executed": "The dispatch instruction requires failing closed and reporting the observed digest in durable owned evidence, and separately forbids returning a plan instead of executed work. The referenced file is present at the immutable controller base, is internally consistent, and agrees with the dispatch on all ten independently checkable identity fields including attempt_id, idempotency_key, lease_id, fence_token and the verbatim hypothesis text. The acceptance-contract digest and all five seeded source-base digests verify exactly. The mismatch is confined to one transcribed digest string.",
+      "residual_risk": "If the supplied digest was instead computed over a genuinely different intended payload that was never committed, this unit executed against the wrong input. That cannot be excluded from inside the producer, because only one version of this path exists in repository history and none of its representations hashes to the supplied value.",
+      "requires": "CONTROLLER_AND_INDEPENDENT_REVIEWER_ATTENTION",
+      "evidence": "workstreams/po03/wave-a/units/wa-013/result/input-digest-verification.json"
+    },
+    {
+      "id": "L-01",
+      "severity": "MEDIUM",
+      "class": "DETECTION_CEILING",
+      "statement": "The scanner cannot detect a well-formed rewrite of an existing ledger event. It detects a malformed interior line, and it detects an event_id reused with different content within one file, but nothing in the current ledger format binds an event to its predecessor, so an attacker or a buggy writer that edits one event in place and leaves it syntactically valid produces a scan that looks CLEAN.",
+      "consequence": "Integrity CLEAN means internally consistent, not tamper-free. It is not a substitute for immutable-commit provenance on the ledger itself.",
+      "mitigation_proposed_not_applied": "SP-PO03-WA-013-05 proposes a prev_event_sha256 hash chain.",
+      "outcome": "NOT_SUPPORTED"
+    },
+    {
+      "id": "L-02",
+      "severity": "MEDIUM",
+      "class": "DETECTION_CEILING",
+      "statement": "PROVIDER_COMPLETED_UNCOMMITTED is only reachable by fusing an external provider observation with the ledger, or by waiting for the lease to expire. From the ledger alone, a run that died one minute after starting is indistinguishable from one working normally until its lease lapses.",
+      "measured": "fx-03 classifies as PROVIDER_COMPLETED_UNCOMMITTED with the provider observation supplied and as IN_FLIGHT without it; both behaviours are asserted. On the live ledger, five units are IN_FLIGHT with leases valid for hours at the pinned instant.",
+      "consequence": "The hypothesis is supported for a scanner that receives provider observations. It is not supported for a scanner given only the ledger and no expired lease.",
+      "mitigation_proposed_not_applied": "SP-PO03-WA-013-04 proposes a bounded heartbeat.",
+      "outcome": "NOT_SUPPORTED"
+    },
+    {
+      "id": "L-03",
+      "severity": "MEDIUM",
+      "class": "UNEXERCISED_PATH_ON_LIVE_DATA",
+      "statement": "The live ledger at the immutable controller base contains no committed-not-ingested unit, no provider-completed-uncommitted unit, no false completion, no stale-fence event, no torn tail and no corrupt line. Every detection claim for those classes rests on synthetic fixtures, not on live occurrences.",
+      "consequence": "This unit demonstrates that the detectors fire on faults constructed to match the commission's fault list. It does not demonstrate that they fire on whatever shape a real future failure takes.",
+      "partial_offset": "The fixtures were built only after the live ledger's actual structure had been measured, and two live irregularities discovered that way, the attempt-naming inconsistency and the non-monotonic timestamps, were folded back into the design and into fixtures fx-14 and the timestamp adversarial case.",
+      "outcome": "NOT_YET"
+    },
+    {
+      "id": "L-04",
+      "severity": "LOW",
+      "class": "SCOPE_BOUNDARY",
+      "statement": "The transactional outbox at workstreams/po03/control/outbox.jsonl and the work-unit registry are not consumed. Reconstruction uses the event ledger only, cross-checked against recovery-state.json.",
+      "consequence": "A unit that exists only in the outbox and never reached the ledger is invisible to this scanner. The hypothesis names events as the reconstruction source, so this is a deliberate scope choice rather than a defect, but it is a real coverage gap for orphan detection.",
+      "outcome": "NOT_YET"
+    },
+    {
+      "id": "L-05",
+      "severity": "MEDIUM",
+      "class": "LIVE_FINDING",
+      "statement": "This attempt reconstructs as AWAITING_DISPATCH from the ledger at the immutable controller base while it is in fact executing. No DISPATCH_DELIVERED or RUNNING event for PO03-WA-013-A02 exists at that commit.",
+      "consequence": "Any scan taken during this window classifies a live unit as undispatched. Had this runtime been lost in the window, the ledger would carry no evidence the attempt ever ran, and the unit would have been recovered as never dispatched rather than as provider-completed-uncommitted. This is the recovery gap the unit was commissioned to test, observed on the unit itself.",
+      "mitigation_proposed_not_applied": "SP-PO03-WA-013-03.",
+      "producer_cannot_repair": "The ledger is controller-owned and read-only to this attempt; a producer appending to it would itself be a custody violation.",
+      "outcome": "NOT_SUPPORTED"
+    },
+    {
+      "id": "L-06",
+      "severity": "LOW",
+      "class": "ATTESTATION",
+      "statement": "The requested configuration was model claude-opus-5-thinking-high with reasoning high and auto-selection false. The runtime identifies the model as Claude Opus 5, which is consistent with the requested family, but exposes no programmatic attestation of the exact variant slug, the reasoning-effort setting, or whether auto-selection was disabled.",
+      "recorded_as": "model_observed claude-opus-5 with a self-reported, non-provider-attested qualifier; reasoning_observed NOT_SUPPORTED; auto_model_selection_observed NOT_SUPPORTED.",
+      "outcome": "NOT_SUPPORTED"
+    },
+    {
+      "id": "L-07",
+      "severity": "LOW",
+      "class": "MEASUREMENT_PRECISION",
+      "statement": "Wall time is measured from the first command executed in this attempt, not from provider queue admission. Queue time, token counts and cost are not exposed to this runtime.",
+      "recorded_as": "wall_time_seconds measured to the second from first observed command; queue_time, token_usage and cost NOT_SUPPORTED.",
+      "outcome": "NOT_SUPPORTED"
+    },
+    {
+      "id": "L-08",
+      "severity": "LOW",
+      "class": "INDEPENDENCE",
+      "statement": "Every test in this unit was written by the same producer that wrote the scanner. Adversarial cases are self-adversarial: they encode the faults this producer thought to construct.",
+      "consequence": "No independent challenger from a different model family generated hidden cases against this scanner. First-pass acceptance cannot be claimed on the strength of a self-written suite.",
+      "partial_offset": "The suite did falsify its own implementation eight times, including a crash and a silent calendar-validation gap, and one test assertion was itself wrong and had to be corrected. It is not a suite written only to pass.",
+      "independent_acceptance": "NOT_TESTED",
+      "outcome": "NOT_YET"
+    },
+    {
+      "id": "L-09",
+      "severity": "LOW",
+      "class": "SCOPE_BOUNDARY",
+      "statement": "No external network source was fetched, so no external method claim is asserted. The immutable task input required zero current-method hypotheses and zero sanitized reproductions for this engineering unit; nine hypotheses and nine reproductions were produced anyway, all anchored to in-repository SHAs.",
+      "outcome": "NOT_SUPPORTED"
+    },
+    {
+      "id": "L-10",
+      "severity": "LOW",
+      "class": "SCOPE_BOUNDARY",
+      "statement": "The scanner is not wired into CI and is not installed as a shared PO-03 tool, because .github/workflows/** and workstreams/po03/tools/** are outside this attempt's write boundary. It therefore has no live CI effect yet.",
+      "mitigation_proposed_not_applied": "SP-PO03-WA-013-01.",
+      "outcome": "NOT_YET"
+    },
+    {
+      "id": "L-11",
+      "severity": "LOW",
+      "class": "ARTIFACT_PROBE_FIDELITY",
+      "statement": "Committed-artifact read-back is exercised through a filesystem probe against a synthetic layout of root/task_id/attempt_id/manifest.json. It is not exercised against real artifacts resolved from immutable git commits.",
+      "consequence": "The corrupt-and-missing-artifact detection path is proven as logic, not proven against the repository's actual artifact addressing.",
+      "outcome": "NOT_YET"
+    }
+  ],
+  "limitation_count": 12,
+  "decision_changed": []
+}

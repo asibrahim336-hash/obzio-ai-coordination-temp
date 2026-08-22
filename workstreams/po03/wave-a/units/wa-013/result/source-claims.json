@@ -1,0 +1,88 @@
+{
+  "protocol_version": "OBZIO-SOURCE-CLAIM-CAPSULE-v1",
+  "task_id": "PO03-WA-013",
+  "attempt_id": "PO03-WA-013-A02",
+  "separation_note": "This file records only claims read from sources. Frozen hypotheses are in hypotheses.json, executed reproductions in reproduction-result.json, mechanism changes in mechanism-change.json, and unbound strategy proposals in strategy-proposals.json. No entry here is evidence that the claim holds for Obzio.",
+  "external_web_sources_read": [],
+  "external_source_limitation": "NOT_SUPPORTED: no external network fetch was performed in this run, so no external URL is cited. Every claim below is anchored to an immutable in-repository SHA that was read directly. Naming a public paper or vendor page without fetching it would be invention.",
+  "sources": [
+    {
+      "source_id": "SC-PO03-WA-013-01",
+      "kind": "IMMUTABLE_REPOSITORY_FILE",
+      "path": "workstreams/po03/COMMISSION.md",
+      "commit": "6559606ac8db12e3f484e9bb74c2b4a05cc3a998",
+      "sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+      "claim": "The mandated unit lifecycle is CREATED -> LEASED -> RUNNING -> CHECKPOINTED* -> RESULT_STAGING -> RESULT_STAGED -> RESULT_VERIFIED -> RESULT_COMMITTED -> PARENT_INGESTED -> COMPLETED -> ACCEPTED | REJECTED, and the required primitives are an append-only ledger, transactional outbox, leases, fencing, monotonic checkpoints and a recovery scanner.",
+      "used_for": "The scanner's state vocabulary, transition table and progress ranks are taken directly from this lifecycle rather than invented."
+    },
+    {
+      "source_id": "SC-PO03-WA-013-02",
+      "kind": "IMMUTABLE_REPOSITORY_FILE",
+      "path": "workstreams/po03/COMMISSION.md",
+      "commit": "6559606ac8db12e3f484e9bb74c2b4a05cc3a998",
+      "sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+      "claim": "Provider COMPLETED is merely an observation. If no verified durable result commit exists, Obzio state is PROVIDER_COMPLETED_UNCOMMITTED, never COMPLETED. Lost callbacks must replay, duplicate callbacks must be harmless, and an expired or stale worker must not commit after ownership transfers.",
+      "used_for": "The three refusal rules the scanner enforces: the false-completion guard, event_id deduplication, and task-scoped fence monotonicity."
+    },
+    {
+      "source_id": "SC-PO03-WA-013-03",
+      "kind": "IMMUTABLE_REPOSITORY_FILE",
+      "path": "workstreams/po03/contracts/transactional-result.schema.json",
+      "commit": "6559606ac8db12e3f484e9bb74c2b4a05cc3a998",
+      "sha256": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1",
+      "claim": "The seeded obzio_state enumeration includes PROVIDER_COMPLETED_UNCOMMITTED, RECOVERY_REQUIRED, RETRY_SCHEDULED, FAILED_TERMINAL and CANCELLED alongside the main lifecycle, and fence_token is an integer with minimum 1.",
+      "used_for": "The scanner accepts exactly this state set and rejects fence tokens below 1, so its reconstruction cannot produce a state the seeded contract would refuse."
+    },
+    {
+      "source_id": "SC-PO03-WA-013-04",
+      "kind": "IMMUTABLE_REPOSITORY_FILE",
+      "path": "workstreams/po03/tools/validate_contracts.py",
+      "commit": "6559606ac8db12e3f484e9bb74c2b4a05cc3a998",
+      "sha256": "ead7d6c78c1f60aaf5440db7fc00fc2ae57d773647ed3b24c279d1a59b43da03",
+      "claim": "The seeded validator already enforces that only the coordinator may set COMPLETED, that a producer cannot be its own reviewer, and that provider completion without a result commit must be PROVIDER_COMPLETED_UNCOMMITTED. It validates one already-written result document and has no view of the event stream.",
+      "used_for": "The scanner deliberately does not restate the document validator. It enforces the same three rules at the event-stream layer, which is the layer the validator cannot see, and it was checked not to weaken any of them."
+    },
+    {
+      "source_id": "SC-PO03-WA-013-05",
+      "kind": "IMMUTABLE_REPOSITORY_FILE",
+      "path": "workstreams/po03/control/events/ledger.jsonl",
+      "commit": "6559606ac8db12e3f484e9bb74c2b4a05cc3a998",
+      "sha256": "1b84241ecdc2c0eee9c9271d035b5e74a957691ec0ba82472d24b4f3d6f7809c",
+      "bytes": 212922,
+      "claim": "The live ledger holds 508 events across 66 task identifiers. Its to_state vocabulary includes four states absent from the commission's main line: FENCED, SUPERSEDED_BEFORE_DISPATCH, RECOVERY_REQUIRED and RETRY_SCHEDULED. event_seq is strictly increasing and every event_id is unique, but the wall-clock at field is not monotonic with event_seq, and one attempt is named three different ways across its own events.",
+      "used_for": "Directly observed and measured, not assumed. It set the scanner's control-state table, its event_seq ordering authority, and its attempt-identity normalisation."
+    },
+    {
+      "source_id": "SC-PO03-WA-013-06",
+      "kind": "IMMUTABLE_REPOSITORY_FILE",
+      "path": "workstreams/po03/control/recovery-state.json",
+      "commit": "6559606ac8db12e3f484e9bb74c2b4a05cc3a998",
+      "claim": "The controller maintains a separately materialised recovery-state.json listing active leases with task_id, lease_id, fence_token and state, plus fenced attempts and wave counters. It is a projection maintained alongside the ledger rather than derived from it at read time.",
+      "used_for": "Used as an independent cross-check surface: the focused suite asserts that ledger reconstruction agrees with this projection on state, lease_id and fence_token for every declared active lease."
+    },
+    {
+      "source_id": "SC-PO03-WA-013-07",
+      "kind": "IMMUTABLE_REPOSITORY_FILE",
+      "path": "workstreams/po03/COMMISSION.md",
+      "commit": "6559606ac8db12e3f484e9bb74c2b4a05cc3a998",
+      "claim": "The lost PO-02 Code-2 packaging return is frozen as PROVIDER_COMPLETED_UNCOMMITTED / UNRECOVERED_AFTER_FOUR_REPORTED_ROUTES / NOT_ACCEPTED and is to be used as a fault fixture, not called a completed deliverable.",
+      "used_for": "Fixture fx-03 is the sanitized structural analogue of that loss: a provider COMPLETED observation over a ledger that stops before any result commit."
+    },
+    {
+      "source_id": "SC-PO03-WA-013-08",
+      "kind": "IMMUTABLE_REPOSITORY_FILE",
+      "path": "operations/README.md",
+      "commit": "6559606ac8db12e3f484e9bb74c2b4a05cc3a998",
+      "claim": "The current operator route resolves the active function to obzio.function.strategic-operations-orchestration under appointment obzio.appointment.strategic-operations-orchestration.20260819.001, and an operator may act from a file only when the current pointers and stack route to it.",
+      "used_for": "Confirmed this unit's authority path before writing, and confirmed that scripts/check_operator_taxonomy.py is the mandated pre-commit currentness gate."
+    }
+  ],
+  "source_claim_count": 8,
+  "exclusions": [
+    "No PO-01 branch, path, artifact, pull request or workspace was read, contacted or written.",
+    "No external network source was fetched, so no external claim is asserted.",
+    "Producer narratives from sibling Wave A units were not used as evidence. Sibling result.json files under other units were read only to observe the required artifact shape and field naming, never to import a factual conclusion.",
+    "workstreams/po03/control/** was read only; no controller state, pointer, ledger, outbox or recovery-state file was modified."
+  ],
+  "decision_changed": []
+}

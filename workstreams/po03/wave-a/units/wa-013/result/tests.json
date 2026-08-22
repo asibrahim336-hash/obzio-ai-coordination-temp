@@ -1,0 +1,121 @@
+{
+  "protocol_version": "OBZIO-UNIT-TESTS-v1",
+  "task_id": "PO03-WA-013",
+  "attempt_id": "PO03-WA-013-A02",
+  "runtime": {
+    "python": "3.12.3",
+    "third_party_packages_used": 0,
+    "environment_variable_enforced": "PYTHONDONTWRITEBYTECODE=1",
+    "bytecode_written_outside_owned_subtree": false,
+    "network_access_used": false
+  },
+  "suites": [
+    {
+      "suite_id": "TS-01",
+      "name": "focused_and_adversarial",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-013/result -p 'test_recovery_scan.py' -v",
+      "test_count": 73,
+      "outcome": "PASS",
+      "exit_code": 0,
+      "log": "workstreams/po03/wave-a/units/wa-013/result/logs/focused-tests.txt",
+      "groups": {
+        "fixture_integrity": 3,
+        "fixture_expectations": 24,
+        "adversarial_ledgers": 34,
+        "determinism_and_idempotence": 5,
+        "command_line_interface": 8,
+        "live_ledger_regression": 6
+      },
+      "group_count_note": "Counts are subtest-expanding; unittest reports 73 top-level test methods and several methods iterate multiple hostile inputs internally."
+    },
+    {
+      "suite_id": "TS-02",
+      "name": "seeded_po03_contract_tests",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+      "test_count": 55,
+      "outcome": "PASS",
+      "exit_code": 0,
+      "log": "workstreams/po03/wave-a/units/wa-013/result/logs/seeded-contract-tests.txt",
+      "note": "This is the exact invocation used by .github/workflows/po03-contracts.yml. The seeded controls were strengthened by addition in an owned subtree and not modified, bypassed or weakened.",
+      "seeded_files_modified": 0
+    },
+    {
+      "suite_id": "TS-03",
+      "name": "operator_taxonomy_currentness_gate",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/check_operator_taxonomy.py",
+      "outcome": "PASS",
+      "exit_code": 0,
+      "verdict_line": "OPERATOR TAXONOMY CHECK: PASS",
+      "active_function": "obzio.function.strategic-operations-orchestration",
+      "active_appointment": "obzio.appointment.strategic-operations-orchestration.20260819.001",
+      "classified_aliases": 9,
+      "log": "workstreams/po03/wave-a/units/wa-013/result/logs/operator-taxonomy.txt"
+    },
+    {
+      "suite_id": "TS-04",
+      "name": "recurrence_harness",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 workstreams/po03/wave-a/units/wa-013/result/run_recurrence.py",
+      "check_count": 151,
+      "outcome": "PASS",
+      "exit_code": 0,
+      "compares_against": "workstreams/po03/wave-a/units/wa-013/result/recurrence-expectations.json",
+      "expectations_frozen_before_first_clean_clone_run": true,
+      "evidence": "workstreams/po03/wave-a/units/wa-013/result/recurrence-evidence.json",
+      "runs": [
+        { "run_label": "PRODUCER_WORKTREE", "outcome": "PASS", "failures": 0 },
+        { "run_label": "FRESH_NO_HARDLINK_CLONE_AT_RESULT_COMMIT", "outcome": "PASS", "failures": 0, "evidence": "workstreams/po03/wave-a/units/wa-013/result/recurrence-evidence-clean-clone.json" }
+      ]
+    },
+    {
+      "suite_id": "TS-05",
+      "name": "immutable_readback_verification",
+      "command": "git clone --no-hardlinks then git show <result_commit>:<path> for every manifest artifact",
+      "outcome": "PASS",
+      "evidence": "workstreams/po03/wave-a/units/wa-013/result/readback-verification.json",
+      "note": "Every artifact in the manifest was read back by immutable commit from a separate clone and compared on both SHA-256 and byte count."
+    }
+  ],
+  "total_automated_assertions": {
+    "focused_tests": 73,
+    "seeded_contract_tests": 55,
+    "recurrence_pinned_checks": 151,
+    "total": 279
+  },
+  "fault_injection_matrix": [
+    { "fault": "process_or_session_loss_mid_append", "fixture": "fx-07-torn-tail.jsonl", "detected": true, "recoverable": true, "outcome": "PASS" },
+    { "fault": "lost_return_message_after_durable_commit", "fixture": "fx-02-committed-not-ingested.jsonl", "detected": true, "recoverable": true, "outcome": "PASS" },
+    { "fault": "partial_write", "fixture": "fx-07-torn-tail.jsonl", "detected": true, "recoverable": true, "outcome": "PASS" },
+    { "fault": "post_commit_pre_ingest_failure", "fixture": "fx-02-committed-not-ingested.jsonl", "detected": true, "recoverable": true, "outcome": "PASS" },
+    { "fault": "pre_commit_failure", "fixture": "fx-03-provider-completed-uncommitted.jsonl", "detected": true, "recoverable": false, "recovery": "RERUN_FROM_IMMUTABLE_INPUT", "outcome": "PASS" },
+    { "fault": "stale_lease_commit_after_ownership_transfer", "fixture": "fx-05-stale-lease-commit.jsonl", "detected": true, "refused": true, "outcome": "PASS" },
+    { "fault": "duplicate_callback", "fixture": "fx-06-duplicate-callback.jsonl", "detected": true, "harmless": true, "outcome": "PASS" },
+    { "fault": "corrupt_artifact_or_missing_artifact", "fixture": "fx-15-committed-artifact-missing.jsonl", "detected": true, "outcome": "PASS" },
+    { "fault": "corrupt_ledger_interior", "fixture": "fx-08-corrupt-interior-line.jsonl", "detected": true, "outcome": "PASS" },
+    { "fault": "parent_restart", "fixture": "all 16 fixtures rescanned three times", "detected": "N/A", "idempotent": true, "outcome": "PASS" },
+    { "fault": "entire_provider_runtime_loss", "fixture": "fx-10-orphaned-lease-expired.jsonl", "detected": true, "outcome": "PASS" },
+    { "fault": "false_completion_attempt", "fixture": "fx-04-false-completion.jsonl", "detected": true, "refused": true, "outcome": "PASS" },
+    { "fault": "unauthorized_completion_actor", "fixture": "fx-12-unauthorized-completion-actor.jsonl", "detected": true, "refused": true, "outcome": "PASS" },
+    { "fault": "producer_self_acceptance", "fixture": "fx-13-producer-self-acceptance.jsonl", "detected": true, "refused": true, "outcome": "PASS" },
+    { "fault": "event_id_reuse_with_altered_content", "fixture": "fx-11-event-id-conflict.jsonl", "detected": true, "refused": true, "outcome": "PASS" },
+    { "fault": "storage_reordering", "fixture": "fx-14-file-order-shuffled.jsonl", "detected": true, "reconstruction_correct": true, "outcome": "PASS" },
+    { "fault": "non_monotonic_checkpoint", "fixture": "fx-09-checkpoint-regression.jsonl", "detected": true, "outcome": "PASS" },
+    { "fault": "network_interruption", "fixture": "NOT_SUPPORTED", "detected": "NOT_SUPPORTED", "note": "No network dependency exists in this unit, so no network-interruption fault can be injected against it. The transport-level analogue exercised instead is at-least-once redelivery in fx-06 and the truncated append in fx-07.", "outcome": "NOT_SUPPORTED" }
+  ],
+  "first_pass_outcome": "FAIL",
+  "first_pass_detail": "The first executed build of the scanner failed against the live ledger, and the adversarial suite failed on its first run. Eight scanner defects were found and repaired, plus one incorrect test assertion.",
+  "defects_found_and_repaired": [
+    { "id": "D-01", "found_by": "live ledger scan", "defect": "Attempt-key aliasing split 55 attempts, producing 55 spurious ILLEGAL_TRANSITION_REFUSED defects and leaving 55 of 508 events unapplied.", "repair": "MC-PO03-WA-013-02" },
+    { "id": "D-02", "found_by": "fixture probe", "defect": "Legitimate at-least-once redelivery raised a spurious FILE_ORDER_NOT_SEQ_ORDER defect and turned integrity DEFECTIVE.", "repair": "MC-PO03-WA-013-04" },
+    { "id": "D-03", "found_by": "fixture probe", "defect": "A refused false-completion attempt was invisible in the report summary, so the guard firing could not be audited.", "repair": "MC-PO03-WA-013-03" },
+    { "id": "D-04", "found_by": "fixture probe", "defect": "A FENCED attempt with no successor was reported as NONE_SUCCESSOR_CARRIES_WORK, silently retiring live work with no recovery action.", "repair": "MC-PO03-WA-013-08" },
+    { "id": "D-05", "found_by": "fixture probe", "defect": "PRODUCER_SELF_ACCEPTANCE was unreachable because the generic actor-prefix check ran first, so the specific fault was misdiagnosed.", "repair": "MC-PO03-WA-013-07" },
+    { "id": "D-06", "found_by": "adversarial test", "defect": "The scan raised ValueError and crashed when every event naming a task was refused.", "repair": "MC-PO03-WA-013-05" },
+    { "id": "D-07", "found_by": "adversarial test", "defect": "parse_instant accepted invalid calendar dates such as month 13, fabricating an epoch value from a malformed lease expiry.", "repair": "MC-PO03-WA-013-06" },
+    { "id": "D-08", "found_by": "adversarial test", "defect": "A false-completion assertion at a structurally legal lifecycle position would have been admitted, because the guard was subordinate to the transition table.", "repair": "MC-PO03-WA-013-03" },
+    { "id": "D-09", "found_by": "adversarial test", "defect": "Test defect, not a scanner defect: the key-order determinism test compared whole-report digests, which legitimately include the ledger's own digest, so it asserted something false.", "repair": "Test corrected to compare the reconstruction and to assert that only the ledger digest differs." }
+  ],
+  "final_outcome": "PASS",
+  "critical_correctness_assertions_passing": "100_PERCENT",
+  "independent_acceptance": "NOT_TESTED",
+  "decision_changed": []
+}

@@ -1,0 +1,91 @@
+{
+  "protocol_version": "OBZIO-RECURRENCE-EXPECTATION-v1",
+  "task_id": "PO03-WA-013",
+  "attempt_id": "PO03-WA-013-A02",
+  "frozen_at": "2026-08-22T09:05:00Z",
+  "frozen_before_clean_clone_rerun": true,
+  "purpose": "Freeze the exact values a clean clone must reproduce, so recurrence is a comparison against pinned expectations rather than a self-derived restatement.",
+  "immutable_controller_base": "6559606ac8db12e3f484e9bb74c2b4a05cc3a998",
+  "live_ledger": {
+    "path": "workstreams/po03/control/events/ledger.jsonl",
+    "sha256": "1b84241ecdc2c0eee9c9271d035b5e74a957691ec0ba82472d24b4f3d6f7809c",
+    "bytes": 212922,
+    "evaluation_instant": "2026-08-22T08:51:42Z",
+    "report_sha256": "eb27afa967f36badee84b59aec1a35d2fb760d6a77eea9656a55022922652a04",
+    "events_parsed": 508,
+    "events_applied": 508,
+    "task_count": 66,
+    "integrity": "CLEAN",
+    "severity_counts": { "CRITICAL": 0, "DEFECT": 0, "ADVISORY": 60 },
+    "state_histogram": {
+      "ACCEPTED": 9,
+      "AWAITING_DISPATCH": 50,
+      "IN_FLIGHT": 5,
+      "RECOVERY_REQUIRED": 1,
+      "REJECTED": 1
+    },
+    "committed_not_ingested": [],
+    "provider_completed_uncommitted": [],
+    "false_completion_admitted": [],
+    "orphaned_lease_expired": [],
+    "unreconstructable_tasks": [],
+    "exit_code": 1,
+    "exit_code_meaning": "recovery action required for at least one unit; no defect and no critical violation"
+  },
+  "self_reconstruction": {
+    "task_id": "PO03-WA-013",
+    "live_attempt_id": "PO03-WA-013-A02",
+    "fence_token": 2,
+    "lease_id": "lease-po03-wa-013-a02",
+    "reconstructed_state": "LEASED",
+    "obzio_state": "AWAITING_DISPATCH",
+    "superseded_attempt_id": "PO03-WA-013-A01",
+    "superseded_attempt_state": "SUPERSEDED_BEFORE_DISPATCH"
+  },
+  "fixtures": {
+    "directory": "workstreams/po03/wave-a/units/wa-013/result/fixtures",
+    "manifest_sha256": "d10e240242d441f8f5d552b6d0cdc0ed1b175f400f4df518ed292f427f03b193",
+    "fixture_count": 16,
+    "total_fixture_bytes": 52020,
+    "regeneration_must_be_byte_identical": true
+  },
+  "fixture_classifications": {
+    "fx-01-clean-full-lifecycle.jsonl": { "task": "PO03-FX-001", "obzio_state": "ACCEPTED", "recovery_action": "NONE", "integrity": "CLEAN", "exit_code": 0 },
+    "fx-02-committed-not-ingested.jsonl": { "task": "PO03-FX-002", "obzio_state": "COMMITTED_NOT_INGESTED", "recovery_action": "REPLAY_PARENT_INGESTION", "integrity": "CLEAN", "exit_code": 1 },
+    "fx-03-provider-completed-uncommitted.jsonl": { "task": "PO03-FX-003", "obzio_state": "PROVIDER_COMPLETED_UNCOMMITTED", "recovery_action": "RERUN_FROM_IMMUTABLE_INPUT", "integrity": "CLEAN", "exit_code": 1 },
+    "fx-04-false-completion.jsonl": { "task": "PO03-FX-004", "obzio_state": "IN_FLIGHT", "recovery_action": "INVESTIGATE_REFUSED_COMPLETION", "integrity": "CRITICAL_VIOLATION", "exit_code": 2 },
+    "fx-05-stale-lease-commit.jsonl": { "task": "PO03-FX-005", "obzio_state": "ATTEMPT_FENCED_NO_SUCCESSOR", "recovery_action": "REDISPATCH_UNDER_NEW_FENCE", "integrity": "CRITICAL_VIOLATION", "exit_code": 2 },
+    "fx-06-duplicate-callback.jsonl": { "task": "PO03-FX-006", "obzio_state": "COMPLETED_AWAITING_INDEPENDENT_ACCEPTANCE", "recovery_action": "REQUEST_INDEPENDENT_ACCEPTANCE", "integrity": "CLEAN", "exit_code": 1 },
+    "fx-07-torn-tail.jsonl": { "task": "PO03-FX-007", "obzio_state": "COMMITTED_NOT_INGESTED", "recovery_action": "REPLAY_PARENT_INGESTION", "integrity": "CLEAN", "exit_code": 1 },
+    "fx-08-corrupt-interior-line.jsonl": { "task": "PO03-FX-008", "obzio_state": "IN_FLIGHT", "recovery_action": "NONE", "integrity": "CRITICAL_VIOLATION", "exit_code": 2 },
+    "fx-09-checkpoint-regression.jsonl": { "task": "PO03-FX-009", "obzio_state": "IN_FLIGHT", "recovery_action": "NONE", "integrity": "DEFECTIVE", "exit_code": 1 },
+    "fx-10-orphaned-lease-expired.jsonl": { "task": "PO03-FX-010", "obzio_state": "ORPHANED_LEASE_EXPIRED", "recovery_action": "REDISPATCH_UNDER_NEW_FENCE", "integrity": "CLEAN", "exit_code": 1 },
+    "fx-11-event-id-conflict.jsonl": { "task": "PO03-FX-011", "obzio_state": "COMMITTED_NOT_INGESTED", "recovery_action": "REPLAY_PARENT_INGESTION", "integrity": "CRITICAL_VIOLATION", "exit_code": 2 },
+    "fx-12-unauthorized-completion-actor.jsonl": { "task": "PO03-FX-012", "obzio_state": "INGESTED_NOT_COMPLETED", "recovery_action": "COORDINATOR_RECORD_COMPLETED", "integrity": "CRITICAL_VIOLATION", "exit_code": 2 },
+    "fx-13-producer-self-acceptance.jsonl": { "task": "PO03-FX-013", "obzio_state": "COMPLETED_AWAITING_INDEPENDENT_ACCEPTANCE", "recovery_action": "REQUEST_INDEPENDENT_ACCEPTANCE", "integrity": "CRITICAL_VIOLATION", "exit_code": 2 },
+    "fx-14-file-order-shuffled.jsonl": { "task": "PO03-FX-014", "obzio_state": "COMMITTED_NOT_INGESTED", "recovery_action": "REPLAY_PARENT_INGESTION", "integrity": "DEFECTIVE", "exit_code": 1 },
+    "fx-15-committed-artifact-missing.jsonl": { "task": "PO03-FX-015", "obzio_state": "COMMITTED_NOT_INGESTED", "recovery_action": "REPLAY_PARENT_INGESTION", "integrity": "CLEAN", "exit_code": 1, "note": "Without an artifact probe the commit is taken at its word; the probing variant is asserted in the focused test suite." }
+  },
+  "mixed_fleet": {
+    "fixture": "fx-16-mixed-fleet.jsonl",
+    "integrity": "CLEAN",
+    "committed_not_ingested": ["PO03-FX-102", "PO03-FX-107"],
+    "provider_completed_uncommitted": ["PO03-FX-103"],
+    "orphaned_lease_expired": ["PO03-FX-104"],
+    "false_completion_admitted": [],
+    "state_histogram": {
+      "ACCEPTED": 1,
+      "AWAITING_DISPATCH": 1,
+      "COMMITTED_NOT_INGESTED": 2,
+      "INGESTED_NOT_COMPLETED": 1,
+      "ORPHANED_LEASE_EXPIRED": 1,
+      "PROVIDER_COMPLETED_UNCOMMITTED": 1
+    }
+  },
+  "test_suites": {
+    "focused": { "command": "python3 -I -m unittest discover -s <result> -p 'test_recovery_scan.py'", "expected_count": 73, "expected_outcome": "PASS" },
+    "seeded_po03_contracts": { "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py'", "expected_count": 55, "expected_outcome": "PASS" },
+    "operator_taxonomy": { "command": "python3 scripts/check_operator_taxonomy.py", "expected_outcome": "PASS" }
+  },
+  "decision_changed": []
+}

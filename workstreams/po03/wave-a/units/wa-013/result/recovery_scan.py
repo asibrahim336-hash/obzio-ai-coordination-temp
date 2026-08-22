@@ -170,6 +170,12 @@ def parse_instant(value: Any) -> int | None:
     if match is None:
         return None
     year, month, day, hour, minute, second = (int(match.group(i)) for i in range(1, 7))
+    if not 1 <= month <= 12 or hour > 23 or minute > 59 or second > 59:
+        return None
+    leap = year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
+    days_in_month = (31, 29 if leap else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+    if not 1 <= day <= days_in_month[month - 1]:
+        return None
     offset_text = match.group(8)
     if offset_text == "Z":
         offset_seconds = 0
@@ -834,7 +840,10 @@ def _absorb_facts(attempt: _Attempt, event: dict[str, Any]) -> None:
         attempt.provider_run_ids.append(previous)
 
 
-def _select_live_attempt(task: _Task) -> _Attempt:
+def _select_live_attempt(task: _Task) -> _Attempt | None:
+    """The attempt that currently carries the task, or None if every event was refused."""
+    if not task.order:
+        return None
     open_attempts = [
         task.attempts[key] for key in task.order if task.attempts[key].state not in ATTEMPT_CLOSED
     ]
@@ -1019,9 +1028,16 @@ def _build_report(
     artifact_probe: Callable[[dict[str, Any]], dict[str, Any]] | None,
 ) -> dict[str, Any]:
     task_reports: list[dict[str, Any]] = []
+    unreconstructable: list[str] = []
     for task_id in sorted(tasks):
         task = tasks[task_id]
         live = _select_live_attempt(task)
+        if live is None:
+            # Every event naming this task was refused, so there is no state to
+            # reconstruct.  The refusals are already recorded as findings; the
+            # task is named here so it cannot be silently dropped.
+            unreconstructable.append(task_id)
+            continue
         provider_state = provider_observations.get(task_id)
         if isinstance(provider_state, dict):
             provider_state = provider_state.get("provider_state")
@@ -1171,6 +1187,7 @@ def _build_report(
         "severity_counts": severity_counts,
         "findings": findings_sorted,
         "task_count": len(task_reports),
+        "unreconstructable_tasks": sorted(unreconstructable),
         "state_histogram": dict(sorted(by_state.items())),
         "action_histogram": dict(sorted(by_action.items())),
         "committed_not_ingested": committed_not_ingested,
