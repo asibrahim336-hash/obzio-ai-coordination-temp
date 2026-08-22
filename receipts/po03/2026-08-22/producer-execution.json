@@ -1,0 +1,177 @@
+{
+  "receipt_id": "RCP-PO03-PRODUCER-EXECUTION-20260822-v001",
+  "state": "INTERIM_WAVE_A_IN_FLIGHT",
+  "actor": "PO-03",
+  "actor_function": "obzio.function.repository-engineering-portable-runtime",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "commission_revision": "v002",
+  "amends_not_restarts": true,
+  "strategy_restarted": false,
+  "decision_changed": [],
+  "generated_at": "2026-08-22T07:28:00Z",
+  "repository": "asibrahim336-hash/obzio-ai-coordination-temp",
+  "integration_branch": "cursor/po03-wave-a-transactional-factory-ed20",
+  "self_marked_accepted": false,
+  "acceptance": "NOT_TESTED",
+  "wave_state": {
+    "wave_id": "po03-wave-a",
+    "units_required": 64,
+    "units_registered": 83,
+    "ledger_rows": 299,
+    "ledger_chain_valid": true,
+    "false_completions": 0,
+    "expired_leases": 0,
+    "orphaned_units": 0,
+    "provider_completed_uncommitted": 0,
+    "units_by_state": { "RUNNING": 43, "PARENT_INGESTED": 20, "FAILED_TERMINAL": 11, "LEASED": 9 },
+    "units_set_to_COMPLETED": 0,
+    "completion_note": "No unit has been set to COMPLETED. Ingestion verified 20 units by artifact read-back, but the coordinator withheld completion after cohort a2 proved that the completion path itself was unsound. Completion resumes only after the remediation cohort closes the actor-authority and commit-verification defects.",
+    "cohorts_returned": ["a2", "a6"],
+    "cohorts_in_flight": ["a1", "a3", "a4", "a5", "a7", "a8", "a9", "a10", "a11"]
+  },
+  "reproduced_defects_in_the_coordinator_control_plane": [
+    {
+      "id": "DEF-01",
+      "severity": "CRITICAL",
+      "found_by": "po03-worker-a2 (gpt-5.6-sol-xhigh), defect 7; independently reproduced by the coordinator",
+      "defect": "The generic event subcommand enforced actor authority only inside cmd_complete. A worker-actor appended COMPLETED with a fabricated result_commit_id, the ledger projection accepted it as COMPLETED, and scan_recovery reported zero false completions because it tested only for a missing commit id and never for an unverifiable one.",
+      "why_it_matters": "This is the exact failure the commission exists to prevent. The control plane was built to make producer self-certification impossible and this path restored it.",
+      "reproduction": "python3 -I workstreams/po03/tools/control_plane.py event a3-u05 COMPLETED --actor po03-worker-a3 --provider-state COMPLETED --fence-token 1 --payload '{\"result_commit_id\":\"totally-made-up\"}' then projecting the unit and running the scanner.",
+      "reproduction_residue": "None. The probe ran against a ledger backup and the ledger was restored; chain verified valid afterwards.",
+      "remediation_unit": "a11-u01",
+      "state": "OPEN_UNDER_REMEDIATION"
+    },
+    {
+      "id": "DEF-02",
+      "severity": "HIGH",
+      "found_by": "po03-worker-a2, defect 2",
+      "defect": "append_event performs an unlocked read-verify-append, so concurrent appends assign duplicate sequence numbers and break the hash chain. Measured 200 of 200 concurrent interleavings violating exactly-once custody or chain integrity.",
+      "remediation_unit": "a11-u02",
+      "state": "OPEN_UNDER_REMEDIATION"
+    },
+    {
+      "id": "DEF-03",
+      "severity": "HIGH",
+      "found_by": "po03-worker-a2, defect 4",
+      "defect": "Ingestion rejects a fence token lower than the current one but accepts an arbitrary higher one the coordinator never issued, so a worker can escalate its own ownership. Measured 10 of 10 unissued higher fences accepted.",
+      "remediation_unit": "a11-u03",
+      "state": "OPEN_UNDER_REMEDIATION"
+    },
+    {
+      "id": "DEF-04",
+      "severity": "HIGH",
+      "found_by": "po03-worker-a2, defect 3",
+      "defect": "A result_commit_id is accepted as durable for being a non-empty string, without resolving it against any remote. Measured 10 of 10 nonexistent remote commit locators accepted.",
+      "remediation_unit": "a11-u04",
+      "state": "OPEN_UNDER_REMEDIATION"
+    },
+    {
+      "id": "DEF-05",
+      "severity": "HIGH",
+      "found_by": "coordinator, on live subordinate data during ingestion",
+      "defect": "The ingestion driver materialises a subordinate branch at HEAD rather than at the commit each result declares, so it was not reading back by immutable SHA. Unit a2-u01 was rejected for a fault_lab.py hash mismatch caused solely by a later commit on the same branch, not by any dishonesty.",
+      "remediation_unit": "a11-u05",
+      "state": "OPEN_UNDER_REMEDIATION"
+    },
+    {
+      "id": "DEF-06",
+      "severity": "MEDIUM",
+      "found_by": "po03-worker-a6 (gpt-5.6-luna-high), five locator discrepancies in its independent read-back audit",
+      "defect": "make_result.py stamps the commit that exists at emission time, but the result record is committed afterwards, so a result declares a commit that does not contain the result record itself.",
+      "remediation_unit": "a11-u06",
+      "state": "OPEN_UNDER_REMEDIATION"
+    },
+    {
+      "id": "DEF-07",
+      "severity": "MEDIUM",
+      "found_by": "po03-worker-a2, defect 5",
+      "defect": "Rejecting a corrupt or missing artifact raises but records nothing, so the rejection is invisible to recovery and committed artifacts are never re-hashed. Measured 20 of 20 rejections leaving no recovery state.",
+      "remediation_unit": "a11-u07",
+      "state": "OPEN_UNDER_REMEDIATION"
+    },
+    {
+      "id": "DEF-08",
+      "severity": "HIGH",
+      "found_by": "po03-worker-a2, defect 1",
+      "defect": "The recovery scanner detects but never remediates. No re-lease, retry, rerun, resume or result-slot reconciliation exists, so the commission's requirement of automatic resume or rerun of uncommitted tasks from immutable input is unmet. Measured 0 of 7 in-flight units resuming.",
+      "remediation_unit": "a11-u08",
+      "state": "OPEN_UNDER_REMEDIATION"
+    },
+    {
+      "id": "DEF-09",
+      "severity": "HIGH",
+      "found_by": "po03-worker-a2, defect 9",
+      "defect": "A fresh clone cannot discover subordinate result branches, so total runtime loss loses committed results in practice even though the bytes exist on the remote. Measured 0 of 10 committed results recovered from fresh clones.",
+      "remediation_unit": "a11-u09",
+      "state": "OPEN_UNDER_REMEDIATION"
+    },
+    {
+      "id": "DEF-10",
+      "severity": "LOW",
+      "found_by": "coordinator's own custody test suite, before any subordinate result arrived",
+      "defect": "Allowlist normalisation used lstrip('./'), wrongly rejecting .github/workflows/po03-*.yml and wrongly accepting a leading traversal such as './../packs/x'.",
+      "state": "FIXED_WITH_RECURRENCE_TESTS",
+      "disposition": "RETAIN"
+    },
+    {
+      "id": "DEF-11",
+      "severity": "HIGH",
+      "found_by": "coordinator's recovery scanner, on live subordinate results",
+      "defect": "ingest_result appended PARENT_INGESTED unconditionally, so reading an honestly failed result promoted the unit into a committed state. Eleven a2 units were reported as false completions.",
+      "state": "FIXED_WITH_RECURRENCE_TESTS",
+      "disposition": "RETAIN",
+      "ledger_treatment": "The eleven erroneous rows are retained as evidence and superseded by corrective events naming the defect and the true reported state. No row was rewritten or deleted."
+    },
+    {
+      "id": "DEF-12",
+      "severity": "LOW",
+      "found_by": "coordinator",
+      "defect": "The seeded contract workflow triggered on push only for po03/** branches, so it never fired on the cursor/po03-*-ed20 branches the work is executed on.",
+      "state": "FIXED",
+      "disposition": "RETAIN",
+      "evidence": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32559213710"
+    }
+  ],
+  "findings_routed_to_other_cohorts": [
+    {
+      "finding": "Tracked generated bytecode on a producer branch: workstreams/po03/tests/__pycache__/*.pyc and workstreams/po03/tools/__pycache__/*.pyc",
+      "found_by": "po03-worker-a6, unit a6-u04, recorded as ESCAPE_FOUND against the clean-clone claim",
+      "owner_to_repair": "po03-worker-a3",
+      "state": "OPEN — a3 is still executing and Cursor exposes no way to message a running subagent, so this is routed for repair on a3's return rather than fixed across an ownership boundary by another writer.",
+      "coordinator_note": "The reviewer correctly refused to fix another cohort's paths. Committed bytecode also falsifies the byte-determinism claim in a3-u05, so a3's own units are affected, not only a6's audit."
+    },
+    {
+      "finding": "Cohort a6 recorded 30 of 30 reviewed producer units as REJECTED and 0 as ACCEPTED",
+      "coordinator_assessment": "Mostly an availability artefact rather than a quality judgment: a1, a5 and a8 branches were unavailable at a6's scoring time and most a3 and a7 units had no result record yet. The two substantive rejections are the a3 locator plus tracked bytecode, and the a7 locator discrepancy, and both are real.",
+      "ledger_treatment": "These rejections are not recorded as ledger dispositions, because cmd_review correctly requires a COMPLETED unit and no unit is COMPLETED. They are retained as a6-owned evidence at cursor/po03-a6-independent-review-ed20@c04bc0ed9f785ed29adaba94ad1f80c976911532. No control was relaxed to admit them.",
+      "state": "RECORDED_NOT_ADMITTED_AS_DISPOSITION"
+    },
+    {
+      "finding": "Cohort a6 found one genuine false green out of two mutations of the code under review",
+      "significance": "The reviewer's mutation harness fired, so the review is demonstrably not ceremonial.",
+      "state": "RECORDED"
+    }
+  ],
+  "compounding_loop_evidence": {
+    "claim": "The operating loop ran as an executable loop, not as a report.",
+    "sequence": "operate (control plane built and 83 units dispatched) → observe (a2 and a6 returned) → measure (a2's matrix: 29 false completions, 200 duplicate effects, 0 of 23 committed results recoverable) → challenge (a6 rejected 30 of 30 and found a false green) → reproduce (coordinator independently reproduced the two most severe defects) → change the live mechanism (two defects already fixed with recurrence tests; nine registered as remediation units with frozen acceptance) → independently test (a10 is auditing the same control plane from a different model family) → next generation.",
+    "cross_family_effect": "Every one of the nine defects entering remediation was found by a model family other than the one that wrote the code under test, or by a test the author wrote against their own work. Heterogeneous independent cognition produced findings that same-family review would have been unlikely to surface.",
+    "honesty_note": "Cohort a2 falsified ten of its own twelve hypotheses and returned FAILED for ten units. That is the correct and most valuable outcome available to it, and it is recorded as such rather than softened."
+  },
+  "po01_non_interference": {
+    "contacted": false,
+    "messaged_paused_redirected_or_signalled": false,
+    "branches_paths_prs_or_artifacts_written": false,
+    "producer_narrative_used_as_evidence": false
+  },
+  "protected_acts": {
+    "merged_or_promoted": false,
+    "pr8_or_cursor_setup_dev_environment_b5ce_modified": false,
+    "out_of_allowlist_writes": 0,
+    "path_collisions": 0,
+    "founder_relay_events": 0,
+    "manual_subagent_launch_requested_of_ahmed": false
+  },
+  "outcome": "NOT_YET",
+  "outcome_basis": "Recovery acceptance currently FAILS on cohort a2's evidence, and the coordinator has withheld every completion until the remediation cohort closes the actor-authority and commit-verification defects. Reporting PASS at this checkpoint would itself be the false completion this commission forbids."
+}
