@@ -1,0 +1,375 @@
+{
+  "cases": [
+    {
+      "case_id": "H001-skip-and-reverse",
+      "evidence": {
+        "rejected": [
+          "SKIPPED_STATE",
+          "REVERSED_STATE",
+          "TERMINAL_STATE_RESURRECTION"
+        ]
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-001"
+    },
+    {
+      "case_id": "H002-fence-type-and-order",
+      "detail": "current+1 staged without an externally validated live lease",
+      "error_type": "AssertionError",
+      "status": "FAIL",
+      "task_id": "PO03-WA-002"
+    },
+    {
+      "case_id": "H003-idempotency-conflict",
+      "evidence": {
+        "created_events": 1,
+        "transactions": 1
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-003"
+    },
+    {
+      "case_id": "H004-replay-twice",
+      "evidence": {
+        "effects": 1,
+        "second_recovery_outcomes": []
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-004"
+    },
+    {
+      "case_id": "H005-same-size-corruption",
+      "evidence": {
+        "reason": "ARTIFACT_VERIFICATION_FAILED",
+        "state": "RESULT_STAGING"
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-005"
+    },
+    {
+      "case_id": "H006-after-commit-crash",
+      "evidence": {
+        "external_executions": 1,
+        "recoveries": [
+          "ALREADY_COMPLETE_NO_ACTION",
+          "ALREADY_COMPLETE_NO_ACTION"
+        ]
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-006"
+    },
+    {
+      "case_id": "H007-provider-only-completion",
+      "evidence": {
+        "detail": "no locator was recorded for this attempt",
+        "durable_commit": false,
+        "evidence": {},
+        "obzio_state": "PROVIDER_COMPLETED_UNCOMMITTED",
+        "provider_state": "COMPLETED",
+        "reason": "NO_RESULT_COMMIT_LOCATOR",
+        "task_id": "held"
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-007"
+    },
+    {
+      "case_id": "H008-recovery-order",
+      "evidence": {
+        "plan_sha256": "5be75246341b6a0c19b2602497b92ddfa050bb1b9a3f2299c7c3deabc6cfe00b",
+        "resume": [
+          "a",
+          "b",
+          "c"
+        ]
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-008"
+    },
+    {
+      "case_id": "H033-delete-outside-allowlist",
+      "evidence": {
+        "admissible": false,
+        "allowed": 1,
+        "component": "changed_path_guard",
+        "decisions": [
+          {
+            "matched_rule": "owned/",
+            "normalised_path": "owned/add.json",
+            "raw_path": "owned/add.json",
+            "reason": "inside allowlisted subtree",
+            "verdict": "ALLOWED"
+          },
+          {
+            "matched_rule": null,
+            "normalised_path": "foreign/deleted.json",
+            "raw_path": "foreign/deleted.json",
+            "reason": "no allowlist rule covers this path",
+            "verdict": "REJECTED_NOT_IN_ALLOWLIST"
+          }
+        ],
+        "evaluated": 2,
+        "rejected": 1,
+        "rule_count": 1
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-033"
+    },
+    {
+      "case_id": "H034-relative-symlink-escape",
+      "evidence": {
+        "resolved_path": "/tmp/tmp2pt271kx/outside",
+        "verdict": "REJECTED_ANCESTOR_SYMLINK_ESCAPE"
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-034"
+    },
+    {
+      "case_id": "H035-rename-crossing-boundary",
+      "evidence": {
+        "into": "REJECTED_SOURCE_NOT_OWNED",
+        "out": "REJECTED_DESTINATION_NOT_OWNED"
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-035"
+    },
+    {
+      "case_id": "H036-unicode-byte-count",
+      "evidence": {
+        "bytes": 5,
+        "characters": 2,
+        "corrupt_finding": "SHA_MISMATCH"
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-036"
+    },
+    {
+      "case_id": "H037-nested-transport-debris",
+      "evidence": {
+        "findings": [
+          "deep/__pycache__/x.pyc"
+        ],
+        "legitimate_preserved": false
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-037"
+    },
+    {
+      "case_id": "H038-missing-parent-lineage",
+      "detail": "omitting the parent lineage field was silently treated as no parents",
+      "error_type": "AssertionError",
+      "status": "FAIL",
+      "task_id": "PO03-WA-038"
+    },
+    {
+      "case_id": "H039-prefix-overlap",
+      "evidence": {
+        "disjoint_overlaps": 0,
+        "lookalike_overlaps": 0,
+        "nested_overlaps": 1
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-039"
+    },
+    {
+      "case_id": "H040-forged-controller-label",
+      "evidence": {
+        "verdict": "REJECTED_NOT_CONTROLLER",
+        "written": false
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-040"
+    },
+    {
+      "case_id": "H041-capsule-key-order",
+      "evidence": {
+        "canonical": true,
+        "changed_address": true
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-041"
+    },
+    {
+      "case_id": "H042-outbox-ack-loss",
+      "evidence": {
+        "effects": 1,
+        "replays": [
+          [
+            "DUPLICATE_ACKNOWLEDGED"
+          ],
+          []
+        ]
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-042"
+    },
+    {
+      "case_id": "H043-delayed-equal-owner",
+      "evidence": {
+        "stale_accepted": false,
+        "tokens": [
+          1,
+          2
+        ]
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-043"
+    },
+    {
+      "case_id": "H044-sanitized-home-and-env",
+      "evidence": {
+        "ambient_state_used": false,
+        "value": "declared"
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-044"
+    },
+    {
+      "case_id": "H045-invalid-state-injection",
+      "detail": "unknown transition was silently ignored",
+      "error_type": "AssertionError",
+      "status": "FAIL",
+      "task_id": "PO03-WA-045"
+    },
+    {
+      "case_id": "H046-equivalent-mutant",
+      "detail": "behavior-equivalent mutant was reported as a surviving correctness escape",
+      "error_type": "AssertionError",
+      "status": "FAIL",
+      "task_id": "PO03-WA-046"
+    },
+    {
+      "case_id": "H047-newline-and-space-paths",
+      "evidence": {
+        "round_tripped_paths": [
+          "space name.json",
+          "unicod\u00e9.json",
+          ".leading-dot",
+          "line\nbreak.json"
+        ]
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-047"
+    },
+    {
+      "case_id": "H048-clean-clone-untracked-mask",
+      "evidence": {
+        "environment_coupling_reported": true
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-048"
+    },
+    {
+      "case_id": "H049-null-commit-semantics",
+      "evidence": {
+        "axes": {
+          "acceptance": {
+            "complete": false,
+            "meaning": "decision of a different producer, never of the producer itself",
+            "state": "PENDING"
+          },
+          "obzio": {
+            "asserted_state": "RESULT_STAGED",
+            "complete": false,
+            "meaning": "durable custody state backed by a verified result commit",
+            "state": "PROVIDER_COMPLETED_UNCOMMITTED"
+          },
+          "provider": {
+            "complete": true,
+            "meaning": "observation of the provider runtime only",
+            "state": "COMPLETED"
+          }
+        },
+        "effective_obzio_state": "PROVIDER_COMPLETED_UNCOMMITTED"
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-049"
+    },
+    {
+      "case_id": "H050-casefold-and-whitespace-alias",
+      "evidence": {
+        "blocked_claims": [
+          " alice producer ",
+          "ALICE PRODUCER",
+          "producer-alias"
+        ]
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-050"
+    },
+    {
+      "case_id": "H051-terminal-outgoing-edges",
+      "evidence": {
+        "legal": 65,
+        "skips": 64,
+        "total": 225
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-051"
+    },
+    {
+      "case_id": "H052-runtime-authority-injection",
+      "evidence": {
+        "invalid_rejected": true,
+        "runtime_axis": "cursor"
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-052"
+    },
+    {
+      "case_id": "H053-mixed-unknown-aggregation",
+      "evidence": {
+        "coverage": 0.5,
+        "known_count": 2,
+        "metric": "mixed",
+        "observed_boundary": "",
+        "population": 4,
+        "unknown_count": 2,
+        "value": 5
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-053"
+    },
+    {
+      "case_id": "H054-conclusion-before-freeze",
+      "evidence": {
+        "blind_order_held": false,
+        "chain_head": "85c8e97c2e03f6a4deb8bb0b8119d0caed7ed184d0f803631cf1fd9b474c1d2e",
+        "ledger_length": 1,
+        "outcomes_freeze_seq": null,
+        "producer_reads_before_freeze": [],
+        "rubric_amendments_after_producer_read": [],
+        "rubric_freeze_seq": null,
+        "violations": [
+          "producer conclusion 'workstreams/po03/runs/wave-a/route-x/FINDING.md' opened before the rubric was frozen"
+        ]
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-054"
+    },
+    {
+      "case_id": "H055-tie-and-missing-critical",
+      "detail": "candidate missing critical evidence won through optional-score averaging",
+      "error_type": "AssertionError",
+      "status": "FAIL",
+      "task_id": "PO03-WA-055"
+    },
+    {
+      "case_id": "H056-manifest-duplicate-path",
+      "evidence": {
+        "corrupt_codes": [
+          "DIGEST_MISMATCH"
+        ],
+        "duplicate_codes": [
+          "DUPLICATE_ENTRY",
+          "TOTAL_BYTES_MISMATCH"
+        ]
+      },
+      "status": "PASS",
+      "task_id": "PO03-WA-056"
+    }
+  ],
+  "decision_changed": [],
+  "failed": 5,
+  "passed": 27,
+  "suite_id": "PO03-WA-ROUTE-08-HELD-OUT-v1"
+}
