@@ -1,0 +1,28 @@
+# GitHub credential rotation — the invariant, re-tested across a refresh
+# captured: 2026-08-22T23:11:27Z
+
+The point-in-time digest is not the finding. The INVARIANT is: at any
+instant, the token in ~/.config/gh/hosts.yml equals the token in the
+~/.gitconfig insteadOf rewrite. Re-test that, not the digest.
+
+  gh_cli (~/.config/gh/hosts.yml): len=390 prefix=ghs_ sha256=9f02a6c7b1a0bb6e29d64f8d9f079234c9621b0d6decf2e94f47920bf5d2b10c
+  git   (~/.gitconfig insteadOf): len=390 prefix=ghs_ sha256=9f02a6c7b1a0bb6e29d64f8d9f079234c9621b0d6decf2e94f47920bf5d2b10c
+  IDENTICAL: True
+
+  earlier sample this run, 2026-08-22T22:43Z:
+    both locations: sha256=25ae6b184f9886fbb4d4aa7aade5958385230a79c5f21aadf3145c0bed75d6ae
+    the token has since ROTATED, and both locations moved together.
+
+  JWT claims (metadata only; no token material printed):
+    iss=github ver=3
+    iat=1787440006 (2026-08-22T23:06:46Z)
+    exp=1787443606 (2026-08-23T00:06:46Z)
+    lifetime_seconds=3600
+
+  managed-auth configuration responsible for the refresh:
+    cursor.managedauthrewritescope=github.com
+    cursor.managedghconfig=true
+
+  Consequence: a run lasting beyond an hour depends on that refresh. An
+  authentication failure late in a long run is more likely token expiry
+  than a repository permission change.

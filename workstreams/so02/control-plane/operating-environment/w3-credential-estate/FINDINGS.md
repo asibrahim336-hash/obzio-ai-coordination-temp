@@ -224,14 +224,27 @@ The dispatch asked me to verify a prior lane's finding that two distinct
 GitHub credentials exist — a read-only App token for `gh`, and a separate
 `x-access-token` carrying write. **The premise is false.**
 
-| Location | Length | Prefix | SHA-256 |
-|---|---|---|---|
-| `~/.config/gh/hosts.yml` `oauth_token` | 390 | `ghs_` | `25ae6b18…d75d6ae` |
-| `~/.gitconfig` `url.insteadOf` rewrite | 390 | `ghs_` | `25ae6b18…d75d6ae` |
+| Location | Length | Prefix | SHA-256 at 22:43Z | SHA-256 at 23:10Z |
+|---|---|---|---|---|
+| `~/.config/gh/hosts.yml` `oauth_token` | 390 | `ghs_` | `25ae6b18…d75d6ae` | `9f02a6c7…f5d2b10c` |
+| `~/.gitconfig` `url.insteadOf` rewrite | 390 | `ghs_` | `25ae6b18…d75d6ae` | `9f02a6c7…f5d2b10c` |
 
-Identical. Confirmed independently by the credential scanner, which loads both
-files by separate code paths for a different purpose and reports the same
-digest.
+Identical at both samples — and the second sample is a *different token*. It
+rotated mid-run, and both locations changed together to the same new value.
+Two independently-injected credentials would not refresh in lockstep to
+identical bytes. Confirmed independently by the credential scanner, which
+loads both files by separate code paths for a different purpose and reports
+the same digest at both times.
+
+**The token is short-lived.** Its JWT claims (metadata only) give a lifetime of
+exactly 3600 seconds — issued 23:06:46Z, expiring 00:06:46Z, issuer `github`.
+Cursor's managed auth (`cursor.managedghconfig=true`) refreshes it in place.
+So the digests above are point-in-time; an acceptor re-running later will see
+different values and must not read that as a contradiction. **The durable
+claim is the invariant:** at any instant the two locations agree. That is what
+should be re-tested, and it held across a rotation. Practical corollary: if a
+git or `gh` operation fails with an authentication error late in a long run,
+check token expiry before suspecting repository permissions.
 
 The mistake is an easy one. The two configurations look nothing alike: one is
 a YAML `oauth_token`; the other is six `url.insteadOf` rules that silently
