@@ -23,6 +23,18 @@ SPEC.loader.exec_module(MODULE)
 
 REPORT_PATH = REPO_ROOT / "workstreams/po03/metrics/generation-comparison.json"
 
+# The exact commit on a8's branch this cohort's committed report was measured
+# against -- see this report's own measured_against.successor_commit_sha.
+# workstreams/po03/evidence/snapshot-coupling.json documents why the live
+# remote-tracking ref must never be used for a reproduction assertion: a8
+# keeps landing more of that branch (this pin itself already superseded an
+# earlier one, 347b0a9710596215f05e0c7b8bef062de1430add, once G2's public
+# transcript landed), so the ref itself is a moving target and "recomputed ==
+# committed" would fail as ordinary wave progress, not as a regression.
+# compute()'s successor_pin parameter exists so this test can resolve the
+# immutable commit directly instead.
+PIN_SUCCESSOR_COMMIT = "4c29dc315a597f586f07eb94f58f6905f7f0c0d4"
+
 REPORTED_SUITE = {
     "status": "REPORTED",
     "scores": {
@@ -41,9 +53,72 @@ class TestGenerationComparison(unittest.TestCase):
     def setUp(self):
         self.report = json.loads(REPORT_PATH.read_text(encoding="utf-8"))
 
-    def test_recomputation_matches_committed_report(self):
-        recomputed = MODULE.compute(REPO_ROOT)
-        self.assertEqual(recomputed, self.report)
+    def test_pin_matches_the_committed_measured_against(self):
+        """PIN_SUCCESSOR_COMMIT must actually be the commit this report
+        claims to be measured against, or the pinned reproduction below
+        would silently be checking the wrong thing."""
+        self.assertEqual(self.report["measured_against"]["successor_commit_sha"], PIN_SUCCESSOR_COMMIT)
+
+    def test_recomputation_matches_committed_report_at_the_recorded_pin(self):
+        """Never assert reproduction against the live a8 remote-tracking ref
+        (workstreams/po03/evidence/snapshot-coupling.json): a8 keeps landing
+        more of that branch, so the ref itself moves. Assert against the
+        explicit immutable commit this report was actually measured against.
+
+        The committed report was produced by a live-ref resolution (an
+        operator ran the tool with no --successor-pin, right after fetching),
+        so its measured_against.resolution_boundary reads "resolved <ref> ->
+        <sha>"; recomputing here with an explicit successor_pin instead
+        produces the semantically equivalent "pinned to explicit immutable
+        commit <sha> -> <sha>". Both resolve to the identical sha (asserted
+        explicitly below) by two different, equally valid code paths, so
+        that one descriptive string is normalised out of the exact-equality
+        check; every other field, including every score and every lift
+        verdict, must match byte-for-byte."""
+        recomputed = MODULE.compute(REPO_ROOT, successor_pin=PIN_SUCCESSOR_COMMIT)
+        self.assertEqual(
+            recomputed["measured_against"]["successor_commit_sha"],
+            self.report["measured_against"]["successor_commit_sha"],
+        )
+        recomputed_normalized = json.loads(json.dumps(recomputed))
+        committed_normalized = json.loads(json.dumps(self.report))
+        recomputed_normalized["measured_against"].pop("resolution_boundary")
+        committed_normalized["measured_against"].pop("resolution_boundary")
+        self.assertEqual(recomputed_normalized, committed_normalized)
+
+    def test_pinned_reproduction_would_catch_a_mutated_report(self):
+        """Prove the pinned assertion is not a tautology from the report's
+        side: a deliberately corrupted copy of the report must not match."""
+        recomputed = MODULE.compute(REPO_ROOT, successor_pin=PIN_SUCCESSOR_COMMIT)
+        mutated_report = json.loads(json.dumps(self.report))
+        mutated_report["overall_result"] = "PASS" if mutated_report["overall_result"] != "PASS" else "FAIL"
+        self.assertNotEqual(recomputed, mutated_report)
+
+    def test_pinned_reproduction_would_catch_a_generator_regression(self):
+        """Prove the pinned assertion is not a tautology from the
+        generator's side: a monkeypatched compare_suite() must make the
+        pinned recomputation disagree with the committed report (the report
+        has at least one REPORTED-vs-REPORTED suite comparison to disturb,
+        namely g1_vs_g0 public, as of this cohort's measurement)."""
+        original_compare_suite = MODULE.compare_suite
+        try:
+            MODULE.compare_suite = lambda later, earlier: {"value": "TAMPERED"}
+            tampered = MODULE.compute(REPO_ROOT, successor_pin=PIN_SUCCESSOR_COMMIT)
+        finally:
+            MODULE.compare_suite = original_compare_suite
+        self.assertNotEqual(tampered, self.report)
+
+    def test_pinned_reproduction_would_catch_the_wrong_pin(self):
+        """Prove the pinned assertion is not a tautology from the pin's
+        side: resolving against HEAD of the a8 branch's own root commit (a
+        different, earlier immutable commit that predates G0's transcripts)
+        must not reproduce this report."""
+        code, root_sha, _ = MODULE.run_git(REPO_ROOT, ["rev-list", "--max-parents=0", PIN_SUCCESSOR_COMMIT])
+        self.assertEqual(code, 0)
+        self.assertTrue(root_sha)
+        older = MODULE.compute(REPO_ROOT, successor_pin=root_sha)
+        self.assertNotEqual(older["measured_against"]["successor_commit_sha"], PIN_SUCCESSOR_COMMIT)
+        self.assertNotEqual(older, self.report)
 
     def test_schema_declares_the_expected_path_pattern(self):
         schema = self.report["schema"]
