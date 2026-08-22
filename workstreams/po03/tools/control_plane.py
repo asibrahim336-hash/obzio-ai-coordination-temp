@@ -138,9 +138,28 @@ def write_json(path: Path, payload: Any) -> str:
 # ---------------------------------------------------------------------------
 
 
+def normalise_path(path: str) -> str | None:
+    """Return a repository-relative path, or None if it is not expressible as one.
+
+    Anything absolute, empty, or containing a ``.`` or ``..`` segment is refused
+    outright rather than repaired, because a guard that silently rewrites a
+    traversal is a guard an attacker can steer.  Only a leading ``./`` is
+    stripped, and a leading dot in a real name such as ``.github`` is preserved.
+    """
+    candidate = path.strip().replace("\\", "/")
+    while candidate.startswith("./"):
+        candidate = candidate[2:]
+    if not candidate or candidate.startswith("/"):
+        return None
+    segments = candidate.split("/")
+    if any(segment in ("", ".", "..") for segment in segments):
+        return None
+    return candidate
+
+
 def path_in_allowlist(path: str) -> bool:
-    normalised = path.strip().lstrip("./")
-    if not normalised or ".." in normalised.split("/"):
+    normalised = normalise_path(path)
+    if normalised is None:
         return False
     if normalised.startswith(ALLOWLIST_PREFIXES):
         return True
@@ -179,9 +198,9 @@ def check_ownership(owner: str, paths: Iterable[str]) -> list[str]:
     prefixes = tuple(entry.get("owned_prefixes", []))
     violations: list[str] = []
     for path in paths:
-        normalised = path.strip().lstrip("./")
-        if not normalised.startswith(prefixes):
-            violations.append(normalised)
+        normalised = normalise_path(path)
+        if normalised is None or not normalised.startswith(prefixes):
+            violations.append(normalised if normalised is not None else path)
     return sorted(set(violations))
 
 
