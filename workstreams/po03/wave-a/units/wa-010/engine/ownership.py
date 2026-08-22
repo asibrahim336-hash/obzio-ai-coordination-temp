@@ -764,11 +764,14 @@ class OwnershipEngine:
             decisions.append(
                 Decision(
                     change=change,
-                    side="writer",
+                    side="target" if change.status != DELETE else "source",
                     path=change.path,
                     decision=DENY,
-                    reason=REASON_UNKNOWN_STATUS,
-                    detail=f"change of status {change.status!r} names no path to check",
+                    reason=REASON_MALFORMED_PATH,
+                    detail=(
+                        f"a change of status {change.status!r} must name the path it writes, "
+                        f"but the path is {change.path!r}"
+                    ),
                 )
             )
         return decisions
