@@ -76,6 +76,39 @@ class ArtifactPathTests(unittest.TestCase):
             TOOL._artifact_declared_path({"bytes": 1})
 
 
+class ProducerInputDigestTests(unittest.TestCase):
+    def test_nested_result_observation_is_supported(self):
+        digest = "a" * 64
+        self.assertEqual(
+            TOOL._producer_input_sha(
+                {},
+                {"immutable_input": {"observed_sha256": digest}},
+            ),
+            digest,
+        )
+
+    def test_matching_claims_across_documents_are_supported(self):
+        digest = "b" * 64
+        self.assertEqual(
+            TOOL._producer_input_sha(
+                {"immutable_input_manifest_sha256": digest},
+                {"immutable_input": {"sha256": digest}},
+            ),
+            digest,
+        )
+
+    def test_divergent_claims_are_refused(self):
+        with self.assertRaisesRegex(ValueError, "divergent immutable inputs"):
+            TOOL._producer_input_sha(
+                {"immutable_input_manifest_sha256": "c" * 64},
+                {"immutable_input": {"observed_sha256": "d" * 64}},
+            )
+
+    def test_missing_digest_is_refused(self):
+        with self.assertRaisesRegex(ValueError, "lacks an immutable input digest"):
+            TOOL._producer_input_sha({}, {})
+
+
 class AttemptProjectionTests(unittest.TestCase):
     def test_a01_uses_canonical_input_and_outbox(self):
         attempt = {"attempt_id": "PO03-WA-009-A01"}

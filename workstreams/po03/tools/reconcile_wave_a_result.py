@@ -147,6 +147,30 @@ def _validate_producer_attempt(
                 )
 
 
+def _producer_input_sha(ready: dict[str, Any], producer_result: dict[str, Any]) -> str:
+    claims: list[str] = []
+    for document in (ready, producer_result):
+        direct = document.get("immutable_input_manifest_sha256")
+        if direct is not None:
+            claims.append(direct)
+        nested = document.get("immutable_input")
+        if isinstance(nested, dict):
+            nested_sha = nested.get("observed_sha256", nested.get("sha256"))
+            if nested_sha is not None:
+                claims.append(nested_sha)
+    if not claims:
+        raise ValueError("producer return lacks an immutable input digest")
+    if any(
+        not isinstance(claim, str)
+        or not re.fullmatch(r"[0-9a-f]{64}", claim)
+        for claim in claims
+    ):
+        raise ValueError("producer return has a malformed immutable input digest")
+    if len(set(claims)) != 1:
+        raise ValueError("producer documents reference divergent immutable inputs")
+    return claims[0]
+
+
 def _require_ancestor(ancestor: str, descendant: str, label: str) -> None:
     try:
         _git("merge-base", "--is-ancestor", ancestor, descendant)
@@ -362,7 +386,7 @@ def main() -> int:
     if _sha(input_bytes) != control_result["immutable_input_manifest_sha256"]:
         raise ValueError("active immutable input digest mismatch")
     if (
-        ready.get("immutable_input_manifest_sha256")
+        _producer_input_sha(ready, producer_result)
         != control_result["immutable_input_manifest_sha256"]
     ):
         raise ValueError("producer return references a stale immutable input")
