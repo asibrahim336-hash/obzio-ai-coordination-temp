@@ -1,0 +1,53 @@
+{
+  "assertions": {
+    "atomic_durable_results_survive_and_verify": true,
+    "ephemeral_provider_completion_has_no_durable_result": true,
+    "lock_preserves_all_checkpoint_writes": true,
+    "stale_snapshot_rebind_loses_checkpoint_writes": true
+  },
+  "cases": {
+    "checkpoint_locked_control": {
+      "expected_writes": 240,
+      "lossy_trials": 0,
+      "lost_writes": 0,
+      "protected": true,
+      "retained_writes": 240,
+      "trials": 30,
+      "workers_per_trial": 8
+    },
+    "checkpoint_stale_snapshot_rebind": {
+      "expected_writes": 240,
+      "lossy_trials": 30,
+      "lost_writes": 210,
+      "protected": false,
+      "retained_writes": 30,
+      "trials": 30,
+      "workers_per_trial": 8
+    },
+    "process_exit_atomic_file": {
+      "durable_readbacks": 12,
+      "false_green_if_receipt_were_sufficient": 0,
+      "hash_verified_readbacks": 12,
+      "mode": "durable",
+      "provider_completed_receipts": 12,
+      "trials": 12
+    },
+    "process_exit_memory_only": {
+      "durable_readbacks": 0,
+      "false_green_if_receipt_were_sufficient": 12,
+      "hash_verified_readbacks": 0,
+      "mode": "ephemeral",
+      "provider_completed_receipts": 12,
+      "trials": 12
+    }
+  },
+  "command": "PYTHONDONTWRITEBYTECODE=1 python3 workstreams/po03/attempts/wave-a/wave-a-022-agent-recovery-postmortems/reproduce.py",
+  "environment": {
+    "implementation": "CPython",
+    "platform": "Linux",
+    "python": "3.12.3"
+  },
+  "fixture": "agent-result-loss-v1",
+  "outcome": "PASS",
+  "schema_version": "1.0"
+}

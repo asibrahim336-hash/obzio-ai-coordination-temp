@@ -1,0 +1,43 @@
+name: PO-03 result custody and compounding contracts
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "po03/**"
+
+permissions:
+  contents: read
+
+jobs:
+  path-scope:
+    if: github.event_name == 'push' || startsWith(github.head_ref, 'po03/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Prove deliberate scope-escape fixture is rejected
+        run: python workstreams/po03/tools/check_path_scope.py --base HEAD --head HEAD --fixture
+      - name: Reject changed paths outside the PO-03 allowlist
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: python workstreams/po03/tools/check_path_scope.py --base "$BASE_SHA" --head "$HEAD_SHA"
+  contracts:
+    if: github.event_name == 'push' || startsWith(github.head_ref, 'po03/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Enforce the immutable PO-03 path boundary
+        run: python -I workstreams/po03/tools/check_path_scope.py
+      - name: Run dependency-free contract tests
+        run: python -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v

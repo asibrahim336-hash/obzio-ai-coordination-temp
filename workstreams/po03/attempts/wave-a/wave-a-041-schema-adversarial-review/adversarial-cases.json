@@ -1,0 +1,1327 @@
+{
+  "cases_version": "PO03-WAVE-A-041-ADVERSARIAL-CASES-v1",
+  "task_id": "wave-a-041-schema-adversarial-review",
+  "frozen_criteria_sha256": "22aefd3eed804bf635a39f1eaae07e638a986462400ab1c43cd293fb2792ad39",
+  "target": {
+    "gate": "workstreams/po03/tools/validate_contracts.py::validate_result",
+    "gate_sha256": "3c2ebd7f06b0230c35355ae0b569283e8dbf90ed87127dedddb7d389b1c62bc7",
+    "schema": "workstreams/po03/contracts/transactional-result.schema.json",
+    "schema_sha256": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1"
+  },
+  "notes": [
+    "Every document below is a complete, self-contained fixture. Nothing is generated at run time.",
+    "predicted_* fields are the reviewer's pre-execution prediction, frozen with the fixtures so that misprediction is itself recorded evidence.",
+    "The reviewer verified that no executable in the repository loads the JSON Schema: it is only hashed by transactional_factory.py and seed_wave_a.py, and CI runs 'python -I -m unittest' with no jsonschema dependency. Schema-only constraints are therefore unenforced in the mandated clean runtime."
+  ],
+  "cases": [
+    {
+      "case_id": "C00-honest-control",
+      "family": "control",
+      "title": "Honest fully-evidenced completion",
+      "attack": "No attack. Establishes that the harness accepts a well-formed document, so later acceptances are not harness artifacts.",
+      "durability_obligation_violated": null,
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "predicted_classification": "CONTROL_ACCEPT",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-control",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "COMPLETED",
+          "attempt": {
+            "attempt_id": "wave-a-041-control-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-control:attempt-1",
+            "lease_id": "lease-wave-a-041-control-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-control-run",
+            "worker_id": "producer-1",
+            "heartbeat_at": "2026-08-22T06:00:00Z",
+            "checkpoint_seq": 4
+          },
+          "result_transaction": {
+            "result_txn_id": "result-wave-a-041-control-1",
+            "state": "INGESTED",
+            "manifest_uri": "git:po03/wave-a-041-control@cafebabe:manifest.json",
+            "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "artifact_count": 1,
+            "total_bytes": 128,
+            "committed_at": "2026-08-22T06:01:00Z",
+            "verified_at": "2026-08-22T06:02:00Z",
+            "parent_ingested_at": "2026-08-22T06:03:00Z",
+            "result_commit_id": "cafebabecafebabecafebabecafebabecafebabe"
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/wave-a-041-control@cafebabe:result.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 128,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T06:02:30Z"
+            }
+          ],
+          "completion_actor": "coordinator",
+          "independent_acceptance": {
+            "state": "ACCEPTED",
+            "reviewer_id": "reviewer-2",
+            "receipt_uri": "git:po03/review@deadbeef:receipt.json"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C01-custody-skip-snapshot",
+      "family": "F1",
+      "title": "CREATED to COMPLETED in a single snapshot with no custody history",
+      "attack": "The gate validates one isolated document. It never sees a predecessor, so the mandated ten-step custody chain need never have occurred. checkpoint_seq stays 0, meaning no checkpoint was ever written, yet the document claims full ingestion and completion.",
+      "durability_obligation_violated": "COMMISSION.md line 117 mandates the ordered chain CREATED -> ... -> COMPLETED and line 133 mandates monotonic checkpoints. Neither is enforceable from a single document.",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-c01",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "COMPLETED",
+          "attempt": {
+            "attempt_id": "wave-a-041-c01-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-c01:attempt-1",
+            "lease_id": "lease-c01-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-c01-run",
+            "worker_id": "producer-1",
+            "heartbeat_at": null,
+            "checkpoint_seq": 0
+          },
+          "result_transaction": {
+            "result_txn_id": "result-c01-1",
+            "state": "INGESTED",
+            "manifest_uri": "git:po03/c01@1:manifest.json",
+            "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "artifact_count": 1,
+            "total_bytes": 1,
+            "committed_at": "2026-08-22T06:01:00Z",
+            "verified_at": "2026-08-22T06:01:00Z",
+            "parent_ingested_at": "2026-08-22T06:01:00Z",
+            "result_commit_id": "1111111111111111111111111111111111111111"
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/c01@1:result.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T06:01:00Z"
+            }
+          ],
+          "completion_actor": "coordinator",
+          "independent_acceptance": {
+            "state": "NOT_TESTED",
+            "reviewer_id": null,
+            "receipt_uri": null
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C02-recovery-required-ingested-wildcard",
+      "family": "F1",
+      "title": "Transaction claims INGESTED with zero commit evidence via the RECOVERY_REQUIRED wildcard",
+      "attack": "EXPECTED_TRANSACTION_STATES maps RECOVERY_REQUIRED to every transaction state including COMMITTED and INGESTED, while RECOVERY_REQUIRED is absent from TERMINAL_RESULT_STATES so no post-commit evidence is demanded, and absent from uncommitted_states so artifacts may be exposed. The document therefore asserts a fully ingested result transaction with result_commit_id null, every custody timestamp null, and an artifact with no read-back.",
+      "durability_obligation_violated": "COMMISSION.md lines 123-129 require hashes, a durable commit and independent read-back before any committed custody claim. A consumer keyed on result_transaction.state sees INGESTED with no evidence at all.",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-c02",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "UNKNOWN",
+          "obzio_state": "RECOVERY_REQUIRED",
+          "attempt": {
+            "attempt_id": "wave-a-041-c02-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-c02:attempt-1",
+            "lease_id": "lease-c02-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-c02-run",
+            "worker_id": "producer-1",
+            "heartbeat_at": null,
+            "checkpoint_seq": 0
+          },
+          "result_transaction": {
+            "result_txn_id": "result-c02-1",
+            "state": "INGESTED",
+            "manifest_uri": null,
+            "manifest_sha256": null,
+            "artifact_count": 1,
+            "total_bytes": 1,
+            "committed_at": null,
+            "verified_at": null,
+            "parent_ingested_at": null,
+            "result_commit_id": null
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/c02@none:result.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": null
+            }
+          ],
+          "completion_actor": null,
+          "independent_acceptance": {
+            "state": "NOT_TESTED",
+            "reviewer_id": null,
+            "receipt_uri": null
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C03-failed-terminal-committed-wildcard",
+      "family": "F1",
+      "title": "FAILED_TERMINAL carries a COMMITTED transaction with no commit identity",
+      "attack": "FAILED_TERMINAL accepts every transaction state and skips the post-commit evidence block, so a failed unit may still publish a COMMITTED transaction and artifacts with no commit id, no manifest and no read-back. A recovery scanner that trusts result_transaction.state would treat the result as already committed and skip replay.",
+      "durability_obligation_violated": "COMMISSION.md line 135 requires 100 percent recovery of committed results and automatic rerun of uncommitted ones. This document is indistinguishable to a state-keyed scanner from a genuinely committed result.",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-c03",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "FAILED",
+          "obzio_state": "FAILED_TERMINAL",
+          "attempt": {
+            "attempt_id": "wave-a-041-c03-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-c03:attempt-1",
+            "lease_id": "lease-c03-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-c03-run",
+            "worker_id": "producer-1",
+            "heartbeat_at": null,
+            "checkpoint_seq": 2
+          },
+          "result_transaction": {
+            "result_txn_id": "result-c03-1",
+            "state": "COMMITTED",
+            "manifest_uri": null,
+            "manifest_sha256": null,
+            "artifact_count": 1,
+            "total_bytes": 1,
+            "committed_at": null,
+            "verified_at": null,
+            "parent_ingested_at": null,
+            "result_commit_id": null
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "partial.json",
+              "content_uri": "git:po03/c03@none:partial.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": null
+            }
+          ],
+          "completion_actor": null,
+          "independent_acceptance": {
+            "state": "NOT_TESTED",
+            "reviewer_id": null,
+            "receipt_uri": null
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C04-negated-readback-and-nonexistent-commit",
+      "family": "F2",
+      "title": "COMPLETED where every durable-evidence field is free text that denies itself",
+      "attack": "The post-commit block only tests non-emptiness. result_commit_id is the literal string NOT_A_COMMIT, manifest_uri is about:blank, the artifact points at urn:absent and its read-back attestation is the literal string NEVER_VERIFIED. Every mandated evidence obligation is satisfied by text that asserts the opposite of the obligation.",
+      "durability_obligation_violated": "COMMISSION.md lines 125-127 require a real result commit on a deterministic po03/* branch and read-back of every artifact by immutable SHA. Both are satisfied here by self-negating strings.",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-c04",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "COMPLETED",
+          "attempt": {
+            "attempt_id": "wave-a-041-c04-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-c04:attempt-1",
+            "lease_id": "lease-c04-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-c04-run",
+            "worker_id": "producer-1",
+            "heartbeat_at": null,
+            "checkpoint_seq": 0
+          },
+          "result_transaction": {
+            "result_txn_id": "result-c04-1",
+            "state": "INGESTED",
+            "manifest_uri": "about:blank",
+            "manifest_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+            "artifact_count": 1,
+            "total_bytes": 1,
+            "committed_at": "NOT_COMMITTED",
+            "verified_at": "NOT_VERIFIED",
+            "parent_ingested_at": "NOT_INGESTED",
+            "result_commit_id": "NOT_A_COMMIT"
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "urn:absent",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": "NEVER_VERIFIED"
+            }
+          ],
+          "completion_actor": "coordinator",
+          "independent_acceptance": {
+            "state": "NOT_TESTED",
+            "reviewer_id": null,
+            "receipt_uri": null
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C05-causally-impossible-custody-order",
+      "family": "F2",
+      "title": "Read-back and verification precede the commit they attest to",
+      "attack": "No timestamp field is parsed or ordered. The document attests that the result was read back and verified in 1970, ingested by the parent before it was committed, and committed after it was ingested. The mandated causal order of commit, read-back, ingestion is inverted while remaining accepted.",
+      "durability_obligation_violated": "COMMISSION.md lines 125-129 impose an order: commit, then independent read-back, then parent ingestion. The contract carries the timestamps but enforces no ordering, so an inverted custody history validates.",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-c05",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "COMPLETED",
+          "attempt": {
+            "attempt_id": "wave-a-041-c05-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-c05:attempt-1",
+            "lease_id": "lease-c05-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-c05-run",
+            "worker_id": "producer-1",
+            "heartbeat_at": "not a timestamp",
+            "checkpoint_seq": 0
+          },
+          "result_transaction": {
+            "result_txn_id": "result-c05-1",
+            "state": "INGESTED",
+            "manifest_uri": "git:po03/c05@2:manifest.json",
+            "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "artifact_count": 1,
+            "total_bytes": 1,
+            "committed_at": "2026-08-22T09:00:00Z",
+            "verified_at": "1970-01-01T00:00:00Z",
+            "parent_ingested_at": "yesterday",
+            "result_commit_id": "2222222222222222222222222222222222222222"
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/c05@2:result.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": "1969-07-20T20:17:00Z"
+            }
+          ],
+          "completion_actor": "coordinator",
+          "independent_acceptance": {
+            "state": "NOT_TESTED",
+            "reviewer_id": null,
+            "receipt_uri": null
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C06-manifest-covers-nothing",
+      "family": "F3",
+      "title": "Manifest digest is bound to no artifact and no artifact is the manifest",
+      "attack": "The manifest is required to exist but never required to be an artifact, to be read back, or to cover the artifact set. manifest_sha256 here matches nothing in the document and no artifact carries the manifest. The complete-manifest obligation is discharged by an unbound digest.",
+      "durability_obligation_violated": "COMMISSION.md line 124 requires a complete artifact manifest and line 135 requires complete hash coverage. The manifest is unverifiable from the document and is itself outside the read-back set.",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-c06",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "RESULT_COMMITTED",
+          "attempt": {
+            "attempt_id": "wave-a-041-c06-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-c06:attempt-1",
+            "lease_id": "lease-c06-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-c06-run",
+            "worker_id": "producer-1",
+            "heartbeat_at": null,
+            "checkpoint_seq": 1
+          },
+          "result_transaction": {
+            "result_txn_id": "result-c06-1",
+            "state": "COMMITTED",
+            "manifest_uri": "git:po03/c06@3:manifest.json",
+            "manifest_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "artifact_count": 1,
+            "total_bytes": 1,
+            "committed_at": "2026-08-22T06:01:00Z",
+            "verified_at": "2026-08-22T06:02:00Z",
+            "parent_ingested_at": null,
+            "result_commit_id": "3333333333333333333333333333333333333333"
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/c06@3:result.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T06:02:00Z"
+            }
+          ],
+          "completion_actor": null,
+          "independent_acceptance": {
+            "state": "NOT_TESTED",
+            "reviewer_id": null,
+            "receipt_uri": null
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C07-logical-name-collision",
+      "family": "F3",
+      "title": "Two different artifacts published under one logical name",
+      "attack": "artifact_id uniqueness is enforced but logical_name uniqueness is not. Two artifacts both called result.json carry different digests, so any consumer that resolves evidence by logical name gets a nondeterministic answer and a producer can shadow the real result with a substitute.",
+      "durability_obligation_violated": "COMMISSION.md line 124 requires a complete manifest and line 135 requires complete hash coverage; ambiguous logical names make the covered evidence undecidable.",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-c07",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "RESULT_COMMITTED",
+          "attempt": {
+            "attempt_id": "wave-a-041-c07-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-c07:attempt-1",
+            "lease_id": "lease-c07-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-c07-run",
+            "worker_id": "producer-1",
+            "heartbeat_at": null,
+            "checkpoint_seq": 1
+          },
+          "result_transaction": {
+            "result_txn_id": "result-c07-1",
+            "state": "COMMITTED",
+            "manifest_uri": "git:po03/c07@4:manifest.json",
+            "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "artifact_count": 2,
+            "total_bytes": 2,
+            "committed_at": "2026-08-22T06:01:00Z",
+            "verified_at": "2026-08-22T06:02:00Z",
+            "parent_ingested_at": null,
+            "result_commit_id": "4444444444444444444444444444444444444444"
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/c07@4:result.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T06:02:00Z"
+            },
+            {
+              "artifact_id": "artifact-2",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/c07@4:decoy.json",
+              "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T06:02:00Z"
+            }
+          ],
+          "completion_actor": null,
+          "independent_acceptance": {
+            "state": "NOT_TESTED",
+            "reviewer_id": null,
+            "receipt_uri": null
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C08-self-accept-trailing-whitespace-alias",
+      "family": "F4",
+      "title": "Producer self-accepts as itself plus a trailing space",
+      "attack": "The self-acceptance guard is a single exact string comparison, reviewer_id == worker_id. The non-emptiness helper strips whitespace but the comparison does not, so worker_id producer-1 and reviewer_id 'producer-1 ' are the same principal to every human and different strings to the guard. The producer reaches ACCEPTED on its own work.",
+      "durability_obligation_violated": "COMMISSION.md lines 130-131 reserve acceptance for a different producer, and the acceptance contract forbids self-acceptance outright.",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-c08",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "COMPLETED",
+          "attempt": {
+            "attempt_id": "wave-a-041-c08-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-c08:attempt-1",
+            "lease_id": "lease-c08-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-c08-run",
+            "worker_id": "producer-1",
+            "heartbeat_at": null,
+            "checkpoint_seq": 4
+          },
+          "result_transaction": {
+            "result_txn_id": "result-c08-1",
+            "state": "INGESTED",
+            "manifest_uri": "git:po03/c08@5:manifest.json",
+            "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "artifact_count": 1,
+            "total_bytes": 1,
+            "committed_at": "2026-08-22T06:01:00Z",
+            "verified_at": "2026-08-22T06:02:00Z",
+            "parent_ingested_at": "2026-08-22T06:03:00Z",
+            "result_commit_id": "5555555555555555555555555555555555555555"
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/c08@5:result.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T06:02:00Z"
+            }
+          ],
+          "completion_actor": "coordinator",
+          "independent_acceptance": {
+            "state": "ACCEPTED",
+            "reviewer_id": "producer-1 ",
+            "receipt_uri": "git:po03/c08@5:self-receipt.json"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C09-self-accept-zero-width-alias",
+      "family": "F4",
+      "title": "Producer self-accepts using an invisible zero-width space",
+      "attack": "U+200B is not whitespace to Python's str.strip, so 'producer-1\\u200b' passes the non-emptiness check, is visually identical to the producer id in every log and review interface, and defeats the exact-match self-acceptance guard.",
+      "durability_obligation_violated": "COMMISSION.md lines 130-131. This variant is the hardest for a human reviewer to detect because the alias is invisible when rendered.",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-c09",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "COMPLETED",
+          "attempt": {
+            "attempt_id": "wave-a-041-c09-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-c09:attempt-1",
+            "lease_id": "lease-c09-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-c09-run",
+            "worker_id": "producer-1",
+            "heartbeat_at": null,
+            "checkpoint_seq": 4
+          },
+          "result_transaction": {
+            "result_txn_id": "result-c09-1",
+            "state": "INGESTED",
+            "manifest_uri": "git:po03/c09@6:manifest.json",
+            "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "artifact_count": 1,
+            "total_bytes": 1,
+            "committed_at": "2026-08-22T06:01:00Z",
+            "verified_at": "2026-08-22T06:02:00Z",
+            "parent_ingested_at": "2026-08-22T06:03:00Z",
+            "result_commit_id": "6666666666666666666666666666666666666666"
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/c09@6:result.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T06:02:00Z"
+            }
+          ],
+          "completion_actor": "coordinator",
+          "independent_acceptance": {
+            "state": "ACCEPTED",
+            "reviewer_id": "producer-1\u200b",
+            "receipt_uri": "git:po03/c09@6:self-receipt.json"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C10-self-accept-unicode-normalisation-alias",
+      "family": "F4",
+      "title": "Producer self-accepts via canonically equivalent Unicode",
+      "attack": "worker_id uses the precomposed character U+00E9 while reviewer_id uses 'e' followed by combining acute U+0301. The two ids are canonically equivalent under NFC and render identically, but compare unequal, so the self-acceptance guard passes.",
+      "durability_obligation_violated": "COMMISSION.md lines 130-131.",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-c10",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "COMPLETED",
+          "attempt": {
+            "attempt_id": "wave-a-041-c10-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-c10:attempt-1",
+            "lease_id": "lease-c10-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-c10-run",
+            "worker_id": "produc\u00e9r-1",
+            "heartbeat_at": null,
+            "checkpoint_seq": 4
+          },
+          "result_transaction": {
+            "result_txn_id": "result-c10-1",
+            "state": "INGESTED",
+            "manifest_uri": "git:po03/c10@7:manifest.json",
+            "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "artifact_count": 1,
+            "total_bytes": 1,
+            "committed_at": "2026-08-22T06:01:00Z",
+            "verified_at": "2026-08-22T06:02:00Z",
+            "parent_ingested_at": "2026-08-22T06:03:00Z",
+            "result_commit_id": "7777777777777777777777777777777777777777"
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/c10@7:result.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T06:02:00Z"
+            }
+          ],
+          "completion_actor": "coordinator",
+          "independent_acceptance": {
+            "state": "ACCEPTED",
+            "reviewer_id": "produce\u0301r-1",
+            "receipt_uri": "git:po03/c10@7:self-receipt.json"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C11-producer-occupies-coordinator-identity",
+      "family": "F4",
+      "title": "The producing worker is itself named coordinator",
+      "attack": "COMPLETED requires completion_actor to be the literal string coordinator, but nothing binds completion_actor to a principal distinct from attempt.worker_id. A worker registered as coordinator satisfies the coordinator-only completion rule about its own work, and the self-acceptance guard does not inspect completion_actor at all.",
+      "durability_obligation_violated": "COMMISSION.md line 130 reserves COMPLETED for the coordinator as an institutional function distinct from the producer. The contract enforces a name, not a separation of duties.",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-c11",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "COMPLETED",
+          "attempt": {
+            "attempt_id": "wave-a-041-c11-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-c11:attempt-1",
+            "lease_id": "lease-c11-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-c11-run",
+            "worker_id": "coordinator",
+            "heartbeat_at": null,
+            "checkpoint_seq": 4
+          },
+          "result_transaction": {
+            "result_txn_id": "result-c11-1",
+            "state": "INGESTED",
+            "manifest_uri": "git:po03/c11@8:manifest.json",
+            "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "artifact_count": 1,
+            "total_bytes": 1,
+            "committed_at": "2026-08-22T06:01:00Z",
+            "verified_at": "2026-08-22T06:02:00Z",
+            "parent_ingested_at": "2026-08-22T06:03:00Z",
+            "result_commit_id": "8888888888888888888888888888888888888888"
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/c11@8:result.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T06:02:00Z"
+            }
+          ],
+          "completion_actor": "coordinator",
+          "independent_acceptance": {
+            "state": "NOT_TESTED",
+            "reviewer_id": null,
+            "receipt_uri": null
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C12-stale-fence-commits-after-transfer",
+      "family": "F5",
+      "title": "A superseded lease commits a different result after ownership transfer",
+      "attack": "Two documents for the same task_id are each accepted in isolation. The first is the current owner at fence_token 2; the second is the evicted worker at fence_token 1 committing a different result_commit_id afterwards. The contract requires only fence_token >= 1 and carries no notion of the highest observed fence, so the stale writer's completion is as valid as the owner's.",
+      "durability_obligation_violated": "COMMISSION.md line 133 requires that an expired or stale worker must not commit after ownership transfers, using leases and fencing.",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-c12",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "RESULT_COMMITTED",
+          "attempt": {
+            "attempt_id": "wave-a-041-c12-attempt-2",
+            "idempotency_key": "COM-PO03:wave-a-041-c12:attempt-2",
+            "lease_id": "lease-c12-2",
+            "fence_token": 2,
+            "provider_run_id": "bc-c12-run-2",
+            "worker_id": "producer-current",
+            "heartbeat_at": "2026-08-22T07:00:00Z",
+            "checkpoint_seq": 3
+          },
+          "result_transaction": {
+            "result_txn_id": "result-c12-2",
+            "state": "COMMITTED",
+            "manifest_uri": "git:po03/c12@aa:manifest.json",
+            "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "artifact_count": 1,
+            "total_bytes": 1,
+            "committed_at": "2026-08-22T07:05:00Z",
+            "verified_at": "2026-08-22T07:06:00Z",
+            "parent_ingested_at": null,
+            "result_commit_id": "aaaa000000000000000000000000000000000000"
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/c12@aa:result.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T07:06:00Z"
+            }
+          ],
+          "completion_actor": null,
+          "independent_acceptance": {
+            "state": "NOT_TESTED",
+            "reviewer_id": null,
+            "receipt_uri": null
+          }
+        },
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-c12",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "RESULT_COMMITTED",
+          "attempt": {
+            "attempt_id": "wave-a-041-c12-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-c12:attempt-1",
+            "lease_id": "lease-c12-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-c12-run-1",
+            "worker_id": "producer-evicted",
+            "heartbeat_at": "2026-08-22T06:30:00Z",
+            "checkpoint_seq": 1
+          },
+          "result_transaction": {
+            "result_txn_id": "result-c12-1",
+            "state": "COMMITTED",
+            "manifest_uri": "git:po03/c12@bb:manifest.json",
+            "manifest_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "artifact_count": 1,
+            "total_bytes": 1,
+            "committed_at": "2026-08-22T07:20:00Z",
+            "verified_at": "2026-08-22T07:21:00Z",
+            "parent_ingested_at": null,
+            "result_commit_id": "bbbb000000000000000000000000000000000000"
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/c12@bb:result.json",
+              "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T07:21:00Z"
+            }
+          ],
+          "completion_actor": null,
+          "independent_acceptance": {
+            "state": "NOT_TESTED",
+            "reviewer_id": null,
+            "receipt_uri": null
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C13-cross-task-idempotency-key",
+      "family": "F5",
+      "title": "Attempt identity contradicts the document it is attached to",
+      "attack": "The idempotency key names a different task and a different attempt number than the document's own task_id, attempt_id and lease. Nothing cross-checks these fields, so a replayed or misrouted callback can be committed under another task's idempotency key, defeating duplicate suppression and making replay non-idempotent.",
+      "durability_obligation_violated": "COMMISSION.md lines 121 and 133 require idempotency keys, harmless duplicate callbacks and replayable lost callbacks. An unbound key cannot deduplicate.",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-c13",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "RESULT_COMMITTED",
+          "attempt": {
+            "attempt_id": "wave-a-041-c13-attempt-1",
+            "idempotency_key": "COM-PO03:some-entirely-different-task:attempt-97",
+            "lease_id": "lease-c13-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-c13-run",
+            "worker_id": "producer-1",
+            "heartbeat_at": null,
+            "checkpoint_seq": 1
+          },
+          "result_transaction": {
+            "result_txn_id": "result-c13-1",
+            "state": "COMMITTED",
+            "manifest_uri": "git:po03/c13@9:manifest.json",
+            "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "artifact_count": 1,
+            "total_bytes": 1,
+            "committed_at": "2026-08-22T06:01:00Z",
+            "verified_at": "2026-08-22T06:02:00Z",
+            "parent_ingested_at": null,
+            "result_commit_id": "9999999999999999999999999999999999999999"
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/c13@9:result.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T06:02:00Z"
+            }
+          ],
+          "completion_actor": null,
+          "independent_acceptance": {
+            "state": "NOT_TESTED",
+            "reviewer_id": null,
+            "receipt_uri": null
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C14-acceptance-receipt-inside-producer-custody",
+      "family": "F6",
+      "title": "Acceptance receipt lives in the producer's own owned subtree",
+      "attack": "Terminal acceptance requires a reviewer_id and a receipt_uri but never requires the receipt to sit outside the producer's write scope, to be an artifact, or to be read back. The producer writes its own acceptance receipt into its own result slot and signs it with any name other than its own.",
+      "durability_obligation_violated": "COMMISSION.md line 131 requires a different producer to accept or reject. Custody of the acceptance evidence stays with the producer.",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-c14",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "COMPLETED",
+          "attempt": {
+            "attempt_id": "wave-a-041-c14-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-c14:attempt-1",
+            "lease_id": "lease-c14-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-c14-run",
+            "worker_id": "producer-1",
+            "heartbeat_at": null,
+            "checkpoint_seq": 4
+          },
+          "result_transaction": {
+            "result_txn_id": "result-c14-1",
+            "state": "INGESTED",
+            "manifest_uri": "git:po03/c14@ab:manifest.json",
+            "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "artifact_count": 1,
+            "total_bytes": 1,
+            "committed_at": "2026-08-22T06:01:00Z",
+            "verified_at": "2026-08-22T06:02:00Z",
+            "parent_ingested_at": "2026-08-22T06:03:00Z",
+            "result_commit_id": "abab000000000000000000000000000000000000"
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/c14@ab:result.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T06:02:00Z"
+            }
+          ],
+          "completion_actor": "coordinator",
+          "independent_acceptance": {
+            "state": "ACCEPTED",
+            "reviewer_id": "producer-1-reviewer-persona",
+            "receipt_uri": "git:po03/wave-a-041-c14@ab:workstreams/po03/attempts/wave-a/wave-a-041-c14/self-receipt.json"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "C15-unknown-property-injection",
+      "family": "F2",
+      "title": "Undeclared top-level keys survive the enforced gate",
+      "attack": "The JSON Schema sets additionalProperties false, but no executable in the repository ever loads the schema and the gate never checks for unknown keys. A document can therefore carry override fields that downstream tooling may read while the enforced gate reports the document valid.",
+      "durability_obligation_violated": "COMMISSION.md line 113 designates the schema and validator as active controls. The unknown-key prohibition exists only in the unexecuted document.",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "INVALID",
+      "predicted_classification": "EXPLOIT_GATE_ONLY",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-c15",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "PROVIDER_COMPLETED_UNCOMMITTED",
+          "attempt": {
+            "attempt_id": "wave-a-041-c15-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-c15:attempt-1",
+            "lease_id": "lease-c15-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-c15-run",
+            "worker_id": "producer-1",
+            "heartbeat_at": null,
+            "checkpoint_seq": 0
+          },
+          "result_transaction": {
+            "result_txn_id": "result-c15-1",
+            "state": "RESERVED",
+            "manifest_uri": null,
+            "manifest_sha256": null,
+            "artifact_count": 0,
+            "total_bytes": 0,
+            "committed_at": null,
+            "verified_at": null,
+            "parent_ingested_at": null,
+            "result_commit_id": null
+          },
+          "artifacts": [],
+          "completion_actor": null,
+          "independent_acceptance": {
+            "state": "NOT_TESTED",
+            "reviewer_id": null,
+            "receipt_uri": null
+          },
+          "obzio_state_override": "COMPLETED",
+          "accepted": true
+        }
+      ]
+    },
+    {
+      "case_id": "U01-staged-provider-loss-unrepresentable",
+      "family": "F1",
+      "title": "Truthful provider loss after staging cannot be expressed",
+      "attack": "Not an exploit attempt. This is the truthful state of a run whose provider completed after artifacts were staged but before any commit. The mandated obzio_state is PROVIDER_COMPLETED_UNCOMMITTED, but EXPECTED_TRANSACTION_STATES restricts that state to a RESERVED transaction, so the truthful STAGED transaction is rejected. The producer must either discard the staging evidence by reporting RESERVED or misreport provider_state.",
+      "durability_obligation_violated": "COMMISSION.md line 119 requires exactly this state to be representable. An unrepresentable truthful state pressures producers toward misreporting, which is a durability risk in the opposite direction from the exploits above.",
+      "predicted_gate": "REJECT",
+      "predicted_schema": "VALID",
+      "predicted_classification": "UNREPRESENTABLE",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-u01",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "PROVIDER_COMPLETED_UNCOMMITTED",
+          "attempt": {
+            "attempt_id": "wave-a-041-u01-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-u01:attempt-1",
+            "lease_id": "lease-u01-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-u01-run",
+            "worker_id": "producer-1",
+            "heartbeat_at": "2026-08-22T06:10:00Z",
+            "checkpoint_seq": 2
+          },
+          "result_transaction": {
+            "result_txn_id": "result-u01-1",
+            "state": "STAGED",
+            "manifest_uri": "git:po03/u01@staged:manifest.json",
+            "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "artifact_count": 1,
+            "total_bytes": 1,
+            "committed_at": null,
+            "verified_at": null,
+            "parent_ingested_at": null,
+            "result_commit_id": null
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "staged-result.json",
+              "content_uri": "file:staging/result.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": null
+            }
+          ],
+          "completion_actor": null,
+          "independent_acceptance": {
+            "state": "NOT_TESTED",
+            "reviewer_id": null,
+            "receipt_uri": null
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "U02-zero-byte-artifact-unrepresentable",
+      "family": "F3",
+      "title": "A legitimately empty durable artifact cannot be manifested",
+      "attack": "Not an exploit attempt. artifacts[].bytes has minimum 1 in both the schema and the gate, so a genuinely empty committed file, such as an empty log or an empty rejection list, cannot be declared. The producer must omit it from the manifest or overstate its size.",
+      "durability_obligation_violated": "COMMISSION.md line 135 requires complete hash coverage. A field that cannot represent zero bytes forces incomplete manifests.",
+      "predicted_gate": "REJECT",
+      "predicted_schema": "INVALID",
+      "predicted_classification": "UNREPRESENTABLE",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-u02",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "RESULT_COMMITTED",
+          "attempt": {
+            "attempt_id": "wave-a-041-u02-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-u02:attempt-1",
+            "lease_id": "lease-u02-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-u02-run",
+            "worker_id": "producer-1",
+            "heartbeat_at": null,
+            "checkpoint_seq": 1
+          },
+          "result_transaction": {
+            "result_txn_id": "result-u02-1",
+            "state": "COMMITTED",
+            "manifest_uri": "git:po03/u02@ac:manifest.json",
+            "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "artifact_count": 1,
+            "total_bytes": 0,
+            "committed_at": "2026-08-22T06:01:00Z",
+            "verified_at": "2026-08-22T06:02:00Z",
+            "parent_ingested_at": null,
+            "result_commit_id": "acac000000000000000000000000000000000000"
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "empty.log",
+              "content_uri": "git:po03/u02@ac:empty.log",
+              "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "bytes": 0,
+              "media_type": "text/plain",
+              "readback_verified_at": "2026-08-22T06:02:00Z"
+            }
+          ],
+          "completion_actor": null,
+          "independent_acceptance": {
+            "state": "NOT_TESTED",
+            "reviewer_id": null,
+            "receipt_uri": null
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "B01-completed-without-commit-id",
+      "family": "F2",
+      "title": "Control: completion with a null commit id is blocked",
+      "attack": "Reviewer-executed negative control. Confirms the gate does refuse the naive false completion, so acceptances elsewhere are not the result of a broken harness.",
+      "durability_obligation_violated": null,
+      "predicted_gate": "REJECT",
+      "predicted_schema": "VALID",
+      "predicted_classification": "BLOCKED",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-b01",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "COMPLETED",
+          "attempt": {
+            "attempt_id": "wave-a-041-b01-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-b01:attempt-1",
+            "lease_id": "lease-b01-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-b01-run",
+            "worker_id": "producer-1",
+            "heartbeat_at": null,
+            "checkpoint_seq": 4
+          },
+          "result_transaction": {
+            "result_txn_id": "result-b01-1",
+            "state": "INGESTED",
+            "manifest_uri": "git:po03/b01@ad:manifest.json",
+            "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "artifact_count": 1,
+            "total_bytes": 1,
+            "committed_at": "2026-08-22T06:01:00Z",
+            "verified_at": "2026-08-22T06:02:00Z",
+            "parent_ingested_at": "2026-08-22T06:03:00Z",
+            "result_commit_id": null
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/b01@ad:result.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T06:02:00Z"
+            }
+          ],
+          "completion_actor": "coordinator",
+          "independent_acceptance": {
+            "state": "NOT_TESTED",
+            "reviewer_id": null,
+            "receipt_uri": null
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "B02-exact-string-self-accept",
+      "family": "F6",
+      "title": "Control: byte-identical self-acceptance is blocked",
+      "attack": "Reviewer-executed negative control establishing the exact boundary that the aliasing cases C08 to C10 step over.",
+      "durability_obligation_violated": null,
+      "predicted_gate": "REJECT",
+      "predicted_schema": "VALID",
+      "predicted_classification": "BLOCKED",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-b02",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "COMPLETED",
+          "attempt": {
+            "attempt_id": "wave-a-041-b02-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-b02:attempt-1",
+            "lease_id": "lease-b02-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-b02-run",
+            "worker_id": "producer-1",
+            "heartbeat_at": null,
+            "checkpoint_seq": 4
+          },
+          "result_transaction": {
+            "result_txn_id": "result-b02-1",
+            "state": "INGESTED",
+            "manifest_uri": "git:po03/b02@ae:manifest.json",
+            "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "artifact_count": 1,
+            "total_bytes": 1,
+            "committed_at": "2026-08-22T06:01:00Z",
+            "verified_at": "2026-08-22T06:02:00Z",
+            "parent_ingested_at": "2026-08-22T06:03:00Z",
+            "result_commit_id": "aeae000000000000000000000000000000000000"
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/b02@ae:result.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T06:02:00Z"
+            }
+          ],
+          "completion_actor": "coordinator",
+          "independent_acceptance": {
+            "state": "ACCEPTED",
+            "reviewer_id": "producer-1",
+            "receipt_uri": "git:po03/b02@ae:receipt.json"
+          }
+        }
+      ]
+    },
+    {
+      "case_id": "B03-running-with-committed-artifacts",
+      "family": "F1",
+      "title": "Control: an uncommitted custody state cannot expose artifacts",
+      "attack": "Reviewer-executed negative control showing that the explicit uncommitted-state list does work, which is what makes its omission of RECOVERY_REQUIRED and FAILED_TERMINAL in C02 and C03 material.",
+      "durability_obligation_violated": null,
+      "predicted_gate": "REJECT",
+      "predicted_schema": "VALID",
+      "predicted_classification": "BLOCKED",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-b03",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "RUNNING",
+          "obzio_state": "RUNNING",
+          "attempt": {
+            "attempt_id": "wave-a-041-b03-attempt-1",
+            "idempotency_key": "COM-PO03:wave-a-041-b03:attempt-1",
+            "lease_id": "lease-b03-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-b03-run",
+            "worker_id": "producer-1",
+            "heartbeat_at": null,
+            "checkpoint_seq": 1
+          },
+          "result_transaction": {
+            "result_txn_id": "result-b03-1",
+            "state": "RESERVED",
+            "manifest_uri": null,
+            "manifest_sha256": null,
+            "artifact_count": 1,
+            "total_bytes": 1,
+            "committed_at": null,
+            "verified_at": null,
+            "parent_ingested_at": null,
+            "result_commit_id": null
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/b03@af:result.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 1,
+              "media_type": "application/json",
+              "readback_verified_at": null
+            }
+          ],
+          "completion_actor": null,
+          "independent_acceptance": {
+            "state": "NOT_TESTED",
+            "reviewer_id": null,
+            "receipt_uri": null
+          }
+        }
+      ]
+    }
+  ]
+}

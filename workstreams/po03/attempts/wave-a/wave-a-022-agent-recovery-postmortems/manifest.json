@@ -1,0 +1,102 @@
+{
+  "artifact_count": 7,
+  "artifacts": [
+    {
+      "bytes": 2415,
+      "path": "hypothesis.json",
+      "sha256": "3e18579ffe1560898acdec40254b9374d5682ca3cbe1c58b8fbedceed8561ba0"
+    },
+    {
+      "bytes": 3791,
+      "path": "limitations.json",
+      "sha256": "88540e1569246723d369a8343fe234d7d0334b4ca594a0a76a0f729fbc284d57"
+    },
+    {
+      "bytes": 3554,
+      "path": "mechanism-disposition.json",
+      "sha256": "91cc4fe16366d89638cf6e42a4f6bd15599a21f924ba859af9338f4ad9ac2055"
+    },
+    {
+      "bytes": 1546,
+      "path": "observed-results.json",
+      "sha256": "b5f21b347885aba7dc71cc7ef22bbb4ea69ed240396b01ba74474355a6900c24"
+    },
+    {
+      "bytes": 9695,
+      "path": "reproduce.py",
+      "sha256": "d98d2310526c2db8b77c0ea4bfbab6e35bf460688ce9589242c298e077141771"
+    },
+    {
+      "bytes": 14989,
+      "path": "source-cards.jsonl",
+      "sha256": "9905fe53dd70eb14ef1f762d6ee161c4cfa53a5e56529f0ee1d74151259f990e"
+    },
+    {
+      "bytes": 3651,
+      "path": "test_reproduction.py",
+      "sha256": "2e06a64bc85a5786c41bb3d5274263167d6a678c0cfd559248e5b740d448b251"
+    }
+  ],
+  "base": {
+    "branch": "po03/repository-engineering-portable-runtime-20260822-v001",
+    "commit": "0e973ed3fb1c2a51e23edba4ae2d5f303fe33b2d",
+    "required_ancestor": "f5b758f373e8d0cb14660c167f4b0b3673251862"
+  },
+  "decision_changed": [],
+  "input_verification": [
+    {
+      "bytes": 1836,
+      "path": "workstreams/po03/control/tasks/wave-a-022-agent-recovery-postmortems/input.json",
+      "sha256": "c03630f12131877348ca373cc47f64714eb521d88779a43de304994ee7139a7b"
+    },
+    {
+      "bytes": 629,
+      "path": "workstreams/po03/control/tasks/wave-a-022-agent-recovery-postmortems/acceptance.json",
+      "sha256": "2a6d8eea3cb1bd0db1646fbe0e20cdb614f6faba4ab1309ba53928fcd4f79879"
+    },
+    {
+      "bytes": 1238,
+      "path": "workstreams/po03/control/tasks/wave-a-022-agent-recovery-postmortems/transaction-created.json",
+      "sha256": "ccaeb2e344c5541fe273404c7315676dccf5b43b0d289ed27c14acf92b1e04ce"
+    },
+    {
+      "bytes": 16030,
+      "path": "workstreams/po03/COMMISSION.md",
+      "sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d"
+    }
+  ],
+  "result_slot": "workstreams/po03/attempts/wave-a/wave-a-022-agent-recovery-postmortems",
+  "runtime": {
+    "cloud_agent_id": "bc-13b664e4-a9eb-4a06-9b23-3283644e5b31",
+    "observed_model": "gpt-5.6-sol-max-fast",
+    "observed_reasoning_control": "NOT_SUPPORTED",
+    "provider": "Cursor",
+    "requested_exact_model": "gpt-5.6-sol-xhigh",
+    "requested_reasoning_control": "xhigh"
+  },
+  "schema_version": "1.0",
+  "self_integrity": {
+    "reason": "A file cannot contain its own final digest without a circular definition.",
+    "sha256_and_bytes": "COMPUTED_EXTERNALLY_AFTER_SERIALIZATION_AND_REPORTED_IN_READ_BACK"
+  },
+  "source_card_count": 8,
+  "task_id": "wave-a-022-agent-recovery-postmortems",
+  "test_evidence": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 workstreams/po03/attempts/wave-a/wave-a-022-agent-recovery-postmortems/reproduce.py",
+      "exit_code": 0,
+      "result": "PASS; 30/30 stale-snapshot trials lost writes, locked control lost 0/240, memory-only durable read-back 0/12, atomic hash-verified read-back 12/12"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s workstreams/po03/attempts/wave-a/wave-a-022-agent-recovery-postmortems -p test_reproduction.py -v",
+      "exit_code": 0,
+      "result": "7 tests passed"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 scripts/check_operator_taxonomy.py",
+      "exit_code": 0,
+      "result": "OPERATOR TAXONOMY CHECK: PASS"
+    }
+  ],
+  "total_artifact_bytes_excluding_manifest": 39641
+}

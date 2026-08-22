@@ -1,0 +1,289 @@
+{
+  "task_id": "wave-a-001-source-lock-reproduction",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "result_version": "PO03-WAVE-A-RESULT-v1",
+  "subordinate_report": "READY_TO_COMMIT",
+  "obzio_state_claim": null,
+  "obzio_state_note": "This unit does not and may not set COMPLETED or ACCEPTED. Only the coordinator may set COMPLETED after ingestion, and a different producer may then accept or reject.",
+  "independent_acceptance": {
+    "receipt_uri": null,
+    "reviewer_id": null,
+    "state": "NOT_TESTED"
+  },
+  "durability": {
+    "artifacts_manifested": 19,
+    "read_back_from_immutable_commit": "9a96bc4a347e134712f37924992fe68aaee60829",
+    "read_back_from_remote_ref": "refs/remotes/origin/po03/wave-a-001-source-lock-reproduction",
+    "read_back_note": "evidence/readback.json records the verification of the preceding commit. The final commit adds only that evidence file and its manifest entry, and is verified again by the same mechanism in the return.",
+    "read_back_status": "PASS",
+    "total_bytes_manifested": 83972
+  },
+  "decision_changed": [],
+  "transaction": {
+    "attempt_number": 1,
+    "fence_token": 1,
+    "idempotency_key": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001:wave-a-001-source-lock-reproduction:attempt-1",
+    "lease_id": "lease-wave-a-001-source-lock-reproduction-1"
+  },
+  "input_verification": {
+    "method": "SHA-256 recomputed from the working tree before any implementation work; each value compared against the hash declared in the task capsule.",
+    "status": "PASS",
+    "verified": [
+      {
+        "bytes": 1850,
+        "declared_as": "transaction-created.json:immutable_input_manifest_sha256",
+        "match": true,
+        "path": "workstreams/po03/control/tasks/wave-a-001-source-lock-reproduction/input.json",
+        "sha256": "dfc10823ca888525723e6e9df8e9b14183bb7fa3386a427d112c16ffdd3ec131"
+      },
+      {
+        "bytes": 627,
+        "declared_as": "input.json:source_hashes.acceptance_contract_sha256 and transaction-created.json:acceptance_contract_sha256",
+        "match": true,
+        "path": "workstreams/po03/control/tasks/wave-a-001-source-lock-reproduction/acceptance.json",
+        "sha256": "71a9aeb2f66eff9aa1121fe18e2cc539ff57462c0c7fd408370df276067dc385"
+      },
+      {
+        "bytes": 1228,
+        "declared_as": "no self-hash is declared for this file; read completely and hashed for the record",
+        "match": null,
+        "path": "workstreams/po03/control/tasks/wave-a-001-source-lock-reproduction/transaction-created.json",
+        "sha256": "a846f884d7f3ee712c9f677a380307896a6bc7bac923f164b828e2cdc9852e9b"
+      },
+      {
+        "bytes": 16030,
+        "declared_as": "input.json:source_hashes.commission_sha256",
+        "match": true,
+        "path": "workstreams/po03/COMMISSION.md",
+        "sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d"
+      },
+      {
+        "bytes": 4618,
+        "declared_as": "input.json:source_hashes.transaction_schema_sha256",
+        "match": true,
+        "path": "workstreams/po03/contracts/transactional-result.schema.json",
+        "sha256": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1"
+      }
+    ]
+  },
+  "base": {
+    "base_branch": "po03/repository-engineering-portable-runtime-20260822-v001",
+    "base_commit": "f5b758f373e8d0cb14660c167f4b0b3673251862",
+    "capsule_controller_head_sha": "1bb843b2a81fd8d73617caf2f1db81909266bb6e",
+    "capsule_controller_head_note": "The capsule records a controller head that is an ancestor-independent commit not present on the base branch tip observed here; work was pinned to the instructed commit f5b758f instead and the difference is recorded rather than reconciled.",
+    "receipt_head_sha": "7b9ee3e29f2d364cff5cdf2383dd512a0a6603e0",
+    "repository": "github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+    "work_branch": "po03/wave-a-001-source-lock-reproduction",
+    "work_branch_created_at": "f5b758f373e8d0cb14660c167f4b0b3673251862",
+    "work_branch_isolation_note": "The branch was created at f5b758f, but concurrent sibling units committed onto the same shared working tree while this branch was checked out. See collision_event."
+  },
+  "hypothesis": {
+    "outcome": "SUPPORTED_WITH_BOUNDARY",
+    "statement": "The source-lock receipt can be independently regenerated from the pinned base without producer narrative.",
+    "supported_claim": "Every derived field of workstreams/po03/evidence/source-lock.json (byte count, SHA-256, Git blob name for all six declared sources) is reproducible from Git object storage alone, and the complete receipt is byte-identical to the committed blob when the non-derivable declarative fields are supplied.",
+    "boundary": "Reproduction succeeds only against the tree at the receipt's own head_sha (7b9ee3e). The declarative fields (repository, branch, head_sha, version, decision_changed, and the ordered path list) are not derivable from any tree and had to be supplied as a spec, so this experiment establishes reproducibility of the receipt's measurements, not of its declaration.",
+    "refuted_claim": "The receipt is not valid at the current base head. Verified against f5b758f, three of six declared sources have drifted, so a receipt carrying no validity scope silently misrepresents the current tree."
+  },
+  "experiments": [
+    {
+      "expected": "byte-identical receipt",
+      "id": "E1",
+      "observed": "regenerated 1551 bytes, sha256 932e098aba03b5961a0e631aa09ce3db8d961ad8c7cf7b3b1eb5b59a0bdbd9ce, identical to the committed blob; Git blob names agreed with git rev-parse for all six sources",
+      "question": "Can the committed receipt be rebuilt byte-for-byte from the pinned tree by a stdlib-only process?",
+      "status": "PASS"
+    },
+    {
+      "expected": "PASS with zero findings",
+      "id": "E2",
+      "observed": "PASS, 0 findings across 6 declared sources",
+      "question": "Does the committed receipt verify against the tree at its own head_sha?",
+      "status": "PASS"
+    },
+    {
+      "expected": "FAIL naming the drifted sources",
+      "id": "E3",
+      "observed": "FAIL, 9 findings over 3 paths: workstreams/po03/tools/validate_contracts.py (10698 to 12390 bytes), workstreams/po03/tests/test_validate_contracts.py (8118 to 8697 bytes), .github/workflows/po03-contracts.yml (834 to 1543 bytes)",
+      "question": "Does the receipt still verify against the current base head f5b758f?",
+      "status": "FAIL_AS_PREDICTED"
+    },
+    {
+      "expected": "measurement, no pass or fail threshold set in advance",
+      "id": "E4",
+      "observed": "the receipt pins 6 paths; 309 files are tracked under workstreams/po03/ at f5b758f, of which 5 are declared, leaving 304 undeclared. Coverage of the governed subtree is approximately 1.6 percent.",
+      "question": "How much of the governed subtree does the receipt actually pin?",
+      "status": "OBSERVED"
+    }
+  ],
+  "mechanism": {
+    "detection_matrix": {
+      "cases": 11,
+      "detected": [
+        "single-byte flip with unchanged length",
+        "length-preserving byte transposition",
+        "truncation",
+        "appended trailing newline",
+        "zero-byte source gaining content",
+        "CRLF line-ending conversion",
+        "deleted source",
+        "source path replaced by a directory",
+        "two sources changed at once, both reported"
+      ],
+      "not_detected": [
+        "addition of a file the receipt never declared"
+      ],
+      "source": "fixtures/synthetic/cases.json"
+    },
+    "entry_points": [
+      "tools/source_lock.py regenerate --spec SPEC --root ROOT",
+      "tools/source_lock.py verify --lock LOCK --root ROOT [--head-sha SHA]",
+      "tools/source_lock.py compare --spec SPEC --root ROOT --expected RECEIPT",
+      "tools/reproduce.py --repo REPO --spec SPEC --receipt-commit SHA --drift-commit SHA --out OUT",
+      "tools/readback.py --repo REPO --commit SHA --remote-ref REF --unit-prefix PREFIX --out OUT"
+    ],
+    "hermeticity": {
+      "asserted_by_test": "HermeticityTest parses tools/source_lock.py and fails on any import outside {__future__, argparse, hashlib, json, sys, pathlib}, on any process or network import, and on eval, exec, compile or __import__.",
+      "external_oracle": "Git blob names are computed as sha1('blob <len>\\0' + payload). Agreement was checked against the object names published for the empty blob, 'hello\\n' and 'what is up, doc?', and against git rev-parse on all six real sources.",
+      "third_party_packages": 0
+    },
+    "verifier_exit_codes": {
+      "0": "PASS",
+      "1": "mismatch detected",
+      "2": "unusable input"
+    }
+  },
+  "commands": [
+    {
+      "command": "sh tools/run_sanitized.sh > evidence/test-run.log 2>&1",
+      "exit_code": 0,
+      "result": "23 tests passed; reproduction wrote evidence/reproduction.json with outcome SUPPORTED_WITH_BOUNDARY"
+    },
+    {
+      "command": "python3 -m unittest discover -s tests -p 'test_*.py' -v",
+      "exit_code": 0,
+      "result": "Ran 23 tests, OK (0 failures, 0 errors, 0 skipped)"
+    },
+    {
+      "command": "python3 tools/reproduce.py --repo /workspace --spec fixtures/spec/source-lock.spec.json --receipt-commit f5b758f373e8d0cb14660c167f4b0b3673251862 --drift-commit f5b758f373e8d0cb14660c167f4b0b3673251862 --out evidence/reproduction.json",
+      "exit_code": 0,
+      "result": "E1 PASS byte_identical=True, E2 PASS 0 findings, E3 FAIL 3 drifted paths"
+    },
+    {
+      "command": "python3 tools/source_lock.py regenerate --spec fixtures/spec/manifest.spec.json --root . --out manifest.json",
+      "exit_code": 0,
+      "result": "manifest.json covering every artifact except itself"
+    },
+    {
+      "command": "git clone --branch po03/wave-a-001-source-lock-reproduction <origin> /tmp/wa001 && sh tools/run_sanitized.sh > evidence/clean-clone-run.log",
+      "exit_code": 0,
+      "result": "23 tests passed in a fresh clone with no warm checkout and no uncommitted files; evidence/reproduction.json regenerated byte-identically at sha256 f06138ae260b176598f5dbe310c24652433c33d676afc54d3bbc5358d6607aa2"
+    },
+    {
+      "command": "python3 tools/source_lock.py verify --lock <clone>/workstreams/po03/evidence/source-lock.json --root <clone>",
+      "exit_code": 1,
+      "result": "FAIL with the same 9 findings over the same 3 paths as E3, reproduced from a checkout that shares no state with the original run"
+    },
+    {
+      "command": "python3 workstreams/po03/tools/check_path_scope.py --base f5b758f373e8d0cb14660c167f4b0b3673251862 --head HEAD",
+      "exit_code": 0,
+      "result": "PO03_PATH_SCOPE_PASS"
+    },
+    {
+      "command": "python3 tools/readback.py --repo <repo> --commit <result commit> --remote-ref refs/remotes/origin/po03/wave-a-001-source-lock-reproduction --unit-prefix workstreams/po03/attempts/wave-a/wave-a-001-source-lock-reproduction --out evidence/readback.json",
+      "exit_code": 0,
+      "result": "see evidence/readback.json"
+    }
+  ],
+  "clean_clone_reproduction": {
+    "evidence": "evidence/clean-clone-run.log",
+    "identical_deterministic_output": true,
+    "method": "Fresh git clone of the pushed branch into an empty directory, then the same sanitized runner. No provider memory, no warm checkout, no uncommitted file and no state carried from the producing workspace.",
+    "status": "PASS",
+    "tests_passed": 23
+  },
+  "collision_event": {
+    "cross_contamination_of_files": false,
+    "description": "Sibling Wave A units executed against the same shared working tree and Git index while this unit's branch was the checked-out HEAD, so their commits landed on this branch.",
+    "detected_by": "git diff --name-only against the pinned base showed a path belonging to another unit, followed by reflog inspection",
+    "foreign_commits_on_this_branch": [
+      {
+        "commit": "7bb2de9",
+        "paths": ["workstreams/po03/attempts/wave-a/wave-a-041-schema-adversarial-review/frozen-criteria.json"],
+        "position": "parent of this unit's first commit",
+        "unit": "wave-a-041-schema-adversarial-review"
+      },
+      {
+        "commit": "4cd20d7249145c780f69b33d95e67380c1737a99",
+        "paths": [
+          "workstreams/po03/attempts/wave-a/wave-a-041-schema-adversarial-review/adversarial-cases.json",
+          "workstreams/po03/attempts/wave-a/wave-a-041-schema-adversarial-review/tests/harness.py",
+          "workstreams/po03/attempts/wave-a/wave-a-041-schema-adversarial-review/tests/minischema.py"
+        ],
+        "position": "committed onto this branch between this unit's commit and its push, and therefore carried to the remote by this unit's push",
+        "unit": "wave-a-041-schema-adversarial-review"
+      },
+      {
+        "commit": "286f48b",
+        "note": "created on this branch, then moved off by a reset performed by another process in the shared tree; now reachable from po03/wave-a-022-agent-recovery-postmortems",
+        "position": "transient",
+        "unit": "wave-a-022-agent-recovery-postmortems"
+      }
+    ],
+    "impact": "The branch tree contains another unit's artifacts. Every commit authored by this unit still touches only its owned subtree.",
+    "remediation_declined": "Removing the foreign paths would be a write outside this unit's owned path, and rewriting history would need a force push that could orphan another unit's only copy of its evidence. Both were refused; the collision is reported instead.",
+    "resolution": "Remaining work moved into an isolated clean clone so no sibling process could stage, reset or amend this unit's index. Verified that no sibling commit contains any file of this unit and that no commit of this unit contains any foreign file.",
+    "wave_a_zero_path_collision_criterion": "NOT_MET_IN_THIS_WORKSPACE"
+  },
+  "sanitized_environment": {
+    "cleared_by": "env -i, which drops every inherited variable including provider tokens, agent identity and proxy or Git configuration",
+    "deterministic_switches": ["PYTHONHASHSEED=0", "PYTHONDONTWRITEBYTECODE=1", "TZ=UTC", "LC_ALL=C.UTF-8"],
+    "evidence": "evidence/test-run.log begins with the complete sanitized variable list",
+    "reintroduced": ["PATH", "HOME", "TMPDIR", "LANG", "LC_ALL", "TZ", "PYTHONHASHSEED", "PYTHONDONTWRITEBYTECODE", "UNIT_DIR", "REPO_ROOT", "RECEIPT_COMMIT", "DRIFT_COMMIT"],
+    "toolchain": ["Python 3.12.3", "git 2.43.0"]
+  },
+  "runtime_observed": {
+    "cloud_agent_id": "bc-13b664e4-a9eb-4a06-9b23-3283644e5b31",
+    "exact_model_requested": "claude-opus-5-thinking-high",
+    "observed_executing_model_self_report": "Claude Opus 5 with extended thinking enabled",
+    "observed_parent_run_model": "gpt-5.6-sol-max-fast",
+    "observed_reasoning_control_value": "NOT_SUPPORTED",
+    "observed_reasoning_control_note": "No provider surface available to this execution exposes the reasoning-control level as an observable value, so the requested 'high' setting is recorded as requested-but-unverifiable rather than confirmed.",
+    "provider": "Cursor Cloud",
+    "route": "subagent under a cloud agent run, isolated working tree",
+    "run_url": "https://cursor.com/agents/bc-13b664e4-a9eb-4a06-9b23-3283644e5b31",
+    "tools_used": ["git", "python3", "repository file tools"]
+  },
+  "boundary_compliance": {
+    "existing_pr_touched": false,
+    "foreign_paths_present_on_branch_from_sibling_commits": 4,
+    "foreign_paths_modified_or_deleted_by_this_unit": 0,
+    "merge_or_promote_performed": false,
+    "po01_contact_or_mutation": false,
+    "pr_8_touched": false,
+    "pr_created": false,
+    "receipts_modified": false,
+    "shared_po03_controls_modified": false,
+    "workflows_modified": false,
+    "writes_outside_owned_path": 0,
+    "writes_verified_by": "git show --name-only on every commit authored by this unit; each path is under workstreams/po03/attempts/wave-a/wave-a-001-source-lock-reproduction/. The repository's own guard, workstreams/po03/tools/check_path_scope.py, also passed against the pinned base."
+  },
+  "mechanism_change_proposals": [
+    {
+      "evidence": "E3 and E4",
+      "id": "P1",
+      "proposal": "A source-lock receipt should carry an explicit validity scope and be verified in CI at every head, so drift such as the three sources already stale at f5b758f fails a check instead of ageing silently.",
+      "state": "PROPOSAL_ONLY_NOT_APPLIED"
+    },
+    {
+      "evidence": "detection matrix case undeclared-file-added and E4",
+      "id": "P2",
+      "proposal": "Receipts should pin a closed set (a subtree digest or declared glob with a completeness assertion) so that adding an undeclared file cannot pass verification.",
+      "state": "PROPOSAL_ONLY_NOT_APPLIED"
+    },
+    {
+      "evidence": "collision_event",
+      "id": "P3",
+      "proposal": "Wave dispatch must give each unit its own worktree or clone rather than sharing one working tree and index. A shared HEAD lets one unit commit onto another unit's branch, and a sibling reset can move another unit's uncommitted work. Committing early and pushing before testing is the only mitigation available to a unit that already shares a tree.",
+      "state": "PROPOSAL_ONLY_NOT_APPLIED"
+    }
+  ]
+}

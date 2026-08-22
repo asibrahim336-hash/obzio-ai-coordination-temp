@@ -1,0 +1,57 @@
+{
+  "bounded_claims": [
+    {
+      "claim_id": "BHC-01",
+      "falsification_rule": "Falsified if any of 30 controlled eight-writer trials using stale read-filter-rebind snapshots retains all eight writes, or if the locked control loses any write.",
+      "hypothesis": "A checkpoint collector that lets parallel writers read a shared result set and later rebind it from stale snapshots can silently lose completed agent writes; one lock spanning read, filter, rebind, and append prevents loss in the same controlled schedule.",
+      "metrics": {
+        "locked_lost_writes": 0,
+        "trials": 30,
+        "unprotected_lossy_trials_minimum": 30,
+        "workers_per_trial": 8
+      },
+      "source_cards": [
+        "SRC-004",
+        "SRC-005",
+        "SRC-006",
+        "SRC-007"
+      ]
+    },
+    {
+      "claim_id": "BHC-02",
+      "falsification_rule": "Falsified if a memory-only result is available by durable path after worker exit in any of 12 trials, or if any atomically written control result cannot be read back with its expected SHA-256.",
+      "hypothesis": "A provider-completed receipt is insufficient custody evidence: a worker result held only in process memory disappears on exit, while an atomically written result survives and can be hash-verified.",
+      "metrics": {
+        "atomic_hash_verified_readbacks": 12,
+        "ephemeral_durable_readbacks": 0,
+        "provider_completed_receipts_per_mode": 12,
+        "trials_per_mode": 12
+      },
+      "source_cards": [
+        "SRC-001",
+        "SRC-002",
+        "SRC-003",
+        "SRC-008"
+      ]
+    }
+  ],
+  "commission_hypothesis": "Published agent failure postmortems reveal recurrent result-loss mechanisms reproducible in the factory.",
+  "decision_changed": [],
+  "freeze": {
+    "frozen_at": "2026-08-22T07:09:11Z",
+    "input_sha256": "c03630f12131877348ca373cc47f64714eb521d88779a43de304994ee7139a7b",
+    "stage": "BEFORE_REPRODUCTION_EXECUTION",
+    "task_created_at": "2026-08-22T06:59:23Z",
+    "task_id": "wave-a-022-agent-recovery-postmortems"
+  },
+  "runtime": {
+    "cloud_agent_id": "bc-13b664e4-a9eb-4a06-9b23-3283644e5b31",
+    "observed_model": "gpt-5.6-sol-max-fast",
+    "observed_reasoning_control": "NOT_SUPPORTED",
+    "provider": "Cursor",
+    "requested_exact_model": "gpt-5.6-sol-xhigh",
+    "requested_reasoning_control": "xhigh",
+    "runtime_match": false
+  },
+  "schema_version": "1.0"
+}
