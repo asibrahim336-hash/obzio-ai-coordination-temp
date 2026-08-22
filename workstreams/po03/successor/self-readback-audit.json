@@ -27,7 +27,7 @@
   "lesson": "L-08",
   "mechanism_that_would_refuse_this": "C-09",
   "method": "For each of this cohort's result records: resolve every artifact at the commit its own content_uri names and compare digest and byte count, then test whether the record itself is readable at its declared result_commit_id and whether the bytes there are the current record. This is the check cohort a6 applied to other cohorts, turned inward.",
-  "observed_at_commit": "0df01b2597efba23b1c66ef8ef3fd5e50436479f",
+  "observed_at_commit": "25b4971ee2c923f00240bcc70be361374b2e9d71",
   "owner": "po03-worker-a8",
   "proposed_repair": "Either declare the locator after committing the record - write the record, commit, then rewrite result_commit_id to the new HEAD and amend, which is a two-phase commit - or declare the locator as branch-relative and require the parent to resolve the record at the branch head rather than at a fixed commit. C-09 in G2 takes the second form: the locator is a name that must resolve to the submitted bytes, and admission fails if it does not.",
   "root_cause": "workstreams/po03/tools/make_result.py resolves result_commit_id to HEAD at the moment it writes the record (line 127, `commit if committed else None`), which is necessarily before that record is committed. No sequence of correct operator behaviour can make the declared commit contain the record, so this is a property of the tool and not of how it was used.",
