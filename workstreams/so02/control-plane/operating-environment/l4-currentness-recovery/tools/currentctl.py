@@ -496,23 +496,48 @@ class AdmissionLadder:
                 unknown.append(entry)
         return {"admissible": admissible, "rejected": rejected, "unknown": unknown}
 
+    def _satisfied(self, state: str, present: set[str]) -> bool:
+        requirement = self.requirements[state]
+        all_of = set(requirement.get("requires_all_of", []))
+        any_of = set(requirement.get("requires_any_of", []))
+        if all_of and not all_of.issubset(present):
+            return False
+        if any_of and not (any_of & present):
+            return False
+        return True
+
     def highest_supported(self, entries: Sequence[dict[str, Any]]) -> str:
-        """The highest state the supplied evidence actually supports."""
+        """The highest state the supplied evidence actually supports.
+
+        The ladder is monotonic, so the walk stops at the first unsatisfied rung
+        even when a higher rung's own requirements happen to be met. Evidence for
+        a later stage does not backfill an earlier one.
+        """
         classified = self.classify_evidence(entries)
         present = {entry["evidence_class"] for entry in classified["admissible"]}
         supported = self.order[0]
         for state in self.order:
-            requirement = self.requirements[state]
-            all_of = set(requirement.get("requires_all_of", []))
-            any_of = set(requirement.get("requires_any_of", []))
-            if all_of and not all_of.issubset(present):
-                break
-            if any_of and not (any_of & present):
+            if not self._satisfied(state, present):
                 break
             supported = state
         if not classified["admissible"]:
             return self.order[0] if not classified["rejected"] else self.ceiling
         return supported
+
+    def skipped_foundations(self, entries: Sequence[dict[str, Any]]) -> list[str]:
+        """States whose own requirements are met but which sit above a broken rung."""
+        classified = self.classify_evidence(entries)
+        present = {entry["evidence_class"] for entry in classified["admissible"]}
+        broken = None
+        skipped: list[str] = []
+        for state in self.order:
+            if not self._satisfied(state, present):
+                if broken is None:
+                    broken = state
+                continue
+            if broken is not None:
+                skipped.append(state)
+        return skipped
 
     def evaluate(self, subject: str, claimed_state: str,
                  entries: Sequence[dict[str, Any]]) -> tuple[str, list[Finding]]:
@@ -531,6 +556,20 @@ class AdmissionLadder:
                     "nor the non-admissible register; an unclassified class cannot be silently trusted"
                 ),
                 evidence={"entry": entry},
+            ))
+
+        skipped = self.skipped_foundations(entries)
+        if skipped:
+            findings.append(Finding(
+                code="LADDER_FOUNDATION_MISSING",
+                severity=ERROR,
+                subject=urn("workstream", subject),
+                detail=(
+                    f"evidence satisfies {', '.join(skipped)} while an earlier rung is unsatisfied; "
+                    f"the subject is held at {supported} because a later stage cannot backfill an "
+                    "earlier one"
+                ),
+                evidence={"satisfied_above_break": skipped, "held_at": supported},
             ))
 
         if self.rank(claimed_state) > self.rank(supported):
