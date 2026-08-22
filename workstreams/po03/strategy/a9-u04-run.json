@@ -5,6 +5,19 @@
     "exit_code": 0,
     "output": "WROTE workstreams/po03/strategy/semantic-check-results.json findings=7 chain_errors=0 taxonomy_exit=0 decision_changed=[]"
   },
+  "snapshot_coupling_remediation": {
+    "asserted_properties": [
+      "the recorded report is byte-equivalent to the report at the pinned commit",
+      "the checker exactly rebuilds the report from the pointer chain and contracts at the pinned commit",
+      "a live run performs exactly three temporary probe writes, all inside the owned strategy prefix, and removes them"
+    ],
+    "options": {
+      "no_outside_allowlist_write": "INVARIANT",
+      "report_reproduction": "IMMUTABLE_COMMIT_PIN"
+    },
+    "snapshot_commit": "7f1a208f207525b459fac1f0661ff2f1191fdde9",
+    "support": "workstreams/po03/strategy/snapshot_fixture.py"
+  },
   "status": "READY_TO_COMMIT",
   "strict_semantic_check": {
     "command": "python3 -I workstreams/po03/strategy/semantic_check.py --root . --output workstreams/po03/strategy/semantic-check-results.json --strict",
@@ -15,7 +28,7 @@
   "test": {
     "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a9_semantic_check.py' -v",
     "exit_code": 0,
-    "output": "test_check_requires_no_outside_allowlist_write (test_a9_semantic_check.SemanticCheckTests.test_check_requires_no_outside_allowlist_write) ... ok\ntest_checker_reports_operator_and_state_contract_ambiguities (test_a9_semantic_check.SemanticCheckTests.test_checker_reports_operator_and_state_contract_ambiguities) ... ok\ntest_contract_probes_execute_the_existing_validator (test_a9_semantic_check.SemanticCheckTests.test_contract_probes_execute_the_existing_validator) ... ok\ntest_current_selected_actor_chain_is_transitively_consistent (test_a9_semantic_check.SemanticCheckTests.test_current_selected_actor_chain_is_transitively_consistent) ... ok\ntest_duplicate_json_keys_are_rejected_before_semantic_resolution (test_a9_semantic_check.SemanticCheckTests.test_duplicate_json_keys_are_rejected_before_semantic_resolution) ... ok\ntest_every_resolution_stays_nonbinding (test_a9_semantic_check.SemanticCheckTests.test_every_resolution_stays_nonbinding) ... ok\ntest_existing_taxonomy_gate_still_passes_and_is_not_replaced (test_a9_semantic_check.SemanticCheckTests.test_existing_taxonomy_gate_still_passes_and_is_not_replaced) ... ok\ntest_results_reproduce_from_current_pointer_chain (test_a9_semantic_check.SemanticCheckTests.test_results_reproduce_from_current_pointer_chain) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 0.482s\n\nOK"
+    "output": "test_check_requires_no_outside_allowlist_write (test_a9_semantic_check.SemanticCheckTests.test_check_requires_no_outside_allowlist_write) ... ok\ntest_checker_reports_operator_and_state_contract_ambiguities (test_a9_semantic_check.SemanticCheckTests.test_checker_reports_operator_and_state_contract_ambiguities) ... ok\ntest_contract_probes_execute_the_existing_validator (test_a9_semantic_check.SemanticCheckTests.test_contract_probes_execute_the_existing_validator) ... ok\ntest_current_selected_actor_chain_is_transitively_consistent (test_a9_semantic_check.SemanticCheckTests.test_current_selected_actor_chain_is_transitively_consistent) ... ok\ntest_duplicate_json_keys_are_rejected_before_semantic_resolution (test_a9_semantic_check.SemanticCheckTests.test_duplicate_json_keys_are_rejected_before_semantic_resolution) ... ok\ntest_every_resolution_stays_nonbinding (test_a9_semantic_check.SemanticCheckTests.test_every_resolution_stays_nonbinding) ... ok\ntest_existing_taxonomy_gate_still_passes_and_is_not_replaced (test_a9_semantic_check.SemanticCheckTests.test_existing_taxonomy_gate_still_passes_and_is_not_replaced) ... ok\ntest_results_reproduce_from_pinned_pointer_chain (test_a9_semantic_check.SemanticCheckTests.test_results_reproduce_from_pinned_pointer_chain) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 1.047s\n\nOK"
   },
   "unit_id": "a9-u04"
 }
