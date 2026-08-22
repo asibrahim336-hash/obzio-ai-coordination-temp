@@ -1,0 +1,69 @@
+{
+  "generation_id": "G0",
+  "label": "pre-amendment receipt-file controller",
+  "unit_id": "a8-u01",
+  "owner": "po03-worker-a8",
+  "reconstruction_basis": {
+    "prior_observed_head": "d627119351a6dc0e90158705abf6aab96e26b3dd",
+    "prior_commission_commit": "887b3c1ac2dec49d5f36d31593e416f651486aee",
+    "pinned_base_sha": "5db7affeb7f00763e148e6d98a33ee6b751f2def",
+    "read_method": "read-only git show / git ls-tree against the pinned commits; no branch, worktree or file outside workstreams/po03/successor was written",
+    "po03_files_present_at_prior_observed_head": [
+      "receipts/po03/2026-08-22/appointment-seed.json",
+      "workstreams/po03/COMMISSION.md"
+    ],
+    "executable_files_present_at_prior_observed_head": [],
+    "verified_by": "workstreams/po03/tests/test_a8_g0_reconstruction.py::ReconstructionBasisTests"
+  },
+  "central_finding": "The pre-amendment PO-03 controller had no durable result custody at all. There is no executable code at prior_observed_head; coordination state was whatever the latest committed receipt said, and the receipt was written from the producer's own report. G0 is therefore a minimal executable controller with exactly that property, and its failures on the frozen suite are the measurement rather than a defect in the reconstruction.",
+  "capabilities_reconstructed": [
+    {
+      "capability": "receipt records carrying a declared state and an acceptance field",
+      "immutable_basis": "receipts/po03/2026-08-22/appointment-seed.json fields state, acceptance, execution_started, next_provider_action"
+    },
+    {
+      "capability": "pinning inputs by repository and SHA",
+      "immutable_basis": "appointment-seed.json fields pinned_start_sha, commission_commit_sha, environment_base_sha; COMMISSION.md v001 mission item 2 and the acceptance control 'Every claimed input is pinned by repository and SHA'"
+    },
+    {
+      "capability": "a manifest digest over pinned inputs",
+      "immutable_basis": "COMMISSION.md v001 mandatory receipt workstreams/po03/MANIFEST.sha256"
+    },
+    {
+      "capability": "process-loss survival by re-reading committed receipts",
+      "immutable_basis": "COMMISSION.md v001 acceptance control 'A fresh checkout reproduces tests without provider memory or hidden state'"
+    }
+  ],
+  "absences_reconstructed": [
+    {
+      "absence": "no append-only ledger and no hash chain",
+      "consequence": "history is a mutable file; in-place edits, reordering and truncation are all undetectable"
+    },
+    {
+      "absence": "no leases and no fence tokens",
+      "consequence": "ownership transfer is unrepresentable, so a stale or expired worker cannot be refused"
+    },
+    {
+      "absence": "no result submission verification and no artifact read-back",
+      "consequence": "a result is admitted on the producer's word; hashes, byte counts and existence are never checked"
+    },
+    {
+      "absence": "no distinction between provider completion and Obzio completion",
+      "consequence": "a provider report of COMPLETED becomes the recorded state with no durable result commit, which is the false-completion mode the amendment exists to close"
+    },
+    {
+      "absence": "no parent ingestion step, no recovery scanner and no idempotency handling",
+      "consequence": "lost callbacks cannot replay, duplicates cannot be deduplicated, and no process can independently re-read a result"
+    },
+    {
+      "absence": "no code enforcement of the allowlist, the ownership partition or the self-acceptance prohibition",
+      "consequence": "all three existed as prose in the v001 commission and none could fail a run"
+    }
+  ],
+  "fidelity_rule": "G0 is not permitted to be better than the pinned source. Every capability above cites immutable text, and BaselineDefectTests asserts each absence directly, so a G0 that quietly improved would fail the suite and would understate every later generation's lift.",
+  "entry_point": "python3 -I workstreams/po03/successor/g0/run.py",
+  "limitations": [
+    "The v001 commission describes a controller in prose; any executable reconstruction makes choices the text does not fully determine. Each choice is cited above and each is testable, but the reconstruction is an interpretation of the pinned text, not a recovered binary.",
+    "The v001 acceptance controls do require that injected corruption and missing-file cases be detected. That requirement is honoured for inputs, which G0 hashed, and not for subordinate result artifacts, which G0 never received as hashed artifacts. G0 reports artifact_coverage 0 so a scorer sees the gap rather than inferring it."
+  ]
+}

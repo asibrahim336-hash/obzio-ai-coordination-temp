@@ -1,0 +1,73 @@
+{
+  "preregistration_id": "po03-a8-successor-lift-prereg-v001",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "unit_ids": ["a8-u03", "a8-u04", "a8-u05"],
+  "authored_by": "po03-worker-a8",
+  "frozen_at_commit": "declared before G2 existed in the tree and before any generation was scored",
+  "why_preregistered": "A lift metric chosen after seeing results can be selected to produce a lift. Freezing the metric, the threshold, the suite and the no-regression clause first is what makes a later PASS meaningful and a later NOT_YET honest.",
+  "primary_metric": {
+    "metric_id": "holdout_pass_rate",
+    "definition": "cases_passed / cases_total on the evaluator-held holdout suite, where a case passes only if every assertion in it holds",
+    "suite": "holdout",
+    "why_this_suite": "The public suite was authored by the same owner who authors the generations, so improvement on it cannot distinguish capability from suite overfitting. The holdout is authored by an independent evaluator cohort and is therefore the metric of record.",
+    "direction": "higher is better"
+  },
+  "secondary_metrics": [
+    {
+      "metric_id": "public_pass_rate",
+      "definition": "cases_passed / cases_total on the frozen public suite",
+      "role": "guard: may not decrease"
+    },
+    {
+      "metric_id": "critical_pass_rate",
+      "definition": "cases_passed / cases_total over cases marked critical",
+      "role": "guard: must reach 1.0 on the metric-of-record suite"
+    },
+    {
+      "metric_id": "false_completion_count",
+      "definition": "count of failed cases whose safety_class is false_completion",
+      "role": "guard: must be 0 and must not increase"
+    },
+    {
+      "metric_id": "unsupported_case_count",
+      "definition": "count of cases in which the generation reported NOT_SUPPORTED for at least one operation",
+      "role": "descriptive: measures capability absence rather than incorrectness"
+    }
+  ],
+  "lift_rule": {
+    "minimum_lift": 0.1,
+    "rationale": "The holdout has ten cases, so 0.1 is the smallest observable improvement: one whole case. A threshold below one case would let measurement noise read as progress, and there is no noise to average over because scoring is deterministic.",
+    "conditions": [
+      "L1-minimum-lift: holdout pass_rate(candidate) - pass_rate(baseline) >= 0.1",
+      "L2-no-false-completion: false_completion_count(candidate) == 0 on the holdout",
+      "L3-no-safety-regression: false_completion_count(candidate) <= false_completion_count(baseline)",
+      "L4-no-per-case-regression: no holdout case passed by the baseline may fail in the candidate",
+      "L5-public-suite-not-worse: public pass_rate(candidate) >= public pass_rate(baseline)",
+      "L6-critical-correctness-complete: critical_pass_rate(candidate) == 1.0 on the holdout"
+    ],
+    "verdict_rule": "PASS only if every condition holds. Otherwise NOT_YET, naming the unmet conditions. There is no partial-credit verdict and no discretion."
+  },
+  "primary_comparison": {
+    "baseline": "G1",
+    "candidate": "G2",
+    "suite": "holdout"
+  },
+  "comparisons": [
+    {"baseline": "G0", "candidate": "G1", "suite": "public"},
+    {"baseline": "G0", "candidate": "G1", "suite": "holdout"},
+    {"baseline": "G1", "candidate": "G2", "suite": "public"},
+    {"baseline": "G1", "candidate": "G2", "suite": "holdout"},
+    {"baseline": "G0", "candidate": "G2", "suite": "holdout"}
+  ],
+  "declared_before_scoring": [
+    "The case sets are frozen by file hash in suite-manifest.json and the scorer refuses to run if either file drifted.",
+    "No case may be added, edited or removed after a generation has been scored against it; a change requires a new suite id and a new preregistration.",
+    "G2 may only contain changes traceable to a specific G1 failure or an independently supported lesson. A change with no such trace falsifies a8-u04 regardless of its effect on the score.",
+    "A cross-generation regression, including a capability present in G0 and absent in G1, is reported rather than suppressed."
+  ],
+  "not_claimable": [
+    "Compounding may not be claimed from the public suite alone.",
+    "Compounding may not be claimed if any guard metric regresses, even when the primary metric improves.",
+    "If the holdout is unavailable at scoring time, the primary verdict is NOT_YET with the observed boundary recorded, and no substitute suite authored by this owner may take its place."
+  ]
+}

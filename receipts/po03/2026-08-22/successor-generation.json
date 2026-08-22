@@ -1,0 +1,304 @@
+{
+  "acceptance": "NOT_TESTED",
+  "acceptance_note": "This cohort cannot accept its own work and has not set COMPLETED. Acceptance is for the coordinator and the independent evaluator cohorts.",
+  "artifacts": [
+    {
+      "path": "workstreams/po03/successor/g0/controller.py",
+      "sha256": "7f608f0c22251d5f0e298061d9fa9092d690b7c10be7661f7e4a20b9af52b676"
+    },
+    {
+      "path": "workstreams/po03/successor/g0/provenance.json",
+      "sha256": "df268316dac009ce67d7b85b37943b8d3f4a33ca4d6056b294ae439be396d0a2"
+    },
+    {
+      "path": "workstreams/po03/successor/g1/factory.py",
+      "sha256": "7a63f8a8ab5a91e26c16f699d90c585b015d1f9ce9803e7f8b96ba31d321f50a"
+    },
+    {
+      "path": "workstreams/po03/successor/g1/packaging.json",
+      "sha256": "b6eb08fba71e72665216447ef813159165ac7c5a383e1462c319656d8ee6bae2"
+    },
+    {
+      "path": "workstreams/po03/successor/g2/successor.py",
+      "sha256": "7bf5c803be1ee02103cada952e3ea8a6e41cf19832beca91ce52a3307c2c47aa"
+    },
+    {
+      "path": "workstreams/po03/successor/g2/lineage.json",
+      "sha256": "f0c272ee29770a7a1b97382d9cc1fa045f2e88c194f91686513bd8caa28bef6e"
+    },
+    {
+      "path": "workstreams/po03/successor/suite/public/cases.json",
+      "sha256": "a370e60300678e234cbfc7751ed0739a7a5ae82de7024f9027b5ccc451eeaa10"
+    },
+    {
+      "path": "workstreams/po03/successor/suite/holdout/cases.json",
+      "sha256": "828c8ca11be242ea3e111bb7bf072956a8a6d81531a9516c7a2e73c5775d0f1b"
+    },
+    {
+      "path": "workstreams/po03/successor/suite/holdout/a6-source-cases.json",
+      "sha256": "52ac6507f66086ff339c3659b681986f1337cea08411d099493b14b65c3d90ef"
+    },
+    {
+      "path": "workstreams/po03/successor/suite/holdout/provenance.json",
+      "sha256": "f3c539f9f70126536be43647f8a883e034b45cb035be850a2c231d09727f51d6"
+    },
+    {
+      "path": "workstreams/po03/successor/suite/lift-preregistration.json",
+      "sha256": "e581c17232488e73f0fcd1add857c3b42e975a52951d2aaa3c1fb8fa633640b3"
+    },
+    {
+      "path": "workstreams/po03/successor/suite/suite-manifest.json",
+      "sha256": "117c9bfe17c2d29465b37f0f91bc4e914c5a6722678686e0de6696f9ab10f3a0"
+    },
+    {
+      "path": "workstreams/po03/successor/scores/generation-comparison.json",
+      "sha256": "72d1b79b21e1c3cace823da242aeb00e704eee2facb1a45408b1daf673f46d35"
+    },
+    {
+      "path": "workstreams/po03/successor/lessons/lessons.json",
+      "sha256": "7cc49f74f4c5daa0580b374779679ea472627b4f1ddf1fa5f9b4eedbcb287859"
+    },
+    {
+      "path": "workstreams/po03/successor/self-readback-audit.json",
+      "sha256": "0f9ad10ef389b6381351238db55e2b870a1c5552b2f273514c214f5bcff29d20"
+    }
+  ],
+  "boundaries": [
+    {
+      "boundary": "recurrence tests are authored by this cohort",
+      "detail": "a8-u06's frozen acceptance asks for a recurrence test authored by a different owner. Every test under workstreams/po03/tests/test_a8_ is authored by po03-worker-a8. The material each test is bound to is independent - a6's evaluator-held cases and a10's published audit findings - but the test code is not.",
+      "status": "NOT_YET"
+    },
+    {
+      "boundary": "no a8 unit has been independently accepted",
+      "detail": "At a6's scoring snapshot this branch was absent from a6's fetch, so a6 recorded all six a8 units as unavailable evidence rather than as quality failures. Absence of an adverse finding is not acceptance.",
+      "status": "NOT_YET"
+    },
+    {
+      "boundary": "this cohort's own result records do not resolve at their declared commit",
+      "detail": "Every a8 result record declares a result_commit_id that does not contain it, because make_result.py resolves that field to HEAD before the record is committed. One record resolves to a stale earlier version of itself, which is worse than absent: an existence check would accept it. All artifact claims do read back byte-exact at their declared commits, so no evidence is lost, but a parent ingesting these records must resolve them at the branch head. Audited in workstreams/po03/successor/self-readback-audit.json; the tool that writes the records is coordinator-owned and was not modified. This is the defect class lesson L-08 names and G2's change C-09 refuses, reproduced on this cohort's own output.",
+      "status": "NOT_SUPPORTED"
+    },
+    {
+      "boundary": "the live control plane still carries the defects G2 fixes",
+      "detail": "workstreams/po03/tools/control_plane.py is coordinator-owned and was not modified. G2 is a successor generation and a proposal, not a deployment.",
+      "status": "NOT_SUPPORTED"
+    },
+    {
+      "boundary": "derived bytecode remains tracked outside this cohort's ownership",
+      "detail": "Two tracked .pyc files remain under workstreams/po03/tests/ and workstreams/po03/tools/. check_custody_hygiene.py reports them and refuses any under owned paths; lesson L-13 is held at RETEST rather than closed.",
+      "status": "NOT_YET"
+    }
+  ],
+  "branch": "cursor/po03-a8-successor-generations-ed20",
+  "cohort_id": "a8",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "commission_revision": "v002",
+  "consumers": {
+    "workstreams/po03/metrics/generation-comparison.json": "owned by po03-worker-a7, which consumes the scores under successor/scores/; this cohort did not write into workstreams/po03/metrics/"
+  },
+  "decision_changed": [],
+  "function": "successor-generation test: three measured generations, each executable code with tests",
+  "generated_by": "workstreams/po03/successor/write_receipt.py",
+  "generations": {
+    "G0": {
+      "entry_point": "workstreams/po03/successor/g0/run.py",
+      "false_completions_holdout": 3,
+      "false_completions_public": 3,
+      "holdout": "0/10",
+      "label": "pre-amendment receipt-file controller",
+      "public": "3/31",
+      "source": "workstreams/po03/successor/g0/controller.py",
+      "source_sha256": "7f608f0c22251d5f0e298061d9fa9092d690b7c10be7661f7e4a20b9af52b676"
+    },
+    "G1": {
+      "entry_point": "workstreams/po03/successor/g1/run.py",
+      "false_completions_holdout": 2,
+      "false_completions_public": 1,
+      "holdout": "7/10",
+      "label": "high-scale transactional factory",
+      "public": "21/31",
+      "source": "workstreams/po03/successor/g1/factory.py",
+      "source_sha256": "7a63f8a8ab5a91e26c16f699d90c585b015d1f9ce9803e7f8b96ba31d321f50a"
+    },
+    "G2": {
+      "entry_point": "workstreams/po03/successor/g2/run.py",
+      "false_completions_holdout": 0,
+      "false_completions_public": 0,
+      "holdout": "10/10",
+      "label": "successor custody engine compiled from G1 failures",
+      "public": "31/31",
+      "source": "workstreams/po03/successor/g2/successor.py",
+      "source_sha256": "7bf5c803be1ee02103cada952e3ea8a6e41cf19832beca91ce52a3307c2c47aa"
+    }
+  },
+  "lessons": {
+    "acceptance_met": true,
+    "acceptance_threshold": 3,
+    "dispositions_used": {
+      "DELETE": [
+        "L-14"
+      ],
+      "REJECT": [
+        "L-09"
+      ],
+      "RETAIN": [
+        "L-01",
+        "L-02",
+        "L-03",
+        "L-05",
+        "L-06",
+        "L-08",
+        "L-11",
+        "L-12"
+      ],
+      "RETEST": [
+        "L-07",
+        "L-13"
+      ],
+      "SUPERSEDE": [
+        "L-04",
+        "L-10"
+      ]
+    },
+    "independently_supported_count": 10,
+    "lesson_count": 14,
+    "qualifying_count": 10,
+    "register": "workstreams/po03/successor/lessons/lessons.json",
+    "verification_command": "python3 -I workstreams/po03/successor/lessons/build_lessons.py --verify-support"
+  },
+  "measurement": {
+    "comparisons": [
+      {
+        "baseline": "G0",
+        "candidate": "G1",
+        "lift": 0.5806,
+        "suite": "public",
+        "unmet_conditions": [
+          "L2-no-false-completion",
+          "L4-no-per-case-regression",
+          "L6-critical-correctness-complete"
+        ],
+        "verdict": "NOT_YET"
+      },
+      {
+        "baseline": "G0",
+        "candidate": "G1",
+        "lift": 0.7,
+        "suite": "holdout",
+        "unmet_conditions": [
+          "L2-no-false-completion",
+          "L6-critical-correctness-complete"
+        ],
+        "verdict": "NOT_YET"
+      },
+      {
+        "baseline": "G1",
+        "candidate": "G2",
+        "lift": 0.3226,
+        "suite": "public",
+        "unmet_conditions": [],
+        "verdict": "PASS"
+      },
+      {
+        "baseline": "G1",
+        "candidate": "G2",
+        "lift": 0.3,
+        "suite": "holdout",
+        "unmet_conditions": [],
+        "verdict": "PASS"
+      },
+      {
+        "baseline": "G0",
+        "candidate": "G2",
+        "lift": 1.0,
+        "suite": "holdout",
+        "unmet_conditions": [],
+        "verdict": "PASS"
+      }
+    ],
+    "headline": {
+      "baseline": "G1",
+      "candidate": "G2",
+      "lift": 0.3,
+      "metric_id": "holdout_pass_rate",
+      "reason": "every preregistered condition held",
+      "suite": "holdout",
+      "verdict": "PASS"
+    },
+    "preregistration": {
+      "frozen_at_commit": "declared before G2 existed in the tree and before any generation was scored",
+      "metric_id": "holdout_pass_rate",
+      "path": "workstreams/po03/successor/suite/lift-preregistration.json",
+      "sha256": "e581c17232488e73f0fcd1add857c3b42e975a52951d2aaa3c1fb8fa633640b3"
+    },
+    "reproduction_command": "python3 -I workstreams/po03/successor/score_generations.py --check",
+    "test_gate": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py'"
+  },
+  "merge_authority": false,
+  "owner": "po03-worker-a8",
+  "po01_non_interference": true,
+  "read_back_verification": "git cat-file blob origin/cursor/po03-a8-successor-generations-ed20:<path> | sha256sum must match the artifact hashes above. Resolve at the branch head, not at a record's declared result_commit_id - see the boundary on result records above.",
+  "receipt_id": "RCP-PO03-A8-SUCCESSOR-GENERATION-20260822-v001",
+  "state": "RESULT_COMMITTED",
+  "suites": [
+    {
+      "authored_by": "po03-worker-a8",
+      "case_count": 31,
+      "case_semantic_digest": "a412c024658799a86912864a4ecc661ee22720a85c10821205dbd94ccb60980f",
+      "case_set_id": "po03-a8-public-custody-suite-v001",
+      "file_sha256": "a370e60300678e234cbfc7751ed0739a7a5ae82de7024f9027b5ccc451eeaa10",
+      "key": "public",
+      "path": "workstreams/po03/successor/suite/public/cases.json",
+      "role": "public"
+    },
+    {
+      "authored_by": "po03-worker-a6",
+      "case_count": 10,
+      "case_semantic_digest": "c2fb7647a0d4f008556e2cffb63371c0e4816ddceede203ed9e115f9db383b59",
+      "case_set_id": "po03-a8-holdout-binding-of-po03-a6-hidden-custody-cases-v002",
+      "file_sha256": "828c8ca11be242ea3e111bb7bf072956a8a6d81531a9516c7a2e73c5775d0f1b",
+      "key": "holdout",
+      "path": "workstreams/po03/successor/suite/holdout/cases.json",
+      "role": "holdout"
+    }
+  ],
+  "units": [
+    {
+      "outcome": "G0 reconstructed as executable code from immutable pre-amendment source",
+      "result_record": "workstreams/po03/control/units/a8/a8-u01.json",
+      "state": "RESULT_COMMITTED",
+      "unit_id": "a8-u01"
+    },
+    {
+      "outcome": "G1 packaged as a generation runnable from its own entry point",
+      "result_record": "workstreams/po03/control/units/a8/a8-u02.json",
+      "state": "RESULT_COMMITTED",
+      "unit_id": "a8-u02"
+    },
+    {
+      "outcome": "public suite frozen, a6 holdout bound, lift metric preregistered",
+      "result_record": "workstreams/po03/control/units/a8/a8-u03.json",
+      "state": "RESULT_COMMITTED",
+      "unit_id": "a8-u03"
+    },
+    {
+      "outcome": "G2 compiled from G1 failures and accepted lessons with explicit lineage",
+      "result_record": "workstreams/po03/control/units/a8/a8-u04.json",
+      "state": "RESULT_COMMITTED",
+      "unit_id": "a8-u04"
+    },
+    {
+      "outcome": "all three generations scored on identical frozen inputs",
+      "result_record": "workstreams/po03/control/units/a8/a8-u05.json",
+      "state": "RESULT_COMMITTED",
+      "unit_id": "a8-u05"
+    },
+    {
+      "outcome": "lesson register with mechanism, recurrence test and disposition",
+      "result_record": "workstreams/po03/control/units/a8/a8-u06.json",
+      "state": "RESULT_COMMITTED",
+      "unit_id": "a8-u06"
+    }
+  ]
+}
