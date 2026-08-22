@@ -1,0 +1,552 @@
+{
+  "acceptance": {
+    "automatic_resume_or_rerun": {
+      "observed": false,
+      "required": true
+    },
+    "committed_result_recovery": {
+      "injected": 23,
+      "locator_only_recovered": 3,
+      "observed_percent": 0,
+      "reason": "Three ledger commit-id strings survived process loss, but no scanner path read result bytes back from a durable result branch.",
+      "recovered_with_hash_and_bytes_from_durable_sink": 0,
+      "required_percent": 100
+    },
+    "complete_hash_coverage": {
+      "observed": false,
+      "reason": "Remote commit existence is not verified and committed artifacts are not re-hashed during recovery.",
+      "required": true
+    },
+    "no_founder_relay": {
+      "count": 0,
+      "observed": true,
+      "required": true
+    },
+    "status": "FAIL",
+    "zero_duplicate_external_effects": {
+      "count": 240,
+      "observed": false,
+      "required": true
+    },
+    "zero_false_completion": {
+      "count": 29,
+      "observed": false,
+      "required": true
+    }
+  },
+  "branch": "cursor/po03-a2-fault-recovery-ed20",
+  "code2_fixture": {
+    "bytes": 878,
+    "path": "workstreams/po03/faults/fixtures/po02-code2-lost-return.json",
+    "sha256": "940861a2dcd4575e7386b1372257ab7384e66f3380154b9fc8f071a09e234419"
+  },
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "commission_revision": "v002",
+  "control_plane": {
+    "bytes": 29552,
+    "path": "workstreams/po03/tools/control_plane.py",
+    "sha256": "9c3d3c95a7bd333c8e2e9f19c2095a9cfe7520ae5f1adafd71b4199b135f84c8"
+  },
+  "decision_changed": [],
+  "defects": [
+    {
+      "finding": "scan_recovery is observational only: it writes a report but emits no LEASE_EXPIRED or RETRY_SCHEDULED event and executes no lease, resume, rerun, or result-slot reconciliation.",
+      "id": "A2-CP-001",
+      "reproducer": "a2-u01 / a2-u02 / a2-u04 / a2-u10"
+    },
+    {
+      "finding": "append_event has an unlocked read-verify-append sequence; concurrent writers reuse seq and prev_sha256, yielding multiple PARENT_INGESTED rows and a broken chain.",
+      "id": "A2-CP-002",
+      "reproducer": "a2-u07; 200 controlled interleavings"
+    },
+    {
+      "finding": "ingest_result verifies only the local working-tree artifact. It accepts an arbitrary non-empty result_commit_id and locator without immutable remote read-back.",
+      "id": "A2-CP-003",
+      "reproducer": "a2-u05 at every lifecycle transition"
+    },
+    {
+      "finding": "Fence validation rejects only incoming_fence < current_fence. It accepts an unissued higher fence without matching the active lease, lease_id, worker, or idempotency key.",
+      "id": "A2-CP-004",
+      "reproducer": "a2-u06 at every lifecycle transition"
+    },
+    {
+      "finding": "Artifact rejection raises an exception without a RECOVERY_REQUIRED event; committed artifacts are never re-hashed by recovery scanning.",
+      "id": "A2-CP-005",
+      "reproducer": "a2-u08 corruption and deletion cases"
+    },
+    {
+      "finding": "ingest_result accepts a valid PROVIDER_COMPLETED_UNCOMMITTED document with zero artifacts and no commit, then appends PARENT_INGESTED and strands it in a terminal projection.",
+      "id": "A2-CP-006",
+      "reproducer": "a2-u12 at every lifecycle transition"
+    },
+    {
+      "finding": "The generic event command/append path enforces neither lifecycle transitions nor actor authority; a worker can append COMPLETED without a result commit.",
+      "id": "A2-CP-007",
+      "reproducer": "FrozenControlPlaneDefects.test_defect_worker_event_must_not_set_completed"
+    },
+    {
+      "finding": "No push/fetch/remote read-back or retry/backoff operation exists in the control plane, so network interruption recovery is not implemented or injectable.",
+      "id": "A2-CP-008",
+      "reproducer": "a2-u09"
+    },
+    {
+      "finding": "Recovery reads only the checked-out ledger and cannot enumerate deterministic result branches or recover their commits from a remote.",
+      "id": "A2-CP-009",
+      "reproducer": "a2-u11 local bare-remote clean-clone injection"
+    }
+  ],
+  "generated_at": "2026-08-22T07:18:45Z",
+  "hypotheses_falsified": [
+    {
+      "reason": "Visibility in resumable_units did not execute re-lease or rerun.",
+      "unit_id": "a2-u01"
+    },
+    {
+      "reason": "Scanner reconciliation never inspected the durable result slot after callback loss.",
+      "unit_id": "a2-u02"
+    },
+    {
+      "reason": "No automatic action distinguishes and recovers either commit boundary.",
+      "unit_id": "a2-u04"
+    },
+    {
+      "reason": "A local artifact plus arbitrary commit string was treated as a durable remote locator.",
+      "unit_id": "a2-u05"
+    },
+    {
+      "reason": "Expiry does not evict automatically and unissued higher fences bypass ownership.",
+      "unit_id": "a2-u06"
+    },
+    {
+      "reason": "Identical callbacks are not harmless under a forced concurrent read/append interleaving.",
+      "unit_id": "a2-u07"
+    },
+    {
+      "reason": "Artifact loss after COMPLETED is not rechecked, and ingest rejection does not schedule recovery.",
+      "unit_id": "a2-u08"
+    },
+    {
+      "reason": "Projection reconstruction succeeds, but the compound hypothesis also required in-flight resume.",
+      "unit_id": "a2-u10"
+    },
+    {
+      "reason": "The scanner does not enumerate or reconcile remote result branches after provider loss.",
+      "unit_id": "a2-u11"
+    },
+    {
+      "reason": "Classification succeeds, but the fixture is admitted to PARENT_INGESTED and no rerun occurs.",
+      "unit_id": "a2-u12"
+    }
+  ],
+  "hypotheses_not_falsified": [
+    {
+      "reason": "All 20 partial artifact/manifest writes were rejected.",
+      "unit_id": "a2-u03"
+    }
+  ],
+  "lifecycle": [
+    "CREATED",
+    "LEASED",
+    "RUNNING",
+    "CHECKPOINTED",
+    "RESULT_STAGING",
+    "RESULT_STAGED",
+    "RESULT_VERIFIED",
+    "RESULT_COMMITTED",
+    "PARENT_INGESTED",
+    "COMPLETED"
+  ],
+  "limitations": [
+    "The runtime-loss test used a dependency-free local bare git remote because tests are required to run without network.",
+    "The live control plane contains no transport operation, so real network retry/backoff cannot be injected.",
+    "PO-02 Code-2 bytes and original immutable input are absent; the fixture preserves that boundary and does not fabricate them."
+  ],
+  "not_supported": [
+    {
+      "boundary": "NOT_SUPPORTED: control_plane.py exposes no push, fetch, remote read-back, transport, retry, or backoff operation; an offline injector has no network boundary to intercept.",
+      "unit_id": "a2-u09"
+    }
+  ],
+  "protocol_version": "OBZIO-PO03-RECOVERY-FAULT-MATRIX-v1",
+  "rows": [
+    {
+      "disposition": "FAILED",
+      "duplicate_external_effect_count": 0,
+      "false_completion_count": 0,
+      "fault_class": "process/session loss",
+      "injection_count": 10,
+      "injector_artifact": {
+        "bytes": 391,
+        "path": "workstreams/po03/faults/inject_process_loss.py",
+        "sha256": "e045018b957e82777c4b791a91d36ad228f72c72cababc5d41dcfa22326b4266"
+      },
+      "lifecycle_transition_count": 10,
+      "outcome": "Committed ledger state survived process loss, but no uncommitted task was automatically re-leased or rerun.",
+      "outcome_artifact": {
+        "bytes": 4384,
+        "path": "workstreams/po03/faults/outcomes/a2-u01.json",
+        "sha256": "1ac345a0c15df4a9734e1d27de690b2da71b2454a8607a14abfe1bd5fccf8f9a"
+      },
+      "recovery_time": {
+        "maximum": 7500428,
+        "median": 700009,
+        "minimum": 595238,
+        "total": 13805293,
+        "unit": "nanoseconds",
+        "wall_total": 70316842
+      },
+      "status": "FAIL",
+      "test_command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a2_*.py' -v",
+      "test_result": "OK (15 tests; expected failures=8)",
+      "unit_id": "a2-u01"
+    },
+    {
+      "disposition": "FAILED",
+      "duplicate_external_effect_count": 0,
+      "false_completion_count": 0,
+      "fault_class": "lost return message",
+      "injection_count": 10,
+      "injector_artifact": {
+        "bytes": 385,
+        "path": "workstreams/po03/faults/inject_lost_return.py",
+        "sha256": "7416baee5738e6e1a50e552c5d421d94bacfb3258a4db2daf41c2c108ffb3cb4"
+      },
+      "lifecycle_transition_count": 10,
+      "outcome": "A durable committed result with a dropped callback was never discovered or ingested by the scanner.",
+      "outcome_artifact": {
+        "bytes": 4097,
+        "path": "workstreams/po03/faults/outcomes/a2-u02.json",
+        "sha256": "0416a8781b157de21cc06a561489a2ec97f410995ca5509e1da51a6ad016571c"
+      },
+      "recovery_time": {
+        "maximum": 7269944,
+        "median": 313366,
+        "minimum": 184853,
+        "total": 10351206,
+        "unit": "nanoseconds",
+        "wall_total": 62036828
+      },
+      "status": "FAIL",
+      "test_command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a2_*.py' -v",
+      "test_result": "OK (15 tests; expected failures=8)",
+      "unit_id": "a2-u02"
+    },
+    {
+      "disposition": "READY_TO_COMMIT",
+      "duplicate_external_effect_count": 0,
+      "false_completion_count": 0,
+      "fault_class": "partial write",
+      "injection_count": 20,
+      "injector_artifact": {
+        "bytes": 378,
+        "path": "workstreams/po03/faults/inject_partial_write.py",
+        "sha256": "b2086fa75c7b249a25da5d5f41a8038f5f6f532a793003289fdca677d219b67b"
+      },
+      "lifecycle_transition_count": 10,
+      "outcome": "All truncated-artifact and half-manifest injections were rejected with zero false completion.",
+      "outcome_artifact": {
+        "bytes": 7466,
+        "path": "workstreams/po03/faults/outcomes/a2-u03.json",
+        "sha256": "ef977e2139f047efb1d86d1ddd0767d7cc4e9503da69c2348b9cb14aad967858"
+      },
+      "recovery_time": {
+        "maximum": 508634,
+        "median": 168969,
+        "minimum": 16187,
+        "total": 4025754,
+        "unit": "nanoseconds",
+        "wall_total": 87416427
+      },
+      "status": "PASS",
+      "test_command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a2_*.py' -v",
+      "test_result": "OK (15 tests; expected failures=8)",
+      "unit_id": "a2-u03"
+    },
+    {
+      "disposition": "FAILED",
+      "duplicate_external_effect_count": 0,
+      "false_completion_count": 0,
+      "fault_class": "pre- and post-commit failure",
+      "injection_count": 10,
+      "injector_artifact": {
+        "bytes": 383,
+        "path": "workstreams/po03/faults/inject_commit_boundary.py",
+        "sha256": "f449c26697f341c907e4aa0e72526f29a5066b46626e474b62aabc67f5819a2c"
+      },
+      "lifecycle_transition_count": 10,
+      "outcome": "Sequential replay was idempotent, but neither pre-commit rerun nor post-commit discovery exists.",
+      "outcome_artifact": {
+        "bytes": 3710,
+        "path": "workstreams/po03/faults/outcomes/a2-u04.json",
+        "sha256": "47745a78ee65087427643bac99c3701007850f8f4cb1aebf8e3e0dd5b0745290"
+      },
+      "recovery_time": {
+        "maximum": 7906235,
+        "median": 1160693,
+        "minimum": 875340,
+        "total": 18454072,
+        "unit": "nanoseconds",
+        "wall_total": 72288772
+      },
+      "status": "FAIL",
+      "test_command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a2_*.py' -v",
+      "test_result": "OK (15 tests; expected failures=8)",
+      "unit_id": "a2-u04"
+    },
+    {
+      "disposition": "FAILED",
+      "duplicate_external_effect_count": 0,
+      "false_completion_count": 10,
+      "fault_class": "pre- and post-push failure",
+      "injection_count": 20,
+      "injector_artifact": {
+        "bytes": 381,
+        "path": "workstreams/po03/faults/inject_push_boundary.py",
+        "sha256": "35aaa54e239ab44b5d988e66e8275f93af147ed31e125055f1e0cee377ef2942"
+      },
+      "lifecycle_transition_count": 10,
+      "outcome": "All absent-remote commit locators were ingested and no pre-push failure triggered rerun.",
+      "outcome_artifact": {
+        "bytes": 6386,
+        "path": "workstreams/po03/faults/outcomes/a2-u05.json",
+        "sha256": "94f10c6af6832919de8cb581fce736fa0fac9fefa58e6350e6bdb0220640f4af"
+      },
+      "recovery_time": {
+        "maximum": 7127339,
+        "median": 1063382,
+        "minimum": 214389,
+        "total": 25628111,
+        "unit": "nanoseconds",
+        "wall_total": 108075465
+      },
+      "status": "FAIL",
+      "test_command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a2_*.py' -v",
+      "test_result": "OK (15 tests; expected failures=8)",
+      "unit_id": "a2-u05"
+    },
+    {
+      "disposition": "FAILED",
+      "duplicate_external_effect_count": 0,
+      "false_completion_count": 10,
+      "fault_class": "stale lease",
+      "injection_count": 10,
+      "injector_artifact": {
+        "bytes": 385,
+        "path": "workstreams/po03/faults/inject_stale_lease.py",
+        "sha256": "787ebf4ddbcca44364b240f45b41a5c4c6580ea6483b0f84962df66bd4a79970"
+      },
+      "lifecycle_transition_count": 10,
+      "outcome": "All stale lower fences were rejected, but expiry was passive and all unissued higher fences were accepted.",
+      "outcome_artifact": {
+        "bytes": 4496,
+        "path": "workstreams/po03/faults/outcomes/a2-u06.json",
+        "sha256": "2fa899e164532fe6f6f83026e4d3f56948e7447df50e41cd33c634b69fad58f6"
+      },
+      "recovery_time": {
+        "maximum": 12858891,
+        "median": 3555590,
+        "minimum": 2979076,
+        "total": 48017022,
+        "unit": "nanoseconds",
+        "wall_total": 96147491
+      },
+      "status": "FAIL",
+      "test_command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a2_*.py' -v",
+      "test_result": "OK (15 tests; expected failures=8)",
+      "unit_id": "a2-u06"
+    },
+    {
+      "disposition": "FAILED",
+      "duplicate_external_effect_count": 240,
+      "false_completion_count": 0,
+      "fault_class": "duplicate callback under concurrency",
+      "injection_count": 200,
+      "injector_artifact": {
+        "bytes": 385,
+        "path": "workstreams/po03/faults/inject_concurrent_duplicate.py",
+        "sha256": "efb413d04df4cb81ee97ea3e60682fcc958df2cb6c6380a320a1a9ffa8dcd646"
+      },
+      "lifecycle_transition_count": 10,
+      "outcome": "All 200 controlled concurrent duplicate interleavings violated exactly-once ledger custody or chain integrity.",
+      "outcome_artifact": {
+        "bytes": 97495,
+        "path": "workstreams/po03/faults/outcomes/a2-u07.json",
+        "sha256": "ce6c28c9bbf873e9ec55caf5a3683681c95c0fe97a43ad9ef33d114a495ad092"
+      },
+      "recovery_time": {
+        "maximum": 6201598,
+        "median": 3238341,
+        "minimum": 2236122,
+        "total": 667547613,
+        "unit": "nanoseconds",
+        "wall_total": 1670670669
+      },
+      "status": "FAIL",
+      "test_command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a2_*.py' -v",
+      "test_result": "OK (15 tests; expected failures=8)",
+      "unit_id": "a2-u07"
+    },
+    {
+      "disposition": "FAILED",
+      "duplicate_external_effect_count": 0,
+      "false_completion_count": 2,
+      "fault_class": "corrupt or missing artifact",
+      "injection_count": 20,
+      "injector_artifact": {
+        "bytes": 381,
+        "path": "workstreams/po03/faults/inject_artifact_loss.py",
+        "sha256": "c760a5ef2421066d73a7221eeacad39aed0a98ab4b4bcedbbdf1d7a4a09ec27e"
+      },
+      "lifecycle_transition_count": 10,
+      "outcome": "Corruption/deletion was rejected during ingest, but no RECOVERY_REQUIRED transition occurred and post-completion loss was invisible.",
+      "outcome_artifact": {
+        "bytes": 7841,
+        "path": "workstreams/po03/faults/outcomes/a2-u08.json",
+        "sha256": "9b12eea81d457b1b5f41ffba21105689b6ffe82100b64093685d879e5f331ac2"
+      },
+      "recovery_time": {
+        "maximum": 512379,
+        "median": 397756,
+        "minimum": 318496,
+        "total": 8063383,
+        "unit": "nanoseconds",
+        "wall_total": 94751381
+      },
+      "status": "FAIL",
+      "test_command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a2_*.py' -v",
+      "test_result": "OK (15 tests; expected failures=8)",
+      "unit_id": "a2-u08"
+    },
+    {
+      "disposition": "NOT_YET",
+      "duplicate_external_effect_count": 0,
+      "false_completion_count": 0,
+      "fault_class": "network interruption",
+      "injection_count": 10,
+      "injector_artifact": {
+        "bytes": 389,
+        "path": "workstreams/po03/faults/inject_network_interruption.py",
+        "sha256": "26544b643446be033a0f665315d7ec600bd4a16f6eab19963f5f692fa5685d10"
+      },
+      "lifecycle_transition_count": 10,
+      "outcome": "NOT_SUPPORTED: the live control plane has no network transport or retry/backoff boundary to inject.",
+      "outcome_artifact": {
+        "bytes": 5346,
+        "path": "workstreams/po03/faults/outcomes/a2-u09.json",
+        "sha256": "62ac31abea4ed7f702b130334d01460efa89538303c4ef9891ecb419807b0c1b"
+      },
+      "recovery_time": {
+        "maximum": 67253,
+        "median": 52684,
+        "minimum": 49642,
+        "total": 546092,
+        "unit": "nanoseconds",
+        "wall_total": 654187
+      },
+      "status": "NOT_SUPPORTED",
+      "test_command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a2_*.py' -v",
+      "test_result": "OK (15 tests; expected failures=8)",
+      "unit_id": "a2-u09"
+    },
+    {
+      "disposition": "FAILED",
+      "duplicate_external_effect_count": 0,
+      "false_completion_count": 0,
+      "fault_class": "parent restart with zero memory",
+      "injection_count": 10,
+      "injector_artifact": {
+        "bytes": 389,
+        "path": "workstreams/po03/faults/inject_parent_restart.py",
+        "sha256": "61c497a1607438cbc40311be590e8dcc16154b1ac2a7ce1b182748a0a01bd6a1"
+      },
+      "lifecycle_transition_count": 10,
+      "outcome": "Zero-memory projection rebuild was byte-identical, but in-flight units did not resume.",
+      "outcome_artifact": {
+        "bytes": 3940,
+        "path": "workstreams/po03/faults/outcomes/a2-u10.json",
+        "sha256": "5674b2f4bcdc02994ff85f38949a3c975f6058b891525e4a79be3dee989e0ae0"
+      },
+      "recovery_time": {
+        "maximum": 7994602,
+        "median": 756793,
+        "minimum": 599107,
+        "total": 14637434,
+        "unit": "nanoseconds",
+        "wall_total": 61392634
+      },
+      "status": "FAIL",
+      "test_command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a2_*.py' -v",
+      "test_result": "OK (15 tests; expected failures=8)",
+      "unit_id": "a2-u10"
+    },
+    {
+      "disposition": "FAILED",
+      "duplicate_external_effect_count": 0,
+      "false_completion_count": 0,
+      "fault_class": "entire provider-runtime loss",
+      "injection_count": 10,
+      "injector_artifact": {
+        "bytes": 389,
+        "path": "workstreams/po03/faults/inject_runtime_loss.py",
+        "sha256": "58363720a888344e8d3f2afaf7f08d10337152f12854a43201e2fdcb19f9ebb3"
+      },
+      "lifecycle_transition_count": 10,
+      "outcome": "A fresh coordinator-branch clone failed to discover committed result branches in a local git remote.",
+      "outcome_artifact": {
+        "bytes": 4522,
+        "path": "workstreams/po03/faults/outcomes/a2-u11.json",
+        "sha256": "c703e294ff05dca48219fc6b25bbd33035ac5b321a5b5340bffdb94631c4704b"
+      },
+      "recovery_time": {
+        "maximum": 15420489,
+        "median": 9998050,
+        "minimum": 8332664,
+        "total": 102911172,
+        "unit": "nanoseconds",
+        "wall_total": 30342559669
+      },
+      "status": "FAIL",
+      "test_command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a2_*.py' -v",
+      "test_result": "OK (15 tests; expected failures=8)",
+      "unit_id": "a2-u11"
+    },
+    {
+      "disposition": "FAILED",
+      "duplicate_external_effect_count": 0,
+      "false_completion_count": 7,
+      "fault_class": "PO-02 Code-2 lost-return fixture",
+      "injection_count": 10,
+      "injector_artifact": {
+        "bytes": 375,
+        "path": "workstreams/po03/faults/inject_code2_fixture.py",
+        "sha256": "e46e2ba171ea2bc185835ded234bdca6847c800c8ed811d68b72c8c6e1d9f6fd"
+      },
+      "lifecycle_transition_count": 10,
+      "outcome": "Code-2 was classified uncommitted, then wrongly admitted as PARENT_INGESTED with no automatic rerun.",
+      "outcome_artifact": {
+        "bytes": 6487,
+        "path": "workstreams/po03/faults/outcomes/a2-u12.json",
+        "sha256": "1ad71890407fd00919daf91a1acec73251c6331b4631206faf7ca73e2aedbc83"
+      },
+      "recovery_time": {
+        "maximum": 7987772,
+        "median": 1057047,
+        "minimum": 934922,
+        "total": 18076388,
+        "unit": "nanoseconds",
+        "wall_total": 46769517
+      },
+      "status": "FAIL",
+      "test_command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a2_*.py' -v",
+      "test_result": "OK (15 tests; expected failures=8)",
+      "unit_id": "a2-u12"
+    }
+  ],
+  "source_commit": "cd143d88863e340786646c70447cea65a62833eb",
+  "strategy_restarted": false,
+  "test_artifact": {
+    "bytes": 6934,
+    "path": "workstreams/po03/tests/test_a2_fault_recovery.py",
+    "sha256": "044e88b83dad1daea3d64d5ce8c2e4532f966ad9d87e09b2903df603da82ff65"
+  }
+}

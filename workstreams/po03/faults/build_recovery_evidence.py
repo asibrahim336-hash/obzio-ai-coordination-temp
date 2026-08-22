@@ -211,7 +211,7 @@ def build(matrix_path: Path, receipt_path: Path) -> None:
     committed_injected = sum(
         document.get("committed_results", {}).get("injected", 0) for document in outcomes
     )
-    committed_recovered = sum(
+    committed_locators_recovered = sum(
         document.get("committed_results", {}).get("recovered", 0) for document in outcomes
     )
     false_completions = sum(document["false_completion_count"] for document in outcomes)
@@ -251,12 +251,10 @@ def build(matrix_path: Path, receipt_path: Path) -> None:
             "committed_result_recovery": {
                 "required_percent": 100,
                 "injected": committed_injected,
-                "recovered": committed_recovered,
-                "observed_percent": (
-                    round(committed_recovered * 100 / committed_injected, 6)
-                    if committed_injected
-                    else "NOT_YET"
-                ),
+                "recovered_with_hash_and_bytes_from_durable_sink": 0,
+                "observed_percent": 0,
+                "locator_only_recovered": committed_locators_recovered,
+                "reason": "Three ledger commit-id strings survived process loss, but no scanner path read result bytes back from a durable result branch.",
             },
             "automatic_resume_or_rerun": {
                 "required": True,
