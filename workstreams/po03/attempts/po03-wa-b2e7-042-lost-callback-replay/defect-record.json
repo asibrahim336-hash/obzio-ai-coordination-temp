@@ -1,0 +1,56 @@
+{
+  "defect_id": "DEF-PO03-C6-042-LOST-CALLBACK-NOT-REPLAYED",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "cohort": "c6",
+  "task_id": "po03-wa-b2e7-042-lost-callback-replay",
+  "function": "transactional-recovery-and-fault-injection",
+  "falsifiable_hypothesis": "A lost return message is replayed from durable state rather than losing the result.",
+  "verdict": "FAIL",
+  "severity": "COHORT_BAR_BREACH",
+  "cohort_bar_clause_breached": "100 percent recovery of committed results",
+  "mechanism_under_test": "workstreams/po03/tools/transactional_factory.py",
+  "fault_injected": "LOST_RETURN_MESSAGE_AFTER_DURABLE_RESULT_COMMIT",
+  "injected_at_state_transition": "RESULT_COMMITTED -> (callback never delivered)",
+  "observed_behaviour": [
+    "scan_recovery classified the unit RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT",
+    "scan_recovery reported ingested=false and produced zero ingestion records",
+    "the committed result commit is referenced nowhere in the recovery state document",
+    "the committed result document remained byte-exact and readable by immutable object id (1804 bytes)",
+    "false_completion_count remained 0 and no transaction-completed.json was written",
+    "the hash-chained event file chain verified with zero errors"
+  ],
+  "why_this_is_a_defect": "scan_recovery reconciles a unit against control-plane events and ingestion records only. It never enumerates committed result documents, so a result that is durable in Git but unreported is invisible to recovery. The prescribed action reruns the unit from immutable input, which discards an already committed result and repeats the external effect of producing it. Recovery of committed results is therefore 0 percent on this path, not 100 percent.",
+  "what_the_mechanism_does_hold": [
+    "no false completion is produced by the lost callback",
+    "the immutable input capsule survives, so a rerun is possible",
+    "the event chain stays tamper-evident across the fault",
+    "no founder relay is involved in any part of the observed path"
+  ],
+  "repair_candidate": {
+    "path": "workstreams/po03/attempts/po03-wa-b2e7-042-lost-callback-replay/repair_candidate_replay_scan.py",
+    "entry_points": ["committed_result_paths", "discover_committed_results", "replay_scan"],
+    "approach": "enumerate every committed result.json under workstreams/po03/attempts at a revision, then ingest each discovered document through the unmodified ingest_result so fence checking, artifact read-back by immutable object id and duplicate suppression all still apply",
+    "evidence_it_closes_the_gap": [
+      "test_candidate_discovers_the_committed_result_from_git_alone",
+      "test_candidate_replays_the_lost_result_into_parent_ingested",
+      "test_candidate_replay_is_idempotent_across_repeated_scans",
+      "test_candidate_refuses_a_stale_worker_after_ownership_transfer",
+      "test_candidate_never_completes_a_unit"
+    ],
+    "adopted_by_live_mechanism": false,
+    "adoption_authority": "coordinator only; a subordinate producer may not modify workstreams/po03/tools/**"
+  },
+  "reproduction": {
+    "component": "workstreams/po03/attempts/po03-wa-b2e7-042-lost-callback-replay/lost_callback_injector.py",
+    "command": "python3 -I workstreams/po03/attempts/po03-wa-b2e7-042-lost-callback-replay/lost_callback_injector.py",
+    "exit_code_observed": 1,
+    "report": "workstreams/po03/attempts/po03-wa-b2e7-042-lost-callback-replay/injection-report.json",
+    "test_command": "python3 -I -m unittest discover -s workstreams/po03/attempts/po03-wa-b2e7-042-lost-callback-replay -p 'test_*.py' -v",
+    "test_outcome": "12 tests, OK",
+    "test_output": "workstreams/po03/attempts/po03-wa-b2e7-042-lost-callback-replay/test-output.txt"
+  },
+  "test_weakening_check": "no assertion was relaxed to make a test pass; the defect tests assert the observed failing behaviour of the unmodified mechanism and will fail if the mechanism is repaired, at which point the repair candidate tests become the live contract",
+  "obzio_state_claim": "READY_TO_COMMIT",
+  "producer_may_not_accept_own_work": true,
+  "decision_changed": []
+}
