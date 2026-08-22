@@ -1,0 +1,107 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-sol-xhigh",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-002-hidden-state-detector",
+  "cohort": "c1",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c1",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "f5118753006d13670cde640c0dee324e1b5465715d4666b7c2a3003f9e50060d",
+  "frozen_hypothesis": "A suite that silently depends on uncommitted working-tree state can be detected mechanically rather than by inspection.",
+  "frozen_required_deliverable": "A detector that compares a run against the committed tree with a run against a pristine export of the same commit and reports any behavioural divergence as hidden-state dependence.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -I (CPython 3.12.3)",
+    "producer_test_command": "python3 -I test_hidden_state_detector.py -v",
+    "producer_test_output_verbatim": "test_equivalent_behavior_is_not_misclassified (__main__.HiddenStateDetectorTests.test_equivalent_behavior_is_not_misclassified) ... ok\ntest_rejects_commit_other_than_working_head (__main__.HiddenStateDetectorTests.test_rejects_commit_other_than_working_head) ... ok\ntest_reports_uncommitted_behavioral_divergence (__main__.HiddenStateDetectorTests.test_reports_uncommitted_behavioral_divergence) ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 0.921s\n\nOK",
+    "producer_test_exit_code": 0
+  },
+
+  "vacuity_probe": {
+    "method": "Forced the divergence decision to a constant in both directions and re-ran the producer's own tests.",
+    "stub_always_clean": {
+      "mutation": "divergence = False",
+      "producer_tests_exit_code": 1,
+      "failures_detected": 1,
+      "tests_detected_stub": true
+    },
+    "stub_always_dirty": {
+      "mutation": "divergence = True",
+      "producer_tests_exit_code": 1,
+      "failures_detected": 1,
+      "tests_detected_stub": true
+    },
+    "vacuous_test_finding": false,
+    "conclusion": "Not vacuous, and notably the suite pins BOTH directions: it carries a real negative control (test_equivalent_behavior_is_not_misclassified), so a detector that always fires is also rejected."
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-C",
+      "rationale": "The producer only tested hidden state supplied as an UNTRACKED file. The more common real form is a locally MODIFIED tracked file, which the producer's tests never cover.",
+      "construction": "committed probe.py printing 'committed-version'; working tree copy overwritten to print 'locally-modified'; detector run against HEAD.",
+      "observed_output_verbatim": "HC-C exit: 1 hidden_state_dependence: True warm: 'locally-modified\\n' pristine: 'committed-version\\n'",
+      "component_survived": true,
+      "interpretation": "True positive. git archive of the commit correctly ignores the working-tree modification, so the detector generalises beyond the untracked-file case the producer tested."
+    },
+    {
+      "hidden_case_id": "HC-A",
+      "rationale": "Adversarial precision probe: the warm run executes in the repository directory and the pristine run executes in a differently-named export directory. Any command whose output legitimately reflects its own location will diverge for reasons that are not hidden-state dependence.",
+      "construction": "committed probe.py containing 'import os; print(os.path.basename(os.getcwd()))'; NO uncommitted state whatsoever.",
+      "observed_output_verbatim": "HC-A exit: 1 hidden_state_dependence: True\nHC-A warm stdout: 'cwdrepo\\n' pristine stdout: 'exp1\\n'",
+      "component_survived": false,
+      "interpretation": "FALSE POSITIVE. The detector reports hidden-state dependence on a repository that has none. Root cause: compare() decides divergence by raw equality of the whole {returncode, stdout, stderr} triple, and the two runs are structurally guaranteed to differ in working-directory name."
+    },
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "Second precision probe: nondeterministic but entirely committed behaviour.",
+      "construction": "committed probe.py containing 'import random; print(random.random())'; no uncommitted state.",
+      "observed_output_verbatim": "HC-B exit: 1 hidden_state_dependence: True (no uncommitted state exists)",
+      "component_survived": false,
+      "interpretation": "FALSE POSITIVE. Any nondeterministic command output is misreported as hidden-state dependence. Unit 005 in the same cohort explicitly normalises nondeterminism out before comparing; this unit does not."
+    }
+  ],
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET - executed by me under python3 -I.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "MET - 3/3 reproduced independently; evidence.md records the verbatim tail.",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET - 3 artifacts with SHA-256 and byte counts, independently reverified (see verification_commands).",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - acceptance_contract_sha256 equals the frozen hash I recorded before disclosure (f5118753...); independent_acceptance state NOT_TESTED, so no self-acceptance.",
+    "result is committed and read back by a different process from an immutable object id": "MET - reverified from artifact_commit 6947d728e531f624e2d2b1d3a7c27cf71ba799f6 in my own process.",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - PASS.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "NOT_APPLICABLE - not refuted.",
+    "no value, hash, metric or provider capability is invented": "MET - every hash and byte count I recomputed matched."
+  },
+
+  "scope_honesty_assessment": {
+    "producer_declared_limitations": [
+      "Comparison covers supplied-command exit code, stdout, and stderr; behaviorally inert hidden state is not reported."
+    ],
+    "assessment": "The producer honestly declared its FALSE-NEGATIVE boundary (behaviourally inert hidden state) but declared no FALSE-POSITIVE boundary, and HC-A/HC-B show a broad one: cwd-sensitive output and nondeterministic output are both misreported as hidden-state dependence with zero uncommitted state present. Because the two runs execute in different directories by construction, HC-A is not an exotic edge case. This is an undeclared precision limitation, not an invented claim.",
+    "does_it_refute_the_frozen_hypothesis": "No. The frozen hypothesis asserts that hidden-state dependence 'can be detected mechanically rather than by inspection' - a detectability (soundness) claim, and I confirmed detection on both the untracked-file case and my own modified-tracked-file case with zero false negatives observed. Precision is not part of the frozen wording. I therefore reach PASS on the hypothesis while recording the undeclared false-positive class as a mandatory limitation addendum."
+  },
+
+  "verification_commands": {
+    "manifest_artifacts_recomputed": [
+      {"logical_name": "evidence.md", "manifest_bytes": 801, "recomputed_bytes": 801, "manifest_sha256_prefix": "5e20988a6d4e", "match": true},
+      {"logical_name": "hidden_state_detector.py", "manifest_bytes": 3080, "recomputed_bytes": 3080, "manifest_sha256_prefix": "d0db2833eee5", "match": true},
+      {"logical_name": "test_hidden_state_detector.py", "manifest_bytes": 2778, "recomputed_bytes": 2778, "manifest_sha256_prefix": "a55666d83c6d", "match": true}
+    ]
+  },
+
+  "nonportable_artifacts_in_subtree": [],
+  "reproducibility_check": "Producer tests and all three hidden cases were run in fresh python3 -I processes and were stable on repeat.",
+
+  "reviewer_independent_verdict": "PASS",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "AGREE",
+  "divergence_reason": null,
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "All eight frozen criteria are independently satisfied, the tests are non-vacuous in BOTH directions (a real negative control is present), and the detector shows genuine detection power beyond what the producer tested - my modified-tracked-file case (HC-C) was correctly caught. Accepted subject to one mandatory limitation addendum: the detector has an undeclared false-positive class (HC-A cwd-sensitive output, HC-B nondeterministic output), which matters because the warm and pristine runs execute in differently-named directories by construction. That is a precision defect, not a soundness defect, and the frozen hypothesis is a detectability claim, so it does not warrant rejection.",
+  "followups_for_coordinator": [
+    "hidden_state_detector.compare() decides divergence by raw equality of the whole {returncode, stdout, stderr} triple. Reviewer-observed false positives: a committed command printing os.getcwd() basename, and a committed command printing random.random(), are both reported as hidden_state_dependence=true with no uncommitted state present. The producer's declared limitations cover only false negatives; the false-positive class should be declared or normalised out (unit 005 does normalise)."
+  ]
+}

@@ -1,0 +1,107 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-sol-xhigh",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-001-clean-clone-runner",
+  "cohort": "c1",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c1",
+  "cohort_ref_sha": "5c0dfcd8ced545cf122d0ab2d8541dd4f4e561af",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "f19bf86a8fd781a84689a3718159baa63af864b423c3d2d8645817fe506fe9a5",
+  "frozen_hypothesis": "The complete PO-03 suite executes from a fresh clone of an immutable commit with no warm checkout, no provider memory, no /tmp dependency and no uncommitted files.",
+  "frozen_required_deliverable": "A runner that clones the repository at an immutable SHA into a caller-supplied directory, executes the discovered PO-03 tests in a child process, and fails closed if the working tree is dirty or any required input is absent.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -I (CPython 3.12.3)",
+    "producer_test_command": "python3 -I test_clean_clone_runner.py -v",
+    "producer_test_output_verbatim": "test_discovers_nested_committed_tests_by_file_path (__main__.CleanCloneRunnerTests.test_discovers_nested_committed_tests_by_file_path) ... ok\ntest_fails_closed_when_test_dirties_clone (__main__.CleanCloneRunnerTests.test_fails_closed_when_test_dirties_clone) ... ok\ntest_rejects_nonimmutable_commit_name (__main__.CleanCloneRunnerTests.test_rejects_nonimmutable_commit_name) ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 1.090s\n\nOK",
+    "producer_test_exit_code": 0
+  },
+
+  "vacuity_probe": {
+    "method": "Substituted two plausible stubs into the component and re-ran the producer's own test file to see whether the tests can distinguish a component that lacks the mechanism.",
+    "stub_1": {
+      "mutation": "replaced 'dirty = final_status.returncode != 0 or bool(final_status.stdout)' with 'dirty = False' (post-run dirtiness detection removed)",
+      "producer_tests_exit_code": 1,
+      "observed_verbatim": "FAIL: test_fails_closed_when_test_dirties_clone\nAssertionError: 3 != 0\nRan 3 tests in 1.007s\nFAILED (failures=1)",
+      "tests_detected_stub": true
+    },
+    "stub_2": {
+      "mutation": "removed the OBJECT_ID.fullmatch immutable-object-id validation block",
+      "producer_tests_exit_code": 1,
+      "observed_verbatim": "FAIL: test_rejects_nonimmutable_commit_name\nAssertionError: 'full lowercase Git object ID' not found in '{\\n  \"error\": \"checked-out object does not equal requested commit\"\\n}\\n'\nRan 3 tests in 29.462s\nFAILED (failures=1)",
+      "tests_detected_stub": true
+    },
+    "vacuous_test_finding": false,
+    "conclusion": "Tests are not vacuous. Both mechanism removals were caught by the producer's own assertions."
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-A",
+      "rationale": "The producer's tests never cover the central hypothesis condition: a committed test that only passes because of an UNCOMMITTED file in the source working tree. This is the actual warm-checkout dependence the runner is supposed to expose.",
+      "construction": "git repo with a committed test asserting Path('warm_only_helper.txt').exists(); the helper file was created in the source working tree only and never committed.",
+      "observed_output_verbatim": "HC-A warm-source-tree test exit: 0\nHC-A clean-clone runner exit: 3\nHC-A failed_tests: ['workstreams/po03/tests/test_warm.py'] test_count: 1",
+      "component_survived": true,
+      "interpretation": "The test passes (exit 0) in the warm source tree and is correctly reported as FAILED from the clean clone with runner exit 3. The runner has real detection power against uncommitted-state dependence."
+    },
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "The producer's tests only use synthetic fixture repositories. The frozen hypothesis is about the real PO-03 suite, so I ran the runner against the actual repository at the immutable cohort commit.",
+      "construction": "python3 -I clean_clone_runner.py --source /home/ubuntu/po03-worktrees/c1 --commit 5c0dfcd8ced545cf122d0ab2d8541dd4f4e561af --destination <fresh dir>",
+      "observed_output_verbatim": "EXIT=0\ncommit: 5c0dfcd8ced545cf122d0ab2d8541dd4f4e561af\ntest_count: 12\ndirty_after_run: False\nfailed_tests: (empty)\nstderr: (empty)",
+      "component_survived": true,
+      "interpretation": "Non-synthetic confirmation: 12 committed PO-03 test files at the immutable c1 commit all executed from a fresh clone with a clean tree afterwards. This is the strongest available evidence for the frozen hypothesis, scoped to the c1 branch suite."
+    },
+    {
+      "hidden_case_id": "HC-C",
+      "rationale": "Well-formed but nonexistent 40-hex object id: does the runner fail closed or crash?",
+      "construction": "--commit 0000000000000000000000000000000000000001",
+      "observed_output_verbatim": "HC-C exit: 2 | stdout: {\n  \"error\": \"immutable commit checkout failed\",\n  \"stderr\": \"fatal: reference is not a tree: 0000000000000000000000000000000000000001\\n\"\n} | crashed: False",
+      "component_survived": true,
+      "interpretation": "Fails closed with exit 2 and a structured error; no traceback."
+    },
+    {
+      "hidden_case_id": "HC-D",
+      "rationale": "The runner invokes subprocess.run with no timeout. A hanging committed test would hang the runner indefinitely.",
+      "construction": "committed test file containing 'import time; time.sleep(600)'; runner invoked with an external 20s cap.",
+      "observed_output_verbatim": "HC-D: runner HUNG >20s on a hanging committed test (no per-test timeout guard)",
+      "component_survived": false,
+      "interpretation": "Confirmed robustness gap: command() calls subprocess.run without a timeout argument, so the runner cannot fail closed on a hung test. This is NOT one of the eight frozen acceptance criteria and does not by itself refute the frozen hypothesis, so it is recorded as a defect observation rather than a criterion failure."
+    }
+  ],
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET - clean_clone_runner.py executed by me under python3 -I; also invoked as a child with sys.executable -I -B.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "MET - I reproduced 3/3 passing independently; producer evidence.md records the same shape of outcome.",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET with a caveat - 3 artifacts listed, all SHA-256 and byte counts independently reverified exactly. manifest.json and result.json are not self-listed (manifest self-reference is impossible; result.json carries its own manifest_sha256).",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - protocol_version present, attempt/fence/lease/idempotency, result_transaction COMMITTED, independent_acceptance NOT_TESTED (correct: producer did not self-accept).",
+    "result is committed and read back by a different process from an immutable object id": "MET - I independently read blob back via 'git cat-file -p a838fbc...:<path>' in my own process; SHA matched c524e7d4...",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - verdict PASS.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "NOT_APPLICABLE - hypothesis was not refuted; I independently confirmed it.",
+    "no value, hash, metric or provider capability is invented": "MET - I verified the producer-cited clone SHA 5ef49cb148f5186397acf1303f325f726bb58543 exists ('po03: add contract-valid result emitter for subordinate producers') and that it really contains exactly 4 committed test_*.py files under workstreams/po03, matching the producer's '4 committed test files' claim. obzio_state_claim is READY_TO_COMMIT, not COMPLETED."
+  },
+
+  "verification_commands": {
+    "artifact_hash_recheck_verbatim": "c524e7d4471f73e24a6110b7a861037e78c55191e6b425f468c0a234e68ea261  clean_clone_runner.py\n700b5c8f38af57814c7f66d76157360be8cbf9704e5b027f59cf17856f4f2790  evidence.md\n064fb44384060a650c3c28801c294453178adb6c2790e4c5e5a1567d50a3021b  test_clean_clone_runner.py\n5190 clean_clone_runner.py\n2196 evidence.md\n3669 test_clean_clone_runner.py",
+    "manifest_sha256_recheck_verbatim": "b02897e1b9ca5801ff19cf97a6ba0dc52fcd62293ca067e692b1bb96319a15e5  manifest.json",
+    "commit_readback_verbatim": "commit\nANCESTOR_OF_C1=yes\nc524e7d4471f73e24a6110b7a861037e78c55191e6b425f468c0a234e68ea261  -",
+    "cited_sha_existence_verbatim": "5ef49cb po03: add contract-valid result emitter for subordinate producers\n4\nworkstreams/po03/tests/test_check_path_scope.py\nworkstreams/po03/tests/test_factory_custody.py\nworkstreams/po03/tests/test_transactional_factory.py\nworkstreams/po03/tests/test_validate_contracts.py"
+  },
+
+  "nonportable_artifacts_in_subtree": [],
+  "reproducibility_check": "Producer test suite and the real-repository run were each executed in fresh python3 -I processes; results were stable across runs. Runner sets PYTHONDONTWRITEBYTECODE=1 and passes -B to children, so no bytecode is emitted into the clone.",
+
+  "reviewer_independent_verdict": "PASS",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "AGREE",
+  "divergence_reason": null,
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "Every frozen criterion is independently satisfied. The component is non-vacuous under two stub substitutions, has demonstrated real detection power against uncommitted-source-state dependence (HC-A), and reproduces the frozen hypothesis against the real repository at the immutable cohort commit rather than only against synthetic fixtures (HC-B, 12 test files, zero failures, clean tree). All manifest hashes, byte counts and the producer-cited external SHA verify exactly. The single defect found (no per-test subprocess timeout, HC-D) is outside the frozen criteria and is logged as a follow-up hardening item, not a basis for rejection.",
+  "followups_for_coordinator": [
+    "clean_clone_runner.command() calls subprocess.run without timeout=; a hung committed PO-03 test hangs the runner with no fail-closed path (reviewer-observed, >20s hang)."
+  ]
+}

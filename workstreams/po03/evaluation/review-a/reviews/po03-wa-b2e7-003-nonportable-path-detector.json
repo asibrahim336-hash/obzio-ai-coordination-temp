@@ -1,0 +1,98 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-sol-xhigh",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-003-nonportable-path-detector",
+  "cohort": "c1",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c1",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "f6a517dc34ca52de85fccb8355d36e1c729d338f1db828a386e49fa7d8eda10e",
+  "frozen_hypothesis": "Absolute paths, home-relative paths and machine-specific roots baked into committed PO-03 artifacts are mechanically detectable.",
+  "frozen_required_deliverable": "A scanner over committed PO-03 text artifacts that flags absolute filesystem paths, user home references, worktree paths and /tmp references, with an allowlist for deliberate documentation.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -I (CPython 3.12.3)",
+    "producer_test_command": "python3 -I test_nonportable_path_detector.py -v",
+    "producer_test_output_verbatim": "test_allowlist_is_path_pattern_and_line_specific ... ok\ntest_clean_relative_paths_pass ... ok\ntest_flags_machine_paths_in_committed_po03_text ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 13.943s\n\nOK",
+    "producer_test_exit_code": 0
+  },
+
+  "vacuity_probe": {
+    "method": "Disabled the pattern loop, then disabled the allowlist, re-running the producer's own tests each time.",
+    "stub_never_fires": {"mutation": "iterate over [] instead of PATTERNS.items()", "producer_tests_exit_code": 1, "failures": 1, "tests_detected_stub": true},
+    "stub_allowlist_ignored": {"mutation": "replaced allowed(...) call with False", "producer_tests_exit_code": 1, "failures": 1, "tests_detected_stub": true},
+    "vacuous_test_finding": false,
+    "conclusion": "Tests are not vacuous for the classes they cover."
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-A",
+      "rationale": "The producer's evidence is entirely synthetic - the scanner was never run against real committed PO-03 artifacts, which is the exact population the frozen hypothesis is about.",
+      "construction": "python3 -I nonportable_path_detector.py --repo /home/ubuntu/po03-worktrees/c1 --commit 5c0dfcd8ced545cf122d0ab2d8541dd4f4e561af (no allowlist, because none is shipped)",
+      "observed_output_verbatim": "exit=1\nscanned_text_artifacts: 328 skipped_binary: 0\nfinding_count: 296\nby pattern: {'temporary-root': 278, 'machine-root': 14, 'home-relative': 2, 'user-home-root': 2}\nfiles with /tmp findings: 135 top:\n   134 workstreams/po03/control/wave-a-spec.json\n   4 workstreams/po03/tools/wave_a_spec.py\n   3 workstreams/po03/control/tasks/po03-wa-b2e7-001-clean-clone-runner/input.json\n   2 workstreams/po03/COMMISSION.md",
+      "component_survived": "PARTIALLY",
+      "interpretation": "The scanner runs cleanly on 328 real text artifacts, so it is operable at real scale. But out of the box it emits 296 findings of which 278 are /tmp hits and 134 come from a single control spec file whose /tmp occurrences are the commission's own PROHIBITION text ('treating /tmp as evidence'), i.e. deliberate documentation. No allowlist is shipped with the unit, so the delivered signal-to-noise on the real target population is poor. It also flags its own regex source line 17 ('~/[^\\s\\'') as a home-relative finding."
+    },
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "Systematic false-negative sweep against every category named in the frozen deliverable. The producer tested only four path forms, all of which its own regexes were written for.",
+      "construction": "Nine committed fixtures under workstreams/po03, one per non-portable form, scanned with no allowlist.",
+      "observed_output_verbatim": "MISSED   a_env_home.txt          ($HOME/po03/artifact)\nMISSED   b_win_userprofile.txt   (%USERPROFILE%\\po03\\artifact)\nDETECTED c_win_drive.txt ['windows-user-root']\nMISSED   d_data_root.txt         (/data/po03/artifact)\nMISSED   e_scratch_root.txt      (/scratch/po03/artifact)\nDETECTED f_worktree.txt ['worktree-root']\nMISSED   g_expanduser.txt        (os.path.expanduser('~'))\nMISSED   h_absolute_bare.txt     (/Volumes/Extern/po03)\nDETECTED i_shebang.txt ['machine-root']",
+      "component_survived": false,
+      "interpretation": "Six of nine forms are missed. Two are squarely inside the frozen deliverable's own wording: '/data/po03/artifact' and '/Volumes/Extern/po03' are absolute filesystem paths that are not flagged, and '$HOME/po03/artifact' and '%USERPROFILE%\\po03\\artifact' are user home references that are not flagged. Root cause: the machine-root regex is a CLOSED enumeration of eight roots (workspace|root|opt|var|etc|usr|mnt|srv), so the component does not detect absolute paths as a class - it detects a hardcoded list of them. Separately, i_shebang.txt shows a false positive: the portable shebang '#!/usr/bin/env python3' is reported as a 'machine-root' non-portability, which is why 14 machine-root findings appear on the real repository."
+    }
+  ],
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "MET - 3/3 reproduced independently.",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET - 3 artifacts, hashes and byte counts reverified.",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - acceptance_contract_sha256 equals the frozen hash I recorded pre-disclosure (f6a517dc...).",
+    "result is committed and read back by a different process from an immutable object id": "MET - artifact_commit 0f38cd4257a82045b1258b0b850cdb739dc215fa.",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - PASS was recorded, but see below: I judge the verdict itself wrong.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "NOT MET IN SPIRIT - the hypothesis is not fully supported, yet it is recorded as an unqualified success.",
+    "no value, hash, metric or provider capability is invented": "MET - all hashes and byte counts recomputed and matched. Nothing fabricated; the problem is scope, not honesty about numbers."
+  },
+
+  "scope_honesty_assessment": {
+    "producer_declared_limitations": [
+      "Binary and non-UTF-8 artifacts are intentionally skipped and require format-specific extraction."
+    ],
+    "undeclared_limitations_found_by_reviewer": [
+      "'Absolute filesystem paths' are not detected as a class; machine-root is a closed enumeration of eight roots, so /data, /scratch and /Volumes pass unflagged.",
+      "'$HOME/...' and '%USERPROFILE%\\...' user home references are not detected, though the deliverable names user home references explicitly.",
+      "os.path.expanduser('~') is not detected.",
+      "The portable '#!/usr/bin/env python3' shebang is a false positive reported as machine-root.",
+      "No evidence at all from the real committed PO-03 tree; all producer evidence is synthetic fixtures the regexes were authored against.",
+      "No allowlist artifact is shipped, so the real-repository output is 296 findings dominated by the commission's own /tmp prohibition text."
+    ]
+  },
+
+  "verification_commands": {
+    "manifest_artifacts_recomputed": [
+      {"logical_name": "evidence.md", "manifest_bytes": 838, "recomputed_bytes": 838, "sha256_prefix": "2d054ffa8e0a", "match": true},
+      {"logical_name": "nonportable_path_detector.py", "manifest_bytes": 4477, "recomputed_bytes": 4477, "sha256_prefix": "ecfdb6a85d16", "match": true},
+      {"logical_name": "test_nonportable_path_detector.py", "manifest_bytes": 3835, "recomputed_bytes": 3835, "sha256_prefix": "94ec2bd55b86", "match": true}
+    ]
+  },
+
+  "nonportable_artifacts_in_subtree": [],
+  "reproducibility_check": "Stable across fresh python3 -I processes; the real-repository scan reproduced identical finding counts on a second run.",
+
+  "reviewer_independent_verdict": "NOT_YET",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "DIVERGE",
+  "divergence_reason": "The producer's PASS rests exclusively on synthetic fixtures authored to match its own regexes. When I probed the categories the frozen deliverable itself names, the component missed six of nine non-portable forms, including two plain absolute filesystem paths (/data/po03/artifact, /Volumes/Extern/po03) and two user home references ($HOME/..., %USERPROFILE%\\...). The component does not detect absolute paths as a class; machine-root is a closed list of eight roots. It also produces a false positive on the portable '#!/usr/bin/env python3' shebang. None of this is declared in the producer's limitations, and the scanner was never run against the real committed PO-03 tree that the hypothesis is about. The mechanism is real and non-vacuous, so this is not a FAIL - but 'absolute paths ... are mechanically detectable' is not yet established, so the correct verdict is NOT_YET.",
+  "disposition_recommendation": "REJECTED",
+  "disposition_reason": "REJECTED as an aggregate PASS, not as work product. The scanner is sound, non-vacuous and operable at real scale (328 artifacts scanned cleanly), and it should be retained. What must not be accepted is the unqualified PASS: the frozen deliverable's own categories 'absolute filesystem paths' and 'user home references' are materially under-covered, the evidence base contains no real-repository run, and a documentation allowlist required by the deliverable is designed but never shipped. Recommend re-verdict to NOT_YET with the six missed forms added as pattern coverage, the /usr/bin/env false positive suppressed, and one real-repository run plus a shipped allowlist added as evidence.",
+  "followups_for_coordinator": [
+    "Extend machine-root beyond its eight-root enumeration, or add a general POSIX-absolute-path pattern, so /data, /scratch and /Volumes are not silently portable.",
+    "Add $HOME, %USERPROFILE% and expanduser('~') to the home-reference patterns.",
+    "Suppress '#!/usr/bin/env' as a portable idiom rather than reporting it as machine-root (14 of 14 real-repository machine-root findings on non-test files are shebangs).",
+    "Ship the documentation allowlist the frozen deliverable requires; without it the real-repository run emits 296 findings, 134 from the commission's own /tmp prohibition text in workstreams/po03/control/wave-a-spec.json."
+  ]
+}
