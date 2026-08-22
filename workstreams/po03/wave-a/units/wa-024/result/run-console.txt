@@ -1,0 +1,34 @@
+== PO03-WA-024 clean-environment reproduction
+   source:      file:///tmp/po03-wa-024-b1956656
+   commit:      0b799f0eeee450e1aaea7a243e91538a079fc516
+   clean clone: /tmp/wa024-reproduction-Du85WE/clone
+   output:      /tmp/po03-wa-024-b1956656/workstreams/po03/wave-a/units/wa-024/result
+   git:         git version 2.43.0
+   python3:     Python 3.12.3
+
+== 1/4 focused tests
+   tests: PASS
+
+----------------------------------------------------------------------
+Ran 86 tests in 1.720s
+
+OK
+
+== 2/4 static local-state control
+   lint exit status: 1 (1 means findings at or above the error threshold)
+INFO R3_BARE_INTERPRETER_WITHOUT_SETUP .github/workflows/operator-taxonomy-currentness.yml: job 'check' runs bare 'python'; this resolves only because actions/setup-python is present in the same job, so the command is not portable outside Actions
+INFO R3_BARE_INTERPRETER_WITHOUT_SETUP .github/workflows/po03-contracts.yml: job 'contracts' runs bare 'python'; this resolves only because actions/setup-python is present in the same job, so the command is not portable outside Actions
+LOCAL STATE LINT: 104 findings across 188 files ({'error': 69, 'warning': 18, 'info': 17})
+
+== 3/4 clean-runner differential harness
+   probe exit status: 0 (non-zero means a binding expectation was not met)
+CLEAN RUNNER PROBE: 24 probes, agree=17, warm_only_pass=0, depth_sensitive=5, clean_only_pass=2, divergent=0
+
+== 4/4 mechanism-change verification
+   mechanism exit status: 0 (non-zero means a proposed change did not verify)
+MECHANISM CHANGES: 4 changes, 43 checks, PASS
+
+== clean clone is unchanged after the reproduction
+
+== reproduction complete, exit status 0
+   reports: /tmp/po03-wa-024-b1956656/workstreams/po03/wave-a/units/wa-024/result

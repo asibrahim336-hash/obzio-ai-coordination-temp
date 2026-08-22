@@ -1,0 +1,2126 @@
+{
+  "git_version": "git version 2.43.0",
+  "interpreter": {
+    "executable_basename": "python3",
+    "version": "3.12.3"
+  },
+  "modes": [
+    "warm",
+    "clean_full",
+    "clean_shallow"
+  ],
+  "nondeterministic_fields": [
+    "probes[].results[].duration_ms",
+    "probes[].results[].stdout_tail",
+    "probes[].results[].stderr_tail",
+    "probes[].results[].output_sha256",
+    "trees.warm.preexisting_dirt",
+    "git_version",
+    "interpreter.version"
+  ],
+  "probes": [
+    {
+      "argv": [
+        "PYTHON",
+        "-c",
+        "import subprocess,sys; out=subprocess.run(['git','status','--porcelain','--untracked-files=all'],capture_output=True,text=True).stdout.strip(); print('dirty_paths=%d' % (len(out.splitlines()) if out else 0)); print(out); sys.exit(1 if out else 0)"
+      ],
+      "classification": "AGREE",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "binding",
+      "expectation_met": true,
+      "expected_classification": "AGREE",
+      "expected_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "findings": [],
+      "hypothesis_ids": [
+        "H-WA024-02"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p01-cleanliness-gate-initial",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 85,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "698a75161bdac912b73db37f5af925915d6748ec3b30fc031e10992cc02e1a53",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "dirty_paths=0\n\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 84,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "698a75161bdac912b73db37f5af925915d6748ec3b30fc031e10992cc02e1a53",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "dirty_paths=0\n\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 79,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "698a75161bdac912b73db37f5af925915d6748ec3b30fc031e10992cc02e1a53",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "dirty_paths=0\n\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "gate",
+      "workload": "PO-03 ownership gate: the tree must carry no untracked or modified files before the job's workload runs."
+    },
+    {
+      "argv": [
+        "PYTHON",
+        "-B",
+        "-I",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "workstreams/po03/tests",
+        "-p",
+        "test_*.py"
+      ],
+      "classification": "AGREE",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": false,
+      "expectation_binding": "binding",
+      "expectation_met": true,
+      "expected_classification": "AGREE",
+      "expected_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "findings": [],
+      "hypothesis_ids": [
+        "H-WA024-02"
+      ],
+      "mutation_expectation_met": true,
+      "observed_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p02-contract-tests-bytecode-free",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 202,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "7b7dc7b80a1526f8fbd83449d2a67622138309015a7ab0ae6c04e5a3b61eb1a8",
+          "reset_removed": [],
+          "stderr_tail": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.001s\n\nOK\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 202,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "7b7dc7b80a1526f8fbd83449d2a67622138309015a7ab0ae6c04e5a3b61eb1a8",
+          "reset_removed": [],
+          "stderr_tail": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.001s\n\nOK\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 204,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "7b7dc7b80a1526f8fbd83449d2a67622138309015a7ab0ae6c04e5a3b61eb1a8",
+          "reset_removed": [],
+          "stderr_tail": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.001s\n\nOK\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "candidate_mechanism_change",
+      "workload": "Candidate mechanism change MC-WA024-02: the PO-03 contract-test command with -B, so CPython writes no bytecode cache into the checkout."
+    },
+    {
+      "argv": [
+        "PYTHON",
+        "-c",
+        "import subprocess,sys; out=subprocess.run(['git','status','--porcelain','--untracked-files=all'],capture_output=True,text=True).stdout.strip(); print('dirty_paths=%d' % (len(out.splitlines()) if out else 0)); print(out); sys.exit(1 if out else 0)"
+      ],
+      "classification": "AGREE",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "binding",
+      "expectation_met": true,
+      "expected_classification": "AGREE",
+      "expected_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "findings": [],
+      "hypothesis_ids": [
+        "H-WA024-02"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p03-cleanliness-gate-after-bytecode-free",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 78,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "698a75161bdac912b73db37f5af925915d6748ec3b30fc031e10992cc02e1a53",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "dirty_paths=0\n\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 78,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "698a75161bdac912b73db37f5af925915d6748ec3b30fc031e10992cc02e1a53",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "dirty_paths=0\n\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 78,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "698a75161bdac912b73db37f5af925915d6748ec3b30fc031e10992cc02e1a53",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "dirty_paths=0\n\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "gate",
+      "workload": "The ownership gate re-run after the bytecode-free command. Passing here is the independent test that MC-WA024-02 removes the contamination."
+    },
+    {
+      "argv": [
+        "PYTHON",
+        "-I",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "workstreams/po03/tests",
+        "-p",
+        "test_*.py"
+      ],
+      "classification": "AGREE",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": true,
+      "expectation_binding": "binding",
+      "expectation_met": true,
+      "expected_classification": "AGREE",
+      "expected_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "findings": [
+        "WORKTREE_MUTATED_BY_WORKLOAD:clean_full",
+        "WORKTREE_MUTATED_BY_WORKLOAD:clean_shallow",
+        "WORKTREE_MUTATED_BY_WORKLOAD:warm"
+      ],
+      "hypothesis_ids": [
+        "H-WA024-02",
+        "H-WA024-03"
+      ],
+      "mutation_expectation_met": true,
+      "observed_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": true,
+        "clean_shallow": true,
+        "warm": true
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p04-contract-tests-as-declared",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 210,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "7b7dc7b80a1526f8fbd83449d2a67622138309015a7ab0ae6c04e5a3b61eb1a8",
+          "reset_removed": [],
+          "stderr_tail": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.001s\n\nOK\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [
+            "?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "worktree_dirt_before": [],
+          "worktree_mutated": true
+        },
+        "clean_shallow": {
+          "duration_ms": 208,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "7b7dc7b80a1526f8fbd83449d2a67622138309015a7ab0ae6c04e5a3b61eb1a8",
+          "reset_removed": [],
+          "stderr_tail": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.001s\n\nOK\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [
+            "?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "worktree_dirt_before": [],
+          "worktree_mutated": true
+        },
+        "warm": {
+          "duration_ms": 208,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "7b7dc7b80a1526f8fbd83449d2a67622138309015a7ab0ae6c04e5a3b61eb1a8",
+          "reset_removed": [],
+          "stderr_tail": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.001s\n\nOK\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [
+            "?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "worktree_dirt_before": [],
+          "worktree_mutated": true
+        }
+      },
+      "role": "declared_ci_command",
+      "workload": ".github/workflows/po03-contracts.yml step 'Run dependency-free contract tests', exactly as the workflow declares it."
+    },
+    {
+      "argv": [
+        "PYTHON",
+        "-c",
+        "import subprocess,sys; out=subprocess.run(['git','status','--porcelain','--untracked-files=all'],capture_output=True,text=True).stdout.strip(); print('dirty_paths=%d' % (len(out.splitlines()) if out else 0)); print(out); sys.exit(1 if out else 0)"
+      ],
+      "classification": "AGREE",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "binding",
+      "expectation_met": true,
+      "expected_classification": "AGREE",
+      "expected_outcomes": {
+        "clean_full": "FAIL",
+        "clean_shallow": "FAIL",
+        "warm": "FAIL"
+      },
+      "findings": [],
+      "hypothesis_ids": [
+        "H-WA024-02"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "FAIL",
+        "clean_shallow": "FAIL",
+        "warm": "FAIL"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p05-cleanliness-gate-after-declared",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 78,
+          "error": null,
+          "exit_code": 1,
+          "outcome": "FAIL",
+          "output_sha256": "3dc97242a81b0feceaa34efa645d04fc0a416b5f9dc202b4bcc7a6a7d255d084",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "dirty_paths=2\n?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc\n?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc\n",
+          "worktree_dirt_after": [
+            "?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "worktree_dirt_before": [
+            "?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 78,
+          "error": null,
+          "exit_code": 1,
+          "outcome": "FAIL",
+          "output_sha256": "3dc97242a81b0feceaa34efa645d04fc0a416b5f9dc202b4bcc7a6a7d255d084",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "dirty_paths=2\n?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc\n?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc\n",
+          "worktree_dirt_after": [
+            "?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "worktree_dirt_before": [
+            "?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 78,
+          "error": null,
+          "exit_code": 1,
+          "outcome": "FAIL",
+          "output_sha256": "3dc97242a81b0feceaa34efa645d04fc0a416b5f9dc202b4bcc7a6a7d255d084",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "dirty_paths=2\n?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc\n?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc\n",
+          "worktree_dirt_after": [
+            "?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "worktree_dirt_before": [
+            "?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "worktree_mutated": false
+        }
+      },
+      "role": "gate",
+      "workload": "The ownership gate re-run after the workflow-declared command. Failing here while p03 passed isolates the declared command as the cause."
+    },
+    {
+      "argv": [
+        "PYTHON",
+        "-I",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "workstreams/po03/tests",
+        "-p",
+        "test_*.py"
+      ],
+      "classification": "AGREE",
+      "cwd": ".",
+      "env_overlay": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "expect_worktree_mutation": true,
+      "expectation_binding": "binding",
+      "expectation_met": true,
+      "expected_classification": "AGREE",
+      "expected_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "findings": [
+        "WORKTREE_MUTATED_BY_WORKLOAD:clean_full",
+        "WORKTREE_MUTATED_BY_WORKLOAD:clean_shallow",
+        "WORKTREE_MUTATED_BY_WORKLOAD:warm"
+      ],
+      "hypothesis_ids": [
+        "H-WA024-02B"
+      ],
+      "mutation_expectation_met": true,
+      "observed_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": true,
+        "clean_shallow": true,
+        "warm": true
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p06-naive-bytecode-remediation-under-isolation",
+      "reset_untracked_delta": true,
+      "results": {
+        "clean_full": {
+          "duration_ms": 212,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "7b7dc7b80a1526f8fbd83449d2a67622138309015a7ab0ae6c04e5a3b61eb1a8",
+          "reset_removed": [
+            "workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "stderr_tail": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.001s\n\nOK\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [
+            "?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "worktree_dirt_before": [],
+          "worktree_mutated": true
+        },
+        "clean_shallow": {
+          "duration_ms": 220,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "7b7dc7b80a1526f8fbd83449d2a67622138309015a7ab0ae6c04e5a3b61eb1a8",
+          "reset_removed": [
+            "workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "stderr_tail": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.001s\n\nOK\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [
+            "?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "worktree_dirt_before": [],
+          "worktree_mutated": true
+        },
+        "warm": {
+          "duration_ms": 212,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "7b7dc7b80a1526f8fbd83449d2a67622138309015a7ab0ae6c04e5a3b61eb1a8",
+          "reset_removed": [
+            "workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "stderr_tail": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.001s\n\nOK\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [
+            "?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "worktree_dirt_before": [],
+          "worktree_mutated": true
+        }
+      },
+      "role": "adversarial_case",
+      "workload": "Adversarial case for H-WA024-02B: the declared isolated-mode command with the widely recommended PYTHONDONTWRITEBYTECODE=1 applied. The tree is first returned to its start state so the effect is attributable to this run."
+    },
+    {
+      "argv": [
+        "PYTHON",
+        "-c",
+        "import subprocess,sys; out=subprocess.run(['git','status','--porcelain','--untracked-files=all'],capture_output=True,text=True).stdout.strip(); print('dirty_paths=%d' % (len(out.splitlines()) if out else 0)); print(out); sys.exit(1 if out else 0)"
+      ],
+      "classification": "AGREE",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "binding",
+      "expectation_met": true,
+      "expected_classification": "AGREE",
+      "expected_outcomes": {
+        "clean_full": "FAIL",
+        "clean_shallow": "FAIL",
+        "warm": "FAIL"
+      },
+      "findings": [],
+      "hypothesis_ids": [
+        "H-WA024-02B"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "FAIL",
+        "clean_shallow": "FAIL",
+        "warm": "FAIL"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p07-cleanliness-gate-after-naive-remediation",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 78,
+          "error": null,
+          "exit_code": 1,
+          "outcome": "FAIL",
+          "output_sha256": "3dc97242a81b0feceaa34efa645d04fc0a416b5f9dc202b4bcc7a6a7d255d084",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "dirty_paths=2\n?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc\n?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc\n",
+          "worktree_dirt_after": [
+            "?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "worktree_dirt_before": [
+            "?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 78,
+          "error": null,
+          "exit_code": 1,
+          "outcome": "FAIL",
+          "output_sha256": "3dc97242a81b0feceaa34efa645d04fc0a416b5f9dc202b4bcc7a6a7d255d084",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "dirty_paths=2\n?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc\n?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc\n",
+          "worktree_dirt_after": [
+            "?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "worktree_dirt_before": [
+            "?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 78,
+          "error": null,
+          "exit_code": 1,
+          "outcome": "FAIL",
+          "output_sha256": "3dc97242a81b0feceaa34efa645d04fc0a416b5f9dc202b4bcc7a6a7d255d084",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "dirty_paths=2\n?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc\n?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc\n",
+          "worktree_dirt_after": [
+            "?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "worktree_dirt_before": [
+            "?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "?? workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "worktree_mutated": false
+        }
+      },
+      "role": "gate",
+      "workload": "The ownership gate re-run after the naive remediation. Failing here shows the recommended environment variable does not protect an isolated-mode command."
+    },
+    {
+      "argv": [
+        "PYTHON",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "workstreams/po03/tests",
+        "-p",
+        "test_*.py"
+      ],
+      "classification": "AGREE",
+      "cwd": ".",
+      "env_overlay": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "expect_worktree_mutation": false,
+      "expectation_binding": "binding",
+      "expectation_met": true,
+      "expected_classification": "AGREE",
+      "expected_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "findings": [],
+      "hypothesis_ids": [
+        "H-WA024-02B"
+      ],
+      "mutation_expectation_met": true,
+      "observed_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p08-bytecode-env-var-without-isolation",
+      "reset_untracked_delta": true,
+      "results": {
+        "clean_full": {
+          "duration_ms": 204,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "7b7dc7b80a1526f8fbd83449d2a67622138309015a7ab0ae6c04e5a3b61eb1a8",
+          "reset_removed": [
+            "workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "stderr_tail": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.001s\n\nOK\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 203,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "7b7dc7b80a1526f8fbd83449d2a67622138309015a7ab0ae6c04e5a3b61eb1a8",
+          "reset_removed": [
+            "workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "stderr_tail": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.001s\n\nOK\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 203,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "7b7dc7b80a1526f8fbd83449d2a67622138309015a7ab0ae6c04e5a3b61eb1a8",
+          "reset_removed": [
+            "workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+            "workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+          ],
+          "stderr_tail": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.001s\n\nOK\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "negative_control",
+      "workload": "Control for H-WA024-02B: the same environment variable with isolated mode removed. This separates 'the variable does not work' from 'isolated mode ignores it'."
+    },
+    {
+      "argv": [
+        "PYTHON",
+        "-c",
+        "import subprocess,sys; out=subprocess.run(['git','status','--porcelain','--untracked-files=all'],capture_output=True,text=True).stdout.strip(); print('dirty_paths=%d' % (len(out.splitlines()) if out else 0)); print(out); sys.exit(1 if out else 0)"
+      ],
+      "classification": "AGREE",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "binding",
+      "expectation_met": true,
+      "expected_classification": "AGREE",
+      "expected_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "findings": [],
+      "hypothesis_ids": [
+        "H-WA024-02B"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p09-cleanliness-gate-after-non-isolated-run",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 80,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "698a75161bdac912b73db37f5af925915d6748ec3b30fc031e10992cc02e1a53",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "dirty_paths=0\n\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 79,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "698a75161bdac912b73db37f5af925915d6748ec3b30fc031e10992cc02e1a53",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "dirty_paths=0\n\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 79,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "698a75161bdac912b73db37f5af925915d6748ec3b30fc031e10992cc02e1a53",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "dirty_paths=0\n\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "gate",
+      "workload": "The ownership gate re-run after the non-isolated command. Passing here completes the causal separation for H-WA024-02B."
+    },
+    {
+      "argv": [
+        "PYTHON",
+        "scripts/check_operator_taxonomy.py"
+      ],
+      "classification": "AGREE",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "binding",
+      "expectation_met": true,
+      "expected_classification": "AGREE",
+      "expected_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "findings": [],
+      "hypothesis_ids": [
+        "H-WA024-03"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p10-operator-taxonomy-check",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 77,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "e08582bd50407feeba4d67ee06e073e7fadb373b1893374b12446e9da1a129b5",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "OPERATOR TAXONOMY CHECK: PASS\nactive function: obzio.function.strategic-operations-orchestration\nactive appointment: obzio.appointment.strategic-operations-orchestration.20260819.001\nclassified aliases: 9\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 77,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "e08582bd50407feeba4d67ee06e073e7fadb373b1893374b12446e9da1a129b5",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "OPERATOR TAXONOMY CHECK: PASS\nactive function: obzio.function.strategic-operations-orchestration\nactive appointment: obzio.appointment.strategic-operations-orchestration.20260819.001\nclassified aliases: 9\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 76,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "e08582bd50407feeba4d67ee06e073e7fadb373b1893374b12446e9da1a129b5",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "OPERATOR TAXONOMY CHECK: PASS\nactive function: obzio.function.strategic-operations-orchestration\nactive appointment: obzio.appointment.strategic-operations-orchestration.20260819.001\nclassified aliases: 9\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "declared_ci_command",
+      "workload": ".github/workflows/operator-taxonomy-currentness.yml step 'python scripts/check_operator_taxonomy.py', run from the workspace root."
+    },
+    {
+      "argv": [
+        "PYTHON",
+        "../../scripts/check_operator_taxonomy.py"
+      ],
+      "classification": "AGREE",
+      "cwd": "workstreams/po03",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "binding",
+      "expectation_met": true,
+      "expected_classification": "AGREE",
+      "expected_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "findings": [],
+      "hypothesis_ids": [
+        "H-WA024-03"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p11-operator-taxonomy-check-foreign-cwd",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 77,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "e08582bd50407feeba4d67ee06e073e7fadb373b1893374b12446e9da1a129b5",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "OPERATOR TAXONOMY CHECK: PASS\nactive function: obzio.function.strategic-operations-orchestration\nactive appointment: obzio.appointment.strategic-operations-orchestration.20260819.001\nclassified aliases: 9\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 77,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "e08582bd50407feeba4d67ee06e073e7fadb373b1893374b12446e9da1a129b5",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "OPERATOR TAXONOMY CHECK: PASS\nactive function: obzio.function.strategic-operations-orchestration\nactive appointment: obzio.appointment.strategic-operations-orchestration.20260819.001\nclassified aliases: 9\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 76,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "e08582bd50407feeba4d67ee06e073e7fadb373b1893374b12446e9da1a129b5",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "OPERATOR TAXONOMY CHECK: PASS\nactive function: obzio.function.strategic-operations-orchestration\nactive appointment: obzio.appointment.strategic-operations-orchestration.20260819.001\nclassified aliases: 9\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "negative_control",
+      "workload": "The same taxonomy check invoked from a nested directory. Negative control for root resolution: the script derives its root from __file__, so it must not depend on the working directory."
+    },
+    {
+      "argv": [
+        "PYTHON",
+        "-B",
+        "-I",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "workstreams/po03/tests",
+        "-p",
+        "test_*.py"
+      ],
+      "classification": "AGREE",
+      "cwd": "workstreams/po03",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "binding",
+      "expectation_met": true,
+      "expected_classification": "AGREE",
+      "expected_outcomes": {
+        "clean_full": "FAIL",
+        "clean_shallow": "FAIL",
+        "warm": "FAIL"
+      },
+      "findings": [],
+      "hypothesis_ids": [
+        "H-WA024-03"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "FAIL",
+        "clean_shallow": "FAIL",
+        "warm": "FAIL"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p12-contract-tests-foreign-cwd",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 161,
+          "error": null,
+          "exit_code": 1,
+          "outcome": "FAIL",
+          "output_sha256": "92c492005c43d19ab47c774770f606da6f4c8f7d58ff1e48796c2ef49215a3df",
+          "reset_removed": [],
+          "stderr_tail": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"/usr/lib/python3.12/unittest/__main__.py\", line 18, in <module>\n    main(module=None)\n  File \"/usr/lib/python3.12/unittest/main.py\", line 104, in __init__\n    self.parseArgs(argv)\n  File \"/usr/lib/python3.12/unittest/main.py\", line 130, in parseArgs\n    self._do_discovery(argv[2:])\n  File \"/usr/lib/python3.12/unittest/main.py\", line 253, in _do_discovery\n    self.createTests(from_discovery=True, Loader=Loader)\n  File \"/usr/lib/python3.12/unittest/main.py\", line 160, in createTests\n    self.test = loader.discover(self.start, self.pattern, self.top)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/unittest/loader.py\", line 307, in discover\n    raise ImportError('Start directory is not importable: %r' % start_dir)\nImportError: Start directory is not importable: 'workstreams/po03/tests'\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 160,
+          "error": null,
+          "exit_code": 1,
+          "outcome": "FAIL",
+          "output_sha256": "92c492005c43d19ab47c774770f606da6f4c8f7d58ff1e48796c2ef49215a3df",
+          "reset_removed": [],
+          "stderr_tail": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"/usr/lib/python3.12/unittest/__main__.py\", line 18, in <module>\n    main(module=None)\n  File \"/usr/lib/python3.12/unittest/main.py\", line 104, in __init__\n    self.parseArgs(argv)\n  File \"/usr/lib/python3.12/unittest/main.py\", line 130, in parseArgs\n    self._do_discovery(argv[2:])\n  File \"/usr/lib/python3.12/unittest/main.py\", line 253, in _do_discovery\n    self.createTests(from_discovery=True, Loader=Loader)\n  File \"/usr/lib/python3.12/unittest/main.py\", line 160, in createTests\n    self.test = loader.discover(self.start, self.pattern, self.top)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/unittest/loader.py\", line 307, in discover\n    raise ImportError('Start directory is not importable: %r' % start_dir)\nImportError: Start directory is not importable: 'workstreams/po03/tests'\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 160,
+          "error": null,
+          "exit_code": 1,
+          "outcome": "FAIL",
+          "output_sha256": "92c492005c43d19ab47c774770f606da6f4c8f7d58ff1e48796c2ef49215a3df",
+          "reset_removed": [],
+          "stderr_tail": "Traceback (most recent call last):\n  File \"<frozen runpy>\", line 198, in _run_module_as_main\n  File \"<frozen runpy>\", line 88, in _run_code\n  File \"/usr/lib/python3.12/unittest/__main__.py\", line 18, in <module>\n    main(module=None)\n  File \"/usr/lib/python3.12/unittest/main.py\", line 104, in __init__\n    self.parseArgs(argv)\n  File \"/usr/lib/python3.12/unittest/main.py\", line 130, in parseArgs\n    self._do_discovery(argv[2:])\n  File \"/usr/lib/python3.12/unittest/main.py\", line 253, in _do_discovery\n    self.createTests(from_discovery=True, Loader=Loader)\n  File \"/usr/lib/python3.12/unittest/main.py\", line 160, in createTests\n    self.test = loader.discover(self.start, self.pattern, self.top)\n                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.12/unittest/loader.py\", line 307, in discover\n    raise ImportError('Start directory is not importable: %r' % start_dir)\nImportError: Start directory is not importable: 'workstreams/po03/tests'\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "portability_probe",
+      "workload": "The declared PO-03 contract-test command invoked from a nested directory, testing whether it silently assumes that the working directory is GITHUB_WORKSPACE."
+    },
+    {
+      "argv": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "100bc20ad5eec62a4f35b60921423135cc0b9d9a",
+        "HEAD"
+      ],
+      "classification": "AGREE",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "binding",
+      "expectation_met": true,
+      "expected_classification": "AGREE",
+      "expected_outcomes": {
+        "clean_full": "FAIL",
+        "clean_shallow": "FAIL",
+        "warm": "FAIL"
+      },
+      "findings": [],
+      "hypothesis_ids": [
+        "H-WA024-04"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "FAIL",
+        "clean_shallow": "FAIL",
+        "warm": "FAIL"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p13-protocol-ancestor-as-frozen-in-input",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 128,
+          "outcome": "FAIL",
+          "output_sha256": "4c86219cf68ab4ddfe8a2745dd688159cc64bb5e2fa9894aae864f77e2890a6d",
+          "reset_removed": [],
+          "stderr_tail": "fatal: Not a valid commit name 100bc20ad5eec62a4f35b60921423135cc0b9d9a\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 128,
+          "outcome": "FAIL",
+          "output_sha256": "4c86219cf68ab4ddfe8a2745dd688159cc64bb5e2fa9894aae864f77e2890a6d",
+          "reset_removed": [],
+          "stderr_tail": "fatal: Not a valid commit name 100bc20ad5eec62a4f35b60921423135cc0b9d9a\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 128,
+          "outcome": "FAIL",
+          "output_sha256": "4c86219cf68ab4ddfe8a2745dd688159cc64bb5e2fa9894aae864f77e2890a6d",
+          "reset_removed": [],
+          "stderr_tail": "fatal: Not a valid commit name 100bc20ad5eec62a4f35b60921423135cc0b9d9a\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "identifier_integrity_probe",
+      "workload": "The PO-03 ancestry check using minimum_protocol_ancestor exactly as recorded in every Wave A immutable input: 100bc20ad5eec62a4f35b60921423135cc0b9d9a."
+    },
+    {
+      "argv": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "100bc20",
+        "HEAD"
+      ],
+      "classification": "DEPTH_SENSITIVE",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "binding",
+      "expectation_met": true,
+      "expected_classification": "DEPTH_SENSITIVE",
+      "expected_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "FAIL",
+        "warm": "PASS"
+      },
+      "findings": [
+        "SHALLOW_HISTORY_DEPENDENCE"
+      ],
+      "hypothesis_ids": [
+        "H-WA024-04"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "FAIL",
+        "warm": "PASS"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p14-protocol-ancestor-abbreviated",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 128,
+          "outcome": "FAIL",
+          "output_sha256": "d1ff3a6821238e6eadc8629486822df3999375e87d7a9628bee9de8e687c751d",
+          "reset_removed": [],
+          "stderr_tail": "fatal: Not a valid object name 100bc20\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "identifier_integrity_probe",
+      "workload": "The ancestry check using only the seven-character prefix 100bc20. A full-history object store resolves the abbreviation, so a lenient provenance check appears to pass even though the recorded forty-character identifier is wrong."
+    },
+    {
+      "argv": [
+        "git",
+        "merge-base",
+        "--is-ancestor",
+        "100bc2079cedc193af3524234ab833cc9f9f4669",
+        "HEAD"
+      ],
+      "classification": "DEPTH_SENSITIVE",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "binding",
+      "expectation_met": true,
+      "expected_classification": "DEPTH_SENSITIVE",
+      "expected_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "FAIL",
+        "warm": "PASS"
+      },
+      "findings": [
+        "SHALLOW_HISTORY_DEPENDENCE"
+      ],
+      "hypothesis_ids": [
+        "H-WA024-01"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "FAIL",
+        "warm": "PASS"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p15-protocol-ancestor-verification",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 128,
+          "outcome": "FAIL",
+          "output_sha256": "77cee1b0f2c8b6340278f01c59df46ababef024528fe8d9db88bd02c83b34a45",
+          "reset_removed": [],
+          "stderr_tail": "fatal: Not a valid commit name 100bc2079cedc193af3524234ab833cc9f9f4669\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "protocol_required_check",
+      "workload": "PO-03 transactional protocol provenance check with the actual object id 100bc2079cedc193af3524234ab833cc9f9f4669: the producer's start commit must descend from the minimum protocol ancestor."
+    },
+    {
+      "argv": [
+        "git",
+        "cat-file",
+        "-e",
+        "552b12eacee637716451492a98980fb0da19ff3e^{commit}"
+      ],
+      "classification": "DEPTH_SENSITIVE",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "binding",
+      "expectation_met": true,
+      "expected_classification": "DEPTH_SENSITIVE",
+      "expected_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "FAIL",
+        "warm": "PASS"
+      },
+      "findings": [
+        "SHALLOW_HISTORY_DEPENDENCE"
+      ],
+      "hypothesis_ids": [
+        "H-WA024-01"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "FAIL",
+        "warm": "PASS"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p16-commission-commit-readable",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 128,
+          "outcome": "FAIL",
+          "output_sha256": "f94cec27e40c027283a3d2181beb906f7f7a3eb27f5d8e6fff1130bebd8171fd",
+          "reset_removed": [],
+          "stderr_tail": "fatal: Not a valid object name 552b12eacee637716451492a98980fb0da19ff3e^{commit}\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "protocol_required_check",
+      "workload": "PO-03 source-base check: the frozen commission commit 552b12eacee637716451492a98980fb0da19ff3e must be readable so its recorded SHA-256 can be reproduced."
+    },
+    {
+      "argv": [
+        "git",
+        "cat-file",
+        "-e",
+        "5db7affeb7f00763e148e6d98a33ee6b751f2def^{commit}"
+      ],
+      "classification": "DEPTH_SENSITIVE",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "binding",
+      "expectation_met": true,
+      "expected_classification": "DEPTH_SENSITIVE",
+      "expected_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "FAIL",
+        "warm": "PASS"
+      },
+      "findings": [
+        "SHALLOW_HISTORY_DEPENDENCE"
+      ],
+      "hypothesis_ids": [
+        "H-WA024-01"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "FAIL",
+        "warm": "PASS"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p17-pinned-base-readable",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 128,
+          "outcome": "FAIL",
+          "output_sha256": "c46b73fb0d6106da8116e5387338068678c2b39a10d89503b0e5039988320146",
+          "reset_removed": [],
+          "stderr_tail": "fatal: Not a valid object name 5db7affeb7f00763e148e6d98a33ee6b751f2def^{commit}\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "protocol_required_check",
+      "workload": "PO-03 commission pinned_base_sha 5db7affeb7f00763e148e6d98a33ee6b751f2def must be readable to reproduce the pinned base."
+    },
+    {
+      "argv": [
+        "PYTHON",
+        "-c",
+        "import os,re,sys; pat=re.compile(r'CURSOR|ANTHROPIC|OPENAI|CLAUDE|_TOKEN|SECRET|_KEY|AGENT_TRANSCRIPTS|CLOUD_AGENT',re.I); hits=[n for n in os.environ if pat.search(n)]; print('provider_shaped_env_vars=%d' % len(hits)); print('total_env_vars=%d' % len(os.environ)); sys.exit(1 if hits else 0)"
+      ],
+      "classification": "CLEAN_ONLY_PASS",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "advisory",
+      "expectation_met": true,
+      "expected_classification": "CLEAN_ONLY_PASS",
+      "expected_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "FAIL"
+      },
+      "findings": [],
+      "hypothesis_ids": [
+        "H-WA024-05"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "FAIL"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p18-no-provider-environment-leak",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 48,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "ce021e546a6649d563f36efa257878eed06aa96d6f30df13ff863b52d0beedaf",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "provider_shaped_env_vars=0\ntotal_env_vars=12\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 48,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "ce021e546a6649d563f36efa257878eed06aa96d6f30df13ff863b52d0beedaf",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "provider_shaped_env_vars=0\ntotal_env_vars=12\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 49,
+          "error": null,
+          "exit_code": 1,
+          "outcome": "FAIL",
+          "output_sha256": "b4bf80a6cdc3c7f9ead20e372c412c3db0bdb220e24b293fdf8b259d7271ea11",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "provider_shaped_env_vars=9\ntotal_env_vars=41\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "environment_probe",
+      "workload": "Portability check on the ambient environment. Fails when provider, agent or credential-shaped variable names are present. Only counts are printed; no variable name or value is emitted, so no secret can reach the evidence record."
+    },
+    {
+      "argv": [
+        "PYTHON",
+        "-c",
+        "import os,glob,sys,tempfile; root=tempfile.gettempdir(); hits=glob.glob(os.path.join(root,'*po03*'))+glob.glob(os.path.join(root,'*wa024*')); print('tmpdir_po03_entries=%d' % len(hits)); sys.exit(1 if hits else 0)"
+      ],
+      "classification": "CLEAN_ONLY_PASS",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "advisory",
+      "expectation_met": true,
+      "expected_classification": "CLEAN_ONLY_PASS",
+      "expected_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "FAIL"
+      },
+      "findings": [],
+      "hypothesis_ids": [
+        "H-WA024-05"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "FAIL"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p19-no-tmpdir-carryover",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 78,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "e002d5d173313b20b74cecbede422bf12d766945dc958b5f674e4e6288f07913",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "tmpdir_po03_entries=0\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 78,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "e002d5d173313b20b74cecbede422bf12d766945dc958b5f674e4e6288f07913",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "tmpdir_po03_entries=0\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 78,
+          "error": null,
+          "exit_code": 1,
+          "outcome": "FAIL",
+          "output_sha256": "ba35fd0d9068c74626916683dffecc402b855b87d254f662b5e76c4271ca646f",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "tmpdir_po03_entries=1\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "environment_probe",
+      "workload": "Portability check on TMPDIR. Fails when the ambient temporary directory already holds PO-03 run state, which is the /tmp dependence the commission forbids. Only a count is printed."
+    },
+    {
+      "argv": [
+        "python",
+        "-c",
+        "print('bare python present')"
+      ],
+      "classification": "AGREE",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "advisory",
+      "expectation_met": true,
+      "expected_classification": "AGREE",
+      "expected_outcomes": null,
+      "findings": [],
+      "hypothesis_ids": [
+        "H-WA024-06"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "ERROR",
+        "clean_shallow": "ERROR",
+        "warm": "ERROR"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": null,
+      "probe_id": "p20-bare-python-interpreter-available",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 0,
+          "error": "EXECUTABLE_NOT_FOUND",
+          "exit_code": null,
+          "outcome": "ERROR",
+          "output_sha256": "80c9a537b8ad915e9cc2b1ad0b4466fb29ab440255c7b8931a7fa27186c521fc",
+          "reset_removed": [],
+          "stderr_tail": "[Errno 2] No such file or directory: 'python'",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 0,
+          "error": "EXECUTABLE_NOT_FOUND",
+          "exit_code": null,
+          "outcome": "ERROR",
+          "output_sha256": "80c9a537b8ad915e9cc2b1ad0b4466fb29ab440255c7b8931a7fa27186c521fc",
+          "reset_removed": [],
+          "stderr_tail": "[Errno 2] No such file or directory: 'python'",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 0,
+          "error": "EXECUTABLE_NOT_FOUND",
+          "exit_code": null,
+          "outcome": "ERROR",
+          "output_sha256": "80c9a537b8ad915e9cc2b1ad0b4466fb29ab440255c7b8931a7fa27186c521fc",
+          "reset_removed": [],
+          "stderr_tail": "[Errno 2] No such file or directory: 'python'",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "toolchain_probe",
+      "workload": "Both workflows spell the interpreter 'python'. This probe tests whether a bare 'python' exists without actions/setup-python having run, which is the assumption the workflow step text carries."
+    },
+    {
+      "argv": [
+        "git",
+        "cat-file",
+        "-e",
+        "371e8da6ab306c2948e0fe1f47c884ae46b2e81f^{commit}"
+      ],
+      "classification": "AGREE",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "binding",
+      "expectation_met": null,
+      "expected_classification": null,
+      "expected_outcomes": {
+        "clean_full": "FAIL",
+        "clean_shallow": "FAIL"
+      },
+      "findings": [],
+      "hypothesis_ids": [
+        "H-WA024-07"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "FAIL",
+        "clean_shallow": "FAIL",
+        "warm": "FAIL"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p21-canary-result-commit-readable",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 128,
+          "outcome": "FAIL",
+          "output_sha256": "fc868f015cf05d3e08371d26ff0d2de4382bc138b4b85d5392d102cbe4e63e05",
+          "reset_removed": [],
+          "stderr_tail": "fatal: Not a valid object name 371e8da6ab306c2948e0fe1f47c884ae46b2e81f^{commit}\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 128,
+          "outcome": "FAIL",
+          "output_sha256": "fc868f015cf05d3e08371d26ff0d2de4382bc138b4b85d5392d102cbe4e63e05",
+          "reset_removed": [],
+          "stderr_tail": "fatal: Not a valid object name 371e8da6ab306c2948e0fe1f47c884ae46b2e81f^{commit}\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 128,
+          "outcome": "FAIL",
+          "output_sha256": "fc868f015cf05d3e08371d26ff0d2de4382bc138b4b85d5392d102cbe4e63e05",
+          "reset_removed": [],
+          "stderr_tail": "fatal: Not a valid object name 371e8da6ab306c2948e0fe1f47c884ae46b2e81f^{commit}\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "protocol_required_check",
+      "workload": "PO-03 transactional custody read-back: the result commit 371e8da6ab306c2948e0fe1f47c884ae46b2e81f recorded for the accepted isolation canary must be readable so its artifacts can be verified by immutable SHA."
+    },
+    {
+      "argv": [
+        "git",
+        "cat-file",
+        "-e",
+        "a702a5a053d384377f63690a814233e27904233b^{commit}"
+      ],
+      "classification": "AGREE",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "binding",
+      "expectation_met": null,
+      "expected_classification": null,
+      "expected_outcomes": {
+        "clean_full": "FAIL",
+        "clean_shallow": "FAIL"
+      },
+      "findings": [],
+      "hypothesis_ids": [
+        "H-WA024-07"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "FAIL",
+        "clean_shallow": "FAIL",
+        "warm": "FAIL"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p22-earlier-canary-result-commit-readable",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 128,
+          "outcome": "FAIL",
+          "output_sha256": "abdf347b3e0ae8cde370829a9a7804d777804b98959c15c40d1f815e39420e29",
+          "reset_removed": [],
+          "stderr_tail": "fatal: Not a valid object name a702a5a053d384377f63690a814233e27904233b^{commit}\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 128,
+          "outcome": "FAIL",
+          "output_sha256": "abdf347b3e0ae8cde370829a9a7804d777804b98959c15c40d1f815e39420e29",
+          "reset_removed": [],
+          "stderr_tail": "fatal: Not a valid object name a702a5a053d384377f63690a814233e27904233b^{commit}\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 128,
+          "outcome": "FAIL",
+          "output_sha256": "abdf347b3e0ae8cde370829a9a7804d777804b98959c15c40d1f815e39420e29",
+          "reset_removed": [],
+          "stderr_tail": "fatal: Not a valid object name a702a5a053d384377f63690a814233e27904233b^{commit}\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "protocol_required_check",
+      "workload": "The same custody read-back for the earlier canary result commit a702a5a053d384377f63690a814233e27904233b."
+    },
+    {
+      "argv": [
+        "git",
+        "cat-file",
+        "-e",
+        "e56eda6e8e4a4e958795f7157839926d93272b30^{commit}"
+      ],
+      "classification": "DEPTH_SENSITIVE",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "binding",
+      "expectation_met": true,
+      "expected_classification": "DEPTH_SENSITIVE",
+      "expected_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "FAIL",
+        "warm": "PASS"
+      },
+      "findings": [
+        "SHALLOW_HISTORY_DEPENDENCE"
+      ],
+      "hypothesis_ids": [
+        "H-WA024-07",
+        "H-WA024-01"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "FAIL",
+        "warm": "PASS"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p23-wave-branch-tip-readable",
+      "reset_untracked_delta": false,
+      "results": {
+        "clean_full": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 128,
+          "outcome": "FAIL",
+          "output_sha256": "721c32938e7c173f660b38ca92f062efe157b95f01447e35a1aa874ee5104d23",
+          "reset_removed": [],
+          "stderr_tail": "fatal: Not a valid object name e56eda6e8e4a4e958795f7157839926d93272b30^{commit}\n",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 1,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "discriminating_control",
+      "workload": "Discriminating control for H-WA024-07: the Wave A controller commit e56eda6e8e4a4e958795f7157839926d93272b30 is an ancestor of this unit's branch, so it is present with full history and absent at depth 1. This separates 'recorded commit is reachable from no fetched ref' from 'recorded commit is reachable but trimmed by depth'."
+    },
+    {
+      "argv": [
+        "PYTHON",
+        "-c",
+        "import subprocess,sys; out=subprocess.run(['git','status','--porcelain','--untracked-files=all'],capture_output=True,text=True).stdout.strip(); print('dirty_paths=%d' % (len(out.splitlines()) if out else 0)); print(out); sys.exit(1 if out else 0)"
+      ],
+      "classification": "AGREE",
+      "cwd": ".",
+      "env_overlay": {},
+      "expect_worktree_mutation": null,
+      "expectation_binding": "binding",
+      "expectation_met": true,
+      "expected_classification": "AGREE",
+      "expected_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "findings": [],
+      "hypothesis_ids": [
+        "H-WA024-02"
+      ],
+      "mutation_expectation_met": null,
+      "observed_outcomes": {
+        "clean_full": "PASS",
+        "clean_shallow": "PASS",
+        "warm": "PASS"
+      },
+      "observed_worktree_mutation": {
+        "clean_full": false,
+        "clean_shallow": false,
+        "warm": false
+      },
+      "outcomes_expectation_met": true,
+      "probe_id": "p24-cleanliness-gate-final",
+      "reset_untracked_delta": true,
+      "results": {
+        "clean_full": {
+          "duration_ms": 78,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "698a75161bdac912b73db37f5af925915d6748ec3b30fc031e10992cc02e1a53",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "dirty_paths=0\n\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "clean_shallow": {
+          "duration_ms": 78,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "698a75161bdac912b73db37f5af925915d6748ec3b30fc031e10992cc02e1a53",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "dirty_paths=0\n\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        },
+        "warm": {
+          "duration_ms": 78,
+          "error": null,
+          "exit_code": 0,
+          "outcome": "PASS",
+          "output_sha256": "698a75161bdac912b73db37f5af925915d6748ec3b30fc031e10992cc02e1a53",
+          "reset_removed": [],
+          "stderr_tail": "",
+          "stdout_tail": "dirty_paths=0\n\n",
+          "worktree_dirt_after": [],
+          "worktree_dirt_before": [],
+          "worktree_mutated": false
+        }
+      },
+      "role": "gate",
+      "workload": "Final ownership gate. The harness returns the tree to its start state before this gate, so a passing result shows the harness itself leaves no residue in the caller's checkout."
+    }
+  ],
+  "protocol_version": "PO03-WA-024-CLEAN-RUNNER-PROBE-v1",
+  "ref": "HEAD",
+  "repository_commit": "0b799f0eeee450e1aaea7a243e91538a079fc516",
+  "summary": {
+    "advisory_expectation_failures": [],
+    "agree": 17,
+    "binding_expectation_failures": [],
+    "clean_only_pass": 2,
+    "depth_sensitive": 5,
+    "divergent": 0,
+    "expectations_declared": 22,
+    "expectations_met": 22,
+    "mutation_expectations_declared": 4,
+    "mutation_expectations_met": 4,
+    "outcome_expectations_declared": 23,
+    "outcome_expectations_met": 23,
+    "probe_count": 24,
+    "warm_only_pass": 0,
+    "worktree_mutating_probes": [
+      "p04-contract-tests-as-declared",
+      "p06-naive-bytecode-remediation-under-isolation"
+    ]
+  },
+  "trees": {
+    "clean_full": {
+      "commits_present": 195,
+      "depth_requested": null,
+      "environment": "scrubbed",
+      "fetch_strategy": "commit",
+      "head": "0b799f0eeee450e1aaea7a243e91538a079fc516",
+      "kind": "fresh_clone",
+      "preexisting_dirt": [],
+      "shallow": false
+    },
+    "clean_shallow": {
+      "commits_present": 1,
+      "depth_requested": 1,
+      "environment": "scrubbed",
+      "fetch_strategy": "commit",
+      "head": "0b799f0eeee450e1aaea7a243e91538a079fc516",
+      "kind": "fresh_clone",
+      "preexisting_dirt": [],
+      "shallow": true
+    },
+    "warm": {
+      "commits_present": 195,
+      "environment": "inherited",
+      "head": "0b799f0eeee450e1aaea7a243e91538a079fc516",
+      "kind": "existing_working_tree",
+      "preexisting_dirt": [],
+      "shallow": false
+    }
+  }
+}

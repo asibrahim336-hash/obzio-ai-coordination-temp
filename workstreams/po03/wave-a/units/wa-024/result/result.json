@@ -1,0 +1,468 @@
+{
+  "protocol_version": "PO03-WAVE-A-MATERIAL-RESULT-v1",
+  "task_id": "PO03-WA-024",
+  "hypothesis_id": "H-PO03-WA-024",
+  "hypothesis": "A clean Actions runner exposes hidden local-state assumptions that a warm checkout misses.",
+  "hypothesis_outcome": "SUPPORTED",
+  "hypothesis_outcome_qualified": "SUPPORTED_WITH_A_CORRECTION_TO_ITS_MECHANISM",
+  "hypothesis_outcome_reasoning": "The hypothesis is supported: seven of twenty-four repository-native probes produce different outcomes in a freshly materialised tree than in the warm checkout, so hidden local-state assumptions exist and a clean environment does expose them. The mechanism named in the hypothesis is, however, incomplete in a way the reproduction can demonstrate rather than assert. Two of the four defect classes found are invisible to any warm-versus-clean comparison. The most consequential finding is an AGREE probe: the repository's own declared contract-test command contaminates the checkout identically in all three environments, and a clean runner hides that rather than exposing it, because it discards the workspace with the virtual machine. The discriminating variable is therefore not warm versus clean but whether the tree is freshly materialised, how much history it carries, whether recorded objects are reachable in it, and whether the workload can be caught mutating it.",
+  "state": "REPRODUCTION_RESULT",
+  "state_note": "This file records the disposition of the reproduction. Source claims are in sources/source-claims.json, hypotheses in hypotheses/hypotheses.json, mechanism changes in proposals/mechanism-changes.json and strategy proposals in proposals/strategy-proposals.json. No file mixes those states.",
+  "started_at": "2026-08-22T07:18:00Z",
+  "finished_at": "2026-08-22T08:14:00Z",
+  "model_observed": "gpt-5.6-sol-max-fast",
+  "model_observed_note": "The immutable input requests configuration.model_slug claude-opus-5-thinking-high with auto_model_selection false. The provider exposes no per-subagent model field, and the enclosing run reports gpt-5.6-sol-max-fast. The requested slug could not be confirmed from runtime evidence, so the observed value is recorded rather than the requested one.",
+  "reasoning_observed": "high",
+  "reasoning_observed_note": "configuration.reasoning in the immutable input is 'high'. The provider exposes no runtime field confirming an effort level, so this echoes the request and is not independent evidence.",
+  "runner_id": "obzio.worker.po03-wa-024-producer-a01",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "attempt_id": "PO03-WA-024-A01",
+  "wave_id": "PO03-WAVE-A",
+
+  "method": {
+    "summary": "Two independent instruments over the repository's own workloads, plus a verifier for each proposed repair. A differential harness runs each declared workload in three environments and classifies the difference. A static control finds the same defect classes by inspection, which lets a single-input finding be generalised to the whole repository. A mechanism verifier applies each proposed patch inside a throwaway clone and requires the defect to be observable before it and absent after it.",
+    "why_two_instruments": "Their blind spots are complementary. The harness found the bytecode contamination, which no amount of reading would reveal, but it can only speak about paths a probe exercises. The static control found the prefix-only-correct identifier in 65 files outside this unit, where the harness could only demonstrate it for the single input this unit was handed.",
+    "environments": [
+      {
+        "mode": "warm",
+        "tree": "the caller's existing working tree",
+        "environment": "inherited",
+        "emulates": "a long-lived checkout reused between runs"
+      },
+      {
+        "mode": "clean_full",
+        "tree": "fresh clone, committed content only, 195 commits present",
+        "environment": "scrubbed HOME, TMPDIR and PYTHON* settings",
+        "emulates": "actions/checkout with fetch-depth: 0"
+      },
+      {
+        "mode": "clean_shallow",
+        "tree": "fresh clone, 1 commit present",
+        "environment": "scrubbed HOME, TMPDIR and PYTHON* settings",
+        "emulates": "actions/checkout with its default fetch-depth of 1"
+      }
+    ],
+    "classification": {
+      "AGREE": "identical outcome in all three environments; not the same as 'no defect', since a mutating workload can agree everywhere",
+      "WARM_ONLY_PASS": "passes in the warm checkout and fails in both clean trees; a dependence on uncommitted local state",
+      "DEPTH_SENSITIVE": "passes with full history and fails at depth 1; a dependence on history the default checkout does not fetch",
+      "CLEAN_ONLY_PASS": "fails in the warm checkout and passes in both clean trees; ambient contamination of the warm environment",
+      "DIVERGENT": "any other disagreement"
+    },
+    "preregistration": "Every probe's expected classification and expected per-mode outcomes were frozen in harness/probes.json, and every hypothesis's predictions and refutation conditions in hypotheses/hypotheses.json, before the reproduction ran. The harness exits non-zero if any binding expectation is unmet, so a wrong prediction fails the run rather than being explained afterwards.",
+    "reproduction_command": "workstreams/po03/wave-a/units/wa-024/harness/run.sh --commit 0b799f0eeee450e1aaea7a243e91538a079fc516 --out <absolute-dir>",
+    "reproduction_stages": [
+      "focused tests",
+      "static local-state control",
+      "clean-runner differential harness",
+      "mechanism-change verification"
+    ],
+    "reproduction_commit": "0b799f0eeee450e1aaea7a243e91538a079fc516",
+    "reproduction_exit_status": 0,
+    "reproduction_count": 1,
+    "sanitized": "The reproduction clones committed content only, exports a private HOME and TMPDIR, unsets inherited PYTHON* settings, and reads no secret. Sandbox and repository paths are redacted from the reports, and nondeterministic fields are named in probe-report.json so a re-run can be compared field by field.",
+    "toolchain": {
+      "git": "git version 2.43.0",
+      "python3": "3.12.3",
+      "third_party_packages": "none"
+    }
+  },
+
+  "findings": [
+    {
+      "finding_id": "F-01-DECLARED-TEST-COMMAND-CONTAMINATES-A-READ-ONLY-DIRECTORY",
+      "severity": "high",
+      "hypotheses": ["H-WA024-02", "H-WA024-02B"],
+      "classification": "AGREE",
+      "statement": "The declared PO-03 contract-test command, python -I -m unittest discover -s workstreams/po03/tests, writes CPython bytecode caches into workstreams/po03/tests, a directory this unit's own ownership grant marks read-only.",
+      "evidence": "Probe p01 shows the tree clean, p04 runs the declared command and is recorded as mutating the worktree in all three environments, and p05 shows the cleanliness gate then failing in all three. Probes p02 and p03 show the same command with -B leaving the gate passing, which isolates bytecode writing as the cause rather than anything else the tests do.",
+      "why_a_clean_runner_hides_it": "A hosted runner discards the workspace with the virtual machine, so the contamination never reaches a later step. In a reused checkout it persists, and any subsequent ownership or changed-path validation sees untracked paths that no producer created.",
+      "notable": "This is the unit's most consequential finding and it is invisible to the comparison the parent hypothesis proposes. It agrees across all three environments; only the mutation record distinguishes it.",
+      "mechanism_change": "MC-01-CONTRACT-TESTS-LEAVE-NO-BYTECODE"
+    },
+    {
+      "finding_id": "F-02-THE-RECOMMENDED-REMEDIATION-IS-SILENTLY-INEFFECTIVE",
+      "severity": "medium",
+      "hypotheses": ["H-WA024-02B"],
+      "classification": "AGREE",
+      "statement": "Setting PYTHONDONTWRITEBYTECODE=1, the remediation most commonly recommended for this symptom, does not work here, because the declared command runs CPython in isolated mode and isolated mode ignores every PYTHON* environment variable.",
+      "evidence": "Probes p06 and p07 run the declared isolated-mode command with the variable set and still record worktree mutation and a failing gate. Probes p08 and p09 run the same command without isolated mode, with the variable set, and record no mutation and a passing gate. SC-WA024-06 states the rule from the CPython documentation source at an immutable commit.",
+      "why_it_matters": "An operator applying the standard fix observes no change and is likely to conclude the contamination has a different cause. Recorded as an adversarial case because it is the wrong turn a competent reader would most plausibly take.",
+      "mechanism_change": "MC-01-CONTRACT-TESTS-LEAVE-NO-BYTECODE"
+    },
+    {
+      "finding_id": "F-03-A-FROZEN-PROVENANCE-IDENTIFIER-NAMES-NO-OBJECT",
+      "severity": "high",
+      "hypotheses": ["H-WA024-04"],
+      "classification": "AGREE_AND_DEPTH_SENSITIVE",
+      "statement": "source_base.minimum_protocol_ancestor is recorded as 100bc20ad5eec62a4f35b60921423135cc0b9d9a in all 64 Wave A immutable inputs. That identifier names no object in this repository. The commit it was meant to name is 100bc2079cedc193af3524234ab833cc9f9f4669.",
+      "evidence": "Probe p13 uses the identifier exactly as frozen and fails in all three environments. Probe p14 uses only its seven-character prefix and passes in warm and clean_full while failing at depth 1. The static control reports the same defect in 65 files outside this unit: all 64 Wave A inputs and the generator that wrote them, which holds the value as an unchecked literal at workstreams/po03/tools/prepare_wave_a.py line 25.",
+      "why_a_warm_checkout_hides_it": "The identifier is prefix-only-correct. Any check that abbreviates it, and any human comparing the first seven characters, resolves 100bc20 successfully in a full-history checkout and concludes the provenance is sound. Only the exact forty-character identifier reveals that it names nothing.",
+      "side_effect_checked": "The wrong and the correct identifier abbreviate to the same seven characters, so every idempotency key of the form po03:100bc20:<slug>:a01 is byte-identical after the correction. No attempt identity changes.",
+      "mechanism_change": "MC-02-VERIFY-FROZEN-OBJECT-IDS"
+    },
+    {
+      "finding_id": "F-04-PROTOCOL-PROVENANCE-CHECKS-FAIL-ON-A-DEFAULT-CLEAN-RUNNER",
+      "severity": "medium",
+      "hypotheses": ["H-WA024-01"],
+      "classification": "DEPTH_SENSITIVE",
+      "statement": "The provenance checks the PO-03 transactional protocol requires of every producer, that the start commit descends from the minimum protocol ancestor and that the commission commit and pinned base are readable, pass in a full-history checkout and fail at depth 1.",
+      "evidence": "Probes p15, p16, p17 and p23 all classify DEPTH_SENSITIVE: PASS in warm and clean_full, FAIL in clean_shallow. The default fetch-depth of 1 is stated by SC-WA024-01 from the actions/checkout manifest at an immutable commit, and SC-WA024-R2 records that the repository's taxonomy workflow uses actions/checkout with no fetch-depth.",
+      "scope": "The PO-03 contracts workflow already sets fetch-depth: 0, so it is unaffected. The exposure is that no workflow currently performs these provenance checks at all, so the requirement rests on each producer's own checkout being deep enough.",
+      "mechanism_change": "NOT_PROPOSED"
+    },
+    {
+      "finding_id": "F-05-CUSTODY-READ-BACK-IS-NOT-VERIFIABLE-IN-CI-AS-CONFIGURED",
+      "severity": "high",
+      "hypotheses": ["H-WA024-07"],
+      "classification": "UNREACHABLE_IN_EVERY_FRESH_TREE",
+      "statement": "The protocol requires a distinct process to read every artifact back from an immutable result commit. Recorded result commits live on their producers' own branches, so they cannot be resolved from a freshly materialised single-ref tree at any depth.",
+      "evidence": "Probes p21 and p22 attempt to read the two recorded canary result commits and fail in all three environments, including clean_full with 195 commits present. Probe p23 is the discriminating control: a commit reachable from the checked-out branch fails only at depth 1. Reachability, not depth, is the variable, so no fetch-depth setting fixes it.",
+      "why_a_warm_checkout_hides_it": "A developer clone carries every branch, so the commits resolve and the custody chain looks verifiable. A single-ref checkout of the kind actions/checkout produces cannot resolve them.",
+      "observation": "Both control result files already embed the branch in manifest_uri as git:<ref>@<commit>:<path>, but the validator never parses it and requires no ref. The information was present and simply unvalidated and unused, so nothing needed backfilling.",
+      "mechanism_change": "MC-03-CUSTODY-READBACK-NEEDS-A-FETCHABLE-REF"
+    },
+    {
+      "finding_id": "F-06-THE-WARM-ENVIRONMENT-CARRIES-AMBIENT-STATE",
+      "severity": "low",
+      "hypotheses": ["H-WA024-05"],
+      "classification": "CLEAN_ONLY_PASS",
+      "statement": "The warm agent checkout runs inside an ambient environment carrying provider-shaped and credential-shaped variable names, and a temporary directory already holding PO-03 run state. Both clean trees are free of them.",
+      "evidence": "Probes p18 and p19 classify CLEAN_ONLY_PASS: FAIL in warm, PASS in both clean modes.",
+      "binding": "advisory",
+      "binding_reason": "The outcome depends on the invoking host rather than on repository content, so it is recorded as an observation and is not enforced for clean-clone recurrence. A different host would produce a different result without any repository change.",
+      "mechanism_change": "NOT_PROPOSED"
+    },
+    {
+      "finding_id": "F-07-DECLARED-COMMANDS-ARE-NOT-PORTABLE-OUTSIDE-ACTIONS",
+      "severity": "low",
+      "hypotheses": ["H-WA024-06", "H-WA024-03"],
+      "classification": "AGREE",
+      "statement": "Both repository workflows spell the interpreter as bare 'python', which resolves only because actions/setup-python ran in the same job. The declared contract-test command also names a working-directory-relative start directory.",
+      "evidence": "Probe p20 records executable-not-found for bare 'python' identically in all three environments on a host where no setup action ran. Probe p12 records the declared command failing from a nested directory in all three environments, while probes p10 and p11 show the taxonomy check, which resolves its root from __file__, passing from both the root and a nested directory.",
+      "not_a_defect": "Both workflows are correct inside Actions. SC-WA024-05 records that setup-python's stated purpose is to add the command-line tools to PATH. This is a portability limit for a reader reproducing the commands outside a runner, which is why it is recorded as a limitation and as strategy proposal SP-03 rather than patched.",
+      "mechanism_change": "NOT_PROPOSED"
+    },
+    {
+      "finding_id": "F-08-THIS-UNITS-OWN-REPRODUCTION-CARRIED-THE-DEFECT-CLASS-IT-STUDIES",
+      "severity": "informational",
+      "hypotheses": ["H-WA024-03"],
+      "classification": "SELF_DETECTED",
+      "statement": "An earlier revision of harness/run.sh accepted a relative --out and passed it to stages that run with the clean clone as their working directory, so the JSON reports were written inside the clone.",
+      "evidence": "The run at commit 6778c22d50d178579ab75ad4fb54b4cdf470d41b exited 1. Writing into the clone dirtied the tree the probes measure, which flipped four cleanliness gates from AGREE to CLEAN_ONLY_PASS, and the residue check named the three report files. Recorded because the harness detected it rather than passing over it, and because it is the same working-directory dependence class as F-07.",
+      "resolution": "run.sh now resolves the output directory to an absolute path before any stage runs, and tests/test_run_script.py covers the ordering so the regression cannot return silently.",
+      "mechanism_change": "NOT_APPLICABLE"
+    }
+  ],
+
+  "hypothesis_dispositions": [
+    {
+      "hypothesis_id": "H-WA024-01",
+      "current_method_claim": "Pin CI to a shallow default checkout and fetch history only where a job needs it.",
+      "outcome": "SUPPORTED",
+      "evidence": "Probes p15, p16, p17 and p23 all classify DEPTH_SENSITIVE exactly as predicted. The refutation condition, passing at depth 1 or failing with full history, did not occur.",
+      "measured_by": ["p15", "p16", "p17"]
+    },
+    {
+      "hypothesis_id": "H-WA024-02",
+      "current_method_claim": "Treat the runner workspace as disposable, so a step may leave artefacts behind.",
+      "outcome": "SUPPORTED",
+      "evidence": "The gate passes at p01, the declared command mutates the tree at p04, the gate fails at p05, and the same command with -B leaves the gate passing at p02 and p03. Both halves of the prediction held.",
+      "measured_by": ["p01", "p02", "p03", "p04", "p05", "p24"]
+    },
+    {
+      "hypothesis_id": "H-WA024-02B",
+      "current_method_claim": "Suppress bytecode writing in CI by exporting PYTHONDONTWRITEBYTECODE=1 for the job.",
+      "outcome": "SUPPORTED",
+      "evidence": "p06 and p07 show the variable ineffective under isolated mode; p08 and p09 show it effective once isolated mode is dropped. The refutation condition, the variable suppressing bytecode under -I, did not occur.",
+      "measured_by": ["p06", "p07", "p08", "p09"]
+    },
+    {
+      "hypothesis_id": "H-WA024-03",
+      "current_method_claim": "Resolve repository paths from GITHUB_WORKSPACE, which Actions sets as the step working directory.",
+      "outcome": "SUPPORTED",
+      "evidence": "The taxonomy check passes from both the root and a nested directory at p10 and p11; the declared contract-test command fails from a nested directory at p12, identically in all three environments. The two portability classes are distinguished as predicted.",
+      "measured_by": ["p10", "p11", "p12"]
+    },
+    {
+      "hypothesis_id": "H-WA024-04",
+      "current_method_claim": "Pin provenance to full forty-character object identifiers rather than abbreviations.",
+      "outcome": "SUPPORTED",
+      "evidence": "p13 fails in all three environments with the identifier exactly as frozen; p14 passes in warm and clean_full and fails at depth 1 with only the prefix. The static control generalises the defect to 65 files outside this unit, confirming the clause about the generator holding it as an unchecked literal.",
+      "measured_by": ["p13", "p14"]
+    },
+    {
+      "hypothesis_id": "H-WA024-05",
+      "current_method_claim": "A hosted runner supplies its own HOME and RUNNER_TEMP and carries no operator state.",
+      "outcome": "SUPPORTED",
+      "outcome_binding": "advisory",
+      "evidence": "p18 and p19 classify CLEAN_ONLY_PASS as predicted, but the result is a property of the invoking host rather than of repository content, so it is not enforced for clean-clone recurrence.",
+      "measured_by": ["p18", "p19"]
+    },
+    {
+      "hypothesis_id": "H-WA024-06",
+      "current_method_claim": "Spell the interpreter 'python' in workflow steps after actions/setup-python has run.",
+      "outcome": "SUPPORTED",
+      "outcome_binding": "advisory",
+      "evidence": "p20 records executable-not-found identically in all three environments on a host where no setup action ran. Host-dependent, so advisory.",
+      "measured_by": ["p20"]
+    },
+    {
+      "hypothesis_id": "H-WA024-07",
+      "current_method_claim": "Record a producer result as an immutable commit id and have a distinct process read every artifact back by that id.",
+      "outcome": "SUPPORTED",
+      "evidence": "p21 and p22 fail in both clean modes and in warm; p23, the discriminating control, fails only at depth 1. The refutation condition, a recorded canary result commit being readable in a tree materialised from the checked-out commit alone, did not occur.",
+      "measured_by": ["p21", "p22", "p23"]
+    }
+  ],
+
+  "reproduction_results": {
+    "reproduction_id": "REPRO-WA024-01",
+    "commit": "0b799f0eeee450e1aaea7a243e91538a079fc516",
+    "exit_status": 0,
+    "wall_seconds": 10,
+    "probe_count": 24,
+    "classifications": {
+      "AGREE": 17,
+      "DEPTH_SENSITIVE": 5,
+      "CLEAN_ONLY_PASS": 2,
+      "WARM_ONLY_PASS": 0,
+      "DIVERGENT": 0
+    },
+    "expectations_declared": 22,
+    "expectations_met": 22,
+    "outcome_expectations_declared": 23,
+    "outcome_expectations_met": 23,
+    "mutation_expectations_declared": 4,
+    "mutation_expectations_met": 4,
+    "binding_expectation_failures": [],
+    "advisory_expectation_failures": [],
+    "worktree_mutating_probes": [
+      "p04-contract-tests-as-declared",
+      "p06-naive-bytecode-remediation-under-isolation"
+    ],
+    "probes_differing_across_environments": 7,
+    "static_control": {
+      "scanned_file_count": 188,
+      "workflow_count": 2,
+      "workflow_parse_errors": [],
+      "findings": 104,
+      "by_severity": { "error": 69, "warning": 18, "info": 17 },
+      "by_rule": { "R1_UNRESOLVABLE_OBJECT_ID": 102, "R3_BARE_INTERPRETER_WITHOUT_SETUP": 2 },
+      "R1_subclasses": {
+        "PREFIX_ONLY_CORRECT": 69,
+        "UNKNOWN_OBJECT": 18,
+        "EXTERNAL_DECLARED": 15
+      },
+      "prefix_only_correct_accounting": {
+        "real_defect_sites_outside_this_unit": 65,
+        "wave_a_immutable_inputs": 64,
+        "generator": "workstreams/po03/tools/prepare_wave_a.py",
+        "inside_this_unit": 4,
+        "inside_this_unit_note": "harness/probes.json, sources/source-claims.json, proposals/mechanism-changes.json and the MC-02 patch each quote the defective identifier in order to document or test it. They are counted honestly rather than suppressed, and they are not defects."
+      },
+      "clean_rules": {
+        "R2_HISTORY_DEPENDENT_WORKFLOW_WITHOUT_FULL_FETCH": 0,
+        "R4_HOST_ABSOLUTE_PATH": 0,
+        "R5_UNTRACKED_REFERENCED_PATH": 0
+      }
+    },
+    "mechanism_verification": {
+      "change_count": 4,
+      "check_count": 43,
+      "disposition": "PASS",
+      "failed_changes": []
+    },
+    "clean_clone_unchanged_after_reproduction": true,
+    "report_paths": [
+      "workstreams/po03/wave-a/units/wa-024/result/probe-report.json",
+      "workstreams/po03/wave-a/units/wa-024/result/lint-report.json",
+      "workstreams/po03/wave-a/units/wa-024/result/mechanism-verification.json",
+      "workstreams/po03/wave-a/units/wa-024/result/run-console.txt"
+    ]
+  },
+
+  "source_claims": {
+    "register": "workstreams/po03/wave-a/units/wa-024/sources/source-claims.json",
+    "external_claim_count": 6,
+    "repository_claim_count": 5,
+    "total": 11,
+    "note": "Recorded separately from the hypotheses derived from them. Every external claim is pinned to an immutable upstream commit and stored as a bounded verbatim capsule; every repository claim is pinned to a measured digest. No claim rests on a rendered page, a blog post or a mutable ref.",
+    "external": [
+      {
+        "claim_id": "SC-WA024-01",
+        "publisher": "GitHub, Inc.",
+        "artefact": "actions/checkout action manifest",
+        "url": "https://raw.githubusercontent.com/actions/checkout/11bd71901bbe5b1630ceea73d27597364c9af683/action.yml",
+        "immutable_commit": "11bd71901bbe5b1630ceea73d27597364c9af683",
+        "retrieved_sha256": "5349b6eea0a1797a9a993c48db9d95b33d27ee1b6227ceced0c9cbf8e655c939"
+      },
+      {
+        "claim_id": "SC-WA024-02",
+        "publisher": "GitHub, Inc.",
+        "artefact": "actions/checkout README",
+        "url": "https://raw.githubusercontent.com/actions/checkout/11bd71901bbe5b1630ceea73d27597364c9af683/README.md",
+        "immutable_commit": "11bd71901bbe5b1630ceea73d27597364c9af683",
+        "retrieved_sha256": "5b1198a8e20cbdd5c484f23d01755884f4d53da10b26f179599517bbe695f91b"
+      },
+      {
+        "claim_id": "SC-WA024-03",
+        "publisher": "GitHub, Inc.",
+        "artefact": "GitHub Docs source, 'Use GitHub-hosted runners'",
+        "url": "https://raw.githubusercontent.com/github/docs/4f8c3170cea7f72cf41fc976f5dbf4e8a0b8567f/content/actions/how-tos/manage-runners/github-hosted-runners/use-github-hosted-runners.md",
+        "immutable_commit": "4f8c3170cea7f72cf41fc976f5dbf4e8a0b8567f",
+        "retrieved_sha256": "NOT_SUPPORTED"
+      },
+      {
+        "claim_id": "SC-WA024-04",
+        "publisher": "GitHub, Inc.",
+        "artefact": "GitHub Docs source, Actions variables reference",
+        "url": "https://raw.githubusercontent.com/github/docs/4f8c3170cea7f72cf41fc976f5dbf4e8a0b8567f/content/actions/reference/workflows-and-actions/variables.md",
+        "immutable_commit": "4f8c3170cea7f72cf41fc976f5dbf4e8a0b8567f",
+        "retrieved_sha256": "NOT_SUPPORTED"
+      },
+      {
+        "claim_id": "SC-WA024-05",
+        "publisher": "GitHub, Inc.",
+        "artefact": "actions/setup-python action manifest",
+        "url": "https://raw.githubusercontent.com/actions/setup-python/a26af69be951a213d495a4c3e4e4022e16d87065/action.yml",
+        "immutable_commit": "a26af69be951a213d495a4c3e4e4022e16d87065",
+        "retrieved_sha256": "0acca40eee6f548ea8269ece66fd625fe9deb1f61f31f0b58562068fc083eb37"
+      },
+      {
+        "claim_id": "SC-WA024-06",
+        "publisher": "Python Software Foundation",
+        "artefact": "CPython command-line documentation source",
+        "url": "https://raw.githubusercontent.com/python/cpython/55fee9cf216abe4ec0d1139f94b1930fbd0c7644/Doc/using/cmdline.rst",
+        "immutable_commit": "55fee9cf216abe4ec0d1139f94b1930fbd0c7644",
+        "retrieved_sha256": "d13736a61946be39fa8f7bab1c1a6206815912890b3a5ab017ca8971c192e8fa"
+      }
+    ],
+    "repository": [
+      {
+        "claim_id": "SC-WA024-R1",
+        "path": ".github/workflows/po03-contracts.yml",
+        "sha256": "427949c07d93fe69bea6485a91ca58c4297be21759e6b0b00a0e5cc9f450c7cb",
+        "matches_immutable_input_field": "source_base.workflow_sha256"
+      },
+      {
+        "claim_id": "SC-WA024-R2",
+        "path": ".github/workflows/operator-taxonomy-currentness.yml",
+        "sha256": "4a8cdf6bb0f62b23127e2f28421be50301c6b23acaedf7dce9bf808b2649e6f5",
+        "matches_immutable_input_field": "NOT_PINNED_BY_INPUT"
+      },
+      {
+        "claim_id": "SC-WA024-R3",
+        "path": "workstreams/po03/tools/prepare_wave_a.py",
+        "sha256": "17c06f16d66847771d4cb7790d51ca3185a044d5ccb4265aa24c7e51a994ded1",
+        "matches_immutable_input_field": "NOT_PINNED_BY_INPUT"
+      },
+      {
+        "claim_id": "SC-WA024-R4",
+        "path": "workstreams/po03/control/inputs/wave-a/wa-024.json",
+        "sha256": "2aeadce77e14e21185ed0e633a3abb7540235a339670e23f5aba8f1d91350fd0",
+        "matches_immutable_input_field": "self"
+      },
+      {
+        "claim_id": "SC-WA024-R5",
+        "path": "workstreams/po03/COMMISSION.md",
+        "sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+        "matches_immutable_input_field": "source_base.commission_sha256"
+      }
+    ]
+  },
+
+  "mechanism_changes": {
+    "register": "workstreams/po03/wave-a/units/wa-024/proposals/mechanism-changes.json",
+    "verifier": "workstreams/po03/wave-a/units/wa-024/proposals/verify_mechanism_changes.py",
+    "count": 3,
+    "applied_by_this_unit": false,
+    "verification_disposition": "PASS",
+    "rejected_candidate_count": 4,
+    "proposed": [
+      "MC-01-CONTRACT-TESTS-LEAVE-NO-BYTECODE",
+      "MC-02-VERIFY-FROZEN-OBJECT-IDS",
+      "MC-03-CUSTODY-READBACK-NEEDS-A-FETCHABLE-REF"
+    ],
+    "note": "Every target is a read-only path, so each change ships as a unified diff plus a verifier that applies it inside a throwaway clone. Each change is falsifiable: the defect must be observable before the patch and absent after it. MC-01 and MC-02 also carry adversarial cases establishing the new guard is not vacuous."
+  },
+
+  "strategy_proposals": {
+    "register": "workstreams/po03/wave-a/units/wa-024/proposals/strategy-proposals.json",
+    "count": 5,
+    "ids": ["SP-01", "SP-02", "SP-03", "SP-04", "SP-05"],
+    "note": "Recommendations to the coordinator, kept distinct from the mechanism changes. This producer holds no authority to change wave policy and claims none."
+  },
+
+  "tests": {
+    "register": "workstreams/po03/wave-a/units/wa-024/result/tests.json",
+    "unit_tests": 86,
+    "seeded_contract_tests": 23,
+    "mechanism_verification_checks": 43,
+    "probe_assertions": 22,
+    "total_assertions_executed": 174,
+    "first_pass_outcome": "PASS",
+    "failures": 0,
+    "errors": 0
+  },
+
+  "artifacts": {
+    "manifest": "workstreams/po03/wave-a/units/wa-024/result/artifact-manifest.json",
+    "note": "Complete SHA-256 and byte accounting for every file this unit wrote is in the manifest. Counts and totals are recorded there rather than duplicated here, so the two cannot disagree."
+  },
+
+  "limitations": {
+    "register": "workstreams/po03/wave-a/units/wa-024/result/limitations.json",
+    "headline": "No GitHub Actions workflow run was dispatched, so every conclusion is CI-equivalent rather than CI-observed. The harness reconstructs the runner's checkout and environment shape locally from the pinned actions/checkout and setup-python manifests."
+  },
+
+  "preregistered_metrics": {
+    "wall_time": { "value": 10, "unit": "seconds", "scope": "the canonical reproduction at 0b799f0eeee450e1aaea7a243e91538a079fc516, four stages end to end" },
+    "test_count": { "value": 174, "note": "86 unit tests, 23 seeded contract tests, 43 mechanism-verification checks and 22 binding probe expectations" },
+    "first_pass_outcome": { "value": "PASS", "note": "The canonical reproduction exits 0 with every binding expectation met and every mechanism change verified." },
+    "artifact_count": { "value": "see artifact-manifest.json", "note": "Recorded once, in the manifest, to keep a single source of truth." },
+    "artifact_bytes": { "value": "see artifact-manifest.json" },
+    "source_claim_count": { "value": 11, "note": "6 external claims pinned to immutable upstream commits, 5 repository claims pinned to measured digests" },
+    "reproduction_count": { "value": 1, "note": "One sanitized repository-native reproduction, which is the minimum the input requires. It runs 24 probes across 3 environments." },
+    "mechanism_change_count": { "value": 3, "note": "Three proposed and verified, four candidates rejected with evidence" },
+    "defects": {
+      "value": 5,
+      "note": "Five defects found in read-only surfaces: F-01 and F-02 bytecode contamination, F-03 the unresolvable frozen identifier across 65 files, F-04 depth-sensitive protocol provenance checks, F-05 unverifiable custody read-back. F-06 and F-07 are recorded as host-dependent observations and portability limits rather than defects."
+    },
+    "rework": {
+      "value": 1,
+      "note": "One self-inflicted defect, F-08: an earlier revision of run.sh accepted a relative output path that resolved inside the throwaway clone. The harness detected it, the run exited 1, and the fix is covered by tests/test_run_script.py."
+    },
+    "provider_block": { "value": 0 },
+    "collision": { "value": 0, "note": "No other producer writes under this unit's subtree, and the runner branch is unique to this attempt." },
+    "recovery_events": { "value": 0 }
+  },
+
+  "boundary_compliance": {
+    "wrote_only_owned_subtree": true,
+    "owned_subtree": "workstreams/po03/wave-a/units/wa-024/",
+    "read_only_paths_modified": 0,
+    "read_only_paths_modified_note": "Every proposed repair to a read-only path is a unified diff in proposals/patches/, applied only inside a throwaway clone by the verifier and never to this repository.",
+    "pull_requests_created_or_modified": 0,
+    "pr_8_touched": false,
+    "po01_contacted_or_mutated": false,
+    "external_mutation": false,
+    "third_party_outreach": false,
+    "workflow_runs_dispatched": 0,
+    "secrets_read": 0,
+    "network_use": "Read-only HTTPS GET of public documentation at immutable commits, plus git push to this attempt's own runner branch.",
+    "merged_or_promoted": false,
+    "claims_completed_or_accepted": false,
+    "completion_actor": null,
+    "independent_acceptance": "NOT_TESTED"
+  },
+
+  "independent_acceptance": {
+    "state": "NOT_TESTED",
+    "reviewer_id": null,
+    "receipt_uri": null,
+    "note": "A producer cannot accept its own result. Only the coordinator may record COMPLETED."
+  },
+
+  "decision_changed": []
+}
