@@ -1,0 +1,85 @@
+{
+  "route_id": "R2-CURSOR-AGENT-CONTROL-MCP",
+  "name": "Cursor agent-run control, results and artifact retrieval over the authenticated MCP surface",
+  "decision_changed": [],
+  "transport": "mcp_over_runtime_bound_auth",
+  "independent_of": ["R1-GITHUB-IMMUTABLE-EXCHANGE"],
+  "independence_argument": "This route addresses provider-held agent-run state through the cursor-cloud MCP server. It does not traverse GitHub, does not use the git protocol and does not depend on any repository credential. R1 traverses GitHub over HTTPS with a separate identity. Either route can fail without disabling the other.",
+  "bounded_work_unit": {
+    "work_unit_id": "CUR-ORCH-QUAL-01/WU-R2-001",
+    "attempt_id": "CUR-ORCH-QUAL-01/WU-R2-001/A1",
+    "description": "Initiate one bounded provider-side retrieval job for a single addressable agent run and collect its result artifacts.",
+    "scope_control": "Addressed only this orchestrator's own run id. PO-03 parent threads were deliberately not opened, fetched or monitored, as the launch sheet requires.",
+    "initiated_at": "2026-08-22T13:34:01Z",
+    "instrument": "cursor-cloud batch-fetch-details with includeEvents=true"
+  },
+  "result_retrieval": {
+    "addressable": true,
+    "addressing_scheme": "provider run id (bcId) -> run directory -> per-run artifact files",
+    "run_directory": "/tmp/cursor/cloud-agent-transcripts/2026-08-22T13-34-01Z-591f",
+    "artifacts_returned": [
+      {
+        "artifact": "index.json",
+        "path": "/tmp/cursor/cloud-agent-transcripts/2026-08-22T13-34-01Z-591f/index.json",
+        "sha256": "e5849e68d8e0ecf1205b18a9c0bf64a7a6c61b3f82dee2a0b8f500eff7521b13"
+      },
+      {
+        "artifact": "events.json",
+        "path": "/tmp/cursor/cloud-agent-transcripts/2026-08-22T13-34-01Z-591f/bc-c6f63d58-9611-495a-96f6-2f2dcbef696d/events.json",
+        "sha256": "1b0c03ddfa9297a94d85f7267ad4316d6932125784335595dc3fcc7903bc3ec3"
+      }
+    ],
+    "retrieved_content_summary": {
+      "agents_returned": 1,
+      "bcId": "bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+      "status_at_retrieval": "RUNNING",
+      "model_at_retrieval": "claude-opus-5-thinking-max-fast",
+      "events_count": 0
+    },
+    "ephemerality_note": "The provider run directory is VM-local and non-durable. The retrieved content is therefore reconciled into the repository under receipts/so02/** where the hash-bound bundle, not the provider path, is canonical."
+  },
+  "additional_control_operations_proved": [
+    {
+      "operation": "run-info",
+      "observed_at": "2026-08-22T13:31:52Z",
+      "returns": "own run identity, stable agent URL, exact model, owner, lifecycle status"
+    },
+    {
+      "operation": "list-cloud-agents",
+      "observed_at": "2026-08-22T13:32:22Z",
+      "returns": "addressable enumeration of all 9 visible top-level runs with per-run status; this is the instrument used for PO-03 capacity observation"
+    },
+    {
+      "operation": "environment-info",
+      "observed_at": "2026-08-22T13:34:05Z",
+      "returns": "environment public id, environment build id, egress policy, repository binding"
+    }
+  ],
+  "stable_locators": [
+    {
+      "kind": "cursor_cloud_agent",
+      "locator": "https://cursor.com/agents/bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+      "resume_checkpoint": "bcId=bc-c6f63d58-9611-495a-96f6-2f2dcbef696d; resume by addressing the run id through cursor-cloud run-info or batch-fetch-details",
+      "contains_credential_material": false
+    },
+    {
+      "kind": "cursor_cloud_environment",
+      "locator": "https://cursor.com/dashboard/cloud-agents/environments/e/69dbfc52-9df5-11f1-a7d1-d6b4613131ce",
+      "resume_checkpoint": "environmentPublicId=69dbfc52-9df5-11f1-a7d1-d6b4613131ce; build bld-20260822-015195f7-955b-445d-8b57-78bc58eec228",
+      "contains_credential_material": false
+    }
+  ],
+  "failure_injection": {
+    "exercise_id": "FB-R2-NONEXISTENT-RUN",
+    "injected": "batch-fetch-details addressed to a well-formed but non-existent run id bc-00000000-0000-4000-8000-000000000000",
+    "observed_at": "2026-08-22T13:34:06Z",
+    "observed": "Fetched 0 available cloud agent(s); the tool named the unavailable id explicitly and wrote no agent artifact.",
+    "fail_closed": true,
+    "fabricated_result_returned": false,
+    "programme_continued": true
+  },
+  "limits_and_honest_gaps": [
+    "This route exposes agent-run observation, artifact retrieval and environment control. It does not, in this runtime, expose creation of a new top-level agent run or submission of a follow-up to another run; that remains an owner or REST-API action (see R4A).",
+    "The provider run directory is not durable across VMs, so the route cannot be canonical on its own."
+  ]
+}

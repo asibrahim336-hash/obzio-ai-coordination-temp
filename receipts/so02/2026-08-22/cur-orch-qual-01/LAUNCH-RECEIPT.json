@@ -1,0 +1,139 @@
+{
+  "receipt_id": "CUR-ORCH-QUAL-01-LAUNCH-RECEIPT",
+  "commission_id": "COM-SCF01-CUR01-20260822-v001",
+  "runtime_binding_id": "SCF-01/CUR-01",
+  "decision_changed": [],
+  "recorded_at": "2026-08-22T13:32:22Z",
+  "recorded_before_any_dispatch": true,
+  "orchestrator": {
+    "provider": "Cursor Cloud Agents",
+    "stable_agent_url": "https://cursor.com/agents/bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+    "provider_run_id": "bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+    "provider_run_name": "Primary orchestration route qualification",
+    "conversation_id_env": "CURSOR_CONVERSATION_ID",
+    "exact_model_configuration": "claude-opus-5-thinking-max-fast",
+    "model_alias_used": false,
+    "model_selection_note": "Exact frontier configuration reported by the provider through cursor-cloud run-info; not Auto and not inferred behind an alias.",
+    "source": "web",
+    "visibility": "team",
+    "owning_user_id": 406024541,
+    "created_at_ms": 1787405466719,
+    "environment_public_id": "69dbfc52-9df5-11f1-a7d1-d6b4613131ce",
+    "environment_build_id": "bld-20260822-015195f7-955b-445d-8b57-78bc58eec228",
+    "environment_url": "https://cursor.com/dashboard/cloud-agents/environments/e/69dbfc52-9df5-11f1-a7d1-d6b4613131ce",
+    "egress_restricted": false
+  },
+  "repository": {
+    "repository": "asibrahim336-hash/obzio-ai-coordination-temp",
+    "workspace_checkout_sha_at_boot": "37943ec2ff9f6702d72e127a3c8e56c81b0c3812",
+    "workspace_checkout_ref_at_boot": "main",
+    "selected_so02_source_branch": "so02/strategic-control-plane-migration-20260822-v001",
+    "immutable_start_sha": "a5adfdff6921b34b05c1ea6eed0c1752bb4ebbbb",
+    "immutable_start_sha_instrument": "git ls-remote --heads origin, resolved 2026-08-22T13:31:58Z",
+    "commission_path": "workstreams/so02/control-plane/commissions/CURSOR-SCP-01.md",
+    "isolated_working_branch": "cursor/so02-cur-orch-qual-01",
+    "isolated_branch_created_from": "a5adfdff6921b34b05c1ea6eed0c1752bb4ebbbb"
+  },
+  "topology_declaration": {
+    "top_level_cursor_agents_used": 1,
+    "cursor_subagents_started": 0,
+    "multiple_agents_groups_started": 0,
+    "shared_state_writers": 1,
+    "root_controller": "bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+    "note": "Subagent dispatch is available in this runtime and was deliberately not used. The commission and launch sheet permit exactly one top-level agent and no nested Cursor agent during qualification."
+  },
+  "seeded_gate_results_before_dispatch": {
+    "scctl_validate": "PASS: SCF-01 seed contracts and state invariants",
+    "unittest_discover": "Ran 41 tests, OK",
+    "check_operator_taxonomy": "OPERATOR TAXONOMY CHECK: PASS"
+  },
+  "tool_census": {
+    "observed_at": "2026-08-22T13:33:00Z",
+    "instrument": "direct runtime tool enumeration plus GetMcpTools server inspection",
+    "repository_and_shell": [
+      "bash shell (persistent, backgroundable)",
+      "file read / write / string-replace / glob / ripgrep",
+      "git 2.43.0 with authenticated https origin",
+      "gh 2.91.0 authenticated as account 'cursor', read-only for write operations",
+      "python 3.12.3 (stdlib; requests and urllib3 present; pytest and openai absent)"
+    ],
+    "mcp_servers": [
+      {
+        "server": "cursor-cloud",
+        "status": "ready",
+        "auth": "runtime-bound, no credential material exposed to the agent",
+        "tools": [
+          "run-info", "list-cloud-agents", "environment-info", "get-events",
+          "get-message-queue", "batch-fetch-details", "get-automation",
+          "list-environment-builds", "environment-build-logs", "trigger-environment-build",
+          "propose-environment-json", "take-environment-snapshot",
+          "check-environment-snapshot", "request-environment-setup-actions"
+        ]
+      },
+      {
+        "server": "cursor-subscriptions",
+        "status": "ready",
+        "auth": "runtime-bound",
+        "tools": ["subscribe_github_pr", "subscribe_github_ci", "subscribe_timer", "list_subscriptions", "unsubscribe"]
+      }
+    ],
+    "github_exchange": [
+      "ManagePullRequest (create_pr, update_pr, post_comment, resolve_comment, get_ci_status, set_pr_status)",
+      "EditPullRequestLabels",
+      "git push to non-protected branches"
+    ],
+    "agent_dispatch": [
+      "Task subagent dispatch (generalPurpose, explore, best-of-n-runner and others) — AVAILABLE_DELIBERATELY_UNUSED_UNDER_COMMISSION"
+    ],
+    "absent_in_this_runtime": [
+      "browser or computer control tool",
+      "web search or web fetch tool",
+      "OpenAI SDK or any OpenAI API credential",
+      "Cursor Agent REST API key",
+      "SW client or SW TLS certificate"
+    ],
+    "credential_census": {
+      "instrument": "environment variable name enumeration only; no value was read, printed or stored",
+      "injected_secret_names": [
+        "AUREA_E2E_SUPABASE_PUBLISHABLE_KEY",
+        "AUREA_E2E_SUPABASE_URL",
+        "AUREA_E2E_USER_EMAIL",
+        "AUREA_E2E_USER_PASSWORD"
+      ],
+      "openai_api_key_present": false,
+      "cursor_api_key_present": false,
+      "sw_credential_present": false,
+      "note": "The four injected secrets belong to an unrelated project and are out of scope for this commission."
+    },
+    "egress_probe": {
+      "observed_at": "2026-08-22T13:33:10Z",
+      "https://api.github.com": 200,
+      "https://api.openai.com/v1/models": 401,
+      "https://api.cursor.com": 200,
+      "interpretation": "Network egress is unrestricted. The OpenAI and Cursor REST surfaces are reachable but unauthenticated, so those routes are credential-blocked rather than unsupported."
+    }
+  },
+  "prohibited_targets_declared_before_work": {
+    "branches": [
+      "main",
+      "so02/strategic-control-plane-migration-20260822-v001",
+      "po03/repository-engineering-portable-runtime-20260822-v001",
+      "cursor/setup-dev-environment-b5ce",
+      "soo/v003-currentness-repair-20260820",
+      "soo/v003-controlling-pointer-and-part-manifest-repair-20260820",
+      "any cursor/po03-* or po03/* branch"
+    ],
+    "pull_requests": {
+      "PR #6": "soo/v003-currentness-repair-20260820",
+      "PR #7": "soo/v003-controlling-pointer-and-part-manifest-repair-20260820",
+      "PR #9": "po03/repository-engineering-portable-runtime-20260822-v001",
+      "PR #10": "so02/strategic-control-plane-migration-20260822-v001"
+    },
+    "workstreams": ["PO-01", "PO-03", "MANUS-ADMIN"],
+    "write_allowlist": [
+      "workstreams/so02/control-plane/**",
+      "receipts/so02/**",
+      ".github/workflows/so02-control-plane-*.yml"
+    ]
+  }
+}

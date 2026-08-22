@@ -1,0 +1,56 @@
+{
+  "record_id": "CUR-ORCH-QUAL-01-FALLBACK-EXERCISES",
+  "decision_changed": [],
+  "requirement": "Exercise at least one unavailable-route or failure fallback. Four were exercised; every one failed closed and none stopped unaffected work.",
+  "exercises": [
+    {
+      "exercise_id": "FB-01-UNAVAILABLE-RETURN-BRANCH",
+      "kind": "unavailable_route",
+      "route_id": "R6-SW-RETURN-EXCHANGE",
+      "observed_at": "2026-08-22T13:38:00Z",
+      "injected": "orchqual ingest against capability-factory/return-20260822-v001, which does not exist",
+      "observed": "state=NOT_YET_CREATED, ingested=false, exit code 2, exact owner action returned",
+      "fail_closed": true,
+      "fabricated_result": false,
+      "programme_continued": true,
+      "reproduce": "python3 workstreams/so02/control-plane/tools/orchqual.py ingest"
+    },
+    {
+      "exercise_id": "FB-02-UNRELATED-LINEAGE-REJECTION",
+      "kind": "adversarial_ingestion",
+      "route_id": "R6-SW-RETURN-EXCHANGE",
+      "observed_at": "2026-08-22T13:38:00Z",
+      "injected": "orchqual ingest pointed at a real but unrelated branch (main) while claiming the SO-02 source SHA as its base",
+      "observed": "state=REJECTED_UNRELATED_LINEAGE, ingested=false, exit code 2; the tool named the exact non-descendant SHA",
+      "fail_closed": true,
+      "fabricated_result": false,
+      "programme_continued": true,
+      "reproduce": "python3 workstreams/so02/control-plane/tools/orchqual.py ingest --branch main --source-sha a5adfdff6921b34b05c1ea6eed0c1752bb4ebbbb"
+    },
+    {
+      "exercise_id": "FB-03-NONEXISTENT-PROVIDER-RUN",
+      "kind": "route_failure",
+      "route_id": "R2-CURSOR-AGENT-CONTROL-MCP",
+      "observed_at": "2026-08-22T13:34:06Z",
+      "injected": "batch-fetch-details addressed to a well-formed but non-existent run id bc-00000000-0000-4000-8000-000000000000",
+      "observed": "Fetched 0 available cloud agent(s); the unavailable id was named explicitly and no agent artifact was written",
+      "fail_closed": true,
+      "fabricated_result": false,
+      "programme_continued": true,
+      "reproduce": "cursor-cloud batch-fetch-details with a non-existent bcId"
+    },
+    {
+      "exercise_id": "FB-04-WRITE-SCOPE-GUARD",
+      "kind": "wrong_target_write",
+      "route_id": "R1-GITHUB-IMMUTABLE-EXCHANGE",
+      "observed_at": "2026-08-22T13:38:00Z",
+      "injected": "Structural writes aimed at the selected SO-02 source branch, the PR #9 PO-03 branch, a cursor/po03-* branch, main, the PR #6 and PR #7 branches, workstreams/po03/**, global state/** and an unscoped workflow path",
+      "observed": "Every attempt refused by the guard before any write; refusals asserted by eight executable tests",
+      "fail_closed": true,
+      "fabricated_result": false,
+      "programme_continued": true,
+      "reproduce": "python3 -I -m unittest workstreams.so02.control-plane.tests.test_orchqual -k WriteScopeGuard, or python3 workstreams/so02/control-plane/tools/orchqual.py guard --base a5adfdff6921b34b05c1ea6eed0c1752bb4ebbbb --head HEAD"
+    }
+  ],
+  "degradation_rule_proved": "Loss of one route degrades the orchestrator to the remaining proved routes rather than to an unverified claim. R1 survives total loss of the Cursor control plane because the repository is canonical; R2 survives GitHub unavailability for observation and artifact retrieval but cannot be canonical alone."
+}

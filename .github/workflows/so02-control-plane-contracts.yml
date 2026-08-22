@@ -24,6 +24,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Validate the control-plane seed
         run: python -I workstreams/so02/control-plane/tools/scctl.py validate
+      - name: Replay the route qualification evidence from this clean clone
+        run: python -I workstreams/so02/control-plane/tools/orchqual.py verify
       - name: Run recurrence tests
         run: python -I -m unittest discover -s workstreams/so02/control-plane/tests -p "test_*.py" -v
 
