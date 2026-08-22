@@ -1,0 +1,93 @@
+{
+  "defect_id": "DEF-PO03-C6-046-SUPPRESSION-KEYED-ON-BYTES-NOT-TRANSACTION",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "cohort": "c6",
+  "task_id": "po03-wa-b2e7-046-duplicate-callback-idempotence",
+  "function": "transactional-recovery-and-fault-injection",
+  "falsifiable_hypothesis": "A duplicated callback is harmless and cannot double-count a unit or a metric row.",
+  "required_deliverable": "Idempotence tests asserting repeated ingestion of an identical result produces exactly one registry effect and one metric row.",
+  "verdict": "FAIL",
+  "verdict_split": {
+    "byte_for_byte_replay": "PASS",
+    "retried_callback_with_regenerated_timestamps": "FAIL",
+    "interleaved_duplicate_same_clock": "FAIL",
+    "interleaved_duplicate_skewed_clock": "FAIL"
+  },
+  "severity": "COHORT_BAR_BREACH",
+  "cohort_bar_clause_breached": "zero duplicate external effects",
+  "mechanism_under_test": "workstreams/po03/tools/transactional_factory.py",
+  "fault_classes": [
+    {
+      "fault_class": "IDENTICAL_CALLBACK_REPLAYED_FIVE_TIMES",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (replayed)",
+      "observed_behaviour": "the first callback was ingested and the next four were suppressed; exactly one ingestion file, one result file, one registry INGESTION row and one PARENT_INGESTED event; verify_chain clean",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "RETRIED_CALLBACK_WITH_REGENERATED_TIMESTAMPS",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (re-emitted)",
+      "observed_behaviour": "the transaction identity (task, idempotency key, lease, fence, attempt, result commit, artifact hashes) was unchanged while the document bytes differed; the second callback was not suppressed and produced two ingestion files, two result files, two registry INGESTION rows and two PARENT_INGESTED events for one transaction",
+      "realism": "workstreams/po03/tools/emit_result.py sets readback_verified_at and committed_at from utc_now() on every run, which was verified in its source, so any producer that re-emits after a lost callback sends exactly this shape",
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "CONCURRENT_DUPLICATE_CALLBACK_SAME_CLOCK",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (interleaved)",
+      "observed_behaviour": "one ingestion suspended between its duplicate check and its first durable write while a second ingestion of the same document completed; the destination file stayed single, but the registry received two INGESTION rows and the event chain received two PARENT_INGESTED events for one logical ingestion",
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "CONCURRENT_DUPLICATE_CALLBACK_SKEWED_CLOCK",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (interleaved)",
+      "observed_behaviour": "with the two ingestions one second apart, the second writer raised FileExistsError: immutable file differs: .../ingestion-69d43205265055ac.json, so the coordinator crashed out of ingestion rather than recognising a duplicate",
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "REPAIR_CANDIDATE_UNDER_IDENTICAL_AND_REGENERATED_DUPLICATES",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (candidate)",
+      "observed_behaviour": "three identical replays plus one regenerated retry produced INGESTED then three DUPLICATE_SUPPRESSED_BY_IDENTITY outcomes, leaving one ingestion file, one registry row and one PARENT_INGESTED event",
+      "verdict": "PASS"
+    }
+  ],
+  "duplicate_external_effects_observed": 2,
+  "false_completions_observed": 0,
+  "why_this_is_a_defect": "ingest_result derives its duplicate check from the SHA-256 of the entire callback document, so suppression only holds when the retry is byte-identical. The result document carries a perfectly good transaction identity — idempotency_key, lease_id, fence_token, attempt_id, result_commit_id and the artifact hashes — and none of it is used for suppression. A producer that re-emits after a lost callback therefore double-counts the unit, and two callbacks arriving together either double-count or crash the coordinator depending on the second on the clock.",
+  "metric_row_finding": {
+    "finding": "INGESTION_WRITES_NO_METRIC_ROW",
+    "detail": "the deliverable asks for exactly one metric row per ingestion, but ingest_result writes none. metrics/work-unit-runs.jsonl is created empty at activation and was still empty (0 rows) after every fault class, so the append-only work-unit registry is the only per-ingestion durable effect that exists to be counted.",
+    "impact": "duplicate metric rows are impossible today because metric rows are never written; the metric surface required by the metric-definitions contract is not populated at ingestion time"
+  },
+  "what_the_mechanism_does_hold": [
+    "a byte-for-byte replay is genuinely harmless and is suppressed",
+    "no duplicate shape produced a false completion or a COMPLETED state",
+    "the hash-chained event file chain verified cleanly after every duplicate class",
+    "duplicate ingestion never fabricated an artifact: every accepted result still read back by immutable object id",
+    "no founder relay is involved in any part of the observed path"
+  ],
+  "repair_candidate": {
+    "path": "workstreams/po03/attempts/po03-wa-b2e7-046-duplicate-callback-idempotence/repair_candidate_idempotence.py",
+    "entry_points": ["identity_fields", "identity_key", "claim_identity", "idempotent_ingest"],
+    "approach": "key suppression on the transaction identity the result already carries rather than on the message bytes, and claim that identity by exclusively creating a claim file before the live ingestion runs so a race collapses to exactly one effect",
+    "evidence_it_closes_the_gap": [
+      "test_candidate_collapses_identical_and_regenerated_duplicates",
+      "test_identity_key_ignores_timestamps_but_not_the_transaction",
+      "test_candidate_claim_is_created_exactly_once",
+      "test_candidate_never_completes_a_unit"
+    ],
+    "adopted_by_live_mechanism": false,
+    "adoption_authority": "coordinator only; a subordinate producer may not modify workstreams/po03/tools/**"
+  },
+  "reproduction": {
+    "component": "workstreams/po03/attempts/po03-wa-b2e7-046-duplicate-callback-idempotence/duplicate_callback_injector.py",
+    "command": "python3 -I workstreams/po03/attempts/po03-wa-b2e7-046-duplicate-callback-idempotence/duplicate_callback_injector.py",
+    "exit_code_observed": 1,
+    "report": "workstreams/po03/attempts/po03-wa-b2e7-046-duplicate-callback-idempotence/injection-report.json",
+    "test_command": "python3 -I -m unittest discover -s workstreams/po03/attempts/po03-wa-b2e7-046-duplicate-callback-idempotence -p 'test_*.py' -v",
+    "test_outcome": "13 tests, OK",
+    "test_output": "workstreams/po03/attempts/po03-wa-b2e7-046-duplicate-callback-idempotence/test-output.txt"
+  },
+  "test_weakening_check": "no assertion was relaxed to obtain a pass; the defect tests pin the observed double-count and the observed crash and will fail once suppression is keyed on the transaction identity",
+  "obzio_state_claim": "READY_TO_COMMIT",
+  "producer_may_not_accept_own_work": true,
+  "decision_changed": []
+}

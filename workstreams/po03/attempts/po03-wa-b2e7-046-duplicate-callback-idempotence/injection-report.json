@@ -1,0 +1,131 @@
+{
+  "duplicate_external_effects_observed": 2,
+  "false_completions_observed": 0,
+  "fault_classes": 5,
+  "results": [
+    {
+      "fault_class": "IDENTICAL_CALLBACK_REPLAYED_FIVE_TIMES",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (replayed)",
+      "observed": {
+        "durable_effects": {
+          "event_chain_errors": [],
+          "ingestion_files": 1,
+          "metric_rows_written_by_ingestion": 0,
+          "parent_ingested_events": 1,
+          "registry_ingestion_rows": 1,
+          "result_files": 1
+        },
+        "outcomes": [
+          {
+            "state": "PARENT_INGESTED",
+            "suppressed": false
+          },
+          {
+            "state": "PARENT_INGESTED",
+            "suppressed": true
+          },
+          {
+            "state": "PARENT_INGESTED",
+            "suppressed": true
+          },
+          {
+            "state": "PARENT_INGESTED",
+            "suppressed": true
+          },
+          {
+            "state": "PARENT_INGESTED",
+            "suppressed": true
+          }
+        ]
+      },
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "RETRIED_CALLBACK_WITH_REGENERATED_TIMESTAMPS",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (re-emitted)",
+      "observed": {
+        "document_bytes_differ": true,
+        "durable_effects": {
+          "event_chain_errors": [],
+          "ingestion_files": 2,
+          "metric_rows_written_by_ingestion": 0,
+          "parent_ingested_events": 2,
+          "registry_ingestion_rows": 2,
+          "result_files": 2
+        },
+        "real_emitter_regenerates_committed_timestamp": true,
+        "real_emitter_regenerates_readback_timestamp": true,
+        "second_callback_state": "PARENT_INGESTED",
+        "second_callback_suppressed": false,
+        "transaction_identity_is_unchanged": true
+      },
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "CONCURRENT_DUPLICATE_CALLBACK_SAME_CLOCK",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (interleaved)",
+      "method": "the outer ingestion is suspended after its duplicate check and before its first durable write while a second ingestion of the same document completes; both clocks are frozen to the same value so the result is deterministic",
+      "observed": {
+        "durable_effects": {
+          "event_chain_errors": [],
+          "ingestion_files": 1,
+          "metric_rows_written_by_ingestion": 0,
+          "parent_ingested_events": 2,
+          "registry_ingestion_rows": 2,
+          "result_files": 1
+        },
+        "inner_state": "PARENT_INGESTED",
+        "outer": {
+          "raised": null,
+          "state": "PARENT_INGESTED"
+        }
+      },
+      "verdict": "FAIL"
+    },
+    {
+      "coordinator_crashed": true,
+      "fault_class": "CONCURRENT_DUPLICATE_CALLBACK_SKEWED_CLOCK",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (interleaved)",
+      "observed": {
+        "durable_effects": {
+          "event_chain_errors": [],
+          "ingestion_files": 1,
+          "metric_rows_written_by_ingestion": 0,
+          "parent_ingested_events": 1,
+          "registry_ingestion_rows": 1,
+          "result_files": 1
+        },
+        "inner_state": "PARENT_INGESTED",
+        "outer": {
+          "raised": "FileExistsError: immutable file differs: workstreams/po03/control/tasks/po03-c6-046-sandbox-unit/ingestion-83bb9fcbb01cdda2.json",
+          "state": null
+        }
+      },
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "REPAIR_CANDIDATE_UNDER_IDENTICAL_AND_REGENERATED_DUPLICATES",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (candidate)",
+      "observed": {
+        "durable_effects": {
+          "event_chain_errors": [],
+          "ingestion_files": 1,
+          "metric_rows_written_by_ingestion": 0,
+          "parent_ingested_events": 1,
+          "registry_ingestion_rows": 1,
+          "result_files": 1
+        },
+        "outcomes": [
+          "INGESTED",
+          "DUPLICATE_SUPPRESSED_BY_IDENTITY",
+          "DUPLICATE_SUPPRESSED_BY_IDENTITY",
+          "DUPLICATE_SUPPRESSED_BY_IDENTITY"
+        ]
+      },
+      "verdict": "PASS"
+    }
+  ],
+  "unit": "po03-wa-b2e7-046-duplicate-callback-idempotence",
+  "verdict": "FAIL",
+  "verdict_basis": "suppression is keyed on the SHA-256 of the whole callback document, so it only holds for a byte-for-byte replay; a re-emitted result with fresh timestamps and a callback that interleaves inside the check-then-write window both produce a second durable effect"
+}
