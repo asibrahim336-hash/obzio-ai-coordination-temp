@@ -1,0 +1,32 @@
+{
+  "acceptance": {
+    "artifact": "terminal-state guard plus non-regression projection plus recurrence tests",
+    "assertion": "A resubmission against a unit that has reached COMPLETED is refused and durably recorded, the projection never regresses a unit out of COMPLETED, and no unit can ever accumulate two COMPLETED events. Reproduced by the coordinator on 2026-08-22: a unit completed with commitA was regressed to PARENT_INGESTED by a non-identical resubmission and re-completed with commitB, yielding two COMPLETED events for one unit while scan_recovery reported zero false completions. A legitimate retry after FAILED_TERMINAL must still be possible, and must require a fresh coordinator-issued lease rather than being admitted silently.",
+    "falsified_if": "any unit can reach COMPLETED twice, or a completed result's artifacts can be swapped, or a legitimate retry after terminal failure becomes impossible"
+  },
+  "acceptance_contract_sha256": "1f835379b3c3f9d94f6fbcce165a5b932231ff6456659e633205ba153c417de5",
+  "cohort_id": "a11",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "function_id": "F8",
+  "hypothesis": "A unit that is already COMPLETED can be silently regressed and completed a second time with entirely different artifacts, because idempotency keys on a hash of the whole result document rather than on unit identity, ingestion has no terminal-state guard, the projection lets a later event regress out of COMPLETED, and cmd_complete checks only the current state rather than whether the unit was ever completed.",
+  "idempotency_key": "a11-u14:29e28fd5c2e5ffd8",
+  "immutable_input_manifest_sha256": "29e28fd5c2e5ffd85e7bbd8d500c7b3ea4684079acb57c0f69ff49eeabdbb94b",
+  "model": "claude-opus-5-thinking-high",
+  "owned_paths": [
+    "workstreams/po03/tools/control_plane.py",
+    "workstreams/po03/tests/test_control_plane.py",
+    "workstreams/po03/control/units/a11/",
+    "workstreams/po03/tests/test_a11_"
+  ],
+  "owner": "po03-worker-a11",
+  "result_slot": {
+    "branch": "cursor/po03-a11-custody-remediation-ed20",
+    "unit_record": "workstreams/po03/control/units/a11/a11-u14.json"
+  },
+  "source_hashes": {
+    "capsule_base_commit": "ed7e17c",
+    "note": "Pinned by commit, per the a12-u02 remediation."
+  },
+  "unit_id": "a11-u14",
+  "wave_id": "po03-wave-a"
+}

@@ -16,7 +16,7 @@
   "wave_state": {
     "wave_id": "po03-wave-a",
     "units_required": 64,
-    "units_registered": 91,
+    "units_registered": 94,
     "ledger_rows": 299,
     "ledger_chain_valid": true,
     "false_completions": 0,
@@ -37,15 +37,15 @@
       "a4",
       "a6",
       "a7",
-      "a9"
+      "a9",
+      "a10",
+      "a12"
     ],
     "cohorts_in_flight": [
       "a3",
       "a5",
       "a8",
-      "a10",
-      "a11",
-      "a12"
+      "a11"
     ]
   },
   "reproduced_defects_in_the_coordinator_control_plane": [
@@ -207,6 +207,50 @@
       "self_reported_instance": "a1-u01 attested 100% tamper detection for a ledger.py that had since gained set_fault_hook. a1 found this by auditing its own documents, re-ran the campaign on current bytes and re-emitted a1-u01 and a1-u05.",
       "remediation_unit": "a11-u13",
       "state": "OPEN_UNDER_REMEDIATION"
+    },
+    {
+      "id": "DEF-17",
+      "severity": "CRITICAL",
+      "found_by": "po03-worker-a10 (claude-sonnet-5-thinking-xhigh), INV-3; reproduced by the coordinator",
+      "defect": "A unit already COMPLETED can be silently regressed and completed a second time with entirely different artifacts.",
+      "reproduction": "Completed a unit with commitA, then ingested a non-identical result: state regressed COMPLETED -> PARENT_INGESTED, a second cmd_complete succeeded with commitB, two COMPLETED events for one unit, scan_recovery reported zero false completions.",
+      "root_causes": [
+        "idempotency keys on the whole-document hash rather than unit identity",
+        "ingestion has no terminal-state guard",
+        "the projection permits regression out of COMPLETED",
+        "cmd_complete checks current state, not whether the unit was ever completed"
+      ],
+      "why_it_matters": "More severe than fabricating a completion: it rewrites the content of an already accepted deliverable while every gate reports clean, which defeats acceptance itself.",
+      "remediation_unit": "a11-u14",
+      "state": "OPEN_UNDER_REMEDIATION"
+    },
+    {
+      "id": "DEF-18",
+      "severity": "HIGH",
+      "found_by": "po03-worker-a10, INV-7 and INV-8",
+      "defect": "Separation-of-duties guards are byte comparisons on self-declared strings with no caller authentication anywhere in the CLI, so one actor satisfies every producer-versus-reviewer check by presenting a different string. Relatedly, an actor with write access can cascade-rehash the entire ledger after tampering one row and verify_chain reports it valid.",
+      "note": "The cascade-rehash half is the same root cause as DEF-13 and is covered by a11-u10's sealed head anchor. The identity half is a11-u15.",
+      "remediation_unit": "a11-u15",
+      "state": "OPEN_UNDER_REMEDIATION"
+    },
+    {
+      "id": "DEF-19",
+      "severity": "HIGH",
+      "found_by": "the coordinator, only when merging a10 and a12 together",
+      "defect": "a12's validator strengthening made validate_contracts.py read its schema from disk at import time, so it is no longer self-contained and a missing schema file becomes an import-time crash rather than a validation failure.",
+      "why_it_matters": "The commission requires clean-runtime execution and process-boundary isolation. A validator that dies on import in a partial checkout is a false-green risk in the opposite direction: a caller that swallows the exception skips validation entirely.",
+      "discovery_significance": "Neither cohort could see this alone. a12 made a correct change in isolation; a10's harness, which copies tools/ without contracts/, is what exposed it. This is direct evidence that integration is a distinct test surface from any single cohort's gate.",
+      "remediation_unit": "a12-u05",
+      "state": "OPEN_UNDER_REMEDIATION"
+    },
+    {
+      "id": "DEF-20",
+      "severity": "MEDIUM",
+      "found_by": "po03-worker-a10's defect-profile comparison against a6",
+      "defect": "Reviewer coverage was uneven in a way neither reviewer could self-detect. a6's hidden cases only call validate_result on hand-built documents and never reach the control-plane CLI, so its reported 6 of 6 is real but narrow, and two of its HELD cases have CLI-reachable bypasses that a10 demonstrated against the same underlying mechanism.",
+      "why_it_matters": "Two reviewers from two families still left an attack surface untested, because both were reviewing artifacts rather than the executable entry point. Cross-family review is necessary but not sufficient; the review target matters as much as the reviewer.",
+      "state": "ROUTED_TO_a6",
+      "disposition": "RETAIN as an operating lesson for the successor generation"
     }
   ],
   "findings_routed_to_other_cohorts": [
@@ -256,5 +300,21 @@
     "result": "Driven over all fifteen Obzio states, the coordinator's cmd_complete refused completion from all thirteen states other than PARENT_INGESTED.",
     "significance": "An independent cohort exhaustively confirmed the one invariant the commission cares about most, by search rather than by reading the code.",
     "disposition": "RETAIN"
+  },
+  "a10_positive_confirmations": {
+    "invariants_held": [
+      "INV-1",
+      "INV-4",
+      "INV-5"
+    ],
+    "note": "Three of nine attacked invariants held with no bypass found. a10 also independently re-executed every a4 and a9 claim from pinned SHAs rather than reading and agreeing, matching byte-for-byte, and accepted both while rejecting a2's claimed capability on the strength of a2's own falsifications."
+  },
+  "a12_result": {
+    "validator_divergences_closed": 25,
+    "seeded_assertions_weakened": 0,
+    "existing_documents_newly_rejected": 0,
+    "capsule": "commit-pinned (path, blob, commit) triples resolving from a bare clone",
+    "preflight": "four-drift fixture exits 3, missing exits 4, clean exits 0",
+    "lineage": "all four paths, hashes, causal commits and ordering agree with the coordinator's record; eight commit-subject discrepancies reported without editing either input"
   }
 }

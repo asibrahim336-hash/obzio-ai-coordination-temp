@@ -1,0 +1,32 @@
+{
+  "acceptance": {
+    "artifact": "self-contained validator plus a schema-parity test plus a no-sibling-directory execution test",
+    "assertion": "The validator imports and validates correctly with only its own file present, with no sibling contracts directory, proven by executing it from a scratch directory containing nothing but the module. Schema and executable remain a single source of truth, enforced by a parity test asserting the embedded rules match the on-disk schema exactly, so the two can never silently diverge again. A missing or unreadable schema file must never turn validation into an exception a caller can swallow. All 23 seeded assertions and a12's 25 divergence cases still pass. Discovered only when a10's harness, which copies tools/ without contracts/, died with FileNotFoundError at import; neither cohort could see it alone.",
+    "falsified_if": "the validator still requires a sibling file to import, or schema and executable can diverge without a test failing"
+  },
+  "acceptance_contract_sha256": "1ad2f94f1dc7bbac786882c8971aaa55b87a14d5df31c928483ea3469a2ce23f",
+  "cohort_id": "a12",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "function_id": "F1",
+  "hypothesis": "Making the validator read its schema from disk at import time removed the self-containment the commission's clean-runtime requirement depends on, and turned a missing schema file into an import-time crash rather than a validation failure.",
+  "idempotency_key": "a12-u05:2c9d97b4845f474c",
+  "immutable_input_manifest_sha256": "2c9d97b4845f474c94a798edcb1f6242ba62335f94f3bc3f6079ff824f7a0c52",
+  "model": "gpt-5.6-sol-xhigh",
+  "owned_paths": [
+    "workstreams/po03/tools/validate_contracts.py",
+    "workstreams/po03/tests/test_validate_contracts.py",
+    "workstreams/po03/tests/test_a12_",
+    "workstreams/po03/control/units/a12/"
+  ],
+  "owner": "po03-worker-a12",
+  "result_slot": {
+    "branch": "cursor/po03-a12-capsule-closure-ed20",
+    "unit_record": "workstreams/po03/control/units/a12/a12-u05.json"
+  },
+  "source_hashes": {
+    "capsule_base_commit": "ed7e17c",
+    "note": "Pinned by commit, per the a12-u02 remediation."
+  },
+  "unit_id": "a12-u05",
+  "wave_id": "po03-wave-a"
+}
