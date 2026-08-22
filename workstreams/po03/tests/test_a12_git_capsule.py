@@ -33,7 +33,9 @@ def git(repo: Path, *args: str) -> str:
 
 class GitCapsuleTests(unittest.TestCase):
     def setUp(self):
-        self.tempdir = tempfile.TemporaryDirectory()
+        self.tempdir = tempfile.TemporaryDirectory(
+            prefix=".test-git-capsule-", dir=MODULE_PATH.parent
+        )
         self.addCleanup(self.tempdir.cleanup)
         self.repo = Path(self.tempdir.name) / "source"
         self.repo.mkdir()

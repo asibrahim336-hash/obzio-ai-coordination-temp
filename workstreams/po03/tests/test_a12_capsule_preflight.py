@@ -107,7 +107,9 @@ class CapsulePreflightTests(unittest.TestCase):
         self.assertEqual("CURRENT", json.loads(completed.stdout)["aggregate_state"])
 
     def test_missing_source_is_distinct_and_exits_four(self):
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(
+            prefix=".test-preflight-", dir=CAPSULE_DIR
+        ) as temporary:
             repo = Path(temporary) / "repo"
             repo.mkdir()
             git(repo, "init", "-q")
