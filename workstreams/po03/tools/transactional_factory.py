@@ -701,6 +701,7 @@ def _recovery_unit(task_id: str) -> dict[str, Any]:
     return {
         "obzio_state": latest["state"],
         "provider_state": provider_state_from_events(events),
+        "independent_acceptance": independent_acceptance_state(task_id),
         "latest_event_sequence": latest["sequence"],
         "latest_event_sha256": sha256_file(event_path),
         "fence_token": _latest_fence(events, int(input_document["transaction"]["fence_token"])),
@@ -865,9 +866,9 @@ def _resolve_result_commit(
 ) -> str:
     require_git_object_id(result_commit_id, "result_commit_id")
     require_git_object_id(result_base_commit_id, "result_base_commit_id")
-    if result_ref != "HEAD" and not (
+    if not isinstance(result_ref, str) or (result_ref != "HEAD" and not (
         result_ref.startswith("origin/po03/") or result_ref.startswith("po03/")
-    ):
+    )):
         raise FactoryError("result_ref must be HEAD or a deterministic po03/* branch")
     try:
         git("cat-file", "-e", f"{result_commit_id}^{{commit}}")
@@ -1146,6 +1147,314 @@ def ingest_committed_result(
         }
 
 
+def _canonical_repository_path(value: Any) -> str:
+    path = _canonical_result_relative_path(value)
+    if not allowed_path(path):
+        raise FactoryError("review receipt must remain inside the PO-03 allowlist")
+    return path
+
+
+def _frontier_model_family(value: Any) -> str:
+    if not _nonempty(value):
+        raise FactoryError("model family must be non-empty")
+    normalized = value.strip()
+    for family in (
+        "claude-opus-5",
+        "gpt-5.6-sol",
+        "gemini-3.1-pro",
+        "composer-2.5",
+    ):
+        if normalized.startswith(family):
+            return family
+    return normalized
+
+
+def _resolve_visible_commit(*, commit_id: str, result_ref: str) -> str:
+    require_git_object_id(commit_id, "commit_id")
+    if not isinstance(result_ref, str) or (result_ref != "HEAD" and not (
+        result_ref.startswith("origin/po03/") or result_ref.startswith("po03/")
+    )):
+        raise FactoryError("review ref must be HEAD or a deterministic po03/* branch")
+    try:
+        git("cat-file", "-e", f"{commit_id}^{{commit}}")
+        visible_from = git("rev-parse", f"{result_ref}^{{commit}}")
+        git("merge-base", "--is-ancestor", commit_id, visible_from)
+    except subprocess.CalledProcessError as exc:
+        raise FactoryError(
+            "review commit must be immutable and readable from the declared review ref"
+        ) from exc
+    return visible_from
+
+
+def _load_independent_review(
+    *,
+    task_id: str,
+    result_commit_id: str,
+    acceptance_sha256: str,
+    producer_worker_id: str,
+    producer_model_family: str,
+    review_commit_id: str,
+    review_ref: str,
+    receipt_path: str,
+) -> tuple[dict[str, Any], bytes, str]:
+    receipt_path = _canonical_repository_path(receipt_path)
+    visible_from = _resolve_visible_commit(
+        commit_id=review_commit_id,
+        result_ref=review_ref,
+    )
+    try:
+        payload = git_bytes("show", f"{review_commit_id}:{receipt_path}")
+        review = json.loads(payload.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError, subprocess.CalledProcessError) as exc:
+        raise FactoryError("independent review receipt is not immutable JSON at the review commit") from exc
+    if not isinstance(review, dict):
+        raise FactoryError("independent review receipt must be an object")
+    required = {
+        "review_version",
+        "task_id",
+        "result_commit_id",
+        "reviewer_id",
+        "reviewer_model_family",
+        "disposition",
+        "criteria_sha256",
+        "reviewed_at",
+        "findings",
+        "conclusion",
+        "decision_changed",
+    }
+    if set(review) != required:
+        raise FactoryError("independent review receipt has missing or unexpected fields")
+    if review["review_version"] != "PO03-INDEPENDENT-REVIEW-v1":
+        raise FactoryError("unsupported independent review receipt version")
+    if review["task_id"] != task_id or review["result_commit_id"] != result_commit_id:
+        raise FactoryError("independent review receipt does not bind the ingested task result")
+    if review["criteria_sha256"] != acceptance_sha256:
+        raise FactoryError("independent review receipt did not use the frozen acceptance contract")
+    if not _nonempty(review["reviewer_id"]) or review["reviewer_id"] == producer_worker_id:
+        raise FactoryError("independent review must name a non-producer reviewer")
+    reviewer_family = _frontier_model_family(review["reviewer_model_family"])
+    if reviewer_family == producer_model_family:
+        raise FactoryError("independent review must use a different frontier model family")
+    if review["disposition"] not in {"ACCEPTED", "REJECTED"}:
+        raise FactoryError("independent review disposition must be ACCEPTED or REJECTED")
+    if (
+        not isinstance(review["criteria_sha256"], str)
+        or not SHA256_RE.fullmatch(review["criteria_sha256"])
+        or not _nonempty(review["reviewed_at"])
+    ):
+        raise FactoryError("independent review receipt has invalid frozen-criteria or review timestamp")
+    if not isinstance(review["findings"], list) or not review["findings"] or not _nonempty(review["conclusion"]):
+        raise FactoryError("independent review requires findings and a conclusion")
+    if review["decision_changed"] != []:
+        raise FactoryError("independent review cannot bind a strategy change")
+    review["reviewer_model_family"] = reviewer_family
+    return review, payload, visible_from
+
+
+def validate_independent_acceptance(task_id: str) -> list[str]:
+    """Verify the immutable non-producer review that permits completion."""
+    task_directory = CONTROL_ROOT / "tasks" / task_id
+    acceptance_path = task_directory / "independent-acceptance.json"
+    if not acceptance_path.is_file():
+        return [f"missing {repo_relative(acceptance_path)}"]
+    try:
+        record = read_json(acceptance_path)
+        created = read_json(task_directory / "transaction-created.json")
+        input_document = read_json(task_directory / "input.json")
+        ingested = read_json(task_directory / "transaction-ingested.json")
+        worker_id = _lease_owner(task_events(task_id))
+    except (FactoryError, OSError, ValueError, json.JSONDecodeError) as exc:
+        return [f"{repo_relative(acceptance_path)}: unreadable acceptance record: {exc}"]
+    required = {
+        "acceptance_version",
+        "task_id",
+        "result_commit_id",
+        "reviewer_id",
+        "reviewer_model_family",
+        "disposition",
+        "criteria_sha256",
+        "reviewed_at",
+        "review_commit_id",
+        "review_ref",
+        "receipt_path",
+        "receipt_sha256",
+        "receipt_bytes",
+        "receipt_uri",
+        "producer_worker_id",
+        "producer_model_family",
+        "visible_from_commit_id",
+        "decision_changed",
+    }
+    errors: list[str] = []
+    if set(record) != required:
+        errors.append("acceptance record has missing or unexpected fields")
+        return errors
+    if record["acceptance_version"] != "PO03-INDEPENDENT-ACCEPTANCE-v1":
+        errors.append("unsupported acceptance record version")
+    result_commit_id = ingested.get("result_transaction", {}).get("result_commit_id")
+    if record["task_id"] != task_id or record["result_commit_id"] != result_commit_id:
+        errors.append("acceptance record does not bind the ingested task result")
+    if record["criteria_sha256"] != created.get("acceptance_contract_sha256"):
+        errors.append("acceptance record does not bind the frozen acceptance contract")
+    try:
+        producer_model = _frontier_model_family(
+            input_document.get("runtime", {}).get("exact_model")
+        )
+    except FactoryError as exc:
+        return [str(exc)]
+    if record["producer_worker_id"] != worker_id or record["producer_model_family"] != producer_model:
+        errors.append("acceptance record producer identity diverges from frozen custody")
+    if not _nonempty(record["reviewer_id"]) or record["reviewer_id"] == worker_id:
+        errors.append("acceptance reviewer is not independent of the producer")
+    try:
+        reviewer_model = _frontier_model_family(record["reviewer_model_family"])
+    except FactoryError as exc:
+        errors.append(str(exc))
+        reviewer_model = ""
+    if reviewer_model == producer_model:
+        errors.append("acceptance reviewer uses the producer frontier family")
+    if record["disposition"] not in {"ACCEPTED", "REJECTED"}:
+        errors.append("acceptance disposition is invalid")
+    if (
+        not isinstance(record["receipt_sha256"], str)
+        or not SHA256_RE.fullmatch(record["receipt_sha256"])
+        or not isinstance(record["receipt_bytes"], int)
+        or record["receipt_bytes"] < 1
+    ):
+        errors.append("acceptance receipt hash or byte count is invalid")
+    if record["decision_changed"] != []:
+        errors.append("acceptance record attempts to bind a strategy change")
+    if errors:
+        return errors
+    try:
+        review, payload, visible_from = _load_independent_review(
+            task_id=task_id,
+            result_commit_id=result_commit_id,
+            acceptance_sha256=created["acceptance_contract_sha256"],
+            producer_worker_id=worker_id,
+            producer_model_family=producer_model,
+            review_commit_id=record["review_commit_id"],
+            review_ref=record["review_ref"],
+            receipt_path=record["receipt_path"],
+        )
+    except FactoryError as exc:
+        return [str(exc)]
+    if record["receipt_sha256"] != sha256_bytes(payload) or record["receipt_bytes"] != len(payload):
+        errors.append("acceptance receipt bytes diverge from immutable review commit")
+    if record["receipt_uri"] != f"git:{record['review_ref']}@{record['review_commit_id']}:{record['receipt_path']}":
+        errors.append("acceptance receipt URI is not canonical")
+    if record["visible_from_commit_id"] != visible_from:
+        errors.append("acceptance review visibility proof diverges from the declared ref")
+    for field in ("reviewer_id", "reviewer_model_family", "disposition", "criteria_sha256", "reviewed_at"):
+        if record[field] != review[field]:
+            errors.append(f"acceptance record {field} diverges from immutable review receipt")
+    return errors
+
+
+def independent_acceptance_state(task_id: str) -> str:
+    path = CONTROL_ROOT / "tasks" / task_id / "independent-acceptance.json"
+    if not path.is_file():
+        return "PENDING"
+    if validate_independent_acceptance(task_id):
+        return "INVALID"
+    try:
+        record = read_json(path)
+    except (OSError, ValueError, json.JSONDecodeError):
+        return "INVALID"
+    disposition = record.get("disposition")
+    return disposition if disposition in {"ACCEPTED", "REJECTED"} else "INVALID"
+
+
+def complete_task_after_independent_review(
+    task_id: str,
+    *,
+    review_commit_id: str,
+    review_ref: str,
+    receipt_path: str,
+) -> dict[str, Any]:
+    """Complete a parent-ingested task only after a different model reviews it."""
+    with _task_lock(task_id):
+        events = task_events(task_id)
+        latest = events[-1]
+        if latest["state"] == "COMPLETED":
+            errors = validate_independent_acceptance(task_id)
+            if errors:
+                raise FactoryError("; ".join(errors))
+            return {"task_id": task_id, "status": "ALREADY_COMPLETED"}
+        if latest["state"] != "PARENT_INGESTED":
+            raise FactoryError(
+                f"independent completion requires PARENT_INGESTED custody, found {latest['state']}"
+            )
+        ingestion_errors = validate_ingested_result(task_id)
+        if ingestion_errors:
+            raise FactoryError("; ".join(ingestion_errors))
+        task_directory = CONTROL_ROOT / "tasks" / task_id
+        created = read_json(task_directory / "transaction-created.json")
+        input_document = read_json(task_directory / "input.json")
+        ingested = read_json(task_directory / "transaction-ingested.json")
+        worker_id = _lease_owner(events)
+        if not _nonempty(worker_id):
+            raise FactoryError("independent completion requires an active leased worker identity")
+        result_commit_id = ingested["result_transaction"]["result_commit_id"]
+        producer_model = _frontier_model_family(input_document["runtime"]["exact_model"])
+        review, payload, visible_from = _load_independent_review(
+            task_id=task_id,
+            result_commit_id=result_commit_id,
+            acceptance_sha256=created["acceptance_contract_sha256"],
+            producer_worker_id=worker_id,
+            producer_model_family=producer_model,
+            review_commit_id=review_commit_id,
+            review_ref=review_ref,
+            receipt_path=receipt_path,
+        )
+        acceptance_record = {
+            "acceptance_version": "PO03-INDEPENDENT-ACCEPTANCE-v1",
+            "task_id": task_id,
+            "result_commit_id": result_commit_id,
+            "reviewer_id": review["reviewer_id"],
+            "reviewer_model_family": review["reviewer_model_family"],
+            "disposition": review["disposition"],
+            "criteria_sha256": created["acceptance_contract_sha256"],
+            "reviewed_at": review["reviewed_at"],
+            "review_commit_id": review_commit_id,
+            "review_ref": review_ref,
+            "receipt_path": receipt_path,
+            "receipt_sha256": sha256_bytes(payload),
+            "receipt_bytes": len(payload),
+            "receipt_uri": f"git:{review_ref}@{review_commit_id}:{receipt_path}",
+            "producer_worker_id": worker_id,
+            "producer_model_family": producer_model,
+            "visible_from_commit_id": visible_from,
+            "decision_changed": [],
+        }
+        write_once(
+            task_directory / "independent-acceptance.json",
+            canonical_json(acceptance_record),
+        )
+        acceptance_errors = validate_independent_acceptance(task_id)
+        if acceptance_errors:
+            raise FactoryError("; ".join(acceptance_errors))
+        fence_token = _latest_fence(events, created["attempt"]["fence_token"])
+        _advance_task_locked(
+            task_id,
+            state="COMPLETED",
+            actor="integration-controller",
+            fence_token=fence_token,
+            details={
+                "result_commit_id": result_commit_id,
+                "review_commit_id": review_commit_id,
+                "reviewer_id": review["reviewer_id"],
+                "independent_disposition": review["disposition"],
+            },
+        )
+        return {
+            "task_id": task_id,
+            "result_commit_id": result_commit_id,
+            "independent_disposition": review["disposition"],
+            "status": "COMPLETED",
+        }
+
+
 def _require_detail_sha256(details: dict[str, Any], name: str) -> None:
     if not isinstance(details.get(name), str) or not SHA256_RE.fullmatch(details[name]):
         raise FactoryError(f"{name} must be a lowercase SHA-256")
@@ -1174,6 +1483,13 @@ def _validate_transition_evidence(task_id: str, state: str, details: dict[str, A
         errors = validate_ingested_result(task_id)
         if errors:
             raise FactoryError("; ".join(errors))
+        if state == "COMPLETED":
+            acceptance_errors = validate_independent_acceptance(task_id)
+            if acceptance_errors:
+                raise FactoryError(
+                    "COMPLETED requires immutable independent acceptance: "
+                    + "; ".join(acceptance_errors)
+                )
         result = read_json(CONTROL_ROOT / "tasks" / task_id / "transaction-ingested.json")
         result_commit_id = result["result_transaction"]["result_commit_id"]
         if details.get("result_commit_id") != result_commit_id:
@@ -1552,6 +1868,8 @@ def verify(args: argparse.Namespace) -> int:
     errors.extend(verify_chain(args.task_id))
     if not errors and task_events(args.task_id)[-1]["state"] in {"PARENT_INGESTED", "COMPLETED"}:
         errors.extend(validate_ingested_result(args.task_id))
+    if not errors and task_events(args.task_id)[-1]["state"] == "COMPLETED":
+        errors.extend(validate_independent_acceptance(args.task_id))
     if errors:
         for error in errors:
             print(f"INVALID: {error}")
@@ -1583,6 +1901,17 @@ def ingest_result(args: argparse.Namespace) -> int:
         result_base_commit_id=args.result_base,
         result_ref=args.result_ref,
         provider_run_id=args.provider_run_id,
+    )
+    print(json.dumps(result, sort_keys=True))
+    return 0
+
+
+def complete_after_review(args: argparse.Namespace) -> int:
+    result = complete_task_after_independent_review(
+        args.task_id,
+        review_commit_id=args.review_commit,
+        review_ref=args.review_ref,
+        receipt_path=args.receipt_path,
     )
     print(json.dumps(result, sort_keys=True))
     return 0
@@ -1624,6 +1953,12 @@ def build_parser() -> argparse.ArgumentParser:
     ingest_parser.add_argument("--result-ref", default="HEAD")
     ingest_parser.add_argument("--provider-run-id", required=True)
     ingest_parser.set_defaults(handler=ingest_result)
+    complete_parser = subparsers.add_parser("complete-after-review")
+    complete_parser.add_argument("task_id")
+    complete_parser.add_argument("--review-commit", required=True)
+    complete_parser.add_argument("--review-ref", default="HEAD")
+    complete_parser.add_argument("--receipt-path", required=True)
+    complete_parser.set_defaults(handler=complete_after_review)
     scan_parser = subparsers.add_parser("scan-recovery")
     scan_parser.set_defaults(handler=lambda args: (print(json.dumps(recovery_scan(), sort_keys=True)) or 0))
     rebuild_parser = subparsers.add_parser("rebuild-recovery")

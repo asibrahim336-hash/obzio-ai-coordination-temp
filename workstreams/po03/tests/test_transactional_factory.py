@@ -113,6 +113,39 @@ class TransactionalFactoryTests(unittest.TestCase):
         self._git("commit", "-m", "produce immutable result")
         return base_commit, self._git("rev-parse", "HEAD")
 
+    def _parent_ingested_result_with_review(self, *, reviewer_family="claude-opus-5"):
+        result_base_commit, result_commit_id = self._committed_ready_result()
+        MODULE.ingest_committed_result(
+            "po03-test-task",
+            result_commit_id=result_commit_id,
+            result_base_commit_id=result_base_commit,
+            result_ref="HEAD",
+            provider_run_id="provider-execution-1",
+        )
+        acceptance_sha256 = MODULE.sha256_file(
+            MODULE.CONTROL_ROOT / "tasks" / "po03-test-task" / "acceptance.json"
+        )
+        receipt_path = "workstreams/po03/reviews/po03-test-task-review.json"
+        receipt = {
+            "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+            "task_id": "po03-test-task",
+            "result_commit_id": result_commit_id,
+            "reviewer_id": "reviewer-2",
+            "reviewer_model_family": reviewer_family,
+            "disposition": "ACCEPTED",
+            "criteria_sha256": acceptance_sha256,
+            "reviewed_at": "2026-08-22T08:00:00Z",
+            "findings": [{"id": "finding-1", "result": "criteria reviewed"}],
+            "conclusion": "The immutable result meets the frozen acceptance contract.",
+            "decision_changed": [],
+        }
+        receipt_file = MODULE.REPO_ROOT / receipt_path
+        receipt_file.parent.mkdir(parents=True)
+        receipt_file.write_bytes(MODULE.canonical_json(receipt))
+        self._git("add", "-A")
+        self._git("commit", "-m", "record independent review")
+        return result_commit_id, self._git("rev-parse", "HEAD"), receipt_path
+
     def test_canonical_json_and_hash_are_stable(self):
         first = MODULE.canonical_json({"b": 2, "a": 1})
         second = MODULE.canonical_json({"a": 1, "b": 2})
@@ -422,6 +455,58 @@ class TransactionalFactoryTests(unittest.TestCase):
                 provider_run_id="provider-execution-1",
             )
         self.assertEqual("RUNNING", MODULE.task_events("po03-test-task")[-1]["state"])
+
+    def test_completion_requires_immutable_independent_review(self):
+        result_base_commit, result_commit_id = self._committed_ready_result()
+        MODULE.ingest_committed_result(
+            "po03-test-task",
+            result_commit_id=result_commit_id,
+            result_base_commit_id=result_base_commit,
+            result_ref="HEAD",
+            provider_run_id="provider-execution-1",
+        )
+        with self.assertRaises(MODULE.FactoryError):
+            MODULE.advance_task(
+                "po03-test-task",
+                state="COMPLETED",
+                actor="integration-controller",
+                fence_token=1,
+                details={"result_commit_id": result_commit_id},
+            )
+
+    def test_independent_review_completes_parent_ingested_result(self):
+        result_commit_id, review_commit_id, receipt_path = self._parent_ingested_result_with_review()
+        result = MODULE.complete_task_after_independent_review(
+            "po03-test-task",
+            review_commit_id=review_commit_id,
+            review_ref="HEAD",
+            receipt_path=receipt_path,
+        )
+        self.assertEqual("COMPLETED", result["status"])
+        self.assertEqual("ACCEPTED", result["independent_disposition"])
+        self.assertEqual("COMPLETED", MODULE.task_events("po03-test-task")[-1]["state"])
+        self.assertEqual([], MODULE.validate_independent_acceptance("po03-test-task"))
+        self.assertEqual("ACCEPTED", MODULE.independent_acceptance_state("po03-test-task"))
+        replay = MODULE.complete_task_after_independent_review(
+            "po03-test-task",
+            review_commit_id=review_commit_id,
+            review_ref="HEAD",
+            receipt_path=receipt_path,
+        )
+        self.assertEqual("ALREADY_COMPLETED", replay["status"])
+
+    def test_same_model_family_cannot_independently_complete_result(self):
+        _, review_commit_id, receipt_path = self._parent_ingested_result_with_review(
+            reviewer_family="gpt-5.6-sol"
+        )
+        with self.assertRaises(MODULE.FactoryError):
+            MODULE.complete_task_after_independent_review(
+                "po03-test-task",
+                review_commit_id=review_commit_id,
+                review_ref="HEAD",
+                receipt_path=receipt_path,
+            )
+        self.assertEqual("PARENT_INGESTED", MODULE.task_events("po03-test-task")[-1]["state"])
 
     def test_source_lock_hashes_pinned_git_bytes_not_worktree_bytes(self):
         original_git = MODULE.git
