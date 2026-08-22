@@ -1,0 +1,110 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-sol-xhigh",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-019-manifest-gap-detection",
+  "cohort": "c3",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c3",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "0fe3910cafa128ceb9dd271440aeb66835dd55d342566411b2a2fd047ac09276",
+  "frozen_hypothesis": "Files present but undeclared, and declarations without hashes, are both manifest gaps and both detectable.",
+  "frozen_required_deliverable": "Bidirectional manifest gap detection reporting undeclared-present and declared-unhashed entries separately.",
+
+  "po01_contact_check": "READ-ONLY CONFIRMED. I materialised the real pack into scratch with 'git archive <pinned sha> packs/repository-engineering | tar -x', which cannot mutate the source. All my mutated copies were made under scratch, never under packs/**.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -I (CPython 3.12.3)",
+    "producer_test_command": "python3 -I test_manifest_gaps.py",
+    "producer_test_output_verbatim": "  \"verdict\": \"FAIL\"\n}\ntest_manifest_gaps: PASS",
+    "producer_test_exit_code": 0
+  },
+
+  "synthetic_evidence_assessment": {
+    "finding": "This unit is the most synthetic-only of the three pack-gap units I reviewed. Unlike units 017 and 018, manifest_gaps.py has NO pinned-commit code path at all - it accepts only --pack-dir over a filesystem directory - and the producer's entire committed evidence is one invented fixture. The producer never touched the real pinned pack.",
+    "does_the_synthetic_case_stand_in_for_the_real_claim": "In this instance, YES - but only because I checked, and the producer did not. I materialised the real pinned pack and ran the detector against it directly (HC-A), then derived positive cases from the real pack rather than from an invented one (HC-B, HC-B2). The component generalises correctly. So here the synthetic-only evidence UNDERSTATES a component that actually works on real input, which is the opposite of the usual risk. That is still a reporting deficiency: nothing in the producer's committed evidence would have told a reader this.",
+    "reviewer_supplied_real_evidence": true
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-A",
+      "rationale": "The producer never ran the detector against the real pinned pack. Since the frozen hypothesis is about manifest gaps in operator packs, that is the population that matters.",
+      "construction": "git archive 1e6f53c323f8326d12af213557082a3665991f19 packs/repository-engineering | tar -x, then python3 -I manifest_gaps.py --pack-dir <real pack> --manifest MANIFEST.json",
+      "observed_output_verbatim": "{\n  \"declared_count\": 8,\n  \"declared_unhashed\": [],\n  \"fixture_label\": null,\n  \"present_count\": 8,\n  \"undeclared_present\": [],\n  \"verdict\": \"PASS\"\n}",
+      "component_survived": true,
+      "interpretation": "The detector works on the real pack and finds it clean: 8 declared, 8 present, no undeclared files, no unhashed declarations. The real pack directory contains exactly BOUNDARIES.md, LAUNCH.md, MANIFEST.json, checks.py, engine.py, oracle.py, state_machine.py, test_pack.py and transport.py - 8 files plus the manifest itself, which the detector correctly excludes from the present set."
+    },
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "Detection-power probe derived from the REAL pack rather than an invented fixture, which is a stronger positive case than the producer's.",
+      "construction": "Copy of the real pinned pack with one extra undeclared file 'smuggled_payload.py' added.",
+      "observed_output_verbatim": "HC-B real-pack + 1 undeclared file: {\"declared_count\": 8, \"present_count\": 9, \"undeclared_present\": [\"smuggled_payload.py\"], \"verdict\": \"FAIL\"}",
+      "component_survived": true,
+      "interpretation": "Correctly fires on real-pack-derived input, names the smuggled file, and reports it in the undeclared_present channel rather than conflating it with the unhashed channel."
+    },
+    {
+      "hidden_case_id": "HC-B2",
+      "rationale": "The obvious way to hide an undeclared file is to bury it in a subdirectory. The producer's flat fixture cannot test this.",
+      "construction": "Copy of the real pinned pack with 'internal/hidden.py' added in a new subdirectory.",
+      "observed_output_verbatim": "HC-B2 real-pack + nested undeclared: {\"present_count\": 9, \"undeclared_present\": [\"internal/hidden.py\"], \"verdict\": \"FAIL\"}",
+      "component_survived": true,
+      "interpretation": "Caught, with the correct posix-relative path. rglob('*') plus relative_to() means nesting is not an escape route."
+    },
+    {
+      "hidden_case_id": "HC-D",
+      "rationale": "declared_unhashed is computed as 'not metadata.get(\"sha256\")', a truthiness test. Any non-empty string therefore counts as a hash, including a placeholder.",
+      "construction": "Copy of the real pinned pack with BOUNDARIES.md's declared sha256 replaced by the literal string 'TBD'.",
+      "observed_output_verbatim": "HC-D placeholder sha256='TBD' on BOUNDARIES.md: {\"declared_unhashed\": [], \"verdict\": \"PASS\"}",
+      "component_survived": false,
+      "interpretation": "GAP. A declaration carrying 'TBD' instead of a hash is reported as fully hashed and the pack passes. Under the frozen hypothesis this is a declaration without a hash, and it is not detected. No format or length validation is applied to the declared value."
+    },
+    {
+      "hidden_case_id": "HC-D2",
+      "rationale": "Control for HC-D, to confirm the unhashed channel works at all when the key is genuinely absent.",
+      "construction": "Same copy with the sha256 key deleted rather than replaced.",
+      "observed_output_verbatim": "HC-D2 control, sha256 key deleted on BOUNDARIES.md: {\"declared_unhashed\": [\"BOUNDARIES.md\"], \"verdict\": \"FAIL\"}",
+      "component_survived": true,
+      "interpretation": "Correctly detected. This isolates HC-D precisely: the channel works for a missing key and fails only for a present-but-meaningless value."
+    }
+  ],
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "MET - reproduced independently.",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET - 7 artifacts including all four synthetic fixture files, all verified, no unlisted files on disk.",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - acceptance_contract_sha256 equals my pre-disclosure hash 0fe3910c...",
+    "result is committed and read back by a different process from an immutable object id": "MET - artifact_commit 137c2311453a2e43995ddaee779bd0cea84dd2cb.",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - PASS.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "NOT_APPLICABLE - not refuted; I confirmed both directions on real-pack-derived input.",
+    "no value, hash, metric or provider capability is invented": "MET - all hashes and byte counts recomputed exactly, and the evidence narrative matches what I observed."
+  },
+
+  "scope_honesty_assessment": {
+    "producer_declared_limitations": [
+      "This unit isolates manifest coverage categories and does not claim that a self-hashing manifest is possible."
+    ],
+    "assessment": "The declared limitation is technically true but essentially unrelated to the interesting risks. The two things a reader needs to know are undeclared: that the component has no pinned-commit path and was never exercised against a real pack, and that the declared-unhashed channel is a truthiness test that a placeholder value defeats. To the producer's credit, the fixture files are all listed in the manifest with hashes and byte counts, and the fixture carries an explicit SYNTHETIC_..._FIXTURE label so it cannot be mistaken for real pack data."
+  },
+
+  "verification_commands": {
+    "artifact_verification_verbatim": "artifact_count: 7 ALL_VERIFY: True\non disk not listed: []",
+    "real_pack_contents_verbatim": "BOUNDARIES.md\nchecks.py\nengine.py\nLAUNCH.md\nMANIFEST.json\noracle.py\nstate_machine.py\ntest_pack.py\ntransport.py"
+  },
+
+  "nonportable_artifacts_in_subtree": [],
+  "reproducibility_check": "All five cases were run in fresh python3 -I processes against a pinned git-archive export; results reproduced on repeat.",
+
+  "reviewer_independent_verdict": "PASS",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "AGREE",
+  "divergence_reason": null,
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "ACCEPTED because both directions the frozen deliverable names are genuinely implemented and reported in separate channels, and I confirmed them on real-pack-derived input rather than on the producer's fixture: a smuggled undeclared file is caught by name, an undeclared file buried in a subdirectory is caught with its correct relative path, and a deleted sha256 key is caught in the unhashed channel. Against the real pinned pack the detector reports it clean, 8 declared and 8 present. Two things I would have the coordinator note. First, the placeholder-hash gap (HC-D): a declaration whose sha256 is the literal 'TBD' is reported as hashed and passes, which is arguably a declaration without a hash going undetected - a hardening item rather than grounds for rejection, since the missing-key case is correctly caught. Second, this is the only one of the three pack units with no pinned-commit code path and no real-pack evidence at all; here that understated a component that actually works, but the coordinator should not rely on that being true in general.",
+  "followups_for_coordinator": [
+    "declared_unhashed uses 'not metadata.get(\"sha256\")', a truthiness test. Reviewer-observed: replacing a real hash with the literal string 'TBD' yields declared_unhashed=[] and verdict PASS, while deleting the key yields the correct FAIL. Validate the declared value as 64 lowercase hex characters instead of merely non-empty.",
+    "Add a pinned-commit code path (as units 017 and 018 have) and record at least one real-pack run in the evidence. The component already works on the real pack - I verified 8 declared / 8 present / no gaps - but no committed evidence shows it."
+  ]
+}

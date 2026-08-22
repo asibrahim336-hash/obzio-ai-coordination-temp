@@ -1,0 +1,112 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-sol-xhigh",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-020-pack-nonportable-paths",
+  "cohort": "c3",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c3",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "38c00eefaa5be763b322e40f07f16ea918c4cb2c2c5cc8cb7b4b2f0128b08d7e",
+  "frozen_hypothesis": "Pack contents that assume a specific machine or transport layout are detectable before qualification.",
+  "frozen_required_deliverable": "A pack-scoped non-portability scanner reporting absolute paths, transport-relative assumptions and unresolvable internal references.",
+
+  "po01_contact_check": "READ-ONLY CONFIRMED. All access to pack material is via 'git ls-tree' and 'git cat-file'. My own fixtures were built in scratch repositories outside the repository under review.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -I (CPython 3.12.3)",
+    "producer_test_command": "python3 -I test_scan_nonportable.py",
+    "producer_test_exit_code": 0,
+    "producer_test_output_verbatim": "test_scan_nonportable: PASS",
+    "reviewer_direct_scan_verbatim": "files_scanned: 93 qualification: FAIL_NONPORTABLE finding_count: 57\nabsolute_paths: 11 transport_assumptions: 41 unresolved: 5\ntransport refs by token: {'../': 8, 'packs2/': 33}"
+  },
+
+  "real_findings_independently_verified": {
+    "note": "This unit produces a truthful NEGATIVE finding about real PO-01 pack material - qualification FAIL_NONPORTABLE - which is the most valuable kind of result in this cohort. I did not take it on trust; I re-derived the load-bearing part myself.",
+    "unresolved_spine_references": {
+      "claim": "Five pack manifests declare a sibling _spine.py that does not exist at the pinned commit.",
+      "reviewer_verification_method": "For each pack I read the manifest blob directly and enumerated declared names, handling the list-form 'files' schema, then probed the blob with 'git cat-file -e'.",
+      "observed_output_verbatim": "### packs/06-browser-execution/MANIFEST.json\n  files type: list\n  declared names: ['BOUNDARIES.md', 'LAUNCH.md', '_spine.py', 'acceptance.py', 'checks.py', 'state_machine.py', 'test_pack.py']\n  declares _spine.py: True\n  _spine.py blob: ABSENT\n### packs/07-capability-manufacture/MANIFEST.json\n  files type: list\n  declared names: ['BOUNDARIES.md', 'LAUNCH.md', '_spine.py', 'acceptance.py', 'checks.py', 'state_machine.py', 'test_pack.py']\n  declares _spine.py: True\n  _spine.py blob: ABSENT",
+      "verdict": "CONFIRMED REAL. The five unresolved references at packs/06-browser-execution, 07-capability-manufacture, 08-knowledge-currentness, 09-infrastructure-operation and 10-economics-measurement are genuine: each manifest declares _spine.py and no blob exists at that path at the pinned commit. This is a real defect in published pack material, found and reported honestly."
+    },
+    "absolute_path_findings": "Confirmed: 11 findings, including /tmp/packs in packs/MANIFEST.json L45 and /tmp/packs/<pack-name> in the LAUNCH.md of several packs. These are genuine machine-root assumptions.",
+    "transport_findings": "Confirmed: 41 findings, of which 33 are the token 'packs2/' (27 in packs/MANIFEST_ALL.json alone) and 8 are the token '../'."
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-D",
+      "rationale": "A scanner that flags 57 findings on the real pack could simply be indiscriminate. The essential control is whether it can ever say PASS_PORTABLE. The producer never established this.",
+      "construction": "Synthetic pack in a scratch repo with a hashed manifest, one data file and a README using only repository-relative references.",
+      "observed_output_verbatim": "HC-D clean synthetic pack -> qualification: PASS_PORTABLE finding_count: 0 files_scanned: 3",
+      "component_survived": true,
+      "interpretation": "Negative control passes. The scanner is not indiscriminate; a genuinely portable pack yields PASS_PORTABLE with zero findings. This is what makes the 57 real findings meaningful."
+    },
+    {
+      "hidden_case_id": "HC-E",
+      "rationale": "The ABSOLUTE regex is a closed enumeration: /tmp, /home, /workspace, /Users. Everything else is invisible. The frozen deliverable says the scanner reports 'absolute paths' as a class.",
+      "construction": "Synthetic portable pack with five non-portable roots planted in a declared, hashed file: /opt/packs/x, /var/lib/packs/y, $HOME/packs/z, /data/packs/w and C:\\Users\\a\\packs.",
+      "observed_output_verbatim": "HC-E planted /opt,/var,$HOME,/data,C:\\Users -> qualification: PASS_PORTABLE | absolute_paths detected: []",
+      "component_survived": false,
+      "interpretation": "FALSE NEGATIVE, all five. A pack carrying five machine-bound roots is qualified PASS_PORTABLE. The scanner detects an enumerated list of roots rather than absolute paths as a class. This is the same structural flaw I found in unit 003 from the same producer, so it is a recurring pattern rather than a one-off."
+    },
+    {
+      "hidden_case_id": "HC-E2",
+      "rationale": "Control for HC-E, to confirm the absolute-path channel works for a covered root.",
+      "construction": "Same synthetic pack with /tmp/packs/covered added.",
+      "observed_output_verbatim": "HC-E2 control, planted /tmp -> qualification: FAIL_NONPORTABLE | absolute_paths detected: ['/tmp/packs/covered']",
+      "component_survived": true,
+      "interpretation": "Confirms the diagnosis is the enumeration and not the machinery."
+    },
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "The TRANSPORT regex includes a bare '../'. I inspected every '../' finding to see whether it indicates a real transport assumption.",
+      "construction": "Extracted the 8 '../' findings and read the flagged source lines directly from the pinned commit.",
+      "observed_output_verbatim": "packs/repository-engineering/BOUNDARIES.md L31:\n| P12 | Escaping the repo with `../` paths | **MACHINE** | Admission guard. Test: `test_path_traversal_refused` |\npacks/repository-engineering/test_pack.py L289:\n    bad = {\"../../etc/passwd\": b\"bad\"}",
+      "component_survived": false,
+      "interpretation": "FALSE POSITIVES, and instructive ones. Both flagged lines are evidence of HARDENING against the very thing being flagged: the first is a prohibition table row declaring that '../' escapes are refused, the second is a negative test fixture proving traversal is rejected. The scanner reports a pack's own traversal defences as transport assumptions. This is why the otherwise-clean repository-engineering pack scores FAIL_NONPORTABLE with 4 findings when scanned alone."
+    }
+  ],
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "MET - I reproduced all counts exactly (93 scanned, 57 findings, 11/41/5 breakdown).",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET - 3 artifacts verified, no unlisted files on disk.",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - acceptance_contract_sha256 equals my pre-disclosure hash 38c00eef...",
+    "result is committed and read back by a different process from an immutable object id": "MET - artifact_commit c047583a39b6d67c88959365ef1f3f5480760262.",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - PASS.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "NOT_APPLICABLE - the hypothesis is confirmed. Note the useful distinction the producer got right: the PACK's qualification is FAIL_NONPORTABLE while the UNIT's verdict is PASS, because the hypothesis was about detectability and detection succeeded. That is the correct way to report a truthful negative about someone else's artifact.",
+    "no value, hash, metric or provider capability is invented": "MET, and this is the unit where I checked hardest. Every count reproduced exactly and the five unresolved _spine.py references are independently confirmed real."
+  },
+
+  "scope_honesty_assessment": {
+    "producer_declared_limitations": [
+      "Text-pattern findings are prequalification warnings and can overlap; the five missing manifest-declared runtime files are independently resolved by git cat-file."
+    ],
+    "assessment": "This is a genuinely good limitation. The producer correctly separates weak text-pattern warnings from the hard, independently resolvable finding, and explicitly tells the reader which one carries weight. That distinction is exactly right and it is what stopped me from treating the 41 transport findings as a claim of substance. What remains undeclared is the closed-enumeration false-negative class (HC-E) and the specific fact that a pack's own traversal defences get flagged (HC-B)."
+  },
+
+  "consistency_note_with_my_unit_003_verdict": "I gave unit 003 NOT_YET partly for this same closed-enumeration flaw, and I am giving unit 020 PASS, so I want the difference on the record. Unit 003 had no real-repository evidence at all, shipped no allowlist despite its frozen deliverable requiring one, and its PASS rested entirely on fixtures written to match its own regexes. Unit 020 produced verified findings against real pack material - including a genuine published-pack defect I confirmed with my own git commands - and has a working negative control that I established. Same regex weakness, materially different evidentiary standing.",
+
+  "verification_commands": {
+    "artifact_verification_verbatim": "artifact_count: 3 ALL_VERIFY: True\non disk not listed: []",
+    "unresolved_references_verbatim": "packs/06-browser-execution/MANIFEST.json -> packs/06-browser-execution/_spine.py\npacks/07-capability-manufacture/MANIFEST.json -> packs/07-capability-manufacture/_spine.py\npacks/08-knowledge-currentness/MANIFEST.json -> packs/08-knowledge-currentness/_spine.py\npacks/09-infrastructure-operation/MANIFEST.json -> packs/09-infrastructure-operation/_spine.py\npacks/10-economics-measurement/MANIFEST.json -> packs/10-economics-measurement/_spine.py"
+  },
+
+  "nonportable_artifacts_in_subtree": [],
+  "reproducibility_check": "Commit-pinned by construction. Reproduced identical counts (93/57/11/41/5) in fresh python3 -I processes on repeat.",
+
+  "reviewer_independent_verdict": "PASS",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "AGREE",
+  "divergence_reason": null,
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "This unit's PASS is justified, and it is the most substantively useful unit I reviewed in cohort c3. The frozen hypothesis is a detectability claim and detection is demonstrated on real material, not on fixtures: I reproduced all counts exactly and independently confirmed the load-bearing finding with my own git commands - five published pack manifests declare a sibling _spine.py that does not exist at the pinned commit. I also established the negative control the producer omitted, showing the scanner returns PASS_PORTABLE with zero findings on a genuinely portable pack, which is what makes the 57 findings meaningful rather than noise. The producer reported a truthful FAIL_NONPORTABLE about PO-01 material while correctly recording its own unit verdict as PASS, and its declared limitation properly separates weak text warnings from the hard resolvable finding. Two defects are logged for follow-up: five non-portable roots outside the regex enumeration pass undetected, and the scanner flags a pack's own path-traversal defences as transport assumptions.",
+  "followups_for_coordinator": [
+    "The ABSOLUTE regex enumerates only /tmp, /home, /workspace and /Users. Reviewer-observed: a pack carrying /opt/packs/x, /var/lib/packs/y, $HOME/packs/z, /data/packs/w and C:\\Users\\a\\packs is qualified PASS_PORTABLE with zero absolute-path findings. This is the same closed-enumeration flaw I found in unit 003 from the same producer and should be fixed once in a shared pattern set.",
+    "The TRANSPORT regex flags a bare '../', which reports a pack's own hardening as a defect. Reviewer-observed: packs/repository-engineering/BOUNDARIES.md L31 is a prohibition row stating that '../' escapes are refused, and test_pack.py L289 is the negative fixture \"../../etc/passwd\" proving traversal is rejected. Both are counted as transport assumptions.",
+    "ESCALATE THE REAL FINDING, not just the tool: five published packs (06-browser-execution, 07-capability-manufacture, 08-knowledge-currentness, 09-infrastructure-operation, 10-economics-measurement) declare _spine.py in their manifests and do not ship it at the pinned commit. Reviewer-confirmed independently. This is a PO-01 material defect surfaced by PO-03 read-only reproduction and is worth routing on its own merits."
+  ]
+}
