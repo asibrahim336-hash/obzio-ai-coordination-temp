@@ -1,0 +1,312 @@
+{
+  "preregistration_version": "OBZIO-WA-018-PREREGISTRATION-v1",
+  "task_id": "PO03-WA-018",
+  "attempt_id": "PO03-WA-018-A02",
+  "hypothesis_id": "H-PO03-WA-018",
+  "standing_function": "zero-base-strategy",
+  "frozen_before": [
+    "any simulation code was written",
+    "any simulation was executed",
+    "any outcome, metric or frontier value was read"
+  ],
+  "frozen_after": [
+    "the sanitized calibration capsule was built from immutable repository evidence"
+  ],
+  "calibration_capsule": {
+    "path": "workstreams/po03/wave-a/units/wa-018/result/calibration-capsule.json",
+    "sha256": "1fca4fefac16692655102afa6eef06e69b7b098049433fd16f912c23d4d54a44",
+    "bytes": 7198,
+    "immutable_commit": "48ac81e2580c6efefae8de39dc6b484b57e5c881",
+    "note": "The capsule is calibration input, not an outcome. Freezing the parameter source before the model exists is what makes the parameter choices non-selective."
+  },
+
+  "frozen_hypothesis": "Increasing concurrency without proportional verification capacity creates a measurable false-green or recovery penalty.",
+
+  "interpretation_chosen_before_execution": {
+    "concurrency": "C, the maximum number of producer work units allowed to execute at the same time.",
+    "verification_capacity": "V, the number of verifier slots able to independently verify a staged producer result, times the verification work each slot applies per result.",
+    "proportional": "C/V held at the balanced ratio R implied by the calibrated mean service times, R = mean_produce_seconds / mean_verify_seconds.",
+    "measurable_penalty": "A change in a preregistered metric that exceeds the materiality threshold below, relative to the proportional-capacity configuration at the same V.",
+    "disjunction": "The hypothesis is a disjunction. It is supported if either the false-green channel or the recovery channel exceeds materiality. Which disjunct fires is itself a recorded finding, not a free parameter.",
+    "scope_bound_accepted_in_advance": "The hypothesis is a claim about the effect of removing proportionality, so it can only bind where verification is or becomes the constraint. A region in which V already exceeds demand and raising C changes nothing is not counted as a refutation; it is the location of the frontier and is reported as such. A reader who insists on the strictly unconditional reading should read the recorded slack region as refuting that stronger claim, and this is recorded as a limitation rather than resolved by wording after the fact."
+  },
+
+  "sub_hypotheses": [
+    {
+      "id": "H-018-1",
+      "claim": "Under a blocking verification gate, raising C above the balanced ratio with V fixed produces zero false greens and a material increase in verification wait and in time-to-detect.",
+      "predicted_direction": "SUPPORTED",
+      "channel": "recovery_and_latency"
+    },
+    {
+      "id": "H-018-2",
+      "claim": "Under a deadline-driven bypass, raising C above the balanced ratio with V fixed produces a material false-green count.",
+      "predicted_direction": "SUPPORTED",
+      "channel": "false_green"
+    },
+    {
+      "id": "H-018-3",
+      "claim": "Under capacity-driven sampling, raising C above the balanced ratio with V fixed produces a material false-green count.",
+      "predicted_direction": "SUPPORTED",
+      "channel": "false_green"
+    },
+    {
+      "id": "H-018-4",
+      "claim": "Under truncated verification that preserves throughput by shortening each verification, raising C above the balanced ratio with V fixed produces a material false-green count without a material queue backlog.",
+      "predicted_direction": "SUPPORTED",
+      "channel": "false_green"
+    },
+    {
+      "id": "H-018-5",
+      "claim": "The null control that raises C and V together at the constant balanced ratio shows no penalty above materiality in any channel.",
+      "predicted_direction": "SUPPORTED",
+      "channel": "control"
+    },
+    {
+      "id": "H-018-6",
+      "claim": "Verified throughput saturates at a finite concurrency for every fixed V, so nominal throughput gained above the safety frontier is not verified throughput.",
+      "predicted_direction": "SUPPORTED",
+      "channel": "throughput"
+    },
+    {
+      "id": "H-018-7",
+      "claim": "Proportional verification capacity counted in slots is sufficient to prevent false greens even when the verification work applied per slot is degraded.",
+      "predicted_direction": "REFUTED",
+      "channel": "adversarial_restatement",
+      "note": "This sub-hypothesis is stated in the direction I expect to fail, so that failing it is informative rather than convenient. If it is refuted, the control variable in the frozen hypothesis must be read as verification work, not verifier slots."
+    },
+    {
+      "id": "H-018-8",
+      "claim": "The live PO-03 Wave A configuration observed in the calibration capsule sits above the balanced ratio implied by its own measured service times.",
+      "predicted_direction": "SUPPORTED",
+      "channel": "live_configuration",
+      "note": "Determined arithmetically from the frozen capsule, not by simulation."
+    }
+  ],
+
+  "simulation_model": {
+    "class": "single-run deterministic discrete-event simulation of the PO-03 produce-then-verify pipeline",
+    "time_unit": "integer seconds",
+    "lifecycle_modelled": "LEASED -> RUNNING -> RESULT_STAGED -> (verification) -> COMPLETED -> ACCEPTED | REJECTED, plus an escape path for a promoted defective result",
+    "entities": {
+      "units": "N work units, each with a produce duration, a latent-defect flag, a detection draw and a downstream-discovery draw",
+      "producer_pool": "C slots; a unit holds a slot only while producing, and the slot is released at staging because the real producer pushes its branch and returns before the controller verifies",
+      "verifier_pool": "V slots; verification is FIFO over staged results"
+    },
+    "promotion_policies": {
+      "BLOCKING_GATE": "A result is promoted only after a verifier has applied full nominal verification work. The staged queue is unbounded.",
+      "DEADLINE_BYPASS": "A result that has waited longer than bypass_deadline_seconds in the staged queue is promoted with zero verification work applied.",
+      "SAMPLED_VERIFICATION": "While the staged queue is longer than queue_cap, the oldest waiting result is promoted with zero verification work applied so the verifier can keep up.",
+      "TRUNCATED_VERIFICATION": "Every result is verified, but nominal verification work is scaled by a factor chosen from the current backlog so that the verifier keeps pace; detection power falls with the work applied."
+    },
+    "detection_power": {
+      "form": "power(w) = detect_power_full * (1 - exp(-k * w / nominal_work)) / (1 - exp(-k))",
+      "k": 3.0,
+      "properties": [
+        "power(0) = 0 exactly, so an unverified promotion can never detect a defect",
+        "power(nominal_work) = detect_power_full exactly",
+        "monotone increasing and concave in applied work"
+      ],
+      "status": "MODELLING_CHOICE_NOT_MEASURED",
+      "justification": "No repository evidence measures partial-verification power. A concave saturating form is the conservative choice against the hypothesis, because it makes partial verification retain most of its power. Sensitivity over k is run and reported."
+    },
+    "common_random_numbers": {
+      "scheme": "Every per-unit draw is derived from blake2b(seed, unit_index, stream_name) rather than from a sequential stream.",
+      "consequence": "A given unit has the same produce duration, latent-defect flag, detection draw and discovery draw at every C, V and policy. Differences across configurations are therefore structural rather than sampling noise.",
+      "purpose": "This removes the usual objection that a concurrency effect is seed noise, and it is preregistered because it also removes my freedom to pick a favourable seed alignment later."
+    },
+    "recovery_channel": {
+      "escape": "A latently defective result promoted without detection is a false green.",
+      "downstream_discovery": "A false green is discovered later with probability downstream_discovery_probability after discovery_delay_seconds, and then costs one rework unit of producer work re-injected into the producer pool.",
+      "penalty_metrics": [
+        "false_green_count",
+        "escaped_defect_count",
+        "recovery_rework_units",
+        "recovery_rework_seconds",
+        "mean_time_to_detect_seconds"
+      ]
+    },
+    "explicitly_not_modelled": [
+      "verifier learning or fatigue",
+      "correlated defects across units",
+      "producer contention for shared machine resources",
+      "review depth chosen per unit by a human",
+      "provider-side queueing outside the controller"
+    ]
+  },
+
+  "parameters": {
+    "units_per_wave": 64,
+    "seeds": {"base": 20260822, "count": 32, "indices": "0..31"},
+    "concurrency_grid": [1, 2, 3, 4, 6, 8, 12, 16, 24, 32],
+    "verifier_grid": [1, 2, 4, 8],
+    "policies": [
+      "BLOCKING_GATE",
+      "DEADLINE_BYPASS",
+      "SAMPLED_VERIFICATION",
+      "TRUNCATED_VERIFICATION"
+    ],
+    "produce_seconds_population": "bootstrap with replacement from calibration distributions.producer_produce_seconds.samples",
+    "verify_seconds_population": "bootstrap with replacement from calibration distributions.verifier_commit_to_ingest_seconds.samples",
+    "verify_population_bias": "The commit-to-ingest samples contain any queue wait already present in the live system, so they overstate pure verification service time. Overstating verification cost would flatter the hypothesis, so a sensitivity variant scales the population down to the observed service floor and is reported alongside the primary.",
+    "balanced_ratio_R": 3.4905,
+    "balanced_ratio_source": "calibration derived.balanced_producer_slots_per_verifier_slot",
+    "proportional_control_ladder": [
+      {"verifiers": 1, "concurrency": 3},
+      {"verifiers": 2, "concurrency": 7},
+      {"verifiers": 4, "concurrency": 14},
+      {"verifiers": 8, "concurrency": 28}
+    ],
+    "latent_defect_probability": {
+      "primary": 0.071429,
+      "source": "calibration observed.verifier_rejection_fraction, one rejection in fourteen verifier decisions",
+      "sweep": [0.0, 0.03, 0.071429, 0.15, 0.3]
+    },
+    "detect_power_full": {"primary": 0.9, "sweep": [1.0, 0.9, 0.7]},
+    "detection_k": {"primary": 3.0, "sweep": [1.0, 3.0, 8.0]},
+    "bypass_deadline_seconds": {"primary": 1800, "sweep": [900, 1800, 3600]},
+    "queue_cap": {
+      "primary": 8,
+      "source": "calibration observed.producer_concurrency_ceiling",
+      "sweep": [4, 8, 16]
+    },
+    "downstream_discovery_probability": {"primary": 0.5, "sweep": [0.25, 0.5, 1.0]},
+    "discovery_delay_seconds": 3600,
+    "rework_seconds": {
+      "primary": 1295,
+      "source": "calibration derived.mean_produce_seconds rounded to seconds"
+    },
+    "verification_wait_slo_seconds": {
+      "primary": 900,
+      "source": "the maximum observed live commit-to-ingest latency of 738 seconds, rounded up to 900 so the SLO is not set at the observed extreme"
+    }
+  },
+
+  "preregistered_metrics": [
+    "wall_time",
+    "test_count",
+    "first_pass_outcome",
+    "artifact_count",
+    "artifact_bytes",
+    "source_claim_count",
+    "reproduction_count",
+    "mechanism_change_count",
+    "defects",
+    "rework",
+    "provider_block",
+    "collision",
+    "recovery_events"
+  ],
+
+  "simulation_output_metrics": [
+    "makespan_seconds",
+    "promoted_count",
+    "fully_verified_count",
+    "unverified_promotion_count",
+    "false_green_count",
+    "escaped_defect_count",
+    "detected_defect_count",
+    "nominal_throughput_per_hour",
+    "verified_throughput_per_hour",
+    "mean_verification_wait_seconds",
+    "p95_verification_wait_seconds",
+    "peak_staged_backlog",
+    "mean_time_to_detect_seconds",
+    "recovery_rework_units",
+    "recovery_rework_seconds",
+    "verification_work_applied_fraction"
+  ],
+
+  "comparison_thresholds": {
+    "false_green_materiality": {
+      "rule": "Any false_green_count of one or more, summed over the seed ensemble, is material.",
+      "justification": "The governing acceptance contract sets false_completion to zero, so this metric has no tolerance band and no relative threshold is appropriate."
+    },
+    "latency_materiality": {
+      "rule": "p95_verification_wait_seconds at least 25 percent above the same-V proportional-control configuration, or above the 900 second SLO in absolute terms."
+    },
+    "recovery_materiality": {
+      "rule": "mean_time_to_detect_seconds at least 25 percent above the same-V proportional-control configuration, or recovery_rework_units at least one above it."
+    },
+    "throughput_saturation": {
+      "rule": "Verified throughput is saturated at the smallest grid concurrency whose verified_throughput_per_hour exceeds the next larger grid concurrency by less than 2 percent."
+    },
+    "separation_margin": {
+      "rule": "A directional effect must hold in at least 90 percent of the 32 seeds. The exact fraction is reported in every case, including when it is 100 percent."
+    },
+    "null_control_requirement": {
+      "rule": "The proportional-capacity ladder must stay within materiality on every channel. If it does not, the effect is not attributable to the capacity ratio."
+    }
+  },
+
+  "frontier_definitions": {
+    "safety_frontier_concurrency": "The largest grid concurrency at a given V and policy whose false_green_count is zero across every seed.",
+    "service_frontier_concurrency": "The largest grid concurrency at a given V and policy whose ensemble mean p95_verification_wait_seconds is at or below the 900 second SLO.",
+    "saturation_frontier_concurrency": "The smallest grid concurrency at a given V and policy at which verified throughput saturates under the 2 percent rule.",
+    "monotonicity_requirement": "Each frontier must be monotone non-decreasing in V for the frontier to be a well-defined object."
+  },
+
+  "falsifiers": [
+    {
+      "id": "F-018-1",
+      "statement": "If raising concurrency from 1 to 32 with V fixed at 1 leaves both the false-green channel and the recovery and latency channels within materiality under every policy, the frozen hypothesis is REFUTED."
+    },
+    {
+      "id": "F-018-2",
+      "statement": "If the proportional-capacity control ladder shows a penalty above materiality, the observed penalty is not attributable to loss of proportionality and the result is REFUTED as confounded."
+    },
+    {
+      "id": "F-018-3",
+      "statement": "If any false green appears under BLOCKING_GATE with detect_power_full set to 1.0, a run that should be structurally incapable of false greens produced one, so the simulator is wrong and the run is INVALID rather than evidence.",
+      "consequence": "invalidates_run"
+    },
+    {
+      "id": "F-018-4",
+      "statement": "If latent_defect_probability is set to 0.0 and any false green or escaped defect is reported, the simulator is wrong and the run is INVALID.",
+      "consequence": "invalidates_run"
+    },
+    {
+      "id": "F-018-5",
+      "statement": "If any frontier is not monotone non-decreasing in V, the frontier is not a well-defined object and the frontier claim is INCONCLUSIVE."
+    },
+    {
+      "id": "F-018-6",
+      "statement": "If the directional effect holds in fewer than 90 percent of seeds, the result is INCONCLUSIVE rather than supported."
+    },
+    {
+      "id": "F-018-7",
+      "statement": "If the sensitivity variant that scales verification service time down to the observed floor removes the penalty entirely, the penalty is an artefact of the upper-bound service estimate and the result is downgraded to INCONCLUSIVE."
+    },
+    {
+      "id": "F-018-8",
+      "statement": "If the promoted count ever differs from the wave size plus re-injected rework units, or fully verified plus unverified promotions ever differs from the promoted count, conservation is violated and the run is INVALID.",
+      "consequence": "invalidates_run"
+    }
+  ],
+
+  "decision_rule": {
+    "SUPPORTED": "At least one policy shows a penalty above materiality when concurrency is raised above the balanced ratio with V fixed; the effect is monotone non-decreasing beyond the identified frontier; the proportional-capacity control stays within materiality; no invalidating falsifier fires; and the seed separation margin is met.",
+    "REFUTED": "F-018-1 or F-018-2 fires.",
+    "INCONCLUSIVE": "F-018-5, F-018-6 or F-018-7 fires, or penalties appear without separating from the control.",
+    "NOT_SUPPORTED": "The evidence needed to decide is unavailable in this runtime and no substitute is admissible.",
+    "OWNER_BLOCKED": "A boundary in the authority envelope prevents the required observation."
+  },
+
+  "prohibited_after_reading_outcomes": [
+    "changing any threshold, grid, seed count, materiality rule or falsifier",
+    "adding a policy or metric in order to reach a preferred outcome",
+    "reclassifying a fired falsifier as a limitation",
+    "reporting a sensitivity variant as the primary result"
+  ],
+  "deviation_policy": "Any change forced after execution is recorded as an explicit deviation with its reason, the outcome before and after, and is counted as a defect against this attempt rather than silently applied.",
+
+  "evidence_boundaries": {
+    "external_network_retrieval": "NOT_SUPPORTED",
+    "external_source_claims": "NONE_CLAIMED",
+    "evidence_admitted": "sanitized repository-native evidence at immutable commit 48ac81e2580c6efefae8de39dc6b484b57e5c881 only",
+    "po01_evidence": "NONE_READ",
+    "producer_narrative_as_evidence": "REFUSED"
+  },
+
+  "decision_changed": []
+}
