@@ -1,0 +1,542 @@
+{
+  "acceptance_contract_path": "workstreams/po03/control/acceptance/wave-a-material-v1.json",
+  "acceptance_contract_sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a",
+  "acceptance_self_check": [
+    {
+      "assertion": "The exact frozen hypothesis was tested, not replaced by a plan, inventory or narrative.",
+      "disposition": "PASS",
+      "evidence": "Six warm-only green mutants across the three named classes were detected and attributed, plus a repository-native scenario in which the seeded validator passes only because its input is untracked."
+    },
+    {
+      "assertion": "The result leaves an executable component, reproduction, tests and adversarial cases in the owned subtree.",
+      "disposition": "PASS",
+      "evidence": "differential_run.py, hidden_state_fixtures.py, reproduce_obzio_workload.py, result_custody.py and 30 focused tests all execute from a clean clone with no third-party dependency."
+    },
+    {
+      "assertion": "Source claims, hypotheses, reproductions, mechanism changes and strategy proposals remain distinct states.",
+      "disposition": "PASS",
+      "evidence": "Five separately typed artifacts; strategy-proposals.json is UNBOUND_PROPOSAL and changes nothing outside this subtree."
+    },
+    {
+      "assertion": "An engineering attempt includes focused automated tests and command output.",
+      "disposition": "PASS",
+      "evidence": "test-output.txt carries the verbose run of all 30 tests; fixture-matrix-result.json and reproduction-result.json carry machine-checked assertions."
+    },
+    {
+      "assertion": "A reproduction runs on a sanitized repository-native Obzio workload with enough detail for clean-clone recurrence.",
+      "disposition": "PASS",
+      "evidence": "R-PO03-WA-008-001 runs three scenarios against immutable commit affc82b using only committed repository content plus a synthetic non-secret document; the suite reruns green in a fresh no-hardlink clone under env -i."
+    },
+    {
+      "assertion": "Exact immutable SHAs actually read are recorded, and unsupported facts use NOT_SUPPORTED rather than invention.",
+      "disposition": "PASS",
+      "evidence": "source-claims.json records 11 claims with immutable blob hashes or local execution evidence, declares external retrieval NOT_SUPPORTED, and claims no external URL."
+    },
+    {
+      "assertion": "Only the declared owned subtree was written, in an isolated best-of-N worktree, with no external effect.",
+      "disposition": "PASS",
+      "evidence": "All 18 changed paths from the immutable base are under workstreams/po03/wave-a/units/wa-008/; readback reports 0 out-of-scope changed paths; no PR, message, deployment or secret operation occurred."
+    },
+    {
+      "assertion": "The result contains result.json, tests.json, limitations.json, artifact-manifest.json and ready-to-commit.json with complete SHA-256 and byte accounting.",
+      "disposition": "PASS",
+      "evidence": "All five are present; the manifest reconciles 17 artifacts and 206275 bytes, and this document carries the manifest digest and the readback of all 18 files."
+    },
+    {
+      "assertion": "Changed paths were validated, a unique branch was pushed, and every artifact was read back from an immutable remote commit.",
+      "disposition": "PASS",
+      "evidence": "A separate process fetched refs/heads/cursor/po03-wa-008-b195-a02-1a9f into a throwaway repository and matched every artifact's SHA-256 and byte count at 84404cfcc2286d5a5ce4a988837cf51ece60c8be."
+    },
+    {
+      "assertion": "Only READY_TO_COMMIT is reported; provider completion without a durable commit would be PROVIDER_COMPLETED_UNCOMMITTED.",
+      "disposition": "PASS",
+      "evidence": "terminal_report is READY_TO_COMMIT, obzio_state is RESULT_COMMITTED, completion_actor is null."
+    },
+    {
+      "assertion": "Only the coordinator may record COMPLETED and the producer does not accept its own result.",
+      "disposition": "PASS",
+      "evidence": "completion_actor null and independent_acceptance.state NOT_TESTED; result.json records self_acceptance REFUSED_BY_PROTOCOL."
+    },
+    {
+      "assertion": "PO-01, PR #8, protected state, shared current pointers and paths outside the allowlist remain untouched.",
+      "disposition": "PASS",
+      "evidence": "No PO-01 path or branch was read as evidence or written; state/**, dispatch/**, .cursor/environment.json, receipts/po01/** and workstreams/po01/** are absent from the changed-path list; the shared controller checkout was only read."
+    }
+  ],
+  "artifact_count": 17,
+  "attempt_id": "PO03-WA-008-A02",
+  "auto_model_selection": false,
+  "changed_file_count": 18,
+  "changed_files": [
+    "workstreams/po03/wave-a/units/wa-008/result/artifact-manifest.json",
+    "workstreams/po03/wave-a/units/wa-008/result/differential_run.py",
+    "workstreams/po03/wave-a/units/wa-008/result/fixture-matrix-result.json",
+    "workstreams/po03/wave-a/units/wa-008/result/hidden_state_fixtures.py",
+    "workstreams/po03/wave-a/units/wa-008/result/hypotheses.json",
+    "workstreams/po03/wave-a/units/wa-008/result/limitations.json",
+    "workstreams/po03/wave-a/units/wa-008/result/live-checkout-census.json",
+    "workstreams/po03/wave-a/units/wa-008/result/mechanism-change.json",
+    "workstreams/po03/wave-a/units/wa-008/result/reproduce_obzio_workload.py",
+    "workstreams/po03/wave-a/units/wa-008/result/reproduction-result.json",
+    "workstreams/po03/wave-a/units/wa-008/result/result.json",
+    "workstreams/po03/wave-a/units/wa-008/result/result_custody.py",
+    "workstreams/po03/wave-a/units/wa-008/result/self-application-result.json",
+    "workstreams/po03/wave-a/units/wa-008/result/source-claims.json",
+    "workstreams/po03/wave-a/units/wa-008/result/strategy-proposals.json",
+    "workstreams/po03/wave-a/units/wa-008/result/test-output.txt",
+    "workstreams/po03/wave-a/units/wa-008/result/test_differential_run.py",
+    "workstreams/po03/wave-a/units/wa-008/result/tests.json"
+  ],
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "controller_run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+  "decision_changed": [],
+  "fence_token": 2,
+  "generated_at": "2026-08-22T09:00:01.122908Z",
+  "hypothesis_id": "H-PO03-WA-008",
+  "idempotency_key": "po03:100bc2079ced:wa-008:a02",
+  "immutable_input_manifest_sha256": "0750a47cff491c5dc64cbd24629337ac6484326f88be11a00a8461f862fdddb2",
+  "immutable_input_path": "workstreams/po03/control/inputs/wave-a/wa-008-a02.json",
+  "lease_id": "lease-po03-wa-008-a02",
+  "limitations": {
+    "count": 17,
+    "details_path": "workstreams/po03/wave-a/units/wa-008/result/limitations.json",
+    "external_source_retrieval": "NOT_SUPPORTED",
+    "independent_acceptance": "NOT_TESTED",
+    "large_repository_cost": "NOT_MEASURED",
+    "non_linux_platforms": "NOT_SUPPORTED",
+    "reasoning_attestation": "NOT_SUPPORTED",
+    "silent_hidden_state_read_detection": "NOT_SUPPORTED"
+  },
+  "manifest_bytes": 5815,
+  "manifest_path": "workstreams/po03/wave-a/units/wa-008/result/artifact-manifest.json",
+  "manifest_sha256": "4fda4910bdd794e66a71ae89b776ee14cc7071eabaff1b619dc8754beffca5eb",
+  "material_work": true,
+  "model_observed": "claude-opus-5",
+  "model_observed_source": "runtime self-report only; the provider exposed no separate model or reasoning attestation to this runner",
+  "model_requested": "claude-opus-5-thinking-high",
+  "owned_subtree": "workstreams/po03/wave-a/units/wa-008/",
+  "payload_commit": {
+    "base_to_payload_changed_path_count": 18,
+    "commit": "84404cfcc2286d5a5ce4a988837cf51ece60c8be",
+    "out_of_scope_changed_path_count": 0,
+    "remote_ref": "refs/heads/cursor/po03-wa-008-b195-a02-1a9f",
+    "remote_tip_at_readback": "84404cfcc2286d5a5ce4a988837cf51ece60c8be"
+  },
+  "portfolio_sha256_verified": "515cf2325bda326471140aa1a294696f02c6c10effc3bae9022d55934c063ebd",
+  "protocol_version": "OBZIO-PRODUCER-RETURN-v1",
+  "provider_run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+  "readback_verification": {
+    "all_match": true,
+    "artifact_count": 18,
+    "base_commit": "affc82b35e6205010fda90f9914a97e467294a44",
+    "changed_path_count": 18,
+    "checks": [
+      {
+        "bytes": 32831,
+        "matches": true,
+        "observed_bytes": 32831,
+        "observed_sha256": "33ece0caa46158627e1ac1aefb137f40a6fe61288020d80d3721d0af2c79caec",
+        "path": "workstreams/po03/wave-a/units/wa-008/result/differential_run.py",
+        "sha256": "33ece0caa46158627e1ac1aefb137f40a6fe61288020d80d3721d0af2c79caec"
+      },
+      {
+        "bytes": 20354,
+        "matches": true,
+        "observed_bytes": 20354,
+        "observed_sha256": "c60e4ddab9b70ecd2252d948c6993cc664e543c0233742a1f1545f0b30611187",
+        "path": "workstreams/po03/wave-a/units/wa-008/result/fixture-matrix-result.json",
+        "sha256": "c60e4ddab9b70ecd2252d948c6993cc664e543c0233742a1f1545f0b30611187"
+      },
+      {
+        "bytes": 28985,
+        "matches": true,
+        "observed_bytes": 28985,
+        "observed_sha256": "8e44a08c7d5e53c594a88fc855fc4b6dd57931d835343639f6d0df52b0bab686",
+        "path": "workstreams/po03/wave-a/units/wa-008/result/hidden_state_fixtures.py",
+        "sha256": "8e44a08c7d5e53c594a88fc855fc4b6dd57931d835343639f6d0df52b0bab686"
+      },
+      {
+        "bytes": 6592,
+        "matches": true,
+        "observed_bytes": 6592,
+        "observed_sha256": "3f4612da597fbb5687fa5b1762f65c5d2c83228c5965c49f7af5fc77e19ac6bf",
+        "path": "workstreams/po03/wave-a/units/wa-008/result/hypotheses.json",
+        "sha256": "3f4612da597fbb5687fa5b1762f65c5d2c83228c5965c49f7af5fc77e19ac6bf"
+      },
+      {
+        "bytes": 8549,
+        "matches": true,
+        "observed_bytes": 8549,
+        "observed_sha256": "501f2e5891ece13876505fce452c10d5a9ded526e890f9cc8e9cea04a5998b86",
+        "path": "workstreams/po03/wave-a/units/wa-008/result/limitations.json",
+        "sha256": "501f2e5891ece13876505fce452c10d5a9ded526e890f9cc8e9cea04a5998b86"
+      },
+      {
+        "bytes": 692,
+        "matches": true,
+        "observed_bytes": 692,
+        "observed_sha256": "21b700e5c47081209746773c70eeadc870e99f425bf7d7691df9389985becc7a",
+        "path": "workstreams/po03/wave-a/units/wa-008/result/live-checkout-census.json",
+        "sha256": "21b700e5c47081209746773c70eeadc870e99f425bf7d7691df9389985becc7a"
+      },
+      {
+        "bytes": 9359,
+        "matches": true,
+        "observed_bytes": 9359,
+        "observed_sha256": "7ebf4ec292d461fd86cfbdff086b36c12ea3d28bfb5f642bd238cb984411f79f",
+        "path": "workstreams/po03/wave-a/units/wa-008/result/mechanism-change.json",
+        "sha256": "7ebf4ec292d461fd86cfbdff086b36c12ea3d28bfb5f642bd238cb984411f79f"
+      },
+      {
+        "bytes": 13849,
+        "matches": true,
+        "observed_bytes": 13849,
+        "observed_sha256": "badcd9cc0046c032993cb2ad812a355d57a6d7079e36155a3246d4cb738f644e",
+        "path": "workstreams/po03/wave-a/units/wa-008/result/reproduce_obzio_workload.py",
+        "sha256": "badcd9cc0046c032993cb2ad812a355d57a6d7079e36155a3246d4cb738f644e"
+      },
+      {
+        "bytes": 4941,
+        "matches": true,
+        "observed_bytes": 4941,
+        "observed_sha256": "48ac7890e19893752fbcd671aa1129f08bd68ee0b5423384be248205d1ad2def",
+        "path": "workstreams/po03/wave-a/units/wa-008/result/reproduction-result.json",
+        "sha256": "48ac7890e19893752fbcd671aa1129f08bd68ee0b5423384be248205d1ad2def"
+      },
+      {
+        "bytes": 9523,
+        "matches": true,
+        "observed_bytes": 9523,
+        "observed_sha256": "2ef3a0c082126066b143513810fb80c854b3225e64ff7240a795682891feac59",
+        "path": "workstreams/po03/wave-a/units/wa-008/result/result.json",
+        "sha256": "2ef3a0c082126066b143513810fb80c854b3225e64ff7240a795682891feac59"
+      },
+      {
+        "bytes": 8995,
+        "matches": true,
+        "observed_bytes": 8995,
+        "observed_sha256": "b0e752a11c1a1eb89d7bf105c9adeb450eb2326fef4805994ecd6d6036ecd0dc",
+        "path": "workstreams/po03/wave-a/units/wa-008/result/result_custody.py",
+        "sha256": "b0e752a11c1a1eb89d7bf105c9adeb450eb2326fef4805994ecd6d6036ecd0dc"
+      },
+      {
+        "bytes": 8905,
+        "matches": true,
+        "observed_bytes": 8905,
+        "observed_sha256": "23a9878a09e47df41e72934d465206922a4158e0abef0d171c38b7e586b5a8c4",
+        "path": "workstreams/po03/wave-a/units/wa-008/result/self-application-result.json",
+        "sha256": "23a9878a09e47df41e72934d465206922a4158e0abef0d171c38b7e586b5a8c4"
+      },
+      {
+        "bytes": 8403,
+        "matches": true,
+        "observed_bytes": 8403,
+        "observed_sha256": "4f39c94ee3c3e24122760607454608c0110c317aed7f5c99c81bfd68348d8c62",
+        "path": "workstreams/po03/wave-a/units/wa-008/result/source-claims.json",
+        "sha256": "4f39c94ee3c3e24122760607454608c0110c317aed7f5c99c81bfd68348d8c62"
+      },
+      {
+        "bytes": 3054,
+        "matches": true,
+        "observed_bytes": 3054,
+        "observed_sha256": "14d8e7c8e2b48e88f50dfe8a800adab2da8fbf334830736cdac0b8dadb16081c",
+        "path": "workstreams/po03/wave-a/units/wa-008/result/strategy-proposals.json",
+        "sha256": "14d8e7c8e2b48e88f50dfe8a800adab2da8fbf334830736cdac0b8dadb16081c"
+      },
+      {
+        "bytes": 5043,
+        "matches": true,
+        "observed_bytes": 5043,
+        "observed_sha256": "395fe9aaedddd642fc3fc35626265e9ba668862eb04c1cf4219ca654a090d46a",
+        "path": "workstreams/po03/wave-a/units/wa-008/result/test-output.txt",
+        "sha256": "395fe9aaedddd642fc3fc35626265e9ba668862eb04c1cf4219ca654a090d46a"
+      },
+      {
+        "bytes": 27513,
+        "matches": true,
+        "observed_bytes": 27513,
+        "observed_sha256": "4f8a0578a21285c8a2724cea17a3e3d9a9a719e7390736bec129631883d1d393",
+        "path": "workstreams/po03/wave-a/units/wa-008/result/test_differential_run.py",
+        "sha256": "4f8a0578a21285c8a2724cea17a3e3d9a9a719e7390736bec129631883d1d393"
+      },
+      {
+        "bytes": 8687,
+        "matches": true,
+        "observed_bytes": 8687,
+        "observed_sha256": "2545d280cf961a7821a6a8a41f7928d281a1fd53178bc0f1ebd0b3615664c86d",
+        "path": "workstreams/po03/wave-a/units/wa-008/result/tests.json",
+        "sha256": "2545d280cf961a7821a6a8a41f7928d281a1fd53178bc0f1ebd0b3615664c86d"
+      },
+      {
+        "bytes": 5815,
+        "matches": true,
+        "note": "manifest verified as present and hashed at the immutable commit",
+        "observed_bytes": 5815,
+        "observed_sha256": "4fda4910bdd794e66a71ae89b776ee14cc7071eabaff1b619dc8754beffca5eb",
+        "path": "workstreams/po03/wave-a/units/wa-008/result/artifact-manifest.json",
+        "sha256": "4fda4910bdd794e66a71ae89b776ee14cc7071eabaff1b619dc8754beffca5eb"
+      }
+    ],
+    "commit": "84404cfcc2286d5a5ce4a988837cf51ece60c8be",
+    "method": "Fresh temporary Git repository, forced ref fetch from the remote, then git show --no-textconv <immutable-commit>:<path> with SHA-256 and byte comparison.",
+    "out_of_scope_changed_path_count": 0,
+    "out_of_scope_changed_paths": [],
+    "protocol_version": "OBZIO-WA-008-READBACK-v1",
+    "remote_ref": "refs/heads/cursor/po03-wa-008-b195-a02-1a9f",
+    "remote_tip_at_readback": "84404cfcc2286d5a5ce4a988837cf51ece60c8be",
+    "verified_at": "2026-08-22T08:57:58.012146Z"
+  },
+  "reasoning_observed": "NOT_SUPPORTED",
+  "reasoning_requested": "high",
+  "remote_branch": "cursor/po03-wa-008-b195-a02-1a9f",
+  "result_commit_id": "84404cfcc2286d5a5ce4a988837cf51ece60c8be",
+  "result_slot": "workstreams/po03/wave-a/units/wa-008/result/",
+  "return_commit_id": null,
+  "return_commit_id_note": "Assigned when this document is committed; a file cannot contain the id of the commit that contains it. The immutable return commit is reported in the producer terminal response and can be read from the pushed branch.",
+  "runner_id": "best-of-n-runner-bc-b1956656-wa-008-a02",
+  "runtime_binding": {
+    "ambient_environment_observation": "PYTHONDONTWRITEBYTECODE=1 is set in this runtime; the detector's sanitised environment deliberately does not set it",
+    "execution_environment": "isolated no-hardlink clone of the controller repository, checked out at the immutable base",
+    "host_git": "git version 2.43.0",
+    "host_python": "3.12.3",
+    "note": "Runtime details are execution evidence only and grant no authority.",
+    "provider": "cursor-cloud-agent",
+    "provider_run_url": "https://cursor.com/agents/bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+    "subagent_type": "best-of-n-runner",
+    "worktree_root_class": "unique /tmp clone; the shared controller checkout was never written to or switched"
+  },
+  "source_base": {
+    "commission_commit": "552b12eacee637716451492a98980fb0da19ff3e",
+    "commission_sha256_verified": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+    "immutable_producer_base": "affc82b35e6205010fda90f9914a97e467294a44",
+    "minimum_protocol_ancestor_declared": "100bc2079cedc193af3524234ab833cc9f9f4669",
+    "minimum_protocol_ancestor_note": "git cat-file resolves 100bc2079cedc193af3524234ab833cc9f9f4669 as a commit and git merge-base --is-ancestor confirms it is an ancestor of the producer base affc82b35e6205010fda90f9914a97e467294a44. The A01 defect that this attempt supersedes recorded an unresolvable ancestor; under the corrected A02 input it resolves. Every other declared source hash also matched exactly.",
+    "minimum_protocol_ancestor_resolution": "VERIFIED_ANCESTOR_OF_PRODUCER_BASE",
+    "repository": "github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+    "transactional_schema_sha256_verified": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1",
+    "validator_sha256_verified": "ead7d6c78c1f60aaf5440db7fc00fc2ae57d773647ed3b24c279d1a59b43da03",
+    "wave_schema_sha256_verified": "5278cb6bc4e7f41a5d513d4a00427a1ed199a21459025c7fa96fb97d56439360"
+  },
+  "supersedes": {
+    "attempt_id": "PO03-WA-008-A01",
+    "defect": "UNRESOLVABLE_MINIMUM_PROTOCOL_ANCESTOR",
+    "fenced_before_dispatch": true,
+    "note": "A01 was fenced before dispatch by the controller; this A02 attempt carries fence token 2 and is the first substantive execution of this work unit."
+  },
+  "task_id": "PO03-WA-008",
+  "terminal_report": "READY_TO_COMMIT",
+  "tests": {
+    "changed_path_ownership_check": "PASS",
+    "clean_clone_suite_runs": 30,
+    "clean_controls": 3,
+    "details_path": "workstreams/po03/wave-a/units/wa-008/result/tests.json",
+    "false_positives": 0,
+    "final_outcome": "PASS",
+    "first_pass_outcome": "FAIL",
+    "fixture_matrix_assertions": 64,
+    "fixture_matrix_fixtures": 12,
+    "focused_tests": 30,
+    "known_false_negatives": 1,
+    "outcome": "PASS",
+    "repository_native_reproduction_assertions": 9,
+    "repository_native_reproduction_scenarios": 3,
+    "seeded_po03_contract_tests_read_only": 37,
+    "self_application_runs": 1,
+    "taxonomy_check": "PASS",
+    "warm_only_green_mutants": 6
+  },
+  "total_bytes": 206275,
+  "transactional_result": {
+    "acceptance_contract_sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a",
+    "artifacts": [
+      {
+        "artifact_id": "art-po03-wa-008-differential-run-py",
+        "bytes": 32831,
+        "content_uri": "workstreams/po03/wave-a/units/wa-008/result/differential_run.py",
+        "logical_name": "differential_run.py",
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:57:58.012146Z",
+        "sha256": "33ece0caa46158627e1ac1aefb137f40a6fe61288020d80d3721d0af2c79caec"
+      },
+      {
+        "artifact_id": "art-po03-wa-008-fixture-matrix-result-json",
+        "bytes": 20354,
+        "content_uri": "workstreams/po03/wave-a/units/wa-008/result/fixture-matrix-result.json",
+        "logical_name": "fixture-matrix-result.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:57:58.012146Z",
+        "sha256": "c60e4ddab9b70ecd2252d948c6993cc664e543c0233742a1f1545f0b30611187"
+      },
+      {
+        "artifact_id": "art-po03-wa-008-hidden-state-fixtures-py",
+        "bytes": 28985,
+        "content_uri": "workstreams/po03/wave-a/units/wa-008/result/hidden_state_fixtures.py",
+        "logical_name": "hidden_state_fixtures.py",
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:57:58.012146Z",
+        "sha256": "8e44a08c7d5e53c594a88fc855fc4b6dd57931d835343639f6d0df52b0bab686"
+      },
+      {
+        "artifact_id": "art-po03-wa-008-hypotheses-json",
+        "bytes": 6592,
+        "content_uri": "workstreams/po03/wave-a/units/wa-008/result/hypotheses.json",
+        "logical_name": "hypotheses.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:57:58.012146Z",
+        "sha256": "3f4612da597fbb5687fa5b1762f65c5d2c83228c5965c49f7af5fc77e19ac6bf"
+      },
+      {
+        "artifact_id": "art-po03-wa-008-limitations-json",
+        "bytes": 8549,
+        "content_uri": "workstreams/po03/wave-a/units/wa-008/result/limitations.json",
+        "logical_name": "limitations.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:57:58.012146Z",
+        "sha256": "501f2e5891ece13876505fce452c10d5a9ded526e890f9cc8e9cea04a5998b86"
+      },
+      {
+        "artifact_id": "art-po03-wa-008-live-checkout-census-json",
+        "bytes": 692,
+        "content_uri": "workstreams/po03/wave-a/units/wa-008/result/live-checkout-census.json",
+        "logical_name": "live-checkout-census.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:57:58.012146Z",
+        "sha256": "21b700e5c47081209746773c70eeadc870e99f425bf7d7691df9389985becc7a"
+      },
+      {
+        "artifact_id": "art-po03-wa-008-mechanism-change-json",
+        "bytes": 9359,
+        "content_uri": "workstreams/po03/wave-a/units/wa-008/result/mechanism-change.json",
+        "logical_name": "mechanism-change.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:57:58.012146Z",
+        "sha256": "7ebf4ec292d461fd86cfbdff086b36c12ea3d28bfb5f642bd238cb984411f79f"
+      },
+      {
+        "artifact_id": "art-po03-wa-008-reproduce-obzio-workload-py",
+        "bytes": 13849,
+        "content_uri": "workstreams/po03/wave-a/units/wa-008/result/reproduce_obzio_workload.py",
+        "logical_name": "reproduce_obzio_workload.py",
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:57:58.012146Z",
+        "sha256": "badcd9cc0046c032993cb2ad812a355d57a6d7079e36155a3246d4cb738f644e"
+      },
+      {
+        "artifact_id": "art-po03-wa-008-reproduction-result-json",
+        "bytes": 4941,
+        "content_uri": "workstreams/po03/wave-a/units/wa-008/result/reproduction-result.json",
+        "logical_name": "reproduction-result.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:57:58.012146Z",
+        "sha256": "48ac7890e19893752fbcd671aa1129f08bd68ee0b5423384be248205d1ad2def"
+      },
+      {
+        "artifact_id": "art-po03-wa-008-result-json",
+        "bytes": 9523,
+        "content_uri": "workstreams/po03/wave-a/units/wa-008/result/result.json",
+        "logical_name": "result.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:57:58.012146Z",
+        "sha256": "2ef3a0c082126066b143513810fb80c854b3225e64ff7240a795682891feac59"
+      },
+      {
+        "artifact_id": "art-po03-wa-008-result-custody-py",
+        "bytes": 8995,
+        "content_uri": "workstreams/po03/wave-a/units/wa-008/result/result_custody.py",
+        "logical_name": "result_custody.py",
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:57:58.012146Z",
+        "sha256": "b0e752a11c1a1eb89d7bf105c9adeb450eb2326fef4805994ecd6d6036ecd0dc"
+      },
+      {
+        "artifact_id": "art-po03-wa-008-self-application-result-json",
+        "bytes": 8905,
+        "content_uri": "workstreams/po03/wave-a/units/wa-008/result/self-application-result.json",
+        "logical_name": "self-application-result.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:57:58.012146Z",
+        "sha256": "23a9878a09e47df41e72934d465206922a4158e0abef0d171c38b7e586b5a8c4"
+      },
+      {
+        "artifact_id": "art-po03-wa-008-source-claims-json",
+        "bytes": 8403,
+        "content_uri": "workstreams/po03/wave-a/units/wa-008/result/source-claims.json",
+        "logical_name": "source-claims.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:57:58.012146Z",
+        "sha256": "4f39c94ee3c3e24122760607454608c0110c317aed7f5c99c81bfd68348d8c62"
+      },
+      {
+        "artifact_id": "art-po03-wa-008-strategy-proposals-json",
+        "bytes": 3054,
+        "content_uri": "workstreams/po03/wave-a/units/wa-008/result/strategy-proposals.json",
+        "logical_name": "strategy-proposals.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:57:58.012146Z",
+        "sha256": "14d8e7c8e2b48e88f50dfe8a800adab2da8fbf334830736cdac0b8dadb16081c"
+      },
+      {
+        "artifact_id": "art-po03-wa-008-test-output-txt",
+        "bytes": 5043,
+        "content_uri": "workstreams/po03/wave-a/units/wa-008/result/test-output.txt",
+        "logical_name": "test-output.txt",
+        "media_type": "text/plain; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:57:58.012146Z",
+        "sha256": "395fe9aaedddd642fc3fc35626265e9ba668862eb04c1cf4219ca654a090d46a"
+      },
+      {
+        "artifact_id": "art-po03-wa-008-test-differential-run-py",
+        "bytes": 27513,
+        "content_uri": "workstreams/po03/wave-a/units/wa-008/result/test_differential_run.py",
+        "logical_name": "test_differential_run.py",
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:57:58.012146Z",
+        "sha256": "4f8a0578a21285c8a2724cea17a3e3d9a9a719e7390736bec129631883d1d393"
+      },
+      {
+        "artifact_id": "art-po03-wa-008-tests-json",
+        "bytes": 8687,
+        "content_uri": "workstreams/po03/wave-a/units/wa-008/result/tests.json",
+        "logical_name": "tests.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:57:58.012146Z",
+        "sha256": "2545d280cf961a7821a6a8a41f7928d281a1fd53178bc0f1ebd0b3615664c86d"
+      }
+    ],
+    "attempt": {
+      "attempt_id": "PO03-WA-008-A02",
+      "checkpoint_seq": 1,
+      "fence_token": 2,
+      "heartbeat_at": "2026-08-22T09:00:01.122908Z",
+      "idempotency_key": "po03:100bc2079ced:wa-008:a02",
+      "lease_id": "lease-po03-wa-008-a02",
+      "provider_run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+      "worker_id": "best-of-n-runner-bc-b1956656-wa-008-a02"
+    },
+    "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+    "completion_actor": null,
+    "immutable_input_manifest_sha256": "0750a47cff491c5dc64cbd24629337ac6484326f88be11a00a8461f862fdddb2",
+    "independent_acceptance": {
+      "receipt_uri": null,
+      "reviewer_id": null,
+      "state": "NOT_TESTED"
+    },
+    "obzio_state": "RESULT_COMMITTED",
+    "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+    "provider_state": "RUNNING",
+    "result_transaction": {
+      "artifact_count": 17,
+      "committed_at": "2026-08-22T09:00:01.122908Z",
+      "manifest_sha256": "4fda4910bdd794e66a71ae89b776ee14cc7071eabaff1b619dc8754beffca5eb",
+      "manifest_uri": "workstreams/po03/wave-a/units/wa-008/result/artifact-manifest.json",
+      "parent_ingested_at": null,
+      "result_commit_id": "84404cfcc2286d5a5ce4a988837cf51ece60c8be",
+      "result_txn_id": "txn-po03-wa-008-a02",
+      "state": "COMMITTED",
+      "total_bytes": 206275,
+      "verified_at": "2026-08-22T08:57:58.012146Z"
+    },
+    "task_id": "PO03-WA-008"
+  },
+  "wave_id": "PO03-WAVE-A"
+}
