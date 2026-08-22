@@ -93,25 +93,52 @@ def ingest(
 ) -> None:
     route = repo / f"workstreams/po03/runs/wave-a/{route_id}"
     nested_route_metadata = (route / "_route/route-manifest.json").exists()
+    custody_route_metadata = (route / "_route/manifest.json").exists()
     uppercase_route_metadata = (route / "MANIFEST.json").exists()
     route_receipt_metadata = uppercase_route_metadata and (route / "ROUTE-RECEIPT.json").exists()
-    metadata_root = route / "_route" if nested_route_metadata else route
+    metadata_root = route / "_route" if nested_route_metadata or custody_route_metadata else route
     route_manifest_path = (
         route / "MANIFEST.json"
         if uppercase_route_metadata
-        else metadata_root / "route-manifest.json"
+        else metadata_root / ("manifest.json" if custody_route_metadata else "route-manifest.json")
     )
     execution_receipt_path = (
         route / ("ROUTE-RECEIPT.json" if route_receipt_metadata else "RECEIPT.json")
         if uppercase_route_metadata
-        else metadata_root / "execution-receipt.json"
+        else metadata_root / ("receipt.json" if custody_route_metadata else "execution-receipt.json")
     )
     route_manifest = read_json(route_manifest_path)
     execution = read_json(execution_receipt_path)
 
-    if execution.get("route_id") != route_id:
+    if not custody_route_metadata and execution.get("route_id") != route_id:
         raise ValueError("execution receipt route mismatch")
-    if route_receipt_metadata:
+    if custody_route_metadata:
+        task_ids = sorted(
+            path.name
+            for path in route.glob("PO03-WA-*")
+            if path.is_dir() and (path / "result.json").is_file()
+        )
+        if len(task_ids) != 8:
+            raise ValueError("custody route must contain eight task slots")
+        producer_state = execution.get("status")
+        staged_state = (
+            "RESULT_STAGED"
+            if all(read_json(route / task_id / "result.json").get("obzio_state") == "RESULT_STAGED"
+                   for task_id in task_ids)
+            else None
+        )
+        acceptance_claimed = any(
+            read_json(route / task_id / "result.json")
+            .get("independent_acceptance", {})
+            .get("state")
+            != "NOT_TESTED"
+            for task_id in task_ids
+        )
+        review_receipts = list((route / "_review/receipts").glob("*.json"))
+        if any(read_json(path).get("terminal_acceptance_claimed") is not False
+               for path in review_receipts):
+            raise ValueError("challenger review claimed terminal acceptance")
+    elif route_receipt_metadata:
         material_attempts = execution.get("material_attempts")
         if not isinstance(material_attempts, list) or not material_attempts:
             raise ValueError("route material attempt records missing")
@@ -161,7 +188,12 @@ def ingest(
     if outside:
         raise ValueError(f"producer wrote outside route ownership: {outside}")
 
-    if route_receipt_metadata:
+    if custody_route_metadata:
+        expected_route_sha = execution["manifest"]["sha256"]
+        expected_route_bytes = execution["manifest"]["bytes"]
+        if execution["manifest"].get("uri") != route_manifest_path.relative_to(repo).as_posix():
+            raise ValueError("route manifest URI mismatch")
+    elif route_receipt_metadata:
         expected_route_sha = execution["route_manifest_sha256"]
         expected_route_bytes = route_manifest_path.stat().st_size
         if execution.get("route_manifest_uri") != route_manifest_path.relative_to(repo).as_posix():
@@ -173,7 +205,42 @@ def ingest(
         expected_route_sha = execution["route_manifest"]["sha256"]
         expected_route_bytes = execution["route_manifest"]["bytes"]
     verify_bytes(route_manifest_path, expected_route_sha, expected_route_bytes)
-    if route_receipt_metadata:
+    manifest_uri = route_manifest_path.relative_to(repo).as_posix()
+    receipt_uri = execution_receipt_path.relative_to(repo).as_posix()
+    if committed_path_sha(repo, producer_tip, manifest_uri) != expected_route_sha:
+        raise ValueError("producer tip does not contain the claimed route manifest")
+    if committed_path_sha(repo, producer_tip, receipt_uri) != digest(execution_receipt_path.read_bytes()):
+        raise ValueError("producer tip does not contain the execution receipt")
+    if custody_route_metadata:
+        route_artifacts = route_manifest.get("artifacts")
+        if not isinstance(route_artifacts, list):
+            raise ValueError("custody route manifest has no artifacts")
+        artifact_by_path = {item["path"]: item for item in route_artifacts}
+        if len(artifact_by_path) != len(route_artifacts):
+            raise ValueError("custody route manifest has duplicate paths")
+        tasks = []
+        for task_id in task_ids:
+            task_dir = route / task_id
+            result_uri = (task_dir / "result.json").relative_to(repo).as_posix()
+            task_manifest_uri = (task_dir / "manifest.json").relative_to(repo).as_posix()
+            task_manifest = read_json(task_dir / "manifest.json")
+            tasks.append(
+                {
+                    "task_id": task_id,
+                    "result_sha256": artifact_by_path[result_uri]["sha256"],
+                    "result_bytes": artifact_by_path[result_uri]["bytes"],
+                    "manifest_sha256": artifact_by_path[task_manifest_uri]["sha256"],
+                    "manifest_bytes": artifact_by_path[task_manifest_uri]["bytes"],
+                    "result_commit_id": task_evidence_commit(repo, producer_tip, result_uri),
+                    "disposition": task_manifest["disposition"],
+                }
+            )
+        artifacts = [
+            {"path": item["path"], "sha256": item["sha256"], "bytes": item["bytes"]}
+            for item in route_artifacts
+        ]
+        expected_artifact_count = route_manifest.get("artifact_count")
+    elif route_receipt_metadata:
         tasks = execution.get("material_attempts")
         if not isinstance(tasks, list) or len(tasks) != 8:
             raise ValueError("route material task count mismatch")
@@ -272,10 +339,20 @@ def ingest(
     metric_ids = {row["task_id"] for row in metrics}
     new_metrics: list[dict[str, Any]] = []
     generated: list[dict[str, Any]] = []
-    route_function = execution.get("function", route_manifest.get("function", "research-reproduction"))
+    if custody_route_metadata:
+        first_input = read_json(
+            repo / f"workstreams/po03/control/tasks/{tasks[0]['task_id']}/input.json"
+        )
+        route_function = first_input["function"]
+    else:
+        route_function = execution.get(
+            "function", route_manifest.get("function", "research-reproduction")
+        )
     exact_model = execution.get("exact_model_configuration") or route_manifest.get(
         "exact_model_configuration"
     )
+    if custody_route_metadata:
+        exact_model = first_input["exact_model_configuration"]
     if not exact_model:
         raise ValueError("exact model configuration missing")
     reasoning = "high" if exact_model.startswith("claude-") else "xhigh"
@@ -311,7 +388,9 @@ def ingest(
             task.get("result_bytes", staged_path.stat().st_size),
         )
 
-        if route_receipt_metadata:
+        if custody_route_metadata:
+            evidence_commit = task["result_commit_id"]
+        elif route_receipt_metadata:
             evidence_commit = task_evidence_commit(
                 repo, producer_tip, staged_path.relative_to(repo).as_posix()
             )
@@ -326,7 +405,9 @@ def ingest(
         if committed_path_sha(repo, evidence_commit, result_path_text) != task["result_sha256"]:
             raise ValueError(f"{task_id}: evidence commit does not contain staged result")
 
-        if route_receipt_metadata:
+        if custody_route_metadata:
+            task_manifest_path = task_dir / "manifest.json"
+        elif route_receipt_metadata:
             task_manifest_path = task_dir / "manifest.json"
         elif uppercase_route_metadata:
             task_manifest_path = repo / task["manifest_uri"]
@@ -339,7 +420,7 @@ def ingest(
             task_manifest_path,
             (
                 task["manifest_sha256"]
-                if nested_route_metadata or uppercase_route_metadata
+                if nested_route_metadata or uppercase_route_metadata or custody_route_metadata
                 else task["artifact_manifest_sha256"]
             ),
             (
@@ -348,7 +429,7 @@ def ingest(
                     if route_receipt_metadata
                     else task["manifest_bytes"]
                 )
-                if nested_route_metadata or uppercase_route_metadata
+                if nested_route_metadata or uppercase_route_metadata or custody_route_metadata
                 else task["artifact_manifest_bytes"]
             ),
         )
@@ -416,7 +497,11 @@ def ingest(
         )
 
         if task_id not in metric_ids:
-            source_path = task_manifest_path if nested_route_metadata or uppercase_route_metadata else task_dir / "source.json"
+            source_path = (
+                task_manifest_path
+                if nested_route_metadata or uppercase_route_metadata or custody_route_metadata
+                else task_dir / "source.json"
+            )
             new_metrics.append(
                 {
                     "task_id": task_id,
