@@ -1,0 +1,36 @@
+$ python3 -I blind_review.py --repo-root . --out-dir <unit> --exclude <own 8 units>
+{
+  "calibration": {
+    "blind_arm_accuracy": 1.0,
+    "blind_arm_correct": 7,
+    "ground_truth_basis": "Ground truth is known by construction only for injected-defect candidates. The unmodified candidates carry no independent label, because the rule that would label them is the same rule the blind reviewer applies, so counting them would be circular.",
+    "labelled_candidate_count": 7,
+    "narrative_arm_accuracy": 0.42857142857142855,
+    "narrative_arm_correct": 3,
+    "unlabelled_candidate_count": 45
+  },
+  "corpus_size": 52,
+  "decision_changed": [],
+  "harness_version": "PO03-BLIND-REVIEW-v1",
+  "hypothesis": {
+    "basis": "The hypothesis holds only if the two arms actually diverge on at least one candidate and the blind arm is strictly more accurate on the ground-truth-labelled candidates.",
+    "better_calibrated": true,
+    "diverged_candidates": [
+      "po03-wa-b2e7-001-clean-clone-runner::I01-corrupt-artifact-digest",
+      "po03-wa-b2e7-001-clean-clone-runner::I02-remove-tests-evidence",
+      "po03-wa-b2e7-002-hidden-state-detector::I03-manifest-result-disagreement",
+      "po03-wa-b2e7-005-deterministic-rerun-equivalence::I06-mutable-artifact-locator"
+    ],
+    "divergence_count": 4,
+    "hypothesis": "A reviewer that receives frozen criteria without producer conclusions reaches a different and better-calibrated verdict than one that sees the narrative.",
+    "verdict": "PASS"
+  },
+  "injected_candidate_count": 7,
+  "observed_at": "2026-08-22T07:46:00Z",
+  "observed_candidate_count": 45
+}
+DIVERGED po03-wa-b2e7-001-clean-clone-runner::I01-corrupt-artifact-digest: blind=REJECT narrative=ACCEPT blind_failed=['artifacts_read_back_byte_identical']
+DIVERGED po03-wa-b2e7-001-clean-clone-runner::I02-remove-tests-evidence: blind=REJECT narrative=ACCEPT blind_failed=['tests_or_reproduction_evidence_present']
+DIVERGED po03-wa-b2e7-002-hidden-state-detector::I03-manifest-result-disagreement: blind=REJECT narrative=ACCEPT blind_failed=['manifest_agrees_with_result']
+DIVERGED po03-wa-b2e7-005-deterministic-rerun-equivalence::I06-mutable-artifact-locator: blind=REJECT narrative=ACCEPT blind_failed=['artifact_locators_name_immutable_objects', 'artifacts_read_back_byte_identical']
+exit=0
