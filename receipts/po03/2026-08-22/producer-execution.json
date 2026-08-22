@@ -23,11 +23,29 @@
     "expired_leases": 0,
     "orphaned_units": 0,
     "provider_completed_uncommitted": 0,
-    "units_by_state": { "RUNNING": 43, "PARENT_INGESTED": 20, "FAILED_TERMINAL": 11, "LEASED": 9 },
+    "units_by_state": {
+      "RUNNING": 43,
+      "PARENT_INGESTED": 20,
+      "FAILED_TERMINAL": 11,
+      "LEASED": 9
+    },
     "units_set_to_COMPLETED": 0,
     "completion_note": "No unit has been set to COMPLETED. Ingestion verified 20 units by artifact read-back, but the coordinator withheld completion after cohort a2 proved that the completion path itself was unsound. Completion resumes only after the remediation cohort closes the actor-authority and commit-verification defects.",
-    "cohorts_returned": ["a2", "a6"],
-    "cohorts_in_flight": ["a1", "a3", "a4", "a5", "a7", "a8", "a9", "a10", "a11"]
+    "cohorts_returned": [
+      "a2",
+      "a6"
+    ],
+    "cohorts_in_flight": [
+      "a1",
+      "a3",
+      "a4",
+      "a5",
+      "a7",
+      "a8",
+      "a9",
+      "a10",
+      "a11"
+    ]
   },
   "reproduced_defects_in_the_coordinator_control_plane": [
     {
@@ -67,11 +85,30 @@
     },
     {
       "id": "DEF-05",
-      "severity": "HIGH",
+      "severity": "CRITICAL",
       "found_by": "coordinator, on live subordinate data during ingestion",
       "defect": "The ingestion driver materialises a subordinate branch at HEAD rather than at the commit each result declares, so it was not reading back by immutable SHA. Unit a2-u01 was rejected for a fault_lab.py hash mismatch caused solely by a later commit on the same branch, not by any dishonesty.",
       "remediation_unit": "a11-u05",
-      "state": "OPEN_UNDER_REMEDIATION"
+      "state": "OPEN_UNDER_REMEDIATION",
+      "live_recurrences": 2,
+      "fixtures_for_remediation": [
+        {
+          "unit": "a2-u01",
+          "artifact": "workstreams/po03/faults/fault_lab.py",
+          "cause": "declared commit correct; branch advanced; rejected at HEAD"
+        },
+        {
+          "unit": "a6-u05",
+          "artifact": "workstreams/po03/tests/test_a6_readback_audit.py",
+          "cause": "declared commit correct; producer later fixed an unrelated false-red test in the same file; rejected at HEAD",
+          "verified_at_declared_commit": "3378721ca42a8bd4bd0e6e04c4d2d9ea5ba4c4e9",
+          "recorded_hash_matches_declared_commit": true,
+          "attributed_to": "coordinator",
+          "producer_at_fault": false
+        }
+      ],
+      "escalation_reason": "Escalated from HIGH. This defect has now falsely rejected honest work from two different cohorts in two different families. A verification step that rejects correct results is worse than no verification, because it destroys trust in the one control that distinguishes a real result from a claimed one.",
+      "remediation_note": "a11-u05 now has two real fixtures rather than one."
     },
     {
       "id": "DEF-06",
