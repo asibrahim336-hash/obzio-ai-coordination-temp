@@ -121,7 +121,12 @@ class TransactionalFactoryTests(unittest.TestCase):
             "po03-test-task",
             "LEASED",
             actor="integration-controller",
-            details={"fence_token": 1, "worker_id": "worker-1", "provider_run_id": "reservation-1"},
+            details={
+                "fence_token": 1,
+                "prior_state": "CREATED",
+                "worker_id": "worker-1",
+                "provider_run_id": "reservation-1",
+            },
             observed_at="2026-08-22T07:00:00Z",
         )
         self.assertEqual([], MODULE.verify_chain("po03-test-task"))
@@ -137,7 +142,12 @@ class TransactionalFactoryTests(unittest.TestCase):
             "po03-test-task",
             "LEASED",
             actor="integration-controller",
-            details={"fence_token": 1, "worker_id": "worker-1", "provider_run_id": "reservation-1"},
+            details={
+                "fence_token": 1,
+                "prior_state": "CREATED",
+                "worker_id": "worker-1",
+                "provider_run_id": "reservation-1",
+            },
             observed_at="2026-08-22T07:00:00Z",
         )
         document = json.loads(event.read_text(encoding="utf-8"))
