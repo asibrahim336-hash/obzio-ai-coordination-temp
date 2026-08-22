@@ -1,0 +1,71 @@
+{
+  "task_id": "po03-wa-b2e7-053-reproduction-outbox-durability",
+  "cohort": "c7",
+  "producer": "gpt-5.6-sol-xhigh",
+  "ref_reviewed": "refs/heads/po03/wa-b2e7-c7",
+  "reviewer_id": "po03-reviewer-b-claude-sonnet-5",
+  "protocol": {
+    "step1_frozen_acceptance_sha256_recorded_before_disclosure": "41d74698c96b1674bbc80781f822be261fd72c619727c826318fdfc9575ee3e9",
+    "step1_frozen_hypothesis": "A transactional outbox with read-back verification eliminates the lost-result class that cost the PO-02 Code-2 return.",
+    "step2_archive_command": "git archive po03/wa-b2e7-c7 workstreams/po03/attempts/po03-wa-b2e7-053-reproduction-outbox-durability | tar -x -C /home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-053-reproduction-outbox-durability",
+    "step3_independent_execution": "executed test_outbox_durability.py and experiment.py myself under python3 -I before reading manifest.json/result.json"
+  },
+  "independent_execution": {
+    "tests_command": "python3 -I test_outbox_durability.py -v",
+    "tests_raw_output": "test_outbox_recovers_all_injected_losses (__main__.OutboxDurabilityTests.test_outbox_recovers_all_injected_losses) ... ok\ntest_readback_refuses_corruption (__main__.OutboxDurabilityTests.test_readback_refuses_corruption) ... ok\n\n----------------------------------------------------------------------\nRan 2 tests in 0.076s\n\nOK",
+    "tests_exit_code": 0,
+    "experiment_command": "python3 -I experiment.py --output /tmp/repro_053.json",
+    "experiment_raw_output_summary": {
+      "report_only_recovered_result_fraction": 0.63,
+      "outbox_recovered_result_fraction": 1.0,
+      "hash_mismatches": 0,
+      "losses_injected": 74,
+      "seed": 53053,
+      "sample_size": 200,
+      "verdict": "PASS"
+    },
+    "reproducibility": "EXACT MATCH -- re-running experiment.py with the committed preregister.json (seed 53053) in a fresh python3 -I process reproduced 0.63 / 1.0 / 74 losses / 0 mismatches bit-for-bit against the committed measurement.json."
+  },
+  "positive_finding": "Unlike units 050/051, this unit's test_readback_refuses_corruption actually corrupts a committed file's bytes and asserts verified_readback() raises a ValueError with 'hash mismatch' -- I confirmed this myself. The corruption-detection mechanism is genuinely real, not vacuous or decorative.",
+  "cross_reference_investigation": {
+    "description": "The falsifiable hypothesis explicitly names 'the lost-result class that cost the PO-02 Code-2 return', which is not a generic abstraction -- it refers to a specific, separately-frozen incident defined elsewhere in this same commission's control tasks. I located and read (read-only) workstreams/po03/control/tasks/po03-wa-b2e7-048-provider-runtime-loss-and-code2-fixture/input.json to establish objectively, not speculatively, what that lost-result class actually is.",
+    "unit_048_falsifiable_hypothesis_verbatim": "Entire provider-runtime loss produces PROVIDER_COMPLETED_UNCOMMITTED, never COMPLETED, and the lost PO-02 Code-2 return is a permanent fault fixture rather than a deliverable.",
+    "conclusion": "The PO-02 Code-2 lost-result class is specifically an ENTIRE PROVIDER-RUNTIME LOSS (the whole worker process/VM disappearing), not merely a dropped notification message while the rest of the runtime, including local disk, remains intact and later re-readable by the same unbroken process."
+  },
+  "construction_audit": {
+    "description": "experiment.py's run() writes the 'outbox' record to a local scratch directory (ROOT / '.scratch') within the SAME still-running python process, then immediately calls verified_readback() on that SAME still-alive filesystem, in the SAME process, with no simulated interruption, crash, or process/runtime termination anywhere in the code. The `loss` boolean computed via rng.random() < loss_probability is used ONLY to set report_recovered = not loss for the report_only arm; it is never passed to commit_outbox or verified_readback in any way. Algebraically, `outbox_recovered = (not loss and readback == record) or (loss and readback == record)` simplifies to exactly `readback == record` regardless of loss, meaning the outbox arm's fate is provably never coupled to the loss event that is supposed to represent the Code-2 failure class at all.",
+    "mismatch_with_named_failure_class": "Since the named failure class (per unit 048) is 'entire provider-runtime loss', a faithful reproduction of the outbox pattern's benefit would need to model the runtime that WROTE the outbox record being terminated/lost, and then a SEPARATE later process or durable medium (e.g. a git commit reachable from a different machine, matching this very commission's own 'result is committed and read back by a different process from an immutable object id' acceptance criterion) recovering the record despite that termination. Instead, this reproduction keeps the same process alive throughout, writes to an ephemeral local temp directory that would be equally vulnerable to 'entire provider-runtime loss' as the notification channel, and reads it back synchronously in the same unbroken process. This is a substantially weaker and easier-to-satisfy scenario than the one the hypothesis actually names.",
+    "hidden_case": {
+      "description": "Built a coupled-failure variant of run() in which, whenever the 'return loss' event fires, there is also a correlated (but not certain) chance that the SAME underlying root cause (representing a shared-fate event like a whole-runtime/VM loss) destroys the just-committed local outbox file before read-back -- directly modeling the actual named PO-02 Code-2 failure class (entire provider-runtime loss) rather than an isolated notification-channel drop.",
+      "command": "python3 -I one-off script reimplementing run() with a correlated_destroy_probability=0.3 applied only when loss is True, deleting the outbox file via path.unlink() before attempting read-back, using the SAME seed/sample_size/loss_probability as the committed preregister.json",
+      "raw_output": "HIDDEN CASE: with a 30% chance that the same event causing return-channel loss ALSO destroys the just-committed local outbox file (e.g. shared-root-cause VM/disk loss), outbox recovery drops to: 0.875\nHIDDEN CASE: files destroyed under the coupled-failure model: 25 out of 200\nHIDDEN CASE: the committed experiment.py has NO code path that can ever produce this outcome -- its `loss` boolean is purely cosmetic on the outbox side (mathematically equivalent to `readback == record` always).",
+      "outcome": "FAILS to preserve the claimed 1.000 recovery once the loss event is allowed to share any root cause with the outbox's own storage medium, which is exactly the scenario the named PO-02 Code-2 incident (entire provider-runtime loss) describes.",
+      "analysis": "The committed experiment can only ever report outbox_recovered_result_fraction == 1.0, for any seed and any loss_probability, because the outbox's file write/read cycle is structurally isolated from the `loss` variable. This is the same 'arm defined so it must win' pattern found in units 050 and 051, here obscured by a superficially real-looking file-I/O implementation (fsync + atomic rename + hash-verified read-back, which IS genuine local-durability engineering) that nonetheless never faces the actual failure class -- runtime loss -- that the hypothesis is about."
+    },
+    "preregistration_bindingness": "preregister.json's accept_when (outbox fraction == 1.0 and report_only fraction < 1.0 and mismatches == 0) is satisfied with certainty for any seed, because outbox_recovered is provably independent of loss (see algebraic simplification above) and report_recovered is provably equal to `not loss`, which is < 1.0 whenever loss_probability > 0. The preregistration does not constrain the outcome; the result is fixed the moment experiment.py's functions were written, before any seed was chosen."
+  },
+  "independent_verdict": "FAIL",
+  "independent_verdict_reasoning": "The literal required_deliverable ('a reproduction contrasting report-only return with outbox-plus-readback under injected loss, reporting recovered-result fractions') is nominally satisfied, and the local-durability engineering (fsync, atomic rename, hash-verified read-back with genuine corruption detection) is real, not vacuous. However, the falsifiable_hypothesis specifically claims elimination of 'the lost-result class that cost the PO-02 Code-2 return', which cross-referencing unit 048's own frozen hypothesis shows is an entire provider-runtime loss. The reproduction never simulates runtime/process loss at all -- it keeps the writer and reader in the same unbroken process and applies 'loss' only to an unrelated notification-channel flag that is provably disconnected from the outbox's own fate. My hidden case shows that under the actual named failure class (a shared root cause that can also destroy the local outbox medium), the claimed 1.000 recovery is not preserved. This is a real effect for a narrower, easier claim (durable local write survives a purely notification-only failure) mischaracterized as evidence for a broader, harder claim (recovery from entire provider-runtime loss) that it was never capable of testing.",
+  "hidden_case": {
+    "summary": "See construction_audit.hidden_case above: under a correlated/shared-root-cause failure model matching the actual named PO-02 Code-2 failure class (entire provider-runtime loss, per unit 048's own frozen hypothesis), outbox recovery drops from the claimed 1.000 to 0.875, and the committed code has no path that could ever represent this.",
+    "outcome": "FAILS -- the specific named failure class is not what was actually tested."
+  },
+  "producer_claim": {
+    "verdict": "PASS",
+    "evidence_text": "Executed 200 matched trials with 74 injected return losses: report-only recovered 0.630, fsynced atomic outbox plus hash read-back recovered 1.000 with zero hash mismatches; 2 tests passed.",
+    "manifest_artifact_count": 5,
+    "producer_disclosed_limitation": "Unavailable PO-02 Code-2 bytes were not reconstructed; the sanitized reproduction injects the same lost-return class."
+  },
+  "agreement": "DIVERGE",
+  "divergence_reason": "Producer's disclosed limitation ('injects the same lost-return class') asserts the reproduction models the same failure class as the historical Code-2 incident. Cross-referencing unit 048's own frozen hypothesis (read as background context, not modified) shows the Code-2 incident's failure class is specifically 'entire provider-runtime loss', a fundamentally different and harder failure mode than the isolated notification-channel-only loss actually simulated here (writer and reader remain the same unbroken process throughout; the local outbox medium is never subjected to the same fate as the lost notification). My hidden case demonstrates the claimed 1.000 recovery does not survive once the loss event is allowed to share a root cause with the outbox's own storage, which is the realistic case for a true runtime loss. The producer's PASS therefore overstates what was actually demonstrated.",
+  "additional_findings": {
+    "no_committed_pycache": "This unit's committed subtree contains no __pycache__ bytecode artifacts.",
+    "vacuous_test_check": {
+      "performed": true,
+      "method": "Checked whether stubbing commit_outbox/verified_readback to bypass real file I/O (e.g. returning success unconditionally) would still pass. test_readback_refuses_corruption explicitly corrupts real bytes on disk and asserts a real ValueError is raised, which a naive stub would fail.",
+      "result": "NOT_VACUOUS for the local file-I/O mechanics -- the hash-verification code genuinely works. The defect found is at the level of experimental design (what failure class is modeled), not test vacuity."
+    }
+  },
+  "disposition_recommendation": "REJECTED",
+  "disposition_reason": "The engineering artifact (atomic fsync + hash-verified read-back) is real and its corruption detection genuinely fires, which is commendable. But the specific falsifiable hypothesis names a specific historical failure class (entire provider-runtime loss, per this same commission's unit 048), and the reproduction structurally cannot ever model that class because the outbox medium and the notification channel are never coupled to a shared point of failure. The reported 1.000-vs-0.630 delta is real for a narrower, unstated, and easier claim, and should have been recorded as addressing only that narrower claim (or refuted/NOT_YET against the actual named claim) rather than restated as a PASS against the Code-2-specific hypothesis."
+}
