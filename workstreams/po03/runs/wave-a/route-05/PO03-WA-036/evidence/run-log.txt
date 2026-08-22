@@ -1,0 +1,54 @@
+PO03-WA-036 execution evidence
+captured_at_utc: 2026-08-22T07:16:30Z
+python: Python 3.12.3
+platform: Linux 6.12.94+ x86_64
+worktree_head: 44de68e52a0baa480a8a8c0b95fd5071391dd4a1
+base_commit: 44de68e52a0baa480a8a8c0b95fd5071391dd4a1
+cwd: workstreams/po03/runs/wave-a/route-05/PO03-WA-036
+
+$ python3 -m unittest discover -s tests -p 'test_*.py' -v
+test_bad_root_exits_two (test_manifest_reconciler.CommandLineTests.test_bad_root_exits_two) ... ok
+test_clean_tree_exits_zero (test_manifest_reconciler.CommandLineTests.test_clean_tree_exits_zero) ... ok
+test_corrupted_tree_exits_one (test_manifest_reconciler.CommandLineTests.test_corrupted_tree_exits_one) ... ok
+test_declared_counts_are_reconciled (test_manifest_reconciler.CompletenessTests.test_declared_counts_are_reconciled) ... ok
+test_excluded_paths_are_not_reported_as_extras (test_manifest_reconciler.CompletenessTests.test_excluded_paths_are_not_reported_as_extras) ... ok
+test_omitted_artifact_is_caught_by_the_reverse_check (test_manifest_reconciler.CompletenessTests.test_omitted_artifact_is_caught_by_the_reverse_check)
+A manifest cannot pass by simply not mentioning a file. ... ok
+test_stray_file_is_reported (test_manifest_reconciler.CompletenessTests.test_stray_file_is_reported) ... ok
+test_directory_in_place_of_a_file_is_caught (test_manifest_reconciler.CorruptionDetectionTests.test_directory_in_place_of_a_file_is_caught) ... ok
+test_duplicate_artifact_id_is_caught (test_manifest_reconciler.CorruptionDetectionTests.test_duplicate_artifact_id_is_caught) ... ok
+test_duplicate_content_uri_is_caught (test_manifest_reconciler.CorruptionDetectionTests.test_duplicate_content_uri_is_caught) ... ok
+test_manifested_path_escaping_root_is_caught (test_manifest_reconciler.CorruptionDetectionTests.test_manifested_path_escaping_root_is_caught) ... ok
+test_missing_artifact_is_caught (test_manifest_reconciler.CorruptionDetectionTests.test_missing_artifact_is_caught) ... ok
+test_single_flipped_byte_is_caught_with_matching_length (test_manifest_reconciler.CorruptionDetectionTests.test_single_flipped_byte_is_caught_with_matching_length) ... ok
+test_symlink_in_place_of_a_file_is_caught (test_manifest_reconciler.CorruptionDetectionTests.test_symlink_in_place_of_a_file_is_caught) ... ok
+test_truncation_is_reported_as_a_byte_mismatch (test_manifest_reconciler.CorruptionDetectionTests.test_truncation_is_reported_as_a_byte_mismatch) ... ok
+test_uppercase_hash_is_non_canonical (test_manifest_reconciler.CorruptionDetectionTests.test_uppercase_hash_is_non_canonical) ... ok
+test_chunk_size_does_not_change_the_result (test_manifest_reconciler.HonestManifestTests.test_chunk_size_does_not_change_the_result) ... ok
+test_hash_and_count_come_from_the_same_stream (test_manifest_reconciler.HonestManifestTests.test_hash_and_count_come_from_the_same_stream) ... ok
+test_untampered_manifest_reconciles (test_manifest_reconciler.HonestManifestTests.test_untampered_manifest_reconciles) ... ok
+test_artifact_without_content_uri_is_refused (test_manifest_reconciler.MalformedManifestTests.test_artifact_without_content_uri_is_refused) ... ok
+test_invalid_json_is_refused (test_manifest_reconciler.MalformedManifestTests.test_invalid_json_is_refused) ... ok
+test_missing_artifacts_array_is_refused (test_manifest_reconciler.MalformedManifestTests.test_missing_artifacts_array_is_refused) ... ok
+test_non_object_root_is_refused (test_manifest_reconciler.MalformedManifestTests.test_non_object_root_is_refused) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 0.515s
+
+OK
+[exit code: 0]
+
+$ python3 src/manifest_reconciler.py --manifest manifest.json --root slot
+ok   MATCH                  a.txt  (hash and byte count re-derived from disk)
+ok   MATCH                  b.bin  (hash and byte count re-derived from disk)
+summary: examined=2 matched=2 unreconciled=0 bytes=70
+[exit code: 0]
+
+$ python3 src/manifest_reconciler.py --manifest manifest.json --root slot   # after tampering
+FAIL BYTES_MISMATCH         a.txt  (claimed 6 bytes, observed 5)
+FAIL SHA_MISMATCH           b.bin  (byte count agrees but content differs)
+FAIL UNMANIFESTED_FILE      stray.tmp  (present on disk, absent from manifest)
+FAIL TOTAL_BYTES_MISMATCH   -  (manifest declares 70, observed 69)
+summary: examined=2 matched=0 unreconciled=2 bytes=69
+[exit code: 1]
+
