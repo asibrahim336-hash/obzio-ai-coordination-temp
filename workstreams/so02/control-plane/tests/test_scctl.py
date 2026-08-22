@@ -30,7 +30,7 @@ class ControlPlaneTests(unittest.TestCase):
 
     def test_project_rebuilds_from_event_head(self) -> None:
         projection = scctl.project(self.root)
-        self.assertEqual(12, projection["event_count"])
+        self.assertEqual(14, projection["event_count"])
         self.assertEqual("ACTIVE_INTERIM", projection["subjects"]["SCF-01/CGPT-01"]["state"])
 
     def test_event_chain_is_valid(self) -> None:
@@ -181,15 +181,20 @@ class ControlPlaneTests(unittest.TestCase):
         po03 = next(item for item in self.control["protected_workstreams"] if item["workstream_id"] == "PO-03")
         self.assertIn("SHARED_WORKTREE_COLLISION", po03["state"])
         self.assertIn("SHARED_ROUTE_REACTIVATED_ISOLATED_CLONES_ONLY_CEILING_TWO", po03["state"])
-        self.assertIn("INDEPENDENT_ACCEPTANCE_PENDING", po03["state"])
+        self.assertIn("ROUTE_ISOLATION_EVIDENCE_INDEPENDENTLY_ACCEPTED_WITH_LIMITATIONS", po03["state"])
+        self.assertIn("RESULT_REF_FENCING_OPEN", po03["state"])
+        self.assertIn("TWO_REACTIVATED_ISOLATED_CLONE_UNITS_RUNNING", po03["state"])
+        self.assertIn("57_CREATED_NOT_DISPATCHED", po03["state"])
+        self.assertIn("INDEPENDENT_PO03_ACCEPTANCE_PENDING", po03["state"])
         controls = scctl.read_json(self.root / "errors/recurrence-controls.json")
         shared_writer = next(item for item in controls["controls"] if item["error_id"] == "ERR-MULTI-PARENT-SHARED-WRITER")
-        self.assertEqual("LIVE_CANARY", shared_writer["mechanism_maturity"])
+        self.assertEqual("INDEPENDENTLY_ACCEPTED", shared_writer["mechanism_maturity"])
         self.assertEqual(
             "PO03_CONCURRENT_SHARED_WORKTREE_INDEX_BRANCH_COLLISION_OBSERVED",
             shared_writer["latest_live_defect"]["state"],
         )
-        self.assertIn("reactivated only at the proven two-unit ceiling", shared_writer["latest_live_defect"]["control_not_promoted_reason"])
+        self.assertIn("independently verified and reactivated only at the proven two-unit ceiling", shared_writer["latest_live_defect"]["control_not_promoted_reason"])
+        self.assertIn("missing result-ref fencing", shared_writer["latest_live_defect"]["control_not_promoted_reason"])
 
     def test_strategy_decision_event_requires_founder_binding(self) -> None:
         events = scctl.read_jsonl(self.root / "state/events.jsonl")
