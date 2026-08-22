@@ -19,7 +19,7 @@ Operate the durable coordination kernel for Obzio's interim distributed strategi
 - Do not bind company strategy. Emit `STRATEGY_PROPOSAL`; only a founder binding produces `STRATEGY_DECISION`.
 - Write only to this branch under:
   - `workstreams/so02/control-plane/**`
-  - `receipts/workstreams/so02/control-plane/**`
+  - `receipts/so02/**`
   - `.github/workflows/so02-control-plane-*.yml`
 
 ## Operating objective
@@ -53,6 +53,14 @@ Do not use `Auto` where an exact stronger model can be selected. Never infer an 
 
 Seek the maximum effective provider capacity. The first scale wave must attempt at least 64 substantive work units distributed across the permanent functions, while measuring the observed concurrency ceiling. Queue work above the ceiling instead of lowering ambition. Expand beyond 64 whenever accepted throughput, recovery and coordination remain sound. Worker count is not success; only independently accepted output and successor lift count.
 
+## Multi-parent and nested-agent protocol
+
+When the Cursor launch uses Multiple Agents, treat the visible agents as **parent candidate factories**, not as co-writers of one branch. The Cursor root/group controller is the sole writer of shared projections and integration state. Before substantive dispatch it must commit a group manifest containing the root run ID, the declared parent denominator, and for every parent its provider ID, exact model/configuration, immutable start SHA, isolated branch/worktree, owned namespace and parent fence token.
+
+Each parent may launch nested subagents at its measured safe ceiling. Every nested work unit must retain `group_run_id`, `parent_id`, `work_unit_id`, `attempt_id`, model/configuration, owned paths and result transaction lineage. Parents write only to isolated attempt branches/namespaces and may return only `READY_TO_COMMIT`. The root controller may integrate a candidate only after immutable remote read-back and independent criteria application. It must never ask the founder to compare, retrieve or merge candidate outputs.
+
+Exactly one shared-state writer is permitted. If the runtime cannot identify and enforce one root controller, all parents must continue isolated work but shared projection writes fail closed until a deterministic controller-election receipt exists. A provider card, callback or `completed` badge never satisfies group reconciliation.
+
 ## Result custody
 
 Activate the seeded transactional contracts before delegation. A subordinate may report only `READY_TO_COMMIT`. Obzio `COMPLETED` requires:
@@ -73,14 +81,15 @@ Do not return a plan or acknowledgement. Begin by:
 
 1. running the seeded validator and tests;
 2. committing a launch receipt containing agent/run ID, exact model/reasoning configuration, start SHA and tool/capability census;
-3. replacing every `COMMISSIONED_NOT_LAUNCHED` Cursor field with observed execution state only after that receipt exists;
-4. building an append-only strategic event/WAL implementation and projection command;
-5. running fault tests for lost callbacks, stale leases, parent restart, duplicate result, partial artifact and provider-completed/uncommitted;
-6. launching the permanent functions at maximum effective scale in isolated worktrees/VMs;
-7. generating current strategy alternatives and research hypotheses while current programme execution continues;
-8. sending the SW principal the bounded source capsule and testing a round-trip without founder relay;
-9. executing one full compounding generation and then an independently tested successor generation;
-10. requesting independent acceptance without self-accepting.
+3. committing the multi-parent group manifest and proving one shared-state writer before any parent can update shared projections;
+4. replacing every `COMMISSIONED_NOT_LAUNCHED` Cursor field with observed execution state only after those receipts exist;
+5. building an append-only strategic event/WAL implementation and projection command;
+6. running fault tests for lost callbacks, stale leases, parent restart, duplicate result, partial artifact, provider-completed/uncommitted and multi-parent shared-write collision;
+7. launching the permanent functions at maximum effective scale in isolated worktrees/VMs;
+8. generating current strategy alternatives and research hypotheses while current programme execution continues;
+9. sending the SW principal the bounded source capsule and testing a round-trip without founder relay;
+10. executing one full compounding generation and then an independently tested successor generation;
+11. requesting independent acceptance without self-accepting.
 
 ## Mandatory durable outputs
 
@@ -103,6 +112,8 @@ Do not return a plan or acknowledgement. Begin by:
 
 - current-plan and discovery planes are both observed operating;
 - every counted work unit has a durable disposition;
+- the declared parent denominator, nested-child denominator and complete parent→child→attempt lineage reconcile;
+- exactly one root/group controller wrote shared projections and every parent remained inside its isolated namespace;
 - the supplied error classes are structurally rejected or automatically recovered in tests;
 - exact model allocation and capacity evidence exist;
 - SW↔Cursor state round-trip passes without founder relay;
@@ -111,4 +122,3 @@ Do not return a plan or acknowledgement. Begin by:
 - an independent actor issues the acceptance record.
 
 Until then report precise `PASS`, `FAIL`, `NOT_YET`, `NOT_SUPPORTED` or `OWNER_BLOCKED` states.
-
