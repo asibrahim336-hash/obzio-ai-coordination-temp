@@ -21,22 +21,78 @@
       "current_sha256": "c0c4064668d0a017ddf8018d496368ad484c59e8871d40860ac23f9566f09b59",
       "state": "DRIFTED",
       "causal_commits": [
-        { "sha": "6f5e386", "subject": "fix allowlist path normalisation and cover custody invariants", "legitimate": true },
-        { "sha": "075e854", "subject": "stop ingestion promoting honest failure into a committed state", "legitimate": true }
+        {
+          "sha": "6f5e386",
+          "subject": "fix allowlist path normalisation and cover custody invariants",
+          "legitimate": true
+        },
+        {
+          "sha": "075e854",
+          "subject": "stop ingestion promoting honest failure into a committed state",
+          "legitimate": true
+        }
       ]
     },
     {
       "path": "workstreams/po03/control/path-ownership.json",
       "frozen_sha256": "73f1fb811f18f8dc7c55cb99c82478f2899760f41003141257675ff8fabfa9a7",
-      "current_sha256": "5a8339e9755771aa2347b85520492d917c20bb525a25bf2ec8b5847727d68c13",
       "state": "DRIFTED",
       "causal_commits": [
-        { "sha": "dd2fcc6", "subject": "register the result emitter as coordinator-owned", "legitimate": true },
-        { "sha": "a23583f", "subject": "register po03-contracts.yml as coordinator-owned", "legitimate": true },
-        { "sha": "075e854", "subject": "register the ingestion driver as coordinator-owned", "legitimate": true },
-        { "sha": "b7b1888", "subject": "transfer control-plane tool ownership to po03-worker-a11", "legitimate": true }
+        {
+          "sha": "dd2fcc6",
+          "subject": "register the result emitter as coordinator-owned",
+          "legitimate": true
+        },
+        {
+          "sha": "a23583f",
+          "subject": "register po03-contracts.yml as coordinator-owned",
+          "legitimate": true
+        },
+        {
+          "sha": "075e854",
+          "subject": "register the ingestion driver as coordinator-owned",
+          "legitimate": true
+        },
+        {
+          "sha": "b7b1888",
+          "subject": "transfer control-plane tool ownership to po03-worker-a11",
+          "legitimate": true
+        },
+        {
+          "sha": "773be21",
+          "subject": "register cohort a12 ownership in the same commit that recorded the drift",
+          "legitimate": true,
+          "omitted_from_original_record": true
+        },
+        {
+          "sha": "e19982d",
+          "subject": "register .gitignore and snapshot-coupling ownership",
+          "legitimate": true,
+          "omitted_from_original_record": true
+        }
       ],
-      "note": "Ownership legitimately evolves during a wave, so this file is the clearest case that a mutable-path hash is the wrong pinning primitive for it."
+      "note": "Ownership legitimately evolves during a wave, so this file is the clearest case that a mutable-path hash is the wrong pinning primitive for it.",
+      "current_sha256_RETRACTED": "5a8339e9755771aa2347b85520492d917c20bb525a25bf2ec8b5847727d68c13",
+      "retraction_reason": "This field was a working-tree hash and was stale at birth. It recorded 5a8339e9, but the very commit that introduced this evidence file, 773be21, also registered cohort a12 and therefore changed the file to d242d685 in the same commit. Corrected by cohort a9 in follow-up review. Not replaced with another working-tree hash, because that would repeat the defect this record documents.",
+      "observed_blobs_commit_pinned": [
+        {
+          "commit": "04827c3",
+          "blob_sha256": "73f1fb811f18f8dc7c55cb99c82478f2899760f41003141257675ff8fabfa9a7",
+          "note": "the hash frozen in wave-a-spec.json at dispatch"
+        },
+        {
+          "commit": "773be21",
+          "blob_sha256": "d242d68523658ab4",
+          "truncated": true,
+          "note": "state when this evidence file was added; the value this record originally and wrongly claimed was 5a8339e9"
+        },
+        {
+          "commit": "e19982d",
+          "blob_sha256": "eb2d602c8a3525d0",
+          "truncated": true,
+          "note": "state after integrating four cohorts and registering .gitignore ownership"
+        }
+      ]
     },
     {
       "path": "workstreams/po03/control/model-capability-register.json",
@@ -44,7 +100,11 @@
       "current_sha256": "a52aa48adca764268d5097688374fa03d536e156015327fc1a55a9d808326480",
       "state": "DRIFTED",
       "causal_commits": [
-        { "sha": "a2298fe", "subject": "record the observed concurrency measurement after dispatch", "legitimate": true }
+        {
+          "sha": "a2298fe",
+          "subject": "record the observed concurrency measurement after dispatch",
+          "legitimate": true
+        }
       ]
     },
     {
@@ -53,7 +113,11 @@
       "current_sha256": "58128e2b3b8e8b56ec662400f856db24ad83b026b73b3012aa14234633f6d9a3",
       "state": "DRIFTED",
       "causal_commits": [
-        { "sha": "a23583f", "subject": "fire the contract gate on this run's working branches", "legitimate": true }
+        {
+          "sha": "a23583f",
+          "subject": "fire the contract gate on this run's working branches",
+          "legitimate": true
+        }
       ]
     }
   ],
@@ -79,7 +143,11 @@
       "Version the capsule: a legitimate change to a pinned source issues a new capsule version with explicit lineage, so drift becomes impossible by construction rather than merely detectable.",
       "Adopt cohort a9's CURRENT / DRIFTED / MISSING classifier as a dispatch preflight that refuses to dispatch against a drifted or incomplete capsule."
     ],
-    "remediation_units": ["a12-u02", "a12-u03", "a12-u04"],
+    "remediation_units": [
+      "a12-u02",
+      "a12-u03",
+      "a12-u04"
+    ],
     "state": "OPEN_UNDER_REMEDIATION"
   },
   "second_finding_from_a9": {
@@ -111,5 +179,14 @@
     "state": "NOT_SUPPORTED",
     "detail": "AGENTS.md rule 10 specifies `python scripts/check_operator_taxonomy.py`. No `python` executable exists in this runtime; `python3` does. Reported independently by cohorts a4 and a9.",
     "resolution": "The gate was run as `python3 scripts/check_operator_taxonomy.py` and returned `OPERATOR TAXONOMY CHECK: PASS` with exit 0, active function obzio.function.strategic-operations-orchestration and 9 classified aliases. The requirement is satisfied in substance; the literal launcher name is recorded as an observed runtime boundary rather than treated as a failure or silently ignored."
+  },
+  "recursive_finding": {
+    "found_by": "po03-worker-a9 (gpt-5.6-sol-xhigh), in follow-up review of the coordinator's own drift record",
+    "finding": "The drift record itself drifted. Its 'current' hash for path-ownership.json was stale in the very commit that introduced the record, and its causal-commit list omitted two legitimate changes.",
+    "coordinator_verification": "Confirmed by computing the blob hash of path-ownership.json at each commit that touched it: 73f1fb81 at dispatch, d242d685 at 773be21 where the record was added, eb2d602c at e19982d. The record claimed 5a8339e9, a value that was already superseded when it was written.",
+    "why_it_matters": "This is the strongest available argument for the remediation already dispatched as a12-u02. A working-tree hash is the wrong pinning primitive not because writers are careless but because the primitive cannot express a moving target at all. The defect reproduced inside the document written to describe it, which no amount of care would have prevented.",
+    "generalisation": "Any assertion about shared mutating state must be expressed as (path, blob SHA, commit SHA) or as an invariant. This now has three independent confirmations: the original capsule drift, the false-red test class in a6 and a9, and this record describing the first two.",
+    "disposition": "RETAIN as the motivating case for a12-u02",
+    "credit": "The correction was produced by a cohort auditing the coordinator, which is the review direction the commission requires and which same-family self-review would not have supplied."
   }
 }
