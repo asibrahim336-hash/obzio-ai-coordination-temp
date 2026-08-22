@@ -77,7 +77,7 @@
     "escalated_at": "2026-08-22T07:50:00Z",
     "from": "two cohorts' test bugs",
     "to": "SYSTEMIC_DEFECT_CLASS — the most replicated finding of Wave A",
-    "instance_count": 8,
+    "instance_count": 13,
     "instances_by_cohort_and_family": {
       "po03-worker-a6 (gpt-5.6-luna-high)": [
         "test_missing_result_is_not_invented (fixed)",
@@ -92,6 +92,11 @@
       ],
       "coordinator (claude-opus-5-thinking-max)": [
         "source-capsule-drift.json recorded a current hash that was stale in the commit that introduced it"
+      ],
+      "po03-worker-a8 (claude-opus-5-thinking-high)": [
+        "test_a8_g1_fidelity path-rule tests: the packaged G1 embeds the pre-fix lstrip('./') normaliser and diverges from the live plane on .github/workflows/po03-successor.yml",
+        "test_a8_scores receipt test asserts workstreams/po03/metrics does not exist, which was true on a8's isolated branch and false once a7 merged",
+        "test_a8_lessons residual-boundary test asserts the tracked-bytecode defect is still present, and correctly fails now that it is fixed"
       ]
     },
     "distinct_model_families_affected": 4,
@@ -106,5 +111,14 @@
     },
     "why_the_fix_is_cheap_here": "Cohort a7 already records the exact ledger head it measured against, row_sha256 1db35dd1b4daa67da32f3bb0fffb4998890d435db05cbd6a930480f0c5804fa0 at 319 rows. Its two failing tests can assert reproduction at that recorded head rather than against the live ledger, which is a small change that makes the assertion permanently true and still falsifiable.",
     "successor_relevance": "This is the strongest candidate for a lesson that changes a live mechanism in the G2 successor, because it is independently replicated across four model families and has a concrete mechanical remedy."
+  },
+  "most_valuable_instance": {
+    "test": "test_a8_g1_fidelity.PathRuleTests",
+    "why": "This is the most valuable instance because it is not merely a stale assertion. It caught that a packaged generation drifts from the live system it claims to replicate: G1's copy of the path rules returns 'github/workflows/...' with the leading dot eaten, which is the pre-fix lstrip('./') behaviour, while the live plane correctly rejects the path. A successor generation that claims fidelity to the live factory must either track it or pin the fidelity claim to the commit it packaged from. The test worked exactly as designed.",
+    "routed_to": "po03-worker-a8"
+  },
+  "a8_intentional_backwards_test": {
+    "test": "test_a8_lessons.HygieneMechanismTests.test_the_residual_boundary_is_still_true",
+    "note": "a8 wrote this to read backwards on purpose: it asserts the defect is still present so that a repair fails the test rather than leaving a stale claim standing. It is now failing, which is the signal a8 designed it to send. Zero tracked bytecode remains, so L-13 moves off RETEST. This is the one failing assertion in the wave that is working as intended rather than rotting."
   }
 }

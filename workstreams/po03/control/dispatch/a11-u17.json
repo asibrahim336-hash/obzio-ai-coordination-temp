@@ -1,0 +1,32 @@
+{
+  "acceptance": {
+    "artifact": "typed-grant enforcement plus recurrence tests covering all three kinds and the four reproduced escapes",
+    "assertion": "Ownership is enforced by typed grant using the grants block the coordinator has added to path-ownership.json: dir matches at a path-segment boundary, prefix matches only as a basename prefix within the named directory and never across a separator, and file matches by equality only. Reproduced by the coordinator on 2026-08-22: holding only workstreams/po03/evidence/recovery-fault-matrix.json also admitted that name with .evil, X and .bak appended, and admitted a nested path beneath it. This is the same root cause as the fixed traversal defect one level up, string-prefix identity standing in for object identity. owned_prefixes must keep working for cohorts already executing, so enforcement must be additive and must fail closed if a grant lacks a kind.",
+    "falsified_if": "any path outside a typed grant is admitted, or a legitimate write permitted by owned_prefixes is refused, or an untyped grant is silently treated as permissive"
+  },
+  "acceptance_contract_sha256": "90ee886aec2b7201a48ec23f8cdccbbceaedc82a043b64c71c7789c84486e514",
+  "cohort_id": "a11",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "function_id": "F8",
+  "hypothesis": "check_ownership grants writes to unrelated paths that merely share a string prefix with a file-shaped grant, because it matches by str.startswith with no path-segment boundary and the ownership schema does not distinguish an exact-file grant from an intentional filename-prefix grant.",
+  "idempotency_key": "a11-u17:605efdc6d01eec6b",
+  "immutable_input_manifest_sha256": "605efdc6d01eec6bf533712904863ac95a875256c64d65dc63904e4558521f70",
+  "model": "claude-opus-5-thinking-high",
+  "owned_paths": [
+    "workstreams/po03/tools/control_plane.py",
+    "workstreams/po03/tests/test_control_plane.py",
+    "workstreams/po03/control/units/a11/",
+    "workstreams/po03/tests/test_a11_"
+  ],
+  "owner": "po03-worker-a11",
+  "result_slot": {
+    "branch": "cursor/po03-a11-custody-remediation-ed20",
+    "unit_record": "workstreams/po03/control/units/a11/a11-u17.json"
+  },
+  "source_hashes": {
+    "capsule_base_commit": "d269952",
+    "note": "Pinned by commit, per a12-u02."
+  },
+  "unit_id": "a11-u17",
+  "wave_id": "po03-wave-a"
+}
