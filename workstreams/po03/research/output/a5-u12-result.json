@@ -1,0 +1,122 @@
+{
+  "different_owner_boundary": "The frozen acceptance wording asks for recurrence testing 'by a different owner'. This subagent has no tool to invoke po03-worker-a6, po03-worker-a10 or the coordinator mid-unit. The recurrence actually executed below is independent-PROCESS, independent-SEED re-execution by this same worker (fresh interpreter, no shared in-memory state, a different random seed than the original run, against the byte-identical committed artifacts). True different-owner replay is recorded here as NOT_YET with this exact boundary, not claimed as done.",
+  "mechanism_changes_independently_tested": 2,
+  "retained_count": 2,
+  "u06": {
+    "different_seed_still_finds_the_defect_class": true,
+    "disposition": "RETAIN",
+    "lineage_original_reproduction_row_sha256": "f17ca42325f2fc7175a4a658cb7a3a59ab6d6ee4197cb4e475ee06c7592790e2",
+    "mechanism_change_paths": [
+      "workstreams/po03/tests/test_a5_property_validate_contracts.py",
+      "workstreams/po03/research/lib/property_harness_u06.py"
+    ],
+    "mechanism_change_unit": "a5-u06",
+    "original_seed_replays_exactly": true,
+    "permanent_test": {
+      "command": "/usr/bin/python3 -I -m unittest discover -s workstreams/po03/tests -p test_a5_property_validate_contracts.py",
+      "passed": true,
+      "returncode": 0,
+      "stderr_tail": "...\n----------------------------------------------------------------------\nRan 3 tests in 0.012s\n\nOK"
+    },
+    "qualitative_match": true,
+    "recurrence_at_different_seed": {
+      "existing_missed_property_caught_count": 2,
+      "per_mutant": [
+        {
+          "existing_suite_killed": false,
+          "mutant_id": "M1_artifact_bytes_lower_bound_relaxed",
+          "property_harness_killed": true
+        },
+        {
+          "existing_suite_killed": true,
+          "mutant_id": "M2_total_bytes_reconciliation_tolerant",
+          "property_harness_killed": true
+        },
+        {
+          "existing_suite_killed": false,
+          "mutant_id": "M3_acceptance_terminal_state_relaxed",
+          "property_harness_killed": true
+        },
+        {
+          "existing_suite_killed": true,
+          "mutant_id": "M4_duplicate_artifact_check_disabled",
+          "property_harness_killed": false
+        },
+        {
+          "existing_suite_killed": true,
+          "mutant_id": "M5_self_accept_check_disabled",
+          "property_harness_killed": false
+        }
+      ],
+      "seed": 314159265,
+      "total_mutants": 5
+    },
+    "recurrence_at_original_seed": {
+      "existing_missed_property_caught_count": 2,
+      "per_mutant": [
+        {
+          "existing_suite_killed": false,
+          "mutant_id": "M1_artifact_bytes_lower_bound_relaxed",
+          "property_harness_killed": true
+        },
+        {
+          "existing_suite_killed": true,
+          "mutant_id": "M2_total_bytes_reconciliation_tolerant",
+          "property_harness_killed": true
+        },
+        {
+          "existing_suite_killed": false,
+          "mutant_id": "M3_acceptance_terminal_state_relaxed",
+          "property_harness_killed": true
+        },
+        {
+          "existing_suite_killed": true,
+          "mutant_id": "M4_duplicate_artifact_check_disabled",
+          "property_harness_killed": false
+        },
+        {
+          "existing_suite_killed": true,
+          "mutant_id": "M5_self_accept_check_disabled",
+          "property_harness_killed": false
+        }
+      ],
+      "seed": 20260822,
+      "total_mutants": 5
+    }
+  },
+  "u07": {
+    "different_seed_still_finds_a_violation": true,
+    "disposition": "RETAIN",
+    "lineage_original_reproduction_row_sha256": "957e0ac73a0b8c4dd516d9b2f7228915ab55c17d0abbfb8ebf3ae399876d5183",
+    "mechanism_change_paths": [
+      "workstreams/po03/tests/test_a5_lease_race_sentinel_u07.py",
+      "workstreams/po03/research/lib/lease_race_actors_u07.py",
+      "workstreams/po03/research/lib/dst_scheduler_u07.py"
+    ],
+    "mechanism_change_unit": "a5-u07",
+    "original_seed_replays_exactly": true,
+    "permanent_test": {
+      "command": "/usr/bin/python3 -I -m unittest discover -s workstreams/po03/tests -p test_a5_lease_race_sentinel_u07.py",
+      "passed": true,
+      "returncode": 0,
+      "stderr_tail": "..\n----------------------------------------------------------------------\nRan 2 tests in 0.018s\n\nOK"
+    },
+    "qualitative_match": true,
+    "recurrence_at_different_seed": {
+      "dst_explored": 300,
+      "dst_space_size": 113400,
+      "dst_violations_found": 299,
+      "seed": 733042219,
+      "sequential_explored": 24,
+      "sequential_violations_found": 0
+    },
+    "recurrence_at_original_seed": {
+      "dst_explored": 300,
+      "dst_space_size": 113400,
+      "dst_violations_found": 298,
+      "seed": 20260822,
+      "sequential_explored": 24,
+      "sequential_violations_found": 0
+    }
+  }
+}

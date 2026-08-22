@@ -1,0 +1,77 @@
+{
+  "clean_one_to_one_isolation": {
+    "checkpoint": "NOT isolated -- also defeats duplicate_callback and crash_before_local_record because it is the durable substrate idempotency-key dedup reads from",
+    "fence_token": "isolated (breaks only stale_writer_after_eviction)",
+    "idempotency_key": "NOT isolated -- also required for safe crash-retry, not only duplicate_callback",
+    "outbox": "isolated (breaks only crash_before_local_record)"
+  },
+  "real_control_plane_matches_full_invariant_prediction": true,
+  "real_control_plane_probe": {
+    "duplicate_commit_marked_duplicate": true,
+    "false_completions_detected": [],
+    "fence_after_two_leases": 2,
+    "final_obzio_state": "PARENT_INGESTED",
+    "fresh_commit_ingested": true,
+    "ledger_events_observed": [
+      "LEASED",
+      "LEASED",
+      "FENCE_REJECTED",
+      "PARENT_INGESTED",
+      "DUPLICATE_IGNORED"
+    ],
+    "stale_commit_error": "stale fence token 1 < 2; refusing commit from evicted worker",
+    "stale_commit_rejected": true
+  },
+  "toy_matrix": {
+    "FULL": {
+      "crash_before_local_record": true,
+      "crash_before_local_record__survival_rate": 1.0,
+      "duplicate_callback": true,
+      "duplicate_callback__survival_rate": 1.0,
+      "restart_with_no_checkpoint": true,
+      "restart_with_no_checkpoint__survival_rate": 1.0,
+      "stale_writer_after_eviction": true,
+      "stale_writer_after_eviction__survival_rate": 1.0
+    },
+    "NO_CHECKPOINT": {
+      "crash_before_local_record": false,
+      "crash_before_local_record__survival_rate": 0.0,
+      "duplicate_callback": false,
+      "duplicate_callback__survival_rate": 0.0,
+      "restart_with_no_checkpoint": false,
+      "restart_with_no_checkpoint__survival_rate": 0.0,
+      "stale_writer_after_eviction": true,
+      "stale_writer_after_eviction__survival_rate": 1.0
+    },
+    "NO_FENCE_TOKEN": {
+      "crash_before_local_record": true,
+      "crash_before_local_record__survival_rate": 1.0,
+      "duplicate_callback": true,
+      "duplicate_callback__survival_rate": 1.0,
+      "restart_with_no_checkpoint": true,
+      "restart_with_no_checkpoint__survival_rate": 1.0,
+      "stale_writer_after_eviction": false,
+      "stale_writer_after_eviction__survival_rate": 0.0
+    },
+    "NO_IDEMPOTENCY_KEY": {
+      "crash_before_local_record": false,
+      "crash_before_local_record__survival_rate": 0.0,
+      "duplicate_callback": false,
+      "duplicate_callback__survival_rate": 0.0,
+      "restart_with_no_checkpoint": true,
+      "restart_with_no_checkpoint__survival_rate": 1.0,
+      "stale_writer_after_eviction": true,
+      "stale_writer_after_eviction__survival_rate": 1.0
+    },
+    "NO_OUTBOX": {
+      "crash_before_local_record": false,
+      "crash_before_local_record__survival_rate": 0.0,
+      "duplicate_callback": true,
+      "duplicate_callback__survival_rate": 1.0,
+      "restart_with_no_checkpoint": true,
+      "restart_with_no_checkpoint__survival_rate": 1.0,
+      "stale_writer_after_eviction": true,
+      "stale_writer_after_eviction__survival_rate": 1.0
+    }
+  }
+}
