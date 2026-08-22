@@ -228,13 +228,34 @@ class Session:
         self.coordinator.restart()
 
     def scan(self, immutable_input: dict[str, Any]) -> None:
-        scanner = RecoveryScanner(self.store, self.world, self.coordinator)
-        report = scanner.scan({fixtures.TASK_ID: immutable_input})
-        self.recovery_actions.extend(report.actions)
-        self.scanner_exhausted = self.scanner_exhausted or report.exhausted
+        """Run the recovery scanner, tolerating a fault during recovery itself.
+
+        Recovery is not privileged: a schedule may interrupt it too, and the
+        scanner must be safe to re-enter after its own crash.
+        """
+        for _ in range(4):
+            try:
+                scanner = RecoveryScanner(self.store, self.world, self.coordinator)
+                report = scanner.scan({fixtures.TASK_ID: immutable_input})
+                self.recovery_actions.extend(report.actions)
+                self.scanner_exhausted = self.scanner_exhausted or report.exhausted
+                return
+            except ProcessLoss as exc:
+                self.crashes.append({"step": "recovery_scan", "point": exc.point, "kind": exc.kind})
+                self.reopen()
+            except ExternalUnavailable:
+                self.crashes.append({"step": "recovery_scan", "point": "external", "kind": "NETWORK_INTERRUPTION"})
+                return
+            except (CustodyRefused, IdempotencyConflict, FencedOut) as exc:
+                self.recovery_actions.append(
+                    {"action": "SCAN_REFUSED", "task_id": fixtures.TASK_ID, "reason": type(exc).__name__}
+                )
+                return
+        self.scanner_exhausted = True
 
 
-def _next_step(state: Any) -> str | None:
+def next_step(state: Any) -> str | None:
+    """The next custody step for a task in ``state``, or None when finished."""
     current = state.obzio_state
     if current == "CREATED":
         return "lease"
@@ -262,7 +283,8 @@ def _next_step(state: Any) -> str | None:
     return None
 
 
-def _run_step(session: Session, step: str, payload: list[tuple[str, bytes]], immutable_input: dict[str, Any]) -> None:
+def run_step(session: Session, step: str, payload: list[tuple[str, bytes]], immutable_input: dict[str, Any]) -> None:
+    """Execute one custody step against the session's current store."""
     task_id = fixtures.TASK_ID
     store = session.store
     if step == "lease":
@@ -415,7 +437,7 @@ def run_cell(
                 break
             steps += 1
             state = session.store.state(task_id)
-            step = _next_step(state)
+            step = next_step(state)
             if step is None:
                 break
             at_target = step == target_step and (
@@ -434,7 +456,7 @@ def run_cell(
                 # transition under test rather than an earlier lookalike.
                 session.injector.arm()
             try:
-                _run_step(session, step, payload, immutable_input)
+                run_step(session, step, payload, immutable_input)
                 if fire_now and cell.point == "environment":
                     event = _apply_environment_fault(session, cell, "after", payload)
                     if event:

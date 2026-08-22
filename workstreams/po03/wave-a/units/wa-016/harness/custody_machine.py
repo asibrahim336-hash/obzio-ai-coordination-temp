@@ -339,12 +339,12 @@ class CustodyStore:
             for name in ("staged_at", "verified_at", "committed_at", "parent_ingested_at", "result_commit_id", "manifest_sha256", "manifest_uri"):
                 if data.get(name) is not None:
                     setattr(state, name, data[name])
+            if data.get("checkpoint_seq") is not None:
+                state.checkpoint_seq = int(data["checkpoint_seq"])
             for entry in data.get("artifacts", ()):
                 state.artifacts[entry["logical_name"]] = ArtifactRecord(**entry)
             for entry in data.get("outbox", ()):
                 state.outbox.append(dict(entry))
-        elif kind == "CHECKPOINT":
-            state.checkpoint_seq = int(data["checkpoint_seq"])
         elif kind == "READBACK":
             for entry in data.get("artifacts", ()):
                 if entry["logical_name"] in state.artifacts:
@@ -472,8 +472,14 @@ class CustodyStore:
             )
             raise CustodyRefused("checkpoint_seq must increase strictly")
         self._require_transition(task_id, "CHECKPOINTED")
-        self._append("TRANSITION", task_id, **{"from": state.obzio_state, "to": "CHECKPOINTED"})
-        self._append("CHECKPOINT", task_id, checkpoint_seq=checkpoint_seq)
+        # The sequence number travels in the same record as the transition.  Two
+        # records would let a crash between them leave a task that claims to be
+        # checkpointed at a sequence it never reached.
+        self._append(
+            "TRANSITION",
+            task_id,
+            **{"from": state.obzio_state, "to": "CHECKPOINTED", "checkpoint_seq": checkpoint_seq},
+        )
 
     def begin_staging(self, task_id: str, fence_token: int) -> None:
         self._require_fence(task_id, fence_token)
