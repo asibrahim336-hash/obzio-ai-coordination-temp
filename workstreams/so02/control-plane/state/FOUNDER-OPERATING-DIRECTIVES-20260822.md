@@ -32,13 +32,12 @@ qualified new capability, or a measured topology/model/context/evaluation change
 - Cursor is an internal repository engineering and coordination factory. Use one
   integration contract, disjoint ownership and isolated branches; do not create
   duplicate whole-programme factories.
-- SW is the strict external discovery/synthesis factory and receives coded abstract
-  capsules only.
+- SW is the repository-connected discovery/synthesis factory. For the current
+  launch, direct GitHub repository access is founder-accepted.
 - Manus must receive full useful administrative enablement across multiple
-  authorised accounts during the high-capacity window, using codenamed tasks and
-  explicit necessary-disclosure classification. OAuth, approval, installation,
-  download or owner-only actions are surfaced immediately while unaffected work
-  continues.
+  authorised accounts during the high-capacity window. OAuth, approval,
+  installation, download or owner-only actions are surfaced immediately while
+  unaffected work continues.
 - ChatGPT hosts the privileged founder interface, state recovery, strategic
   coordination, commissioning, acceptance, research and specialist offices. Expand
   to at least ten working projects with launch sheets and durable return routes.
@@ -56,7 +55,7 @@ founder a routine relay, monitor, comparison engine or merger.
 The founder activation and acquisition package must say exactly what to buy, set up,
 connect and delegate, with provider/account, plan or SKU, quantity, access scopes,
 security owner, verification step, cost/renewal surface and stop condition. It must
-cover the ChatGPT project estate, Cursor internal factory, codenamed SW exchange,
+cover the ChatGPT project estate, Cursor internal factory, SW GitHub access,
 Manus accounts/connectors, model/API capacity, storage/backup, code/runtime, domain
 and identity controls. Nothing is called acquired merely because it was recommended.
 
@@ -89,6 +88,21 @@ knowledge packages. Provider memory is never constitutional authority.
   automation-only turn fails.
 - Every automation records premise, cost shape and job shape; event storms and
   per-push Work-mode runs fail closed.
-- Disclosure is classified before every downstream launch. Controlled codenames are
-  the default where a referent is required.
 - No merge, promotion or company-strategy binding follows from these directives.
+
+## Deferred disclosure factory workstream
+
+The founder's standing role-specific identity, affiliation, intent and
+strategic-context disclosure policy is preserved for later implementation by the
+capability factory after Cursor and SW have refined the repositories. Access
+authority and semantic disclosure remain independent; the privileged internal
+command layer retains the full frame; future downstream prompts should receive the
+context necessary for their function without unnecessary exposure; and controlled
+codenames with an internal mapping are the default when a referent is required.
+
+This workstream is deferred. Build no disclosure register, schema, scanner, test,
+branch, Manus control or Cursor change now. Today's sole application is the natural,
+neutral SW launch message in `launch/SW-LAUNCH-NOW.md`: task and GitHub access only,
+without identity narration, intent narration, strategic positioning, internal
+workstream identifiers or control trailers. SW reading the repository through
+GitHub is accepted. Cursor remains an unchanged internal runtime.

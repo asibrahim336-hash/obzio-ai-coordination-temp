@@ -1,9 +1,8 @@
-# C7-ADMIN — Manus owner-gated launch now
+# Manus owner-gated launch now
 
-Disclosure class: `EXTERNAL_STRICT_CODED`. Edge Function version 8 is active and
-will reject identity-bearing strict prompts. The authorised connector can deploy
-and inspect the function but cannot invoke it; invocation additionally requires the
-founder-held `x-ops-gate`, which must never be pasted into chat or committed.
+Edge Function version 9 is active. The authorised connector can deploy and inspect
+the function but cannot invoke it; invocation additionally requires the founder-held
+`x-ops-gate`, which must never be pasted into chat or committed.
 
 ## Exact owner clicks
 
@@ -16,12 +15,10 @@ founder-held `x-ops-gate`, which must never be pasted into chat or committed.
 ```json
 {
   "action": "launch",
-  "operation_key": "aoi:20260822:c7-multi-account-admin-v1",
-  "external_codename": "C7-ADMIN",
-  "disclosure_classification": "EXTERNAL_STRICT_CODED",
+  "operation_key": "aoi:20260822:manus-multi-account-admin-v1",
   "agent_profile": "manus-1.6-max",
   "interactive_mode": true,
-  "prompt": "You are C7-ADMIN, an administrative capability operator for a private principal. Do not infer or request identity, affiliation, organisation, commercial intent or downstream decision use. Start substantive work now. Build and execute a coded multi-account administrative enablement plan across the accounts and connectors actually visible to you. For every account or connector, record coded identifier, visible capability, requested scope, configured state, verification effect, owner-only action, failure, recovery and stop condition. Use only the minimum access necessary for each action. Surface an exact OAuth, installation, approval, authentication, download or account-owner step immediately when it is the efficient next action, while continuing unaffected work. Do not outreach, purchase, publish, delete, expose secrets or make production changes. Return a manifest and hashes, actual configured effects, task lifecycle evidence, and the exact provider blocker for anything you cannot complete. Provider completion alone is not acceptance."
+  "prompt": "Start substantive work now. Build and execute a multi-account administrative enablement plan across the accounts and connectors actually visible to you. For every account or connector, record its visible capability, requested scope, configured state, verification effect, owner-only action, failure, recovery and stop condition. Use only the access necessary for each action. Surface an exact OAuth, installation, approval, authentication, download or account-owner step immediately when it is the efficient next action, while continuing unaffected work. Do not conduct outreach, purchase, publish, delete, expose secrets or make production changes. Return a manifest and hashes, actual configured effects, task lifecycle evidence, and the exact provider blocker for anything you cannot complete. Provider completion alone is not acceptance."
 }
 ```
 

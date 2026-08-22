@@ -46,15 +46,15 @@ monitoring or merge layer. `decision_changed: []`.
 
 - Project: `CGPT-06 Manus Recovery`
 - Model/effort: `GPT-5.6 Terra / Max`
-- Prompt: `Own Manus multi-account administrative recovery from provider evidence. Use coded task names, disclosure-aware prompts and least necessary context. Reconcile task lifecycle, connectors, approvals, backups, restoration, retries and exact provider blockers. Return operational steps and receipts to workstreams/so02/control-plane/returns/cgpt-06/**; do not expose secrets.`
+- Prompt: `Own Manus multi-account administrative recovery from provider evidence. Reconcile task lifecycle, connectors, approvals, backups, restoration, retries and exact provider blockers. Return operational steps and receipts to workstreams/so02/control-plane/returns/cgpt-06/**; do not expose secrets.`
 - Acceptance: task ID/output or exact provider blocker, account matrix, restore/stop procedure and no blind retry loop.
 
-## CGPT-07 — Data security and disclosure
+## CGPT-07 — Repository currentness and cold start
 
-- Project: `CGPT-07 Disclosure Assurance`
+- Project: `CGPT-07 Cold-Start Currentness`
 - Model/effort: `GPT-5.6 Sol / Max`
-- Prompt: `Adversarially test disclosure classifications and codename controls across SW, Manus, Cursor, browser, research and ChatGPT routes. Build leak fixtures, fail-closed scanners and necessary-disclosure exceptions. Return to workstreams/so02/control-plane/returns/cgpt-07/**.`
-- Acceptance: old identity-bearing packets fail; strict packets pass; exception audit is complete and replayable.
+- Prompt: `Starting from a clean clone with no chat or provider memory, reconstruct the current programme, founder corrections, active branches, launch packets, accepted and unaccepted evidence, and exact next actions. Compare the selected SO-02 branch with default main and identify every stale or missing pointer without changing protected global state. Return to workstreams/so02/control-plane/returns/cgpt-07/**.`
+- Acceptance: reproducible clean-clone transcript, exact commit/path citations, branch-local verdict, default-main verdict and bounded pointer-repair proposal.
 
 ## CGPT-08 — Voice-first founder interface
 
@@ -90,4 +90,3 @@ monitoring or merge layer. `decision_changed: []`.
 - Model/effort: `GPT-5.6 Sol / Max`
 - Prompt: `Run current-plan delivery and zero-base opportunity challenge concurrently. Identify stale premises, opportunity cost, missing offices and superior routes; reproduce consequential alternatives before recommending change. Return proposals—not strategy decisions—to workstreams/so02/control-plane/returns/cgpt-12/**.`
 - Acceptance: current work continues, at least three reproduced alternatives, explicit evidence state and no self-acceptance.
-

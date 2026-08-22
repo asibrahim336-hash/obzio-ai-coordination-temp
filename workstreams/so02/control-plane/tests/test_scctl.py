@@ -30,7 +30,7 @@ class ControlPlaneTests(unittest.TestCase):
 
     def test_project_rebuilds_from_event_head(self) -> None:
         projection = scctl.project(self.root)
-        self.assertEqual(17, projection["event_count"])
+        self.assertEqual(18, projection["event_count"])
         self.assertEqual("ACTIVE_INTERIM", projection["subjects"]["SCF-01/CGPT-01"]["state"])
 
     def test_event_chain_is_valid(self) -> None:
@@ -209,17 +209,6 @@ class ControlPlaneTests(unittest.TestCase):
         errors: list[str] = []
         scctl.validate_controls(controls, errors)
         self.assertTrue(any("uncontrolled without uncontrolled_reason" in item for item in errors))
-
-    def test_strict_external_packet_rejects_identity_bearing_old_behaviour(self) -> None:
-        old = "You are SCF-01/SW-01, Obzio principal. Read workstreams/so02 from asibrahim336-hash. decision_changed: []"
-        self.assertGreater(len(scctl.strict_external_violations(old)), 0)
-        current = (self.root / "launch/SW-LAUNCH-NOW.md").read_text(encoding="utf-8")
-        self.assertEqual([], scctl.strict_external_violations(current))
-
-    def test_cursor_internal_disclosure_classification_is_explicit(self) -> None:
-        current = (self.root / "launch/CURSOR-LAUNCH-NOW.md").read_text(encoding="utf-8")
-        self.assertIn("INTERNAL_AUTHORISED_RUNTIME", current)
-        self.assertIn("do not write PR #9", current)
 
     def test_repository_native_founder_content_is_complete(self) -> None:
         errors: list[str] = []

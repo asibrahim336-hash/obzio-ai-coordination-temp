@@ -1,11 +1,4 @@
-# Launch SCF-01/CUR-01 now — internal authorised runtime
-
-Disclosure class: `INTERNAL_AUTHORISED_RUNTIME`.
-
-Cursor is operating the principal's own private repository under existing
-authorised access. Repository identity, internal roles, workstream names and the
-strategic execution frame are necessary for the task and may be disclosed inside
-this runtime. Secrets, credentials and unrelated personal data remain prohibited.
+# Launch SCF-01/CUR-01 now
 
 ## Exact provider clicks
 
@@ -21,7 +14,6 @@ this runtime. Secrets, credentials and unrelated personal data remain prohibited
 
 ## Paste exactly
 
-> CUR-01 — INTERNAL CROSS-PARENT HARVEST, INDEPENDENT QUALIFICATION AND STRATEGIC COORDINATION. Execute `workstreams/so02/control-plane/commissions/CURSOR-SCP-01.md` at the current immutable branch head. Read all repository-native founder directives, disclosure controls, launch sheets, evaluations and control-plane tests before acting. This is an internal authorised runtime. Do not execute `workstreams/po03/COMMISSION.md` as another whole factory. Treat PO-03 production surfaces as read-only: do not write PR #9, its branch, any `cursor/po03-*` branch, PO-01, main, PR #6 or PR #7. The existing PO-03 integration controller remains the sole PR9 writer. You are the root/group controller and the only writer of shared projections on this SO-02 branch. Register and reconcile the complete group→parent→child→attempt denominator; give every parent a disjoint function and isolated namespace. First build a content-hash-deduplicated admission matrix across immutable PO-02 and PO-03 artifacts, reproduce the highest-value candidates in fresh isolated clones under frozen criteria, and return ingest/reject/quarantine dispositions. In parallel, operate the current-plan, research, model/runtime qualification, ontology/governance, recovery, measurement and successor functions. No parent accepts its own output. Record route-specific admission and isolation telemetry; do not claim a global account ceiling. Begin with substantive executable evidence, not a plan, register or receipt-only change. Keep writes inside the SO-02 allowlist, do not merge, promote or bind strategy, and never make Ahmed retrieve, compare, monitor or merge agent results. Surface only complete genuine provider/owner actions. `decision_changed: []`.
+> CUR-01 — INTERNAL CROSS-PARENT HARVEST, INDEPENDENT QUALIFICATION AND STRATEGIC COORDINATION. Execute `workstreams/so02/control-plane/commissions/CURSOR-SCP-01.md` at the current immutable branch head. Read all repository-native founder directives, launch sheets, evaluations and control-plane tests before acting. Do not execute `workstreams/po03/COMMISSION.md` as another whole factory. Treat PO-03 production surfaces as read-only: do not write PR #9, its branch, any `cursor/po03-*` branch, PO-01, main, PR #6 or PR #7. The existing PO-03 integration controller remains the sole PR9 writer. You are the root/group controller and the only writer of shared projections on this SO-02 branch. Register and reconcile the complete group→parent→child→attempt denominator; give every parent a disjoint function and isolated namespace. First build a content-hash-deduplicated admission matrix across immutable PO-02 and PO-03 artifacts, reproduce the highest-value candidates in fresh isolated clones under frozen criteria, and return ingest/reject/quarantine dispositions. In parallel, operate the current-plan, research, model/runtime qualification, ontology/governance, recovery, measurement and successor functions. No parent accepts its own output. Record route-specific admission and isolation telemetry; do not claim a global account ceiling. Begin with substantive executable evidence, not a plan, register or receipt-only change. Keep writes inside the SO-02 allowlist, do not merge, promote or bind strategy, and never make Ahmed retrieve, compare, monitor or merge agent results. Surface only complete genuine provider/owner actions. `decision_changed: []`.
 
 Cursor owns subordinate launch, custody, reconciliation and return integration.
-
