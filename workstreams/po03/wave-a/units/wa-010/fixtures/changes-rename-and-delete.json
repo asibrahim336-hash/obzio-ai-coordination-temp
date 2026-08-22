@@ -1,0 +1,86 @@
+{
+  "fixture_id": "FX-PO03-WA-010-CHANGES-RENAME-AND-DELETE",
+  "purpose": "Renames and deletes are two-sided writes. A rename that reaches across an ownership boundary must be refused on the side that escapes, and a delete must be refused unless the removed path is owned.",
+  "writer": "lease-po03-wa-010-a02",
+  "fence_token": 2,
+  "expected_outcome": "BLOCKED",
+  "expected": [
+    {
+      "case": "rename inside the grant",
+      "status": "R",
+      "old_path": "workstreams/po03/wave-a/units/wa-010/a.json",
+      "path": "workstreams/po03/wave-a/units/wa-010/result/a.json",
+      "source_reason": "ALLOWED",
+      "target_reason": "ALLOWED"
+    },
+    {
+      "case": "rename carries a file out of the grant",
+      "status": "R",
+      "old_path": "workstreams/po03/wave-a/units/wa-010/a.json",
+      "path": "workstreams/po03/wave-a/units/wa-011/a.json",
+      "source_reason": "ALLOWED",
+      "target_reason": "DENY_RENAME_TARGET_NOT_OWNED"
+    },
+    {
+      "case": "rename drags a foreign file into the grant",
+      "status": "R",
+      "old_path": "workstreams/po03/wave-a/units/wa-011/a.json",
+      "path": "workstreams/po03/wave-a/units/wa-010/a.json",
+      "source_reason": "DENY_RENAME_SOURCE_NOT_OWNED",
+      "target_reason": "ALLOWED"
+    },
+    {
+      "case": "rename escapes into denied state",
+      "status": "R",
+      "old_path": "workstreams/po03/wave-a/units/wa-010/a.json",
+      "path": "state/a.json",
+      "source_reason": "ALLOWED",
+      "target_reason": "DENY_PROHIBITED_PATH"
+    },
+    {
+      "case": "rename launders a denied file into the grant",
+      "status": "R",
+      "old_path": "state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+      "path": "workstreams/po03/wave-a/units/wa-010/pointer.json",
+      "source_reason": "DENY_PROHIBITED_PATH",
+      "target_reason": "ALLOWED"
+    },
+    {
+      "case": "delete inside the grant",
+      "status": "D",
+      "path": "workstreams/po03/wave-a/units/wa-010/scratch.json",
+      "source_reason": "ALLOWED",
+      "target_reason": null
+    },
+    {
+      "case": "delete of a sibling unit's committed result",
+      "status": "D",
+      "path": "workstreams/po03/wave-a/units/wa-012/result.json",
+      "source_reason": "DENY_DELETE_NOT_OWNED",
+      "target_reason": null
+    },
+    {
+      "case": "delete of depended-upon controller state",
+      "status": "D",
+      "path": "workstreams/po03/control/path-ownership.json",
+      "source_reason": "DENY_READ_ONLY_PATH",
+      "target_reason": null
+    },
+    {
+      "case": "copy only writes its target, so a foreign source is readable",
+      "status": "C",
+      "old_path": "workstreams/po03/control/path-ownership.json",
+      "path": "workstreams/po03/wave-a/units/wa-010/fixtures/registry-copy.json",
+      "source_reason": null,
+      "target_reason": "ALLOWED"
+    },
+    {
+      "case": "a rename that reports no source is not admissible",
+      "status": "R",
+      "old_path": null,
+      "path": "workstreams/po03/wave-a/units/wa-010/a.json",
+      "source_reason": "DENY_MISSING_RENAME_SOURCE",
+      "target_reason": null
+    }
+  ]
+}

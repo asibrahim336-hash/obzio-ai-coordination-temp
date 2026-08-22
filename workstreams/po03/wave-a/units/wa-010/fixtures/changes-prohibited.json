@@ -1,0 +1,105 @@
+{
+  "fixture_id": "FX-PO03-WA-010-CHANGES-PROHIBITED",
+  "purpose": "Deliberately prohibited writes. Each entry must be refused, and the reason code is preregistered so a permissive engine cannot pass by denying for the wrong cause.",
+  "writer": "lease-po03-wa-010-a02",
+  "fence_token": 2,
+  "expected_outcome": "BLOCKED",
+  "expected": [
+    {
+      "path": "state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+      "status": "M",
+      "reason": "DENY_PROHIBITED_PATH",
+      "why": "Shared current-pointer state is denied to every writer."
+    },
+    {
+      "path": "dispatch/queue/wave-a.json",
+      "status": "A",
+      "reason": "DENY_PROHIBITED_PATH",
+      "why": "Dispatch surfaces are denied to every writer."
+    },
+    {
+      "path": ".cursor/environment.json",
+      "status": "M",
+      "reason": "DENY_PROHIBITED_PATH",
+      "why": "The runtime environment file is denied to every writer."
+    },
+    {
+      "path": "workstreams/po01/plan.md",
+      "status": "M",
+      "reason": "DENY_PROHIBITED_PATH",
+      "why": "PO-01 non-interference is absolute."
+    },
+    {
+      "path": "receipts/po01/2026-08-22/pack.json",
+      "status": "A",
+      "reason": "DENY_PROHIBITED_PATH",
+      "why": "PO-01 receipts are immutable to PO-03."
+    },
+    {
+      "path": ".git/config",
+      "status": "M",
+      "reason": "DENY_PROHIBITED_PATH",
+      "why": "Repository internals are denied implicitly, without needing a registry entry."
+    },
+    {
+      "path": ".gitmodules",
+      "status": "A",
+      "reason": "DENY_PROHIBITED_PATH",
+      "why": "A submodule declaration can import arbitrary external code."
+    },
+    {
+      "path": "workstreams/po03/control/path-ownership.json",
+      "status": "M",
+      "reason": "DENY_READ_ONLY_PATH",
+      "why": "A subordinate must not rewrite the registry that grants it authority."
+    },
+    {
+      "path": "workstreams/po03/COMMISSION.md",
+      "status": "M",
+      "reason": "DENY_READ_ONLY_PATH",
+      "why": "The commission is read-only to its own producer."
+    },
+    {
+      "path": "workstreams/po03/tools/validate_contracts.py",
+      "status": "M",
+      "reason": "DENY_READ_ONLY_PATH",
+      "why": "Seeded controls may be strengthened only by the controller, never bypassed here."
+    },
+    {
+      "path": "packs/operator/pack.json",
+      "status": "M",
+      "reason": "DENY_PROHIBITED_PATH",
+      "why": "Pack surfaces appear in the registry deny list, which outranks the read-only list naming them too."
+    },
+    {
+      "path": ".github/workflows/po03-contracts.yml",
+      "status": "M",
+      "reason": "DENY_FOREIGN_OWNER",
+      "why": "The workflow belongs to the integration controller, not to a subordinate."
+    },
+    {
+      "path": "workstreams/po03/wave-a/units/wa-011/result/result.json",
+      "status": "A",
+      "reason": "DENY_FOREIGN_OWNER",
+      "why": "This is the exact overlapping-subordinate-write case the hypothesis targets."
+    },
+    {
+      "path": "workstreams/po03/wave-a/units/wa-0100/result.json",
+      "status": "A",
+      "reason": "DENY_UNOWNED_PATH",
+      "why": "A prefix-string comparison would wrongly admit wa-0100 under the wa-010 grant."
+    },
+    {
+      "path": "README.md",
+      "status": "M",
+      "reason": "DENY_UNOWNED_PATH",
+      "why": "Repository-root files are outside every wave-one grant."
+    },
+    {
+      "path": "workstreams/po03/wave-a/units/wa-010",
+      "status": "A",
+      "reason": "DENY_UNOWNED_PATH",
+      "why": "The grant owns paths inside the subtree, not a file that shadows the subtree root."
+    }
+  ]
+}

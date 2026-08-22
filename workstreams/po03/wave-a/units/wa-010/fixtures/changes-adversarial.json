@@ -1,0 +1,99 @@
+{
+  "fixture_id": "FX-PO03-WA-010-CHANGES-ADVERSARIAL",
+  "purpose": "Path shapes crafted to slip past a naive comparison. Every one must be refused, and none may be silently normalised into an admitted path.",
+  "writer": "lease-po03-wa-010-a02",
+  "fence_token": 2,
+  "expected_outcome": "BLOCKED",
+  "expected": [
+    {
+      "path": "workstreams/po03/wave-a/units/wa-010/../wa-011/result.json",
+      "status": "A",
+      "reason": "DENY_MALFORMED_PATH",
+      "why": "Traversal must be refused rather than resolved, because resolving it would land in a sibling grant."
+    },
+    {
+      "path": "workstreams/po03/wave-a/units/wa-010/./result.json",
+      "status": "A",
+      "reason": "DENY_MALFORMED_PATH",
+      "why": "A '.' segment is not a path git would report and hides the real target."
+    },
+    {
+      "path": "/workstreams/po03/wave-a/units/wa-010/result.json",
+      "status": "A",
+      "reason": "DENY_MALFORMED_PATH",
+      "why": "An absolute path escapes the repository entirely."
+    },
+    {
+      "path": "workstreams//po03/wave-a/units/wa-010/result.json",
+      "status": "A",
+      "reason": "DENY_MALFORMED_PATH",
+      "why": "A doubled separator produces an empty segment that some matchers skip."
+    },
+    {
+      "path": "workstreams\\po03\\wave-a\\units\\wa-010\\result.json",
+      "status": "A",
+      "reason": "DENY_MALFORMED_PATH",
+      "why": "Backslash separators would be one opaque segment, and treating them as separators would widen the grant."
+    },
+    {
+      "path": "C:/workstreams/po03/wave-a/units/wa-010/result.json",
+      "status": "A",
+      "reason": "DENY_MALFORMED_PATH",
+      "why": "A drive-letter path is not repository-relative."
+    },
+    {
+      "path": "workstreams/po03/wave-a/units/wa-010/result.json/",
+      "status": "A",
+      "reason": "DENY_MALFORMED_PATH",
+      "why": "A trailing separator names a directory; git reports files."
+    },
+    {
+      "path": "\"workstreams/po03/wave-a/units/wa-010/r\\303\\251sult.json\"",
+      "status": "A",
+      "reason": "DENY_MALFORMED_PATH",
+      "why": "A git-quoted path means the caller forgot -z; the quotes would defeat every glob."
+    },
+    {
+      "path": "workstreams/po03/wave-a/units/wa-010/res\u0000ult.json",
+      "status": "A",
+      "reason": "DENY_MALFORMED_PATH",
+      "why": "A NUL byte truncates the path in any C-level consumer."
+    },
+    {
+      "path": "workstreams/po03/wave-a/units/wa-010/res\nult.json",
+      "status": "A",
+      "reason": "DENY_MALFORMED_PATH",
+      "why": "A newline splits the path in line-oriented tooling."
+    },
+    {
+      "path": "workstreams/po03/wave-a/units/WA-010/result.json",
+      "status": "A",
+      "reason": "DENY_UNOWNED_PATH",
+      "why": "Git pathspecs are case-sensitive, so a case variant is a different path and is not granted."
+    },
+    {
+      "path": "workstreams/po03/wave-a/units/wa-010x/result.json",
+      "status": "A",
+      "reason": "DENY_UNOWNED_PATH",
+      "why": "A suffixed sibling directory must not inherit the grant."
+    },
+    {
+      "path": "workstreams/po03/wave-a/units/wa-01*/result.json",
+      "status": "A",
+      "reason": "DENY_UNOWNED_PATH",
+      "why": "A literal '*' in a changed path must be matched as a character, never expanded as a wildcard."
+    },
+    {
+      "path": "workstreams/po03/wave-a/units/wa-010\u200b/result.json",
+      "status": "A",
+      "reason": "DENY_UNOWNED_PATH",
+      "why": "A zero-width space makes the segment visually identical to the granted one."
+    },
+    {
+      "path": "workstreams/po03/wave-a/units/wa-010/.git/config",
+      "status": "A",
+      "reason": "DENY_PROHIBITED_PATH",
+      "why": "A nested repository inside the owned subtree is still repository internals."
+    }
+  ]
+}

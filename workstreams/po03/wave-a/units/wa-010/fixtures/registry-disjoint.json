@@ -1,0 +1,52 @@
+{
+  "fixture_id": "FX-PO03-WA-010-REGISTRY-DISJOINT",
+  "purpose": "Control fixture: a registry whose grants provably cannot collide.",
+  "expected_outcome": "DISJOINT",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "schema_version": "1.0",
+  "controller": {
+    "branch": "cursor/po03-wave-a-b195-1a9f",
+    "run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+    "owned_globs": [
+      "workstreams/po03/control/**",
+      "workstreams/po03/metrics/**",
+      ".github/workflows/po03-*.yml"
+    ]
+  },
+  "global_deny_globs": [
+    "state/**",
+    "dispatch/**",
+    ".cursor/environment.json"
+  ],
+  "subordinate_owners": [
+    {
+      "task_id": "PO03-WA-010",
+      "attempt_id": "PO03-WA-010-A02",
+      "lease_id": "lease-po03-wa-010-a02",
+      "fence_token": 2,
+      "write_mode": "BEST_OF_N_ISOLATED_WORKTREE_ONLY",
+      "owned_globs": [
+        "workstreams/po03/wave-a/units/wa-010/**"
+      ]
+    },
+    {
+      "task_id": "PO03-WA-011",
+      "attempt_id": "PO03-WA-011-A02",
+      "lease_id": "lease-po03-wa-011-a02",
+      "fence_token": 2,
+      "write_mode": "BEST_OF_N_ISOLATED_WORKTREE_ONLY",
+      "owned_globs": [
+        "workstreams/po03/wave-a/units/wa-011/**"
+      ]
+    },
+    {
+      "task_id": "PO03-WA-012",
+      "lease_id": "lease-po03-wa-012-a01",
+      "fence_token": 1,
+      "write_mode": "BEST_OF_N_ISOLATED_WORKTREE_ONLY",
+      "owned_globs": [
+        "workstreams/po03/wave-a/units/wa-012/**"
+      ]
+    }
+  ]
+}

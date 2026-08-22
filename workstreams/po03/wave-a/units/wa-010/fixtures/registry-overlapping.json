@@ -1,0 +1,76 @@
+{
+  "fixture_id": "FX-PO03-WA-010-REGISTRY-OVERLAPPING",
+  "purpose": "Four deliberate grant collisions that a prefix-string comparison would miss.",
+  "expected_outcome": "OVERLAP_DETECTED",
+  "expected_overlap_pairs_note": "Preregistered before execution by reading the patterns, including the non-obvious collisions the '**' and '?' grants create.",
+  "expected_overlap_pairs": [
+    ["cursor/po03-wave-a-b195-1a9f", "lease-po03-wa-control-writer-a01"],
+    ["lease-po03-wa-010-a02", "lease-po03-wa-shared-report-a01"],
+    ["lease-po03-wa-010-a02", "lease-po03-wa-wildcard-a01"],
+    ["lease-po03-wa-010-a02", "lease-po03-wa-control-writer-a01"],
+    ["lease-po03-wa-011-a02", "lease-po03-wa-wildcard-a01"],
+    ["lease-po03-wa-011-a02", "lease-po03-wa-control-writer-a01"],
+    ["lease-po03-wa-shared-report-a01", "lease-po03-wa-wildcard-a01"],
+    ["lease-po03-wa-wildcard-a01", "lease-po03-wa-control-writer-a01"]
+  ],
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "schema_version": "1.0",
+  "controller": {
+    "branch": "cursor/po03-wave-a-b195-1a9f",
+    "run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+    "owned_globs": [
+      "workstreams/po03/control/**"
+    ]
+  },
+  "global_deny_globs": [
+    "state/**",
+    "dispatch/**"
+  ],
+  "subordinate_owners": [
+    {
+      "task_id": "PO03-WA-010",
+      "lease_id": "lease-po03-wa-010-a02",
+      "fence_token": 2,
+      "write_mode": "BEST_OF_N_ISOLATED_WORKTREE_ONLY",
+      "owned_globs": [
+        "workstreams/po03/wave-a/units/wa-010/**"
+      ]
+    },
+    {
+      "task_id": "PO03-WA-011",
+      "lease_id": "lease-po03-wa-011-a02",
+      "fence_token": 2,
+      "write_mode": "BEST_OF_N_ISOLATED_WORKTREE_ONLY",
+      "owned_globs": [
+        "workstreams/po03/wave-a/units/wa-011/**"
+      ]
+    },
+    {
+      "task_id": "PO03-WA-SHARED-REPORT",
+      "lease_id": "lease-po03-wa-shared-report-a01",
+      "fence_token": 1,
+      "write_mode": "BEST_OF_N_ISOLATED_WORKTREE_ONLY",
+      "owned_globs": [
+        "workstreams/po03/wave-a/units/wa-010/result/shared-summary.json"
+      ]
+    },
+    {
+      "task_id": "PO03-WA-WILDCARD",
+      "lease_id": "lease-po03-wa-wildcard-a01",
+      "fence_token": 1,
+      "write_mode": "BEST_OF_N_ISOLATED_WORKTREE_ONLY",
+      "owned_globs": [
+        "workstreams/po03/wave-a/units/wa-01?/**"
+      ]
+    },
+    {
+      "task_id": "PO03-WA-CONTROL-WRITER",
+      "lease_id": "lease-po03-wa-control-writer-a01",
+      "fence_token": 1,
+      "write_mode": "BEST_OF_N_ISOLATED_WORKTREE_ONLY",
+      "owned_globs": [
+        "workstreams/**/control/**"
+      ]
+    }
+  ]
+}
