@@ -145,6 +145,16 @@ class LineageTests(unittest.TestCase):
         self.assertEqual({"LINEAGE_PHANTOM_VERSION"}, codes(findings))
         self.assertIn("no commit on any ref ever added", findings[0].detail)
 
+    def test_renamed_family_is_a_discontinuity_not_a_phantom(self) -> None:
+        """The version exists; the chain does not. Those are different defects."""
+        git = FakeGit(refs={}, dag={}, added_paths={"*OLD*v009*": []})
+        findings = currentctl.detect_phantom_versions(
+            git, Path("/nonexistent"),
+            [{"token": "OLD_v009", "path_glob": "*OLD*v009*", "continues_as": "dispatch/NEW_v009.md"}],
+        )
+        self.assertEqual({"LINEAGE_FAMILY_DISCONTINUITY"}, codes(findings))
+        self.assertEqual("dispatch/NEW_v009.md", findings[0].evidence["continues_as"])
+
     def test_version_that_was_committed_is_not_a_phantom(self) -> None:
         git = FakeGit(refs={}, dag={}, added_paths={"*ROUTE*v008*": ["f" * 40]})
         findings = currentctl.detect_phantom_versions(
@@ -228,6 +238,27 @@ class NonAdmissibleEvidenceTests(unittest.TestCase):
                     "RECEIPT_COUNT", "LESSON_DOCUMENTED")]
         admitted, _ = ladder().evaluate("WS-PILE", "ACCEPTED", entries)
         self.assertEqual("PROPOSED", admitted)
+
+    def test_an_alias_locator_does_not_satisfy_a_locator_requirement(self) -> None:
+        """An admissible class whose locator addresses nothing counts for nothing."""
+        admitted, findings = ladder().evaluate("WS-ALIAS", "OBSERVED", [
+            {"evidence_class": "COMMISSION_DOCUMENT", "artifact_path": "c.md"},
+            {"evidence_class": "LAUNCH_RECEIPT_WITH_LOCATOR", "locator": "current_project_conversation"},
+            {"evidence_class": "OBSERVED_OUTPUT_WITH_LOCATOR", "locator": "current_project_conversation"},
+        ])
+        self.assertEqual("PROPOSED", admitted)
+        self.assertIn("EVIDENCE_DISQUALIFIED", codes(findings))
+
+    def test_an_externally_disqualified_class_stops_counting(self) -> None:
+        admitted, findings = ladder().evaluate("WS-STALE", "DURABLE", [
+            {"evidence_class": "COMMISSION_DOCUMENT", "artifact_path": "c.md"},
+            {"evidence_class": "LAUNCH_RECEIPT_WITH_LOCATOR", "locator": "https://x/1"},
+            {"evidence_class": "OBSERVED_OUTPUT_WITH_LOCATOR", "locator": "https://x/1"},
+            {"evidence_class": "COMMITTED_ARTIFACT_HASH", "artifact_path": "a", "sha256": "0" * 64},
+            {"evidence_class": "REMOTE_READBACK_HASH", "artifact_path": "a", "sha256": "0" * 64},
+        ], disqualified={"REMOTE_READBACK_HASH"})
+        self.assertEqual("OBSERVED", admitted)
+        self.assertIn("EVIDENCE_DISQUALIFIED", codes(findings))
 
     def test_unknown_evidence_class_is_not_silently_trusted(self) -> None:
         _, findings = ladder().evaluate(
@@ -515,12 +546,12 @@ class RefGraphTests(unittest.TestCase):
         # main <- feature; merged is an ancestor of main; orphan has its own root.
         refs = {
             "main": {"head": "m2"},
-            "feature": {"head": "f1"},
+            "feature": {"head": "f2"},
             "merged": {"head": "m1"},
             "orphan": {"head": "o1"},
             "lease": {"head": "l1"},
         }
-        dag = {"f1": ["m2"], "m2": ["m1"], "m1": [], "o1": [], "l1": []}
+        dag = {"f2": ["f1"], "f1": ["m2"], "m2": ["m1"], "m1": [], "o1": [], "l1": []}
         trees = {"main": ["a.md"], "feature": ["a.md", "b.md"], "merged": ["a.md"],
                  "orphan": ["x.md"], "lease": ["claim.json"]}
         return FakeGit(refs=refs, dag=dag, trees=trees)
@@ -531,6 +562,23 @@ class RefGraphTests(unittest.TestCase):
         self.assertEqual("MERGED", nodes["merged"]["classification"])
         self.assertEqual("ACTIVE", nodes["feature"]["classification"])
         self.assertEqual("ORPHANED", nodes["orphan"]["classification"])
+
+    def test_an_addressed_branch_is_active_even_when_contained(self) -> None:
+        """A base branch a pull request still targets is live, not superseded."""
+        git = self.build()
+        git.refs["base"] = {"head": "f1"}
+        git.trees["base"] = ["a.md"]
+        graph = currentctl.compile_ref_graph(git, live_branches=["main", "base"])
+        node = graph["nodes"]["base"]
+        self.assertEqual("ACTIVE", node["classification"])
+        self.assertIn("feature", node["contained_by"])
+
+    def test_an_unaddressed_contained_branch_is_superseded(self) -> None:
+        git = self.build()
+        git.refs["stale"] = {"head": "f1"}
+        git.trees["stale"] = ["a.md"]
+        graph = currentctl.compile_ref_graph(git, live_branches=["main"])
+        self.assertEqual("SUPERSEDED", graph["nodes"]["stale"]["classification"])
 
     def test_an_unaddressed_tip_is_abandoned_not_active(self) -> None:
         """Old behaviour: a recent branch is treated as live work."""

@@ -1,0 +1,84 @@
+{
+  "receipt_id": "RCPT-OE-L4-CURRENTNESS-RECOVERY-20260822T2028Z-v001",
+  "parent_id": "OE-L4-CURRENTNESS-RECOVERY",
+  "group_manifest_id": "OE-GROUP-20260822-v001",
+  "commission_id": "COM-CUR-ENV-01-20260822-v001",
+  "parent_fence_token": "b749f2eaa8cf6e1c",
+  "recorded_at": "2026-08-22T20:28Z",
+  "terminal_state": "READY_TO_COMMIT",
+  "decision_changed": [],
+  "strategy_bound": false,
+  "immutable_source": {
+    "sha": "fe0a595206e5986de7eaac6cabc619215a1eb81b",
+    "branch": "so02/strategic-control-plane-migration-20260822-v001",
+    "treated_as": "READ_ONLY",
+    "written": false
+  },
+  "return_branch": "cursor/oe-l4-currentness-recovery-696d",
+  "execution_isolation": {
+    "observation": "Four sibling lanes of this group were operating in the same checkout at /workspace and moving HEAD between their branches seconds apart, evidenced by the HEAD reflog at 20:12:53, 20:12:55, 20:13:04 and 20:13:15.",
+    "action": "This lane created an isolated git worktree at /tmp/oe-l4 on its own branch at the immutable source SHA, so that its index and HEAD could not collide with the siblings' checkouts.",
+    "shared_state_written": false,
+    "sibling_branches_written": false
+  },
+  "deliverables": {
+    "diagnosis_json": "workstreams/so02/control-plane/operating-environment/l4-currentness-recovery/diagnosis/DIAGNOSIS-L4-20260822-v001.json",
+    "diagnosis_markdown": "workstreams/so02/control-plane/operating-environment/l4-currentness-recovery/diagnosis/DIAGNOSIS-L4-20260822-v001.md",
+    "tool": "workstreams/so02/control-plane/operating-environment/l4-currentness-recovery/tools/currentctl.py",
+    "tests": "workstreams/so02/control-plane/operating-environment/l4-currentness-recovery/tests/test_currentctl.py",
+    "projection": "workstreams/so02/control-plane/operating-environment/l4-currentness-recovery/projection/CURRENT-STATE-PROJECTION-20260822-v001.json"
+  },
+  "reproduction": [
+    {
+      "argv": ["python3", "-I", "workstreams/so02/control-plane/operating-environment/l4-currentness-recovery/tests/test_currentctl.py"],
+      "observed": "Ran 68 tests, OK",
+      "expected_exit_code": 0,
+      "label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "argv": ["python3", "-I", "workstreams/so02/control-plane/operating-environment/l4-currentness-recovery/tools/currentctl.py", "validate"],
+      "observed": "fail-closed against the real repository",
+      "expected_exit_code": 1,
+      "label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "argv": ["python3", "-I", "workstreams/so02/control-plane/operating-environment/l4-currentness-recovery/tools/currentctl.py", "resolve", "--scope", "pointer.operator-system"],
+      "observed": "REFUSED: 3 competing current claims",
+      "expected_exit_code": 1,
+      "label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "argv": ["python3", "-I", "workstreams/so02/control-plane/operating-environment/l4-currentness-recovery/tools/currentctl.py", "reproduce"],
+      "observed": "REPRODUCTION_FAILED for modules/work_unit_contract/test_forced_interruption.py, which exits 2 because the module PR #5 proposes is absent from this lineage; the scctl validate command in the same ledger re-ran clean",
+      "expected_exit_code": 1,
+      "label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "argv": ["python3", "scripts/check_operator_taxonomy.py"],
+      "observed": "OPERATOR TAXONOMY CHECK: PASS",
+      "expected_exit_code": 0,
+      "label": "DIRECTLY_REPRODUCED"
+    }
+  ],
+  "protected_noninterference": {
+    "main_written": false,
+    "so02_migration_branch_written": false,
+    "operating_environment_return_branch_written": false,
+    "cur_orch_qual_branch_written": false,
+    "po03_branches_written": false,
+    "soo_branches_written": false,
+    "packs_branches_written": false,
+    "sibling_lane_branches_written": false,
+    "pull_request_opened_commented_merged_or_modified": false,
+    "sw_messaged_operated_or_configured": false,
+    "po01_po03_manus_operated": false,
+    "anything_deleted": false,
+    "unique_evidence_deletion_proposed": false,
+    "secrets_requested_or_printed": false,
+    "strategy_bound": false
+  },
+  "self_acceptance": {
+    "producer_accepted_own_work": false,
+    "note": "This lane produced the mechanism and therefore cannot validate it. The projection records every workstream's admitted state including this lane's own, and nothing here is recorded above OBSERVED."
+  }
+}

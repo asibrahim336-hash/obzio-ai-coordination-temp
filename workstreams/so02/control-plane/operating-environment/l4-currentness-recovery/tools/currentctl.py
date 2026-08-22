@@ -214,10 +214,12 @@ def compile_ref_graph(git: GitEvidence, live_branches: Iterable[str],
     Classification is derived, never declared:
 
     MERGED      head is an ancestor of the trunk head.
-    SUPERSEDED  head is an ancestor of some other live-lineage branch head.
     ORPHANED    head shares no ancestry with the trunk at all.
-    ACTIVE      an unmerged tip that is a declared live branch.
-    ABANDONED   an unmerged tip that nothing points at.
+    ACTIVE      something addressable points at it: an open pull request or a
+                group manifest. Being addressed outranks being contained, because
+                a contained branch that a pull request still targets is live.
+    SUPERSEDED  nothing addresses it, but another branch head already contains it.
+    ABANDONED   nothing addresses it and nothing contains it.
     """
     refs = git.remote_refs()
     live = set(live_branches)
@@ -265,10 +267,10 @@ def compile_ref_graph(git: GitEvidence, live_branches: Iterable[str],
             classification = REF_MERGED
         elif disjoint:
             classification = REF_ORPHANED
-        elif contained_by_live:
-            classification = REF_SUPERSEDED
         elif branch in live:
             classification = REF_ACTIVE
+        elif contained_by_live:
+            classification = REF_SUPERSEDED
         else:
             classification = REF_ABANDONED
 
@@ -428,14 +430,47 @@ def compile_version_lineage(git: GitEvidence, ref: str = "HEAD") -> dict[str, An
 
 def detect_phantom_versions(git: GitEvidence, root: Path,
                             tokens: list[dict[str, Any]]) -> list[Finding]:
-    """A version referenced in committed text but never added on any ref."""
+    """Find the two distinct ways a version chain stops being one chain.
+
+    PHANTOM               a version is referenced in committed text and no commit
+                          on any ref ever added it. The predecessor never existed
+                          in the canonical store.
+    FAMILY_DISCONTINUITY  the version number continues, but under a different
+                          filename family, so no filename-based supersession
+                          chain can span the join.
+    """
     findings: list[Finding] = []
     for token in tokens:
         label = token["token"]
         pattern = token["path_glob"]
         commits = git.path_ever_added(pattern)
-        references = token.get("referenced_by", [])
         if commits:
+            continue
+        references = token.get("referenced_by", [])
+        continues_as = token.get("continues_as")
+        shared = {
+            "path_glob": pattern,
+            "commits_adding_path": commits,
+            "referenced_by": references,
+            "note": token.get("note", ""),
+            "provenance": provenance(
+                DIRECTLY_REPRODUCED,
+                method=f"git log --all --diff-filter=A -- {pattern}",
+                result="no commits",
+            ),
+        }
+        if continues_as:
+            findings.append(Finding(
+                code="LINEAGE_FAMILY_DISCONTINUITY",
+                severity=WARNING,
+                subject=urn("version", label),
+                detail=(
+                    f"no commit on any ref added a path matching {pattern!r}, but the version number "
+                    f"continues as {continues_as}. The chain survives only in prose: no filename-based "
+                    "supersession edge can span the rename"
+                ),
+                evidence={**shared, "continues_as": continues_as},
+            ))
             continue
         findings.append(Finding(
             code="LINEAGE_PHANTOM_VERSION",
@@ -444,18 +479,9 @@ def detect_phantom_versions(git: GitEvidence, root: Path,
             detail=(
                 f"{label} is referenced by {len(references)} committed artifact(s) but no commit on "
                 f"any ref ever added a path matching {pattern!r}. The lineage claims a predecessor "
-                f"that the canonical store has never held."
+                "that the canonical store has never held"
             ),
-            evidence={
-                "path_glob": pattern,
-                "commits_adding_path": commits,
-                "referenced_by": references,
-                "provenance": provenance(
-                    DIRECTLY_REPRODUCED,
-                    method=f"git log --all --diff-filter=A -- {pattern}",
-                    result="no commits",
-                ),
-            },
+            evidence=shared,
         ))
     return findings
 
@@ -482,19 +508,34 @@ class AdmissionLadder:
             raise ValueError(f"unknown admission state: {state}")
         return self.order.index(state)
 
-    def classify_evidence(self, entries: Sequence[dict[str, Any]]) -> dict[str, Any]:
+    def classify_evidence(self, entries: Sequence[dict[str, Any]],
+                          disqualified: set[str] | None = None) -> dict[str, Any]:
+        """Sort evidence into admissible, rejected, unaddressable and unknown.
+
+        `disqualified` names evidence classes an outside check has already
+        invalidated for this subject, such as a read-back the ref has moved past.
+        An admissible class does not stay admissible when its own locator or hash
+        turns out not to address anything.
+        """
+        disqualified = disqualified or set()
         admissible: list[dict[str, Any]] = []
         rejected: list[dict[str, Any]] = []
+        unaddressable: list[dict[str, Any]] = []
         unknown: list[dict[str, Any]] = []
         for entry in entries:
             entry_class = entry.get("evidence_class")
             if entry_class in self.non_admissible:
                 rejected.append(entry)
-            elif entry_class in self.admissible:
-                admissible.append(entry)
-            else:
+            elif entry_class not in self.admissible:
                 unknown.append(entry)
-        return {"admissible": admissible, "rejected": rejected, "unknown": unknown}
+            elif entry_class in disqualified:
+                unaddressable.append(entry)
+            elif _is_alias_locator(entry.get("locator")):
+                unaddressable.append(entry)
+            else:
+                admissible.append(entry)
+        return {"admissible": admissible, "rejected": rejected,
+                "unaddressable": unaddressable, "unknown": unknown}
 
     def _satisfied(self, state: str, present: set[str]) -> bool:
         requirement = self.requirements[state]
@@ -506,14 +547,15 @@ class AdmissionLadder:
             return False
         return True
 
-    def highest_supported(self, entries: Sequence[dict[str, Any]]) -> str:
+    def highest_supported(self, entries: Sequence[dict[str, Any]],
+                          disqualified: set[str] | None = None) -> str:
         """The highest state the supplied evidence actually supports.
 
         The ladder is monotonic, so the walk stops at the first unsatisfied rung
         even when a higher rung's own requirements happen to be met. Evidence for
         a later stage does not backfill an earlier one.
         """
-        classified = self.classify_evidence(entries)
+        classified = self.classify_evidence(entries, disqualified)
         present = {entry["evidence_class"] for entry in classified["admissible"]}
         supported = self.order[0]
         for state in self.order:
@@ -524,9 +566,10 @@ class AdmissionLadder:
             return self.order[0] if not classified["rejected"] else self.ceiling
         return supported
 
-    def skipped_foundations(self, entries: Sequence[dict[str, Any]]) -> list[str]:
+    def skipped_foundations(self, entries: Sequence[dict[str, Any]],
+                            disqualified: set[str] | None = None) -> list[str]:
         """States whose own requirements are met but which sit above a broken rung."""
-        classified = self.classify_evidence(entries)
+        classified = self.classify_evidence(entries, disqualified)
         present = {entry["evidence_class"] for entry in classified["admissible"]}
         broken = None
         skipped: list[str] = []
@@ -540,11 +583,12 @@ class AdmissionLadder:
         return skipped
 
     def evaluate(self, subject: str, claimed_state: str,
-                 entries: Sequence[dict[str, Any]]) -> tuple[str, list[Finding]]:
+                 entries: Sequence[dict[str, Any]],
+                 disqualified: set[str] | None = None) -> tuple[str, list[Finding]]:
         """Return (admitted_state, findings). Admitted never exceeds supported."""
         findings: list[Finding] = []
-        classified = self.classify_evidence(entries)
-        supported = self.highest_supported(entries)
+        classified = self.classify_evidence(entries, disqualified)
+        supported = self.highest_supported(entries, disqualified)
 
         for entry in classified["unknown"]:
             findings.append(Finding(
@@ -558,7 +602,19 @@ class AdmissionLadder:
                 evidence={"entry": entry},
             ))
 
-        skipped = self.skipped_foundations(entries)
+        for entry in classified["unaddressable"]:
+            findings.append(Finding(
+                code="EVIDENCE_DISQUALIFIED",
+                severity=WARNING,
+                subject=urn("workstream", subject),
+                detail=(
+                    f"{entry.get('evidence_class')} is of an admissible class but does not address "
+                    "anything a third party could reach now, so it does not count toward any rung"
+                ),
+                evidence={"entry": entry},
+            ))
+
+        skipped = self.skipped_foundations(entries, disqualified)
         if skipped:
             findings.append(Finding(
                 code="LADDER_FOUNDATION_MISSING",
@@ -619,6 +675,11 @@ DISPLAY_ALIAS_LOCATORS = {
 }
 
 
+def _is_alias_locator(locator: Any) -> bool:
+    """A locator that resolves to whatever the reader is looking at addresses nothing."""
+    return isinstance(locator, str) and locator.strip().lower() in DISPLAY_ALIAS_LOCATORS
+
+
 def check_reproducibility(root: Path, subject: str,
                           entries: Sequence[dict[str, Any]],
                           contract: dict[str, Any],
@@ -631,7 +692,7 @@ def check_reproducibility(root: Path, subject: str,
     for entry in entries:
         entry_class = entry.get("evidence_class")
         locator = entry.get("locator")
-        if isinstance(locator, str) and locator.strip().lower() in DISPLAY_ALIAS_LOCATORS:
+        if _is_alias_locator(locator):
             findings.append(Finding(
                 code="ALIAS_USED_AS_LOCATOR",
                 severity=ERROR,
@@ -1061,12 +1122,22 @@ class Compiler:
         for workstream in self.ledger.get("workstreams", []):
             subject = workstream["workstream_id"]
             entries = workstream.get("evidence", [])
+            reproducibility = check_reproducibility(self.repo_root, subject, entries,
+                                                    self.contract, self.git)
+            # A read-back the ref has moved past, or an artifact whose bytes do not
+            # match, is of an admissible class but no longer addresses anything.
+            disqualified = {
+                finding.evidence["entry"]["evidence_class"]
+                for finding in reproducibility
+                if finding.code in ("STALE_REMOTE_READBACK", "EVIDENCE_HASH_MISMATCH",
+                                    "UNBACKED_EVIDENCE_CLAIM")
+                and "entry" in finding.evidence
+            }
             admitted, subject_findings = self.ladder.evaluate(
-                subject, workstream["claimed_state"], entries)
+                subject, workstream["claimed_state"], entries, disqualified)
             findings.extend(subject_findings)
-            findings.extend(check_reproducibility(self.repo_root, subject, entries, self.contract,
-                                                  self.git))
-            classified = self.ladder.classify_evidence(entries)
+            findings.extend(reproducibility)
+            classified = self.ladder.classify_evidence(entries, disqualified)
             workstreams[subject] = {
                 "urn": urn("workstream", subject),
                 "workstream_id": subject,
@@ -1077,6 +1148,7 @@ class Compiler:
                 "overclaimed": admitted != workstream["claimed_state"],
                 "admissible_evidence": [e["evidence_class"] for e in classified["admissible"]],
                 "non_admissible_evidence": [e["evidence_class"] for e in classified["rejected"]],
+                "disqualified_evidence": [e["evidence_class"] for e in classified["unaddressable"]],
                 "evidence": entries,
                 "provenance": workstream.get("provenance", provenance(DOCUMENTED, method="lane ledger")),
             }
