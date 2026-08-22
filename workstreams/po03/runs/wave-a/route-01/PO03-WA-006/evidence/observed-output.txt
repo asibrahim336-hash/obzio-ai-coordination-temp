@@ -1,0 +1,129 @@
+$ python3 effect_journal.py --demo
+{
+  "probeable_external_system": {
+    "max_executions_for_any_key": 1,
+    "outcomes": [
+      {
+        "crash_point": "before_commit",
+        "crashed": true,
+        "executions_after_recovery": 0,
+        "executions_before_recovery": 0,
+        "obzio_state": "RETRY_SCHEDULED",
+        "probes": 0,
+        "recovery_action": "RESTART_FROM_SCRATCH"
+      },
+      {
+        "crash_point": "after_commit_before_intent",
+        "crashed": true,
+        "executions_after_recovery": 1,
+        "executions_before_recovery": 0,
+        "obzio_state": "RESULT_COMMITTED",
+        "probes": 0,
+        "recovery_action": "EFFECT_APPLIED_FIRST_TIME"
+      },
+      {
+        "crash_point": "after_intent_before_effect",
+        "crashed": true,
+        "executions_after_recovery": 1,
+        "executions_before_recovery": 0,
+        "obzio_state": "RESULT_COMMITTED",
+        "probes": 1,
+        "recovery_action": "PROBE_SHOWED_NOT_APPLIED_SO_APPLIED"
+      },
+      {
+        "crash_point": "after_effect_before_applied",
+        "crashed": true,
+        "executions_after_recovery": 1,
+        "executions_before_recovery": 1,
+        "obzio_state": "RESULT_COMMITTED",
+        "probes": 1,
+        "recovery_action": "CONFIRMED_BY_PROBE_JOURNAL_REPAIRED"
+      },
+      {
+        "crash_point": "after_applied",
+        "crashed": true,
+        "executions_after_recovery": 1,
+        "executions_before_recovery": 1,
+        "obzio_state": "RESULT_COMMITTED",
+        "probes": 0,
+        "recovery_action": "ALREADY_COMPLETE_NO_ACTION"
+      }
+    ],
+    "probeable": true
+  },
+  "unprobeable_external_system": {
+    "max_executions_for_any_key": 1,
+    "outcomes": [
+      {
+        "crash_point": "before_commit",
+        "crashed": true,
+        "executions_after_recovery": 0,
+        "executions_before_recovery": 0,
+        "obzio_state": "RETRY_SCHEDULED",
+        "probes": 0,
+        "recovery_action": "RESTART_FROM_SCRATCH"
+      },
+      {
+        "crash_point": "after_commit_before_intent",
+        "crashed": true,
+        "executions_after_recovery": 1,
+        "executions_before_recovery": 0,
+        "obzio_state": "RESULT_COMMITTED",
+        "probes": 0,
+        "recovery_action": "EFFECT_APPLIED_FIRST_TIME"
+      },
+      {
+        "crash_point": "after_intent_before_effect",
+        "crashed": true,
+        "executions_after_recovery": 0,
+        "executions_before_recovery": 0,
+        "obzio_state": "RECOVERY_REQUIRED",
+        "probes": 0,
+        "recovery_action": "RECONCILIATION_NOT_SUPPORTED"
+      },
+      {
+        "crash_point": "after_effect_before_applied",
+        "crashed": true,
+        "executions_after_recovery": 1,
+        "executions_before_recovery": 1,
+        "obzio_state": "RECOVERY_REQUIRED",
+        "probes": 0,
+        "recovery_action": "RECONCILIATION_NOT_SUPPORTED"
+      },
+      {
+        "crash_point": "after_applied",
+        "crashed": true,
+        "executions_after_recovery": 1,
+        "executions_before_recovery": 1,
+        "obzio_state": "RESULT_COMMITTED",
+        "probes": 0,
+        "recovery_action": "ALREADY_COMPLETE_NO_ACTION"
+      }
+    ],
+    "probeable": false
+  }
+}
+exit=0
+
+$ python3 -m unittest -v test_effect_journal
+test_crash_before_commit_leaves_no_effect_and_no_commit (test_effect_journal.CrashMatrixTests.test_crash_before_commit_leaves_no_effect_and_no_commit) ... ok
+test_crash_before_the_effect_still_applies_it_exactly_once (test_effect_journal.CrashMatrixTests.test_crash_before_the_effect_still_applies_it_exactly_once) ... ok
+test_each_crash_point_recovers_to_the_expected_action (test_effect_journal.CrashMatrixTests.test_each_crash_point_recovers_to_the_expected_action) ... ok
+test_no_crash_point_causes_a_duplicate_effect (test_effect_journal.CrashMatrixTests.test_no_crash_point_causes_a_duplicate_effect) ... ok
+test_repeated_recovery_at_every_crash_point_is_idempotent (test_effect_journal.CrashMatrixTests.test_repeated_recovery_at_every_crash_point_is_idempotent) ... ok
+test_the_dangerous_window_is_recovered_without_reapplying (test_effect_journal.CrashMatrixTests.test_the_dangerous_window_is_recovered_without_reapplying)
+Crash between the effect and its APPLIED record -- the real hazard. ... ok
+test_recovery_after_a_complete_run_does_nothing (test_effect_journal.HappyPathTests.test_recovery_after_a_complete_run_does_nothing) ... ok
+test_rerunning_run_after_completion_is_not_a_second_commit (test_effect_journal.HappyPathTests.test_rerunning_run_after_completion_is_not_a_second_commit) ... ok
+test_uninterrupted_run_applies_the_effect_once (test_effect_journal.HappyPathTests.test_uninterrupted_run_applies_the_effect_once) ... ok
+test_distinct_tasks_have_distinct_effect_keys (test_effect_journal.JournalTests.test_distinct_tasks_have_distinct_effect_keys) ... ok
+test_intent_is_journalled_before_the_effect_runs (test_effect_journal.JournalTests.test_intent_is_journalled_before_the_effect_runs) ... ok
+test_journal_is_append_only_and_survives_a_new_object (test_effect_journal.JournalTests.test_journal_is_append_only_and_survives_a_new_object) ... ok
+test_blind_matrix_never_duplicates_an_effect (test_effect_journal.UnprobeableSystemTests.test_blind_matrix_never_duplicates_an_effect) ... ok
+test_unknown_outcome_is_not_supported_rather_than_assumed (test_effect_journal.UnprobeableSystemTests.test_unknown_outcome_is_not_supported_rather_than_assumed) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.058s
+
+OK
+exit=0
