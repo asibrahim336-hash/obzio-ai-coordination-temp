@@ -1,0 +1,94 @@
+{
+  "observation_id": "OBS-PO03-C6-047-CORRUPTION-REFUSED-AND-RECOVERED",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "cohort": "c6",
+  "task_id": "po03-wa-b2e7-047-corrupt-artifact-recovery",
+  "function": "transactional-recovery-and-fault-injection",
+  "falsifiable_hypothesis": "A corrupt or missing artifact is refused at ingestion and routed to recovery rather than accepted.",
+  "verdict": "PASS",
+  "mechanism_under_test": "workstreams/po03/tools/transactional_factory.py",
+  "fault_classes": [
+    {
+      "fault_class": "CLAIMED_HASH_DOES_NOT_MATCH_COMMITTED_BYTES",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (ingestion check)",
+      "observed_behaviour": "refused with a read-back mismatch error, classified RECOVERY_REQUIRED, capsule intact, rerun from the capsule reached PARENT_INGESTED",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "CLAIMED_BYTE_COUNT_DOES_NOT_MATCH_COMMITTED_BYTES",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (ingestion check)",
+      "observed_behaviour": "a byte count one higher than the committed bytes was enough on its own to produce a read-back mismatch and RECOVERY_REQUIRED; rerun reached PARENT_INGESTED",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "COMMITTED_BYTES_TRUNCATED_AFTER_HASHING",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (ingestion check)",
+      "observed_behaviour": "the artifact was truncated by five bytes and re-committed while the result kept the original hash; refused with a read-back mismatch and RECOVERY_REQUIRED; rerun reached PARENT_INGESTED",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "ARTIFACT_PATH_ABSENT_FROM_THE_COMMIT",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (ingestion check)",
+      "observed_behaviour": "refused with a read-back failure, RECOVERY_REQUIRED, event chain still verifiable, rerun reached PARENT_INGESTED",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "RESULT_COMMIT_DOES_NOT_EXIST",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (ingestion check)",
+      "observed_behaviour": "a forty-zero commit id was refused with a read-back failure and RECOVERY_REQUIRED; rerun reached PARENT_INGESTED",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "LOCATOR_POINTS_AT_A_TREE_NOT_A_BLOB",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (ingestion check)",
+      "observed_behaviour": "git cat-file blob refused the tree locator, so ingestion refused with a read-back failure and RECOVERY_REQUIRED; rerun reached PARENT_INGESTED",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "LOCATOR_IS_NOT_A_DURABLE_GIT_OBJECT",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (ingestion check)",
+      "observed_behaviour": "a file:// locator was refused as non-durable; read_object_bytes also raised ValueError for http:// and for a bare relative path",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "WORKTREE_TAMPERED_AFTER_THE_COMMIT",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (ingestion check)",
+      "observed_behaviour": "overwriting the worktree file with different bytes after the commit changed nothing: ingestion read the committed object, matched the recorded hash and byte count, and reached PARENT_INGESTED with zero errors",
+      "verdict": "PASS",
+      "note": "this class asserts the opposite direction on purpose; it is the property that makes hash coverage meaningful"
+    },
+    {
+      "fault_class": "EMPTY_OR_MISSING_ARTIFACT_SET",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (contract check)",
+      "observed_behaviour": "a zero-byte artifact was refused by the seeded contract with '$.artifacts[0].bytes: must be an integer >= 1' and an artifact-free committed result with '$.artifacts: committed result requires at least one artifact'; both classified RECOVERY_REQUIRED",
+      "verdict": "PASS"
+    }
+  ],
+  "false_completions_observed": 0,
+  "residual_findings": [
+    {
+      "finding": "CONTRACT_REJECTION_PREEMPTS_THE_INGESTION_GUARD",
+      "detail": "ingest_result carries its own guard for an artifact-free result ('result carries no artifacts; nothing durable to ingest'), but the seeded contract rejects that document first, so the guard is unreachable for a committed result.",
+      "impact": "none on custody: the document is refused either way and classified RECOVERY_REQUIRED. Recorded so the guard is not mistaken for the active check.",
+      "severity": "LOW_NO_CUSTODY_IMPACT"
+    },
+    {
+      "finding": "CORRUPT_CALLBACKS_ARE_PERSISTED_INTO_THE_CONTROL_PLANE",
+      "detail": "a refused result is still written to control/tasks/<task>/result-<hash>.json alongside its ingestion record.",
+      "impact": "this is what makes the refusal auditable and hash-covered; it is recorded as observed behaviour rather than as a fault.",
+      "severity": "INFORMATIONAL"
+    }
+  ],
+  "reproduction": {
+    "component": "workstreams/po03/attempts/po03-wa-b2e7-047-corrupt-artifact-recovery/corruption_injector.py",
+    "command": "python3 -I workstreams/po03/attempts/po03-wa-b2e7-047-corrupt-artifact-recovery/corruption_injector.py",
+    "exit_code_observed": 0,
+    "report": "workstreams/po03/attempts/po03-wa-b2e7-047-corrupt-artifact-recovery/injection-report.json",
+    "test_command": "python3 -I -m unittest discover -s workstreams/po03/attempts/po03-wa-b2e7-047-corrupt-artifact-recovery -p 'test_*.py' -v",
+    "test_outcome": "11 tests, OK",
+    "test_output": "workstreams/po03/attempts/po03-wa-b2e7-047-corrupt-artifact-recovery/test-output.txt"
+  },
+  "obzio_state_claim": "READY_TO_COMMIT",
+  "producer_may_not_accept_own_work": true,
+  "decision_changed": []
+}
