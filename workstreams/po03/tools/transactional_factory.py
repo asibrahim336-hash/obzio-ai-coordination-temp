@@ -44,6 +44,11 @@ FRONTIER_MODEL_FAMILIES = (
     "claude-opus-5",
     "gpt-5.6-sol",
 )
+ROUTE_REACTIVATED_STATE = "DISPATCH_AUTHORIZED_ISOLATED_CLONES"
+ROUTE_CANARY_TASK_IDS = (
+    "po03-route-isolation-canary-a",
+    "po03-route-isolation-canary-b",
+)
 
 ALLOWED_WRITE_PREFIXES = (
     "workstreams/po03/",
@@ -865,6 +870,324 @@ def record_route_collision(receipt_relative: str) -> dict[str, Any]:
         "collision_count": count + 1,
         "receipt_uri": receipt_relative,
     }
+
+
+def _canonical_receipt_path(receipt_relative: str) -> Path:
+    if "\\" in receipt_relative or "\x00" in receipt_relative:
+        raise FactoryError("route receipt path must be canonical POSIX")
+    relative = PurePosixPath(receipt_relative)
+    if (
+        relative.is_absolute()
+        or ".." in relative.parts
+        or relative.as_posix() != receipt_relative
+        or relative.parts[:2] != ("receipts", "po03")
+    ):
+        raise FactoryError("route receipt must be a canonical receipts/po03 path")
+    path = REPO_ROOT.joinpath(*relative.parts)
+    if not path.is_file():
+        raise FactoryError(f"missing route receipt: {receipt_relative}")
+    return path
+
+
+def _read_ingested_route_canary(task_id: str) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+    """Read one parent-ingested canary from exact immutable Git bytes."""
+    errors = verify_chain(task_id)
+    errors.extend(validate_ingested_result(task_id))
+    if errors:
+        raise FactoryError(f"{task_id} custody invalid: {'; '.join(errors)}")
+
+    events = task_events(task_id)
+    if not events or events[-1]["state"] != "PARENT_INGESTED":
+        raise FactoryError(f"{task_id} must remain PARENT_INGESTED for route activation")
+    transaction = read_json(CONTROL_ROOT / "tasks" / task_id / "transaction-ingested.json")
+    if (
+        transaction.get("task_id") != task_id
+        or transaction.get("obzio_state") != "PARENT_INGESTED"
+        or transaction.get("completion_actor") is not None
+        or transaction.get("independent_acceptance", {}).get("state") != "PENDING"
+    ):
+        raise FactoryError(f"{task_id} has an impermissible completion or acceptance claim")
+
+    result_transaction = transaction.get("result_transaction")
+    input_document = read_json(CONTROL_ROOT / "tasks" / task_id / "input.json")
+    if not isinstance(result_transaction, dict) or not isinstance(input_document.get("result_slot"), str):
+        raise FactoryError(f"{task_id} has no valid immutable result locator")
+    result_commit_id = result_transaction.get("result_commit_id")
+    if not isinstance(result_commit_id, str):
+        raise FactoryError(f"{task_id} result commit is missing")
+    require_git_object_id(result_commit_id, f"{task_id} result commit")
+
+    artifact = next(
+        (
+            item
+            for item in transaction.get("artifacts", [])
+            if isinstance(item, dict) and item.get("logical_name") == "canary.json"
+        ),
+        None,
+    )
+    if not isinstance(artifact, dict):
+        raise FactoryError(f"{task_id} has no ingested canary artifact")
+    expected_sha256 = artifact.get("sha256")
+    expected_bytes = artifact.get("bytes")
+    if not isinstance(expected_sha256, str) or not isinstance(expected_bytes, int):
+        raise FactoryError(f"{task_id} canary artifact declaration is invalid")
+
+    result_slot = input_document["result_slot"]
+    raw = git_bytes("show", f"{result_commit_id}:{result_slot}/canary.json")
+    if sha256_bytes(raw) != expected_sha256 or len(raw) != expected_bytes:
+        raise FactoryError(f"{task_id} canary bytes diverge from parent ingestion")
+    try:
+        document = json.loads(raw.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise FactoryError(f"{task_id} canary artifact is not valid JSON") from exc
+    if not isinstance(document, dict):
+        raise FactoryError(f"{task_id} canary artifact must be a JSON object")
+    return transaction, document, {
+        "task_id": task_id,
+        "result_commit_id": result_commit_id,
+        "canary_sha256": expected_sha256,
+        "result_slot": result_slot,
+    }
+
+
+def _observed_time(value: Any, field: str) -> datetime:
+    if not _nonempty(value):
+        raise FactoryError(f"{field} must be a non-empty RFC 3339 timestamp")
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise FactoryError(f"{field} is not a valid timestamp") from exc
+    if parsed.tzinfo is None:
+        raise FactoryError(f"{field} must include a timezone")
+    return parsed.astimezone(timezone.utc)
+
+
+def _route_canary_pair_evidence() -> dict[str, Any]:
+    """Independently compare both immutable route-canary artifacts."""
+    _, canary_a, result_a = _read_ingested_route_canary(ROUTE_CANARY_TASK_IDS[0])
+    _, canary_b, result_b = _read_ingested_route_canary(ROUTE_CANARY_TASK_IDS[1])
+    if (
+        canary_a.get("task_id") != ROUTE_CANARY_TASK_IDS[0]
+        or canary_b.get("task_id") != ROUTE_CANARY_TASK_IDS[1]
+        or canary_a.get("sibling_canary_id") != ROUTE_CANARY_TASK_IDS[1]
+        or canary_b.get("sibling_canary_id") != ROUTE_CANARY_TASK_IDS[0]
+        or canary_a.get("commission_id") != COMMISSION_ID
+        or canary_b.get("commission_id") != COMMISSION_ID
+        or canary_a.get("decision_changed") != []
+        or canary_b.get("decision_changed") != []
+    ):
+        raise FactoryError("route canary identity or authority evidence is invalid")
+
+    topology_a = canary_a.get("git_topology")
+    if not isinstance(topology_a, dict):
+        raise FactoryError("canary A is missing Git topology evidence")
+    fields_a = {
+        "worktree": topology_a.get("clone_worktree_path"),
+        "git_dir": topology_a.get("git_dir_absolute"),
+        "git_common_dir": topology_a.get("git_common_dir_resolved"),
+        "index_path": topology_a.get("index_path_resolved"),
+        "branch": topology_a.get("branch"),
+    }
+    fields_b = {
+        "worktree": canary_b.get("resolved_clone_worktree_path"),
+        "git_dir": canary_b.get("absolute_git_dir"),
+        "git_common_dir": canary_b.get("resolved_git_common_dir"),
+        "index_path": canary_b.get("resolved_index_path"),
+        "branch": canary_b.get("branch"),
+    }
+    if any(not _nonempty(value) for value in (*fields_a.values(), *fields_b.values())):
+        raise FactoryError("route canary Git topology fields must be non-empty")
+    colliding_fields = [
+        name for name in fields_a if fields_a[name] == fields_b[name]
+    ]
+    if colliding_fields:
+        raise FactoryError(
+            f"route canary Git topology is not disjoint: {', '.join(colliding_fields)}"
+        )
+
+    start_a = _observed_time(canary_a.get("started_at_utc"), "canary A start")
+    end_a = _observed_time(canary_a.get("ended_at_utc"), "canary A end")
+    start_b = _observed_time(canary_b.get("start_utc"), "canary B start")
+    end_b = _observed_time(canary_b.get("end_utc"), "canary B end")
+    if start_a >= end_a or start_b >= end_b:
+        raise FactoryError("route canary execution interval is invalid")
+    overlap_seconds = int((min(end_a, end_b) - max(start_a, start_b)).total_seconds())
+    if overlap_seconds <= 0:
+        raise FactoryError("route canary execution intervals do not overlap")
+
+    base_a = topology_a.get("base_commit_id")
+    base_b = canary_b.get("base_commit")
+    if not isinstance(base_a, str) or base_a != base_b:
+        raise FactoryError("route canaries do not share one immutable base commit")
+    require_git_object_id(base_a, "route canary base")
+    isolation_a = canary_a.get("isolation_attestations")
+    ownership_b = canary_b.get("ownership")
+    foreign_b = canary_b.get("foreign_evidence")
+    metadata_b = canary_b.get("git_metadata_identity")
+    if (
+        not isinstance(isolation_a, dict)
+        or isolation_a.get("foreign_commit_observed_on_owned_branch") is not False
+        or isolation_a.get("foreign_path_written") is not False
+        or isolation_a.get("shared_index_with_any_preexisting_checkout") is not False
+        or not isinstance(ownership_b, dict)
+        or ownership_b.get("writes_outside_owned_result_slot") != 0
+        or not isinstance(foreign_b, dict)
+        or foreign_b.get("foreign_worktree_mutation_observed") is not False
+        or not isinstance(metadata_b, dict)
+        or metadata_b.get("shared_index_evidence_observed") is not False
+    ):
+        raise FactoryError("route canary foreign-write or shared-index evidence is unsafe")
+
+    return {
+        "canary_results": [result_a, result_b],
+        "shared_base_commit_id": base_a,
+        "overlap_seconds": overlap_seconds,
+        "resolved_metadata_fields_disjoint": True,
+        "result_ranges_no_foreign_paths": True,
+        "parent_readback_verified": True,
+        "no_completion_or_self_acceptance": True,
+    }
+
+
+def _validate_route_reactivation_receipt(
+    receipt: dict[str, Any], evidence: dict[str, Any]
+) -> None:
+    if (
+        receipt.get("receipt_version") != "PO03-ROUTE-REACTIVATION-v1"
+        or not _nonempty(receipt.get("receipt_id"))
+        or receipt.get("commission_id") != COMMISSION_ID
+        or receipt.get("route_id") != "cursor-subagent-cloud-shared-checkout"
+        or receipt.get("prior_route_state") != "DISPATCH_SUSPENDED"
+        or receipt.get("route_state") != ROUTE_REACTIVATED_STATE
+        or receipt.get("safe_new_dispatch_ceiling") != 2
+        or not _nonempty(receipt.get("recorded_at"))
+        or receipt.get("decision_changed") != []
+    ):
+        raise FactoryError("route reactivation receipt fails structural safety checks")
+    comparison = receipt.get("controller_comparison")
+    if not isinstance(comparison, dict):
+        raise FactoryError("route reactivation receipt requires controller comparison")
+    for field in (
+        "resolved_metadata_fields_disjoint",
+        "result_ranges_no_foreign_paths",
+        "parent_readback_verified",
+        "no_completion_or_self_acceptance",
+    ):
+        if comparison.get(field) is not True or comparison.get(field) != evidence[field]:
+            raise FactoryError(f"route reactivation receipt lacks verified {field}")
+    if (
+        comparison.get("shared_base_commit_id") != evidence["shared_base_commit_id"]
+        or comparison.get("overlap_seconds") != evidence["overlap_seconds"]
+    ):
+        raise FactoryError("route reactivation comparison diverges from immutable canaries")
+
+    declared = receipt.get("canary_results")
+    if not isinstance(declared, list) or len(declared) != len(ROUTE_CANARY_TASK_IDS):
+        raise FactoryError("route reactivation receipt must name both canary results")
+    by_task = {
+        item.get("task_id"): item
+        for item in declared
+        if isinstance(item, dict) and isinstance(item.get("task_id"), str)
+    }
+    if set(by_task) != set(ROUTE_CANARY_TASK_IDS):
+        raise FactoryError("route reactivation receipt has an unexpected canary set")
+    for observed in evidence["canary_results"]:
+        declared_result = by_task[observed["task_id"]]
+        if any(
+            declared_result.get(field) != observed[field]
+            for field in ("result_commit_id", "canary_sha256", "result_slot")
+        ):
+            raise FactoryError("route reactivation receipt diverges from parent-ingested result")
+
+
+def reactivate_route(receipt_relative: str) -> dict[str, Any]:
+    """Authorize only the two-way isolated-clone route proven by canaries."""
+    receipt_path = _canonical_receipt_path(receipt_relative)
+    receipt = read_json(receipt_path)
+    health_path = CONTROL_ROOT / "route-health.json"
+    if not health_path.is_file():
+        raise FactoryError("missing route health control")
+    health = read_json(health_path)
+    if health.get("route_id") != "cursor-subagent-cloud-shared-checkout":
+        raise FactoryError("route health identifies an unexpected route")
+    if health.get("state") not in {"DISPATCH_SUSPENDED", ROUTE_REACTIVATED_STATE}:
+        raise FactoryError("route health is in an unsupported state")
+    if health.get("state") == "DISPATCH_SUSPENDED":
+        projection = read_json(CONTROL_ROOT / "recovery-state.json")
+        if projection.get("collision_count") != 1:
+            raise FactoryError("route cannot reactivate without exactly one recorded collision boundary")
+
+    evidence = _route_canary_pair_evidence()
+    _validate_route_reactivation_receipt(receipt, evidence)
+    receipt_sha256 = sha256_file(receipt_path)
+    if health.get("state") == ROUTE_REACTIVATED_STATE:
+        if (
+            health.get("reactivation_receipt") != receipt_relative
+            or health.get("reactivation_receipt_sha256") != receipt_sha256
+        ):
+            raise FactoryError("route reactivation receipt conflicts with existing route health")
+        return {
+            "status": "ALREADY_REACTIVATED",
+            "safe_new_dispatch_ceiling": health["safe_new_dispatch_ceiling"],
+        }
+
+    health["state"] = ROUTE_REACTIVATED_STATE
+    health["reason"] = "CONCURRENT_ISOLATED_CLONE_CANARIES_VERIFIED"
+    health["safe_new_dispatch_ceiling"] = 2
+    health["reactivation_receipt"] = receipt_relative
+    health["reactivation_receipt_sha256"] = receipt_sha256
+    health["reactivated_at"] = receipt["recorded_at"]
+    health["reactivation_constraints"] = [
+        "fresh isolated clone per material unit",
+        "one Git index and checked-out branch per material unit",
+        "immutable remote result read-back before parent ingestion",
+        "concurrency never exceeds the two-way proven ceiling",
+    ]
+    replace_atomic(health_path, canonical_json(health))
+
+    projection_path = CONTROL_ROOT / "recovery-state.json"
+    projection = read_json(projection_path)
+    projection["dispatch_route_state"] = ROUTE_REACTIVATED_STATE
+    projection["route_reactivation"] = {
+        "receipt_uri": receipt_relative,
+        "sha256": receipt_sha256,
+        "safe_new_dispatch_ceiling": 2,
+    }
+    replace_atomic(projection_path, canonical_json(projection))
+    return {
+        "status": "REACTIVATED",
+        "safe_new_dispatch_ceiling": 2,
+        "overlap_seconds": evidence["overlap_seconds"],
+    }
+
+
+def verify_route_reactivation() -> list[str]:
+    """Verify the active route authorization against immutable canary bytes."""
+    health_path = CONTROL_ROOT / "route-health.json"
+    if not health_path.is_file():
+        return ["missing route health control"]
+    try:
+        health = read_json(health_path)
+        if health.get("state") != ROUTE_REACTIVATED_STATE:
+            return [f"route is not reactivated: {health.get('state')!r}"]
+        receipt_relative = health.get("reactivation_receipt")
+        if not isinstance(receipt_relative, str):
+            return ["route health has no reactivation receipt"]
+        receipt_path = _canonical_receipt_path(receipt_relative)
+        if health.get("reactivation_receipt_sha256") != sha256_file(receipt_path):
+            return ["route health reactivation receipt hash diverges"]
+        evidence = _route_canary_pair_evidence()
+        _validate_route_reactivation_receipt(read_json(receipt_path), evidence)
+        projection = read_json(CONTROL_ROOT / "recovery-state.json")
+        if (
+            projection.get("dispatch_route_state") != ROUTE_REACTIVATED_STATE
+            or projection.get("route_reactivation", {}).get("receipt_uri") != receipt_relative
+            or projection.get("route_reactivation", {}).get("safe_new_dispatch_ceiling") != 2
+        ):
+            return ["recovery projection diverges from route reactivation"]
+    except (OSError, ValueError, subprocess.CalledProcessError, json.JSONDecodeError) as exc:
+        return [str(exc)]
+    return []
 
 
 def _update_recovery_projection(
@@ -2163,6 +2486,21 @@ def record_collision(args: argparse.Namespace) -> int:
     return 0
 
 
+def reactivate_route_command(args: argparse.Namespace) -> int:
+    print(json.dumps(reactivate_route(args.receipt), sort_keys=True))
+    return 0
+
+
+def verify_route_reactivation_command(_args: argparse.Namespace) -> int:
+    errors = verify_route_reactivation()
+    if errors:
+        for error in errors:
+            print(f"INVALID: {error}")
+        return 1
+    print("VALID route reactivation")
+    return 0
+
+
 def ingest_result(args: argparse.Namespace) -> int:
     result = ingest_committed_result(
         args.task_id,
@@ -2248,6 +2586,11 @@ def build_parser() -> argparse.ArgumentParser:
     collision_parser = subparsers.add_parser("record-collision")
     collision_parser.add_argument("--receipt", required=True)
     collision_parser.set_defaults(handler=record_collision)
+    reactivate_route_parser = subparsers.add_parser("reactivate-route")
+    reactivate_route_parser.add_argument("--receipt", required=True)
+    reactivate_route_parser.set_defaults(handler=reactivate_route_command)
+    verify_route_parser = subparsers.add_parser("verify-route-reactivation")
+    verify_route_parser.set_defaults(handler=verify_route_reactivation_command)
     return parser
 
 

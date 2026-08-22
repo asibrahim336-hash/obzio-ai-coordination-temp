@@ -5,6 +5,7 @@ import subprocess
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 MODULE_PATH = Path(__file__).parents[1] / "tools" / "transactional_factory.py"
@@ -279,6 +280,103 @@ class TransactionalFactoryTests(unittest.TestCase):
         self.assertEqual(1, projection["collision_count"])
         self.assertEqual("DISPATCH_SUSPENDED", projection["dispatch_route_state"])
         self.assertEqual(1, len(projection["collision_receipts"]))
+
+    def test_route_reactivation_requires_exact_two_canary_proof(self):
+        MODULE.CONTROL_ROOT.mkdir(parents=True)
+        MODULE.replace_atomic(
+            MODULE.CONTROL_ROOT / "route-health.json",
+            MODULE.canonical_json(
+                {
+                    "route_id": "cursor-subagent-cloud-shared-checkout",
+                    "state": "DISPATCH_SUSPENDED",
+                    "collision_count": 1,
+                }
+            ),
+        )
+        MODULE.replace_atomic(
+            MODULE.CONTROL_ROOT / "recovery-state.json",
+            MODULE.canonical_json(
+                {
+                    "recovery_version": "PO03-RECOVERY-STATE-v1",
+                    "scan_state": "ACTIVE",
+                    "units": {},
+                    "collision_count": 1,
+                    "decision_changed": [],
+                }
+            ),
+        )
+        evidence = {
+            "canary_results": [
+                {
+                    "task_id": "po03-route-isolation-canary-a",
+                    "result_commit_id": "a" * 40,
+                    "canary_sha256": "b" * 64,
+                    "result_slot": "workstreams/po03/attempts/canary/a",
+                },
+                {
+                    "task_id": "po03-route-isolation-canary-b",
+                    "result_commit_id": "c" * 40,
+                    "canary_sha256": "d" * 64,
+                    "result_slot": "workstreams/po03/attempts/canary/b",
+                },
+            ],
+            "shared_base_commit_id": "e" * 40,
+            "overlap_seconds": 124,
+            "resolved_metadata_fields_disjoint": True,
+            "result_ranges_no_foreign_paths": True,
+            "parent_readback_verified": True,
+            "no_completion_or_self_acceptance": True,
+        }
+
+        def receipt(ceiling):
+            return {
+                "receipt_version": "PO03-ROUTE-REACTIVATION-v1",
+                "receipt_id": "reactivation-1",
+                "commission_id": MODULE.COMMISSION_ID,
+                "route_id": "cursor-subagent-cloud-shared-checkout",
+                "prior_route_state": "DISPATCH_SUSPENDED",
+                "route_state": MODULE.ROUTE_REACTIVATED_STATE,
+                "safe_new_dispatch_ceiling": ceiling,
+                "recorded_at": "2026-08-22T08:00:00Z",
+                "canary_results": evidence["canary_results"],
+                "controller_comparison": {
+                    key: evidence[key]
+                    for key in (
+                        "shared_base_commit_id",
+                        "overlap_seconds",
+                        "resolved_metadata_fields_disjoint",
+                        "result_ranges_no_foreign_paths",
+                        "parent_readback_verified",
+                        "no_completion_or_self_acceptance",
+                    )
+                },
+                "decision_changed": [],
+            }
+
+        invalid_receipt_relative = "receipts/po03/2026-08-22/reactivation-invalid.json"
+        valid_receipt_relative = "receipts/po03/2026-08-22/reactivation-valid.json"
+        MODULE.write_once(
+            MODULE.REPO_ROOT / invalid_receipt_relative,
+            MODULE.canonical_json(receipt(3)),
+        )
+        with patch.object(MODULE, "_route_canary_pair_evidence", return_value=evidence):
+            with self.assertRaises(MODULE.FactoryError):
+                MODULE.reactivate_route(invalid_receipt_relative)
+
+        MODULE.write_once(
+            MODULE.REPO_ROOT / valid_receipt_relative,
+            MODULE.canonical_json(receipt(2)),
+        )
+        with patch.object(MODULE, "_route_canary_pair_evidence", return_value=evidence):
+            first = MODULE.reactivate_route(valid_receipt_relative)
+            replay = MODULE.reactivate_route(valid_receipt_relative)
+        health = json.loads((MODULE.CONTROL_ROOT / "route-health.json").read_text())
+        projection = json.loads((MODULE.CONTROL_ROOT / "recovery-state.json").read_text())
+        self.assertEqual("REACTIVATED", first["status"])
+        self.assertEqual("ALREADY_REACTIVATED", replay["status"])
+        self.assertEqual(MODULE.ROUTE_REACTIVATED_STATE, health["state"])
+        self.assertEqual(2, health["safe_new_dispatch_ceiling"])
+        self.assertEqual(MODULE.ROUTE_REACTIVATED_STATE, projection["dispatch_route_state"])
 
     def test_write_once_is_idempotent_but_immutable(self):
         destination = MODULE.PO03_ROOT / "control" / "immutable.json"
