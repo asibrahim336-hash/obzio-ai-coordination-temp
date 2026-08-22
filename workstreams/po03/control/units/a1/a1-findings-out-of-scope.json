@@ -77,6 +77,20 @@
       "integration_ready_change": "None required.",
       "not_applied_because": "Nothing to apply.",
       "engine_disposition": "RETAIN."
+    },
+    {
+      "finding_id": "FIND-A1-06",
+      "subject": "Compiled bytecode is tracked at workstreams/po03/tests/__pycache__/ and workstreams/po03/tools/__pycache__/",
+      "owner": "coordinator",
+      "severity": "LOW",
+      "state": "REPORTED_NOT_REPAIRED",
+      "discovered_by_unit": "a1-u08",
+      "reproducing_test": "git ls-files 'workstreams/po03/**/__pycache__/*' lists test_validate_contracts.cpython-312.pyc and validate_contracts.cpython-312.pyc. Running the gate suite once leaves both reported as modified by git status.",
+      "observation": "Two .pyc files are committed inside coordinator-owned directories. Any cohort that runs the gate suite recompiles them, so a clean checkout becomes dirty in paths that cohort does not own, without touching a single source file.",
+      "consequence": "A cohort using 'git add -A' or 'git commit -a' would commit compiled bytecode into coordinator-owned paths and trip the ownership check at ingestion, or worse, land a stale .pyc that shadows a later source change on a runner with a warm cache. It is a collision and portability hazard rather than a custody one.",
+      "integration_ready_change": "git rm --cached the two tracked .pyc files and add a __pycache__/ and *.pyc entry to the repository or workstreams/po03 .gitignore.",
+      "not_applied_because": "Both files and any workstreams/po03-level .gitignore sit outside cohort a1's owned prefixes.",
+      "engine_disposition": "AVOIDED WITHIN OWNED PATHS. Cohort a1 committed only explicit path lists, never 'git add -A', and restored both files with git checkout after the final gate run, so this branch carries no bytecode change. workstreams/po03/engine/.gitignore already excludes the engine's own __pycache__ and scratch space."
     }
   ],
   "limitations": [
