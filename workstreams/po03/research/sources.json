@@ -1,0 +1,158 @@
+{
+  "note": "Every entry lists a source actually fetched over live egress by po03-worker-a5. observed_at is the UTC date the page was retrieved during this commission. Text under evidence_snippet is a short verbatim excerpt confirming the claim was read, not paraphrased from memory.",
+  "units": {
+    "a5-u01": {
+      "prediction": "A fault class is survivable by a durable-execution style custody engine iff the specific invariant it depends on is present: idempotency/dedup key for duplicate-effect faults, fence token for stale-writer-after-eviction faults, and an append-only history (outbox/event-log) for crash-and-replay faults. Removing the invariant a fault class depends on makes that class unsurvivable while leaving unrelated invariants intact does not fix it.",
+      "sources": [
+        {
+          "url": "https://docs.temporal.io/workflows",
+          "observed_at": "2026-08-22",
+          "claim": "Durable workflow engines rebuild state by replaying a complete, ordered Event History; a Workflow must be deterministic given that history.",
+          "evidence_snippet": "Because the Workflow is re-executed to rebuild its state: It has to make the same decisions when given the same history, which makes a Workflow deterministic."
+        },
+        {
+          "url": "https://docs.aws.amazon.com/step-functions/latest/dg/concepts-standard-vs-express.html",
+          "observed_at": "2026-08-22",
+          "claim": "AWS Step Functions documents an explicit exactly-once vs at-least-once distinction tied directly to whether actions are idempotent.",
+          "evidence_snippet": "Standard Workflows follow an exactly-once model... Express Workflows use an at-least-once model... better suited for orchestrating idempotent actions."
+        },
+        {
+          "url": "https://martin.kleppmann.com/2016/02/08/how-to-do-distributed-locking.html",
+          "observed_at": "2026-08-22",
+          "claim": "A fencing token (a monotonically increasing number issued at lock/lease acquisition) is the standard fix for a paused/stale client committing after its lease expired.",
+          "evidence_snippet": "The fix for this problem is actually pretty simple: you need to include a fencing token with every write request to the storage service."
+        }
+      ]
+    },
+    "a5-u02": {
+      "prediction": "Under injected callback loss, a content-addressed custody design (result committed to durable, independently re-readable storage keyed by content hash) recovers a materially higher fraction of results than a message-passing design (result only reachable via a single in-flight callback).",
+      "sources": [
+        {
+          "url": "https://git-scm.com/book/en/v2/Git-Internals-Git-Objects",
+          "observed_at": "2026-08-22",
+          "claim": "Content-addressable storage keys data by the hash of its own content, so any party holding the key can independently re-fetch and verify the content, with no dependency on the writer's delivery channel.",
+          "evidence_snippet": "Git is a content-addressable filesystem... you can insert any kind of content into a Git repository, for which Git will hand you back a unique key you can use later to retrieve that content."
+        }
+      ]
+    },
+    "a5-u03": {
+      "prediction": "Two independently frozen review methodologies applied blind to the same seeded-defect corpus find a non-identical set of defect classes (neither is a subset of the other), so pooling both catches strictly more than either alone.",
+      "sources": [
+        {
+          "url": "https://en.wikipedia.org/wiki/N-version_programming",
+          "observed_at": "2026-08-22",
+          "claim": "The founding conjecture of N-version programming is that independently produced implementations from the same spec fail differently, so diversity reduces correlated (identical) defects.",
+          "evidence_snippet": "the central conjecture that the \"independence of programming efforts will greatly reduce the probability of identical software faults\""
+        },
+        {
+          "url": "https://research.google/pubs/modern-code-review-a-case-study-at-google/",
+          "observed_at": "2026-08-22",
+          "claim": "Real-world lightweight code review at scale is the deployed practice this hypothesis generalizes from; it does not itself measure cross-model-family diversity.",
+          "evidence_snippet": "we make an exploratory investigation of modern code review at Google"
+        }
+      ],
+      "scope_limitation": "This commission's cross-family review matrix means different frontier LLM families (e.g. reviewer po03-worker-a6 vs producer families). This subagent has no tool to invoke a second frontier model family live inside a dependency-free stdlib reproduction, and may not contact other PO-03 workers. The reproduction therefore operationalizes 'family' as two independently coded, methodologically distinct reviewers (static pattern-based vs dynamic property/mutation-based) as the nearest testable proxy for cross-family diversity, and this substitution is recorded explicitly rather than reported as literal multi-LLM evidence."
+    },
+    "a5-u04": {
+      "prediction": "At a fixed context budget, selecting content by relevance-ranked hashed chunks preserves a larger fraction of task-relevant facts than naive whole-tree dumping truncated at the same budget, and the gap widens as corpus size grows past the budget.",
+      "sources": [
+        {
+          "url": "https://arxiv.org/abs/2307.03172",
+          "observed_at": "2026-08-22",
+          "claim": "Language model performance on long-context tasks degrades when relevant information sits in the middle of a large, undifferentiated context, even for models built for long contexts.",
+          "evidence_snippet": "significantly degrades when models must access relevant information in the middle of long contexts, even for explicitly long-context models"
+        }
+      ],
+      "scope_limitation": "No live frontier-model call is available inside this dependency-free stdlib harness, so 'accepted-result rate at equal reasoning setting' cannot be measured directly here. The reproduction measures the necessary precondition -- fact-admission recall under a fixed token budget -- as a deterministic proxy, and the full acceptance-rate claim is recorded NOT_YET rather than asserted from the proxy alone."
+    },
+    "a5-u05": {
+      "prediction": "Acceptance criteria frozen before an implementation is inspected catch a higher fraction of seeded defects across several implementations than criteria written after inspecting one implementation's happy-path behavior.",
+      "sources": [
+        {
+          "url": "https://www.cos.io/initiatives/prereg",
+          "observed_at": "2026-08-22",
+          "claim": "Preregistration means specifying a plan before doing the study, precisely so criteria cannot be reshaped by having already seen the outcome.",
+          "evidence_snippet": "the same data cannot be used to generate and test a hypothesis, which can happen unintentionally and reduce the credibility of your results"
+        }
+      ]
+    },
+    "a5-u06": {
+      "prediction": "A hand-rolled, seeded property/metamorphic test harness run against the real validate_contracts.validate_result function kills at least one mutant of that function that the existing example-based test_validate_contracts.py suite does not kill.",
+      "sources": [
+        {
+          "url": "https://hypothesis.readthedocs.io/en/latest/index.html",
+          "observed_at": "2026-08-22",
+          "claim": "Property-based testing checks a property over a whole input space rather than a handful of examples, exposing edge cases the author did not think to write down as an example.",
+          "evidence_snippet": "you write tests which should pass for all inputs in whatever range you describe... including edge cases you might not have thought about"
+        }
+      ],
+      "scope_limitation": "The Hypothesis package itself is a third-party dependency and is not installed in this dependency-free stdlib runtime, so the harness is a hand-rolled seeded generator/shrinker rather than an import of that library. It reproduces the property-based *technique* against the real validator, not the library."
+    },
+    "a5-u07": {
+      "prediction": "A deterministic seeded scheduler that interleaves concurrent custody operations explores an explicitly larger, quantified space of orderings than the sequential fault-injection style already covered by the existing suite, and either finds an interleaving-only invariant violation within that space or proves none exists within it.",
+      "sources": [
+        {
+          "url": "https://asatarin.github.io/testing-distributed-systems/",
+          "observed_at": "2026-08-22",
+          "claim": "Deterministic simulation testing, pioneered by FoundationDB and since adopted widely, and dedicated interleaving-exploration techniques find concurrency bugs that ordinary sequential testing does not reach.",
+          "evidence_snippet": "Pioneered by FoundationDB, deterministic simulation approach to testing distributed systems gained more popularity in recent years."
+        }
+      ]
+    },
+    "a5-u08": {
+      "prediction": "Sweeping lease TTL across at least four values on a synthetic workload with a modeled task-duration distribution shows a non-monotonic trade-off between false-eviction rate (TTL too short) and mean recovery time (TTL too long), with an interior minimum of a combined cost.",
+      "sources": [
+        {
+          "url": "https://etcd.io/docs/v3.5/learning/api/#lease-api",
+          "observed_at": "2026-08-22",
+          "claim": "Production lease services expose an explicit TTL/keepalive model in which too-short a TTL causes premature expiry and too-long a TTL delays detecting a dead holder.",
+          "evidence_snippet": "A lease expires if the etcd cluster does not receive a keepAlive within a given TTL period."
+        }
+      ]
+    },
+    "a5-u09": {
+      "prediction": "Coding the documented Wave-A/PO-02 incidents in workstreams/po03/evidence/so02-operating-correction.json against the six causal_defects categories shows the self-report/self-certification-without-independent-verification category implicated more often than any single other category.",
+      "sources": [
+        {
+          "url": "https://sre.google/sre-book/postmortem-culture/",
+          "observed_at": "2026-08-22",
+          "claim": "SRE postmortem practice treats an incident report as evidence about contributing causes, not as the producer's own certification of what happened -- the general pattern this hypothesis targets.",
+          "evidence_snippet": "it must focus on identifying the contributing causes of the incident without indicting any individual or team"
+        },
+        {
+          "url": "workstreams/po03/evidence/so02-operating-correction.json",
+          "observed_at": "2026-08-22",
+          "claim": "Internal frozen evidence document recording the causal_defects taxonomy and the concrete PO-02/Wave-A incidents this unit codes against it.",
+          "evidence_snippet": "\"worker self-report could represent completion\", \"provider return route was treated as result custody\""
+        }
+      ]
+    },
+    "a5-u10": {
+      "prediction": "Replaying the same real Wave-A ledger history through an append-only-log-plus-projection design and a mutable-status-file design, then injecting one lost/partial write, shows the log design detects the loss (hash-chain mismatch) and fully reconstructs history while the mutable-file design silently loses the update.",
+      "sources": [
+        {
+          "url": "https://docs.temporal.io/encyclopedia/event-history",
+          "observed_at": "2026-08-22",
+          "claim": "An immutable, ordered event history from which current state is projected is the durable-execution pattern this hypothesis compares against a mutable single-record file.",
+          "evidence_snippet": "Event History"
+        }
+      ]
+    },
+    "a5-u11": {
+      "prediction": "Within this wave, hypotheses that were frozen in hypotheses.jsonl before their reproduction ran reach a decisive outcome (SUPPORTED or REJECTED with a measurement) at a higher rate than an ad hoc comparison group explored without pre-freezing criteria.",
+      "sources": [
+        {
+          "url": "https://www.cos.io/initiatives/prereg",
+          "observed_at": "2026-08-22",
+          "claim": "The mechanism preregistration protects against is criteria drifting to match whatever was already observed; the same mechanism should raise decisive-outcome rate for engineering hypotheses.",
+          "evidence_snippet": "Preregistering creates a specific plan for the upcoming study. Doing so helps to distinguish planned from unplanned work."
+        }
+      ]
+    },
+    "a5-u12": {
+      "prediction": "At least two of the mechanism changes proposed by units a5-u02, a5-u06, a5-u07, a5-u08 and a5-u10 survive a second, independent execution of their reproduction (fresh process, no shared in-memory state, and where applicable a different random seed) with the same qualitative outcome.",
+      "sources": [],
+      "scope_limitation": "The acceptance wording asks for recurrence testing 'by a different owner'. This subagent is confined to its own worktree/branch and has no tool to invoke po03-worker-a6 or po03-worker-a10 or to signal the coordinator to do so mid-unit. The recurrence test actually executed here is independent-process, independent-seed re-execution by this same worker; true different-owner replay is recorded as NOT_YET with that exact boundary."
+    }
+  }
+}
