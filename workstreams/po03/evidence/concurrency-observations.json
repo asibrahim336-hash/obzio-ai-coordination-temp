@@ -1,0 +1,45 @@
+{
+  "observation_id": "EV-PO03-CONCURRENCY-OBSERVATIONS-20260822-b2e7",
+  "controller_run_id": "bc-2bb75c2e-66fe-4eee-b456-e1d5e22db2e7",
+  "recorded_at": "2026-08-22T07:05:00Z",
+  "decision_changed": [],
+  "purpose": "Record the provider concurrency actually observed rather than an assumed ceiling. The commission requires beginning at maximum safe active concurrency and recording the exact observed limit if one exists.",
+  "dispatch_mechanism": {
+    "route": "Cursor subagent dispatch, each subordinate bound to a dedicated git worktree and its own result branch",
+    "isolation": "git worktree per subordinate; disjoint owned subtree per unit; controller is the sole writer of shared PO-03 paths",
+    "durable_sink": "git object store plus the origin remote; every artifact is located by immutable object id",
+    "cloud_vm_per_subordinate": "NOT_USED",
+    "cloud_vm_basis": "cloud subagents were not requested by the founder instruction and were not required, because a dedicated worktree plus a dedicated result branch already provides the isolation and unique ownership the commission specifies"
+  },
+  "top_level_dispatch_observed": {
+    "concurrent_subordinates_launched": 9,
+    "composition": "1 route-canary producer plus 8 Wave A cohort leads",
+    "provider_refusals": 0,
+    "provider_throttles_observed": 0,
+    "queueing_observed": 0,
+    "all_accepted": true,
+    "observed_ceiling": "NOT_REACHED_AT_9_CONCURRENT",
+    "honest_limitation": "A ceiling cannot be reported as a number because no refusal, throttle or queueing was observed at the concurrency this controller drove. The value is an observed lower bound on capacity, not a measured maximum."
+  },
+  "nested_dispatch_authorisation": {
+    "cohort_internal_concurrency_cap": 3,
+    "cap_rationale": "each cohort lead may parallelise its 8 units internally, capped so total in-flight subordinates stay within a range this controller can reconcile and recover",
+    "theoretical_peak_in_flight": 32,
+    "instruction_to_leads": "record verbatim any provider error, refusal or throttle encountered when spawning; that observation is the required ceiling evidence"
+  },
+  "scale_ladder_position": {
+    "wave": "A",
+    "commissioned_minimum_attempts": 64,
+    "attempts_created_and_claimed": 64,
+    "attempts_dispatched": 64,
+    "wave_b_precondition": "Wave B at 128 attempts requires Wave A first demonstrating zero false completion, zero result loss and zero path collision",
+    "wave_b_state": "NOT_YET",
+    "wave_b_blocking_observation": "a cross-controller path collision was observed and repaired during Wave A; the zero-path-collision precondition must be re-demonstrated against the repaired mechanism before Wave B may open"
+  },
+  "machine_capacity_observed": {
+    "cpu_count": 8,
+    "memory_total_gb": 47,
+    "disk_available": "228G",
+    "note": "local capacity was not the binding constraint on dispatch concurrency"
+  }
+}

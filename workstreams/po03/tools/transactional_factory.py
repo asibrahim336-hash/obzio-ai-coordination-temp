@@ -733,6 +733,203 @@ def assert_fence_current(task_id: str, fence_token: int) -> None:
         )
 
 
+REMOTE_LEASE_PREFIX = "refs/heads/po03/lease/"
+
+
+def _claim_commit(payload: dict[str, Any]) -> str:
+    """Build an unreferenced commit carrying an ownership claim."""
+    claim_bytes = canonical_json(payload)
+    blob = subprocess.run(
+        ("git", "hash-object", "-w", "--stdin"),
+        cwd=REPO_ROOT,
+        input=claim_bytes,
+        check=True,
+        capture_output=True,
+    ).stdout.decode().strip()
+    tree = subprocess.run(
+        ("git", "mktree"),
+        cwd=REPO_ROOT,
+        input=f"100644 blob {blob}\tclaim.json\n".encode("utf-8"),
+        check=True,
+        capture_output=True,
+    ).stdout.decode().strip()
+    return git("commit-tree", tree, "-m", f"po03 lease claim {payload['task_id']}")
+
+
+def read_remote_claim(task_id: str, *, remote: str = "origin") -> dict[str, Any] | None:
+    """Return the published ownership claim for a task, or None if unclaimed."""
+    ref = REMOTE_LEASE_PREFIX + task_id
+    listing = git("ls-remote", remote, ref)
+    if not listing.strip():
+        return None
+    git("fetch", "--no-tags", remote, ref)
+    head = git("rev-parse", "FETCH_HEAD")
+    body = subprocess.run(
+        ("git", "cat-file", "blob", f"{head}:claim.json"),
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+    ).stdout
+    claim = json.loads(body.decode("utf-8"))
+    return claim if isinstance(claim, dict) else None
+
+
+def acquire_remote_lease(
+    task_id: str,
+    controller_run_id: str,
+    *,
+    remote: str = "origin",
+    attempt: int = 1,
+) -> dict[str, Any]:
+    """Atomically claim cross-controller ownership of a task.
+
+    A local fence token cannot arbitrate between two controllers that inherited
+    the same immutable capsule: both read the same frozen token and both believe
+    they own the work.  Creating a remote ref is a compare-and-swap, so the first
+    controller to publish a claim wins and every later controller is refused
+    instead of colliding in the shared result slot.
+    """
+    existing = read_remote_claim(task_id, remote=remote)
+    if existing is not None:
+        state = "OWNED" if existing.get("controller_run_id") == controller_run_id else "REFUSED"
+        return {"state": state, "owner": existing.get("controller_run_id"), "claim": existing}
+
+    payload = {
+        "claim_version": "PO03-REMOTE-LEASE-CLAIM-v1",
+        "task_id": task_id,
+        "controller_run_id": controller_run_id,
+        "commission_id": COMMISSION_ID,
+        "attempt": attempt,
+        "claimed_at": utc_now(),
+    }
+    commit = _claim_commit(payload)
+    try:
+        git("push", remote, f"{commit}:{REMOTE_LEASE_PREFIX}{task_id}")
+    except subprocess.CalledProcessError:
+        # Another controller won the race between the check and the push.
+        existing = read_remote_claim(task_id, remote=remote)
+        return {
+            "state": "REFUSED",
+            "owner": existing.get("controller_run_id") if existing else "UNKNOWN",
+            "claim": existing,
+        }
+    return {"state": "ACQUIRED", "owner": controller_run_id, "claim": payload}
+
+
+def published_claims(remote: str = "origin") -> dict[str, dict[str, Any]]:
+    """Read every published ownership claim in one batched round trip."""
+    listing = git("ls-remote", "--heads", remote, f"{REMOTE_LEASE_PREFIX}*")
+    task_ids = [
+        line.split("\t")[1][len(REMOTE_LEASE_PREFIX) :]
+        for line in listing.splitlines()
+        if "\t" in line
+    ]
+    if not task_ids:
+        return {}
+    git("fetch", "--no-tags", "--force", remote, f"+{REMOTE_LEASE_PREFIX}*:refs/po03-claims/*")
+    claims: dict[str, dict[str, Any]] = {}
+    for task_id in task_ids:
+        body = subprocess.run(
+            ("git", "cat-file", "blob", f"refs/po03-claims/{task_id}:claim.json"),
+            cwd=REPO_ROOT,
+            check=False,
+            capture_output=True,
+        )
+        if body.returncode != 0:
+            continue
+        try:
+            claim = json.loads(body.stdout.decode("utf-8"))
+        except json.JSONDecodeError:
+            continue
+        if isinstance(claim, dict):
+            claims[task_id] = claim
+    return claims
+
+
+def claim_wave(spec_path: Path, controller_run_id: str, *, remote: str = "origin") -> dict[str, Any]:
+    """Claim every unclaimed unit in a wave with one batched compare-and-swap.
+
+    Idempotent: a slot this controller already owns is reported as owned rather
+    than re-pushed, and a slot another controller owns is reported as contended
+    rather than overwritten.
+    """
+    spec = read_json(spec_path)
+    existing = published_claims(remote)
+    owned: list[str] = []
+    contended: list[dict[str, str]] = []
+    refspecs: list[str] = []
+    for unit in spec["units"]:
+        task_id = unit["task_id"]
+        claim = existing.get(task_id)
+        if claim is not None:
+            if claim.get("controller_run_id") == controller_run_id:
+                owned.append(task_id)
+            else:
+                contended.append({"task_id": task_id, "owner": claim.get("controller_run_id", "UNKNOWN")})
+            continue
+        payload = {
+            "claim_version": "PO03-REMOTE-LEASE-CLAIM-v1",
+            "task_id": task_id,
+            "controller_run_id": controller_run_id,
+            "commission_id": COMMISSION_ID,
+            "attempt": 1,
+            "claimed_at": utc_now(),
+        }
+        refspecs.append(f"{_claim_commit(payload)}:{REMOTE_LEASE_PREFIX}{task_id}")
+
+    acquired: list[str] = []
+    rejected: list[str] = []
+    exit_code = 0
+    if refspecs:
+        completed = subprocess.run(
+            ("git", "push", "--porcelain", remote, *refspecs),
+            cwd=REPO_ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        exit_code = completed.returncode
+        for line in completed.stdout.splitlines():
+            parts = line.split("\t")
+            if len(parts) < 2:
+                continue
+            target = parts[1].split(":")[-1]
+            if not target.startswith(REMOTE_LEASE_PREFIX):
+                continue
+            task_id = target[len(REMOTE_LEASE_PREFIX) :]
+            (rejected if parts[0].startswith("!") else acquired).append(task_id)
+
+    return {
+        "claim_outcome_version": "PO03-WAVE-CLAIM-v1",
+        "controller_run_id": controller_run_id,
+        "remote": remote,
+        "requested": len(spec["units"]),
+        "already_owned": sorted(owned),
+        "acquired": sorted(acquired),
+        "rejected_at_push": sorted(rejected),
+        "contended": sorted(contended, key=lambda item: item["task_id"]),
+        "already_owned_count": len(owned),
+        "acquired_count": len(acquired),
+        "rejected_count": len(rejected),
+        "contended_count": len(contended),
+        "exclusive_ownership_complete": len(owned) + len(acquired) == len(spec["units"]),
+        "push_exit_code": exit_code,
+        "claimed_at": utc_now(),
+    }
+
+
+def assert_remote_ownership(task_id: str, controller_run_id: str, *, remote: str = "origin") -> None:
+    """Refuse to publish into a result slot this controller does not own."""
+    claim = read_remote_claim(task_id, remote=remote)
+    if claim is None:
+        raise StaleFenceError(f"{task_id}: no published ownership claim; acquire a remote lease first")
+    owner = claim.get("controller_run_id")
+    if owner != controller_run_id:
+        raise StaleFenceError(
+            f"{task_id}: result slot is owned by controller {owner}, not {controller_run_id}"
+        )
+
+
 def read_object_bytes(locator: str) -> bytes:
     """Read committed bytes by immutable Git object id, never from the worktree."""
     if not locator.startswith("git:"):
@@ -1053,6 +1250,14 @@ def collisions(args: argparse.Namespace) -> int:
     return 1 if found else 0
 
 
+def claim(args: argparse.Namespace) -> int:
+    outcome = claim_wave(Path(args.spec), args.run_id)
+    if args.out:
+        write_once(Path(args.out), canonical_json(outcome))
+    print(json.dumps(outcome, indent=2, sort_keys=True))
+    return 0 if outcome["exclusive_ownership_complete"] else 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -1088,6 +1293,12 @@ def build_parser() -> argparse.ArgumentParser:
 
     collision_parser = subparsers.add_parser("collisions")
     collision_parser.set_defaults(handler=collisions)
+
+    claim_parser = subparsers.add_parser("claim-wave")
+    claim_parser.add_argument("spec")
+    claim_parser.add_argument("--run-id", required=True)
+    claim_parser.add_argument("--out", default=None)
+    claim_parser.set_defaults(handler=claim)
     return parser
 
 

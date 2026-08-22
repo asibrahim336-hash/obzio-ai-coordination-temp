@@ -1,0 +1,94 @@
+{
+  "receipt_id": "RCP-PO03-DISPATCH-AUTHORIZATION-20260822-b2e7",
+  "supersedes_receipt": null,
+  "extends_receipt": "RCP-PO03-AMENDMENT-ACTIVATION-20260822-v001",
+  "extends_receipt_note": "The prior activation receipt is immutable and recorded transactional_dispatch_state CANARY_CREATED_NOT_DISPATCHED with material_subordinate_dispatch_authorized false. This receipt records what this controller run did to clear that precondition. It adds to that evidence and does not rewrite it.",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "commission_continuation": true,
+  "strategy_restarted": false,
+  "decision_changed": [],
+  "controller_run_id": "bc-2bb75c2e-66fe-4eee-b456-e1d5e22db2e7",
+  "parent_model_exact": "claude-opus-5-thinking-max",
+  "recorded_at": "2026-08-22T07:05:00Z",
+  "repository": "github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+  "integration_branch": "cursor/po03-wave-a-transactional-factory-b2e7",
+  "immutable_head_pinned": "2b488695ffefa346abcf5d870ff103e6b221fe18",
+  "precondition_required_by_commission": "Before dispatch, durably write immutable task input, configuration, source hashes, acceptance hashes, exact model/configuration, owned paths, result slot, idempotency key, lease and fence token. Verify that the child can write and independently read back a synthetic canary. If no durable sink exists, do not delegate material work through that route.",
+  "durable_sink_verification": [
+    {
+      "proof": "controller-executed route canary",
+      "method": "wrote a nonce-bearing object, pushed it to refs/heads/po03/custody/route-canary, re-fetched it from the remote in a separate invocation and compared SHA-256",
+      "local_readback": "PASS",
+      "remote_readback": "PASS",
+      "commit": "5ec9e06670fe36ef07c92d92e631f73ad0e77b4c",
+      "evidence": "workstreams/po03/evidence/route-canary.json",
+      "executed_before_material_dispatch": true
+    },
+    {
+      "proof": "child-shaped isolated-worktree canary",
+      "method": "a producer working in a dedicated worktree committed artifacts on its own branch; the controller then read those bytes back by immutable object id from a separate process",
+      "observed_sha256": "d285a2c6e08797925c11a45bfadb05680152768192ed78b488f8a4b9bd8f432a",
+      "observed_bytes": 19,
+      "verdict": "PASS",
+      "executed_before_material_dispatch": true
+    },
+    {
+      "proof": "dedicated canary work unit po03-canary-001",
+      "method": "dispatched to a subordinate producer on a dedicated worktree and branch, using the exact model configuration frozen in the immutable capsule",
+      "producer_local_commit": "bb75306f0cdf2d75193b49aca32f1b53430418b9",
+      "producer_local_readback": "PASS, 852 bytes, sha256 8a7baed9734008103e28a14a745c72e712b5356fdaeae4652c9d5a034cc8523d",
+      "producer_publication": "REJECTED_NON_FAST_FORWARD",
+      "producer_verdict": "FAIL on the 'without path collision' clause of its hypothesis",
+      "producer_independently_verified_the_contended_bytes": "the bytes already published in the contended slot matched the frozen capsule nonce and its SHA-256",
+      "dispatched_before_material_dispatch": true,
+      "final_report_returned_before_material_dispatch": false,
+      "honest_sequencing_note": "The canary producer had already committed durable artifacts before the Wave A cohorts were dispatched, and its commit was observable to the controller at that time. Its final written report, including the collision finding, was read after the cohorts were dispatched. This is recorded exactly rather than presented as a clean sequential gate."
+    }
+  ],
+  "authorization_decision": {
+    "material_subordinate_dispatch_authorized": true,
+    "basis": "Two controller-executed proofs of durable write plus independent read-back by immutable object id completed before material dispatch, and the dedicated canary producer had committed durable artifacts before material dispatch.",
+    "durable_sink_verdict": "PASS",
+    "cross_controller_exclusivity_verdict_at_dispatch": "FAIL",
+    "cross_controller_exclusivity_verdict_after_repair": "PASS",
+    "repair": "atomic remote-ref ownership claim under refs/heads/po03/lease/<task_id>, with five recurrence tests",
+    "repair_evidence": "workstreams/po03/evidence/cross-controller-collision.json",
+    "exclusive_ownership_of_this_wave": "64 of 64 slots owned by this controller, 0 contended"
+  },
+  "wave_a_dispatch": {
+    "wave": "A",
+    "units_created": 64,
+    "units_claimed_exclusively": 64,
+    "units_dispatched": 64,
+    "cohorts": 8,
+    "concurrent_subordinates_at_dispatch": 9,
+    "provider_refusals": 0,
+    "spec": "workstreams/po03/control/wave-a-spec.json",
+    "path_collision_check": "PO03_PATH_COLLISION_PASS",
+    "capsules_are_immutable": true,
+    "controller_is_sole_writer_of_shared_paths": true
+  },
+  "custody_invariants_active": {
+    "worker_may_only_report": "READY_TO_COMMIT",
+    "only_coordinator_sets_completed": true,
+    "completion_requires_parent_ingested": true,
+    "producer_cannot_self_accept": true,
+    "provider_completion_without_result_commit_is": "PROVIDER_COMPLETED_UNCOMMITTED",
+    "artifacts_read_back_by_immutable_object_id": true,
+    "duplicate_callback_is_idempotent": true,
+    "stale_fence_is_refused": true,
+    "out_of_allowlist_write_fails_closed": true,
+    "test_count_passing": 63,
+    "test_command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py'"
+  },
+  "boundaries": {
+    "pr8_touched": false,
+    "po01_contacted_or_mutated": false,
+    "sibling_controller_branches_touched": false,
+    "merge_or_promotion_performed": false,
+    "founder_relay_required": false,
+    "owner_blocked_acts": []
+  },
+  "acceptance": "NOT_TESTED",
+  "self_marked_accepted": false
+}

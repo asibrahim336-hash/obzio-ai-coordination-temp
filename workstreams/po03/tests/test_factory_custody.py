@@ -339,6 +339,72 @@ class RecoveryAndCollisionTests(CustodyTestCase):
         self.assertEqual([], MODULE.detect_path_collisions())
 
 
+class CrossControllerLeaseTests(CustodyTestCase):
+    """Two controllers inheriting one capsule must not both own the result slot.
+
+    Regression cover for the observed collision on po03-canary-001, where a local
+    fence token could not arbitrate because both controllers read the same frozen
+    token from identical immutable bytes.
+    """
+
+    def setUp(self):
+        super().setUp()
+        root = Path(self.temporary.name)
+        self.remote = root / "remote.git"
+        subprocess.run(("git", "init", "--bare", "--quiet", str(self.remote)), check=True)
+        self.controllers = {}
+        for name in ("alpha", "beta"):
+            path = root / name
+            path.mkdir()
+            subprocess.run(("git", "init", "--quiet"), cwd=path, check=True)
+            for key, value in (("user.email", "po03@obzio.invalid"), ("user.name", "PO-03 Test")):
+                subprocess.run(("git", "config", key, value), cwd=path, check=True)
+            subprocess.run(("git", "remote", "add", "origin", str(self.remote)), cwd=path, check=True)
+            self.controllers[name] = path
+
+    def _as(self, name):
+        MODULE.REPO_ROOT = self.controllers[name]
+
+    def test_first_controller_acquires_and_second_is_refused(self):
+        self._as("alpha")
+        first = MODULE.acquire_remote_lease("po03-canary-001", "bc-alpha")
+        self.assertEqual("ACQUIRED", first["state"])
+
+        self._as("beta")
+        second = MODULE.acquire_remote_lease("po03-canary-001", "bc-beta")
+        self.assertEqual("REFUSED", second["state"])
+        self.assertEqual("bc-alpha", second["owner"])
+
+    def test_reacquisition_by_the_owner_is_idempotent(self):
+        self._as("alpha")
+        MODULE.acquire_remote_lease("po03-canary-001", "bc-alpha")
+        again = MODULE.acquire_remote_lease("po03-canary-001", "bc-alpha")
+        self.assertEqual("OWNED", again["state"])
+        self.assertEqual("bc-alpha", again["owner"])
+
+    def test_publishing_without_ownership_is_refused(self):
+        self._as("alpha")
+        MODULE.acquire_remote_lease("po03-unit-900", "bc-alpha")
+        MODULE.assert_remote_ownership("po03-unit-900", "bc-alpha")
+
+        self._as("beta")
+        with self.assertRaises(MODULE.StaleFenceError):
+            MODULE.assert_remote_ownership("po03-unit-900", "bc-beta")
+
+    def test_unclaimed_slot_is_refused_until_claimed(self):
+        self._as("alpha")
+        with self.assertRaises(MODULE.StaleFenceError):
+            MODULE.assert_remote_ownership("po03-unit-901", "bc-alpha")
+        MODULE.acquire_remote_lease("po03-unit-901", "bc-alpha")
+        MODULE.assert_remote_ownership("po03-unit-901", "bc-alpha")
+
+    def test_distinct_tasks_do_not_contend(self):
+        self._as("alpha")
+        self.assertEqual("ACQUIRED", MODULE.acquire_remote_lease("po03-unit-902", "bc-alpha")["state"])
+        self._as("beta")
+        self.assertEqual("ACQUIRED", MODULE.acquire_remote_lease("po03-unit-903", "bc-beta")["state"])
+
+
 class RegistryTests(CustodyTestCase):
     def test_registry_is_append_only(self):
         MODULE.append_registry({"registry_event": "CREATED", "task_id": "po03-unit-004"})

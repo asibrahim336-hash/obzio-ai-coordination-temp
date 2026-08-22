@@ -1,0 +1,95 @@
+{
+  "finding_id": "EV-PO03-CROSS-CONTROLLER-COLLISION-20260822-v001",
+  "controller_run_id": "bc-2bb75c2e-66fe-4eee-b456-e1d5e22db2e7",
+  "observed_at": "2026-08-22T06:59:07Z",
+  "function": "operating-system-measurement-and-failure-recovery",
+  "severity": "MATERIAL_COORDINATION_DEFECT",
+  "decision_changed": [],
+  "how_it_was_found": "Work unit po03-canary-001 was dispatched to a subordinate producer on a dedicated worktree and branch. The producer completed its artifact, attempted to publish, was refused non-fast-forward, declined the prohibited force-push, and reported FAIL with a path-collision classification rather than a manufactured success.",
+  "observation": {
+    "task_id": "po03-canary-001",
+    "result_slot": "workstreams/po03/attempts/canary/po03-canary-001",
+    "remote_branch": "po03/po03-canary-001",
+    "classification_by_producer": "SEQUENTIAL_DUPLICATE_DISPATCH_OF_ONE_IDEMPOTENCY_KEY",
+    "shared_idempotency_key": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001:po03-canary-001:attempt-1",
+    "shared_lease_id": "lease-po03-canary-001-1",
+    "shared_fence_token": 1,
+    "this_controller_local_commit": "bb75306f0cdf2d75193b49aca32f1b53430418b9",
+    "remote_ref_sha_observed": "4b0506a440614875987f52616f04deba879b9e16",
+    "push_outcome": "REJECTED_NON_FAST_FORWARD",
+    "force_push_performed": false,
+    "writes_outside_owned_path": 0
+  },
+  "root_cause": "The transactional protocol arbitrated ownership only with a fence token frozen inside the immutable task capsule. Two controller runs that inherit the same capsule read the identical fence token from identical bytes, so each concluded it held exclusive ownership of the same idempotency key, lease and result slot. A monotonic local counter cannot arbitrate between peers that never share a counter.",
+  "why_the_local_fence_was_insufficient": "Fence monotonicity is only meaningful within one allocator. The capsule is immutable and shared, therefore the fence it carries is a constant, not a claim. Exclusivity required a compare-and-swap on a resource both controllers can see.",
+  "concurrent_controllers_observed": [
+    {
+      "controller_run_id": "bc-13b664e4-a9eb-4a06-9b23-3283644e5b31",
+      "evidence": "authored workstreams/po03/control/model-capability-register.json and receipts/po03/2026-08-22/amendment-activation.json at branch head 2b48869",
+      "parent_model_recorded": "gpt-5.6-sol-max-fast"
+    },
+    {
+      "controller_run_id": "bc-2bb75c2e-66fe-4eee-b456-e1d5e22db2e7",
+      "evidence": "this controller; parent model claude-opus-5-thinking-max",
+      "parent_model_recorded": "claude-opus-5-thinking-max"
+    },
+    {
+      "controller_run_id": "UNKNOWN_ATTRIBUTION",
+      "evidence": "remote branches cursor/po03-wave-a-factory-6e19, po03/wave-a-001-source-lock-reproduction, po03/wave-a-022-agent-recovery-postmortems, po03/wave-a-041-schema-adversarial-review observed during this run; work-unit identifiers are unprefixed wave-a-NNN",
+      "parent_model_recorded": "NOT_SUPPORTED"
+    }
+  ],
+  "live_mechanism_change": {
+    "change": "Cross-controller ownership is now claimed by an atomic compare-and-swap on a remote git ref under refs/heads/po03/lease/<task_id>, carrying a claim document that names the owning controller run.",
+    "implementation": [
+      "workstreams/po03/tools/transactional_factory.py::acquire_remote_lease",
+      "workstreams/po03/tools/transactional_factory.py::read_remote_claim",
+      "workstreams/po03/tools/transactional_factory.py::published_claims",
+      "workstreams/po03/tools/transactional_factory.py::claim_wave",
+      "workstreams/po03/tools/transactional_factory.py::assert_remote_ownership"
+    ],
+    "primitive": "Creating a git ref is a compare-and-swap: the first controller to publish a claim wins, and every later controller is refused instead of colliding in a shared result slot.",
+    "idempotence": "A slot already owned by this controller reports OWNED and is not re-pushed; a slot owned by another controller reports contended and is never overwritten.",
+    "recurrence_tests": [
+      "workstreams/po03/tests/test_factory_custody.py::CrossControllerLeaseTests::test_first_controller_acquires_and_second_is_refused",
+      "workstreams/po03/tests/test_factory_custody.py::CrossControllerLeaseTests::test_reacquisition_by_the_owner_is_idempotent",
+      "workstreams/po03/tests/test_factory_custody.py::CrossControllerLeaseTests::test_publishing_without_ownership_is_refused",
+      "workstreams/po03/tests/test_factory_custody.py::CrossControllerLeaseTests::test_unclaimed_slot_is_refused_until_claimed",
+      "workstreams/po03/tests/test_factory_custody.py::CrossControllerLeaseTests::test_distinct_tasks_do_not_contend"
+    ],
+    "verified_against_real_remote": {
+      "lease_refs_published": 64,
+      "exclusive_ownership_complete": true,
+      "contended_count": 0,
+      "rejection_of_second_write_to_an_owned_ref": "observed: a push of a different commit to an existing lease ref is rejected as non-fast-forward",
+      "evidence_file": "workstreams/po03/evidence/wave-a-remote-claims.json"
+    }
+  },
+  "collision_avoidance_applied_to_this_wave": {
+    "task_id_namespace": "po03-wa-b2e7-NNN-<slug>",
+    "result_branch_namespace": "po03/wa-b2e7-c1 .. po03/wa-b2e7-c8",
+    "result_slot_namespace": "workstreams/po03/attempts/po03-wa-b2e7-NNN-<slug>",
+    "rationale": "The controller run suffix is carried in every identifier so a concurrently executing sibling controller cannot contend for any of this wave's 64 slots.",
+    "observed_disjointness_from_sibling": "sibling identifiers observed as wave-a-NNN with slots outside this namespace; zero overlap"
+  },
+  "route_durability_conclusion": {
+    "verdict": "PASS",
+    "basis": [
+      "controller-executed route canary wrote, pushed and independently re-fetched byte-identical content (workstreams/po03/evidence/route-canary.json)",
+      "a producer working in an isolated worktree committed artifacts that the controller then read back by immutable object id from a separate process",
+      "the producer independently verified that the bytes already published in the contended slot matched the frozen capsule nonce and its SHA-256"
+    ],
+    "distinction": "The durable sink is sound. The defect was exclusivity between controllers, not durability of the sink."
+  },
+  "canary_unit_disposition": {
+    "task_id": "po03-canary-001",
+    "obzio_state": "RECOVERY_REQUIRED",
+    "provider_state": "COMPLETED",
+    "decision": "SUPERSEDE",
+    "superseded_by": "remote-ref ownership claim plus run-suffixed identifier namespace",
+    "retained_as": "permanent cross-controller collision fault fixture",
+    "self_accepted": false,
+    "counted_as_substantive_wave_a_unit": false,
+    "reason_not_counted": "the unit is a route precondition probe, not one of the 64 commissioned Wave A attempts"
+  }
+}
