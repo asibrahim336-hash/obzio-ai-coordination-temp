@@ -1,0 +1,273 @@
+{
+  "all_blobs_verified": true,
+  "branch": "cursor/po03-wa-route-01-material-6e19",
+  "canary_commit": "00b3988bad3e2b74ba5c2d7a50dc8ab9883fc24e",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "decision_changed": [],
+  "dispositions": [
+    "PASS"
+  ],
+  "exact_model_configuration": "claude-opus-5-thinking-high",
+  "function": "transactional-custody",
+  "generated_at": "2026-08-22T07:25:17Z",
+  "immutable_base_commit": "44de68e52a0baa480a8a8c0b95fd5071391dd4a1",
+  "independent_acceptance": "NOT_TESTED",
+  "lease": {
+    "fence_token": 1,
+    "lease_batch_id": "PO03-WAVE-A-20260822:route-01:lease-1",
+    "owned_subtree": "workstreams/po03/runs/wave-a/route-01/",
+    "result_state_ceiling": "READY_TO_COMMIT"
+  },
+  "manifest_version": "PO03-ROUTE-01-MANIFEST-v1",
+  "ordered_result_commits": [
+    "2b23aeed91c90e09dd18ddf29d7cbf584bd13300",
+    "4217ca569d19d366ebe6337661438ca2eec1edc5",
+    "1bdb226bebb9538a5efb1b5a84d188cf5e418a36",
+    "e6efd8ef496d0e2437da6295e7e41a838cf7cc17",
+    "3fb7916fedca11e28a4fb47cf2e538c6927c0ff7",
+    "dc33d95158b0c97fc2ca1b0f85a9a99f0e695941",
+    "c0ee06ab73181cc2d8c7213152c8993869336d73",
+    "805906977a6cb046e9e7fd78e129af54231f18dc"
+  ],
+  "producer_terminal_report": "READY_TO_COMMIT",
+  "route_id": "route-01",
+  "task_count": 8,
+  "tasks": [
+    {
+      "artifact_count": 4,
+      "blob_mismatches": [],
+      "blob_verification": "PASS",
+      "commands": [
+        "python3 custody_fsm.py --demo",
+        "python3 custody_fsm.py --from CREATED --to COMPLETED",
+        "python3 -m unittest -v test_custody_fsm"
+      ],
+      "completion_actor": null,
+      "disposition": "PASS",
+      "frozen_hypothesis": "State transitions reject skipped or reversed custody states.",
+      "independent_acceptance": "NOT_TESTED",
+      "limitations": [
+        "Validates transition legality only; artifact existence is PO03-WA-005.",
+        "In-process enforcement; durable-boundary fencing is PO03-WA-002.",
+        "Exhaustive over ordered state pairs, not over full illegal paths."
+      ],
+      "manifest_bytes": 2856,
+      "manifest_sha256": "c36dd39a42224cc2b117d312dff9e70ebd063f4a8e62588acdcb20b077f817f5",
+      "manifest_uri": "workstreams/po03/runs/wave-a/route-01/PO03-WA-001/manifest.json",
+      "obzio_state": "RESULT_STAGED",
+      "provider_state": "RUNNING",
+      "result_commit_id": "2b23aeed91c90e09dd18ddf29d7cbf584bd13300",
+      "result_sha256": "936572695823f0990f24bfbf0bbb6bc12750a39ed8021fb94a3f4f60aae3bd44",
+      "result_uri": "workstreams/po03/runs/wave-a/route-01/PO03-WA-001/result.json",
+      "task_id": "PO03-WA-001",
+      "total_bytes": 29547
+    },
+    {
+      "artifact_count": 4,
+      "blob_mismatches": [],
+      "blob_verification": "PASS",
+      "commands": [
+        "python3 fenced_sink.py --demo",
+        "python3 -m unittest -v test_fenced_sink"
+      ],
+      "completion_actor": null,
+      "disposition": "PASS",
+      "frozen_hypothesis": "A stale fence token cannot stage or commit a result.",
+      "independent_acceptance": "NOT_TESTED",
+      "limitations": [
+        "Single-task file-backed sink; not a distributed store with compare-and-set.",
+        "flock is advisory and POSIX-specific; direct JSON edits bypass the class.",
+        "Durability shown across processes on one filesystem, not across hosts."
+      ],
+      "manifest_bytes": 2807,
+      "manifest_sha256": "509eca191df832c3d6c5cb2ed9c33d2b96a5644c9791859cd6102aee64fcc4d6",
+      "manifest_uri": "workstreams/po03/runs/wave-a/route-01/PO03-WA-002/manifest.json",
+      "obzio_state": "RESULT_STAGED",
+      "provider_state": "RUNNING",
+      "result_commit_id": "4217ca569d19d366ebe6337661438ca2eec1edc5",
+      "result_sha256": "d0159a156f1463aa217b117848b85af8b26ed73f0be7edeb9c8e866dea330d6d",
+      "result_uri": "workstreams/po03/runs/wave-a/route-01/PO03-WA-002/result.json",
+      "task_id": "PO03-WA-002",
+      "total_bytes": 29592
+    },
+    {
+      "artifact_count": 4,
+      "blob_mismatches": [],
+      "blob_verification": "PASS",
+      "commands": [
+        "python3 idempotent_callback.py --demo",
+        "python3 -m unittest -v test_idempotent_callback"
+      ],
+      "completion_actor": null,
+      "disposition": "PASS",
+      "frozen_hypothesis": "Duplicate callbacks are idempotent and create one result transaction.",
+      "independent_acceptance": "NOT_TESTED",
+      "limitations": [
+        "Exactly-once effect is reconstructed at the receiver; the network still delivers at-least-once.",
+        "Single-host JSON reservation table under flock; multi-host needs a conditional insert.",
+        "Conflicting bodies are refused, not resolved; authority is a coordinator policy question.",
+        "Negative control covers the check-then-act defect shape only."
+      ],
+      "manifest_bytes": 3009,
+      "manifest_sha256": "6328c4920893cebf46ebc37ef55082733e6c519a95f115a00ed30b5ba489f317",
+      "manifest_uri": "workstreams/po03/runs/wave-a/route-01/PO03-WA-003/manifest.json",
+      "obzio_state": "RESULT_STAGED",
+      "provider_state": "RUNNING",
+      "result_commit_id": "1bdb226bebb9538a5efb1b5a84d188cf5e418a36",
+      "result_sha256": "5cd91165afe81c520c12346dcc6523095ed6351993c9127df3ddf5ec17c953a6",
+      "result_uri": "workstreams/po03/runs/wave-a/route-01/PO03-WA-003/result.json",
+      "task_id": "PO03-WA-003",
+      "total_bytes": 26894
+    },
+    {
+      "artifact_count": 4,
+      "blob_mismatches": [],
+      "blob_verification": "PASS",
+      "commands": [
+        "python3 outbox_relay.py --demo",
+        "python3 -m unittest -v test_outbox_relay"
+      ],
+      "completion_actor": null,
+      "disposition": "PASS",
+      "frozen_hypothesis": "A lost callback is recovered from the durable outbox.",
+      "independent_acceptance": "NOT_TESTED",
+      "limitations": [
+        "Atomicity is a single-file os.replace, not a multi-store transaction.",
+        "The channel models loss only, not latency, reordering or byzantine acks.",
+        "Relay scheduling, backoff and poison-row quarantine are not implemented.",
+        "Exactly-once effect depends on the receiver honouring the key (PO03-WA-003)."
+      ],
+      "manifest_bytes": 2895,
+      "manifest_sha256": "eb25ff853b745dd3145977254fb9da27ea37567560177d3408ebe4d858a77be5",
+      "manifest_uri": "workstreams/po03/runs/wave-a/route-01/PO03-WA-004/manifest.json",
+      "obzio_state": "RESULT_STAGED",
+      "provider_state": "RUNNING",
+      "result_commit_id": "e6efd8ef496d0e2437da6295e7e41a838cf7cc17",
+      "result_sha256": "224d06f65d9fd203c4f08cc836c19c6061db66f301be8077e6d369a5aa9bcc32",
+      "result_uri": "workstreams/po03/runs/wave-a/route-01/PO03-WA-004/result.json",
+      "task_id": "PO03-WA-004",
+      "total_bytes": 25802
+    },
+    {
+      "artifact_count": 4,
+      "blob_mismatches": [],
+      "blob_verification": "PASS",
+      "commands": [
+        "python3 staging_gate.py --demo",
+        "python3 -m unittest -v test_staging_gate"
+      ],
+      "completion_actor": null,
+      "disposition": "PASS",
+      "frozen_hypothesis": "A partial artifact write cannot reach RESULT_STAGED.",
+      "independent_acceptance": "NOT_TESTED",
+      "limitations": [
+        "Fault injection is application-layer; real device or full-disk short writes are modelled, not induced.",
+        "os.rename atomicity holds within one filesystem only.",
+        "fsync usage is correct on common Linux filesystems but is not a durability proof under all mounts.",
+        "Artifacts are verified against a same-process declaration, not an independently authored manifest."
+      ],
+      "manifest_bytes": 2957,
+      "manifest_sha256": "7a9a967a77f497397ac35a7fb348dd0f9e883b6d77b3a3a509b554d15731f0ab",
+      "manifest_uri": "workstreams/po03/runs/wave-a/route-01/PO03-WA-005/manifest.json",
+      "obzio_state": "RESULT_STAGED",
+      "provider_state": "RUNNING",
+      "result_commit_id": "3fb7916fedca11e28a4fb47cf2e538c6927c0ff7",
+      "result_sha256": "fe054847c2441b98fc326a84266a8a8a6087d9c3101f67e6c35d3233c5556edd",
+      "result_uri": "workstreams/po03/runs/wave-a/route-01/PO03-WA-005/result.json",
+      "task_id": "PO03-WA-005",
+      "total_bytes": 30465
+    },
+    {
+      "artifact_count": 4,
+      "blob_mismatches": [],
+      "blob_verification": "PASS",
+      "commands": [
+        "python3 effect_journal.py --demo",
+        "python3 -m unittest -v test_effect_journal"
+      ],
+      "completion_actor": null,
+      "disposition": "PASS",
+      "frozen_hypothesis": "Post-commit process loss is recovered without rerunning external effects.",
+      "independent_acceptance": "NOT_TESTED",
+      "limitations": [
+        "At-most-once across a crash requires an externally observable effect key; otherwise NOT_SUPPORTED is reported.",
+        "Process loss is raised in-process, not by SIGKILL; OS write-back behaviour is not exercised.",
+        "The probe is assumed truthful and immediately consistent; a read-after-write delay could yield a false negative.",
+        "One effect per task is modelled; multi-effect ordering is not implemented."
+      ],
+      "manifest_bytes": 3030,
+      "manifest_sha256": "f18c9101b2e3002f8c61d5391c3cb0a46953cb53a66741ed6b6c5b1d669d6337",
+      "manifest_uri": "workstreams/po03/runs/wave-a/route-01/PO03-WA-006/manifest.json",
+      "obzio_state": "RESULT_STAGED",
+      "provider_state": "RUNNING",
+      "result_commit_id": "dc33d95158b0c97fc2ca1b0f85a9a99f0e695941",
+      "result_sha256": "24ce0f56c0c1903161e4860a3cdbb196aed3666855648d31f45a8baad2b15eb7",
+      "result_uri": "workstreams/po03/runs/wave-a/route-01/PO03-WA-006/result.json",
+      "task_id": "PO03-WA-006",
+      "total_bytes": 30950
+    },
+    {
+      "artifact_count": 4,
+      "blob_mismatches": [],
+      "blob_verification": "PASS",
+      "commands": [
+        "python3 reclassifier.py --demo",
+        "python3 -m unittest -v test_reclassifier"
+      ],
+      "completion_actor": null,
+      "disposition": "PASS",
+      "frozen_hypothesis": "Provider completion without a durable commit is reclassified automatically.",
+      "independent_acceptance": "NOT_TESTED",
+      "limitations": [
+        "The commit resolver is an in-memory fixture; a real remote must distinguish an absent object from a transient fetch failure.",
+        "Verification pins the manifest hash only; per-artifact reconciliation belongs to route-05.",
+        "Provider states outside the seeded enum raise rather than being mapped."
+      ],
+      "manifest_bytes": 2905,
+      "manifest_sha256": "26c4207c74eee9879b9c031febd1adf28328dca9f4769f0c524062567a3db0d5",
+      "manifest_uri": "workstreams/po03/runs/wave-a/route-01/PO03-WA-007/manifest.json",
+      "obzio_state": "RESULT_STAGED",
+      "provider_state": "RUNNING",
+      "result_commit_id": "c0ee06ab73181cc2d8c7213152c8993869336d73",
+      "result_sha256": "4adf434f30d9b307c12d435bac2893e2cbb10aca5a0609f31220a2b1567ccdb4",
+      "result_uri": "workstreams/po03/runs/wave-a/route-01/PO03-WA-007/result.json",
+      "task_id": "PO03-WA-007",
+      "total_bytes": 32431
+    },
+    {
+      "artifact_count": 4,
+      "blob_mismatches": [],
+      "blob_verification": "PASS",
+      "commands": [
+        "python3 recovery_scan.py --demo",
+        "python3 -m unittest -v test_recovery_scan"
+      ],
+      "completion_actor": null,
+      "disposition": "PASS",
+      "frozen_hypothesis": "A recovery scan deterministically resumes every nonterminal task.",
+      "independent_acceptance": "NOT_TESTED",
+      "limitations": [
+        "Determinism is over ledger ordering, duplication and permutation, not over content changes.",
+        "The scan plans resume actions but does not execute them; re-run safety is PO03-WA-006.",
+        "Ledger validity is assumed; a corrupted or reused event_seq would fold incorrectly.",
+        "The synthetic wave is a seeded fixture, not observed production traffic."
+      ],
+      "manifest_bytes": 2958,
+      "manifest_sha256": "5da6f732238f5d03a06db480e46ffd7d0257076181add13ac408872116676045",
+      "manifest_uri": "workstreams/po03/runs/wave-a/route-01/PO03-WA-008/manifest.json",
+      "obzio_state": "RESULT_STAGED",
+      "provider_state": "RUNNING",
+      "result_commit_id": "805906977a6cb046e9e7fd78e129af54231f18dc",
+      "result_sha256": "fa77261ab8b30c6564ad3c4be4dbb7ffc21ff4299d3d234c441c4ecbd1046fe8",
+      "result_uri": "workstreams/po03/runs/wave-a/route-01/PO03-WA-008/result.json",
+      "task_id": "PO03-WA-008",
+      "total_bytes": 28475
+    }
+  ],
+  "test_summary": {
+    "bytes": 2616,
+    "sha256": "72d3c8895b483f78a58f7e5af269a1d219e5aa2a2d88a4d11f3d03921776328f",
+    "uri": "workstreams/po03/runs/wave-a/route-01/evidence/route-01-test-summary.txt"
+  },
+  "wave_id": "PO03-WAVE-A-20260822"
+}

@@ -1,0 +1,136 @@
+{
+  "boundaries_observed": {
+    "merge_or_promotion": false,
+    "new_spend_or_obligation": false,
+    "po01_contact_or_mutation": false,
+    "pr8_mutated": false,
+    "protected_effects_used": false,
+    "pull_request_created_or_updated": false,
+    "shared_control_paths_written": 0,
+    "third_party_contact": false,
+    "writes_outside_owned_subtree": 0
+  },
+  "branch": "cursor/po03-wa-route-01-material-6e19",
+  "collision_events": [],
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "custody_state": {
+    "completion_actor": null,
+    "coordinator_completion_claimed": false,
+    "independent_acceptance": "NOT_TESTED",
+    "independent_acceptance_claimed": false,
+    "obzio_state_per_task": "RESULT_STAGED",
+    "producer_terminal_report": "READY_TO_COMMIT",
+    "provider_state_per_task": "RUNNING"
+  },
+  "decision_changed": [],
+  "defects_found_during_execution": [
+    {
+      "defect": "Refusals discarded their audit record because the durable write ran only on the success path of the lock context.",
+      "resolution": "The durable write was moved into a finally block so rejection records survive the exception.",
+      "task_id": "PO03-WA-002"
+    },
+    {
+      "defect": "The crash injector conflated truncation with crashing, so the truncation path aborted before readback verification and the silent short write could not be exercised at all.",
+      "resolution": "Truncation and process loss were split into independent controls, and both fault families are now covered by exhaustive matrices.",
+      "task_id": "PO03-WA-005"
+    },
+    {
+      "defect": "Two test assertions encoded wrong expectations (a rung distance of 4 where the ladder distance is 5, and a less specific rejection reason).",
+      "resolution": "The assertions were corrected to the observed classifications; the component was not weakened to fit them.",
+      "task_id": "PO03-WA-001"
+    }
+  ],
+  "execution": {
+    "all_committed_blobs_verified": true,
+    "artifacts_verified": 32,
+    "dispositions": {
+      "PO03-WA-001": "PASS",
+      "PO03-WA-002": "PASS",
+      "PO03-WA-003": "PASS",
+      "PO03-WA-004": "PASS",
+      "PO03-WA-005": "PASS",
+      "PO03-WA-006": "PASS",
+      "PO03-WA-007": "PASS",
+      "PO03-WA-008": "PASS"
+    },
+    "ordered_result_commits": [
+      "2b23aeed91c90e09dd18ddf29d7cbf584bd13300",
+      "4217ca569d19d366ebe6337661438ca2eec1edc5",
+      "1bdb226bebb9538a5efb1b5a84d188cf5e418a36",
+      "e6efd8ef496d0e2437da6295e7e41a838cf7cc17",
+      "3fb7916fedca11e28a4fb47cf2e538c6927c0ff7",
+      "dc33d95158b0c97fc2ca1b0f85a9a99f0e695941",
+      "c0ee06ab73181cc2d8c7213152c8993869336d73",
+      "805906977a6cb046e9e7fd78e129af54231f18dc"
+    ],
+    "result_contract_validation": "VALID for all 8 result documents",
+    "route_tip_before_route_commit": "805906977a6cb046e9e7fd78e129af54231f18dc",
+    "seeded_factory_scan": "PASS",
+    "seeded_po03_contract_tests": {
+      "exit_code": 0,
+      "failed": 0,
+      "passed": 23,
+      "ran": 23
+    },
+    "task_count": 8,
+    "task_tests_failed": 0,
+    "task_tests_passed": 124,
+    "task_tests_total": 124,
+    "tests_per_task": {
+      "PO03-WA-001": 17,
+      "PO03-WA-002": 15,
+      "PO03-WA-003": 14,
+      "PO03-WA-004": 12,
+      "PO03-WA-005": 16,
+      "PO03-WA-006": 14,
+      "PO03-WA-007": 19,
+      "PO03-WA-008": 17
+    },
+    "total_artifact_bytes": 234156
+  },
+  "function": "transactional-custody",
+  "generated_at": "2026-08-22T07:26:08Z",
+  "immutable_base_commit": "44de68e52a0baa480a8a8c0b95fd5071391dd4a1",
+  "isolated_worktree": "/home/ubuntu/po03-wa-route-01-material-6e19",
+  "lease": {
+    "expires_at": "2026-08-22T07:56:37Z",
+    "fence_token": 1,
+    "granted_at": "2026-08-22T06:56:37Z",
+    "lease_batch_id": "PO03-WAVE-A-20260822:route-01:lease-1",
+    "live_at_work_start": true,
+    "owned_subtree": "workstreams/po03/runs/wave-a/route-01/",
+    "result_state_ceiling": "READY_TO_COMMIT",
+    "work_started_at": "2026-08-22T06:59:27Z"
+  },
+  "limitations": [
+    "All eight components are dependency-free standard-library fixtures. They demonstrate and falsify custody properties; none is wired into a live coordinator.",
+    "Process loss is injected in-process rather than by SIGKILL, so operating-system write-back behaviour is exercised only indirectly.",
+    "Durability is demonstrated on a single host and filesystem; no multi-host, network-partition or clock-skew condition is exercised.",
+    "The recorded lost PO-02 Code-2 case is reproduced from its recorded shape in this repository, not from the original provider run, which is no longer observable.",
+    "run-info reports the enclosing cloud run's originalModelName as gpt-5.6-sol-max-fast; the executing runtime for this material work is the leased claude-opus-5-thinking-high configuration. This is a runtime-binding observation recorded as evidence, not a routing claim.",
+    "Producer self-verification only. Every disposition here is a producer claim awaiting independent acceptance; independent_acceptance is NOT_TESTED for all eight tasks."
+  ],
+  "preflight_verification": {
+    "acceptance_contracts_hash_verified": 8,
+    "base_commit_equals_remote_branch_tip": true,
+    "base_commit_matched": true,
+    "canary_commit": "00b3988bad3e2b74ba5c2d7a50dc8ab9883fc24e",
+    "canary_response_blob_identical_at_base_and_canary_commit": true,
+    "canary_verified_by_seeded_tool": "CANARY_VALID route=route-01",
+    "immutable_input_manifest_sha256": "f66ba25343ceb8ce7810a7b241dd80b042b3b888ba498dcd61e48a29863c2f66",
+    "input_capsules_verified": 8
+  },
+  "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+  "receipt_id": "RCP-PO03-WAVE-A-ROUTE-01-MATERIAL-20260822-v1",
+  "receipt_version": "PO03-ROUTE-EXECUTION-RECEIPT-v1",
+  "recovery_events": [],
+  "route_id": "route-01",
+  "route_manifest_bytes": 12793,
+  "route_manifest_sha256": "2696f61c37db8e7646899485b3110bce8c82c157a3810fa98af7e5963bf28691",
+  "route_manifest_uri": "workstreams/po03/runs/wave-a/route-01/MANIFEST.json",
+  "shared_workspace_head_mutated": false,
+  "test_summary_bytes": 2616,
+  "test_summary_sha256": "72d3c8895b483f78a58f7e5af269a1d219e5aa2a2d88a4d11f3d03921776328f",
+  "test_summary_uri": "workstreams/po03/runs/wave-a/route-01/evidence/route-01-test-summary.txt",
+  "wave_id": "PO03-WAVE-A-20260822"
+}
