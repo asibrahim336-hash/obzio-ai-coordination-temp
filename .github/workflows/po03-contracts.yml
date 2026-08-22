@@ -8,7 +8,12 @@ on:
       - ".github/workflows/po03-*.yml"
   push:
     branches:
+      # Commission branches, plus this run's working branches. Without the
+      # second pattern the gate never fires on the branches the work is
+      # actually done on, so a clean-runtime failure would only surface at
+      # pull-request time.
       - "po03/**"
+      - "cursor/po03-*-ed20"
     paths:
       - "workstreams/po03/**"
       - "receipts/po03/**"
