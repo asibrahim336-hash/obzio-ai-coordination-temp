@@ -25,10 +25,12 @@ class FalseGreenDetectorTests(unittest.TestCase):
             (root / "tests" / "test_impl.py").write_text(
                 "import sys\n"
                 "from pathlib import Path\n"
+                "import unittest\n"
                 "sys.path.insert(0, str(Path(__file__).parents[1]))\n"
                 "from impl import is_even\n\n"
-                "def test_even_only():\n"
-                "    assert is_even(2)\n",
+                "class EvenTests(unittest.TestCase):\n"
+                "    def test_even_only(self):\n"
+                "        self.assertTrue(is_even(2))\n",
                 encoding="utf-8",
             )
             mutations = [
