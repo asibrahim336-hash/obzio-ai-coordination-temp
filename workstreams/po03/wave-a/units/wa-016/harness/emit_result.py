@@ -233,10 +233,10 @@ def metrics(evidence: dict[str, Any], tests: dict[str, Any], artifacts: list[dic
         "first_pass_outcome": {
             "value": "PASS",
             "note": (
-                "The suite passes as committed. Five defects were found and fixed before this record: "
+                "The suite passes as committed. Six defects were found and fixed before this record: "
                 "M3 and M5 by the matrix, M7 by the focused tests, M8 by the campaign, M9 by recomputing a "
-                "digest instead of reading it back. Recorded under rework rather than presented as a clean "
-                "first pass."
+                "digest instead of reading it back, M10 by reading the emitted bytes of the receipt. Recorded "
+                "under rework rather than presented as a clean first pass."
             ),
         },
         "artifact_count": {
@@ -265,19 +265,20 @@ def metrics(evidence: dict[str, Any], tests: dict[str, Any], artifacts: list[dic
             "evidence_backed_rejection": sum(1 for m in mechanisms if m["scope"] == "REJECTION"),
         },
         "defects": {
-            "value": 6,
+            "value": 7,
             "in_the_machine_under_test": ["M3", "M5", "M7"],
             "in_the_measuring_instrument": ["M8"],
-            "in_the_reporting_layer": ["M9"],
+            "in_the_reporting_layer": ["M9", "M10"],
             "in_a_read_only_control": ["M2 (frozen input resolvability, reproduced not fixed)"],
             "note": "M1 closes gaps in a seeded control and is a proposal, not a defect this unit introduced.",
         },
         "rework": {
-            "value": 5,
+            "value": 6,
             "note": (
-                "Five fix-and-rerun cycles driven by this unit's own evidence: pre-commit reconciliation (M3), "
+                "Six fix-and-rerun cycles driven by this unit's own evidence: pre-commit reconciliation (M3), "
                 "commit-time preservation (M5), atomic checkpoint records (M7), fault containment in the fuzz "
-                "driver (M8), and deferred self-digests in the return documents (M9)."
+                "driver (M8), deferred self-digests in the return documents (M9), and credential stripping in "
+                "the read-back record (M10)."
             ),
         },
         "provider_block": {"value": 0, "note": "no provider refusal, quota block or capability block was observed"},
@@ -838,6 +839,21 @@ def git_output(*args: str) -> str:
     ).stdout
 
 
+def sanitized_remote(url: str) -> str:
+    """Strip any credential the remote URL carries.
+
+    The push URL embeds an access token.  A return document is committed and read
+    by others, so the token must never reach it; the host and path are what
+    identify the remote.
+    """
+    if "://" not in url:
+        return url
+    scheme, rest = url.split("://", 1)
+    if "@" in rest:
+        rest = rest.split("@", 1)[1]
+    return f"{scheme}://{rest}"
+
+
 def branch_base() -> str:
     """The commit this runner branched from.
 
@@ -911,7 +927,7 @@ def read_back_from_remote(result_commit: str) -> dict[str, Any]:
                 "git clone --no-checkout --filter=blob:none of the pushed branch into a throwaway directory, "
                 "then git show <result_commit>:<path> for every artifact in the manifest"
             ),
-            "remote": remote,
+            "remote": sanitized_remote(remote),
             "branch": REMOTE_BRANCH,
             "result_commit_id": result_commit,
             "commit_present_in_remote": commit_present,
