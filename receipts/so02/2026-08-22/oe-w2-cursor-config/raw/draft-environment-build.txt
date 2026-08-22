@@ -1,0 +1,189 @@
+DRAFT ENVIRONMENT BUILD — lane OE-W2-CURSOR-CONFIG-APPLY
+commission COM-CUR-ENV-01-20260822-v001
+
+PURPOSE
+  L1 recorded G3's residual uncertainty as: "Whether a corrected
+  .cursor/environment.json actually takes effect for this estate's
+  feature-branch runs was NOT verified. Settling it requires
+  trigger-environment-build, which is outside this lane's permitted tools."
+  This lane is permitted to call it. This file settles what a draft build can
+  and cannot prove.
+
+--------------------------------------------------------------------------
+STEP 0 — the live environment record, before any build
+--------------------------------------------------------------------------
+cursor-cloud environment-info:
+
+  bcId                     bc-c6f63d58-9611-495a-96f6-2f2dcbef696d
+  environmentPublicId      69dbfc52-9df5-11f1-a7d1-d6b4613131ce
+  name                     null
+  source                   Team
+  recordedVia              RUNTIME_FORWARD_FILL
+  environmentJsonPath      null
+  environmentJson          null
+  environmentJsonNote      "environment.json was found but contained no
+                            recognized configuration fields."
+  egress.restricted        false
+  build.buildId            bld-20260822-015195f7-955b-445d-8b57-78bc58eec228
+  build.warmFork           cold
+
+  This independently reproduces L1 finding 3 from a different lane: the
+  repository file sets name and install, both are recognized fields of the live
+  schema, and the effective environment record is still null.
+
+--------------------------------------------------------------------------
+STEP 1 — what the build tool will accept as an override (REJECTION EVIDENCE)
+--------------------------------------------------------------------------
+The tool's own input schema declares:
+
+  "environmentJson": {
+    "properties": { "install": ..., "start": ..., "snapshot": ... },
+    "additionalProperties": false
+  }
+
+so it is a STRICT SUBSET of https://cursor.com/schemas/environment.schema.json,
+which additionally accepts name, user, terminals, ports, repositoryDependencies,
+disableAllMcpServers, mcpServerAllowlist, build, agentCanUpdateSnapshot.
+
+Attempted the full applied file as the override:
+
+  trigger-environment-build(
+    refs=[{repoUrl: github.com/asibrahim336-hash/obzio-ai-coordination-temp,
+           ref: cursor/oe-w2-cursor-config-696d}],
+    environmentJson={name, install, start, terminals})
+
+  -> REJECTED, no build started:
+  [{"code": "unrecognized_keys",
+    "keys": ["name", "terminals"],
+    "path": ["environmentJson"],
+    "message": "Unrecognized key(s) in object: 'name', 'terminals'"}]
+
+  CONSEQUENCE: a draft build CANNOT test `terminals` at all. Any claim that the
+  validators terminal works is unproven by this instrument. Recorded rather than
+  quietly dropped.
+
+--------------------------------------------------------------------------
+STEP 2 — the build that ran
+--------------------------------------------------------------------------
+  trigger-environment-build(
+    refs=[{repoUrl: github.com/asibrahim336-hash/obzio-ai-coordination-temp,
+           ref: cursor/oe-w2-cursor-config-696d}],
+    environmentJson={install: "bash .cursor/install.sh",
+                     start:   "bash .cursor/start.sh"})
+
+  buildId                  bld-20260822-f72bf7be-cef7-425f-bc38-e86ae43d5e47
+  environmentPublicId      69dbfc52-9df5-11f1-a7d1-d6b4613131ce
+  isDraft                  true
+  createdDraftEnvironment  false
+
+  Tool warning returned verbatim: "this build was created from a non-default
+  branch ref, so it can be tested but cannot be promoted to active later."
+  That is the wanted safety property, not a limitation: this lane is forbidden
+  from changing what agents boot from.
+
+  list-environment-builds:
+    status        SUCCEEDED
+    failureType   null
+    source        AGENT
+    triggerType   MANUAL
+    createdAtMs   1787438337883
+    completedAtMs 1787438384875      (47 seconds wall)
+
+  Before this, L1 recorded twelve builds of which eleven were SYSTEM/RECURRING
+  and SKIPPED, one was the permanent baseline, and ZERO were agent-requested.
+  This is the first AGENT/MANUAL build in this environment.
+
+--------------------------------------------------------------------------
+STEP 3 — what the logs prove (28266 bytes, fetched by buildId)
+--------------------------------------------------------------------------
+INSTALL — RAN. Verbatim, the repository script's own output:
+
+  [2026-08-22T22:39:08.251Z] >>> obzio install: begin
+  [2026-08-22T22:39:08.256Z] Python 3.12.3
+  [2026-08-22T22:39:08.260Z] git version 2.43.0
+  [2026-08-22T22:39:09.466Z]   WARNING: The script jsonschema is installed in
+                              '/home/ubuntu/.local/bin' which is not on PATH.
+  [2026-08-22T22:39:09.575Z] OPERATOR TAXONOMY CHECK: PASS
+                             active function: obzio.function.strategic-operations-orchestration
+                             active appointment: obzio.appointment.strategic-operations-orchestration.20260819.001
+                             classified aliases: 9
+  [2026-08-22T22:39:09.578Z] >>> obzio install: complete
+  [2026-08-22T22:39:09.581Z] [INSTALL] Exit code: 0
+
+  Every line of .cursor/install.sh executed in order: python3 --version,
+  git --version, pip install jsonschema==4.26.0, and
+  scripts/check_operator_taxonomy.py. Exit 0.
+
+  This settles G3 for the install phase: the proposed environment.json content
+  is not merely schema-valid, it runs. L1 observed the opposite state — a
+  generated wrapper that only echoed "Started from stale build ... skipping
+  install script".
+
+  Non-fatal defect surfaced by running it: pip installs the jsonschema console
+  script to /home/ubuntu/.local/bin, which is not on PATH. The Python IMPORT is
+  what start.sh and the validators use, and that works, so nothing is broken.
+  Recorded because it is a real warning in a real log.
+
+START — DID NOT RUN during the build. The log contains no "obzio start: begin".
+
+  The only start spans present are platform-internal and detached:
+    [SPAN] Started: start:core-dumps
+    [SPAN] Started: start:desktop-init
+    [SPAN] Started: start:exec-daemon
+    Starting detached setup start command: start:exec-daemon
+  followed immediately by:
+    [2026-08-22T22:39:09.677Z] Install finished. Preparing snapshot…
+
+  The absence is meaningful rather than a logging gap: install.sh's own echoes
+  DO appear in this log, so the pipeline captures repository script stdout. A
+  build runs install and snapshots disk; it does not run the environment's
+  start command. This matches .cursor/install.sh's own header ("Must not start
+  any process — Builds preserve disk state only") and start.sh's ("Runs at the
+  start of every agent run").
+
+  HONEST LIMIT: this shows start did not run IN A BUILD. It does not show
+  whether start runs on an agent run — a build is not an agent run. The
+  instrument that settles that is a fresh agent run booted from this
+  configuration, checking for /tmp/cursor/start-user/ and for the files
+  start.sh writes into .cursor/.run/.
+
+TERMINALS — NOT TESTED. Rejected by the override schema at step 1.
+
+DRAFT SAFETY — confirmed in the log itself:
+  [2026-08-22T22:39:23.075Z] Snapshot created; waiting until it's ready
+  [2026-08-22T22:39:43.142Z] Snapshot ready.
+  [2026-08-22T22:39:44.783Z] Warming skipped (draft).
+  A draft build skips warm-pool seeding, so it never becomes what new agents
+  boot from.
+
+PROJECT ROOT — corroborated independently by the build:
+  [2026-08-22T22:39:01.197Z] [GIT:gitCloneCheckout:stderr] Cloning into '/workspace'...
+  The build clones the repository to /workspace, the same path the hook-firing
+  probe identified as this runtime's project root.
+
+--------------------------------------------------------------------------
+STEP 4 — the conclusion this build does NOT support
+--------------------------------------------------------------------------
+It does NOT show that committing .cursor/environment.json makes this estate's
+agents run install, start or terminals. The build proved the CONTENT works when
+the platform is handed it; it did not prove the repository FILE is what the
+platform reads.
+
+Evidence that it is not, from this run:
+  - environment-info reports environmentJsonPath: null and source: Team.
+  - The tool contract states environmentJson override "is not supported for
+    repo-file managed environments (see environmentJsonPath in
+    environment-info) and is rejected for them".
+  - This environment ACCEPTED the override and built.
+Therefore this environment is db-managed, not repo-file managed, so the
+repository .cursor/environment.json is not its configuration source. That
+resolves the question L1 could not settle from inside the pod — whether the
+saved Team record is empty or holds config the repository file loses to.
+
+Making the applied file effective is a founder action; it is specified in
+workstreams/so02/control-plane/operating-environment/w2-cursor-config/.
+This lane is explicitly forbidden from calling propose-environment-json or
+take-environment-snapshot, and did not call either.
+
+Build logs are retained about 10 days and are re-fetchable by buildId
+bld-20260822-f72bf7be-cef7-425f-bc38-e86ae43d5e47.

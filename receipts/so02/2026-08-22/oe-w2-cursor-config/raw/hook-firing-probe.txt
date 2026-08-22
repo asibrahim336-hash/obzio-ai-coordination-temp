@@ -1,0 +1,162 @@
+HOOK FIRING PROBE — lane OE-W2-CURSOR-CONFIG-APPLY
+commission COM-CUR-ENV-01-20260822-v001
+worktree /tmp/oe-w2, branch cursor/oe-w2-cursor-config-696d
+probed 2026-08-22T22:35Z .. 22:44Z
+
+QUESTION
+  verify_hooks.py proves the hook SCRIPTS behave correctly (69/69). It cannot
+  prove that Cursor FIRES them. Those are different claims. This transcript
+  settles the second one in this runtime.
+
+WHY NOT THE PROBE APPLY.md SPECIFIES
+  APPLY.md says to prove firing with:
+      git checkout -b throwaway/hook-firing-probe
+      git push origin main
+  That is unsafe by construction. It tests for a safety net by running the
+  command the net exists to catch, so the outcome "hooks are not firing" is the
+  outcome "the push reached main". It was not run. Every probe below is inert
+  whether or not a hook intercepts it.
+
+--------------------------------------------------------------------------
+CONTROL — does the INSTALLED guard refuse these commands when run by hand?
+--------------------------------------------------------------------------
+Without this control, "the command was not refused" is ambiguous between "the
+hook did not fire" and "the command never matched a rule". With it, a
+non-refusal means non-firing.
+
+  $ printf '{"command": "gh workflow list", "cwd": "/tmp/oe-w2"}' \
+      | python3 .cursor/hooks/guard_write_scope.py
+    permission: deny | Refused by write-scope guard (ISSUE-WRITE).
+
+  $ printf '{"command": "git rebase --abort", "cwd": "/tmp/oe-w2"}' \
+      | python3 .cursor/hooks/guard_write_scope.py
+    permission: deny | Refused by write-scope guard (HISTORY-REWRITE).
+
+  $ printf '{"command": "git status", "cwd": "/tmp/oe-w2"}' \
+      | python3 .cursor/hooks/guard_write_scope.py
+    permission: allow
+
+CONTROL PASSES. The guard denies both probe commands and allows the benign one,
+and it wrote an audit line for each decision:
+
+  $ cat .cursor/.run/write-scope-audit.jsonl
+  {"at": "2026-08-22T22:35:25Z", "command": "gh workflow list", "decision": "deny", "rule": "ISSUE-WRITE"}
+  {"at": "2026-08-22T22:35:25Z", "command": "git rebase --abort", "decision": "deny", "rule": "HISTORY-REWRITE"}
+  {"at": "2026-08-22T22:35:26Z", "command": "git status", "decision": "allow"}
+
+  $ sha256sum .cursor/.run/write-scope-audit.jsonl
+  2eb0a89a4e40446b6a34d9de154bd70dd3712c38eb95797216b7317818858643
+
+The audit log is therefore a valid witness: the guard records EVERY decision it
+reaches, including allow, so a benign command is enough to detect firing. No
+refusal has to be provoked to get a positive signal.
+
+--------------------------------------------------------------------------
+PROBE B — allow path. Benign command through the agent's own shell tool.
+--------------------------------------------------------------------------
+  $ git status --porcelain          [executed via the agent shell tool, 22:35:59Z]
+   M .cursor/environment.json
+  ?? .cursor/hooks.json
+  ...
+  PROBE-B-RAN: git status via agent shell tool at 22:35:59Z
+
+  $ wc -l < .cursor/.run/write-scope-audit.jsonl
+  3
+  $ sha256sum .cursor/.run/write-scope-audit.jsonl
+  2eb0a89a4e40446b6a34d9de154bd70dd3712c38eb95797216b7317818858643
+
+  RESULT: unchanged — 3 lines, identical sha256. No audit line was appended for
+  a `git` command that Cursor actually executed. The hook did not run.
+
+--------------------------------------------------------------------------
+PROBE C — deny path, `git` half of the hooks.json matcher "git|gh ".
+--------------------------------------------------------------------------
+  $ git rebase --abort              [executed via the agent shell tool]
+  fatal: No rebase in progress?
+  PROBE-C EXIT: 128
+
+  RESULT: the command EXECUTED and failed on its own terms. It was not refused.
+  The guard denies this exact command by hand (control above), so this is
+  non-firing, not a non-matching command. Inert: with no rebase running, the
+  command changes nothing.
+
+--------------------------------------------------------------------------
+PROBE D — deny path, `gh ` half of the matcher, different binary.
+--------------------------------------------------------------------------
+  $ gh workflow list                [executed via the agent shell tool]
+  Operator taxonomy currentness	active	337921230
+  PO-03 clean-runner reproduction	active	339915995
+  ...
+  PROBE-D EXIT: 0
+
+  RESULT: the command EXECUTED and returned data. It was not refused. Read-only
+  either way. Audit log still 3 lines, sha256 unchanged.
+
+--------------------------------------------------------------------------
+VERDICT
+--------------------------------------------------------------------------
+Project hooks in this worktree DO NOT FIRE. Four independent observations agree:
+one allow-path witness that produced no record, two deny-path commands that
+executed instead of being refused across both halves of the matcher, and a
+hand-run control proving all three are commands the guard does refuse.
+
+WHY — DOCUMENTED, https://cursor.com/docs/hooks.md
+  "Cloud agents run command-based hooks from your repository. If you have hooks
+   defined in `.cursor/hooks.json` at the root of your project, cloud agents
+   pick them up and run them during their work."
+  "Project hooks (`.cursor/hooks.json` in a repository): Run from the project root"
+  Configuration source for project scope is `<project-root>/.cursor/hooks.json`.
+
+WHERE THE PROJECT ROOT IS — DIRECTLY_REPRODUCED
+  $ git config --get core.hooksPath
+  /home/ubuntu/.cursor/agent-hooks/L3dvcmtzcGFjZQ
+  $ echo L3dvcmtzcGFjZQ | base64 -d
+  /workspace
+  $ ls /workspace/.cursor/
+  environment.json            <-- only file; NO hooks.json at the project root
+
+  The run booted with /workspace as its project root. This lane's hooks live in
+  /tmp/oe-w2/.cursor/, a git worktree Cursor never reads for project hooks.
+
+CONSEQUENCE FOR THE ESTATE
+  G0 says every lane must take its own `git worktree` under /tmp to avoid the
+  reproduced shared-checkout collision. G1 says the guard enforces write scope.
+  Both cannot hold at once as written: the isolation G0 requires puts the hooks
+  G1 installs outside the only directory Cursor reads them from. The guard will
+  protect a future agent whose project root is a checkout of this branch. It
+  does not protect a lane working in a worktree, which is every lane in this
+  group.
+
+WHAT WAS NOT SETTLED, AND WHY IT WAS NOT
+  Whether hooks would fire if `.cursor/hooks.json` were present at /workspace.
+  Settling that requires writing into the shared checkout, which (a) is outside
+  this lane's declared write scope and (b) would alter every concurrently
+  running sibling lane's turns in this same VM — the precise collision class
+  that produced G0. It was not done. The instrument that settles it is a fresh
+  cloud agent run booted with this branch checked out at /workspace, running
+  `python3 .cursor/hooks/probe_hook_firing.py --arm`, the three printed
+  commands, then `--check`.
+
+RE-RUNNABLE MECHANISM
+  $ python3 .cursor/hooks/probe_hook_firing.py --arm
+  Control — running the guard by hand against each probe command.
+    deny   git rebase --abort   (expects deny, rule HISTORY-REWRITE)
+    deny   gh workflow list   (expects deny, rule ISSUE-WRITE)
+    allow  git status --porcelain   (expects allow, and an audited line)
+    working tree root : /tmp/oe-w2
+    hooks.json present: True
+    NOTE: this working tree is not /workspace. If the agent run booted with
+    /workspace as its project root, Cursor reads project hooks from there and
+    the hooks in this tree cannot fire, however correct they are.
+  Armed at 2026-08-22T22:44:08Z. Audit log has 6 line(s).
+
+  [three printed commands then run through the agent's shell tool]
+
+  $ python3 .cursor/hooks/probe_hook_firing.py --check
+  armed at   : 2026-08-22T22:44:08Z
+  checked at : 2026-08-22T22:44:31Z
+  audit log  : .cursor/.run/write-scope-audit.jsonl
+  lines      : 6 -> 6  (added 0)
+
+  VERDICT: project hooks are NOT firing in this runtime.
+  CHECK EXIT: 1

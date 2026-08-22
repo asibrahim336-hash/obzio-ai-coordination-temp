@@ -1,0 +1,29 @@
+REVERT TEST — lane OE-W2-CURSOR-CONFIG-APPLY
+revert target (base SHA): 3f3ee110cf9b769e60c664f758c437dcc582afd3
+applied commit under test: 39756089
+run at: 2026-08-22T22:46:05Z
+
+HEAD is now at 39756089 OE-W2: set explicit repository MCP policy, add a safe hook-firing probe
+applied tree: 15 files under .cursor; .gitignore present: yes
+
+--- TEST 1: the revert procedure documented in APPLY.md ---
+$ git checkout 3f3ee110... -- .cursor .gitignore
+error: pathspec '.gitignore' did not match any file(s) known to git
+exit=1
+RESULT: .cursor still has 15 files (base has 1); .gitignore still present: yes
+DEFECT: .gitignore does not exist at the revert SHA, so the pathspec fails and
+        git checkout aborts atomically WITHOUT reverting .cursor either.
+
+--- TEST 2: corrected revert ---
+$ git rm -r -q --cached --ignore-unmatch .cursor .gitignore .cursorignore
+$ rm -rf .cursor .gitignore .cursorignore
+$ git checkout 3f3ee110... -- .cursor
+exit=0
+
+VERIFY
+  .cursor file count : 1   (base: 1)
+  .gitignore present : no   (base: no)
+  environment.json   : af09d9f4d242d95e7f8701a817218178346b2ead32cbe085059d28e8fc85b2d6
+  base was           : af09d9f4d242d95e7f8701a817218178346b2ead32cbe085059d28e8fc85b2d6
+  index  vs base diff: ''  (empty == identical)
+  worktree vs base   : ''  (empty == identical)

@@ -1,0 +1,128 @@
+{
+  "record_id": "OE-W2-MCP-POLICY-DECISION-20260822-v001",
+  "lane_id": "OE-W2-CURSOR-CONFIG-APPLY",
+  "closes_gap": "G9 — no .cursorignore, and no repository MCP policy statement",
+  "decision_status": "DECIDED AND APPLIED on this branch. Not accepted; the root controller integrates.",
+  "supersedes": "workstreams/so02/control-plane/operating-environment/l1-cursor-baseline/proposed-cursor-config/dot-cursor/mcp.json, which APPLY.md marks DO NOT COPY and which is a decision record rather than a configuration file.",
+
+  "observed_mcp_estate": {
+    "label": "DIRECTLY_REPRODUCED",
+    "method": "namespace status query across every MCP namespace exposed to this run",
+    "ready": [
+      {"namespace": "cursor-cloud", "kind": "Cursor built-in", "tools": 14},
+      {"namespace": "cursor-subscriptions", "kind": "Cursor built-in", "tools": 5},
+      {"namespace": "Cloudflare-docs", "kind": "team or user server", "tools": 2, "note": "read-only documentation search"}
+    ],
+    "needs_auth": [
+      {"namespace": "Supabase", "error": "This MCP server requires authentication before its tools can be used."},
+      {"namespace": "Vercel", "error": "This MCP server requires authentication before its tools can be used."},
+      {"namespace": "Cloudflare-bindings", "error": "This MCP server requires authentication before its tools can be used."},
+      {"namespace": "Cloudflare-builds", "error": "This MCP server requires authentication before its tools can be used."},
+      {"namespace": "Cloudflare-observability", "error": "This MCP server requires authentication before its tools can be used."}
+    ],
+    "repository_mcp_json_before_this_lane": "absent"
+  },
+
+  "documented_basis": [
+    {
+      "label": "DOCUMENTED",
+      "source": "https://cursor.com/docs/mcp.md",
+      "points": [
+        "Project Configuration: create .cursor/mcp.json in your project for project-specific tools.",
+        "Global Configuration: create ~/.cursor/mcp.json in your home directory for tools available everywhere.",
+        "Project scope adds project-specific servers; it is a separate scope from global and team configuration."
+      ]
+    },
+    {
+      "label": "DOCUMENTED",
+      "source": "https://cursor.com/schemas/environment.schema.json (live, fetched, sha256 5683735c6227f1316aa141587ba57b4bddde98c54417f1797ff20e7c2f176341)",
+      "points": [
+        "disableAllMcpServers: 'When true, block every user and team MCP server for agents using this environment. Cursor built-in MCP servers are never restricted. An empty mcpServerAllowlist alone does not disable MCP.'",
+        "mcpServerAllowlist: 'MCP server identities allowed by this environment when disableAllMcpServers is false. Omit or leave empty (with disableAllMcpServers false/omitted) to inherit upstream team/user MCP policy.'",
+        "Each allowlist item requires serverUrl or command, and sets additionalProperties:false over {name, serverUrl, command, toolAllowlist}."
+      ]
+    },
+    {
+      "label": "DOCUMENTED",
+      "source": "https://cursor.com/docs/cloud-agent/capabilities.md, as cited by the staged decision record",
+      "points": [
+        "Prefer HTTP transport: with HTTP the server configuration never enters the agent VM and tool calls are proxied through the backend, whereas a stdio server runs inside the VM and the agent can read its environment and credentials."
+      ]
+    }
+  ],
+
+  "decisions": [
+    {
+      "id": "MCP-D1",
+      "decision": "Write .cursor/mcp.json as a real, strictly parseable file with an empty mcpServers object.",
+      "content": "{\"mcpServers\": {}}",
+      "empty_by_decision_not_by_omission": true,
+      "reasoning": [
+        "The two servers this estate actually depends on, cursor-cloud and cursor-subscriptions, are Cursor built-ins. A project mcp.json cannot add them and, per the schema text, an allowlist can never restrict them. Naming them would be decoration.",
+        "Cloudflare-docs is already available at team level and ready. Re-declaring it at project level would create a second place the same server is configured — the estate's F1 shape applied to tooling.",
+        "The five needsAuth servers cannot be authenticated from inside a pod. Declaring them here would be a capability claim with no working capability behind it, which is the exact defect this configuration is designed against.",
+        "The staged record's own top candidate, a git-immutable-readback stdio server, carries its own status: 'candidate; no such server has been evaluated or named'. Building and wiring an unevaluated stdio server would put a new component inside the VM holding the agent's git credential, for a need that plain git and gh already meet on unrestricted egress. Its documentation-fetch candidate is self-described as 'a convenience rather than a capability' because egress is unrestricted. Its issue-tracker candidate carries a caution the record itself says 'may be decisive'.",
+        "Adding a server nobody has evaluated would violate the rule that every addition traces to a named gap or a reproduced defect."
+      ],
+      "safety_checked_before_writing": {
+        "question": "Could an empty project mcp.json shadow or disable the team servers this estate depends on?",
+        "answer": "No. Project configuration adds project-scoped servers; the documented lever for removal is disableAllMcpServers, and the schema states explicitly that an empty allowlist alone does not disable MCP.",
+        "label": "DOCUMENTED"
+      },
+      "reasoning_lives_elsewhere_on_purpose": "The staged file failed because it was a decision record wearing a configuration file's name, carrying _comment keys a strict parser may reject. Config and rationale are separated here: .cursor/mcp.json holds only what Cursor reads, and this file holds why."
+    },
+    {
+      "id": "MCP-D2",
+      "decision": "Set \"disableAllMcpServers\": false explicitly in .cursor/environment.json.",
+      "reasoning": [
+        "G9's complaint is that neither field is set, so the repository silently inherits upstream policy with no repository-side statement of intent. This states it.",
+        "The permissive value is the correct one. The founder authority in force records that unauthenticated integrations are 'a blocker to remove, not a boundary to respect' and that maximum useful authorised access is the objective. Setting true would block every user and team MCP server for every agent using this environment, removing Cloudflare-docs today and Supabase, Vercel and the three Cloudflare servers the moment they are authenticated. That is a capability regression dressed as governance.",
+        "Unlike a key nothing reads, this field is consumed by the platform. It is set to the permissive value by decision, not left unset by default."
+      ],
+      "schema_result": "environment.json re-validated VALID against the live schema with the field present, keys ['disableAllMcpServers','install','name','start','terminals']."
+    },
+    {
+      "id": "MCP-D3",
+      "decision": "Do NOT set mcpServerAllowlist.",
+      "reasoning": [
+        "Each allowlist entry requires a serverUrl or command pattern. Those identities are configured at team or user level and are not observable from inside the pod. Writing them would be guesswork, and a wrong pattern silently removes a server another lane depends on — G9 names that risk directly.",
+        "An empty array is documented to be behaviourally identical to omitting the field. Adding one would create a second key that looks like a restriction and restricts nothing — precisely defect DEF-3, which this same lane found in write-scope.json and labelled. Committing that defect while criticising it would be incoherent.",
+        "Silence here is not inheritance by accident: MCP-D2 states the inheritance explicitly, and this record is the reason."
+      ]
+    },
+    {
+      "id": "MCP-D4",
+      "decision": "Do NOT add a .cursorignore.",
+      "closes": "the other half of G9",
+      "documented_basis": {
+        "label": "DOCUMENTED",
+        "source": "https://cursor.com/docs/reference/ignore-file.md",
+        "points": [
+          "'Cursor blocks access to files listed in .cursorignore from: Code accessible by Agent, Tab, and Inline Edit; Code accessible via @ mention references.'",
+          "'The terminal and MCP server tools used by Agent cannot block access to code governed by .cursorignore.'",
+          "'While Cursor blocks ignored files, complete protection isn't guaranteed due to LLM unpredictability.'",
+          "'Cursor automatically ignores files in .gitignore and the default ignore list.'",
+          "'.cursorindexingignore: exclude files from indexing only. These files remain accessible to AI features but won't appear in codebase searches.'"
+        ]
+      },
+      "reasoning": [
+        "It cannot enforce a prohibition. The documentation states plainly that the terminal tool bypasses it. Using .cursorignore to make 'never read workstreams/po03/**' a mechanism would produce a boundary that a single `cat` defeats — defect DEF-3 again, manufactured deliberately this time.",
+        "There is nothing here it is for. Its stated security purpose is API keys, credentials and secrets in files; L1's name census established that this estate's secrets live in environment variables, and the repository is 639 tracked text files totalling 7.2 MB with no credential-shaped file.",
+        "Its stated performance purpose does not bite at 7.2 MB.",
+        "The one plausible target would be receipts/**/raw/**, which holds the largest artifacts including a 689 KB fetched JSON and eight non-UTF-8 third-party web captures. Blocking those would actively break independent acceptance, whose entire job is replaying raw evidence. That is the estate's most important control and must not be degraded to tidy an index.",
+        "G9 itself concludes a .cursorignore is probably unnecessary for a repository of text state and does not propose one. Nothing found here contradicts that."
+      ],
+      "recorded_not_applied": {
+        "instrument": ".cursorindexingignore",
+        "why_it_is_the_right_tool_for_the_one_real_candidate": "It excludes from indexing only, so raw evidence stays readable by an acceptor while large third-party captures stop dominating codebase search. Candidate paths: receipts/so02/2026-08-22/oe-l2-capability-research/raw/openrouter-models.json (689069 bytes), .../raw/github-signals.jsonl (186939 bytes) and the eight non-text captures under .../raw/docs/.",
+        "why_this_lane_did_not_write_it": "`.cursorindexingignore` is not in this lane's declared write scope, which names .cursor/**, .gitignore, .cursorignore and two namespaces. Writing it would be a scope breach for a low-stakes tidiness gain. Recorded for the root controller to decide."
+      }
+    }
+  ],
+
+  "what_this_does_not_do": [
+    "It enables no server, contacts no external service and spends nothing.",
+    "It does not authenticate the five needsAuth servers. That is a founder action, specified in W2-FOUNDER-ACTIONS-20260822-v001.md.",
+    "It binds no architecture. Any later decision to add a repository MCP server supersedes MCP-D1 by editing .cursor/mcp.json and recording why here."
+  ]
+}
