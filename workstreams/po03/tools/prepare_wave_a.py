@@ -169,14 +169,28 @@ def validate_git_provenance(
     """Fail closed before generation unless both pins are real and related."""
     ancestor = _resolve_exact_commit(root, protocol_ancestor, "protocol ancestor")
     commission = _resolve_exact_commit(root, commission_commit, "commission commit")
-    ancestry = _git(root, "merge-base", "--is-ancestor", ancestor, commission)
+    head_result = _git(root, "rev-parse", "--verify", "HEAD^{commit}")
+    head = head_result.stdout.strip()
+    if head_result.returncode != 0 or not FULL_COMMIT_RE.fullmatch(head):
+        detail = head_result.stderr.strip() or "HEAD did not resolve to a commit"
+        raise ValueError(f"unable to resolve generation HEAD: {detail}")
+    chronology = _git(root, "merge-base", "--is-ancestor", commission, ancestor)
+    if chronology.returncode == 1:
+        raise ValueError(
+            f"commission commit {commission} is not an ancestor of "
+            f"protocol ancestor {ancestor}"
+        )
+    if chronology.returncode != 0:
+        detail = chronology.stderr.strip() or "git chronology check failed"
+        raise ValueError(f"unable to validate commission chronology: {detail}")
+    ancestry = _git(root, "merge-base", "--is-ancestor", ancestor, head)
     if ancestry.returncode == 1:
         raise ValueError(
-            f"protocol ancestor {ancestor} is not an ancestor of commission commit {commission}"
+            f"protocol ancestor {ancestor} is not an ancestor of generation HEAD {head}"
         )
     if ancestry.returncode != 0:
         detail = ancestry.stderr.strip() or "git ancestry check failed"
-        raise ValueError(f"unable to validate protocol ancestry: {detail}")
+        raise ValueError(f"unable to validate generation ancestry: {detail}")
 
 
 def _write(relative: str, value: Any) -> str:
