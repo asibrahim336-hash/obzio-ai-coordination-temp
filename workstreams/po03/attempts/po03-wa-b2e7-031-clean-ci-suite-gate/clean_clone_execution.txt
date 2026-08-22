@@ -1,0 +1,32 @@
+# command: python3 -I workstreams/po03/attempts/po03-wa-b2e7-031-clean-ci-suite-gate/validate_workflow.py --execute --commit a46098d1d62b4cdee9f151f1b203f7daa8c44bd5
+# host python3: Python 3.12.3 (main, Mar 23 2026, 19:04:32) [GCC 13.3.0]
+# git: git version 2.43.0
+# executed at commit: a46098d1d62b4cdee9f151f1b203f7daa8c44bd5
+# note: a disclosed `python` -> python3.12 shim stands in for actions/setup-python
+
+# workflow=/home/ubuntu/po03-worktrees/c4/workstreams/po03/attempts/po03-wa-b2e7-031-clean-ci-suite-gate/po03-suite.yml
+# install as=.github/workflows/po03-suite.yml
+# commit=a46098d1d62b4cdee9f151f1b203f7daa8c44bd5
+# `python` shim forwards to=/usr/bin/python3.12 (stands in for actions/setup-python)
+STEP (action) :: uses actions/checkout@v4
+STEP (action) :: uses actions/setup-python@v5
+STEP Record the runtime that produced this result :: run block
+STEP Enforce the immutable PO-03 path boundary :: run block
+STEP Enforce the hardened PO-03 path boundary :: run block
+STEP Run the dependency-free contract suite :: run block
+STEP Run every counted unit's own tests :: run block
+STEP Prove the path-scope guard rejects an out-of-allowlist mutation :: run block
+STEP Prove tampering with committed custody is evident :: run block
+STEP Audit hash and byte coverage of every manifested slot :: run block
+STEP Root every manifested slot in its immutable capsule :: run block
+OK       Record the runtime that produced this result exit=0 tail=['Python 3.12.3 (main, Mar 23 2026, 19:04:32) [GCC 13.3.0]', 'git version 2.43.0']
+OK       Enforce the immutable PO-03 path boundary exit=0 tail=['PO03_PATH_SCOPE_PASS changed_paths=337']
+OK       Enforce the hardened PO-03 path boundary exit=0 tail=['PO03_HARDENED_SCOPE_PASS images=337']
+OK       Run the dependency-free contract suite exit=0 tail=['Ran 58 tests in 0.374s', '', 'OK']
+OK       Run every counted unit's own tests exit=0 tail=['Ran 43 tests in 1.451s', '', 'OK']
+OK       Prove the path-scope guard rejects an out-of-allowlist mutation exit=0 tail=['OK       scratch-repo-out-of-allowlist-deletion expected_exit=1 actual_exit=1 marker=present', 'OK       unresolvable-base-fails-closed expected_exit=2 actual_exit=2 marker=present', 'PO03_FIXTURE_PASS scenarios=16 rejecting=14 passing=2 guard=check_path_scope.py']
+OK       Prove tampering with committed custody is evident exit=0 tail=['PO03_TAMPER_PASS cases=15 detected=9 clean=4 known_undetected=2', 'KNOWN_GAP: tail-event-deleted: errors=[]; a truncated chain is internally consistent because nothing records the expected head', 'KNOWN_GAP: forged-event-appended-with-correct-links: errors=[]; a hash chain constrains order, not authorship, so anyone able to write to control/events can extend it']
+OK       Audit hash and byte coverage of every manifested slot exit=0 tail=['COMPLETE workstreams/po03/attempts/po03-wa-b2e7-030-tamper-evidence covered=5 measured_bytes=39420 artifact_commit=b1648380cfd7fbaaa5cc2f27b1615ce30fb02bd2', 'PO03_COVERAGE_PASS slots=1 artifacts=5 measured_bytes=39420 excluded_by_declaration=manifest.json,result.json', 'PO03_SUITE slots_audited=6']
+OK       Root every manifested slot in its immutable capsule exit=0 tail=['ROOTED   task=po03-wa-b2e7-030-tamper-evidence input=5d8b8bb5a4e6631ce39cd49bc954bbaba692a93580a7fe981f91576f9e0ba2b6 acceptance=b1607c466a517d39ff18cbe34823cd54a726de241e2579acef01a95011435df6', 'PO03_PROVENANCE_PASS rooted=1 source=git:HEAD', 'PO03_SUITE slots_rooted=6']
+PO03_WORKFLOW_PASS steps=11 run_blocks=9 executed=9 install_path=.github/workflows/po03-suite.yml
+EXIT=0
