@@ -1,0 +1,31 @@
+name: PO-03 result custody and compounding contracts
+
+on:
+  pull_request:
+    paths:
+      - "workstreams/po03/**"
+      - "receipts/po03/**"
+      - ".github/workflows/po03-*.yml"
+  push:
+    branches:
+      - "po03/**"
+    paths:
+      - "workstreams/po03/**"
+      - "receipts/po03/**"
+      - ".github/workflows/po03-*.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run dependency-free contract tests
+        run: python -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v
