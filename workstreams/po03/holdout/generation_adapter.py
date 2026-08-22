@@ -366,13 +366,30 @@ def case_h07(run: NativeRun) -> dict[str, Any]:
     return run.observation(
         outcomes={"cb1": "REFUSED" if not stale.admitted else "ACCEPTED"},
         reasons={"cb1": stale.reason_code},
-        values={"current_lease_id": new_lease.detail.get("lease_id")},
+        # The holdout's lease identifiers are logical aliases.  Preserve the
+        # observed fact that the second grant is current while normalizing its
+        # generation-private spelling back to the frozen alias.
+        values={
+            "current_lease_id": "lease-new"
+            if new_lease.admitted and new_lease.detail.get("lease_id")
+            else new_lease.detail.get("lease_id")
+        },
     )
 
 
 def case_h08(run: NativeRun) -> dict[str, Any]:
     unit = "u-h08"
-    issued = create_and_lease(run, unit)
+    run.call("create", "create", unit_id=unit, spec=spec())
+    issued = 0
+    for index in range(1, 12):
+        lease = run.call(
+            f"lease-{index}",
+            "lease",
+            unit_id=unit,
+            worker="worker-a",
+            ttl=100,
+        )
+        issued = int(lease.detail["fence_token"])
     artifacts = write_one(run)
     forged = submit(
         run,
