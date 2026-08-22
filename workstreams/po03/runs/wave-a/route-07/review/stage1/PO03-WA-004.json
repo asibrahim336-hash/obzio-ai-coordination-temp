@@ -1,0 +1,534 @@
+{
+  "acceptance_authority_note": "Consequential acceptance requires a second frontier-family challenger. This receipt is a recommendation only and never sets ACCEPTED.",
+  "decision_changed": [],
+  "defects": [
+    "R4_MANIFEST_COMPLETE: manifest reconciliation failed",
+    "R10_HYPOTHESIS_EXERCISED: hypothesis under-exercised"
+  ],
+  "dimensions": [
+    {
+      "critical": true,
+      "detail": "2 parseable module(s)",
+      "dimension": "R1_EXECUTABLE_UNIT",
+      "evidence": [
+        "outbox_relay.py",
+        "test_outbox_relay.py"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "critical": true,
+      "detail": "12 test(s) rerun green by reviewer",
+      "dimension": "R2_TESTS_RERUN",
+      "evidence": [
+        {
+          "ran": 12,
+          "returncode": 0,
+          "summary": "OK",
+          "test": "test_outbox_relay.py"
+        }
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "critical": true,
+      "detail": "manifest reconciliation failed",
+      "dimension": "R4_MANIFEST_COMPLETE",
+      "evidence": [
+        "artifacts present but not manifested: ['result.json']"
+      ],
+      "verdict": "FAIL"
+    },
+    {
+      "critical": true,
+      "detail": "disposition(s) ['PASS'] within frozen enum",
+      "dimension": "R5_DISPOSITION_LEGAL",
+      "evidence": [],
+      "verdict": "PASS"
+    },
+    {
+      "critical": true,
+      "detail": "6 artifact(s) inside workstreams/po03/runs/wave-a/route-01/PO03-WA-004",
+      "dimension": "R7_PATH_CONFINEMENT",
+      "evidence": [],
+      "verdict": "PASS"
+    },
+    {
+      "critical": true,
+      "detail": "no producer self-acceptance (independent_acceptance=NOT_TESTED)",
+      "dimension": "R8_NO_SELF_ACCEPTANCE",
+      "evidence": [],
+      "verdict": "PASS"
+    },
+    {
+      "critical": true,
+      "detail": "frozen contract hashes echoed",
+      "dimension": "R9_CONTRACT_ECHO",
+      "evidence": [
+        "manifest.json",
+        "result.json"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "critical": false,
+      "detail": "command + observed output recorded",
+      "dimension": "R3_COMMANDS_AND_OBSERVED",
+      "evidence": [
+        "observed-output.txt"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "critical": false,
+      "detail": "limitations recorded",
+      "dimension": "R6_LIMITATIONS_PRESENT",
+      "evidence": [
+        "FINDING.md"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "critical": false,
+      "detail": "hypothesis under-exercised",
+      "dimension": "R10_HYPOTHESIS_EXERCISED",
+      "evidence": [
+        "no negative/adversarial case"
+      ],
+      "verdict": "FAIL"
+    },
+    {
+      "critical": false,
+      "detail": "2 module(s) structurally distinct",
+      "dimension": "R11_NOT_DUPLICATED",
+      "evidence": [],
+      "verdict": "PASS"
+    }
+  ],
+  "frozen_criteria": {
+    "acceptance_contract_sha256": "b429e6af6972221ba6fb7a6b15617c2837117cdda6be684831c906dfea7a6523",
+    "acceptance_contract_uri": "workstreams/po03/control/tasks/PO03-WA-004/acceptance.json",
+    "criteria_freeze_sha256": "901ecbffc27ecb2149c5a50c9c137618c8b6f568228e19f817cbdecc7d53cc31",
+    "criteria_freeze_uri": "workstreams/po03/evidence/criteria-freeze.json",
+    "immutable_input_manifest_sha256": "f66ba25343ceb8ce7810a7b241dd80b042b3b888ba498dcd61e48a29863c2f66",
+    "source_lock_sha256": "f66ba25343ceb8ce7810a7b241dd80b042b3b888ba498dcd61e48a29863c2f66",
+    "source_lock_uri": "workstreams/po03/evidence/source-lock.json"
+  },
+  "frozen_hypothesis": "A lost callback is recovered from the durable outbox.",
+  "function": "transactional-custody",
+  "hidden_cases": [
+    {
+      "case": "golden",
+      "expected_failed_dimensions": [],
+      "expected_recommendation": "RECOMMEND_ACCEPT",
+      "slot": "slots/golden"
+    },
+    {
+      "case": "prose_only",
+      "expected_failed_dimensions": [
+        "R1_EXECUTABLE_UNIT",
+        "R2_TESTS_RERUN"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/prose_only"
+    },
+    {
+      "case": "manifest_omission",
+      "expected_failed_dimensions": [
+        "R4_MANIFEST_COMPLETE"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/manifest_omission"
+    },
+    {
+      "case": "manifest_hash_corrupt",
+      "expected_failed_dimensions": [
+        "R4_MANIFEST_COMPLETE"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/manifest_hash_corrupt"
+    },
+    {
+      "case": "manifest_bytes_corrupt",
+      "expected_failed_dimensions": [
+        "R4_MANIFEST_COMPLETE"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/manifest_bytes_corrupt"
+    },
+    {
+      "case": "failing_test",
+      "expected_failed_dimensions": [
+        "R2_TESTS_RERUN"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/failing_test"
+    },
+    {
+      "case": "illegal_disposition",
+      "expected_failed_dimensions": [
+        "R5_DISPOSITION_LEGAL"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/illegal_disposition"
+    },
+    {
+      "case": "self_acceptance",
+      "expected_failed_dimensions": [
+        "R8_NO_SELF_ACCEPTANCE"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/self_acceptance"
+    },
+    {
+      "case": "terminal_overreach",
+      "expected_failed_dimensions": [
+        "R8_NO_SELF_ACCEPTANCE"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/terminal_overreach"
+    },
+    {
+      "case": "wrong_contract_hash",
+      "expected_failed_dimensions": [
+        "R9_CONTRACT_ECHO"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/wrong_contract_hash"
+    },
+    {
+      "case": "escaping_symlink",
+      "expected_failed_dimensions": [
+        "R7_PATH_CONFINEMENT"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/escaping_symlink"
+    },
+    {
+      "case": "missing_limitations",
+      "expected_failed_dimensions": [
+        "R6_LIMITATIONS_PRESENT"
+      ],
+      "expected_recommendation": "RETEST",
+      "slot": "slots/missing_limitations"
+    },
+    {
+      "case": "thin_tests",
+      "expected_failed_dimensions": [
+        "R10_HYPOTHESIS_EXERCISED"
+      ],
+      "expected_recommendation": "RETEST",
+      "slot": "slots/thin_tests"
+    },
+    {
+      "case": "no_observed_output",
+      "expected_failed_dimensions": [
+        "R3_COMMANDS_AND_OBSERVED"
+      ],
+      "expected_recommendation": "RETEST",
+      "slot": "slots/no_observed_output"
+    },
+    {
+      "case": "duplicate_unit",
+      "expected_failed_dimensions": [
+        "R11_NOT_DUPLICATED"
+      ],
+      "expected_recommendation": "RETEST",
+      "slot": "slots/duplicate_unit"
+    },
+    {
+      "case": "unmanifested_extra",
+      "expected_failed_dimensions": [
+        "R4_MANIFEST_COMPLETE"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/unmanifested_extra"
+    }
+  ],
+  "immutable_artifact_readback": [
+    {
+      "bytes": 3806,
+      "immutable_commit_sha256": "3b74b7c5c01895dd6f875eab52988d5f0826c11e550bf33a386067c564486859",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-01/PO03-WA-004/FINDING.md",
+      "sha256": "3b74b7c5c01895dd6f875eab52988d5f0826c11e550bf33a386067c564486859"
+    },
+    {
+      "bytes": 3494,
+      "immutable_commit_sha256": "b8337432416e3a18d8fb65c4a94356537fc2b232cde44cb09b2a6f7f5f87f0e1",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-01/PO03-WA-004/evidence/observed-output.txt",
+      "sha256": "b8337432416e3a18d8fb65c4a94356537fc2b232cde44cb09b2a6f7f5f87f0e1"
+    },
+    {
+      "bytes": 2895,
+      "immutable_commit_sha256": "eb25ff853b745dd3145977254fb9da27ea37567560177d3408ebe4d858a77be5",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-01/PO03-WA-004/manifest.json",
+      "sha256": "eb25ff853b745dd3145977254fb9da27ea37567560177d3408ebe4d858a77be5"
+    },
+    {
+      "bytes": 10979,
+      "immutable_commit_sha256": "89fbbfc54a61f3234c8e7c620355c7a17a6bbcef4a0d388a6cf7f4ae22959d33",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-01/PO03-WA-004/outbox_relay.py",
+      "sha256": "89fbbfc54a61f3234c8e7c620355c7a17a6bbcef4a0d388a6cf7f4ae22959d33"
+    },
+    {
+      "bytes": 3030,
+      "immutable_commit_sha256": "224d06f65d9fd203c4f08cc836c19c6061db66f301be8077e6d369a5aa9bcc32",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-01/PO03-WA-004/result.json",
+      "sha256": "224d06f65d9fd203c4f08cc836c19c6061db66f301be8077e6d369a5aa9bcc32"
+    },
+    {
+      "bytes": 7523,
+      "immutable_commit_sha256": "1bd1b14ef10b4c87921112b179aeafa3baf93886a1f7dcb5461bbaa35f3a54f8",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-01/PO03-WA-004/test_outbox_relay.py",
+      "sha256": "1bd1b14ef10b4c87921112b179aeafa3baf93886a1f7dcb5461bbaa35f3a54f8"
+    }
+  ],
+  "limitations": [],
+  "receipt_version": "PO03-ROUTE07-INDEPENDENT-REVIEW-RECEIPT-v1",
+  "recommendation": "RECOMMEND_REJECT",
+  "review_order": "BLIND_STAGE_1_CRITERIA_ONLY",
+  "reviewed_at": "2026-08-22T07:41:39Z",
+  "reviewer_function": "evaluation-and-semantics",
+  "reviewer_id": "po03-route-07-independent-reviewer",
+  "reviewer_model_family": "claude-opus-5",
+  "route_id": "route-01",
+  "rubric_freeze": {
+    "components": [
+      {
+        "bytes": 24024,
+        "path": "workstreams/po03/runs/wave-a/route-07/review/rubric_v1.py",
+        "sha256": "51fbef424eb31ad0b5706921a30c583950386b8c8c6de704a929dc51b6bd3904"
+      },
+      {
+        "bytes": 12371,
+        "path": "workstreams/po03/runs/wave-a/route-07/review/hidden_cases_v1.py",
+        "sha256": "62cfdac26f63246aab538c36e87f02d77035aef11d8012abd9e61fb7eb8afbde"
+      },
+      {
+        "bytes": 4161,
+        "path": "workstreams/po03/runs/wave-a/route-07/review/test_rubric_v1.py",
+        "sha256": "6a560d73c3aee69829978420a684381ec3ca1e87a36bce78821e4645cfbfc950"
+      },
+      {
+        "bytes": 10154,
+        "path": "workstreams/po03/runs/wave-a/route-07/review/run_review.py",
+        "sha256": "208bf292265aa2be6bcf1b70a6dc638997b13586da7316f312fe6a069a85070c"
+      }
+    ],
+    "composite_rubric_sha256": "c237b24c7242b80dddb29e62e6cf63ce284c6fc66fea1c722e31de7aa5fc05ad",
+    "criteria_freeze_sha256": "901ecbffc27ecb2149c5a50c9c137618c8b6f568228e19f817cbdecc7d53cc31",
+    "decision_changed": [],
+    "dimensions": {
+      "advisory": [
+        "R3_COMMANDS_AND_OBSERVED",
+        "R6_LIMITATIONS_PRESENT",
+        "R10_HYPOTHESIS_EXERCISED",
+        "R11_NOT_DUPLICATED"
+      ],
+      "critical": [
+        "R1_EXECUTABLE_UNIT",
+        "R2_TESTS_RERUN",
+        "R4_MANIFEST_COMPLETE",
+        "R5_DISPOSITION_LEGAL",
+        "R7_PATH_CONFINEMENT",
+        "R8_NO_SELF_ACCEPTANCE",
+        "R9_CONTRACT_ECHO"
+      ]
+    },
+    "exact_model_configuration": "claude-opus-5-thinking-high",
+    "freeze_id": "PO03-ROUTE07-RUBRIC-FREEZE-v1",
+    "frozen_at": "2026-08-22T07:41:16Z",
+    "frozen_at_base_commit": "1a93d690c81433913803fe370406e3da1700bb21",
+    "hidden_case_count": 16,
+    "hidden_cases": [
+      {
+        "case": "golden",
+        "expected_failed_dimensions": [],
+        "expected_recommendation": "RECOMMEND_ACCEPT",
+        "slot": "slots/golden"
+      },
+      {
+        "case": "prose_only",
+        "expected_failed_dimensions": [
+          "R1_EXECUTABLE_UNIT",
+          "R2_TESTS_RERUN"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/prose_only"
+      },
+      {
+        "case": "manifest_omission",
+        "expected_failed_dimensions": [
+          "R4_MANIFEST_COMPLETE"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/manifest_omission"
+      },
+      {
+        "case": "manifest_hash_corrupt",
+        "expected_failed_dimensions": [
+          "R4_MANIFEST_COMPLETE"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/manifest_hash_corrupt"
+      },
+      {
+        "case": "manifest_bytes_corrupt",
+        "expected_failed_dimensions": [
+          "R4_MANIFEST_COMPLETE"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/manifest_bytes_corrupt"
+      },
+      {
+        "case": "failing_test",
+        "expected_failed_dimensions": [
+          "R2_TESTS_RERUN"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/failing_test"
+      },
+      {
+        "case": "illegal_disposition",
+        "expected_failed_dimensions": [
+          "R5_DISPOSITION_LEGAL"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/illegal_disposition"
+      },
+      {
+        "case": "self_acceptance",
+        "expected_failed_dimensions": [
+          "R8_NO_SELF_ACCEPTANCE"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/self_acceptance"
+      },
+      {
+        "case": "terminal_overreach",
+        "expected_failed_dimensions": [
+          "R8_NO_SELF_ACCEPTANCE"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/terminal_overreach"
+      },
+      {
+        "case": "wrong_contract_hash",
+        "expected_failed_dimensions": [
+          "R9_CONTRACT_ECHO"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/wrong_contract_hash"
+      },
+      {
+        "case": "escaping_symlink",
+        "expected_failed_dimensions": [
+          "R7_PATH_CONFINEMENT"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/escaping_symlink"
+      },
+      {
+        "case": "missing_limitations",
+        "expected_failed_dimensions": [
+          "R6_LIMITATIONS_PRESENT"
+        ],
+        "expected_recommendation": "RETEST",
+        "slot": "slots/missing_limitations"
+      },
+      {
+        "case": "thin_tests",
+        "expected_failed_dimensions": [
+          "R10_HYPOTHESIS_EXERCISED"
+        ],
+        "expected_recommendation": "RETEST",
+        "slot": "slots/thin_tests"
+      },
+      {
+        "case": "no_observed_output",
+        "expected_failed_dimensions": [
+          "R3_COMMANDS_AND_OBSERVED"
+        ],
+        "expected_recommendation": "RETEST",
+        "slot": "slots/no_observed_output"
+      },
+      {
+        "case": "duplicate_unit",
+        "expected_failed_dimensions": [
+          "R11_NOT_DUPLICATED"
+        ],
+        "expected_recommendation": "RETEST",
+        "slot": "slots/duplicate_unit"
+      },
+      {
+        "case": "unmanifested_extra",
+        "expected_failed_dimensions": [
+          "R4_MANIFEST_COMPLETE"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/unmanifested_extra"
+      }
+    ],
+    "inputs_admitted_before_freeze": [
+      "workstreams/po03/evidence/criteria-freeze.json",
+      "workstreams/po03/evidence/source-lock.json",
+      "workstreams/po03/contracts/transactional-result.schema.json",
+      "workstreams/po03/contracts/wave-compounding.schema.json",
+      "workstreams/po03/metrics/metric-definitions.json",
+      "workstreams/po03/COMMISSION.md",
+      "workstreams/po03/control/path-ownership.json",
+      "workstreams/po03/control/protocol-activation.json",
+      "workstreams/po03/control/recovery-state.json",
+      "workstreams/po03/control/leases/route-07.json",
+      "workstreams/po03/control/canaries/route-07/challenge.json",
+      "workstreams/po03/control/canaries/route-07/response.json",
+      "workstreams/po03/control/tasks/PO03-WA-0{01-08,33-56}/input.json",
+      "workstreams/po03/control/tasks/PO03-WA-0{01-08,33-56}/acceptance.json",
+      "workstreams/po03/control/completions/route-01.json",
+      "workstreams/po03/control/completions/route-05.json",
+      "workstreams/po03/control/completions/route-06.json"
+    ],
+    "inputs_withheld_until_after_freeze": [
+      "workstreams/po03/runs/wave-a/route-01/**",
+      "workstreams/po03/runs/wave-a/route-05/**",
+      "workstreams/po03/runs/wave-a/route-06/**",
+      "workstreams/po03/control/results/**"
+    ],
+    "recommendation_enum": [
+      "RECOMMEND_ACCEPT",
+      "RECOMMEND_REJECT",
+      "RETEST"
+    ],
+    "review_order_declaration": "Rubric, hidden-case generators and stage-1 driver were compiled and hashed from frozen criteria only, before reading any producer conclusion, FINDING narrative, observed-result prose, per-task producer result receipt or route execution receipt.",
+    "reviewer_function": "evaluation-and-semantics",
+    "reviewer_id": "po03-route-07-independent-reviewer",
+    "self_test_command": "python3 -m unittest test_rubric_v1 -v",
+    "source_lock_sha256": "f66ba25343ceb8ce7810a7b241dd80b042b3b888ba498dcd61e48a29863c2f66",
+    "terminal_acceptance_permitted": false
+  },
+  "target": {
+    "completed_receipt_sha256": "d0e9dd8e1c539746b8bc0c1b25b7d5d050d436b60c5dfe11a2f3edfcef6e756e",
+    "coordinator_state": "COMPLETED_PENDING_INDEPENDENT_ACCEPTANCE",
+    "parent_ingested_receipt_sha256": "a86d7927eb86a102bf9955d13f21e09314a73539c7aa9d018c382044e0668326",
+    "result_commit_id": "e6efd8ef496d0e2437da6295e7e41a838cf7cc17",
+    "result_slot": "workstreams/po03/runs/wave-a/route-01/PO03-WA-004",
+    "result_uri": "workstreams/po03/control/results/PO03-WA-004.json",
+    "reviewed_at_base_commit": "1a93d690c81433913803fe370406e3da1700bb21"
+  },
+  "task_id": "PO03-WA-004",
+  "terminal_acceptance_claimed": false,
+  "tests_rerun_by_reviewer": [
+    {
+      "ran": 12,
+      "returncode": 0,
+      "summary": "OK",
+      "test": "test_outbox_relay.py"
+    }
+  ]
+}
