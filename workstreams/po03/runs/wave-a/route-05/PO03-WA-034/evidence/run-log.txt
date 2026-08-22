@@ -1,0 +1,51 @@
+PO03-WA-034 execution evidence
+captured_at_utc: 2026-08-22T07:16:28Z
+python: Python 3.12.3
+platform: Linux 6.12.94+ x86_64
+worktree_head: 44de68e52a0baa480a8a8c0b95fd5071391dd4a1
+base_commit: 44de68e52a0baa480a8a8c0b95fd5071391dd4a1
+cwd: workstreams/po03/runs/wave-a/route-05/PO03-WA-034
+
+$ python3 -m unittest discover -s tests -p 'test_*.py' -v
+test_ancestor_directory_symlink_escape_is_rejected (test_symlink_resolution_guard.BypassAttemptTests.test_ancestor_directory_symlink_escape_is_rejected) ... ok
+test_chained_symlinks_are_followed_to_the_end (test_symlink_resolution_guard.BypassAttemptTests.test_chained_symlinks_are_followed_to_the_end) ... ok
+test_dangling_symlink_is_rejected (test_symlink_resolution_guard.BypassAttemptTests.test_dangling_symlink_is_rejected) ... ok
+test_deeply_nested_ancestor_symlink_escape_is_rejected (test_symlink_resolution_guard.BypassAttemptTests.test_deeply_nested_ancestor_symlink_escape_is_rejected) ... ok
+test_final_component_symlink_escape_is_rejected (test_symlink_resolution_guard.BypassAttemptTests.test_final_component_symlink_escape_is_rejected) ... ok
+test_relative_symlink_escape_is_rejected (test_symlink_resolution_guard.BypassAttemptTests.test_relative_symlink_escape_is_rejected) ... ok
+test_symlink_loop_is_reported_as_a_loop (test_symlink_resolution_guard.BypassAttemptTests.test_symlink_loop_is_reported_as_a_loop) ... ok
+test_clean_paths_exit_zero (test_symlink_resolution_guard.CommandLineTests.test_clean_paths_exit_zero) ... ok
+test_missing_root_exits_two (test_symlink_resolution_guard.CommandLineTests.test_missing_root_exits_two) ... ok
+test_symlink_bypass_exits_one (test_symlink_resolution_guard.CommandLineTests.test_symlink_bypass_exits_one) ... ok
+test_lexical_escape_is_rejected_before_filesystem_access (test_symlink_resolution_guard.ContainmentTests.test_lexical_escape_is_rejected_before_filesystem_access) ... ok
+test_nonexistent_deep_path_is_allowed (test_symlink_resolution_guard.ContainmentTests.test_nonexistent_deep_path_is_allowed) ... ok
+test_plain_owned_path_is_allowed (test_symlink_resolution_guard.ContainmentTests.test_plain_owned_path_is_allowed) ... ok
+test_symlink_to_internal_directory_is_allowed (test_symlink_resolution_guard.ContainmentTests.test_symlink_to_internal_directory_is_allowed) ... ok
+test_allowed_write_lands_inside_the_owned_root (test_symlink_resolution_guard.WriteEnforcementTests.test_allowed_write_lands_inside_the_owned_root) ... ok
+test_unguarded_write_would_have_escaped (test_symlink_resolution_guard.WriteEnforcementTests.test_unguarded_write_would_have_escaped)
+Control case: without the guard the same request corrupts the victim. ... ok
+test_write_through_escaping_directory_symlink_creates_nothing_outside (test_symlink_resolution_guard.WriteEnforcementTests.test_write_through_escaping_directory_symlink_creates_nothing_outside) ... ok
+test_write_through_escaping_symlink_never_touches_the_target (test_symlink_resolution_guard.WriteEnforcementTests.test_write_through_escaping_symlink_never_touches_the_target) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.441s
+
+OK
+[exit code: 0]
+
+$ python3 src/symlink_resolution_guard.py --owned-root owned nested/ok.json report.json
+ok   ALLOWED                                nested/ok.json  (resolved target is physically inside the owned root)
+ok   ALLOWED                                report.json  (resolved target is physically inside the owned root)
+[exit code: 0]
+
+$ python3 src/symlink_resolution_guard.py --owned-root owned sneaky/victim.txt escape.txt dangling.txt ../outside/victim.txt
+FAIL REJECTED_ANCESTOR_SYMLINK_ESCAPE       sneaky/victim.txt  (symlink component 'sneaky' resolves outside the owned root)
+FAIL REJECTED_SYMLINK_ESCAPE                escape.txt  (symlink component 'escape.txt' resolves outside the owned root)
+FAIL REJECTED_DANGLING_SYMLINK              dangling.txt  (dangling symlink at dangling.txt; containment unprovable)
+FAIL REJECTED_OUTSIDE_ROOT_LEXICAL          ../outside/victim.txt  (path leaves the owned root before any filesystem access)
+[exit code: 1]
+
+$ cat outside/victim.txt   # unchanged after all rejected attempts
+ORIGINAL
+[exit code: 0]
+
