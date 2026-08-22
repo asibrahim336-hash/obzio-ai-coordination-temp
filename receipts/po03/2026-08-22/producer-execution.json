@@ -16,7 +16,7 @@
   "wave_state": {
     "wave_id": "po03-wave-a",
     "units_required": 64,
-    "units_registered": 94,
+    "units_registered": 98,
     "ledger_rows": 299,
     "ledger_chain_valid": true,
     "false_completions": 0,
@@ -91,7 +91,7 @@
       "defect": "The ingestion driver materialises a subordinate branch at HEAD rather than at the commit each result declares, so it was not reading back by immutable SHA. Unit a2-u01 was rejected for a fault_lab.py hash mismatch caused solely by a later commit on the same branch, not by any dishonesty.",
       "remediation_unit": "a11-u05",
       "state": "OPEN_UNDER_REMEDIATION",
-      "live_recurrences": 2,
+      "live_recurrences": 5,
       "fixtures_for_remediation": [
         {
           "unit": "a2-u01",
@@ -106,10 +106,22 @@
           "recorded_hash_matches_declared_commit": true,
           "attributed_to": "coordinator",
           "producer_at_fault": false
+        },
+        {
+          "units": [
+            "a12-u01",
+            "a12-u03",
+            "a12-u04"
+          ],
+          "cause": "declared commits 7e224c36, db44722c, cf964998 all verify correctly; rejected only because the branch advanced during the follow-up",
+          "artifacts_verified_at_declared_commit": 13,
+          "attributed_to": "coordinator",
+          "producer_at_fault": false
         }
       ],
       "escalation_reason": "Escalated from HIGH. This defect has now falsely rejected honest work from two different cohorts in two different families. A verification step that rejects correct results is worse than no verification, because it destroys trust in the one control that distinguishes a real result from a claimed one.",
-      "remediation_note": "a11-u05 now has two real fixtures rather than one."
+      "remediation_note": "a11-u05 now has two real fixtures rather than one.",
+      "operational_impact": "Now falsely rejecting on essentially every cohort follow-up. Five instances across three model families. The coordinator has had to ingest correctly by hand each time by materialising the declared commit, which is exactly what a11-u05 must make automatic and what a11-u13 must pair with a branch-tip comparison so a superseded attestation is still flagged."
     },
     {
       "id": "DEF-06",
@@ -241,7 +253,9 @@
       "why_it_matters": "The commission requires clean-runtime execution and process-boundary isolation. A validator that dies on import in a partial checkout is a false-green risk in the opposite direction: a caller that swallows the exception skips validation entirely.",
       "discovery_significance": "Neither cohort could see this alone. a12 made a correct change in isolation; a10's harness, which copies tools/ without contracts/, is what exposed it. This is direct evidence that integration is a distinct test surface from any single cohort's gate.",
       "remediation_unit": "a12-u05",
-      "state": "OPEN_UNDER_REMEDIATION"
+      "state": "FIXED_WITH_RECURRENCE_TESTS",
+      "disposition": "RETAIN",
+      "fix": "a12 embedded the schema bytes in the validator and added a parity test asserting the embedded rules equal the seeded on-disk schema exactly, so the two cannot silently diverge. Independently verified by the coordinator: the validator imports and validates in a directory containing nothing but itself, and an invalid document still exits 1 with a precise diagnostic rather than crashing."
     },
     {
       "id": "DEF-20",
