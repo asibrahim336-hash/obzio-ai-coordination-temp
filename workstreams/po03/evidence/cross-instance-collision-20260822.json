@@ -1,0 +1,54 @@
+{
+  "evidence_id": "EV-PO03-CROSS-INSTANCE-COLLISION-20260822-v002",
+  "recorded_by": "orchestrating parent session (not the integration-controller worker)",
+  "purpose": "Independent follow-up confirmation of the collision the worker already found and recorded in workstreams/po03/control/path-ownership.json (collision_events[0], base head 0e973ed3) and workstreams/po03/control/events/0011-base-branch-path-collision-measured.json. This file adds a later re-measurement and reads the base branch's own in-progress registry; it does not restate the worker's per-sibling-branch path-change counts, which remain the primary record for that data.",
+  "recorded_at": "2026-08-22T08:20:00Z",
+  "decision_changed": [],
+  "relationship_to_prior_record": {
+    "worker_measurement_base_head": "0e973ed3fb1c2a51e23edba4ae2d5f303fe33b2d",
+    "worker_measurement_commits_ahead_of_branch_point": 14,
+    "worker_measurement_overlap_count": 17,
+    "this_measurement_base_head": "ffb6bef150bbb9894ea6ba2bce290585b2e48d31",
+    "this_measurement_commits_ahead_of_branch_point": 58,
+    "this_measurement_overlap_count": 16,
+    "delta_since_worker_measurement": "44 additional commits landed on the shared base branch between the worker's end-of-wave measurement and this follow-up read, confirming the base branch is being actively, continuously written by another actor rather than having paused. The overlap set changed by one entry (this pass no longer sees workstreams/po03/.gitignore as overlapping under a straight `git diff --name-only`; it is not evidence the underlying conflict shrank, only that the path sets are not stable and must be re-measured at merge time, not trusted from either the worker's or this snapshot.)",
+    "ancestry_check": "552b12ea (this branch's fork point) remains an ancestor of ffb6bef150bbb9 (`git merge-base --is-ancestor` sense, confirmed by `git log --oneline 552b12e..origin/po03/...`  producing a linear list with no merge commits from this side); the base has advanced, it has not diverged from a common history perspective."
+  },
+  "what_this_pass_additionally_read": {
+    "action": "Read the current tip content of the shared PR base branch (`po03/repository-engineering-portable-runtime-20260822-v001` itself) via `git show origin/<base>:<path>`, specifically `workstreams/po03/evidence/scale-ladder.json` and `workstreams/po03/control/work-unit-registry.jsonl`.",
+    "why_this_is_in_bounds": "The base branch is this Wave's own PR target, not a subordinate sibling's private branch. Reading the branch you intend to open a PR against is ordinary, necessary practice, distinct from reading a sibling/subordinate branch's content.",
+    "what_was_not_read": "No content from any `cursor/po03-*`, `po03/wa-b2e7-*`, `po03/wave-a-*`, `po03/lease/*`, `po03/review-*` or other sibling/subordinate branch was checked out, merged, or read this pass. Only the shared base branch's own tip and ref names/diffstats of the siblings were examined, consistent with the worker's own non-interference discipline."
+  },
+  "base_branch_registry_snapshot_at_ffb6bef": {
+    "scale_ladder_claim": {
+      "wave_a": {"registered_attempts": 64, "required_substantive_attempts": 64, "state": "REGISTERED_AWAITING_CANARY"},
+      "wave_b": {"required_substantive_attempts": 128, "state": "NOT_YET"},
+      "assessment": "Claims 64 registered/planned attempts, explicitly not 64 completed (state is REGISTERED_AWAITING_CANARY, not COMPLETED). This is an honest label, not a false-completion claim, on the evidence available from outside that branch."
+    },
+    "work_unit_registry": {
+      "distinct_task_ids": 67,
+      "task_ids_with_a_tracked_lifecycle_state": 10,
+      "parent_ingested_count": 6,
+      "parent_ingested_task_ids": [
+        "po03-canary-001",
+        "wave-a-001-source-lock-reproduction",
+        "wave-a-022-agent-recovery-postmortems",
+        "wave-a-041-schema-adversarial-review",
+        "po03-route-isolation-canary-a",
+        "po03-route-isolation-canary-b"
+      ],
+      "recovery_required_or_retry_scheduled_task_ids": [
+        "wave-a-021-official-cursor-capability",
+        "wave-a-014-lease-design-challenge"
+      ],
+      "remaining_task_ids": "approximately 57 of the 67 registered task ids carry no observed state beyond initial registration at this snapshot",
+      "assessment": "The concurrent effort's own ledger is internally consistent with a genuine, still-in-progress execution (6 of 67 registered units fully ingested, 2 in recovery, the rest not yet started) rather than a false bulk-completion claim. Its named task decomposition (e.g. fencing-patterns, idempotency-patterns, lost-callback-reproduction, stale-lease-reproduction, corrupt-artifact-reproduction, worktree-isolation-method, hermetic-python-method, disposition-ontology, manifest-completeness) is a substantive, non-duplicate breakdown of the commission's requirements and is, on this evidence, a materially larger-scale execution of the literal 64-unit instruction than this branch attempted."
+    }
+  },
+  "complementarity_check": {
+    "method": "Compared this branch's 4 unique tool scripts against the base registry's task ids covering similar ground.",
+    "result": "wave-a-004-manifest-completeness, wave-a-045-manifest-adversarial-review and wave-a-058-disposition-ontology are registered on the base branch but are not among its 6 PARENT_INGESTED task ids as of this snapshot. This branch's workstreams/po03/tools/manifest.py and workstreams/po03/tools/repository_disposition.py are working, tested code covering that ground now. At this snapshot the two efforts are complementary rather than duplicative, but this is time-sensitive: if those base-branch units complete before reconciliation, the assessment must be re-run."
+  },
+  "recommendation_unchanged_from_worker": "Do not have this branch or the concurrent base-branch effort force a resolution unilaterally. A human, or one explicitly designated integration-controller run, should reconcile the 16-17 overlapping paths (principally workstreams/po03/tools/validate_contracts.py and its test module) by direct comparison, decide whether this branch's four unique tool scripts should be cherry-picked onto the current base tip, and only then re-run the zero-collision acceptance check. This file and the worker's own path-ownership.json are evidence for that decision, not a resolution of it.",
+  "state": "OPEN_UNRESOLVED_COLLISION_CONFIRMED_BY_INDEPENDENT_REMEASUREMENT"
+}
