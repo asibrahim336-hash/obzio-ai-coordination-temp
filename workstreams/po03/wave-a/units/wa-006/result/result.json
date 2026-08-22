@@ -1,0 +1,186 @@
+{
+  "protocol_version": "OBZIO-WAVE-A-UNIT-RESULT-v1",
+  "task_id": "PO03-WA-006",
+  "hypothesis_id": "H-PO03-WA-006",
+  "hypothesis": "PO-01 pack claims can be checked from immutable commits without branch mutation or producer narrative.",
+  "hypothesis_outcome": "SUPPORTED",
+  "hypothesis_outcome_basis": "86 per-pack file claims across 13 manifests at two immutable PO-01 commits were checked from git object bytes alone. 79 verified exactly on digest and byte count, 7 were falsified, and every scan left the ref digest and HEAD state unchanged. No checkout occurred and no producer prose or self-assertion field was used as evidence.",
+  "title": "Immutable PO-01 claim reproducer",
+  "standing_function": "clean-runtime-reproduction",
+  "group": "reproduction",
+  "attempt_id": "PO03-WA-006-A02",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "method": {
+    "source_claim_capsule": "workstreams/po03/wave-a/units/wa-006/result/source-claims.json",
+    "hypothesis_freeze": "workstreams/po03/wave-a/units/wa-006/result/hypotheses.json",
+    "reproductions": [
+      "R-PO03-WA-006-001",
+      "R-PO03-WA-006-002",
+      "R-PO03-WA-006-003",
+      "R-PO03-WA-006-004"
+    ],
+    "reproduction_design": "A dependency-free harness reads pack manifests and the blobs they claim through a positive allowlist of read-only git plumbing subcommands at a caller-pinned commit id. It normalises the two manifest dialects present in the corpus, checks path membership, SHA-256, byte count, file_count, total_bytes, aggregate coverage and embedded build-host absolute paths, and indexes the whole scoped tree by content digest so a relocated file is distinguished from a lost one. It was first qualified against a sanitized adversarial fixture whose 11 injected discrepancies were declared before the run, then applied to three immutable commits.",
+    "exact_falsifier": "Any pack claim that cannot be evaluated without a working-tree checkout, a network call inside the check, or producer prose; or any ref or HEAD state that differs before and after a scan.",
+    "narrative_exclusion": "Only files named exactly MANIFEST.json and the blobs they claim were read. The verifies: true and problems: [] fields in packs/MANIFEST.json are producer self-assertions; they were recorded as source claims and then contradicted by content rather than trusted.",
+    "observed": {
+      "immutable_commits_read": 3,
+      "manifests_checked": 13,
+      "file_claims_checked": 86,
+      "file_claims_verified": 79,
+      "file_claims_falsified": 7,
+      "discrepancies_found": 9,
+      "material_findings": 4,
+      "refs_unchanged_on_every_scan": true,
+      "head_unchanged_on_every_scan": true,
+      "checkouts_performed": 0,
+      "po01_writes": 0
+    }
+  },
+  "findings_summary": [
+    {
+      "finding_id": "F-WA-006-01",
+      "kind": "MISSING_AT_CLAIMED_PATH_CONTENT_RELOCATED",
+      "count": 5,
+      "one_line": "Packs 06-10 each claim a member _spine.py that is absent from the pack directory at commit 1e6f53c; the identical 43928 bytes are published once at packs/_shared/_spine.py, and the same claim is satisfied at commit 96adfe7.",
+      "content_lost": false
+    },
+    {
+      "finding_id": "F-WA-006-02",
+      "kind": "MISSING_AT_CLAIMED_PATH_CONTENT_ABSENT",
+      "count": 2,
+      "one_line": "Pack 07 claims state_machine.py and test_pack.py at commit 96adfe7; both are absent and their claimed digests match no blob anywhere in that commit, so the pack cannot be qualified there.",
+      "content_lost": true
+    },
+    {
+      "finding_id": "F-WA-006-03",
+      "kind": "NON_PORTABLE_ABSOLUTE_PATH_CLAIM",
+      "count": 1,
+      "one_line": "packs/MANIFEST.json publishes its corpus root as /tmp/packs, a build-host temporary directory.",
+      "content_lost": false
+    },
+    {
+      "finding_id": "F-WA-006-04",
+      "kind": "AGGREGATE_COVERAGE_GAP",
+      "count": 1,
+      "one_line": "packs/MANIFEST.json enumerates five packs while twelve directories exist under packs/, so packs 06-10 are missing from the aggregate a consumer reads first.",
+      "content_lost": false
+    }
+  ],
+  "artifacts": {
+    "read_only_reproduction_harness": "workstreams/po03/wave-a/units/wa-006/result/pack_claim_reproducer.py",
+    "sanitized_fixture_builder": "workstreams/po03/wave-a/units/wa-006/result/build_sanitized_fixture.py",
+    "sanitized_fixture_spec": "workstreams/po03/wave-a/units/wa-006/result/fixtures/adversarial-fixture-spec.json",
+    "frozen_discrepancy_report": "workstreams/po03/wave-a/units/wa-006/result/frozen-discrepancy-report.json",
+    "focused_and_recurrence_tests": "workstreams/po03/wave-a/units/wa-006/result/test_pack_claim_reproducer.py",
+    "reproduction_report_packs_commit": "workstreams/po03/wave-a/units/wa-006/result/reproduction-po01-packs.json",
+    "reproduction_report_fleet_commit": "workstreams/po03/wave-a/units/wa-006/result/reproduction-po01-fleet.json",
+    "reproduction_result": "workstreams/po03/wave-a/units/wa-006/result/reproduction-result.json",
+    "explicit_disposition": "workstreams/po03/wave-a/units/wa-006/result/disposition.json",
+    "source_claims": "workstreams/po03/wave-a/units/wa-006/result/source-claims.json",
+    "hypothesis_freeze": "workstreams/po03/wave-a/units/wa-006/result/hypotheses.json",
+    "strategy_proposals": "workstreams/po03/wave-a/units/wa-006/result/strategy-proposals.json",
+    "ownership_guard": "workstreams/po03/wave-a/units/wa-006/result/ownership-guard.json",
+    "test_output": "workstreams/po03/wave-a/units/wa-006/result/test-output.txt",
+    "tests": "workstreams/po03/wave-a/units/wa-006/result/tests.json",
+    "limitations": "workstreams/po03/wave-a/units/wa-006/result/limitations.json",
+    "manifest": "workstreams/po03/wave-a/units/wa-006/result/artifact-manifest.json",
+    "producer_return": "workstreams/po03/wave-a/units/wa-006/result/ready-to-commit.json"
+  },
+  "required_executable_output": {
+    "required": "Read-only reproduction harness, sanitized fixture, and frozen discrepancy report.",
+    "harness_delivered": true,
+    "harness_executed": true,
+    "sanitized_fixture_delivered": true,
+    "sanitized_fixture_executed": true,
+    "frozen_report_delivered": true,
+    "frozen_report_recurrence_tested": true,
+    "explicit_disposition_delivered": true
+  },
+  "tests": {
+    "path": "workstreams/po03/wave-a/units/wa-006/result/tests.json",
+    "focused": { "count": 21, "outcome": "PASS" },
+    "seeded_contracts": { "count": 37, "outcome": "PASS", "modified": false },
+    "taxonomy": { "count": 1, "outcome": "PASS" },
+    "cli_behaviour": { "count": 2, "outcome": "PASS" },
+    "total": 61,
+    "skipped": 0,
+    "first_pass_outcome": "FAIL",
+    "final_outcome": "PASS"
+  },
+  "source_claims": {
+    "path": "workstreams/po03/wave-a/units/wa-006/result/source-claims.json",
+    "count": 7,
+    "external_documentation_claims": "NOT_SUPPORTED",
+    "all_claims_read_from_immutable_repository_objects": true
+  },
+  "hypotheses": {
+    "path": "workstreams/po03/wave-a/units/wa-006/result/hypotheses.json",
+    "assigned_hypothesis_tested_as_written": true,
+    "predicate_count": 6,
+    "predicates_supported": 6,
+    "current_method_hypothesis_count": 0,
+    "current_method_hypothesis_minimum": 0,
+    "all_frozen_before_reproduction": true
+  },
+  "reproductions": {
+    "path": "workstreams/po03/wave-a/units/wa-006/result/reproduction-result.json",
+    "reproduction_count": 4,
+    "sanitized_obzio_reproduction_count": 1,
+    "immutable_po01_reproduction_count": 3,
+    "sanitized_reproduction_minimum": 0
+  },
+  "mechanism_changes": {
+    "path": "workstreams/po03/wave-a/units/wa-006/result/disposition.json",
+    "count": 0,
+    "required_by_input": false,
+    "note": "No live shared mechanism was changed and none is claimed. Repair candidates for the four PO-01 findings are recorded unapplied, with PO-01 named as owner."
+  },
+  "strategy_proposals": {
+    "path": "workstreams/po03/wave-a/units/wa-006/result/strategy-proposals.json",
+    "count": 3,
+    "status": "UNBOUND_PROPOSAL",
+    "applied_count": 0
+  },
+  "dispositions": {
+    "path": "workstreams/po03/wave-a/units/wa-006/result/disposition.json",
+    "hypothesis_disposition": "RETAIN",
+    "artifact_disposition_count": 4,
+    "finding_disposition_count": 4,
+    "po01_in_place_repairs": 0
+  },
+  "limitations": {
+    "path": "workstreams/po03/wave-a/units/wa-006/result/limitations.json",
+    "count": 13,
+    "not_supported_count": 5,
+    "owner_blocked_count": 1
+  },
+  "model_requested": "claude-opus-5-thinking-high",
+  "model_observed": "claude-opus-5",
+  "model_observed_provenance": "RUNTIME_SELF_REPORT_NOT_SEPARATELY_ATTESTED",
+  "reasoning_requested": "high",
+  "reasoning_observed": "NOT_SUPPORTED",
+  "started_at": "2026-08-22T08:21:00Z",
+  "finished_at": "2026-08-22T08:47:00Z",
+  "preregistered_metrics": {
+    "wall_time_seconds": 1560,
+    "wall_time_start_precision": "MINUTE_FROM_INVOCATION_TIMESTAMP",
+    "test_count": 61,
+    "first_pass_outcome": "FAIL",
+    "artifact_count": "RECORDED_IN_ARTIFACT_MANIFEST",
+    "artifact_bytes": "RECORDED_IN_ARTIFACT_MANIFEST",
+    "source_claim_count": 7,
+    "reproduction_count": 4,
+    "mechanism_change_count": 0,
+    "defects": 2,
+    "rework": 2,
+    "provider_block": false,
+    "collision": false,
+    "recovery_events": 0
+  },
+  "producer_state": "READY_TO_COMMIT",
+  "obzio_state_claimed": "RESULT_COMMITTED_AFTER_IMMUTABLE_REMOTE_READBACK_ONLY",
+  "completion_claimed": false,
+  "independent_acceptance": "NOT_TESTED",
+  "self_accepted": false,
+  "decision_changed": []
+}

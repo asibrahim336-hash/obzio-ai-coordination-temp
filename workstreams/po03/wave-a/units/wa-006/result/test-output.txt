@@ -1,0 +1,58 @@
+== PO03-WA-006 recorded test output ==
+python: Python 3.12.3
+git: git version 2.43.0
+repo: isolated clone, branch cursor/po03-wa-006-b195-a02-1a9f
+
+--- 1. focused suite, isolated interpreter, CI-shaped discover ---
+$ python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-006/result -t workstreams/po03/wave-a/units/wa-006/result -p 'test_*.py' -v
+test_array_entry_without_path_is_rejected (test_pack_claim_reproducer.DialectNormalisationTests.test_array_entry_without_path_is_rejected) ... ok
+test_claim_with_uppercase_digest_is_rejected (test_pack_claim_reproducer.DialectNormalisationTests.test_claim_with_uppercase_digest_is_rejected) ... ok
+test_claim_without_digest_is_rejected (test_pack_claim_reproducer.DialectNormalisationTests.test_claim_without_digest_is_rejected) ... ok
+test_missing_files_key_is_rejected (test_pack_claim_reproducer.DialectNormalisationTests.test_missing_files_key_is_rejected) ... ok
+test_every_frozen_target_recurs (test_pack_claim_reproducer.FrozenFindingRecurrenceTests.test_every_frozen_target_recurs) ... ok
+test_frozen_relocation_resolves_by_content_on_the_sibling_commit (test_pack_claim_reproducer.FrozenFindingRecurrenceTests.test_frozen_relocation_resolves_by_content_on_the_sibling_commit)
+The spine claim that fails on one commit is satisfied on another. ... ok
+test_build_host_absolute_paths_are_collected_with_pointers (test_pack_claim_reproducer.NonPortabilityDetectionTests.test_build_host_absolute_paths_are_collected_with_pointers) ... ok
+test_repository_relative_paths_are_not_flagged (test_pack_claim_reproducer.NonPortabilityDetectionTests.test_repository_relative_paths_are_not_flagged) ... ok
+test_allowlisted_read_succeeds (test_pack_claim_reproducer.ReadOnlyGuardTests.test_allowlisted_read_succeeds) ... ok
+test_empty_argument_vector_is_refused (test_pack_claim_reproducer.ReadOnlyGuardTests.test_empty_argument_vector_is_refused) ... ok
+test_hash_object_write_flag_is_refused (test_pack_claim_reproducer.ReadOnlyGuardTests.test_hash_object_write_flag_is_refused) ... ok
+test_write_subcommands_are_refused (test_pack_claim_reproducer.ReadOnlyGuardTests.test_write_subcommands_are_refused) ... ok
+test_absent_pack_root_is_refused_rather_than_passed (test_pack_claim_reproducer.SanitizedFixtureTests.test_absent_pack_root_is_refused_rather_than_passed) ... ok
+test_both_manifest_dialects_are_normalised (test_pack_claim_reproducer.SanitizedFixtureTests.test_both_manifest_dialects_are_normalised) ... ok
+test_branch_name_and_immutable_commit_agree (test_pack_claim_reproducer.SanitizedFixtureTests.test_branch_name_and_immutable_commit_agree)
+A moving branch must not change what a pinned commit reports. ... ok
+test_clean_control_pack_reports_no_discrepancy (test_pack_claim_reproducer.SanitizedFixtureTests.test_clean_control_pack_reports_no_discrepancy) ... ok
+test_expect_clean_flag_fails_on_a_defective_corpus (test_pack_claim_reproducer.SanitizedFixtureTests.test_expect_clean_flag_fails_on_a_defective_corpus) ... ok
+test_injected_defects_are_detected_exactly (test_pack_claim_reproducer.SanitizedFixtureTests.test_injected_defects_are_detected_exactly) ... ok
+test_relocated_content_is_distinguished_from_absent_content (test_pack_claim_reproducer.SanitizedFixtureTests.test_relocated_content_is_distinguished_from_absent_content) ... ok
+test_report_is_deterministic_across_runs (test_pack_claim_reproducer.SanitizedFixtureTests.test_report_is_deterministic_across_runs) ... ok
+test_scan_does_not_move_any_ref_or_head (test_pack_claim_reproducer.SanitizedFixtureTests.test_scan_does_not_move_any_ref_or_head) ... ok
+
+----------------------------------------------------------------------
+Ran 21 tests in 0.605s
+
+OK
+
+--- 2. seeded PO-03 contract suite, unmodified, exactly as po03-contracts.yml runs it ---
+$ python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py'
+----------------------------------------------------------------------
+Ran 37 tests in 0.850s
+
+OK
+
+--- 3. repository taxonomy currentness check ---
+$ python3 scripts/check_operator_taxonomy.py
+OPERATOR TAXONOMY CHECK: PASS
+active function: obzio.function.strategic-operations-orchestration
+active appointment: obzio.appointment.strategic-operations-orchestration.20260819.001
+classified aliases: 9
+
+--- 4. harness CLI against the immutable PO-01 pack commit ---
+$ python3 pack_claim_reproducer.py --repo . --revision 1e6f53c323f8326d12af213557082a3665991f19 --pack-root packs --expect-clean
+exit code: 1 (1 = claims falsified, as frozen)
+
+--- 5. harness CLI against a commit with no pack corpus ---
+$ python3 pack_claim_reproducer.py --repo . --revision 37943ec2ff9f6702d72e127a3c8e56c81b0c3812 --pack-root packs
+REPRODUCTION_FAILED: commit 37943ec2ff9f6702d72e127a3c8e56c81b0c3812 has no paths under 'packs'
+exit code: 2 (refused, not silently clean)

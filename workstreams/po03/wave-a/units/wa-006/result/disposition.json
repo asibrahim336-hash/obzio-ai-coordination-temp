@@ -1,0 +1,126 @@
+{
+  "protocol_version": "OBZIO-WA-006-DISPOSITION-v1",
+  "task_id": "PO03-WA-006",
+  "hypothesis_id": "H-PO03-WA-006",
+  "state": "EXPLICIT_DISPOSITION",
+  "decided_at": "2026-08-22T08:35:00Z",
+  "deciding_function": "obzio.function.repository-engineering-portable-runtime",
+  "self_acceptance_note": "These dispositions govern this unit's own artifacts and record PO-03's engineering judgement about the PO-01 findings. They are not an acceptance decision. Independent acceptance of this unit remains NOT_TESTED and must be issued by a different producer.",
+  "hypothesis_disposition": {
+    "hypothesis_id": "H-PO03-WA-006",
+    "outcome": "SUPPORTED",
+    "disposition": "RETAIN",
+    "basis": "All six frozen predicates hold. 86 pack file claims across 13 per-pack manifests at two immutable PO-01 commits were checked from git object bytes alone, with identical ref and HEAD digests before and after every scan, no checkout, and no reliance on producer prose or self-assertion fields.",
+    "would_have_been_refuted_by": "Any claim requiring a working-tree checkout or producer narrative to evaluate, or any ref or HEAD change during a scan."
+  },
+  "artifact_dispositions": [
+    {
+      "artifact": "pack_claim_reproducer.py",
+      "disposition": "RETAIN",
+      "basis": "Executable, dependency-free, qualified against a fixture with a pre-declared defect set, and exercised on three immutable commits. Its read-only guard is asserted by test rather than asserted in prose.",
+      "scope_limit": "It reads only files named exactly MANIFEST.json. The third dialect in packs/MANIFEST_ALL.json is out of scope in v1 and recorded as NOT_SUPPORTED_IN_V1 rather than partially parsed."
+    },
+    {
+      "artifact": "build_sanitized_fixture.py and fixtures/adversarial-fixture-spec.json",
+      "disposition": "RETAIN",
+      "basis": "The spec declares the expected discrepancy set before the run, so a false negative in the reproducer is a test failure rather than a matter of judgement."
+    },
+    {
+      "artifact": "frozen-discrepancy-report.json",
+      "disposition": "RETAIN_FROZEN",
+      "basis": "The report is pinned to commit ids, not branch names, so it stays checkable after any branch tip moves. Its numbers are asserted by the recurrence test."
+    },
+    {
+      "artifact": "test_pack_claim_reproducer.py",
+      "disposition": "RETAIN",
+      "basis": "21 focused tests, including the recurrence test that re-derives every frozen number from the immutable commits."
+    }
+  ],
+  "finding_dispositions": [
+    {
+      "finding_id": "F-WA-006-01",
+      "summary": "Packs 06-10 each claim a member _spine.py that is absent from the pack directory at commit 1e6f53c; the identical bytes are published once at packs/_shared/_spine.py.",
+      "disposition": "FROZEN_AS_TEST_ISOLATED_REPAIR_CANDIDATE_ONLY",
+      "po01_in_place_repair": "PROHIBITED_AND_NOT_ATTEMPTED",
+      "prohibition_basis": "The commission states that a PO-01 defect produces a frozen test and an isolated PO-03 repair candidate, never an in-place repair, and that PO-01 remains active, outcome-pending and must not be contacted or signalled.",
+      "recurrence_test": "test_every_frozen_target_recurs and test_frozen_relocation_resolves_by_content_on_the_sibling_commit in test_pack_claim_reproducer.py",
+      "repair_candidate": {
+        "state": "UNAPPLIED_CANDIDATE",
+        "applied_anywhere": false,
+        "option_a": "Restore a copy of _spine.py into each of the five pack directories so the published tree matches the existing per-pack manifests.",
+        "option_b": "Rewrite the five per-pack manifests to reference the shared publication path and record the sibling-import requirement as an explicit dependency claim rather than a member-file claim.",
+        "recommendation": "Option B, because it removes six byte-identical copies rather than restoring them, and makes the dependency explicit for a consumer that materialises exactly what a manifest enumerates.",
+        "owner": "PO-01, as the owner of the pack namespace. PO-03 must not apply either option.",
+        "delivery_route": "An integration-ready patch produced separately, as the commission requires; not applied to any PO-01 namespace by this unit."
+      },
+      "severity_note": "No content is lost. This is a publication-path and manifest-currency defect, and the repair is mechanical."
+    },
+    {
+      "finding_id": "F-WA-006-02",
+      "summary": "modules/operators/07-capability-manufacture claims state_machine.py and test_pack.py at commit 96adfe7; both are absent from the pack directory and their claimed digests match no blob anywhere in that commit.",
+      "disposition": "FROZEN_AS_TEST_ESCALATE_TO_OWNER",
+      "po01_in_place_repair": "PROHIBITED_AND_NOT_ATTEMPTED",
+      "recurrence_test": "test_every_frozen_target_recurs in test_pack_claim_reproducer.py",
+      "repair_candidate": {
+        "state": "NOT_CONSTRUCTIBLE_BY_PO03",
+        "reason": "The missing bytes are not present at this commit, so PO-03 cannot reconstruct them from immutable objects. Only the pack's owner holds the content.",
+        "owner": "PO-01"
+      },
+      "qualification_effect": "Pack 07 cannot be independently qualified at this commit, because its own test file is one of the missing members. That is recorded as a boundary on qualification, not as a pack failure verdict.",
+      "escalation_note": "Recorded for the coordinator to route. This unit issued no message, comment, PR action or other signal to PO-01, and must not.",
+      "severity_note": "This is content absence at the observed tip of a volatile branch. It may be an in-progress publication rather than permanent loss; this unit pinned a read-only commit and did not re-observe the branch to find out, because doing so would not change the frozen finding at the pinned commit."
+    },
+    {
+      "finding_id": "F-WA-006-03",
+      "summary": "packs/MANIFEST.json publishes $.root as /tmp/packs, a build-host temporary directory.",
+      "disposition": "FROZEN_AS_TEST_ISOLATED_REPAIR_CANDIDATE_ONLY",
+      "po01_in_place_repair": "PROHIBITED_AND_NOT_ATTEMPTED",
+      "recurrence_test": "test_every_frozen_target_recurs asserts the NON_PORTABLE_ABSOLUTE_PATH_CLAIM count at this commit; test_build_host_absolute_paths_are_collected_with_pointers asserts the detector itself.",
+      "repair_candidate": {
+        "state": "UNAPPLIED_CANDIDATE",
+        "applied_anywhere": false,
+        "proposal": "Emit the pack root as a repository-relative path and keep any build-host path in a separate provenance field that consumers do not resolve.",
+        "owner": "PO-01"
+      },
+      "severity_note": "Two effects: a consumer resolving paths from $.root fails off the build host, and build-host layout leaks into a published artefact."
+    },
+    {
+      "finding_id": "F-WA-006-04",
+      "summary": "packs/MANIFEST.json enumerates five packs while twelve directories exist under packs/, so packs 06-10 are absent from the aggregate a consumer would read first.",
+      "disposition": "FROZEN_AS_TEST_ISOLATED_REPAIR_CANDIDATE_ONLY",
+      "po01_in_place_repair": "PROHIBITED_AND_NOT_ATTEMPTED",
+      "recurrence_test": "test_every_frozen_target_recurs in test_pack_claim_reproducer.py",
+      "repair_candidate": {
+        "state": "UNAPPLIED_CANDIDATE",
+        "applied_anywhere": false,
+        "proposal": "Have one aggregate manifest cover every published pack, or make each aggregate declare its own coverage scope explicitly so a partial aggregate cannot be mistaken for a complete corpus index.",
+        "owner": "PO-01"
+      },
+      "known_imprecision": "The reproducer's uncovered list also names _shared and obzio_spine, which are support directories rather than packs. That imprecision is reported openly rather than filtered, because filtering by directory name would embed a guess about pack semantics into the checker. The material gap is packs 06-10."
+    }
+  ],
+  "mechanism_change": {
+    "required_by_input": false,
+    "input_field": "mechanism_change_or_rejection_required: false",
+    "count": 0,
+    "claimed": false,
+    "note": "This unit's required_executable_output is a read-only harness, sanitized fixture and frozen report. It changes no live shared PO-03 mechanism, and no mechanism-change claim is manufactured to appear more complete. The harness is a new component in this unit's owned subtree, offered for adoption rather than wired into a shared control path."
+  },
+  "guardrail_evidence": {
+    "po01_paths_written": 0,
+    "po01_branches_mutated": 0,
+    "po01_prs_touched": 0,
+    "po01_messages_or_signals": 0,
+    "pr_8_touched": false,
+    "setup_dev_environment_branch_touched": false,
+    "prohibited_globs_written": 0,
+    "read_only_globs_written": 0,
+    "out_of_allowlist_writes": 0,
+    "protected_external_effects": 0,
+    "secrets_read_or_written": 0,
+    "deployment_or_dns_acts": 0,
+    "pr_created_or_merged": false,
+    "promotion_performed": false
+  },
+  "decision_changed": []
+}

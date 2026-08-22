@@ -1,0 +1,67 @@
+{
+  "protocol_version": "OBZIO-WA-006-HYPOTHESIS-FREEZE-v1",
+  "task_id": "PO03-WA-006",
+  "state": "FROZEN_HYPOTHESES",
+  "state_note": "Frozen before any reproduction was run against a PO-01 commit. Distinct from the source claims, the reproductions, the mechanism-change candidate and the strategy proposals, each of which is a separate artifact of this unit.",
+  "frozen_at": "2026-08-22T08:27:00Z",
+  "assigned_hypothesis": {
+    "hypothesis_id": "H-PO03-WA-006",
+    "statement": "PO-01 pack claims can be checked from immutable commits without branch mutation or producer narrative.",
+    "source": "workstreams/po03/control/inputs/wave-a/wa-006-a02.json",
+    "source_sha256": "c881d2c18bbe8add72805e33440d57cbaca97e74a9960fa9ca3c79ae1ee5ebe0",
+    "substituted": false,
+    "substitution_note": "The assigned hypothesis was tested as written. No plan, inventory, renamed clone or narrative summary was substituted for it."
+  },
+  "decomposition": [
+    {
+      "predicate_id": "P1",
+      "statement": "Every checkable pack claim can be resolved from git object bytes at a caller-pinned commit id.",
+      "exact_falsifier": "A pack claim exists that cannot be evaluated without a working-tree checkout, a network fetch inside the check, or a document written as prose rather than as a manifest.",
+      "outcome": "SUPPORTED",
+      "evidence": "86 file claims across 13 per-pack manifests at two immutable commits were resolved through cat-file and ls-tree alone."
+    },
+    {
+      "predicate_id": "P2",
+      "statement": "The check completes without moving any ref, changing HEAD, or writing the index of any repository.",
+      "exact_falsifier": "The digest over all refs, or the HEAD state, differs before and after a scan; or any allowlisted git call is observed to write.",
+      "outcome": "SUPPORTED",
+      "evidence": "The reproducer records a refs digest and HEAD state before and after each scan; both were identical on every target. The read-only guard refuses checkout, switch, fetch, push, branch, update-ref, commit, reset, clean and worktree, and this refusal is asserted by test."
+    },
+    {
+      "predicate_id": "P3",
+      "statement": "No producer narrative is needed to reach a discrepancy verdict.",
+      "exact_falsifier": "A finding whose support requires reading pack prose, a README, a commit message, or a self-assertion field such as verifies: true.",
+      "outcome": "SUPPORTED",
+      "evidence": "The reproducer reads only files named MANIFEST.json plus the blobs those manifests claim. The verifies: true and problems: [] self-assertions in packs/MANIFEST.json were recorded as source claims and contradicted by content, not relied upon."
+    },
+    {
+      "predicate_id": "P4",
+      "statement": "Such a check can detect real defects rather than only confirming agreement.",
+      "exact_falsifier": "The reproducer reports a clean corpus on a corpus known to contain injected defects, or reports defects on a corpus known to be clean.",
+      "outcome": "SUPPORTED",
+      "evidence": "On the sanitized fixture the reproducer reported exactly the 11 pre-declared injected discrepancies across 8 kinds and reported zero discrepancies for the clean control pack. On the real corpus it found 9 discrepancies across two commits."
+    },
+    {
+      "predicate_id": "P5",
+      "statement": "A path claim that fails can be separated from content that is actually lost.",
+      "exact_falsifier": "Relocated content and absent content receive the same discrepancy kind, so a consumer cannot tell recoverable republication from data loss.",
+      "outcome": "SUPPORTED",
+      "evidence": "MISSING_AT_CLAIMED_PATH_CONTENT_RELOCATED and MISSING_AT_CLAIMED_PATH_CONTENT_ABSENT are distinct kinds resolved by a whole-tree content index. F-WA-006-01 is relocation; F-WA-006-02 is loss."
+    },
+    {
+      "predicate_id": "P6",
+      "statement": "The verdict is a property of the pinned commit, not of the branch name used to reach it.",
+      "exact_falsifier": "Reading by branch name and by resolved commit id yield different totals.",
+      "outcome": "SUPPORTED",
+      "evidence": "The reproducer resolves the caller's revision to a commit id once and reads nothing else; a fixture test asserts that a branch-name scan and a commit-id scan produce identical totals."
+    }
+  ],
+  "current_method_hypotheses": {
+    "required_minimum": 0,
+    "recorded": 0,
+    "reason": "The immutable task input sets minimum_current_method_hypotheses to 0 and first_substantive_return_seed to false for this unit. No external-method hypothesis is claimed, and none is invented to pad the return."
+  },
+  "aggregate_outcome": "SUPPORTED",
+  "aggregate_outcome_note": "All six predicates hold. The hypothesis is about checkability, and checkability is demonstrated; the pack defects the check found are findings about PO-01's manifests, not evidence against the hypothesis.",
+  "decision_changed": []
+}

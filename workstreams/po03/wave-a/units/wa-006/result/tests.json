@@ -1,0 +1,111 @@
+{
+  "protocol_version": "OBZIO-WA-006-TESTS-v1",
+  "task_id": "PO03-WA-006",
+  "hypothesis_id": "H-PO03-WA-006",
+  "recorded_output": "workstreams/po03/wave-a/units/wa-006/result/test-output.txt",
+  "runtime": {
+    "python": "3.12.3",
+    "git": "2.43.0",
+    "third_party_packages_required": 0,
+    "network_required_by_tests": false
+  },
+  "suites": [
+    {
+      "suite_id": "focused",
+      "path": "workstreams/po03/wave-a/units/wa-006/result/test_pack_claim_reproducer.py",
+      "command": "python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-006/result -t workstreams/po03/wave-a/units/wa-006/result -p 'test_*.py' -v",
+      "test_count": 21,
+      "outcome": "PASS",
+      "skipped": 0,
+      "failures": 0,
+      "errors": 0,
+      "groups": [
+        {
+          "group": "ReadOnlyGuardTests",
+          "count": 4,
+          "asserts": "checkout, switch, fetch, push, branch -f, update-ref, commit, reset, clean and worktree add are all refused; the write flag is refused; an empty argument vector is refused; an allowlisted read still works."
+        },
+        {
+          "group": "SanitizedFixtureTests",
+          "count": 9,
+          "asserts": "the 11 pre-declared injected discrepancies are detected exactly across 8 kinds; the clean control pack reports none; relocation is distinguished from absence; both manifest dialects normalise; no ref or HEAD moves; --expect-clean exits 1 on a defective corpus; the report is deterministic across runs; a branch-name scan equals a commit-id scan; an absent pack root raises instead of passing."
+        },
+        {
+          "group": "NonPortabilityDetectionTests",
+          "count": 2,
+          "asserts": "build-host absolute paths are collected with exact JSON pointers; repository-relative paths are not flagged."
+        },
+        {
+          "group": "DialectNormalisationTests",
+          "count": 4,
+          "asserts": "a claim without a digest, with an uppercase digest, without a path, or without a files key is rejected rather than silently skipped."
+        },
+        {
+          "group": "FrozenFindingRecurrenceTests",
+          "count": 2,
+          "asserts": "every frozen target's claim counts and discrepancy-kind counts re-derive from the immutable commits; the relocated spine claim is shown absent at its claimed path, present at the shared path, and satisfied on the sibling commit."
+        }
+      ]
+    },
+    {
+      "suite_id": "seeded_contracts",
+      "path": "workstreams/po03/tests/",
+      "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py'",
+      "test_count": 37,
+      "outcome": "PASS",
+      "modified_by_this_unit": false,
+      "access": "READ_ONLY",
+      "note": "The seeded custody and compounding controls were executed unmodified, exactly as .github/workflows/po03-contracts.yml invokes them. git status confirmed no change to workstreams/po03/tests, tools, contracts or control after the run."
+    },
+    {
+      "suite_id": "taxonomy_currentness",
+      "path": "scripts/check_operator_taxonomy.py",
+      "command": "python3 scripts/check_operator_taxonomy.py",
+      "test_count": 1,
+      "outcome": "PASS",
+      "detail": "PASS; active function obzio.function.strategic-operations-orchestration, active appointment obzio.appointment.strategic-operations-orchestration.20260819.001, 9 classified aliases."
+    },
+    {
+      "suite_id": "cli_behaviour",
+      "path": "workstreams/po03/wave-a/units/wa-006/result/pack_claim_reproducer.py",
+      "command": "see test-output.txt sections 4 and 5",
+      "test_count": 2,
+      "outcome": "PASS",
+      "detail": "Exit 1 under --expect-clean at the immutable PO-01 pack commit, matching the frozen finding that claims are falsified there. Exit 2 with an explicit refusal at a commit with no pack corpus, so an empty target cannot be read as a verified one."
+    }
+  ],
+  "totals": {
+    "test_count": 61,
+    "outcome": "PASS",
+    "skipped": 0,
+    "failures": 0,
+    "errors": 0
+  },
+  "first_pass_outcome": "FAIL",
+  "first_pass_defects": [
+    {
+      "defect_id": "D-WA-006-01",
+      "observed": "The focused suite could not be imported under an isolated interpreter (python3 -I), because -I drops the script directory from sys.path and the suite imports its two sibling modules.",
+      "impact": "A clean-runtime invocation matching the seeded CI shape would have failed, which would have undermined the clean-clone recurrence requirement.",
+      "repair": "The test module now inserts its own resolved directory into sys.path before importing its siblings.",
+      "verification": "The suite now passes under python3 -m unittest, direct execution, and isolated CI-shaped discover. It remains impossible to run as python3 -I -m unittest <module-name> from the module's own directory, because under -I unittest cannot import a module by name from a path it has removed; the supported invocations are recorded above instead of claiming otherwise.",
+      "rework": 1
+    },
+    {
+      "defect_id": "D-WA-006-02",
+      "observed": "A draft of frozen-discrepancy-report.json carried a placeholder SHA-256 for the missing state_machine.py claim that had not been read from the manifest.",
+      "impact": "An invented digest in a frozen evidence artifact.",
+      "repair": "Both missing-file digests and byte counts were read from the immutable manifest blob at modules/operators/07-capability-manufacture/MANIFEST.json and the artifact now records their provenance.",
+      "verification": "5b0ccae203f1139cae7446647a90143c43a023e71ecfd5a41c4e3a162be03060 / 24479 bytes and cb8f72ed471546fe21b0f3f7a4a003f032eeef2034de697bb5c3afe9f13d8839 / 17930 bytes were re-read from the pinned blob, and the recurrence test re-derives the finding counts from the commit.",
+      "rework": 1
+    }
+  ],
+  "final_outcome": "PASS",
+  "recurrence": {
+    "recurrence_test": "FrozenFindingRecurrenceTests",
+    "frozen_targets_resolved": 3,
+    "frozen_targets_skipped": 0,
+    "note": "All three pinned commits were present in the local object store and every frozen number re-derived. The test skips with an explicit reason rather than passing if an object is absent."
+  },
+  "decision_changed": []
+}

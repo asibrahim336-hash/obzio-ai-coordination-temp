@@ -20,16 +20,23 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
-import build_sanitized_fixture
-import pack_claim_reproducer as reproducer
-
 
 HERE = Path(__file__).resolve().parent
 FROZEN_REPORT = HERE / "frozen-discrepancy-report.json"
+
+# Self-locating import so the suite runs identically under `python3 file.py`,
+# `python3 -m unittest`, and CI's isolated `python3 -I -m unittest discover`,
+# which drops the script directory from sys.path.
+if str(HERE) not in sys.path:
+    sys.path.insert(0, str(HERE))
+
+import build_sanitized_fixture  # noqa: E402
+import pack_claim_reproducer as reproducer  # noqa: E402
 
 
 def _local_repo_root() -> Path:

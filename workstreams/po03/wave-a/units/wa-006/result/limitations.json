@@ -1,0 +1,98 @@
+{
+  "protocol_version": "OBZIO-WA-006-LIMITATIONS-v1",
+  "task_id": "PO03-WA-006",
+  "hypothesis_id": "H-PO03-WA-006",
+  "limitations": [
+    {
+      "limitation_id": "L-WA-006-01",
+      "subject": "independent acceptance",
+      "status": "NOT_TESTED",
+      "detail": "This unit is the producer. It reports READY_TO_COMMIT only. It does not set COMPLETED, does not accept itself, and issues no acceptance verdict. A different producer must evaluate it."
+    },
+    {
+      "limitation_id": "L-WA-006-02",
+      "subject": "model and reasoning attestation",
+      "status": "NOT_SUPPORTED",
+      "detail": "The immutable task input requested model_slug claude-opus-5-thinking-high with reasoning high. The runtime self-identifies as Claude Opus 5 in its system context, but this producer has no separately attested provider channel that reports the exact model slug or the effective reasoning setting back to it. Recorded as the requested value plus a runtime self-report; no attestation is invented.",
+      "recorded_requested_model": "claude-opus-5-thinking-high",
+      "recorded_runtime_self_report": "claude-opus-5",
+      "separately_attested_model": "NOT_SUPPORTED",
+      "separately_attested_reasoning": "NOT_SUPPORTED"
+    },
+    {
+      "limitation_id": "L-WA-006-03",
+      "subject": "third manifest dialect",
+      "status": "NOT_SUPPORTED",
+      "detail": "packs/MANIFEST_ALL.json at commit 1e6f53c323f8326d12af213557082a3665991f19 is an aggregate whose files map is keyed by repository-root-relative paths, including paths under a packs2/ prefix that does not exist at that commit. The reproducer reads only files named exactly MANIFEST.json, so this document is skipped rather than mis-parsed into invented findings. Its claims are therefore unchecked, not verified.",
+      "consequence": "The frozen report's coverage of the corpus is partial by construction, and says so."
+    },
+    {
+      "limitation_id": "L-WA-006-04",
+      "subject": "aggregate coverage precision",
+      "status": "KNOWN_IMPRECISION",
+      "detail": "AGGREGATE_COVERAGE_GAP lists _shared and obzio_spine among the uncovered directories, although they are support directories rather than packs. The checker enumerates directories under the pack root and does not infer pack semantics from names. The material gap is packs 06-10; the imprecision is reported rather than filtered, because a name filter would embed a guess into the evidence."
+    },
+    {
+      "limitation_id": "L-WA-006-05",
+      "subject": "scope of the check",
+      "status": "BOUNDED",
+      "detail": "The reproducer checks manifest claims: path membership, SHA-256, byte count, file_count, total_bytes, aggregate coverage and embedded absolute paths. It does not execute pack code, does not run any pack's own test_pack.py, and therefore makes no claim about whether a pack functions. Process-boundary effects are recorded as consequences reasoned from the manifest and tree, not as observed runtime failures."
+    },
+    {
+      "limitation_id": "L-WA-006-06",
+      "subject": "branch volatility",
+      "status": "BOUNDED_BY_DESIGN",
+      "detail": "The three targets were pinned to commit ids observed once from remote-tracking refs. Those pack branch tips may have moved since. The frozen findings are statements about the pinned commits and remain true regardless; they are not claims about any branch's current tip. The branches were not re-observed, because re-observation cannot change a verdict at a pinned commit.",
+      "commission_alignment": "The commission permits observing a volatile branch only to pin a new read-only SHA. That is exactly what was done, once, per target."
+    },
+    {
+      "limitation_id": "L-WA-006-07",
+      "subject": "object availability for recurrence",
+      "status": "PRECONDITION",
+      "detail": "The recurrence test needs the three pinned commits in the local object store. A fresh clone of the repository default branch does not carry the packs/* branch objects; git fetch origin 'refs/heads/packs/*:refs/remotes/origin/packs/*' brings them in. That fetch is a read of the remote and writes only the fetching repository's own remote-tracking refs; it mutates no PO-01 branch. The test skips with an explicit reason when an object is absent rather than reporting an unearned pass.",
+      "fetch_performed_outside_harness": true,
+      "fetch_note": "The fetch used to populate this producer's isolated clone happened during setup, before the harness ran. The harness itself has no network capability: fetch is not in its allowlist."
+    },
+    {
+      "limitation_id": "L-WA-006-08",
+      "subject": "git object hash function",
+      "status": "NOT_SUPPORTED",
+      "detail": "All reads were performed against a SHA-1 object-format repository with git 2.43.0. Behaviour against a SHA-256 object-format repository was not exercised. The reproducer accepts both 40 and 64 character commit ids, but that path is untested and is not claimed to work."
+    },
+    {
+      "limitation_id": "L-WA-006-09",
+      "subject": "mechanism change",
+      "status": "NOT_CLAIMED",
+      "detail": "The immutable task input sets mechanism_change_or_rejection_required to false and minimum_current_method_hypotheses to 0 for this unit. No live shared PO-03 mechanism was changed, and no mechanism-change or external-method-hypothesis claim is manufactured. The harness lives in this unit's owned subtree and is offered for adoption, not wired into a shared control path."
+    },
+    {
+      "limitation_id": "L-WA-006-10",
+      "subject": "PO-01 repair",
+      "status": "OWNER_BLOCKED",
+      "detail": "Every finding names PO-01 as the owner of the affected namespace. Repair candidates are recorded unapplied. F-WA-006-02's missing bytes are not present at the pinned commit and cannot be reconstructed by PO-03 from immutable objects at all. No PO-01 path, branch, PR, artifact or workspace was written, and no message, comment or other signal was sent to PO-01."
+    },
+    {
+      "limitation_id": "L-WA-006-11",
+      "subject": "CI execution",
+      "status": "NOT_SUPPORTED",
+      "detail": "The seeded po03-contracts.yml workflow triggers on pull_request and on push to po03/** branches. This unit pushes to cursor/po03-wa-006-b195-a02-1a9f and opens no pull request, so no workflow run was produced and no workflow-run URL exists. The seeded suite was instead executed locally with the exact command that workflow uses. Opening a PR or pushing a po03/** branch to force a run was not attempted, because the input forbids PR creation and promotion.",
+      "workflow_run_url": "NOT_SUPPORTED"
+    },
+    {
+      "limitation_id": "L-WA-006-12",
+      "subject": "fixture commit determinism",
+      "status": "BOUNDED",
+      "detail": "The sanitized fixture's git commit id differs per run because git commit objects embed timestamps, so no fixture commit id is pinned. The property under test is the discrepancy set, which is deterministic; a test asserts run-to-run equality of the full discrepancy list."
+    },
+    {
+      "limitation_id": "L-WA-006-13",
+      "subject": "wall time measurement",
+      "status": "BOUNDED_PRECISION",
+      "detail": "started_at is derived from the invocation timestamp at minute precision; finished_at is recorded at generation time. Sub-minute start precision is not available to this producer."
+    }
+  ],
+  "limitation_count": 13,
+  "not_supported_count": 5,
+  "owner_blocked_count": 1,
+  "decision_changed": []
+}
