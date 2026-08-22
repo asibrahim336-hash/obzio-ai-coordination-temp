@@ -1,0 +1,41 @@
+{
+  "unit_id": "a12-u02",
+  "fence_token": 2,
+  "outcome": "READY_TO_COMMIT",
+  "pre_fix": {
+    "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a12_git_capsule.py'",
+    "exit_code": 1,
+    "output": "Ran 1 test in 0.000s; FAILED (errors=1): FileNotFoundError for workstreams/po03/capsule/git_capsule.py"
+  },
+  "post_fix": {
+    "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a12_git_capsule.py'",
+    "exit_code": 0,
+    "output": "Ran 5 tests in 0.375s; OK"
+  },
+  "capsules": [
+    {
+      "capsule_id": "po03-wave-a-sources-v001",
+      "version": 1,
+      "manifest_sha256": "7d373bb4672a6e2b5ea6f37ef83e6970fa38826e9cdef5d1101d29c1f227aea9",
+      "entry_count": 12,
+      "commit_sha": "04827c3cca829ece4ccca87e3d4196cc1b64a7a7",
+      "meaning": "byte-identical reconstruction of all twelve source hashes frozen by wave-a-spec.json"
+    },
+    {
+      "capsule_id": "po03-wave-a-sources-v002",
+      "version": 2,
+      "manifest_sha256": "d23bf01b67817ea0736de1debcc2d7732ca465f757d8ecbe33a6b8615c3d5d6f",
+      "entry_count": 12,
+      "commit_sha": "85d595cd7b19edfccc605577a8ca1ade63cccf74",
+      "predecessor_manifest_sha256": "7d373bb4672a6e2b5ea6f37ef83e6970fa38826e9cdef5d1101d29c1f227aea9",
+      "meaning": "successor containing legitimate coordinator repairs and validator schema closure"
+    }
+  ],
+  "invariants_proven": [
+    "Each source entry contains exactly path, blob_sha and commit_sha.",
+    "Resolution uses git ls-tree and git cat-file, never a working-tree source path.",
+    "A fresh --bare --no-local clone with no working tree resolves byte-identical binary content.",
+    "A source repair produces a successor version that references the canonical predecessor hash.",
+    "The predecessor object and its resolved historical bytes remain unchanged."
+  ]
+}
