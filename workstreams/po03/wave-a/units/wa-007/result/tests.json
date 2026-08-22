@@ -1,0 +1,99 @@
+{
+  "protocol_version": "OBZIO-TEST-RESULT-v1",
+  "task_id": "PO03-WA-007",
+  "verified_at": "2026-08-22T08:31:01Z",
+  "automated_test_count": 59,
+  "focused_test_count": 22,
+  "seeded_po03_test_count": 37,
+  "measurement_case_count": 67,
+  "suites": [
+    {
+      "suite_id": "TS-PO03-WA-007-FOCUSED",
+      "command": "python3 -I -B -m unittest discover -s workstreams/po03/wave-a/units/wa-007/tests -p 'test_*.py' -v",
+      "tests": 22,
+      "failures": 0,
+      "errors": 0,
+      "outcome": "PASS",
+      "coverage": [
+        "absolute POSIX and Windows paths",
+        "home-relative paths",
+        "/tmp and /var/tmp paths",
+        "checkout-root component boundaries",
+        "quoted and escaped spaces",
+        "file URIs",
+        "URL, route, JSON Pointer, regex, and relative-path negative controls",
+        "binary, invalid UTF-8, symlink, duplicate, exclusion, and missing-root closure behavior",
+        "CLI exit codes",
+        "fresh-repository immutable readback",
+        "wrong digest, branch movement, and path traversal failures"
+      ]
+    },
+    {
+      "suite_id": "TS-PO03-WA-007-SEEDED",
+      "command": "python3 -I -B -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+      "tests": 37,
+      "failures": 0,
+      "errors": 0,
+      "outcome": "PASS",
+      "tracked_file_mutation": "NONE"
+    },
+    {
+      "suite_id": "TS-PO03-WA-007-MEASUREMENT",
+      "command": "python3 -I -B workstreams/po03/wave-a/units/wa-007/measure_false_positives.py --pretty",
+      "cases": 67,
+      "positive_cases": 23,
+      "negative_cases": 44,
+      "false_positive": 0,
+      "false_negative": 0,
+      "false_positive_rate": 0.0,
+      "recall": 1.0,
+      "outcome": "PASS"
+    },
+    {
+      "suite_id": "TS-PO03-WA-007-DELIBERATE-TRUE-POSITIVE",
+      "command": "python3 -I -B workstreams/po03/wave-a/units/wa-007/portable_path_scanner.py --checkout-root /var/lib/ci/checkouts/run-9281/repo workstreams/po03/wave-a/units/wa-007/fixtures/positive.txt",
+      "expected_exit": 1,
+      "observed_exit": 1,
+      "finding_count": 14,
+      "outcome": "PASS"
+    },
+    {
+      "suite_id": "TS-PO03-WA-007-DELIBERATE-FALSE-POSITIVE-CONTROL",
+      "command": "python3 -I -B workstreams/po03/wave-a/units/wa-007/portable_path_scanner.py workstreams/po03/wave-a/units/wa-007/fixtures/negative.txt",
+      "expected_exit": 0,
+      "observed_exit": 0,
+      "finding_count": 0,
+      "outcome": "PASS"
+    },
+    {
+      "suite_id": "TS-PO03-WA-007-TAXONOMY",
+      "command": "python3 -I -B scripts/check_operator_taxonomy.py",
+      "checks": 1,
+      "outcome": "PASS",
+      "observed": "OPERATOR TAXONOMY CHECK: PASS"
+    }
+  ],
+  "first_pass_outcome": "FAIL",
+  "first_pass_evidence": {
+    "command": "python3 -I -B -m unittest discover -s workstreams/po03/wave-a/units/wa-007/tests -p 'test_*.py' -v",
+    "tests_run": 18,
+    "failures": 4,
+    "errors": 0,
+    "root_cause": "The generic slash matcher entered at the slash inside ./ and ../ relative paths, creating two false-positive fixture cases and their dependent CLI/measurement failures.",
+    "repair_commit": "01689b2d1081b064c4475e6ab46cba23bd0eb238",
+    "recurrence": "The final 22-test focused suite and 67-case measurement both pass."
+  },
+  "defects": 1,
+  "rework_events": 1,
+  "provider_block": false,
+  "collision": false,
+  "recovery_events": 0,
+  "post_commit_checks": {
+    "owned_path_diff": "RECORDED_AFTER_PAYLOAD_COMMIT_IN_READY_TO_COMMIT",
+    "immutable_remote_readback": "RECORDED_AFTER_PAYLOAD_COMMIT_IN_READY_TO_COMMIT",
+    "reason": "The immutable payload commit does not exist until this test evidence is committed."
+  },
+  "final_outcome": "PASS",
+  "test_output_path": "workstreams/po03/wave-a/units/wa-007/result/test-output.txt",
+  "decision_changed": []
+}

@@ -1,0 +1,52 @@
+PO03-WA-007-A02 producer test evidence
+immutable base: affc82b35e6205010fda90f9914a97e467294a44
+input sha256: 2c0c71f7ab212b95514639a41b216b5d632e6baecdb80a9f2d4c77e7664927a9
+fence token: 2
+
+FIRST PASS
+command: python3 -I -B -m unittest discover -s workstreams/po03/wave-a/units/wa-007/tests -p 'test_*.py' -v
+result: FAILED (failures=4, tests=18)
+observed defect: negative fixture lines ./scripts/run.py and ../shared/data.json were entered at their interior slash.
+repair: reject a generic slash candidate when the immediate predecessor is a dot.
+repair commit: 01689b2d1081b064c4475e6ab46cba23bd0eb238
+
+FINAL FOCUSED SUITE
+command: python3 -I -B -m unittest discover -s workstreams/po03/wave-a/units/wa-007/tests -p 'test_*.py' -v
+result: OK (tests=22, failures=0, errors=0)
+covered:
+- labelled positive, negative, and adversarial corpus
+- required path categories and checkout component boundary
+- quoted/escaped spaces and file URI
+- binary, invalid UTF-8, symlink, exclusion, duplicate, missing-root closure
+- scanner and measurement black-box CLI
+- fresh immutable remote readback and digest/movement/traversal failures
+
+FALSE-POSITIVE MEASUREMENT
+command: python3 -I -B workstreams/po03/wave-a/units/wa-007/measure_false_positives.py --pretty
+result: PASS
+cases=67 positive=23 negative=44
+true_positive=23 true_negative=44 false_positive=0 false_negative=0
+false_positive_rate=0.0 recall=1.0 category_misses=0 scan_errors=0
+
+DELIBERATE TRUE-POSITIVE CONTROL
+command: python3 -I -B workstreams/po03/wave-a/units/wa-007/portable_path_scanner.py --checkout-root /var/lib/ci/checkouts/run-9281/repo workstreams/po03/wave-a/units/wa-007/fixtures/positive.txt
+expected exit=1 observed exit=1 findings=14
+result: PASS
+
+DELIBERATE FALSE-POSITIVE CONTROL
+command: python3 -I -B workstreams/po03/wave-a/units/wa-007/portable_path_scanner.py workstreams/po03/wave-a/units/wa-007/fixtures/negative.txt
+expected exit=0 observed exit=0 findings=0
+result: PASS
+
+SEEDED PO-03 SUITE
+command: python3 -I -B -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v
+result: OK (tests=37, failures=0, errors=0)
+
+TAXONOMY
+command: python3 -I -B scripts/check_operator_taxonomy.py
+result: OPERATOR TAXONOMY CHECK: PASS
+active function: obzio.function.strategic-operations-orchestration
+active appointment: obzio.appointment.strategic-operations-orchestration.20260819.001
+classified aliases: 9
+
+Post-commit owned-path validation and immutable remote readback are recorded in ready-to-commit.json because their immutable target does not exist until the payload commit is created.

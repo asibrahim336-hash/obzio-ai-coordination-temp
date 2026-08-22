@@ -1,0 +1,48 @@
+{
+  "protocol_version": "OBZIO-HYPOTHESIS-FREEZE-v1",
+  "task_id": "PO03-WA-007",
+  "hypotheses": [
+    {
+      "hypothesis_id": "H-PO03-WA-007",
+      "state": "FROZEN_BY_IMMUTABLE_INPUT",
+      "frozen_at": "2026-08-22T08:10:14Z",
+      "statement": "Absolute, home-relative, /tmp, and checkout-specific paths can be detected with negligible false positives in declared portable artifacts.",
+      "immutable_source": {
+        "path": "workstreams/po03/control/inputs/wave-a/wa-007-a02.json",
+        "sha256": "2c0c71f7ab212b95514639a41b216b5d632e6baecdb80a9f2d4c77e7664927a9",
+        "fence_token": 2
+      },
+      "operationalization": {
+        "positive_population": "Every labelled line containing an absolute POSIX or Windows path, home-relative form, /tmp or /var/tmp path, file URI, or exact supplied checkout-root descendant.",
+        "negative_population": "Every labelled benign line containing portable relative paths, URLs, URI fragments, service routes, templated routes, JSON Pointer syntax, identifiers, dates, ratios, or other slash-bearing non-filesystem text.",
+        "negligible_false_positive_threshold": "At most 1 false positive across at least 40 labelled negative cases, reported as an exact numerator and denominator.",
+        "critical_correctness_threshold": "Zero false negatives across the labelled positive cases and every required category observed.",
+        "closure_threshold": "No implicit exclusions, silent symlink traversal, binary skip, invalid UTF-8 skip, missing root, or duplicate closure member."
+      },
+      "exact_falsifiers": [
+        "More than one false positive among at least 40 labelled negative cases.",
+        "Any false negative among labelled positive or adversarial cases.",
+        "Failure to classify absolute, home-relative, temporary, or checkout-specific categories.",
+        "A closure-affecting node is silently skipped or followed without explicit evidence.",
+        "The CLI requires a third-party runtime dependency."
+      ],
+      "outcome": "SUPPORTED",
+      "outcome_evidence": "R-PO03-WA-007-001"
+    }
+  ],
+  "post_freeze_implementation_assumptions": [
+    {
+      "assumption_id": "A-PO03-WA-007-01",
+      "statement": "Lexical component-boundary matching is sufficient for checkout-root detection without filesystem resolution.",
+      "status": "SUPPORTED_ON_FIXTURES",
+      "evidence": "Exact descendant cases matched while a checkout-prefix collision did not receive checkout-specific classification."
+    },
+    {
+      "assumption_id": "A-PO03-WA-007-02",
+      "statement": "Explicit suppression of common pseudo-path shapes materially reduces false positives without compromising the preregistered positive corpus.",
+      "status": "SUPPORTED_ON_FIXTURES",
+      "evidence": "The final run produced 0/44 false positives and 23/23 true positives; suppression remains a documented false-negative boundary."
+    }
+  ],
+  "decision_changed": []
+}

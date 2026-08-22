@@ -1,0 +1,133 @@
+{
+  "protocol_version": "OBZIO-WAVE-A-UNIT-RESULT-v1",
+  "task_id": "PO03-WA-007",
+  "hypothesis_id": "H-PO03-WA-007",
+  "hypothesis": "Absolute, home-relative, /tmp, and checkout-specific paths can be detected with negligible false positives in declared portable artifacts.",
+  "hypothesis_outcome": "SUPPORTED",
+  "method": {
+    "source_claim_capsule": "workstreams/po03/wave-a/units/wa-007/result/source-claims.json",
+    "hypothesis_freeze": "workstreams/po03/wave-a/units/wa-007/result/hypotheses.json",
+    "reproduction": "R-PO03-WA-007-001",
+    "reproduction_result": "workstreams/po03/wave-a/units/wa-007/result/reproduction-result.json",
+    "design": "A dependency-free lexical scanner recursively closes over declared UTF-8 roots, records explicit exclusions, fails closed on unsupported nodes, classifies path tokens, and measures case-level precision/recall against a manifest that labels every fixture line.",
+    "exact_falsifier": "More than 1/40 false-positive negative cases, any labelled false negative, any missing required category, silent closure omission, or a third-party runtime dependency.",
+    "first_pass": {
+      "outcome": "FAIL",
+      "false_positive": 2,
+      "negative_cases": 44,
+      "cause": "Interior slashes in ./ and ../ relative paths entered generic absolute-path matching."
+    },
+    "final_observed": {
+      "case_count": 67,
+      "true_positive": 23,
+      "true_negative": 44,
+      "false_positive": 0,
+      "false_negative": 0,
+      "false_positive_rate": 0.0,
+      "recall": 1.0,
+      "required_categories_observed": [
+        "absolute-posix",
+        "absolute-windows",
+        "home-relative",
+        "temporary",
+        "checkout-specific"
+      ]
+    }
+  },
+  "artifacts": {
+    "scanner_cli": "workstreams/po03/wave-a/units/wa-007/portable_path_scanner.py",
+    "measurement_cli": "workstreams/po03/wave-a/units/wa-007/measure_false_positives.py",
+    "closure_contract": "workstreams/po03/wave-a/units/wa-007/scan-closure-contract.json",
+    "fixture_manifest": "workstreams/po03/wave-a/units/wa-007/fixtures/case-manifest.json",
+    "positive_fixture": "workstreams/po03/wave-a/units/wa-007/fixtures/positive.txt",
+    "negative_fixture": "workstreams/po03/wave-a/units/wa-007/fixtures/negative.txt",
+    "adversarial_fixture": "workstreams/po03/wave-a/units/wa-007/fixtures/adversarial.txt",
+    "focused_tests": [
+      "workstreams/po03/wave-a/units/wa-007/tests/test_portable_path_scanner.py",
+      "workstreams/po03/wave-a/units/wa-007/tests/test_remote_readback.py"
+    ],
+    "remote_readback_verifier": "workstreams/po03/wave-a/units/wa-007/result/verify_remote_readback.py",
+    "manifest": "workstreams/po03/wave-a/units/wa-007/result/artifact-manifest.json",
+    "producer_return": "workstreams/po03/wave-a/units/wa-007/result/ready-to-commit.json"
+  },
+  "tests": {
+    "path": "workstreams/po03/wave-a/units/wa-007/result/tests.json",
+    "focused": {
+      "count": 22,
+      "outcome": "PASS"
+    },
+    "seeded_po03": {
+      "count": 37,
+      "outcome": "PASS"
+    },
+    "measurement": {
+      "case_count": 67,
+      "outcome": "PASS"
+    },
+    "taxonomy": "PASS",
+    "first_pass_outcome": "FAIL",
+    "final_outcome": "PASS"
+  },
+  "source_claims": {
+    "path": "workstreams/po03/wave-a/units/wa-007/result/source-claims.json",
+    "count": 5
+  },
+  "hypotheses": {
+    "path": "workstreams/po03/wave-a/units/wa-007/result/hypotheses.json",
+    "frozen_count": 1,
+    "post_freeze_assumption_count": 2
+  },
+  "reproductions": {
+    "path": "workstreams/po03/wave-a/units/wa-007/result/reproduction-result.json",
+    "sanitized_obzio_reproduction_count": 1
+  },
+  "mechanism_changes": {
+    "path": "workstreams/po03/wave-a/units/wa-007/result/mechanism-change.json",
+    "count": 3,
+    "producer_disposition_recommendation": "RETAIN",
+    "independent_disposition": "NOT_TESTED"
+  },
+  "strategy_proposals": {
+    "path": "workstreams/po03/wave-a/units/wa-007/result/strategy-proposals.json",
+    "count": 0,
+    "status": "NO_STRATEGY_PROPOSAL_GENERATED"
+  },
+  "limitations": {
+    "path": "workstreams/po03/wave-a/units/wa-007/result/limitations.json",
+    "count": 10
+  },
+  "model_observed": "gpt-5.6-sol",
+  "model_observation_source": "Runtime system identity",
+  "model_requested": "gpt-5.6-sol-xhigh",
+  "reasoning_observed": "NOT_SUPPORTED",
+  "reasoning_requested": "xhigh",
+  "runtime_observed": {
+    "environment": "Cursor Cloud",
+    "operating_system": "Linux 6.12.94+",
+    "python": "3.12.3",
+    "provider_run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+    "authority_effect": "NONE"
+  },
+  "started_at": "2026-08-22T08:24:57Z",
+  "finished_at": "2026-08-22T08:31:01Z",
+  "preregistered_metrics": {
+    "wall_time_seconds": 364,
+    "test_count": 59,
+    "first_pass_outcome": "FAIL",
+    "artifact_count": "RECORDED_IN_ARTIFACT_MANIFEST",
+    "artifact_bytes": "RECORDED_IN_ARTIFACT_MANIFEST",
+    "source_claim_count": 5,
+    "reproduction_count": 1,
+    "mechanism_change_count": 3,
+    "defects": 1,
+    "rework": 1,
+    "provider_block": false,
+    "collision": false,
+    "recovery_events": 0
+  },
+  "producer_state": "READY_TO_COMMIT",
+  "obzio_state_claimed": "RESULT_COMMITTED_AFTER_REMOTE_READBACK_ONLY",
+  "completion_claimed": false,
+  "independent_acceptance": "NOT_TESTED",
+  "decision_changed": []
+}
