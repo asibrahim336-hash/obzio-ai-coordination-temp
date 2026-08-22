@@ -1440,7 +1440,17 @@ def dispose_unit(
     if errors:
         raise ValueError(f"{task_id}: disposition rejected by contract: {errors}")
 
-    write_once(CONTROL_ROOT / "tasks" / task_id / "transaction-disposed.json", canonical_json(disposed))
+    # One file per reviewer. A single shared file could not represent two
+    # independent reviewers reaching different verdicts, which is exactly the
+    # disagreement the review design exists to surface.
+    reviewer_key = sha256_bytes(reviewer_id.encode("utf-8"))[:12]
+    write_once(
+        CONTROL_ROOT / "tasks" / task_id / f"disposition-{reviewer_key}.json",
+        canonical_json(disposed | {"reviewer_id": reviewer_id, "reviewer_model": reviewer_model}),
+    )
+    legacy = CONTROL_ROOT / "tasks" / task_id / "transaction-disposed.json"
+    if not legacy.is_file():
+        write_once(legacy, canonical_json(disposed))
     hash_chain_event(
         task_id,
         decision,
@@ -1525,6 +1535,66 @@ def _committed_result_locator(task_id: str) -> dict[str, Any] | None:
         if found.returncode == 0:
             return {"ref": ref, "path": f"{slot}/result.json", "availability": "PRESENT_LOCALLY"}
     return None
+
+
+def collect_dispositions(task_id: str) -> list[dict[str, Any]]:
+    """Gather every recorded disposition for a unit, across record shapes."""
+    task_directory = CONTROL_ROOT / "tasks" / task_id
+    found: dict[str, dict[str, Any]] = {}
+    legacy = task_directory / "transaction-disposed.json"
+    if legacy.is_file():
+        document = read_json(legacy)
+        acceptance = document.get("independent_acceptance", {})
+        reviewer = acceptance.get("reviewer_id")
+        if reviewer:
+            found[reviewer] = {
+                "reviewer_id": reviewer,
+                "decision": acceptance.get("state"),
+                "receipt_uri": acceptance.get("receipt_uri"),
+                "record": "transaction-disposed.json",
+            }
+    for path in sorted(task_directory.glob("disposition-*.json")):
+        document = read_json(path)
+        acceptance = document.get("independent_acceptance", {})
+        reviewer = document.get("reviewer_id") or acceptance.get("reviewer_id")
+        if reviewer:
+            found[reviewer] = {
+                "reviewer_id": reviewer,
+                "reviewer_model": document.get("reviewer_model"),
+                "decision": acceptance.get("state"),
+                "receipt_uri": acceptance.get("receipt_uri"),
+                "record": path.name,
+            }
+    return sorted(found.values(), key=lambda item: item["reviewer_id"])
+
+
+def reconcile_dispositions(task_id: str) -> dict[str, Any]:
+    """Report whether independent reviewers agreed on a unit.
+
+    A disagreement is not an error to be resolved by preferring one reviewer. It
+    is a measured signal, and the unit's standing is the stricter of the verdicts
+    until a named human authority rules otherwise.
+    """
+    recorded = collect_dispositions(task_id)
+    decisions = {item["decision"] for item in recorded}
+    if not recorded:
+        state = "NOT_TESTED"
+    elif len(decisions) == 1:
+        state = "AGREED"
+    else:
+        state = "DISAGREED"
+    standing = None
+    if recorded:
+        standing = "REJECTED" if "REJECTED" in decisions else "ACCEPTED"
+    return {
+        "task_id": task_id,
+        "reviewer_count": len(recorded),
+        "state": state,
+        "decisions": sorted(decisions),
+        "standing": standing,
+        "standing_rule": "the stricter verdict governs while reviewers disagree",
+        "reviewers": recorded,
+    }
 
 
 def scan_recovery(run_id: str, head_sha: str) -> dict[str, Any]:
