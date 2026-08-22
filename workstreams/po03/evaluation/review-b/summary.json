@@ -1,0 +1,166 @@
+{
+  "reviewer_id": "po03-reviewer-b-claude-sonnet-5",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "branch": "po03/review-b-b2e7",
+  "units_reviewed_count": 20,
+  "units_reviewed": [
+    "po03-wa-b2e7-033-disposition-compiler",
+    "po03-wa-b2e7-034-transport-debris-detector",
+    "po03-wa-b2e7-035-orphan-route-detector",
+    "po03-wa-b2e7-036-renamed-clone-detector",
+    "po03-wa-b2e7-037-legacy-alias-census",
+    "po03-wa-b2e7-038-lineage-preservation",
+    "po03-wa-b2e7-039-unique-evidence-deletion-guard",
+    "po03-wa-b2e7-040-silent-deletion-adversarial",
+    "po03-wa-b2e7-049-hypothesis-register",
+    "po03-wa-b2e7-050-reproduction-context-admission",
+    "po03-wa-b2e7-051-reproduction-verifier-first",
+    "po03-wa-b2e7-052-reproduction-independent-review",
+    "po03-wa-b2e7-053-reproduction-outbox-durability",
+    "po03-wa-b2e7-054-reproduction-checkpoint-granularity",
+    "po03-wa-b2e7-055-reproduction-scale-versus-acceptance",
+    "po03-wa-b2e7-056-mechanism-change-and-recurrence",
+    "po03-wa-b2e7-001-clean-clone-runner",
+    "po03-wa-b2e7-005-deterministic-rerun-equivalence",
+    "po03-wa-b2e7-019-manifest-gap-detection",
+    "po03-wa-b2e7-022-po01-claim-reproduction"
+  ],
+  "independent_verdict_distribution": {
+    "PASS": 12,
+    "FAIL": 7,
+    "NOT_SUPPORTED": 1,
+    "NOT_YET": 0,
+    "OWNER_BLOCKED": 0
+  },
+  "producer_claimed_verdict_distribution": {
+    "PASS": 18,
+    "FAIL": 0,
+    "NOT_SUPPORTED": 2,
+    "NOT_YET": 0,
+    "OWNER_BLOCKED": 0,
+    "note": "PASS(18) includes unit 022, where the producer used a non-binary internal aggregate-PASS framing (022's ledger-level PASS means 'every claim received an evidence-bounded verdict', not that every individual PO-01 claim passed -- individual claim rows include real FAIL, NOT_YET and NOT_SUPPORTED entries). NOT_SUPPORTED(2) covers unit 034 (over-generalized boundary claim, independent verdict FAIL) and unit 052 (legitimately scoped, independent verdict agrees)."
+  },
+  "disposition_recommendation_distribution": {
+    "ACCEPTED": 13,
+    "REJECTED": 7
+  },
+  "divergences_from_producer_claim": {
+    "count": 7,
+    "list": [
+      {
+        "task_id": "po03-wa-b2e7-034-transport-debris-detector",
+        "producer_verdict": "NOT_SUPPORTED",
+        "independent_verdict": "FAIL",
+        "reason": "Producer's own observed_surface_boundary.txt claimed packs/_transport/modules were absent, but the pinned commit 1e6f53c323f8326d12af213557082a3665991f19 genuinely contains packs/** with 93 real files (independently verified via git ls-tree/cat-file), and the producer's own later-committed scan_git_tree output and per_surface_verdicts.json/real_pack_output.json prove this internally. The blanket NOT_SUPPORTED was over-generalized. Independently, a hidden case also found a real classification defect: an explicitly live-pointer-referenced file with a debris-like suffix is misclassified as debris, undermining the core hypothesis."
+      },
+      {
+        "task_id": "po03-wa-b2e7-039-unique-evidence-deletion-guard",
+        "producer_verdict": "PASS",
+        "independent_verdict": "FAIL",
+        "reason": "Guard fails open: when the same unique, currently-referenced file is named by an absolute path in current_pointer_paths but the deletion candidate is expressed as a relative path (or vice versa), the guard's plain string-equality path check does not recognize them as the same file and incorrectly ALLOWS deletion of unique, depended-upon evidence -- a direct contradiction of the falsifiable hypothesis under a realistic, unremarkable path-representation mismatch."
+      },
+      {
+        "task_id": "po03-wa-b2e7-050-reproduction-context-admission",
+        "producer_verdict": "PASS",
+        "independent_verdict": "FAIL",
+        "reason": "The reported 0.845 recovery delta is an artifact of an unconditional rng.shuffle() applied only before truncating the 'losing' full_dump arm. Hidden case: removing the shuffle (keeping natural field order) makes full_dump recovery 1.0, identical to bounded_capsule, collapsing the entire effect to zero. The preregistered accept_when threshold (>=0.20) was never at real risk given the analytically guaranteed ~0.83 delta under the as-built design."
+      },
+      {
+        "task_id": "po03-wa-b2e7-051-reproduction-verifier-first",
+        "producer_verdict": "PASS",
+        "independent_verdict": "FAIL",
+        "reason": "adapted_after_acceptance is a mathematical tautology: it infers each field's 'expected type' from that same field's own observed value, so isinstance(value, type(value)) is true by construction for every possible input. Hidden case confirmed it returns True for a clean result, a maximally malformed result, an empty dict, and 10,000 random junk dicts (10,003/10,003 True). The reported 1.000-vs-0.000 split is a certainty baked into the code before any run, not an empirical finding, and this is also a genuine vacuous-test case (a hardcoded `return True` stub is behaviorally indistinguishable from the real function)."
+      },
+      {
+        "task_id": "po03-wa-b2e7-053-reproduction-outbox-durability",
+        "producer_verdict": "PASS",
+        "independent_verdict": "FAIL",
+        "reason": "outbox_recovered is structurally decoupled from the injected loss variable (the outbox write/read cycle is never subjected to the same failure), so its recovery fraction is provably always 1.0 for any seed -- not an emergent durability property. Cross-referencing unit 048's definition of the named failure class as 'entire provider-runtime loss', a hidden case modeling a correlated 30% chance of the local outbox file also being destroyed on loss dropped recovery to 0.875, a scenario the committed code has no path to ever produce. Real engineering, but tested against a narrower failure class than the one named in the hypothesis."
+      },
+      {
+        "task_id": "po03-wa-b2e7-054-reproduction-checkpoint-granularity",
+        "producer_verdict": "PASS",
+        "independent_verdict": "FAIL",
+        "reason": "rework_for_failure is a closed-form arithmetic formula (completed - (completed // granularity) * granularity); granularity=1 is an algebraic identity guaranteeing exactly 0 rework and all-or-nothing guarantees non-zero rework whenever failure occurs before the last step, for any seed, any steps_per_attempt. Verified across 6 seeds and 3 step counts. No task loop, checkpoint file or induced failure was ever actually executed; presenting this as a 'measured reproduction under identical injected failures' overstates what was run, even though the underlying arithmetic is true and not deceptive."
+      },
+      {
+        "task_id": "po03-wa-b2e7-055-reproduction-scale-versus-acceptance",
+        "producer_verdict": "PASS",
+        "independent_verdict": "FAIL",
+        "reason": "Hidden case: re-ran the identical queueing simulation at concurrency=32 but with defect_chance/detection_chance held fixed at concurrency=4 baseline values instead of the preregistered formula-scaled values; throughput came out to 3.825 (vs the claimed 1.15) and escaped-defect fraction stayed near zero (0.0013 vs claimed 0.583), both statistically indistinguishable from the concurrency=4 baseline. This proves the actual capacity-bottleneck/queueing mechanism named in the hypothesis contributes negligibly; the entire large reported effect comes from two hand-picked formulas directly asserting concurrency degrades quality/detection, decoupled from the simulation's own contention dynamics."
+      }
+    ]
+  },
+  "vacuous_test_findings": {
+    "count": 1,
+    "list": [
+      {
+        "task_id": "po03-wa-b2e7-051-reproduction-verifier-first",
+        "finding": "adapted_after_acceptance is functionally identical to a hardcoded `return True`; the test suite never exercises it in isolation and only checks aggregate experiment output, so it cannot and does not distinguish the real implementation from a trivial stub."
+      }
+    ],
+    "note": "Explicit stub/vacuity checks were performed and documented for 18 of 20 units (all except the two c3 overlap units 019 and 022, which were instead independently cross-validated by re-executing against real, non-synthetic PO-01 pack data and by re-implementing the aggregate manifest check via a wholly independent code path -- an equivalent or stronger evidentiary bar than a stub-substitution test for those two specific units). Only unit 051 was found to be vacuous by this standard. Several other c7 units (050, 053, 054, 055) have real, non-vacuous test suites that exercise genuine executable logic -- their problems are experimental-design/construction-validity defects, not test vacuity, and are recorded separately as divergences rather than vacuous-test findings."
+  },
+  "committed_pycache_findings": {
+    "count": 1,
+    "list": [
+      {
+        "task_id": "po03-wa-b2e7-033-disposition-compiler",
+        "finding": "__pycache__/disposition_compiler.cpython-312.pyc was committed at an early commit despite a .gitignore rule excluding it; cleaned up in a later commit on the same branch. Not disqualifying (bytecode removed before final state; historical commit remains readable by hash) but noted as sloppy for a portable-runtime commission."
+      }
+    ]
+  },
+  "notable_manifest_integrity_findings": [
+    {
+      "task_id": "po03-wa-b2e7-034-transport-debris-detector",
+      "finding": "Producer's manifest.json/result.json are stale: a later commit added a third test, scan_git_tree(), and two new evidence files (per_surface_verdicts.json, real_pack_output.json) that directly contradict the earlier NOT_SUPPORTED verdict, but the manifest was never updated to declare or hash these new files."
+    },
+    {
+      "task_id": "po03-wa-b2e7-019-manifest-gap-detection / po03-wa-b2e7-022-po01-claim-reproduction",
+      "finding": "Independently discovered (and unit 022 itself explicitly and correctly reports as its claim #2 FAIL) that the real, production PO-01 pack manifests for 5 packs (06-browser-execution, 07-capability-manufacture, 08-knowledge-currentness, 09-infrastructure-operation, 10-economics-measurement) at the pinned commit each declare a _spine.py file with a hash and byte count that does not exist anywhere in the git tree. Unit 019's manifest_gaps.py tool does not check for this 'declared-but-missing' direction at all (it only checks present-but-undeclared and declared-but-unhashed, which is what its narrower frozen hypothesis literally requires), so it reports a false PASS on this real pack. Unit 022's broader ledger correctly catches and reports this as a named FAIL. This is a real, non-synthetic finding about the actual PO-01 pack data, discovered independently via two different units' hidden cases and cross-verified via git ls-tree."
+    }
+  ],
+  "overlap_unit_verdicts": [
+    {
+      "task_id": "po03-wa-b2e7-001-clean-clone-runner",
+      "cohort": "c1",
+      "independent_verdict": "PASS",
+      "producer_verdict": "PASS",
+      "agreement": "AGREE",
+      "disposition_recommendation": "ACCEPTED",
+      "note": "Independently ran against the real /workspace repository at a real pinned commit (5c0dfcd8ced545cf122d0ab2d8541dd4f4e561af), discovering and passing all 12 real PO-03 test files; also verified clean fail-closed behavior against a nonexistent commit hash."
+    },
+    {
+      "task_id": "po03-wa-b2e7-005-deterministic-rerun-equivalence",
+      "cohort": "c1",
+      "independent_verdict": "PASS",
+      "producer_verdict": "PASS",
+      "agreement": "AGREE",
+      "disposition_recommendation": "ACCEPTED",
+      "note": "Independently ran a real double-clone against the same pinned commit and got byte-equivalent normalized output across all 12 real test files. Flagged a latent, non-disqualifying defect: PYTHONHASHSEED is not pinned in the runner's subprocess environment, unlike sibling unit 001, which could cause false non-equivalence if a future test's output depends on set/dict iteration order."
+    },
+    {
+      "task_id": "po03-wa-b2e7-019-manifest-gap-detection",
+      "cohort": "c3",
+      "independent_verdict": "PASS",
+      "producer_verdict": "PASS",
+      "agreement": "AGREE",
+      "disposition_recommendation": "ACCEPTED",
+      "note": "Independently ran against real PO-01 pack data (packs/07-capability-manufacture at the pinned commit) as a true negative control (verdict PASS, zero gaps in the two checked directions), in addition to the synthetic fixture. Hidden case found the tool has no coverage for a third gap direction (declared-but-missing), which real pack 07 actually exhibits (a phantom _spine.py) -- out of the frozen hypothesis's literal 'bidirectional' scope, so not disqualifying, but worth flagging."
+    },
+    {
+      "task_id": "po03-wa-b2e7-022-po01-claim-reproduction",
+      "cohort": "c3",
+      "independent_verdict": "PASS",
+      "producer_verdict": "PASS",
+      "agreement": "AGREE",
+      "disposition_recommendation": "ACCEPTED",
+      "note": "Independently re-executed the producer's actual test entrypoint end-to-end and separately cross-verified the ledger's two most important claims (aggregate manifest hash/byte match across 92 files, and 5 declared-but-missing _spine.py runtime files) via a wholly independent extraction/hashing code path, with exact agreement. Read-only git-plumbing confirmed; no PO-01 contact or mutation. Hidden case found one of nine ledger rows (pointer-repair claim) emits a hardcoded 'NOT_SUPPORTED' literal regardless of observed data -- a narrow, non-hypothesis-defining defect that happens not to misstate the true (empty) result for the actual pinned commit."
+    }
+  ],
+  "c7_experiment_audit_summary": {
+    "reference": "Full detail in workstreams/po03/evaluation/review-b/experiment-audit.json",
+    "reproduced_numbers_all_8": true,
+    "conclusion": "All 8 c7 units' raw numbers were honestly and reproducibly computed with zero fabricated hashes, metrics or outcomes found; unit 049's external source hashes were independently corroborated via live re-fetch. However, in 4 of the 6 comparative experiments (050, 051, 053, 055), and 1 non-comparative-but-still-measured unit (054), the reported effect sizes are substantially or entirely artifacts of how the 'losing' arm or comparison was constructed rather than measurements of the named mechanism, and in every comparative experiment the preregistered accept_when threshold was either mathematically guaranteed to be met or met with such a wide margin that no genuine risk of refutation existed. Unit 052's NOT_SUPPORTED is a legitimate, correctly-bounded finding. Unit 056's revert-proof recurrence engineering is itself genuinely rigorous and non-vacuous, but it stages promotion-relevant magnitude claims inherited from the four compromised experiments (050, 053, 055, and by extension its own MC-001/MC-002/MR-001 evidentiary chain)."
+  }
+}
