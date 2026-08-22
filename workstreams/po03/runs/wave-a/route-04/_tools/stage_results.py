@@ -399,11 +399,16 @@ def stage_task(
             },
             {
                 "command": (
-                    f"python3 {ROUTE_REL.as_posix()}/{task_id}/{source_name} "
-                    f"--target-fresh-checkout {TARGET_COMMIT}"
+                    f"PYTHONDONTWRITEBYTECODE=1 python3 "
+                    f"{ROUTE_REL.as_posix()}/_tools/stage_results.py "
+                    f"--material-root . "
+                    f"--target-root /tmp/po03-route04-route08-fresh-6e19"
                 ),
                 "observed": disposition,
-                "note": "Equivalent callable invocation used where component CLI flags differ.",
+                "note": (
+                    f"Executed staging driver invoked {source_name} directly against "
+                    f"fresh target commit {TARGET_COMMIT}; embedded qualification is its report."
+                ),
             },
         ],
         "hidden_cases": HIDDEN_CASES[task_id],
