@@ -160,9 +160,12 @@ def _trusted_source_base(
     return source_base
 
 
-def _later_time(existing: Any, candidate: Any) -> Any:
-    values = [value for value in (existing, candidate) if isinstance(value, str) and value]
-    return max(values) if values else None
+def _preserve_recorded_time(existing: Any, fallback: Any) -> Any:
+    if isinstance(existing, str) and existing:
+        return existing
+    if isinstance(fallback, str) and fallback:
+        return fallback
+    return None
 
 
 def _reconciled_active_count(
@@ -436,10 +439,10 @@ def main() -> int:
             row.update(
                 state="DELIVERED",
                 attempts=max(1, int(row.get("attempts", 0))),
-                last_attempt_at=_later_time(
+                last_attempt_at=_preserve_recorded_time(
                     row.get("last_attempt_at"), producer_result.get("started_at")
                 ),
-                delivered_at=_later_time(
+                delivered_at=_preserve_recorded_time(
                     row.get("delivered_at"), producer_result.get("started_at")
                 ),
                 provider_run_id=args.provider_run_id,

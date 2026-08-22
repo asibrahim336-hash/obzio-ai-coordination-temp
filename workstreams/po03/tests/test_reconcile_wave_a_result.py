@@ -164,18 +164,27 @@ class TrustedSourceBaseTests(unittest.TestCase):
 
 
 class ProjectionTimeTests(unittest.TestCase):
-    def test_existing_later_dispatch_time_is_preserved(self):
+    def test_existing_dispatch_time_is_preserved(self):
         self.assertEqual(
-            TOOL._later_time(
+            TOOL._preserve_recorded_time(
                 "2026-08-22T08:22:00Z",
                 "2026-08-22T08:21:00Z",
             ),
             "2026-08-22T08:22:00Z",
         )
 
+    def test_existing_earlier_dispatch_time_is_also_preserved(self):
+        self.assertEqual(
+            TOOL._preserve_recorded_time(
+                "2026-08-22T08:22:00Z",
+                "2026-08-22T08:24:00Z",
+            ),
+            "2026-08-22T08:22:00Z",
+        )
+
     def test_missing_dispatch_time_uses_producer_start(self):
         self.assertEqual(
-            TOOL._later_time(None, "2026-08-22T08:21:00Z"),
+            TOOL._preserve_recorded_time(None, "2026-08-22T08:21:00Z"),
             "2026-08-22T08:21:00Z",
         )
 
