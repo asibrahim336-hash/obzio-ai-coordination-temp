@@ -1,0 +1,48 @@
+{
+  "falsification_conditions": [
+    "A source absent from the explicit request appears in the capsule.",
+    "A request exceeding max_sources or max_bytes is admitted.",
+    "A declared critical source can be omitted or marked optional.",
+    "A source whose bytes differ from its declared SHA-256 is admitted.",
+    "Equivalent frozen inputs produce different manifest or capsule bytes.",
+    "The committed mechanism and fixture cannot recur from a clean remote clone."
+  ],
+  "hypothesis_id": "H-PO03-WA-009",
+  "observations": [
+    {
+      "evidence": "The sanitized root contains three files; the valid request selected two, and only those two plus the manifest appeared.",
+      "falsification_condition": 1,
+      "outcome": "NOT_OBSERVED"
+    },
+    {
+      "evidence": "The 120-byte fixture was rejected at 121 observed bytes; a two-source request with max_sources=1 was also rejected.",
+      "falsification_condition": 2,
+      "outcome": "NOT_OBSERVED"
+    },
+    {
+      "evidence": "omitted-critical-source.json was rejected with MISSING_CRITICAL_SOURCE; critical-set mismatch tests also passed.",
+      "falsification_condition": 3,
+      "outcome": "NOT_OBSERVED"
+    },
+    {
+      "evidence": "A mutated content pin was rejected with SOURCE_HASH_MISMATCH before output publication.",
+      "falsification_condition": 4,
+      "outcome": "NOT_OBSERVED"
+    },
+    {
+      "evidence": "Repeated builds and order-varied equivalent requests produced byte-identical manifests and files.",
+      "falsification_condition": 5,
+      "outcome": "NOT_OBSERVED"
+    },
+    {
+      "evidence": "Fresh remote clone 8914a4bb2ebe51324e4a8dabd9d36cabe890b4d9 passed 29 focused tests and deterministic recurrence.",
+      "falsification_condition": 6,
+      "outcome": "NOT_OBSERVED"
+    }
+  ],
+  "outcome": "SUPPORTED",
+  "protocol_version": "OBZIO-FROZEN-HYPOTHESIS-RESULT-v1",
+  "scope_boundary": "Support is bounded to caller-declared task relevance. The mechanism validates declared relevance tags and exact bytes; it does not independently infer semantic relevance.",
+  "statement": "Hash-bounded source capsules can admit only task-relevant files while retaining sufficient evidence for recurrence.",
+  "task_id": "PO03-WA-009"
+}

@@ -1,0 +1,38 @@
+{
+  "change_id": "MC-PO03-WA-009-001",
+  "decision": "RETAIN_CANDIDATE_PENDING_INDEPENDENT_ACCEPTANCE",
+  "implemented_components": [
+    {
+      "component": "capsule_builder.py",
+      "effect": "Atomically writes only explicitly admitted regular files and a deterministic manifest."
+    },
+    {
+      "component": "hash and snapshot admission",
+      "effect": "Verifies every source SHA-256 and the canonical selected-source snapshot before publication."
+    },
+    {
+      "component": "dual budgets",
+      "effect": "Rejects source-count excess before reads and byte excess before output publication."
+    },
+    {
+      "component": "critical-source completeness",
+      "effect": "Requires exact equality between required sources and entries marked critical."
+    },
+    {
+      "component": "task relevance fence",
+      "effect": "Rejects missing rationales/tags and tags outside the request's frozen relevance policy."
+    },
+    {
+      "component": "recurrence verifier",
+      "effect": "Rebuilds twice, compares every byte to the committed capsule and exercises both required negative fixtures."
+    }
+  ],
+  "independent_acceptance": "NOT_TESTED",
+  "protocol_version": "OBZIO-MECHANISM-CHANGE-v1",
+  "recurrence_test": {
+    "clean_clone_commit": "8914a4bb2ebe51324e4a8dabd9d36cabe890b4d9",
+    "focused_tests_passed": 29,
+    "status": "PASS"
+  },
+  "task_id": "PO03-WA-009"
+}

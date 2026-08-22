@@ -1,0 +1,86 @@
+{
+  "adversarial_coverage": [
+    "unlisted source exclusion",
+    "byte-budget overflow",
+    "source-count overflow",
+    "omitted critical source",
+    "critical flag mismatch",
+    "content hash mismatch",
+    "source snapshot mismatch",
+    "duplicate source",
+    "missing relevance",
+    "disallowed relevance tag",
+    "absolute and traversal paths",
+    "non-canonical separators",
+    "symlink source",
+    "missing and non-regular source",
+    "existing output preservation",
+    "malformed and unexpected request fields",
+    "deterministic order and repeated builds",
+    "machine-readable CLI success and rejection"
+  ],
+  "commands": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s workstreams/po03/wave-a/units/wa-009/tests -v",
+      "environment": "isolated producer clone",
+      "failed": 0,
+      "passed": 29,
+      "status": "PASS"
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s workstreams/po03/tests -p test_validate_contracts.py -v",
+      "environment": "isolated producer clone; seeded files read-only",
+      "failed": 0,
+      "passed": 23,
+      "status": "PASS"
+    },
+    {
+      "command": "python3 workstreams/po03/wave-a/units/wa-009/verify_recurrence.py --repo-root .",
+      "environment": "isolated producer clone",
+      "negative_fixtures_passed": 2,
+      "rebuilds_matched": 2,
+      "status": "PASS"
+    },
+    {
+      "command": "python3 scripts/check_operator_taxonomy.py",
+      "environment": "isolated producer clone",
+      "status": "PASS"
+    },
+    {
+      "command": "fresh remote single-branch clone at 8914a4bb2ebe51324e4a8dabd9d36cabe890b4d9; rerun focused, seeded, recurrence and taxonomy commands",
+      "environment": "clean clone /tmp/po03-wa009-clean-recurrence-1a9f",
+      "focused_passed": 29,
+      "recurrence_status": "PASS",
+      "seeded_passed": 23,
+      "status": "PASS",
+      "taxonomy": "PASS"
+    },
+    {
+      "command": "git diff --name-only affc82b35e6205010fda90f9914a97e467294a44 with allowed-prefix rejection",
+      "environment": "isolated producer clone",
+      "out_of_scope_paths": 0,
+      "status": "PASS"
+    }
+  ],
+  "defects": [
+    {
+      "defect_id": "D-PO03-WA-009-001",
+      "effect": "The first clean-clone compound command stopped before test execution because its manually entered expected mechanism commit contained a transcription error.",
+      "mechanism_failure": false,
+      "repair": "Read the full local and remote commit IDs, verified equality, then ran every clean-clone command from the fresh clone.",
+      "status": "REPAIRED_AND_RETESTED"
+    }
+  ],
+  "first_pass_outcome": "FAIL",
+  "first_pass_qualification": "The mechanism's first focused suite passed. The conservative overall first-pass metric is FAIL because the first clean-clone harness invocation contained a commit-ID transcription defect.",
+  "protocol_version": "OBZIO-TEST-EVIDENCE-v1",
+  "summary": {
+    "clean_clone_automated_tests_failed": 0,
+    "clean_clone_automated_tests_passed": 52,
+    "local_automated_tests_failed": 0,
+    "local_automated_tests_passed": 52,
+    "negative_recurrence_fixtures_passed": 2,
+    "taxonomy_checks_passed": 2
+  },
+  "task_id": "PO03-WA-009"
+}
