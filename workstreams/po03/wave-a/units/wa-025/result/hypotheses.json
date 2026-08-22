@@ -1,0 +1,45 @@
+{
+  "protocol_version": "OBZIO-FROZEN-METHOD-HYPOTHESES-v1",
+  "task_id": "PO03-WA-025",
+  "hypothesis_id": "H-PO03-WA-025",
+  "frozen_at": "2026-08-22T07:23:14Z",
+  "frozen_before_reproduction": true,
+  "exact_falsifiable_hypothesis": "Fetch plus git-show at an immutable commit detects branch-tip movement and preserves exact artifact bytes.",
+  "current_method_hypotheses": [
+    {
+      "method_hypothesis_id": "MH-PO03-WA-025-01",
+      "state": "FROZEN_HYPOTHESIS",
+      "hypothesis": "If a dedicated remote-tracking ref first resolves to pinned commit A and its remote branch is force-moved to unrelated commit B, a forced fetch will update the tracking ref to B; comparing the recorded A, pre-fetch ref and post-fetch ref will detect the movement.",
+      "source_claim_ids": [
+        "SC-PO03-WA-025-01"
+      ],
+      "independent_variable": "Remote branch remains at A versus a forced non-fast-forward move from A to unrelated B.",
+      "dependent_observations": [
+        "tracking_tip_before_fetch",
+        "tracking_tip_after_fetch",
+        "branch_tip_moved_from_expected_commit"
+      ],
+      "falsifier": "After the remote branch moves from A to B and fetch succeeds, the verifier reports no movement or does not resolve B as the post-fetch branch tip."
+    },
+    {
+      "method_hypothesis_id": "MH-PO03-WA-025-02",
+      "state": "FROZEN_HYPOTHESIS",
+      "hypothesis": "After that branch move, git show --no-textconv A:<path> will emit the original binary blob bytes rather than B:<path> bytes, and the emitted SHA-256 and byte count will equal the frozen artifact manifest.",
+      "source_claim_ids": [
+        "SC-PO03-WA-025-02",
+        "SC-PO03-WA-025-03",
+        "SC-PO03-WA-025-04"
+      ],
+      "independent_variable": "Read object by immutable commit A instead of the moved mutable branch tip B.",
+      "dependent_observations": [
+        "observed_sha256",
+        "observed_bytes",
+        "moved_tip_content_differs"
+      ],
+      "falsifier": "The pinned read differs by any byte or digest from A's frozen artifact, or it returns B's intentionally different artifact bytes."
+    }
+  ],
+  "conjunction_rule": "H-PO03-WA-025 is SUPPORTED only if both frozen method hypotheses pass in the same sanitized reproduction; otherwise it is REFUTED or INCONCLUSIVE according to the observed failure.",
+  "strategy_status": "NO_STRATEGY_BOUND_BY_THIS_HYPOTHESIS_FREEZE",
+  "decision_changed": []
+}
