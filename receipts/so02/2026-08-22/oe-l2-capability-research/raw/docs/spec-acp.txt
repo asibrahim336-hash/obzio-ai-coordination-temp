@@ -1,0 +1,414 @@
+Documentation Index
+Fetch the complete documentation index at: /llms.txt
+Use this file to discover all available pages before exploring further.
+Skip to main content Agent Client Protocol home page
+
+Search...
+
+⌘ K
+
+Get Started
+
+Introduction
+
+Architecture
+
+Agents
+
+Clients
+
+ACP Registry
+
+Protocol
+
+v1 Latest
+
+Overview
+
+Initialization
+
+Authentication
+
+Session Setup
+
+Session List
+
+Session Delete
+
+Prompt Turn
+
+Content
+
+Tool Calls
+
+Elicitation
+
+File System
+
+Cancellation
+
+Terminals
+
+Agent Plan
+
+Session Modes
+
+Session Config Options
+
+Slash Commands
+
+Extensibility
+
+Transports
+
+Schema
+
+v2 Draft
+
+Libraries
+
+Kotlin
+
+Java
+
+Python
+
+Rust
+
+TypeScript
+
+Community
+
+GitHub
+
+Zed Industries
+
+JetBrains
+
+Agent Client Protocol home page
+
+Search...
+
+⌘ K
+GitHub
+Zed Industries
+JetBrains
+
+Search...
+
+Navigation
+v1
+Overview
+
+Protocol
+RFDs
+Community
+Publications
+Updates
+Brand
+
+Protocol
+RFDs
+Community
+Publications
+Updates
+Brand
+
+v1
+Overview
+Copy page Copy page
+
+How the Agent Client Protocol works
+
+Copy page Copy page
+
+The Agent Client Protocol allows Agents and Clients to communicate by exposing methods that each side can call and sending notifications to inform each other of events.
+​
+
+Communication Model
+
+The protocol follows the JSON-RPC 2.0 specification with two types of messages:
+
+Methods : Request-response pairs that expect a result or error
+
+Notifications : One-way messages that don’t expect a response
+
+​
+
+Message Flow
+
+A typical flow follows this pattern:
+
+1
+
+Initialization Phase
+
+Client → Agent: initialize to establish connection
+
+Client → Agent: authenticate if required by the Agent
+
+2
+
+Session Setup - either:
+
+Client → Agent: session/new to create a new session
+
+Client → Agent: session/load to resume an existing session if supported
+
+3
+
+Prompt Turn
+
+Client → Agent: session/prompt to send user message
+
+Agent → Client: session/update notifications for progress updates
+
+Agent → Client: File operations or permission requests as needed
+
+Client → Agent: session/cancel to interrupt processing if needed
+
+Turn ends and the Agent sends the session/prompt response with a stop reason
+
+​
+
+Agent
+
+Agents are programs that use generative AI to autonomously modify code. They typically run as subprocesses of the Client.
+​
+
+Baseline Methods
+
+​
+
+initialize
+
+Negotiate versions and exchange capabilities. .
+
+​
+
+authenticate
+
+Authenticate with the Agent (if required).
+
+​
+
+session/new
+
+Create a new conversation
+session .
+
+​
+
+session/prompt
+
+Send user prompts to the Agent.
+
+​
+
+Optional Methods
+
+​
+
+session/load
+
+Load an existing session
+(requires loadSession capability).
+
+​
+
+logout
+
+End the current authenticated state
+(requires agentCapabilities.auth.logout capability).
+
+​
+
+session/set_mode
+
+Switch between agent operating
+modes .
+
+​
+
+Notifications
+
+​
+
+session/cancel
+
+Cancel ongoing operations (no
+response expected).
+
+​
+
+Client
+
+Clients provide the interface between users and agents. They are typically code editors (IDEs, text editors) but can also be other UIs for interacting with agents. Clients manage the environment, handle user interactions, and control access to resources.
+​
+
+Baseline Methods
+
+​
+
+session/request_permission
+
+Request user authorization
+for tool calls.
+
+​
+
+Optional Methods
+
+​
+
+fs/read_text_file
+
+Read file contents (requires
+fs.readTextFile capability).
+
+​
+
+fs/write_text_file
+
+Write file contents (requires
+fs.writeTextFile capability).
+
+​
+
+terminal/create
+
+Create a new terminal (requires terminal
+capability).
+
+​
+
+terminal/output
+
+Get terminal output and exit status (requires terminal capability).
+
+​
+
+terminal/release
+
+Release a terminal (requires terminal capability).
+
+​
+
+terminal/wait_for_exit
+
+Wait for terminal command to exit (requires terminal capability).
+
+​
+
+terminal/kill
+
+Kill terminal command without releasing (requires terminal capability).
+
+​
+
+elicitation/create
+
+Request structured information from the user
+(requires the matching elicitation mode capability).
+
+​
+
+Notifications
+
+​
+
+elicitation/complete
+
+Report completion of an out-of-band URL
+interaction (no response expected).
+
+​
+
+session/update
+
+Send session updates to
+inform the Client of changes (no response expected). This includes: - Message
+chunks (agent, user, thought) - Tool calls and
+updates - Plans -
+Available commands updates
+Mode changes
+
+​
+
+Argument requirements
+
+All file paths in the protocol MUST be absolute.
+
+Line numbers are 1-based
+
+​
+
+Error Handling
+
+All methods follow standard JSON-RPC 2.0 error handling :
+
+Successful responses include a result field
+
+Errors include an error object with code and message
+
+Notifications never receive responses (success or error)
+
+​
+
+Conventions
+
+Unless explicitly defined otherwise in the schema, ACP-defined JSON object property keys use camelCase . String values carried by discriminator fields use snake_case . The JSON-RPC envelope fields ( jsonrpc , id , method , params , result , and error ) follow the JSON-RPC 2.0 specification.
+​
+
+Extensibility
+
+The protocol provides built-in mechanisms for adding custom functionality while maintaining compatibility:
+
+Add custom data using _meta fields
+
+Create custom methods by prefixing their name with underscore ( _ )
+
+Advertise custom capabilities during initialization
+
+Learn about protocol extensibility to understand how to use these mechanisms.
+​
+
+Next Steps
+
+Learn about Initialization to understand version and capability negotiation
+
+Understand Session Setup for creating and loading sessions
+
+Review the Prompt Turn lifecycle
+
+Explore Extensibility to add custom features
+
+Was this page helpful?
+Yes No
+
+Previous Initialization
+How all Agent Client Protocol connections begin
+
+Next
+
+⌘ I
+
+github
+Powered by This documentation is built and hosted on Mintlify, a developer documentation platform
+
+On this page
+Communication Model
+Message Flow
+Agent Baseline Methods
+Optional Methods
+Notifications
+
+Client Baseline Methods
+Optional Methods
+Notifications
+
+Argument requirements
+Error Handling
+Conventions
+Extensibility
+Next Steps
