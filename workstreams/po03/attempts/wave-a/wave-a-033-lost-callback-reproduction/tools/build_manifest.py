@@ -107,6 +107,11 @@ def main() -> int:
         artifacts.append(
             {
                 "artifact_id": f"wave-a-033-{relative.replace('/', '-')}",
+                # ``path`` is the slot-relative envelope the shared factory
+                # consumes; ``logical_name`` and ``content_uri`` are retained for
+                # readers and are always the same path, slot-relative and
+                # repository-relative respectively.
+                "path": relative,
                 "logical_name": relative,
                 "content_uri": f"{SLOT}/{relative}",
                 "sha256": hashlib.sha256(payload).hexdigest(),
@@ -130,6 +135,10 @@ def main() -> int:
         ),
         "artifact_count": len(artifacts),
         "total_bytes": total_bytes,
+        # The shared factory reads this field when artifacts carry ``path``, and
+        # requires it to equal the summed declared artifact bytes exactly. The
+        # manifest is excluded from its own artifact list, so it is excluded here.
+        "total_artifact_bytes_excluding_manifest": total_bytes,
         "git_blob_sha_note": (
             "git_blob_sha is populated when the object already exists in the local object "
             "store, which is true for committed artifacts. It is null for artifacts not yet "
