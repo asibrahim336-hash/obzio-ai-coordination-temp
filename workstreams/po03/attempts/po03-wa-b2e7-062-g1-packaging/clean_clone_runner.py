@@ -66,19 +66,76 @@ def digest_in_clone(clone: Path, relative: str) -> dict[str, Any]:
     return {"path": relative, "present": True, "sha256": sha256_bytes(payload), "bytes": len(payload)}
 
 
-def smoke_test_the_package(clone: Path) -> list[dict[str, Any]]:
-    """Exercise the packaged factory's CLI inside the clone.
+DEPLOY_RELATIVE = "_g1_deploy"
+DEPLOY_SOURCES = (
+    "workstreams/po03/COMMISSION.md",
+    "workstreams/po03/contracts",
+    "workstreams/po03/control",
+    "workstreams/po03/evidence",
+    "workstreams/po03/metrics",
+    "workstreams/po03/tools/validate_contracts.py",
+)
 
-    `--help` only proves the file parses.  `verify` on a real capsule that the
-    branch already carries proves the package can read the committed ledger from
-    a checkout it has never seen before.
+
+def deploy_the_package(clone: Path) -> Path:
+    """Place the clone's committed package at the layout the factory requires.
+
+    The factory computes PO03_ROOT from its own file location, so a copy read
+    from anywhere other than workstreams/po03/tools/ resolves the control tree
+    to the wrong place.  Deployment therefore means reproducing that layout, and
+    it is done entirely from bytes the clone already carries.
+    """
+    root = clone / DEPLOY_RELATIVE
+    for relative in DEPLOY_SOURCES:
+        source = clone / relative
+        destination = root / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        if source.is_dir():
+            shutil.copytree(source, destination)
+        else:
+            shutil.copy2(source, destination)
+    deployed = root / FACTORY_PATH
+    shutil.copy2(clone / PACKAGE_RELATIVE, deployed)
+    return deployed
+
+
+def smoke_test_the_package(clone: Path) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Exercise the packaged factory's CLI inside the clone, in two arms.
+
+    `--help` only proves the file parses.  `verify` on a capsule the branch
+    already carries proves the package can read a committed ledger from a
+    checkout it has never seen.  That second command is run twice: once with the
+    package sitting where this unit stages it, and once with it deployed at the
+    layout the factory's own path arithmetic requires.  The difference between
+    the two arms is the package's real relocation constraint, so both are
+    recorded instead of only the arm that succeeds.
     """
     package = clone / PACKAGE_RELATIVE
-    checks = [run(("python3", "-I", package.as_posix(), "--help"), clone)]
+    deployed = deploy_the_package(clone)
     tasks = sorted((clone / "workstreams/po03/control/tasks").glob("po03-wa-b2e7-*"))
-    if tasks:
-        checks.append(run(("python3", "-I", package.as_posix(), "verify", tasks[0].name), clone))
-    return checks
+    task_id = tasks[0].name if tasks else None
+
+    parses = run(("python3", "-I", package.as_posix(), "--help"), clone)
+    deployed_parses = run(("python3", "-I", deployed.as_posix(), "--help"), clone)
+    checks = [parses, deployed_parses]
+
+    relocation: dict[str, Any] = {
+        "constraint": "the factory sets PO03_ROOT from Path(__file__).parents[1], so it reads the control tree relative to its own file location",
+        "verified_task_id": task_id,
+    }
+    if task_id is not None:
+        in_place = run(("python3", "-I", package.as_posix(), "verify", task_id), clone)
+        at_layout = run(("python3", "-I", deployed.as_posix(), "verify", task_id), clone)
+        checks.append(at_layout)
+        relocation.update(
+            {
+                "in_place_at_staged_path": in_place,
+                "deployed_at_required_layout": at_layout,
+                "in_place_reads_the_ledger": in_place["exit_code"] == 0,
+                "deployed_reads_the_ledger": at_layout["exit_code"] == 0,
+            }
+        )
+    return checks, relocation
 
 
 def measure_in_clone(clone: Path, name: str, description: str) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -152,7 +209,7 @@ def main(argv: list[str] | None = None) -> int:
             integrity["package_in_clone"].get("sha256") == integrity["live_factory_in_clone"].get("sha256")
         )
 
-        smoke = smoke_test_the_package(clone)
+        smoke, relocation = smoke_test_the_package(clone)
         measurement_step, measurement = measure_in_clone(clone, args.name, args.description)
         Path(args.measurement_out).write_bytes(canonical(measurement))
 
@@ -168,6 +225,7 @@ def main(argv: list[str] | None = None) -> int:
                 "note": "the clone is a fresh checkout; no file from the author's working tree is copied into it",
             },
             "integrity": integrity,
+            "relocation": relocation,
             "steps": [clone_step, *smoke, measurement_step],
             "executable_from_clean_clone": all(step["exit_code"] == 0 for step in smoke)
             and measurement_step["exit_code"] == 0

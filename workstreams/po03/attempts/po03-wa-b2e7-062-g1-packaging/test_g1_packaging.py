@@ -132,6 +132,35 @@ class TheCleanCloneRunnerIsHonest(unittest.TestCase):
         for step in report["steps"]:
             self.assertEqual(step["exit_code"], 0, step["command"])
 
+    def test_the_relocation_constraint_is_recorded_with_both_arms(self) -> None:
+        report_path = UNIT / "clean-clone-report.json"
+        if not report_path.is_file():
+            self.skipTest("clean-clone-report.json is produced by clean_clone_runner.py")
+        relocation = json.loads(report_path.read_text(encoding="utf-8"))["relocation"]
+        self.assertIn("PO03_ROOT", relocation["constraint"])
+        self.assertIn("in_place_at_staged_path", relocation)
+        self.assertIn("deployed_at_required_layout", relocation)
+        self.assertTrue(
+            relocation["deployed_reads_the_ledger"],
+            "the package must read the committed ledger once deployed at the layout it requires",
+        )
+        self.assertFalse(
+            relocation["in_place_reads_the_ledger"],
+            "the in-place arm is expected to fail; if it now passes the constraint has changed and the "
+            "report text must be corrected rather than left standing",
+        )
+
+    def test_the_deployed_arm_names_the_task_it_verified(self) -> None:
+        report_path = UNIT / "clean-clone-report.json"
+        if not report_path.is_file():
+            self.skipTest("clean-clone-report.json is produced by clean_clone_runner.py")
+        relocation = json.loads(report_path.read_text(encoding="utf-8"))["relocation"]
+        task_id = relocation["verified_task_id"]
+        self.assertTrue((PO03 / "control/tasks" / task_id).is_dir(), task_id)
+        self.assertIn(
+            f"VALID task={task_id}", " ".join(relocation["deployed_at_required_layout"]["stdout_tail"])
+        )
+
     def test_the_report_records_a_failing_step_rather_than_hiding_it(self) -> None:
         record = runner.run(("python3", "-I", "-c", "raise SystemExit(3)"), REPO)
         self.assertEqual(record["exit_code"], 3)
