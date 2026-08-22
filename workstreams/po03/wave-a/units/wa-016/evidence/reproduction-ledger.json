@@ -1,0 +1,276 @@
+[
+  {
+    "classification_matches_recorded_fixture": true,
+    "final_state": "COMPLETED",
+    "four_routes_left_no_durable_result": true,
+    "never_reported_completed_without_commit": true,
+    "recorded_fixture": {
+      "acceptance_state": "NOT_ACCEPTED",
+      "obzio_state": "PROVIDER_COMPLETED_UNCOMMITTED",
+      "provider_state": "COMPLETED",
+      "result_state": "UNRECOVERED_AFTER_FOUR_REPORTED_ROUTES"
+    },
+    "reproduction_id": "R1-PO02-CODE2-LOST-RETURN",
+    "route_five_callback_outcome": [
+      {
+        "outbox_id": "ob-po02-code2-packaging-return-1",
+        "outcome": "LOST_IN_TRANSIT"
+      }
+    ],
+    "route_five_commit_id": "56c7f469d660a083b6d34e5553d03bcc0ba8577231921dbb1b392be9fe0337f6",
+    "route_five_completion": "COMPLETED",
+    "route_five_recovery_actions": [
+      "REPLAY_LOST_CALLBACK"
+    ],
+    "routes": [
+      {
+        "classified_as": "PROVIDER_COMPLETED_UNCOMMITTED",
+        "durable_commit": null,
+        "recovery_actions": [
+          "SCHEDULE_RETRY_FROM_IMMUTABLE_INPUT"
+        ],
+        "route": 1,
+        "state_after_scan": "RETRY_SCHEDULED"
+      },
+      {
+        "classified_as": "PROVIDER_COMPLETED_UNCOMMITTED",
+        "durable_commit": null,
+        "recovery_actions": [
+          "SCHEDULE_RETRY_FROM_IMMUTABLE_INPUT"
+        ],
+        "route": 2,
+        "state_after_scan": "RETRY_SCHEDULED"
+      },
+      {
+        "classified_as": "PROVIDER_COMPLETED_UNCOMMITTED",
+        "durable_commit": null,
+        "recovery_actions": [
+          "SCHEDULE_RETRY_FROM_IMMUTABLE_INPUT"
+        ],
+        "route": 3,
+        "state_after_scan": "RETRY_SCHEDULED"
+      },
+      {
+        "classified_as": "PROVIDER_COMPLETED_UNCOMMITTED",
+        "durable_commit": null,
+        "recovery_actions": [
+          "SCHEDULE_RETRY_FROM_IMMUTABLE_INPUT"
+        ],
+        "route": 4,
+        "state_after_scan": "RETRY_SCHEDULED"
+      }
+    ],
+    "verdict": "REPRODUCED"
+  },
+  {
+    "git_available": true,
+    "input_count": 64,
+    "non_resumable_count": 64,
+    "pointer_failure_counts": {
+      "minimum_protocol_ancestor": 64
+    },
+    "reproduction_id": "R2-FROZEN-INPUT-RESOLVABILITY",
+    "this_unit_example": {
+      "abbreviated_prefix": "100bc20",
+      "abbreviated_resolves_to": "commit",
+      "disposition": "UNRESOLVABLE",
+      "pointer": "minimum_protocol_ancestor",
+      "value": "100bc20ad5eec62a4f35b60921423135cc0b9d9a"
+    },
+    "unresolvable_pointers": [
+      "minimum_protocol_ancestor"
+    ],
+    "verdict": "DEFECT_REPRODUCED"
+  },
+  {
+    "probe": {
+      "all_artifacts_reconcile": true,
+      "canary_bytes_matches_recorded": true,
+      "canary_sha256_matches_recorded": true,
+      "commit": "853aab9c81f8bd88a3112efb37a02e3164534835",
+      "first_push_returncode": 0,
+      "git_version": "git version 2.43.0",
+      "push_is_idempotent": true,
+      "readback": [
+        {
+          "bytes": 74,
+          "expected_bytes": 74,
+          "expected_sha256": "5fdeb53d88f287e7e82006277c55ab0b3359b3b1881f408929359285be95f31b",
+          "logical_name": "canary.txt",
+          "matches": true,
+          "sha256": "5fdeb53d88f287e7e82006277c55ab0b3359b3b1881f408929359285be95f31b"
+        },
+        {
+          "bytes": 142,
+          "expected_bytes": 142,
+          "expected_sha256": "12da0adc5d930cce895488f50929736054da806dcc4e1e4cfa9d7b998c76b47a",
+          "logical_name": "unit-result.json",
+          "matches": true,
+          "sha256": "12da0adc5d930cce895488f50929736054da806dcc4e1e4cfa9d7b998c76b47a"
+        }
+      ],
+      "remote_had_commit_before_push": false,
+      "remote_tip_after_first_push": "853aab9c81f8bd88a3112efb37a02e3164534835",
+      "remote_tip_after_replay": "853aab9c81f8bd88a3112efb37a02e3164534835",
+      "result_ref": "refs/heads/po03-wa-016-probe",
+      "second_push_returncode": 0,
+      "second_push_stderr": "Everything up-to-date"
+    },
+    "recorded_canary_check": {
+      "commit": "371e8da6ab306c2948e0fe1f47c884ae46b2e81f",
+      "disposition": "MATCHES",
+      "embedded_bytes": 74,
+      "embedded_sha256": "5fdeb53d88f287e7e82006277c55ab0b3359b3b1881f408929359285be95f31b",
+      "observed_bytes": 74,
+      "observed_sha256": "5fdeb53d88f287e7e82006277c55ab0b3359b3b1881f408929359285be95f31b",
+      "path": "workstreams/po03/runs/bc-b1956656-b897-4889-aeab-82c4556c1a9f/units/wa-isolation-canary-001/result/canary.txt"
+    },
+    "reproduction_id": "R3-REAL-GIT-CUSTODY",
+    "verdict": "REPRODUCED"
+  },
+  {
+    "cell_id": "T08|POST_WRITE_LOSS@post_external_effect#1",
+    "reproduction_id": "R4-DETERMINISTIC-REPLAY",
+    "rows_equal": true,
+    "trace_digest_first": "97cf565ef35373827be8625a8220cd8a94f7a1486072fd88e6e88cfe411569a6",
+    "trace_digest_second": "97cf565ef35373827be8625a8220cd8a94f7a1486072fd88e6e88cfe411569a6",
+    "trace_digests_equal": true,
+    "verdict": "REPRODUCED"
+  },
+  {
+    "admitted_by_seeded_validator": 6,
+    "closed_by_strengthened_layer": 6,
+    "gap_count": 6,
+    "gaps": [
+      {
+        "closes_gap": true,
+        "gap_id": "GAP-1-UNDECLARED-TRANSACTION-STATE",
+        "rationale": "the seeded executable validator never compares result_transaction.state to the schema enum",
+        "seeded_validator_admits": true,
+        "seeded_validator_errors": [],
+        "strengthened_errors": [
+          "$.result_transaction.state: 'DEFINITELY_NOT_A_STATE' is not a declared transaction state"
+        ],
+        "strengthened_rejects": true
+      },
+      {
+        "closes_gap": true,
+        "gap_id": "GAP-2-INCOHERENT-TRANSACTION-STATE",
+        "rationale": "a COMPLETED result may claim a merely RESERVED transaction",
+        "seeded_validator_admits": true,
+        "seeded_validator_errors": [],
+        "strengthened_errors": [
+          "$.result_transaction.state: RESERVED is incoherent with obzio_state COMPLETED"
+        ],
+        "strengthened_rejects": true
+      },
+      {
+        "closes_gap": true,
+        "gap_id": "GAP-3-VERIFICATION-BEFORE-COMMIT",
+        "rationale": "custody timestamps are checked for presence but never for order",
+        "seeded_validator_admits": true,
+        "seeded_validator_errors": [],
+        "strengthened_errors": [
+          "$.artifacts[0].readback_verified_at: precedes committed_at",
+          "$.result_transaction.verified_at: fully read-back result verified before it was committed"
+        ],
+        "strengthened_rejects": true
+      },
+      {
+        "closes_gap": true,
+        "gap_id": "GAP-4-DUPLICATE-LOGICAL-NAME",
+        "rationale": "only artifact_id uniqueness is enforced, so one path can be counted twice",
+        "seeded_validator_admits": true,
+        "seeded_validator_errors": [],
+        "strengthened_errors": [
+          "$.artifacts[1].logical_name: duplicate logical name 'canary.txt'",
+          "$.artifacts[1].content_uri: duplicate content uri 'refs/po03/po03-wa-016@commit1:canary.txt'"
+        ],
+        "strengthened_rejects": true
+      },
+      {
+        "closes_gap": true,
+        "gap_id": "GAP-5-ARTIFACT-AT-WRONG-COMMIT",
+        "rationale": "artifact content URIs are never tied to the claimed result commit",
+        "seeded_validator_admits": true,
+        "seeded_validator_errors": [],
+        "strengthened_errors": [
+          "$.artifacts[0].content_uri: does not reference result_commit_id commit1"
+        ],
+        "strengthened_rejects": true
+      },
+      {
+        "closes_gap": true,
+        "gap_id": "GAP-6-MANIFEST-URI-WITHOUT-DIGEST",
+        "rationale": "a manifest may be located without any digest before the committed states",
+        "seeded_validator_admits": true,
+        "seeded_validator_errors": [],
+        "strengthened_errors": [
+          "$.result_transaction.manifest_sha256: required whenever manifest_uri is claimed"
+        ],
+        "strengthened_rejects": true
+      }
+    ],
+    "reproduction_id": "R5-SEEDED-VALIDATOR-GAPS",
+    "verdict": "DEFECT_REPRODUCED"
+  },
+  {
+    "all_mutants_detected": true,
+    "false_completion_detected_in_provider_trusting_mutant": true,
+    "mutants": [
+      {
+        "cells": 101,
+        "cells_with_violations": 30,
+        "defect": "snapshot written before the journal and trusted on reload",
+        "detected": true,
+        "mutant": "SnapshotFirstStore",
+        "violation_counts": {
+          "I6_JOURNAL_INTEGRITY": 30
+        }
+      },
+      {
+        "cells": 101,
+        "cells_with_violations": 3,
+        "defect": "provider completion promoted to Obzio completion",
+        "detected": true,
+        "mutant": "ProviderTrustingStore",
+        "violation_counts": {
+          "I10_STRENGTHENED_INVARIANTS_HOLD": 3,
+          "I1_NO_FALSE_COMPLETION": 3,
+          "I8_SEEDED_VALIDATOR_ACCEPTS": 3
+        }
+      },
+      {
+        "cells": 101,
+        "cells_with_violations": 7,
+        "defect": "fence token never checked, so a stale worker can still write",
+        "detected": true,
+        "mutant": "UnfencedStore",
+        "violation_counts": {
+          "I7_STALE_FENCE_REJECTED": 7
+        }
+      },
+      {
+        "cells": 101,
+        "cells_with_violations": 10,
+        "defect": "torn trailing journal record left in place",
+        "detected": true,
+        "mutant": "TornTailTrustingStore",
+        "violation_counts": {
+          "I6_JOURNAL_INTEGRITY": 10
+        }
+      }
+    ],
+    "reproduction_id": "R6-HARNESS-FALSIFICATION-POWER",
+    "verdict": "REPRODUCED"
+  },
+  {
+    "distinct_external_effects": 1,
+    "divergent_replay_outcome": "IdempotencyConflict",
+    "external_effect_attempts": 1,
+    "first_commit_id": "ee7d4831d96e0312e4afca67a92e19bbe3e35b9d0a47c6996786dfc30c71ed4f",
+    "reproduction_id": "R7-IDEMPOTENT-REPLAY-CONFLICT",
+    "same_parameter_replay_returns_same_commit": true,
+    "verdict": "REPRODUCED"
+  }
+]

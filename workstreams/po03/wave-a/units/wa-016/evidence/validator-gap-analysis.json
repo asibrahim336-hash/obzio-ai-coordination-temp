@@ -1,0 +1,70 @@
+[
+  {
+    "closes_gap": true,
+    "gap_id": "GAP-1-UNDECLARED-TRANSACTION-STATE",
+    "rationale": "the seeded executable validator never compares result_transaction.state to the schema enum",
+    "seeded_validator_admits": true,
+    "seeded_validator_errors": [],
+    "strengthened_errors": [
+      "$.result_transaction.state: 'DEFINITELY_NOT_A_STATE' is not a declared transaction state"
+    ],
+    "strengthened_rejects": true
+  },
+  {
+    "closes_gap": true,
+    "gap_id": "GAP-2-INCOHERENT-TRANSACTION-STATE",
+    "rationale": "a COMPLETED result may claim a merely RESERVED transaction",
+    "seeded_validator_admits": true,
+    "seeded_validator_errors": [],
+    "strengthened_errors": [
+      "$.result_transaction.state: RESERVED is incoherent with obzio_state COMPLETED"
+    ],
+    "strengthened_rejects": true
+  },
+  {
+    "closes_gap": true,
+    "gap_id": "GAP-3-VERIFICATION-BEFORE-COMMIT",
+    "rationale": "custody timestamps are checked for presence but never for order",
+    "seeded_validator_admits": true,
+    "seeded_validator_errors": [],
+    "strengthened_errors": [
+      "$.artifacts[0].readback_verified_at: precedes committed_at",
+      "$.result_transaction.verified_at: fully read-back result verified before it was committed"
+    ],
+    "strengthened_rejects": true
+  },
+  {
+    "closes_gap": true,
+    "gap_id": "GAP-4-DUPLICATE-LOGICAL-NAME",
+    "rationale": "only artifact_id uniqueness is enforced, so one path can be counted twice",
+    "seeded_validator_admits": true,
+    "seeded_validator_errors": [],
+    "strengthened_errors": [
+      "$.artifacts[1].logical_name: duplicate logical name 'canary.txt'",
+      "$.artifacts[1].content_uri: duplicate content uri 'refs/po03/po03-wa-016@commit1:canary.txt'"
+    ],
+    "strengthened_rejects": true
+  },
+  {
+    "closes_gap": true,
+    "gap_id": "GAP-5-ARTIFACT-AT-WRONG-COMMIT",
+    "rationale": "artifact content URIs are never tied to the claimed result commit",
+    "seeded_validator_admits": true,
+    "seeded_validator_errors": [],
+    "strengthened_errors": [
+      "$.artifacts[0].content_uri: does not reference result_commit_id commit1"
+    ],
+    "strengthened_rejects": true
+  },
+  {
+    "closes_gap": true,
+    "gap_id": "GAP-6-MANIFEST-URI-WITHOUT-DIGEST",
+    "rationale": "a manifest may be located without any digest before the committed states",
+    "seeded_validator_admits": true,
+    "seeded_validator_errors": [],
+    "strengthened_errors": [
+      "$.result_transaction.manifest_sha256: required whenever manifest_uri is claimed"
+    ],
+    "strengthened_rejects": true
+  }
+]

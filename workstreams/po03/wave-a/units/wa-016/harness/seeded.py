@@ -66,7 +66,11 @@ def sha256_file(path: Path) -> str:
 
 def task_input(root: Path | None = None) -> dict[str, Any]:
     base = root or repository_root()
-    return json.loads((base / TASK_INPUT_REL).read_text(encoding="utf-8"))
+    path = base / TASK_INPUT_REL
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise SeededControlError(f"frozen task input unreadable at {path}: {exc}") from exc
 
 
 @dataclass(frozen=True)

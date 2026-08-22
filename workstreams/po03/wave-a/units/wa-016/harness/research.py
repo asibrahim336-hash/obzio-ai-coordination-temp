@@ -342,7 +342,7 @@ MECHANISM_CHANGES: tuple[dict[str, Any], ...] = (
             "digest whenever a manifest URI is claimed."
         ),
         "target": "workstreams/po03/tools/validate_contracts.py (not modified by this unit; strengthening lives in this unit's subtree)",
-        "recurrence_test": "tests/test_custody_invariants.py",
+        "recurrence_test": "tests/test_custody_invariants.py::GapTests::test_every_declared_gap_is_admitted_upstream_and_rejected_here",
         "disposition": "PROPOSED_TO_COORDINATOR",
         "rationale": (
             "The seeded validator is an active control and read-only to this unit, so the change is delivered as "
@@ -359,7 +359,7 @@ MECHANISM_CHANGES: tuple[dict[str, Any], ...] = (
             "because the input's own source base cannot be located."
         ),
         "target": "workstreams/po03/tools/prepare_wave_a.py and the dispatch precondition (not modified by this unit)",
-        "recurrence_test": "tests/test_input_resolvability.py",
+        "recurrence_test": "tests/test_input_resolvability.py::DefectTests::test_the_gate_refuses_dispatch_while_the_defect_stands",
         "disposition": "PROPOSED_TO_COORDINATOR",
         "rationale": "prepare_wave_a.py is read-only to this unit; the defect it produced is reproduced and gated instead.",
     },
@@ -373,7 +373,7 @@ MECHANISM_CHANGES: tuple[dict[str, Any], ...] = (
             "published under the earlier manifest, and the spent idempotency key then blocked the repair."
         ),
         "target": "harness/custody_machine.py:commit_result",
-        "recurrence_test": "tests/test_custody_machine.py::test_damage_between_verify_and_commit_is_refused",
+        "recurrence_test": "tests/test_custody_machine.py::StagingVerificationTests::test_damage_between_verify_and_commit_is_refused",
         "disposition": "RETAIN",
         "rationale": "Measured defect with a recurrence test; the matrix cell that found it now passes.",
     },
@@ -387,7 +387,8 @@ MECHANISM_CHANGES: tuple[dict[str, Any], ...] = (
             "without ever approaching completion."
         ),
         "target": "harness/recovery.py:CLASSIFY_UNRECOVERABLE_REMOTE_DAMAGE",
-        "recurrence_test": "tests/test_transition_matrix.py::test_remote_damage_terminates_without_completion",
+        "recurrence_test": "tests/test_transition_matrix.py::RemoteDamageTests::test_remote_damage_terminates_without_completion",
+        "additional_recurrence_test": "tests/test_recovery.py::BoundedTerminationTests::test_repeated_remote_damage_is_classified_terminally",
         "disposition": "RETAIN",
         "rationale": "Found by this unit's matrix as an unbounded retry loop; bounded and tested.",
     },
@@ -400,7 +401,7 @@ MECHANISM_CHANGES: tuple[dict[str, Any], ...] = (
             "instead of restamping it, so custody timestamps cannot claim a commit later than its own ingestion."
         ),
         "target": "harness/custody_machine.py:_record_commit_transition",
-        "recurrence_test": "tests/test_transition_matrix.py::test_commit_reentry_preserves_commit_time",
+        "recurrence_test": "tests/test_transition_matrix.py::RemoteDamageTests::test_commit_reentry_preserves_commit_time",
         "disposition": "RETAIN",
         "rationale": "Found by the strengthened timestamp-order invariant applied to the matrix's own output.",
     },
@@ -422,6 +423,24 @@ MECHANISM_CHANGES: tuple[dict[str, Any], ...] = (
         ),
     },
     {
+        "mechanism_id": "M8",
+        "hypothesis_ids": ["CM-H8"],
+        "scope": "LIVE_IN_THIS_UNIT",
+        "change": (
+            "The fuzz driver applies an environment fault inside the same recovery path as the custody step. "
+            "Found only at campaign scale: an environment action is itself a durable write, so a point fault "
+            "scheduled on the same step crashed it and the exception escaped the driver rather than being "
+            "recovered."
+        ),
+        "target": "harness/fuzz.py:run_case",
+        "recurrence_test": "tests/test_fuzz.py::CaseTests::test_a_fault_during_an_environment_action_does_not_escape_the_driver",
+        "disposition": "RETAIN",
+        "rationale": (
+            "A defect in the measuring instrument, not the machine under test, but it silently truncated the "
+            "campaign the M6 rejection rests on, so it is recorded with the same standing."
+        ),
+    },
+    {
         "mechanism_id": "M6",
         "hypothesis_ids": ["CM-H8"],
         "scope": "REJECTION",
@@ -430,7 +449,7 @@ MECHANISM_CHANGES: tuple[dict[str, Any], ...] = (
             "substitute for exhaustive single-fault enumeration at this model's size."
         ),
         "target": "harness/fuzz.py",
-        "recurrence_test": "tests/test_fuzz.py::test_fuzz_finds_no_class_the_matrix_missed",
+        "recurrence_test": "tests/test_fuzz.py::CampaignTests::test_fuzz_finds_no_class_the_matrix_missed",
         "disposition": "EVIDENCE_BACKED_REJECTION",
         "rationale": "Filled in from the campaign result at run time; see mechanism_evidence in result.json.",
     },

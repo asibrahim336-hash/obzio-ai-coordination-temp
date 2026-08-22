@@ -1,0 +1,102 @@
+[
+  {
+    "change": "custody_invariants.validate_result_strict composes the read-only seeded validator and appends six invariants: declared transaction state, lifecycle/transaction coherence, custody timestamp order, unique logical name and content URI, artifacts located at the claimed result commit, and a manifest digest whenever a manifest URI is claimed.",
+    "disposition": "PROPOSED_TO_COORDINATOR",
+    "hypothesis_ids": [
+      "CM-H7"
+    ],
+    "mechanism_id": "M1",
+    "rationale": "The seeded validator is an active control and read-only to this unit, so the change is delivered as a composing layer plus paired evidence rather than an edit.",
+    "recurrence_test": "tests/test_custody_invariants.py::GapTests::test_every_declared_gap_is_admitted_upstream_and_rejected_here",
+    "scope": "PROPOSAL_TO_COORDINATOR",
+    "target": "workstreams/po03/tools/validate_contracts.py (not modified by this unit; strengthening lives in this unit's subtree)"
+  },
+  {
+    "change": "input_resolvability.gate refuses dispatch unless every pointer in a frozen input resolves in the target repository, closing the gap where automatic resume from immutable input is impossible because the input's own source base cannot be located.",
+    "disposition": "PROPOSED_TO_COORDINATOR",
+    "hypothesis_ids": [
+      "CM-H2"
+    ],
+    "mechanism_id": "M2",
+    "rationale": "prepare_wave_a.py is read-only to this unit; the defect it produced is reproduced and gated instead.",
+    "recurrence_test": "tests/test_input_resolvability.py::DefectTests::test_the_gate_refuses_dispatch_while_the_defect_stands",
+    "scope": "PROPOSAL_TO_COORDINATOR",
+    "target": "workstreams/po03/tools/prepare_wave_a.py and the dispatch precondition (not modified by this unit)"
+  },
+  {
+    "change": "commit_result re-reconciles staged bytes against the recorded manifest immediately before publishing. Found by this unit's own matrix: damage landing between verification and commit was published under the earlier manifest, and the spent idempotency key then blocked the repair.",
+    "disposition": "RETAIN",
+    "hypothesis_ids": [
+      "CM-H3",
+      "CM-H5"
+    ],
+    "mechanism_id": "M3",
+    "rationale": "Measured defect with a recurrence test; the matrix cell that found it now passes.",
+    "recurrence_test": "tests/test_custody_machine.py::StagingVerificationTests::test_damage_between_verify_and_commit_is_refused",
+    "scope": "LIVE_IN_THIS_UNIT",
+    "target": "harness/custody_machine.py:commit_result"
+  },
+  {
+    "additional_recurrence_test": "tests/test_recovery.py::BoundedTerminationTests::test_repeated_remote_damage_is_classified_terminally",
+    "change": "The recovery scanner classifies repeated read-back failure against an immutable commit as FAILED_TERMINAL instead of retrying without bound, so unrecoverable remote damage terminates without ever approaching completion.",
+    "disposition": "RETAIN",
+    "hypothesis_ids": [
+      "CM-H1"
+    ],
+    "mechanism_id": "M4",
+    "rationale": "Found by this unit's matrix as an unbounded retry loop; bounded and tested.",
+    "recurrence_test": "tests/test_transition_matrix.py::RemoteDamageTests::test_remote_damage_terminates_without_completion",
+    "scope": "LIVE_IN_THIS_UNIT",
+    "target": "harness/recovery.py:CLASSIFY_UNRECOVERABLE_REMOTE_DAMAGE"
+  },
+  {
+    "change": "Re-entering RESULT_COMMITTED after a lost acknowledgement preserves the original committed_at instead of restamping it, so custody timestamps cannot claim a commit later than its own ingestion.",
+    "disposition": "RETAIN",
+    "hypothesis_ids": [
+      "CM-H7"
+    ],
+    "mechanism_id": "M5",
+    "rationale": "Found by the strengthened timestamp-order invariant applied to the matrix's own output.",
+    "recurrence_test": "tests/test_transition_matrix.py::RemoteDamageTests::test_commit_reentry_preserves_commit_time",
+    "scope": "LIVE_IN_THIS_UNIT",
+    "target": "harness/custody_machine.py:_record_commit_transition"
+  },
+  {
+    "change": "The checkpoint sequence number travels inside the CHECKPOINTED transition record instead of a second journal record. Found by this unit's own focused tests: a crash between the two records left a task claiming CHECKPOINTED at a sequence it had never reached.",
+    "disposition": "RETAIN",
+    "hypothesis_ids": [
+      "CM-H2"
+    ],
+    "mechanism_id": "M7",
+    "rationale": "The machine already required a transition and its payload to land in one record for staging and for the outbox; checkpoints were the one place that rule was not applied.",
+    "recurrence_test": "tests/test_custody_machine.py::JournalIsTruthTests::test_checkpoint_sequence_lands_atomically_with_the_transition",
+    "scope": "LIVE_IN_THIS_UNIT",
+    "target": "harness/custody_machine.py:checkpoint"
+  },
+  {
+    "change": "The fuzz driver applies an environment fault inside the same recovery path as the custody step. Found only at campaign scale: an environment action is itself a durable write, so a point fault scheduled on the same step crashed it and the exception escaped the driver rather than being recovered.",
+    "disposition": "RETAIN",
+    "hypothesis_ids": [
+      "CM-H8"
+    ],
+    "mechanism_id": "M8",
+    "rationale": "A defect in the measuring instrument, not the machine under test, but it silently truncated the campaign the M6 rejection rests on, so it is recorded with the same standing.",
+    "recurrence_test": "tests/test_fuzz.py::CaseTests::test_a_fault_during_an_environment_action_does_not_escape_the_driver",
+    "scope": "LIVE_IN_THIS_UNIT",
+    "target": "harness/fuzz.py:run_case"
+  },
+  {
+    "change": "Randomized multi-fault fuzzing is retained as a cheap regression sweep but rejected as a substitute for exhaustive single-fault enumeration at this model's size.",
+    "disposition": "EVIDENCE_BACKED_REJECTION",
+    "hypothesis_ids": [
+      "CM-H8"
+    ],
+    "mechanism_evidence": "12 seeded fuzz cases with up to 3 overlapping faults produced 0 safety violations and 0 classes not already covered by the 101-cell exhaustive matrix.",
+    "mechanism_id": "M6",
+    "rationale": "Filled in from the campaign result at run time; see mechanism_evidence in result.json.",
+    "recurrence_test": "tests/test_fuzz.py::CampaignTests::test_fuzz_finds_no_class_the_matrix_missed",
+    "rejected_claim": "CM-H8",
+    "scope": "REJECTION",
+    "target": "harness/fuzz.py"
+  }
+]

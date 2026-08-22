@@ -1,0 +1,129 @@
+[
+  {
+    "evaluator": "fence",
+    "evidence": "7 stale-lease cells, all recording FENCED_OUT with at most one durable effect",
+    "hypothesis_id": "CM-H1",
+    "outcome": "SUPPORTED",
+    "prediction": "Every STALE_LEASE cell records a FENCED_OUT refusal and still reaches exactly one durable result.",
+    "reproduction_ids": [
+      "R6-HARNESS-FALSIFICATION-POWER",
+      "MATRIX-STALE-LEASE-CELLS"
+    ],
+    "source_claim_ids": [
+      "S1"
+    ],
+    "state": "REPRODUCED",
+    "statement": "If the durable store actively checks a monotonic fence token, a worker whose lease expired cannot write after ownership transfers, so a stale attempt cannot produce a second durable result."
+  },
+  {
+    "evaluator": "determinism",
+    "evidence": "trace digests equal=True rows equal=True",
+    "hypothesis_id": "CM-H2",
+    "outcome": "SUPPORTED",
+    "prediction": "Two runs of one cell produce identical arrival-trace digests and identical result rows.",
+    "reproduction_ids": [
+      "R4-DETERMINISTIC-REPLAY"
+    ],
+    "source_claim_ids": [
+      "S2",
+      "S7"
+    ],
+    "state": "REPRODUCED",
+    "statement": "If the harness is single-threaded with a logical clock and a declared fault schedule, re-running a cell reproduces the same fault ordering and the same custody outcome exactly."
+  },
+  {
+    "evaluator": "at_most_once",
+    "evidence": "max distinct effects across 101 cells and 12 fuzz cases = 1",
+    "hypothesis_id": "CM-H3",
+    "outcome": "SUPPORTED",
+    "prediction": "No cell or fuzz case ever records more than one distinct external effect.",
+    "reproduction_ids": [
+      "R7-IDEMPOTENT-REPLAY-CONFLICT",
+      "R3-REAL-GIT-CUSTODY",
+      "MATRIX-I4"
+    ],
+    "source_claim_ids": [
+      "S3",
+      "S8"
+    ],
+    "state": "REPRODUCED",
+    "statement": "If the external effect is keyed by the frozen idempotency key and is content addressed, repeated delivery attempts after a crash produce at most one distinct durable effect."
+  },
+  {
+    "evaluator": "outbox",
+    "evidence": "1 lost-callback cells redelivered with exactly one ingestion, 2 duplicate-callback cells ignored the duplicate, scanner replay path evidenced by R1 route five=True",
+    "hypothesis_id": "CM-H4",
+    "outcome": "SUPPORTED",
+    "prediction": "A lost callback is redelivered from the surviving outbox and the parent ingests exactly once; a duplicated callback is ignored exactly once.",
+    "prediction_correction": "The prediction first written named the recovery scanner action REPLAY_LOST_CALLBACK specifically. The matrix showed the redelivery happening through the at-least-once relay on the next step, with the scanner path exercised instead by R1 route five. Naming one of two valid replay paths was an implementation detail, not part of the claim, so the prediction was widened to the claim itself and both paths are now checked. Recorded because the correction was made after seeing the result.",
+    "reproduction_ids": [
+      "R1-PO02-CODE2-LOST-RETURN",
+      "MATRIX-CALLBACK-CELLS"
+    ],
+    "source_claim_ids": [
+      "S4"
+    ],
+    "state": "REPRODUCED",
+    "statement": "If the parent callback is journaled in the same durable record as the RESULT_COMMITTED transition, a lost callback is replayable from the surviving outbox and a duplicated callback is harmless."
+  },
+  {
+    "evaluator": "conflict",
+    "evidence": "divergent replay outcome=IdempotencyConflict",
+    "hypothesis_id": "CM-H5",
+    "outcome": "SUPPORTED",
+    "prediction": "A restage with different bytes under the same key raises IdempotencyConflict.",
+    "reproduction_ids": [
+      "R7-IDEMPOTENT-REPLAY-CONFLICT"
+    ],
+    "source_claim_ids": [
+      "S8"
+    ],
+    "state": "REPRODUCED",
+    "statement": "If a replay under an existing idempotency key presents different parameters, the store errors rather than overwriting, so a divergent second result is detected instead of silently published."
+  },
+  {
+    "evaluator": "falsification",
+    "evidence": "SnapshotFirstStore=30 cells; ProviderTrustingStore=3 cells; UnfencedStore=7 cells; TornTailTrustingStore=10 cells",
+    "hypothesis_id": "CM-H6",
+    "outcome": "SUPPORTED",
+    "prediction": "All four mutants are detected and the provider-trusting mutant violates the no-false-completion invariant.",
+    "reproduction_ids": [
+      "R6-HARNESS-FALSIFICATION-POWER"
+    ],
+    "source_claim_ids": [
+      "S5"
+    ],
+    "state": "REPRODUCED",
+    "statement": "If the harness has real falsification power, deliberately defective custody machines produce invariant violations, including a detected false completion for a machine that trusts the provider."
+  },
+  {
+    "evaluator": "gaps",
+    "evidence": "6 of 6 documents admitted by the seeded validator, 6 rejected by the strengthened layer",
+    "hypothesis_id": "CM-H7",
+    "outcome": "SUPPORTED",
+    "prediction": "At least one such document exists and the strengthened layer rejects every one of them.",
+    "reproduction_ids": [
+      "R5-SEEDED-VALIDATOR-GAPS"
+    ],
+    "source_claim_ids": [
+      "S6"
+    ],
+    "state": "REPRODUCED",
+    "statement": "If custody is checked as a history and as a set of cross-field relations rather than per-field presence, documents exist that the seeded per-field validator admits while they assert a completion whose evidence is internally impossible."
+  },
+  {
+    "evaluator": "fuzz_advantage",
+    "evidence": "12 seeded cases with up to 3 overlapping faults found safety classes []; classes unique to fuzz=[]",
+    "hypothesis_id": "CM-H8",
+    "outcome": "REFUTED",
+    "prediction": "The fuzz campaign reports at least one safety class absent from the exhaustive matrix.",
+    "reproduction_ids": [
+      "FUZZ-CAMPAIGN"
+    ],
+    "source_claim_ids": [
+      "S2"
+    ],
+    "state": "REPRODUCED",
+    "statement": "At this custody model's size, seeded randomized multi-fault scheduling discovers safety-invariant violation classes that exhaustive single-fault matrix enumeration does not."
+  }
+]

@@ -165,9 +165,12 @@ def run_case(seed: int, *, max_faults: int = 3) -> dict[str, Any]:
             step = next_step(session.store.state(task_id))
             if step is None:
                 break
-            if steps in environment:
-                environment_events.append(_apply_environment(session, environment.pop(steps)))
             try:
+                # The environment action is itself a durable write, so a
+                # scheduled fault can interrupt it.  It shares the step's
+                # recovery path rather than escaping the driver.
+                if steps in environment:
+                    environment_events.append(_apply_environment(session, environment.pop(steps)))
                 run_step(session, step, payload, immutable_input)
             except ProcessLoss as exc:
                 session.crashes.append({"step": step, "point": exc.point, "kind": exc.kind})
