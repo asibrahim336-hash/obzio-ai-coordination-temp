@@ -9,14 +9,27 @@
     {
       "wave_id": "po03-wave-a",
       "required_units": 64,
-      "registered_units": 74,
+      "registered_units": 87,
       "headroom_over_requirement": 10,
       "state": "IN_FLIGHT",
       "registered_at": "2026-08-22T07:01:19Z",
       "dispatched_at": "2026-08-22T07:10:19Z",
       "dispatch_base_sha": "04827c3cca829ece4ccca87e3d4196cc1b64a7a7",
       "ledger_head_sha256_at_dispatch": "74e9389448f90f749fa7defaa79a2f743b13107be3a31ea2dcd39de250cb3a8c",
-      "units_by_cohort": { "a1": 8, "a2": 12, "a3": 8, "a4": 8, "a5": 12, "a6": 6, "a7": 6, "a8": 6, "a9": 4, "a10": 4 },
+      "units_by_cohort": {
+        "a1": 8,
+        "a2": 12,
+        "a3": 8,
+        "a4": 8,
+        "a5": 12,
+        "a6": 6,
+        "a7": 6,
+        "a8": 6,
+        "a9": 4,
+        "a10": 4,
+        "a11": 9,
+        "a12": 4
+      },
       "units_by_function": {
         "F1_current_plan_engineering_and_clean_runtime": 16,
         "F2_zero_base_strategy_challenge": 2,
@@ -55,13 +68,18 @@
   "concurrency_saturation": {
     "target": "Begin at the maximum safe active concurrency the provider exposes and keep every available slot filled.",
     "mechanism_used": "One background Cursor subagent per cohort, each bound to an exclusive git worktree and an exclusive branch. Worktrees were created serially by the controller before dispatch so that concurrent workers never contend for the git configuration lock.",
-    "simultaneous_background_subagents_dispatched": 10,
-    "provider_rejections": 0,
+    "simultaneous_background_subagents_dispatched": 13,
+    "provider_rejections": 1,
     "queued_cohorts_required": false,
     "observed_ceiling": "NOT_REACHED_AT_10",
     "ceiling_measurement_honesty": "Ten concurrent background subagents were accepted with zero provider rejection. That establishes a measured floor on available concurrency; it does not establish the true ceiling, and no ceiling value is asserted. If a later dispatch is rejected, the exact observed ceiling will be recorded here and the remaining attempts completed in queued cohorts.",
     "internal_parallelism": "Each cohort may additionally parallelise inside its own worktree, so the effective attempt concurrency is at or above the cohort count. Effective concurrency is measured from ledger timestamps by cohort a7 rather than assumed here.",
-    "host_capacity_bound": { "vcpu": 8, "memory_gb": 47, "disk_available_gb": 228 }
+    "host_capacity_bound": {
+      "vcpu": 8,
+      "memory_gb": 47,
+      "disk_available_gb": 228
+    },
+    "rejection_note": "One dispatch failed with 'Workflow execution already started' while only about seven cohorts were active, well under the ten already accepted without rejection. It is recorded as a provider-side duplicate-launch artefact and recovered from, not as a ceiling. The ceiling remains unobserved."
   },
   "expansion_rule": "Continue expanding beyond Wave B only while independently accepted throughput and discovery yield both improve. Scale is not increased on the strength of dispatched volume; it is increased on the strength of independently accepted results.",
   "guardrails_held_at_this_checkpoint": {
@@ -71,5 +89,33 @@
     "false_completion": 0,
     "merge_or_promotion": 0,
     "founder_relay_events": 0
-  }
+  },
+  "provider_block_observations": [
+    {
+      "observed_at": "2026-08-22T07:39:00Z",
+      "cohort": "a12",
+      "provider_error": "Workflow execution already started",
+      "classification": "PROVIDER_DISPATCH_FAILURE_NOT_WORK_FAILURE",
+      "work_performed": "none",
+      "evidence_of_zero_work": "No commit beyond the dispatch base, no remote branch created, and all four units still at LEASED having never advanced to RUNNING.",
+      "active_cohorts_at_time_of_failure": 7,
+      "max_concurrency_previously_accepted": 10,
+      "attributable_to_a_concurrency_ceiling": false,
+      "ceiling_interpretation": "NOT_A_CEILING_OBSERVATION. Only about seven cohorts were active when this failed, against ten previously accepted with zero rejection, so this is a provider-side workflow idempotency or duplicate-launch artefact rather than evidence of a concurrency limit. No ceiling value is inferred from it.",
+      "recovery_actuated": {
+        "method": "The coordinator recorded LEASE_EXPIRED against fence 1 with the provider error and the zero-work evidence, then re-leased all four units, which minted fence 2 and attempt 2.",
+        "immutable_input_reused": true,
+        "immutable_input_manifest_sha256_prefix": "721254eb9389284e",
+        "idempotency_key_unchanged": true,
+        "dispatch_record_bytes_unchanged": true,
+        "new_fence_token": 2,
+        "attempts_after_recovery": 2,
+        "ledger_chain_valid_after_recovery": true,
+        "false_completions_after_recovery": 0,
+        "result": "PASS"
+      },
+      "significance": "This is an unplanned live test of the recovery path on real data, and it passed: a dispatch that produced nothing was correctly classified as never-started rather than as a failed result, the stale lease was retired, and the rerun proceeded from byte-identical immutable input with a strictly higher fence. It is also direct evidence for the gap cohort a2 identified as defect 1 and which is dispatched as a11-u08: detection and re-lease worked, but the coordinator had to actuate them by hand because scan_recovery still has no actuator. The commission requires automatic resume or rerun, so this remains NOT_YET until a11 lands.",
+      "founder_relay_required": false
+    }
+  ]
 }
