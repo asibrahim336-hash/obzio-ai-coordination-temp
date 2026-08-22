@@ -44,6 +44,16 @@
       "diagnosis": "Concurrency above the safety frontier buys unverified promotions and concurrency above the saturation frontier buys no verified throughput, so neither frontier alone is the operating answer.",
       "disposition": "RETAIN",
       "recurrence_test": "test_usable_cap_never_exceeds_either_frontier asserts the reduction is sound for every policy and verifier count in the recorded output."
+    },
+    {
+      "id": "MC-018-05",
+      "change": "The immutable readback now moves the throwaway clone to the immutable commit with a detached checkout before running the clean-clone suite from the owned subtree.",
+      "trigger": "The first readback attempt failed with FileNotFoundError on the owned subtree path inside the fresh clone.",
+      "diagnosis": "A fresh clone lands on the repository default branch, where workstreams/po03/wave-a/units/wa-018/ does not exist. Hash verification through git show was unaffected because it addresses the commit directly, but the clean-clone suite needs the files materialised on disk. The failure was loud rather than silent, which is the correct behaviour for a custody tool.",
+      "disposition": "RETAIN",
+      "recurrence_test": "The readback itself is the test: it now reports clean_clone_suite with an exit code and a test count, and it exits non-zero if any artifact fails to match. The recorded readback shows 75 tests passing in the fresh clone under a restricted environment.",
+      "counted_as": "one defect and one rework cycle",
+      "consequence": "Repairing this tool changed its own bytes after the manifest had been built, so the manifest was rebuilt and the result was recommitted before the return envelope was written. That ordering is why the manifest digest in the return envelope is the second one."
     }
   ],
   "explicit_rejections": [
@@ -93,7 +103,7 @@
       "why_not": "Those are shared controller paths. Only the integration controller may write them."
     }
   ],
-  "mechanism_change_count": 4,
+  "mechanism_change_count": 5,
   "explicit_rejection_count": 5,
   "decision_changed": []
 }

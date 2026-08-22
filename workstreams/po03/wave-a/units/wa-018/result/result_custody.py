@@ -130,6 +130,10 @@ def readback(branch: str, commit: str, remote: str) -> dict[str, Any]:
         _git(work, "fetch", "--quiet", "origin", f"refs/heads/{branch}")
         resolved = _git(work, "rev-parse", "--verify", f"{commit}^{{commit}}").strip()
         tip = _git(work, "rev-parse", f"refs/remotes/origin/{branch}").strip()
+        # A fresh clone lands on the default branch, where the owned subtree does
+        # not exist, so the working tree is moved to the immutable commit before
+        # the clean-clone suite is run from it.
+        _git(work, "checkout", "--quiet", "--detach", resolved)
 
         for entry in manifest["artifacts"]:
             data = _git_bytes(work, "show", "--no-textconv", f"{resolved}:{entry['path']}")
