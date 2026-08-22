@@ -1,0 +1,79 @@
+{
+  "combined": {
+    "case_count": 26,
+    "failed": 1,
+    "false_green_count": 1,
+    "false_green_rate": 1.0,
+    "pass_rate": 0.2692307692307692,
+    "passed": 7,
+    "reported_success_count": 1,
+    "unsupported": 18
+  },
+  "decision_changed": [],
+  "generation": {
+    "description": "pre-amendment controller reconstructed from blob 2d34ae8c7f63e1c25d12f16096eec52effdeb73f at commit 2b48869",
+    "name": "G0",
+    "source": "/home/ubuntu/po03-worktrees/c8/workstreams/po03/attempts/po03-wa-b2e7-061-g0-reconstruction/g0/transactional_factory_g0.py",
+    "source_bytes": 25742,
+    "source_sha256": "46c57f433c7f074ae6ae159429df3d3a1d38dadc95ac6a5ce34c343edf516199"
+  },
+  "holdout": {
+    "case_count": 10,
+    "failed": 1,
+    "false_green_count": 1,
+    "false_green_rate": 1.0,
+    "pass_rate": 0.1,
+    "passed": 1,
+    "reported_success_count": 1,
+    "unsupported": 8
+  },
+  "measured_at": "2026-08-22T08:00:52Z",
+  "public": {
+    "case_count": 16,
+    "failed": 0,
+    "false_green_count": 0,
+    "false_green_rate": 0.0,
+    "pass_rate": 0.375,
+    "passed": 6,
+    "reported_success_count": 0,
+    "unsupported": 10
+  },
+  "runner_version": "PO03-GENERATION-RUNNER-v1",
+  "suite_freeze": {
+    "holdout_file": "/home/ubuntu/po03-worktrees/c8/workstreams/po03/attempts/po03-wa-b2e7-059-adversarial-hidden-cases/hidden/holdout_custody_cases.py",
+    "holdout_seal_combined_sha256": "782b235bbea3168ce77d2d876040cb40b1a903ac61c32cb32047ca15c150c5da",
+    "holdout_seal_matches_file": true,
+    "holdout_sha256": "c15cfe57b318a8cf7aba12fd5c6e715d03fab5fee3be381771562daa18fe91d5",
+    "public_case_count": 16,
+    "public_suite_file": "generation_suite.py",
+    "public_suite_sha256": "345b266db4c9ea415d83de1505f06ded8f7c276d5ca88935bfc60aa8f23eb152",
+    "runner_version": "PO03-GENERATION-RUNNER-v1",
+    "suite_version": "PO03-PUBLIC-CUSTODY-SUITE-v1"
+  }
+}
+PASS         P01-capsule-creation-is-immutable: capsule wrote input, acceptance and transaction documents plus one CREATED event
+PASS         P02-write-once-rejects-divergent-rewrite: a divergent rewrite of an immutable file was refused and the bytes held
+PASS         P03-write-once-is-idempotent: an identical replay was a no-op
+PASS         P04-allowlist-rejects-foreign-write: a write outside the PO-03 allowlist was refused: write outside PO-03 allowlist: packs/operator-packs-v1/forged.json
+PASS         P05-event-chain-links-previous-hash: three events form an unbroken hash chain
+PASS         P06-verify-chain-detects-tampering: chain verification detected the tampered event body: ['workstreams/po03/control/events/suite-tamper/000001-leased.json: event hash mismatch', 'workstreams/po03/control/events/suite-tamper/000002-running.json: previous hash mismatch']
+UNSUPPORTED  P07-fence-allocation-is-monotonic: generation does not expose allocate_fence
+UNSUPPORTED  P08-stale-fence-write-is-rejected: generation does not expose grant_lease, assert_fence_current
+UNSUPPORTED  P09-contract-rejects-worker-set-completion: generation does not expose load_result_validator
+UNSUPPORTED  P10-readback-is-by-immutable-object: generation does not expose read_object_bytes
+UNSUPPORTED  P11-duplicate-callback-is-idempotent: generation does not expose ingest_result
+UNSUPPORTED  P12-completion-requires-parent-ingestion: generation does not expose complete_unit
+UNSUPPORTED  P13-recovery-scan-flags-an-orphan: generation does not expose scan_recovery
+UNSUPPORTED  P14-path-collision-fails-closed: generation does not expose detect_path_collisions
+UNSUPPORTED  P15-registry-is-append-only: generation does not expose append_registry
+UNSUPPORTED  P16-ingestion-refuses-result-without-artifacts: generation does not expose ingest_result
+UNSUPPORTED  H01-completion-bound-to-ingested-result: generation does not expose ingest_result, complete_unit
+UNSUPPORTED  H02-fence-monotonic-under-concurrency: generation does not expose allocate_fence
+UNSUPPORTED  H03-ingestion-rejects-foreign-task-result: generation does not expose ingest_result
+UNSUPPORTED  H04-recovery-reports-real-collision-count: generation does not expose scan_recovery
+FAIL         H05-chain-detects-truncation: the latest event was deleted and chain verification still reported the chain valid; verification walks only the files that remain, so truncation is invisible
+UNSUPPORTED  H06-locator-must-be-immutable: generation does not expose ingest_result
+UNSUPPORTED  H07-ingestion-detects-byte-disagreement: generation does not expose ingest_result
+UNSUPPORTED  H08-completion-refuses-invalid-document: generation does not expose ingest_result, complete_unit
+PASS         H09-capsule-refuses-foreign-owned-paths: capsule creation refused ownership of a path outside PO-03: owned paths must be non-empty PO-03 paths
+UNSUPPORTED  H10-registry-append-under-concurrency: generation does not expose append_registry
