@@ -120,5 +120,19 @@
   "a8_intentional_backwards_test": {
     "test": "test_a8_lessons.HygieneMechanismTests.test_the_residual_boundary_is_still_true",
     "note": "a8 wrote this to read backwards on purpose: it asserts the defect is still present so that a repair fails the test rather than leaving a stale claim standing. It is now failing, which is the signal a8 designed it to send. Zero tracked bytecode remains, so L-13 moves off RETEST. This is the one failing assertion in the wave that is working as intended rather than rotting."
+  },
+  "integration_is_a_distinct_test_surface": {
+    "headline": "The most consequential finding of Wave A's integration phase.",
+    "finding": "a3's whole-tree hermeticity gate reported zero findings across the 18 files on its own branch and, run unchanged against the integrated tree, reports 117 findings across 210 files. Its CI-surface gate reports 165 findings across 3 workflows. Fourteen of the twenty-one suite failures are a3's own gates firing.",
+    "the_question_that_mattered": "Whether a3's gates were miscalibrated or the integrated tree genuinely violates them.",
+    "answer": "The gates are correct and the tree genuinely violates them. Confirmed by running a3's prober directly: roughly nineteen test files from a5, a7 and a8 mutate sys.path to import their own libraries, which is precisely the '-I implies -P' constraint a3 independently discovered; test_a8_scores.py carries a literal /tmp path; and validate_contracts.py, the strengthened seeded control, carries a '~' home-path literal. These are real portability defects, not stale assertions.",
+    "why_no_cohort_could_find_it": "Every cohort's gate ran over a tree containing only its own files plus the dispatch base. A whole-tree property is only testable once the tree is whole. This is the same lesson DEF-19 taught in miniature, where a12's gate passed and a10's gate passed and the pair failed, now demonstrated at the scale of thirteen merged cohorts.",
+    "known_false_positives_to_triage": [
+      "test-data strings that look like paths, for example the traversal fixtures in the coordinator's own test_control_plane.py",
+      "gitignored bytecode present in a working checkout but correctly uncommitted, which the CI-surface check currently counts as a finding"
+    ],
+    "routing": "a3 owns the prober and must triage all 117 findings into genuine and false-positive with justification, improve precision so test data is not flagged, and emit a per-owner routed list. The fixes themselves belong to a5, a7, a8, a12 and the coordinator, each inside their own paths.",
+    "suite_health_note": "The integration suite is 868 tests taking over two minutes, with 19 failures, 2 errors and 12 declared expected failures. The failure count is dominated by this one finding rather than by many independent regressions, and it is reported as FAIL rather than triaged away.",
+    "disposition": "RETAIN as the primary lesson for the successor generation"
   }
 }
