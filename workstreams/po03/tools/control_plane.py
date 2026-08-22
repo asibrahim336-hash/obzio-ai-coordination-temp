@@ -62,6 +62,13 @@ ALLOWLIST_WORKFLOW_SUFFIX = ".yml"
 COMMITTED_STATES = {"RESULT_COMMITTED", "PARENT_INGESTED", "COMPLETED"}
 TERMINAL_STATES = COMMITTED_STATES | {"FAILED_TERMINAL", "CANCELLED"}
 
+# Every event the coordinator may append as the outcome of one ingestion.
+# Idempotency lookups span all of them so a replayed failure is exactly as
+# harmless as a replayed success.
+INGESTION_EVENTS = frozenset(
+    {"PARENT_INGESTED", "PROVIDER_COMPLETED_UNCOMMITTED", "FAILED_TERMINAL", "CANCELLED", "RECOVERY_REQUIRED"}
+)
+
 EVENT_KINDS = {
     "CREATED",
     "LEASED",
@@ -138,9 +145,28 @@ def write_json(path: Path, payload: Any) -> str:
 # ---------------------------------------------------------------------------
 
 
+def normalise_path(path: str) -> str | None:
+    """Return a repository-relative path, or None if it is not expressible as one.
+
+    Anything absolute, empty, or containing a ``.`` or ``..`` segment is refused
+    outright rather than repaired, because a guard that silently rewrites a
+    traversal is a guard an attacker can steer.  Only a leading ``./`` is
+    stripped, and a leading dot in a real name such as ``.github`` is preserved.
+    """
+    candidate = path.strip().replace("\\", "/")
+    while candidate.startswith("./"):
+        candidate = candidate[2:]
+    if not candidate or candidate.startswith("/"):
+        return None
+    segments = candidate.split("/")
+    if any(segment in ("", ".", "..") for segment in segments):
+        return None
+    return candidate
+
+
 def path_in_allowlist(path: str) -> bool:
-    normalised = path.strip().lstrip("./")
-    if not normalised or ".." in normalised.split("/"):
+    normalised = normalise_path(path)
+    if normalised is None:
         return False
     if normalised.startswith(ALLOWLIST_PREFIXES):
         return True
@@ -179,9 +205,9 @@ def check_ownership(owner: str, paths: Iterable[str]) -> list[str]:
     prefixes = tuple(entry.get("owned_prefixes", []))
     violations: list[str] = []
     for path in paths:
-        normalised = path.strip().lstrip("./")
-        if not normalised.startswith(prefixes):
-            violations.append(normalised)
+        normalised = normalise_path(path)
+        if normalised is None or not normalised.startswith(prefixes):
+            violations.append(normalised if normalised is not None else path)
     return sorted(set(violations))
 
 
@@ -566,12 +592,27 @@ def ingest_result(
             raise ControlPlaneError(f"artifact byte count mismatch on read-back: {relative}")
         verified.append({"logical_name": artifact["logical_name"], "sha256": actual_sha, "bytes": actual_bytes})
 
+    # Ingestion records what the subordinate actually achieved.  A subordinate
+    # that honestly reports failure, or work that was never durably committed,
+    # must not be promoted into a committed state just because the parent read
+    # its result document successfully.
+    incoming_state = result_doc["obzio_state"]
+    txn = result_doc["result_transaction"]
+    commit_id = txn["result_commit_id"]
+    has_commit = isinstance(commit_id, str) and bool(commit_id.strip())
+    if incoming_state == "RESULT_COMMITTED" and has_commit:
+        ingest_event = "PARENT_INGESTED"
+    elif incoming_state in {"PROVIDER_COMPLETED_UNCOMMITTED", "FAILED_TERMINAL", "CANCELLED"}:
+        ingest_event = incoming_state
+    else:
+        ingest_event = "RECOVERY_REQUIRED"
+
     result_sha = sha256_text(canonical(result_doc))
     already = [
         row
         for row in ledger_rows()
         if row["unit_id"] == unit_id
-        and row["event"] == "PARENT_INGESTED"
+        and row["event"] in INGESTION_EVENTS
         and (row.get("payload") or {}).get("result_sha256") == result_sha
     ]
     if already:
@@ -587,21 +628,27 @@ def ingest_result(
 
     append_event(
         unit_id,
-        "PARENT_INGESTED",
+        ingest_event,
         actor="coordinator",
         provider_state=result_doc["provider_state"],
         fence_token=incoming_fence,
         payload={
             "result_sha256": result_sha,
-            "result_commit_id": result_doc["result_transaction"]["result_commit_id"],
-            "result_locator": result_doc["result_transaction"]["manifest_uri"],
+            "reported_obzio_state": incoming_state,
+            "result_commit_id": txn["result_commit_id"],
+            "result_locator": txn["manifest_uri"],
             "artifact_count": len(verified),
             "total_bytes": sum(item["bytes"] for item in verified),
             "verified_artifacts": verified,
         },
     )
     materialize()
-    return {"unit_id": unit_id, "duplicate": False, "verified_artifacts": len(verified)}
+    return {
+        "unit_id": unit_id,
+        "duplicate": False,
+        "verified_artifacts": len(verified),
+        "ingest_event": ingest_event,
+    }
 
 
 def cmd_ingest(args: argparse.Namespace) -> int:

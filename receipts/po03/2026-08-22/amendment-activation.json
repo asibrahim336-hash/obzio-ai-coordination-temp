@@ -1,0 +1,185 @@
+{
+  "receipt_id": "RCP-PO03-AMENDMENT-ACTIVATION-20260822-v001",
+  "actor": "PO-03",
+  "actor_function": "obzio.function.repository-engineering-portable-runtime",
+  "appointment": "PO-03",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "commission_revision": "v002",
+  "amendment_id": "AMD-COM-PO03-COMPOUNDING-FACTORY-20260822-v002",
+  "amends_not_restarts": true,
+  "strategy_restarted": false,
+  "decision_changed": [],
+  "lifecycle_transition": {
+    "from": "COMMISSIONED_NOT_YET_EXECUTING",
+    "to": "EXECUTING",
+    "at": "2026-08-22T06:51:22Z",
+    "basis": "The commission at workstreams/po03/COMMISSION.md was read in full at the immutable branch head together with every seeded contract, validator and test before any action was taken. Execution began immediately; no plan or acknowledgement was returned."
+  },
+  "runtime_binding": {
+    "provider": "Cursor Cloud",
+    "run_id": "bc-e92c4fa6-3658-4270-ab36-9eb56bf2ed20",
+    "run_url": "https://cursor.com/agents/bc-e92c4fa6-3658-4270-ab36-9eb56bf2ed20",
+    "lead_model_observed": "claude-opus-5-thinking-max",
+    "lead_model_vs_commission_default": "AT_OR_ABOVE_REQUESTED",
+    "prestaged_handle_in_launch_file": "bc-8a562f1a-1aaf-4056-a505-bc25a8b7b5ce",
+    "prestaged_handle_disposition": "NOT_THE_EXECUTING_RUN — runtime-binding divergence recorded as evidence, not a commission change",
+    "owning_user": "Ahmed Sadek <sadekahmed@meta.com>",
+    "repository": "asibrahim336-hash/obzio-ai-coordination-temp",
+    "repository_visibility": "private",
+    "egress_restricted": false,
+    "setup_status": "INSTALL_SUCCEEDED",
+    "host_capacity": { "vcpu": 8, "memory_gb": 47, "disk_available_gb": 228 },
+    "authority_note": "No authority is claimed from Cursor. The runtime is a binding and an execution surface only."
+  },
+  "source_lock": {
+    "pinned_base_sha": "5db7affeb7f00763e148e6d98a33ee6b751f2def",
+    "prior_commission_commit": "887b3c1ac2dec49d5f36d31593e416f651486aee",
+    "prior_observed_head": "d627119351a6dc0e90158705abf6aab96e26b3dd",
+    "commission_branch": "po03/repository-engineering-portable-runtime-20260822-v001",
+    "commission_branch_head_at_read": "552b12eacee637716451492a98980fb0da19ff3e",
+    "integration_branch": "cursor/po03-wave-a-transactional-factory-ed20",
+    "dispatch_base_sha": "04827c3cca829ece4ccca87e3d4196cc1b64a7a7",
+    "hash_pinned_launch_evidence_modified": false
+  },
+  "seeded_controls_state": {
+    "workstreams/po03/contracts/transactional-result.schema.json": "RETAINED_UNMODIFIED",
+    "workstreams/po03/contracts/wave-compounding.schema.json": "RETAINED_UNMODIFIED",
+    "workstreams/po03/tools/validate_contracts.py": "RETAINED_UNMODIFIED",
+    "workstreams/po03/tests/test_validate_contracts.py": "RETAINED_UNMODIFIED",
+    ".github/workflows/po03-contracts.yml": "RETAINED_UNMODIFIED",
+    "seeded_test_result_at_activation": "PASS_23_OF_23",
+    "note": "The amendment says strengthen these controls, do not bypass them. They are unmodified; strengthening is additive via control_plane.py, its tests and cohort-owned modules."
+  },
+  "hard_precondition_satisfied_before_any_delegation": {
+    "immutable_task_input_written": true,
+    "configuration_and_source_hashes_written": true,
+    "acceptance_contract_hashes_written": true,
+    "exact_model_configuration_written": true,
+    "owned_paths_written": true,
+    "result_slot_written": true,
+    "idempotency_key_written": true,
+    "lease_and_fence_token_written": true,
+    "durable_sink_proof": {
+      "method": "Committed and pushed the control plane and all 74 dispatch records, then fetched the branch and re-read the ledger blob from the remote object store by immutable SHA.",
+      "commit": "04827c3cca829ece4ccca87e3d4196cc1b64a7a7",
+      "ledger_blob_sha256_from_remote": "447dd9542a2f53a769783060230cbd5f62aeeb1e36719148bfe92bb50656b8cd",
+      "ledger_blob_sha256_from_worktree": "447dd9542a2f53a769783060230cbd5f62aeeb1e36719148bfe92bb50656b8cd",
+      "match": true
+    },
+    "child_canary_roundtrip": {
+      "method": "Each of the ten isolated worktrees wrote a synthetic canary through the control plane and independently read it back, comparing the written and re-read digests.",
+      "workers_verified": 10,
+      "workers_failed": 0,
+      "all_roundtrip_ok": true
+    },
+    "conclusion": "A durable sink exists and every child can write and independently read back through it, so material work was delegable through this route."
+  },
+  "wave_a_dispatch": {
+    "wave_id": "po03-wave-a",
+    "units_required_by_amendment": 64,
+    "units_registered": 74,
+    "units_leased": 74,
+    "orphaned_at_dispatch": 0,
+    "cohorts": 10,
+    "ledger_rows_at_dispatch": 222,
+    "ledger_head_sha256_at_dispatch": "74e9389448f90f749fa7defaa79a2f743b13107be3a31ea2dcd39de250cb3a8c",
+    "ledger_chain_valid": true,
+    "false_completions": 0,
+    "isolation_mechanism": "One background Cursor subagent per cohort, each bound to an exclusive git worktree and an exclusive branch, with a disjoint owned subtree enforced at ingestion by the controller.",
+    "concurrency_observed": {
+      "simultaneous_background_subagents_dispatched": 10,
+      "provider_rejections": 0,
+      "observed_ceiling": "NOT_REACHED_AT_10",
+      "note": "Ten concurrent background subagents were accepted with zero provider rejection, so no ceiling was observed at that level. This is a measured floor on available concurrency, not a claim about the true ceiling."
+    },
+    "cohort_allocation": [
+      { "cohort": "a1", "worker": "po03-worker-a1", "model": "claude-opus-5-thinking-high", "family": "claude-opus-5", "units": 8, "provider_run_id": "0e5cadca-e3dd-4344-aa36-c8acba875967", "branch": "cursor/po03-a1-custody-engine-ed20", "function": "transactional custody engine" },
+      { "cohort": "a2", "worker": "po03-worker-a2", "model": "gpt-5.6-sol-xhigh", "family": "gpt-5.6-sol", "units": 12, "provider_run_id": "f2a10b60-cf9a-420e-916e-aa7dbc2396cb", "branch": "cursor/po03-a2-fault-recovery-ed20", "function": "fault injection and recovery proof" },
+      { "cohort": "a3", "worker": "po03-worker-a3", "model": "claude-opus-5-thinking-high", "family": "claude-opus-5", "units": 8, "provider_run_id": "adfe22d3-119a-4ca9-ac65-a17d6d2875ca", "branch": "cursor/po03-a3-portable-runtime-ed20", "function": "portable runtime, clean-clone reproduction and CI enforcement" },
+      { "cohort": "a4", "worker": "po03-worker-a4", "model": "gpt-5.6-sol-xhigh", "family": "gpt-5.6-sol", "units": 8, "provider_run_id": "32f3e586-a751-4b86-8e1e-ba0d12fac022", "branch": "cursor/po03-a4-pack-qualification-ed20", "function": "operator-pack qualification and repository disposition" },
+      { "cohort": "a5", "worker": "po03-worker-a5", "model": "claude-sonnet-5-thinking-xhigh", "family": "claude-sonnet-5", "units": 12, "provider_run_id": "ac22b2fa-cac8-4d8c-851b-b17db3cb048a", "branch": "cursor/po03-a5-research-conversion-ed20", "function": "research to reproduction to live mechanism change" },
+      { "cohort": "a6", "worker": "po03-worker-a6", "model": "gpt-5.6-luna-high", "family": "gpt-5.6-luna", "units": 6, "provider_run_id": "97ca817e-57f4-4fb3-bc46-2884f5213fd2", "branch": "cursor/po03-a6-independent-review-ed20", "function": "independent adversarial evaluation of Claude-produced work" },
+      { "cohort": "a7", "worker": "po03-worker-a7", "model": "claude-sonnet-5-thinking-high", "family": "claude-sonnet-5", "units": 6, "provider_run_id": "a29865bc-adb0-4e73-9d08-44880e1f3b55", "branch": "cursor/po03-a7-os-metrics-ed20", "function": "operating-system measurement" },
+      { "cohort": "a8", "worker": "po03-worker-a8", "model": "claude-opus-5-thinking-high", "family": "claude-opus-5", "units": 6, "provider_run_id": "11cbdab6-8b83-4351-920b-58f40722463a", "branch": "cursor/po03-a8-successor-generations-ed20", "function": "successor generation compilation and measured comparison" },
+      { "cohort": "a9", "worker": "po03-worker-a9", "model": "gpt-5.6-sol-xhigh", "family": "gpt-5.6-sol", "units": 4, "provider_run_id": "143e8a8d-38ef-4e7d-b5ab-4454fc01a6f6", "branch": "cursor/po03-a9-strategy-discovery-ed20", "function": "zero-base strategy challenge, alternatives and open discovery" },
+      { "cohort": "a10", "worker": "po03-worker-a10", "model": "claude-sonnet-5-thinking-xhigh", "family": "claude-sonnet-5", "units": 4, "provider_run_id": "f9318195-a774-4e3a-b68f-fc911cebd35b", "branch": "cursor/po03-a10-crossfamily-review-ed20", "function": "independent adversarial evaluation of GPT-produced work and of the coordinator" }
+    ]
+  },
+  "standing_functions_staffed": {
+    "F1_current_plan_engineering_and_clean_runtime": ["a1", "a3", "a4"],
+    "F2_zero_base_strategy_challenge": ["a9"],
+    "F3_current_frontier_research": ["a5"],
+    "F4_controlled_reproduction_of_external_claims": ["a4", "a5"],
+    "F5_independent_evaluation_and_adversarial_review": ["a6", "a10", "a4"],
+    "F6_model_tool_runtime_context_topology_evaluation": ["a3", "a7"],
+    "F7_semantic_ontology_state_contract": ["a1", "a4", "a9"],
+    "F8_operating_system_measurement_and_recovery": ["a2", "a7"],
+    "F9_successor_compilation_and_comparison": ["a8"],
+    "F10_open_discovery": ["a9"],
+    "concurrency_note": "All ten functions are staffed simultaneously. Current-plan execution runs in parallel with strategy, research, reproduction, evaluation and successor functions rather than after them."
+  },
+  "po01_non_interference": {
+    "contacted": false,
+    "messaged_paused_redirected_or_signalled": false,
+    "branches_paths_prs_or_artifacts_written": false,
+    "read_access_used": "Read-only observation only, for pinning immutable SHAs. Cohorts a4 and a10 are instructed to use read-only git operations exclusively and to produce isolated PO-03 repair candidates rather than in-place repairs.",
+    "producer_narrative_used_as_evidence": false
+  },
+  "protected_acts": {
+    "merged_or_promoted": false,
+    "pr8_or_cursor_setup_dev_environment_b5ce_modified": false,
+    "cursor_environment_json_modified": false,
+    "third_party_outreach": false,
+    "new_spend_or_obligation": false,
+    "secrets_or_owner_identity_acts": false,
+    "new_external_oauth_or_account_permissions": false,
+    "production_security_dns_or_deployment_mutation": false,
+    "permanent_deletion_of_depended_upon_evidence": false,
+    "substantive_strategy_binding": false
+  },
+  "founder_relay_required": false,
+  "founder_actions_requested": [],
+  "non_delegable_provider_controls_encountered": [],
+  "manual_subagent_launch_requested_of_ahmed": false,
+  "defect_found_and_repaired_before_first_result": {
+    "subject": "allowlist path normalisation in workstreams/po03/tools/control_plane.py",
+    "found_by": "coordinator's own custody test suite, before any subordinate result arrived",
+    "defect": "Normalisation used lstrip('./'), which removes every leading dot and slash rather than a leading './' segment. It wrongly rejected .github/workflows/po03-*.yml, the only workflow prefix the commission permits, and wrongly accepted a leading traversal such as './../packs/x' because stripping ran before the '..' check.",
+    "repair": "Normalisation now refuses any absolute, empty, or '.'/'..'-containing path instead of repairing it, preserves a leading dot in a real name, and is shared by ownership checking so a traversal cannot be folded into an owned subtree.",
+    "recurrence_tests_added": ["test_traversal_is_refused", "test_leading_dot_slash_is_tolerated_without_eating_dotfiles", "test_traversal_cannot_be_normalised_into_an_owned_subtree"],
+    "disposition": "RETAIN"
+  },
+  "verification_at_activation": {
+    "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py'",
+    "result": "PASS_62_OF_62",
+    "composition": "23 seeded contract tests retained unmodified plus 39 new custody tests",
+    "control_plane_verify": "ledger_chain_valid=true, units_total=74, false_completions=0, orphaned_units=0, expired_leases=0",
+    "path_scope_check": "PASS — every changed path inside workstreams/po03/**, receipts/po03/** or .github/workflows/po03-*.yml"
+  },
+  "ci_gap_found_and_closed": {
+    "subject": ".github/workflows/po03-contracts.yml push trigger",
+    "gap": "The seeded gate triggered on push only for po03/** branches and on pull_request. Wave A is executed on cursor/po03-*-ed20 branches, so the gate never fired on the branches the work is actually done on and a clean-runtime failure would have surfaced only at pull-request time.",
+    "repair": "Added the cursor/po03-*-ed20 push pattern without weakening the existing triggers, scoped to this run's branch suffix so other runs' branches are unaffected.",
+    "seeded_control_weakened": false,
+    "disposition": "RETAIN"
+  },
+  "clean_runtime_ci_observed": {
+    "workflow": "PO-03 result custody and compounding contracts",
+    "workflow_file": ".github/workflows/po03-contracts.yml",
+    "branch": "cursor/po03-wave-a-transactional-factory-ed20",
+    "event": "push",
+    "run_id": "32559213710",
+    "run_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32559213710",
+    "conclusion": "success",
+    "duration": "12s",
+    "started_at": "2026-08-22T07:17:42Z",
+    "runner": "ubuntu-latest, actions/setup-python 3.12",
+    "command": "python -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+    "significance": "The suite reproduces in a clean GitHub Actions environment with no Cursor memory, no local hidden state, no /tmp dependency and no uncommitted files. Deeper clean-clone, determinism, offline and path-scope enforcement are cohort a3's units."
+  },
+  "acceptance": "NOT_TESTED",
+  "self_marked_accepted": false,
+  "outcome_vocabulary_note": "Only PASS, FAIL, NOT_YET, NOT_SUPPORTED and OWNER_BLOCKED are used, with exact evidence for every non-PASS outcome.",
+  "wave_a_state": "IN_FLIGHT",
+  "wave_b_state": "NOT_YET — gated on Wave A demonstrating zero false completion, zero result loss and zero path collision"
+}
