@@ -19,7 +19,7 @@ import re
 import subprocess
 import tempfile
 from datetime import datetime, timezone
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Iterator
 
 try:
@@ -823,6 +823,321 @@ def validate_ingested_result(task_id: str) -> list[str]:
     return errors
 
 
+def _canonical_result_relative_path(value: Any) -> str:
+    if not _nonempty(value) or "\\" in value or "\x00" in value:
+        raise FactoryError("result artifact path must be a non-empty canonical relative POSIX path")
+    path = PurePosixPath(value)
+    if (
+        path.is_absolute()
+        or ".." in path.parts
+        or value == "."
+        or path.as_posix() != value
+    ):
+        raise FactoryError(f"non-canonical result artifact path: {value!r}")
+    return value
+
+
+def _result_media_type(path: str) -> str:
+    if path.endswith(".json"):
+        return "application/json"
+    if path.endswith(".jsonl"):
+        return "application/x-ndjson"
+    if path.endswith(".py"):
+        return "text/x-python"
+    if path.endswith(".md"):
+        return "text/markdown"
+    return "application/octet-stream"
+
+
+def _resolve_result_commit(
+    *,
+    result_commit_id: str,
+    result_base_commit_id: str,
+    result_ref: str,
+) -> str:
+    require_git_object_id(result_commit_id, "result_commit_id")
+    require_git_object_id(result_base_commit_id, "result_base_commit_id")
+    if result_ref != "HEAD" and not (
+        result_ref.startswith("origin/po03/") or result_ref.startswith("po03/")
+    ):
+        raise FactoryError("result_ref must be HEAD or a deterministic po03/* branch")
+    try:
+        git("cat-file", "-e", f"{result_commit_id}^{{commit}}")
+        git("cat-file", "-e", f"{result_base_commit_id}^{{commit}}")
+        git("merge-base", "--is-ancestor", result_base_commit_id, result_commit_id)
+        visible_from = git("rev-parse", f"{result_ref}^{{commit}}")
+        git("merge-base", "--is-ancestor", result_commit_id, visible_from)
+    except subprocess.CalledProcessError as exc:
+        raise FactoryError(
+            "result commit must be immutable, descend from the declared result base, "
+            "and be readable from the declared result ref"
+        ) from exc
+    return visible_from
+
+
+def _result_manifest_artifacts(
+    *,
+    task_id: str,
+    result_slot: str,
+    result_commit_id: str,
+    result_base_commit_id: str,
+    result_ref: str,
+) -> tuple[list[dict[str, Any]], str, int, str]:
+    """Read and verify a producer manifest strictly from immutable Git bytes."""
+    normalized_slot = result_slot.rstrip("/")
+    manifest_path = f"{normalized_slot}/manifest.json"
+    try:
+        manifest_bytes = git_bytes("show", f"{result_commit_id}:{manifest_path}")
+        manifest = json.loads(manifest_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError, subprocess.CalledProcessError) as exc:
+        raise FactoryError("result manifest is not an immutable JSON object at the result commit") from exc
+    if not isinstance(manifest, dict):
+        raise FactoryError("result manifest must be an object")
+    if manifest.get("task_id") != task_id:
+        raise FactoryError("result manifest task_id does not match custody task")
+    if str(manifest.get("result_slot", "")).rstrip("/") != normalized_slot:
+        raise FactoryError("result manifest slot does not match frozen task ownership")
+    declared = manifest.get("artifacts")
+    if not isinstance(declared, list) or not declared:
+        raise FactoryError("result manifest requires at least one declared artifact")
+    if manifest.get("artifact_count") != len(declared):
+        raise FactoryError("result manifest artifact_count does not match declared artifacts")
+
+    artifacts: list[dict[str, Any]] = []
+    expected_paths = {manifest_path}
+    declared_bytes = 0
+    seen_paths: set[str] = set()
+    observed_at = utc_now()
+    for index, item in enumerate(declared, start=1):
+        if not isinstance(item, dict):
+            raise FactoryError("result manifest artifact entries must be objects")
+        relative = _canonical_result_relative_path(item.get("path"))
+        if relative == "manifest.json" or relative in seen_paths:
+            raise FactoryError("result manifest artifacts must be unique and exclude manifest.json")
+        seen_paths.add(relative)
+        repository_path = f"{normalized_slot}/{relative}"
+        expected_paths.add(repository_path)
+        try:
+            content = git_bytes("show", f"{result_commit_id}:{repository_path}")
+        except subprocess.CalledProcessError as exc:
+            raise FactoryError(f"declared result artifact is absent from immutable commit: {relative}") from exc
+        observed_sha256 = sha256_bytes(content)
+        if item.get("sha256") != observed_sha256:
+            raise FactoryError(f"declared result artifact hash does not match immutable bytes: {relative}")
+        if item.get("bytes") != len(content):
+            raise FactoryError(f"declared result artifact byte count does not match immutable bytes: {relative}")
+        declared_bytes += len(content)
+        artifacts.append(
+            {
+                "artifact_id": f"{task_id}-artifact-{index}",
+                "logical_name": relative,
+                "content_uri": f"git:{result_ref}@{result_commit_id}:{repository_path}",
+                "sha256": observed_sha256,
+                "bytes": len(content),
+                "media_type": _result_media_type(relative),
+                "readback_verified_at": observed_at,
+            }
+        )
+    if manifest.get("total_artifact_bytes_excluding_manifest") != declared_bytes:
+        raise FactoryError("result manifest total artifact bytes do not match immutable bytes")
+    try:
+        changed_paths = {
+            path
+            for path in git(
+                "diff",
+                "--name-only",
+                "--no-renames",
+                "--diff-filter=ACMRD",
+                f"{result_base_commit_id}..{result_commit_id}",
+            ).splitlines()
+            if path
+        }
+    except subprocess.CalledProcessError as exc:
+        raise FactoryError("unable to enumerate the immutable result commit range") from exc
+    if changed_paths != expected_paths:
+        raise FactoryError(
+            "result commit range must change exactly the manifest and declared owned artifacts"
+        )
+    manifest_sha256 = sha256_bytes(manifest_bytes)
+    artifacts.append(
+        {
+            "artifact_id": f"{task_id}-manifest",
+            "logical_name": "manifest.json",
+            "content_uri": f"git:{result_ref}@{result_commit_id}:{manifest_path}",
+            "sha256": manifest_sha256,
+            "bytes": len(manifest_bytes),
+            "media_type": "application/json",
+            "readback_verified_at": observed_at,
+        }
+    )
+    return artifacts, manifest_sha256, declared_bytes + len(manifest_bytes), observed_at
+
+
+def ingest_committed_result(
+    task_id: str,
+    *,
+    result_commit_id: str,
+    result_base_commit_id: str,
+    result_ref: str = "HEAD",
+    provider_run_id: str,
+) -> dict[str, Any]:
+    """Ingest one READY_TO_COMMIT return only after immutable Git read-back.
+
+    The controller reconstructs the parent record from Git object bytes rather
+    than trusting a worker summary. It intentionally stops at PARENT_INGESTED;
+    a coordinator completion and independent review remain separate actions.
+    """
+    if not _nonempty(provider_run_id):
+        raise FactoryError("provider_run_id must be non-empty")
+    with _task_lock(task_id):
+        events = task_events(task_id)
+        latest = events[-1]
+        if latest["state"] in {"PARENT_INGESTED", "COMPLETED"}:
+            errors = validate_ingested_result(task_id)
+            if errors:
+                raise FactoryError("; ".join(errors))
+            record = read_json(CONTROL_ROOT / "tasks" / task_id / "transaction-ingested.json")
+            existing_commit = record["result_transaction"]["result_commit_id"]
+            if existing_commit != result_commit_id:
+                raise FactoryError("duplicate ingestion names a different immutable result commit")
+            return {
+                "task_id": task_id,
+                "result_commit_id": result_commit_id,
+                "status": "ALREADY_INGESTED",
+            }
+        if latest["state"] != "RUNNING":
+            raise FactoryError(
+                f"result ingestion requires RUNNING custody, found {latest['state']}"
+            )
+
+        task_directory = CONTROL_ROOT / "tasks" / task_id
+        input_document = read_json(task_directory / "input.json")
+        created = read_json(task_directory / "transaction-created.json")
+        ownership = input_document.get("ownership")
+        if not isinstance(ownership, dict) or not _nonempty(ownership.get("result_slot")):
+            raise FactoryError("frozen task lacks an owned result slot")
+        worker_id = _lease_owner(events)
+        if not _nonempty(worker_id):
+            raise FactoryError("result ingestion requires an active leased worker")
+        visible_from = _resolve_result_commit(
+            result_commit_id=result_commit_id,
+            result_base_commit_id=result_base_commit_id,
+            result_ref=result_ref,
+        )
+        artifacts, manifest_sha256, total_bytes, readback_at = _result_manifest_artifacts(
+            task_id=task_id,
+            result_slot=ownership["result_slot"],
+            result_commit_id=result_commit_id,
+            result_base_commit_id=result_base_commit_id,
+            result_ref=result_ref,
+        )
+        committed_at = git("show", "-s", "--format=%aI", result_commit_id)
+        result_record = {
+            "protocol_version": PROTOCOL_VERSION,
+            "task_id": task_id,
+            "commission_id": created["commission_id"],
+            "immutable_input_manifest_sha256": created["immutable_input_manifest_sha256"],
+            "acceptance_contract_sha256": created["acceptance_contract_sha256"],
+            "provider_state": "COMPLETED",
+            "obzio_state": "PARENT_INGESTED",
+            "attempt": {
+                "attempt_id": created["attempt"]["attempt_id"],
+                "idempotency_key": created["attempt"]["idempotency_key"],
+                "lease_id": created["attempt"]["lease_id"],
+                "fence_token": _latest_fence(events, created["attempt"]["fence_token"]),
+                "provider_run_id": provider_run_id,
+                "worker_id": worker_id,
+                "heartbeat_at": None,
+                "checkpoint_seq": sum(event["state"] == "CHECKPOINTED" for event in events),
+            },
+            "result_transaction": {
+                "result_txn_id": created["result_transaction"]["result_txn_id"],
+                "state": "INGESTED",
+                "manifest_uri": (
+                    f"git:{result_ref}@{result_commit_id}:"
+                    f"{ownership['result_slot'].rstrip('/')}/manifest.json"
+                ),
+                "manifest_sha256": manifest_sha256,
+                "artifact_count": len(artifacts),
+                "total_bytes": total_bytes,
+                "committed_at": committed_at,
+                "verified_at": readback_at,
+                "parent_ingested_at": readback_at,
+                "result_commit_id": result_commit_id,
+            },
+            "artifacts": artifacts,
+            "completion_actor": None,
+            "independent_acceptance": {
+                "state": "PENDING",
+                "reviewer_id": None,
+                "receipt_uri": None,
+            },
+        }
+        errors = _result_validator().validate_result(result_record)
+        if errors:
+            raise FactoryError("invalid reconstructed result record: " + "; ".join(errors))
+        fence_token = result_record["attempt"]["fence_token"]
+        provenance = {
+            "reported_by": "integration-controller",
+            "provider_execution_id": provider_run_id,
+            "result_base_commit_id": result_base_commit_id,
+            "result_commit_id": result_commit_id,
+            "result_ref": result_ref,
+            "visible_from_commit_id": visible_from,
+        }
+        _advance_task_locked(
+            task_id,
+            state="RESULT_STAGING",
+            actor=worker_id,
+            fence_token=fence_token,
+            details=provenance,
+        )
+        _advance_task_locked(
+            task_id,
+            state="RESULT_STAGED",
+            actor=worker_id,
+            fence_token=fence_token,
+            details={
+                **provenance,
+                "manifest_sha256": manifest_sha256,
+                "total_bytes": total_bytes,
+            },
+        )
+        _advance_task_locked(
+            task_id,
+            state="RESULT_VERIFIED",
+            actor=worker_id,
+            fence_token=fence_token,
+            details={
+                **provenance,
+                "verified_artifacts": len(artifacts),
+                "parent_remote_readback": "PASS",
+            },
+        )
+        _advance_task_locked(
+            task_id,
+            state="RESULT_COMMITTED",
+            actor="integration-controller",
+            fence_token=fence_token,
+            details=provenance,
+        )
+        write_once(task_directory / "transaction-ingested.json", canonical_json(result_record))
+        _advance_task_locked(
+            task_id,
+            state="PARENT_INGESTED",
+            actor="integration-controller",
+            fence_token=fence_token,
+            details={**provenance, "parent_readback": "PASS"},
+        )
+        return {
+            "task_id": task_id,
+            "result_commit_id": result_commit_id,
+            "artifact_count": len(artifacts),
+            "total_bytes": total_bytes,
+            "status": "PARENT_INGESTED",
+        }
+
+
 def _require_detail_sha256(details: dict[str, Any], name: str) -> None:
     if not isinstance(details.get(name), str) or not SHA256_RE.fullmatch(details[name]):
         raise FactoryError(f"{name} must be a lowercase SHA-256")
@@ -1253,6 +1568,18 @@ def verify_recovery(args: argparse.Namespace) -> int:
     return 0
 
 
+def ingest_result(args: argparse.Namespace) -> int:
+    result = ingest_committed_result(
+        args.task_id,
+        result_commit_id=args.result_commit,
+        result_base_commit_id=args.result_base,
+        result_ref=args.result_ref,
+        provider_run_id=args.provider_run_id,
+    )
+    print(json.dumps(result, sort_keys=True))
+    return 0
+
+
 def _json_object(value: str) -> dict[str, Any]:
     parsed = json.loads(value)
     if not isinstance(parsed, dict):
@@ -1282,6 +1609,13 @@ def build_parser() -> argparse.ArgumentParser:
     advance_parser.set_defaults(
         handler=lambda args: (print(advance_task(args.task_id, state=args.state, actor=args.actor, fence_token=args.fence_token, details=args.details)) or 0)
     )
+    ingest_parser = subparsers.add_parser("ingest-result")
+    ingest_parser.add_argument("task_id")
+    ingest_parser.add_argument("--result-commit", required=True)
+    ingest_parser.add_argument("--result-base", required=True)
+    ingest_parser.add_argument("--result-ref", default="HEAD")
+    ingest_parser.add_argument("--provider-run-id", required=True)
+    ingest_parser.set_defaults(handler=ingest_result)
     scan_parser = subparsers.add_parser("scan-recovery")
     scan_parser.set_defaults(handler=lambda args: (print(json.dumps(recovery_scan(), sort_keys=True)) or 0))
     rebuild_parser = subparsers.add_parser("rebuild-recovery")

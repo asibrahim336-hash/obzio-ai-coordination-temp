@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -54,6 +55,63 @@ class TransactionalFactoryTests(unittest.TestCase):
             fence_token=1,
             nonce="b" * 64,
         )
+
+    def _git(self, *arguments):
+        return subprocess.run(
+            ("git", *arguments),
+            cwd=MODULE.REPO_ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+
+    def _committed_ready_result(self, *, include_scope_escape=False):
+        self._create_task()
+        MODULE.advance_task(
+            "po03-test-task",
+            state="LEASED",
+            actor="integration-controller",
+            fence_token=1,
+            details={"worker_id": "worker-1", "provider_run_id": "reservation-1"},
+        )
+        MODULE.advance_task(
+            "po03-test-task",
+            state="RUNNING",
+            actor="worker-1",
+            fence_token=1,
+        )
+        self._git("init")
+        self._git("config", "user.name", "PO-03 Test")
+        self._git("config", "user.email", "po03-test@example.invalid")
+        self._git("add", "-A")
+        self._git("commit", "-m", "freeze task custody")
+        base_commit = self._git("rev-parse", "HEAD")
+
+        result_root = MODULE.REPO_ROOT / "workstreams" / "po03" / "attempts" / "test"
+        result_root.mkdir(parents=True)
+        artifact_bytes = b'{"outcome":"ready"}\n'
+        (result_root / "result.json").write_bytes(artifact_bytes)
+        manifest = {
+            "task_id": "po03-test-task",
+            "result_slot": "workstreams/po03/attempts/test",
+            "artifact_count": 1,
+            "total_artifact_bytes_excluding_manifest": len(artifact_bytes),
+            "artifacts": [
+                {
+                    "path": "result.json",
+                    "sha256": MODULE.sha256_bytes(artifact_bytes),
+                    "bytes": len(artifact_bytes),
+                }
+            ],
+        }
+        (result_root / "manifest.json").write_bytes(MODULE.canonical_json(manifest))
+        if include_scope_escape:
+            escaped = MODULE.REPO_ROOT / "state" / "scope-escape.json"
+            escaped.parent.mkdir()
+            escaped.write_text("{}\n", encoding="utf-8")
+        self._git("add", "-A")
+        self._git("commit", "-m", "produce immutable result")
+        return base_commit, self._git("rev-parse", "HEAD")
 
     def test_canonical_json_and_hash_are_stable(self):
         first = MODULE.canonical_json({"b": 2, "a": 1})
@@ -304,6 +362,54 @@ class TransactionalFactoryTests(unittest.TestCase):
         self.assertEqual("COMPLETED", unit["provider_state"])
         self.assertEqual(result_commit_id, unit["result_commit_id"])
         self.assertEqual([], MODULE.verify_recovery_state())
+
+    def test_committed_result_is_ingested_from_immutable_git_bytes(self):
+        result_base_commit, result_commit_id = self._committed_ready_result()
+        result = MODULE.ingest_committed_result(
+            "po03-test-task",
+            result_commit_id=result_commit_id,
+            result_base_commit_id=result_base_commit,
+            result_ref="HEAD",
+            provider_run_id="provider-execution-1",
+        )
+        self.assertEqual("PARENT_INGESTED", result["status"])
+        self.assertEqual(2, result["artifact_count"])
+        self.assertEqual(
+            [
+                "RESULT_STAGING",
+                "RESULT_STAGED",
+                "RESULT_VERIFIED",
+                "RESULT_COMMITTED",
+                "PARENT_INGESTED",
+            ],
+            [event["state"] for event in MODULE.task_events("po03-test-task")][-5:],
+        )
+        self.assertEqual([], MODULE.validate_ingested_result("po03-test-task"))
+        transaction = json.loads(
+            (MODULE.CONTROL_ROOT / "tasks" / "po03-test-task" / "transaction-ingested.json").read_text()
+        )
+        self.assertEqual(result_commit_id, transaction["result_transaction"]["result_commit_id"])
+        self.assertEqual(2, transaction["result_transaction"]["artifact_count"])
+        replay = MODULE.ingest_committed_result(
+            "po03-test-task",
+            result_commit_id=result_commit_id,
+            result_base_commit_id=result_base_commit,
+            result_ref="HEAD",
+            provider_run_id="provider-execution-1",
+        )
+        self.assertEqual("ALREADY_INGESTED", replay["status"])
+
+    def test_ingestion_rejects_commit_that_escapes_owned_result_slot(self):
+        result_base_commit, result_commit_id = self._committed_ready_result(include_scope_escape=True)
+        with self.assertRaises(MODULE.FactoryError):
+            MODULE.ingest_committed_result(
+                "po03-test-task",
+                result_commit_id=result_commit_id,
+                result_base_commit_id=result_base_commit,
+                result_ref="HEAD",
+                provider_run_id="provider-execution-1",
+            )
+        self.assertEqual("RUNNING", MODULE.task_events("po03-test-task")[-1]["state"])
 
     def test_source_lock_hashes_pinned_git_bytes_not_worktree_bytes(self):
         original_git = MODULE.git
