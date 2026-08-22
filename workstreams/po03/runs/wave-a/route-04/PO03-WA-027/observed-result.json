@@ -1,0 +1,67 @@
+{
+  "commands": [
+    {
+      "command": "python3 workstreams/po03/runs/wave-a/route-04/PO03-WA-027/test_side_effect_free_loader.py -v",
+      "observed": "PASS"
+    },
+    {
+      "command": "python3 workstreams/po03/runs/wave-a/route-04/PO03-WA-027/side_effect_free_loader.py --target-fresh-checkout 0c65156c41c765ac18e1bbca91cb052a0021b8b2",
+      "note": "Equivalent callable invocation used where component CLI flags differ.",
+      "observed": "PASS"
+    }
+  ],
+  "criterion": "load code without package-import side effects",
+  "decision_changed": [],
+  "disposition": "PASS",
+  "frozen_input_hypothesis": "Qualification rejects traversal and repository-escape paths.",
+  "hidden_cases": [
+    "hostile package initializer side effect",
+    "hidden __main__ block",
+    "repository traversal"
+  ],
+  "independent_acceptance": "NOT_TESTED",
+  "legal_disposition": "PASS",
+  "limitations": [
+    "Direct loading supports standard-library imports but intentionally does not resolve package-relative imports."
+  ],
+  "obzio_state": "RESULT_STAGED",
+  "primary_live_targets": {
+    "fresh_checkout_head": "0c65156c41c765ac18e1bbca91cb052a0021b8b2",
+    "route_manifest": {
+      "bytes": 24619,
+      "path": "workstreams/po03/runs/wave-a/route-08/_route/manifest.json",
+      "sha256": "96ad7fa28a4437ed5dee204633862692de73c6f713b37b5fa12b3098bb4f9c5d"
+    },
+    "successor_generation": {
+      "bytes": 23155,
+      "path": "workstreams/po03/runs/wave-a/route-08/PO03-WA-064/successor-generation.json",
+      "sha256": "e328dd385542e1c83c04454093895adf703934518a2ceec1a0624f2806145065"
+    }
+  },
+  "producer_report": "READY_TO_COMMIT",
+  "qualification": {
+    "adversarial": {
+      "defects": [
+        "SOURCE_PATH_ESCAPES_REPOSITORY"
+      ],
+      "disposition": "FAIL"
+    },
+    "adversarial_expected": "FAIL",
+    "live": {
+      "defects": [],
+      "disposition": "PASS",
+      "package_imported": false,
+      "path": "workstreams/po03/runs/wave-a/route-08/PO03-WA-064/successor_reproducer.py",
+      "required_symbol": "verify",
+      "source_bytes": 3114,
+      "source_sha256": "4a8678c599e6484141353ea56b04cc6dd530c18efadc79e666ee0f3014626a03",
+      "stdlib_modules_loaded": []
+    }
+  },
+  "runtime_binding": {
+    "classification": "DISTINCT_RUNTIME_LAYERS_NOT_A_MODEL_MISMATCH",
+    "delegated_task_configuration": "gpt-5.6-sol-xhigh",
+    "enclosing_controller_run_metadata": "gpt-5.6-sol-max-fast"
+  },
+  "task_id": "PO03-WA-027"
+}
