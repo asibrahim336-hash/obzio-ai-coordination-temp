@@ -280,6 +280,27 @@ class Receipt(unittest.TestCase):
         for boundary in self.receipt.get("boundaries", []):
             self.assertTrue(boundary["statement"].strip())
             self.assertTrue(boundary["observed_in"].strip())
+            self.assertEqual(boundary["disposition"], "RECORDED_AS_BOUNDARY")
+
+    def test_recorded_steps_are_steps_this_workflow_actually_declares(self) -> None:
+        """A receipt naming steps the workflow does not have would be fabricated."""
+        text = WORKFLOW_PATH.read_text(encoding="utf-8")
+        declared = {
+            line.split("- name:", 1)[1].strip()
+            for line in text.splitlines()
+            if line.strip().startswith("- name:")
+        }
+        declared |= {"Run actions/checkout@v4", "Run actions/setup-python@v5"}
+        for step in self.receipt["run"]["steps"]:
+            self.assertIn(step["name"], declared, step["name"])
+
+    def test_failed_earlier_runs_are_recorded_with_causes(self) -> None:
+        """Two of the three runs failed; a receipt listing only the pass would mislead."""
+        for earlier in self.receipt.get("earlier_runs_of_this_workflow", []):
+            self.assertEqual(earlier["conclusion"], "failure")
+            self.assertTrue(earlier["cause"].strip())
+            self.assertTrue(earlier["fix"].strip())
+            self.assertTrue(earlier["url"].endswith(str(earlier["id"])))
 
 
 if __name__ == "__main__":
