@@ -4,6 +4,7 @@
     "capsule_registration_commit": "9edfd8ed08e0d27727f66e128a87b24aa561432c",
     "controller_branch": "po03/repository-engineering-portable-runtime-20260822-v001",
     "controller_tip_at_admission": "ffb6bef150bbb9894ea6ba2bce290585b2e48d31",
+    "controller_tip_before_final_seal": "ffb6bef150bbb9894ea6ba2bce290585b2e48d31",
     "dispatch_base": "e63fbae079774b151fd24a4132e4a5e571f75298",
     "dispatch_base_parent": "0221316d957f23ed1b22b04dabd719bcb5077b90",
     "implementation_commit_before_tests": "fd52e641b4815ad915ffe19baf508d595cc22200",
@@ -12,6 +13,7 @@
     "result_branch": "po03/wave-a-028-fencing-patterns",
     "result_head_at_manifest_generation": "672b93f4da6230d2d19a05c2fa8a36ac47e8aeab",
     "result_remote_final_head": "EXTERNALLY_VERIFIED_AFTER_FINAL_COMMIT",
+    "sealed_custody_commit": "1629d4ae50252753892e5b9475838d77f2897597",
     "statement": "The task capsule records historical source head 1bb843b. The capsule files were registered by 9edfd8e. The required dispatch base e63fbae and admission tip ffb6bef are descendants with additive controller, custody, route-isolation, schema, validation, event and lease hardening. This attempt remains based exactly on e63fbae and does not ingest later controller commits."
   },
   "capsule_verification": {
@@ -137,6 +139,41 @@
       "command": "PYTHONDONTWRITEBYTECODE=1 python3 \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/verify_manifest.py\" > \"/tmp/wave-a-028-manifest-verification.json\"",
       "exit_code": 0,
       "purpose": "Verify the manifested commit's complete declared artifact set before adding the verification receipt."
+    },
+    {
+      "command": "git add -- \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns\" && git commit -m \"po03 wave-a-028: seal manifested custody\" && git push -u origin \"po03/wave-a-028-fencing-patterns\"",
+      "exit_code": 0,
+      "purpose": "Commit and push sealed manifested custody, producing 1629d4ae50252753892e5b9475838d77f2897597."
+    },
+    {
+      "command": "git clone --branch \"po03/wave-a-028-fencing-patterns\" --single-branch \"https://github.com/asibrahim336-hash/obzio-ai-coordination-temp.git\" \"/home/ubuntu/po03-wave-a-028-fencing-patterns-readback-1\"",
+      "exit_code": 0,
+      "purpose": "Create a separate fresh clone for immutable readback of 1629d4ae50252753892e5b9475838d77f2897597."
+    },
+    {
+      "command": "test \"$(git rev-parse HEAD)\" = \"1629d4ae50252753892e5b9475838d77f2897597\" && test \"$(git rev-parse origin/po03/wave-a-028-fencing-patterns)\" = \"1629d4ae50252753892e5b9475838d77f2897597\" && test -z \"$(git status --porcelain)\"",
+      "exit_code": 0,
+      "purpose": "Prove the readback clone checked out the exact clean immutable commit."
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/verify_manifest.py\" > \"/tmp/wave-a-028-readback-1-manifest.json\"",
+      "exit_code": 0,
+      "purpose": "Verify all 19 declared artifacts from the first fresh readback clone."
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONHASHSEED=0 TZ=UTC LC_ALL=C.UTF-8 python3 \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/run_fixtures.py\" > \"/tmp/wave-a-028-readback-1-fixtures.json\" && PYTHONDONTWRITEBYTECODE=1 PYTHONHASHSEED=0 TZ=UTC LC_ALL=C.UTF-8 python3 -m unittest discover -s \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/tests\" -p \"test_*.py\" -v > \"/tmp/wave-a-028-readback-1-unittest.log\" 2>&1",
+      "exit_code": 0,
+      "purpose": "Reproduce all six fixtures and seven unit tests in the first fresh clone."
+    },
+    {
+      "command": "bad=0; while IFS= read -r path; do case \"$path\" in workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/*) ;; *) printf 'out_of_scope=%s\\n' \"$path\"; bad=1 ;; esac; done < <(git diff --name-only \"e63fbae079774b151fd24a4132e4a5e571f75298..HEAD\"); test \"$bad\" -eq 0",
+      "exit_code": 0,
+      "purpose": "Verify that every changed path is inside the owned result slot."
+    },
+    {
+      "command": "test \"$(git ls-remote origin refs/heads/po03/wave-a-028-fencing-patterns | cut -f1)\" = \"1629d4ae50252753892e5b9475838d77f2897597\"",
+      "exit_code": 0,
+      "purpose": "Confirm the remote branch tip equaled the immutable commit read back."
     }
   ],
   "decision_changed": [],
