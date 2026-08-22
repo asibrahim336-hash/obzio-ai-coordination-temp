@@ -1,0 +1,79 @@
+{
+  "observation_id": "OBS-PO03-C6-043-ATOMICITY-AT-THE-COMMIT-BOUNDARY",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "cohort": "c6",
+  "task_id": "po03-wa-b2e7-043-partial-and-commit-failure",
+  "function": "transactional-recovery-and-fault-injection",
+  "falsifiable_hypothesis": "A partial write, a pre-commit failure and a post-commit failure each leave a recoverable state and never a false completion.",
+  "verdict": "PASS",
+  "mechanism_under_test": "workstreams/po03/tools/transactional_factory.py",
+  "injection_method": "a child worker process is really killed with SIGKILL (returncode -9) at a chosen instruction inside write_once, replace_atomic, the event chain, or the commit boundary",
+  "fault_classes": [
+    {
+      "fault_class": "PARTIAL_WRITE_KILLED_BEFORE_ATOMIC_LINK",
+      "injected_at_state_transition": "RUNNING -> CHECKPOINTED",
+      "observed_behaviour": "the 2 MiB payload was fsynced into a hidden temporary file and the process died before os.link; no CHECKPOINTED event file ever became visible, the chain still verified, the scanner prescribed RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "LINKED_BUT_UNFSYNCED_DIRECTORY_ENTRY",
+      "injected_at_state_transition": "RUNNING -> CHECKPOINTED",
+      "observed_behaviour": "the process died after os.link but before the directory fsync; the event file was present, its recomputed event_sha256 matched its claim, and verify_chain returned no errors",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "CRASH_MID_REPLACEMENT_OF_DERIVED_STATE",
+      "injected_at_state_transition": "controller recovery-state regeneration",
+      "observed_behaviour": "the process died before os.replace; generation 1 of recovery-state.json survived byte-intact and parsed as valid JSON, so no torn derived state was observable",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "CRASH_BETWEEN_HASH_CHAINED_EVENTS",
+      "injected_at_state_transition": "CHECKPOINTED -> RESULT_STAGING",
+      "observed_behaviour": "four contiguous events survived, sequence numbering stayed dense, and verify_chain reported no previous-hash or sequence errors",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "PRE_COMMIT_FAILURE_WITH_UNCOMMITTED_BYTES",
+      "injected_at_state_transition": "RESULT_STAGING -> (no commit)",
+      "observed_behaviour": "bytes existed only in the worktree; git ls-tree at HEAD listed nothing under the slot; ingesting a result that pointed at HEAD produced RECOVERY_REQUIRED with a read-back failure error and no false completion",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "POST_COMMIT_FAILURE_BEFORE_CALLBACK",
+      "injected_at_state_transition": "RESULT_COMMITTED -> (no callback)",
+      "observed_behaviour": "1796 bytes of committed result stayed readable by immutable object id and the immutable capsule survived, so the state is recoverable and no false completion appeared; the live scanner nevertheless reported ingested=false and prescribed a rerun rather than replaying the commit",
+      "verdict": "PASS",
+      "cross_reference": "DEF-PO03-C6-042-LOST-CALLBACK-NOT-REPLAYED covers the missing automatic replay"
+    },
+    {
+      "fault_class": "IMMUTABLE_FILE_REWRITE_ATTEMPT",
+      "injected_at_state_transition": "CREATED (immutable capsule)",
+      "observed_behaviour": "write_once raised FileExistsError for differing bytes, treated an identical payload as a no-op, and left the capsule bytes unchanged",
+      "verdict": "PASS"
+    }
+  ],
+  "false_completions_observed": 0,
+  "residual_findings": [
+    {
+      "finding": "STRAY_TEMPORARY_FILES_SURVIVE_A_CRASH",
+      "detail": "write_once and replace_atomic clean their temporary file in a finally block, which an uncatchable SIGKILL skips. The crashed runs left entries such as .000004-checkpointed.json.dlcc87xf and .recovery-state.json.ps09914g behind.",
+      "impact": "no correctness impact was observed: the mechanism enumerates state with a *.json glob and by explicit filename, so a stray dotted temporary is never read as state and verify_chain stayed clean. It is an unbounded-growth and hygiene issue, not a custody failure.",
+      "severity": "LOW_NO_CUSTODY_IMPACT",
+      "repair_candidate": "a controller-side sweep of CONTROL_ROOT for entries matching .<name>.* older than the current lease would reclaim them; not staged as code because no custody assertion fails without it"
+    }
+  ],
+  "reproduction": {
+    "component": "workstreams/po03/attempts/po03-wa-b2e7-043-partial-and-commit-failure/commit_boundary_injector.py",
+    "child_worker": "workstreams/po03/attempts/po03-wa-b2e7-043-partial-and-commit-failure/crash_child.py",
+    "command": "python3 -I workstreams/po03/attempts/po03-wa-b2e7-043-partial-and-commit-failure/commit_boundary_injector.py",
+    "exit_code_observed": 0,
+    "report": "workstreams/po03/attempts/po03-wa-b2e7-043-partial-and-commit-failure/injection-report.json",
+    "test_command": "python3 -I -m unittest discover -s workstreams/po03/attempts/po03-wa-b2e7-043-partial-and-commit-failure -p 'test_*.py' -v",
+    "test_outcome": "12 tests, OK",
+    "test_output": "workstreams/po03/attempts/po03-wa-b2e7-043-partial-and-commit-failure/test-output.txt"
+  },
+  "obzio_state_claim": "READY_TO_COMMIT",
+  "producer_may_not_accept_own_work": true,
+  "decision_changed": []
+}

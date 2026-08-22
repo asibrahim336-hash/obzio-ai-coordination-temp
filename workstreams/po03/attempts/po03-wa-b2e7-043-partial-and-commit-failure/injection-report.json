@@ -1,0 +1,169 @@
+{
+  "false_completions_observed": 0,
+  "fault_classes": 7,
+  "results": [
+    {
+      "crash": {
+        "crash_point": "WRITE_ONCE_BEFORE_LINK",
+        "killed_by_sigkill": true,
+        "returncode": -9,
+        "stderr_tail": "",
+        "stdout": ""
+      },
+      "fault_class": "PARTIAL_WRITE_KILLED_BEFORE_ATOMIC_LINK",
+      "injected_at_state_transition": "RUNNING -> CHECKPOINTED",
+      "observed": {
+        "durable_event_files": [
+          "000001-created.json",
+          "000002-leased.json",
+          "000003-running.json"
+        ],
+        "event_chain_errors": [],
+        "false_completion_count": 0,
+        "half_written_immutable_file_visible": false,
+        "recovery_action": "RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT",
+        "stray_entries_ignored_by_mechanism": true,
+        "stray_temporary_entries": [
+          ".000004-checkpointed.json.0bhn60np"
+        ]
+      },
+      "verdict": "PASS"
+    },
+    {
+      "crash": {
+        "crash_point": "WRITE_ONCE_BEFORE_DIRECTORY_FSYNC",
+        "killed_by_sigkill": true,
+        "returncode": -9,
+        "stderr_tail": "",
+        "stdout": ""
+      },
+      "fault_class": "LINKED_BUT_UNFSYNCED_DIRECTORY_ENTRY",
+      "injected_at_state_transition": "RUNNING -> CHECKPOINTED",
+      "observed": {
+        "checkpoint_content_self_consistent": true,
+        "checkpoint_file_present": true,
+        "durable_event_files": [
+          "000001-created.json",
+          "000002-leased.json",
+          "000003-running.json",
+          "000004-checkpointed.json"
+        ],
+        "event_chain_errors": [],
+        "false_completion_count": 0
+      },
+      "verdict": "PASS"
+    },
+    {
+      "crash": {
+        "crash_point": "REPLACE_ATOMIC_BEFORE_REPLACE",
+        "killed_by_sigkill": true,
+        "returncode": -9,
+        "stderr_tail": "",
+        "stdout": ""
+      },
+      "fault_class": "CRASH_MID_REPLACEMENT_OF_DERIVED_STATE",
+      "injected_at_state_transition": "controller recovery-state regeneration",
+      "observed": {
+        "observed_generation": 1,
+        "previous_generation_intact": true,
+        "stray_temporary_entries": [
+          ".recovery-state.json.a3iq9vs1"
+        ],
+        "target_is_valid_json": true
+      },
+      "verdict": "PASS"
+    },
+    {
+      "crash": {
+        "crash_point": "MID_EVENT_CHAIN",
+        "killed_by_sigkill": true,
+        "returncode": -9,
+        "stderr_tail": "",
+        "stdout": ""
+      },
+      "fault_class": "CRASH_BETWEEN_HASH_CHAINED_EVENTS",
+      "injected_at_state_transition": "CHECKPOINTED -> RESULT_STAGING",
+      "observed": {
+        "durable_event_files": [
+          "000001-created.json",
+          "000002-leased.json",
+          "000003-running.json",
+          "000004-checkpointed.json"
+        ],
+        "event_chain_errors": [],
+        "false_completion_count": 0,
+        "last_state": "CHECKPOINTED",
+        "next_event_sequence_is_contiguous": true
+      },
+      "verdict": "PASS"
+    },
+    {
+      "crash": {
+        "crash_point": "PRE_COMMIT",
+        "killed_by_sigkill": true,
+        "returncode": -9,
+        "stderr_tail": "",
+        "stdout": ""
+      },
+      "fault_class": "PRE_COMMIT_FAILURE_WITH_UNCOMMITTED_BYTES",
+      "injected_at_state_transition": "RESULT_STAGING -> (no commit)",
+      "observed": {
+        "bytes_present_in_commit": [],
+        "bytes_present_in_worktree": true,
+        "event_chain_errors": [],
+        "false_completion_count": 0,
+        "ingestion_errors": [
+          "artifact po03-c6-043-pre-commit-artifact-001: read-back failed (Command '('git', 'cat-file', 'blob', '39b081e0b98e0ee4fff9ab1f31e128a77e469fec:workstreams/po03/attempts/po03-c6-043-pre-commit/component.json')' returned non-zero exit status 128.)"
+        ],
+        "ingestion_state": "RECOVERY_REQUIRED",
+        "recovery_action": "RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT",
+        "uncommitted_claim": {
+          "claimed_bytes": 55,
+          "claimed_sha256": "2cd0b79019b78a98acb6d4629b3822ea1bd1aeb2f6915b80247d82c54b7b416c",
+          "task_id": "po03-c6-043-pre-commit"
+        }
+      },
+      "verdict": "PASS"
+    },
+    {
+      "automatic_recovery_by_live_scanner": false,
+      "crash": {
+        "crash_point": "POST_COMMIT_BEFORE_CALLBACK",
+        "killed_by_sigkill": true,
+        "returncode": -9,
+        "stderr_tail": "",
+        "stdout": "{\"artifact_commit\": \"b37d1e5cead18116b8630c3ca72d84078efbaab1\", \"result_commit\": \"60b44833f6410e65a61d88195070538e6e3944c3\"}"
+      },
+      "cross_reference": "the committed bytes survive and no false completion appears, but the live scanner still prescribes a rerun rather than replaying the commit; that gap is recorded as DEF-PO03-C6-042-LOST-CALLBACK-NOT-REPLAYED",
+      "fault_class": "POST_COMMIT_FAILURE_BEFORE_CALLBACK",
+      "injected_at_state_transition": "RESULT_COMMITTED -> (no callback)",
+      "observed": {
+        "committed_result_bytes_readable": 1796,
+        "event_chain_errors": [],
+        "false_completion_count": 0,
+        "immutable_input_available_for_rerun": true,
+        "ingestion_records": 0,
+        "recovery_action": "RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT",
+        "scanner_sees_ingested_result": false
+      },
+      "state_is_recoverable": true,
+      "verdict": "PASS"
+    },
+    {
+      "crash": {
+        "crash_point": "NONE_IN_PROCESS_ATTEMPT",
+        "killed_by_sigkill": false
+      },
+      "fault_class": "IMMUTABLE_FILE_REWRITE_ATTEMPT",
+      "injected_at_state_transition": "CREATED (immutable capsule)",
+      "observed": {
+        "bytes_unchanged": true,
+        "differing_payload_refused": true,
+        "identical_payload_is_a_noop": true
+      },
+      "verdict": "PASS"
+    }
+  ],
+  "unit": "po03-wa-b2e7-043-partial-and-commit-failure",
+  "verdict": "PASS"
+}
