@@ -133,5 +133,22 @@ class TrustedSourceBaseTests(unittest.TestCase):
         git.assert_not_called()
 
 
+class ProjectionTimeTests(unittest.TestCase):
+    def test_existing_later_dispatch_time_is_preserved(self):
+        self.assertEqual(
+            TOOL._later_time(
+                "2026-08-22T08:22:00Z",
+                "2026-08-22T08:21:00Z",
+            ),
+            "2026-08-22T08:22:00Z",
+        )
+
+    def test_missing_dispatch_time_uses_producer_start(self):
+        self.assertEqual(
+            TOOL._later_time(None, "2026-08-22T08:21:00Z"),
+            "2026-08-22T08:21:00Z",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

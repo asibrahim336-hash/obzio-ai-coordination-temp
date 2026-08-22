@@ -150,6 +150,11 @@ def _trusted_source_base(
     return source_base
 
 
+def _later_time(existing: Any, candidate: Any) -> Any:
+    values = [value for value in (existing, candidate) if isinstance(value, str) and value]
+    return max(values) if values else None
+
+
 def _args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--task-number", type=int, required=True)
@@ -409,8 +414,12 @@ def main() -> int:
             row.update(
                 state="DELIVERED",
                 attempts=max(1, int(row.get("attempts", 0))),
-                last_attempt_at=producer_result.get("started_at"),
-                delivered_at=producer_result.get("started_at"),
+                last_attempt_at=_later_time(
+                    row.get("last_attempt_at"), producer_result.get("started_at")
+                ),
+                delivered_at=_later_time(
+                    row.get("delivered_at"), producer_result.get("started_at")
+                ),
                 provider_run_id=args.provider_run_id,
             )
             found = True
@@ -486,6 +495,12 @@ def main() -> int:
         and row.get("independent_acceptance") == "ACCEPTED"
     )
     wave.update(
+        active_provider_runs=sum(
+            1
+            for row in registry
+            if row.get("material") is True
+            and row.get("provider_state") == "RUNNING"
+        ),
         completed_durable=completed,
         independently_accepted=accepted,
         remaining=64 - completed,
