@@ -574,6 +574,128 @@ class DuplicateDispatchTests(CustodyTestCase):
         self.assertEqual("DISPATCHABLE", outcome["state"])
 
 
+class G1FailureRegressionTests(CustodyTestCase):
+    """Regression cover for six false greens found by independent measurement.
+
+    Each of these previously reported success while the invariant was broken, so
+    each test must fail if the corresponding repair is reverted.
+    """
+
+    def test_concurrent_fence_allocation_never_duplicates(self):
+        import os as _os
+
+        readers, writers = zip(*[_os.pipe() for _ in range(6)])
+        children = []
+        for index in range(6):
+            pid = _os.fork()
+            if pid == 0:  # child
+                try:
+                    tokens = [MODULE.allocate_fence() for _ in range(4)]
+                    _os.write(writers[index], json.dumps(tokens).encode())
+                finally:
+                    _os._exit(0)
+            children.append(pid)
+        allocated: list[int] = []
+        for index, pid in enumerate(children):
+            _os.close(writers[index])
+            with _os.fdopen(readers[index]) as handle:
+                allocated.extend(json.loads(handle.read()))
+            _os.waitpid(pid, 0)
+        self.assertEqual(24, len(allocated))
+        self.assertEqual(len(allocated), len(set(allocated)), "fence tokens must be unique")
+        final = json.loads((MODULE.CONTROL_ROOT / "fence-counter.json").read_text())
+        self.assertEqual(24, final["fence_token"])
+
+    def test_result_for_another_task_is_refused(self):
+        body = b'{"unit":"po03-unit-001"}\n'
+        commit = self._init_repository_with_artifact(body)
+        document = self._result_document(
+            commit=commit, sha256=MODULE.sha256_bytes(body), size=len(body)
+        )
+        document["task_id"] = "po03-some-other-task"
+        ingestion = MODULE.ingest_result("po03-unit-001", document)
+        self.assertEqual("RECOVERY_REQUIRED", ingestion["obzio_state"])
+        self.assertTrue(any("not 'po03-unit-001'" in error for error in ingestion["errors"]))
+
+    def test_mutable_locator_is_refused(self):
+        body = b'{"unit":"po03-unit-001"}\n'
+        self._init_repository_with_artifact(body)
+        for revision in ("HEAD", "main", "refs/heads/main", "abc1234"):
+            with self.assertRaises(ValueError):
+                MODULE.read_object_bytes(f"git:{revision}:workstreams/po03/attempts/unit/result.json")
+
+    def test_immutable_locator_is_accepted(self):
+        body = b'{"unit":"po03-unit-001"}\n'
+        commit = self._init_repository_with_artifact(body)
+        observed = MODULE.read_object_bytes(
+            f"git:{commit}:workstreams/po03/attempts/unit/result.json"
+        )
+        self.assertEqual(body, observed)
+
+    def test_deleting_the_newest_event_is_detected(self):
+        for state in ("CREATED", "LEASED", "RUNNING"):
+            MODULE.hash_chain_event("po03-unit-010", state, actor="controller", details={})
+        self.assertEqual([], MODULE.verify_chain("po03-unit-010"))
+        events = sorted((MODULE.CONTROL_ROOT / "events" / "po03-unit-010").glob("*.json"))
+        events[-1].unlink()
+        errors = MODULE.verify_chain("po03-unit-010")
+        self.assertTrue(any("truncated" in error for error in errors), errors)
+
+    def test_missing_chain_anchor_is_reported(self):
+        MODULE.hash_chain_event("po03-unit-011", "CREATED", actor="controller", details={})
+        MODULE._anchor_path("po03-unit-011").unlink()
+        errors = MODULE.verify_chain("po03-unit-011")
+        self.assertTrue(any("no chain anchor" in error for error in errors), errors)
+
+    def test_recovery_reports_real_collision_count(self):
+        MODULE.task_capsule(
+            task_id="po03-unit-012",
+            head_sha="a" * 40,
+            run_id="bc-test",
+            model="gpt-5.6-sol-xhigh",
+            reasoning="xhigh",
+            hypothesis="recovery must measure collisions rather than assert zero",
+            prompt="do the work",
+            owned_paths=["workstreams/po03/attempts/unit-012/**"],
+            result_slot="workstreams/po03/attempts/unit-012",
+            acceptance={"criteria": ["x"], "decision_changed": []},
+            lease_seconds=60,
+            fence_token=1,
+            function="wave-a-work-unit",
+        )
+        MODULE.replace_atomic(
+            MODULE.CONTROL_ROOT / "path-ownership.json",
+            MODULE.canonical_json(
+                {
+                    "ownership_version": "PO03-PATH-OWNERSHIP-v1",
+                    "controller": {"run_id": "bc-test", "owned_paths": []},
+                    "subordinates": [
+                        {"task_id": "unit-a", "owned_paths": ["workstreams/po03/attempts/shared/**"]},
+                        {"task_id": "unit-b", "owned_paths": ["workstreams/po03/attempts/shared/inner/**"]},
+                    ],
+                    "collision_policy": "FAIL_CLOSED",
+                }
+            ),
+        )
+        state = MODULE.scan_recovery("bc-test", "a" * 40)
+        self.assertEqual(1, state["collision_count"])
+        self.assertEqual(1, len(state["collisions"]))
+
+    def test_recovery_counts_duplicate_callbacks(self):
+        body = b'{"unit":"po03-unit-001"}\n'
+        commit = self._init_repository_with_artifact(body)
+        document = self._result_document(
+            commit=commit, sha256=MODULE.sha256_bytes(body), size=len(body)
+        )
+        MODULE.grant_lease("po03-unit-001", holder="producer-1", lease_seconds=60, attempt=1)
+        MODULE.ingest_result("po03-unit-001", document)
+        second = json.loads(json.dumps(document))
+        second["attempt"]["checkpoint_seq"] = 3
+        MODULE.ingest_result("po03-unit-001", second)
+        state = MODULE.scan_recovery("bc-test", "a" * 40)
+        self.assertEqual(1, state["duplicate_callback_count"])
+
+
 class RegistryTests(CustodyTestCase):
     def test_registry_is_append_only(self):
         MODULE.append_registry({"registry_event": "CREATED", "task_id": "po03-unit-004"})

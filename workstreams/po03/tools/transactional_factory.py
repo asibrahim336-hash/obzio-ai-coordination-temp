@@ -9,6 +9,8 @@ only an ingested, read-back result can advance to Obzio COMPLETED.
 from __future__ import annotations
 
 import argparse
+import contextlib
+import fcntl
 import hashlib
 import importlib.util
 import json
@@ -187,7 +189,33 @@ def hash_chain_event(
     body["event_sha256"] = sha256_bytes(canonical_json(body))
     destination = event_directory / f"{sequence:06d}-{state.lower()}.json"
     write_once(destination, canonical_json(body))
+    anchor_chain(task_id)
     return destination
+
+
+def _anchor_path(task_id: str) -> Path:
+    return CONTROL_ROOT / "chain-heads" / f"{task_id}.json"
+
+
+def anchor_chain(task_id: str) -> dict[str, Any]:
+    """Record the chain length and head hash outside the chain itself.
+
+    A hash chain proves that no retained event was altered, but says nothing
+    about an event that was removed: deleting the newest link leaves a shorter
+    chain that is still internally consistent. The anchor is what makes
+    truncation detectable.
+    """
+    events = sorted((CONTROL_ROOT / "events" / task_id).glob("*.json"))
+    anchor = {
+        "anchor_version": "PO03-CHAIN-ANCHOR-v1",
+        "task_id": task_id,
+        "event_count": len(events),
+        "head_sha256": sha256_file(events[-1]) if events else None,
+        "head_name": events[-1].name if events else None,
+        "anchored_at": utc_now(),
+    }
+    replace_atomic(_anchor_path(task_id), canonical_json(anchor))
+    return anchor
 
 
 def source_lock(head_sha: str) -> dict[str, Any]:
@@ -645,6 +673,19 @@ def verify_chain(task_id: str) -> list[str]:
         previous_hash = sha256_file(path)
     if not events:
         errors.append(f"task {task_id}: no events")
+
+    anchor_file = _anchor_path(task_id)
+    if not anchor_file.is_file():
+        errors.append(f"task {task_id}: no chain anchor; truncation would be undetectable")
+    else:
+        anchor = read_json(anchor_file)
+        if anchor.get("event_count") != len(events):
+            errors.append(
+                f"task {task_id}: chain truncated or extended; anchor records "
+                f"{anchor.get('event_count')} events, found {len(events)}"
+            )
+        elif events and anchor.get("head_sha256") != sha256_file(events[-1]):
+            errors.append(f"task {task_id}: chain head does not match anchor")
     return errors
 
 
@@ -686,16 +727,37 @@ def append_registry(entry: dict[str, Any]) -> str:
     return sha256_bytes(payload)
 
 
+@contextlib.contextmanager
+def exclusive_lock(name: str):
+    """Serialise a read-modify-write across processes.
+
+    Atomic file replacement makes a single write crash-safe but does nothing for
+    concurrency: two processes can read the same value and both write their own
+    successor. Fence allocation is a read-modify-write, so it needs real mutual
+    exclusion, not just atomic replacement.
+    """
+    CONTROL_ROOT.mkdir(parents=True, exist_ok=True)
+    descriptor = os.open(CONTROL_ROOT / f"{name}.lock", os.O_CREAT | os.O_RDWR, 0o644)
+    try:
+        fcntl.flock(descriptor, fcntl.LOCK_EX)
+        yield
+    finally:
+        fcntl.flock(descriptor, fcntl.LOCK_UN)
+        os.close(descriptor)
+
+
 def allocate_fence() -> int:
-    """Allocate a strictly monotonic fence token.
+    """Allocate a strictly monotonic fence token, safe under concurrency.
 
     The previous value survives a crash mid-allocation because the counter is
-    replaced atomically rather than rewritten in place.
+    replaced atomically, and concurrent allocators cannot collide because the
+    read-modify-write is held under an exclusive lock.
     """
     counter = CONTROL_ROOT / "fence-counter.json"
-    current = read_json(counter)["fence_token"] if counter.is_file() else 0
-    nxt = int(current) + 1
-    replace_atomic(counter, canonical_json({"fence_token": nxt, "allocated_at": utc_now()}))
+    with exclusive_lock("fence-counter"):
+        current = read_json(counter)["fence_token"] if counter.is_file() else 0
+        nxt = int(current) + 1
+        replace_atomic(counter, canonical_json({"fence_token": nxt, "allocated_at": utc_now()}))
     return nxt
 
 
@@ -1014,10 +1076,22 @@ def assert_remote_ownership(task_id: str, controller_run_id: str, *, remote: str
 
 
 def read_object_bytes(locator: str) -> bytes:
-    """Read committed bytes by immutable Git object id, never from the worktree."""
+    """Read committed bytes by immutable Git object id, never from the worktree.
+
+    The revision must be a full object id. A symbolic revision such as HEAD, a
+    branch or a tag resolves to different bytes over time, so accepting one would
+    let a result claim durability it does not have.
+    """
     if not locator.startswith("git:"):
         raise ValueError(f"non-durable artifact locator: {locator}")
     revision_path = locator[len("git:") :]
+    revision, separator, path = revision_path.partition(":")
+    if not separator or not path:
+        raise ValueError(f"artifact locator must be git:<object-id>:<path>: {locator}")
+    if not GIT_OBJECT_RE.fullmatch(revision):
+        raise ValueError(
+            f"mutable artifact locator refused; revision {revision!r} is not a full object id: {locator}"
+        )
     result = subprocess.run(
         ("git", "cat-file", "blob", revision_path),
         cwd=REPO_ROOT,
@@ -1054,6 +1128,13 @@ def ingest_result(task_id: str, document: dict[str, Any]) -> dict[str, Any]:
     validator = load_result_validator()
     errors = list(validator.validate_result(document))
     attempt = document.get("attempt", {}) if isinstance(document.get("attempt"), dict) else {}
+
+    # A result must be filed against the task it was produced for, or one unit's
+    # work can be recorded as another unit's completion.
+    if document.get("task_id") != task_id:
+        errors.append(
+            f"result belongs to task {document.get('task_id')!r}, not {task_id!r}"
+        )
 
     if not errors:
         try:
@@ -1304,6 +1385,11 @@ def scan_recovery(run_id: str, head_sha: str) -> dict[str, Any]:
             "ingested": verified,
             "recovery_action": action,
         }
+    # Measured, not asserted: a reconciliation that hardcodes zero is a false green.
+    collisions = detect_path_collisions() if (CONTROL_ROOT / "path-ownership.json").is_file() else []
+    duplicate_callbacks = sum(
+        max(0, len(list((tasks_root / task_id).glob("ingestion-*.json"))) - 1) for task_id in units
+    )
     state = {
         "recovery_version": "PO03-RECOVERY-STATE-v1",
         "controller_run_id": run_id,
@@ -1314,8 +1400,9 @@ def scan_recovery(run_id: str, head_sha: str) -> dict[str, Any]:
         "unit_count": len(units),
         "false_completion_count": false_completion,
         "orphan_count": orphans,
-        "duplicate_callback_count": 0,
-        "collision_count": 0,
+        "duplicate_callback_count": duplicate_callbacks,
+        "collision_count": len(collisions),
+        "collisions": collisions,
         "decision_changed": [],
     }
     replace_atomic(CONTROL_ROOT / "recovery-state.json", canonical_json(state))
@@ -1442,6 +1529,25 @@ def recover(args: argparse.Namespace) -> int:
     return 0
 
 
+def anchor(args: argparse.Namespace) -> int:
+    """Backfill chain anchors for tasks created before anchoring existed."""
+    events_root = CONTROL_ROOT / "events"
+    anchored = []
+    for directory in sorted(p for p in events_root.glob("*") if p.is_dir()):
+        anchored.append(anchor_chain(directory.name))
+    print(
+        json.dumps(
+            {
+                "anchored_tasks": len(anchored),
+                "total_events": sum(item["event_count"] for item in anchored),
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
 def collisions(args: argparse.Namespace) -> int:
     found = detect_path_collisions()
     for item in found:
@@ -1504,6 +1610,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     collision_parser = subparsers.add_parser("collisions")
     collision_parser.set_defaults(handler=collisions)
+
+    anchor_parser = subparsers.add_parser("anchor-chains")
+    anchor_parser.set_defaults(handler=anchor)
 
     claim_parser = subparsers.add_parser("claim-wave")
     claim_parser.add_argument("spec")
