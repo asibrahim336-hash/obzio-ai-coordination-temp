@@ -1,0 +1,31 @@
+{
+  "acceptance": {
+    "artifact": "corrected emitter plus tests",
+    "assertion": "checkpoint_seq, lease_id and fence_token are read from the authoritative ledger for the unit rather than invented or defaulted, and an emitter run that cannot resolve them fails loudly instead of emitting a plausible-looking attempt block. A result whose attempt block disagrees with the ledger is rejected.",
+    "falsified_if": "any attempt field can still be produced without ledger corroboration"
+  },
+  "acceptance_contract_sha256": "db8bae3f3b5af2c5f3324116e798fcb1d8855a4fa9faa2d551a7acc928cd0805",
+  "cohort_id": "a11",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "function_id": "F8",
+  "hypothesis": "The result emitter derives attempt.checkpoint_seq as the artifact count and takes lease_id and fence_token from CLI defaults rather than from the ledger, so the attempt block is decorative and unusable as recovery evidence.",
+  "idempotency_key": "a11-u12:1da0b3e7a628d473",
+  "immutable_input_manifest_sha256": "1da0b3e7a628d4735aa109a25935dac07f678900f01158000460d5a1ee011f71",
+  "model": "claude-opus-5-thinking-high",
+  "owned_paths": [
+    "workstreams/po03/tools/make_result.py",
+    "workstreams/po03/control/units/a11/",
+    "workstreams/po03/tests/test_a11_"
+  ],
+  "owner": "po03-worker-a11",
+  "result_slot": {
+    "branch": "cursor/po03-a11-custody-remediation-ed20",
+    "unit_record": "workstreams/po03/control/units/a11/a11-u12.json"
+  },
+  "source_hashes": {
+    "capsule_base_commit": "754aeda",
+    "note": "Pinned by commit rather than by working-tree hash, per the a12-u02 remediation and the source-capsule drift finding."
+  },
+  "unit_id": "a11-u12",
+  "wave_id": "po03-wave-a"
+}

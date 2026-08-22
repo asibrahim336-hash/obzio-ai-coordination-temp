@@ -1,0 +1,32 @@
+{
+  "acceptance": {
+    "artifact": "dual-check ingestion plus three fixtures and tests",
+    "assertion": "Ingestion verifies artifacts at the declared commit, which is what makes an honest earlier result verifiable, and additionally compares each artifact against the branch tip, flagging any result whose attested bytes are no longer current as SUPERSEDED_ATTESTATION rather than silently admitting or rejecting it. Proven with three fixtures: an honest earlier result that must pass, a superseded attestation that must be flagged, and a genuinely corrupt artifact that must be rejected. Cohort a1 hit this itself when a1-u01 attested tamper detection for a ledger.py that had since gained set_fault_hook.",
+    "falsified_if": "a superseded attestation is admitted unflagged, or an honest earlier result is rejected"
+  },
+  "acceptance_contract_sha256": "b271cce6837c552e33aed9213707a49d0b58fcd11d03cc647b508e7fcf6dd8ee",
+  "cohort_id": "a11",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "function_id": "F8",
+  "hypothesis": "Verifying artifacts only at the commit a result declares admits a false green: a result can attest to bytes that a later commit has superseded, stay VALID, and read back byte-identically while describing an ancestor. This is the exact inverse of the defect where reading only at branch tip falsely rejects honest work, so neither check alone is sufficient.",
+  "idempotency_key": "a11-u13:7806fefac9beebbe",
+  "immutable_input_manifest_sha256": "7806fefac9beebbe7daa506309931911ed6818ec8a42894a51ebee6f23c2c30f",
+  "model": "claude-opus-5-thinking-high",
+  "owned_paths": [
+    "workstreams/po03/tools/ingest_wave.py",
+    "workstreams/po03/tools/control_plane.py",
+    "workstreams/po03/control/units/a11/",
+    "workstreams/po03/tests/test_a11_"
+  ],
+  "owner": "po03-worker-a11",
+  "result_slot": {
+    "branch": "cursor/po03-a11-custody-remediation-ed20",
+    "unit_record": "workstreams/po03/control/units/a11/a11-u13.json"
+  },
+  "source_hashes": {
+    "capsule_base_commit": "754aeda",
+    "note": "Pinned by commit rather than by working-tree hash, per the a12-u02 remediation and the source-capsule drift finding."
+  },
+  "unit_id": "a11-u13",
+  "wave_id": "po03-wave-a"
+}

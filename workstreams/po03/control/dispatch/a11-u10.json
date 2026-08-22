@@ -1,0 +1,32 @@
+{
+  "acceptance": {
+    "artifact": "anchored verify_chain plus recurrence tests plus the corrected coordinator test",
+    "assertion": "verify_chain detects tail truncation and suffix rewrite in 100% of injected cases, using a sealed head anchor with write-ahead intent so a crash mid-append is distinguishable from a truncation. The change must be byte-compatible with the 353 existing ledger rows and must not invalidate them. Additionally, the coordinator's test named test_truncation_is_detected_by_projection_gap must be corrected: it asserts verify_chain returns no errors after truncation while claiming detection in its name, which is a false green in the gate itself. Reproduced by the coordinator on 2026-08-22: truncating three of five rows yielded zero chain errors.",
+    "falsified_if": "any truncation or suffix rewrite still verifies clean, or an existing ledger row is invalidated, or the corrected test still asserts non-detection"
+  },
+  "acceptance_contract_sha256": "ee6b1d11bc2689a96f111c214fc50e13e2f13471c51bfdae45dacec082a3740b",
+  "cohort_id": "a11",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "function_id": "F8",
+  "hypothesis": "A pure per-row hash chain cannot detect tail truncation or suffix rewrite with recomputed digests, so the ledger's tamper detection is blind to exactly the attack that hides evidence; and the coordinator's own test suite encodes that blindness as acceptable.",
+  "idempotency_key": "a11-u10:4333324d8d0accfe",
+  "immutable_input_manifest_sha256": "4333324d8d0accfee6e04301ea3e8eaa6626492d13cc898edff821c25886f770",
+  "model": "claude-opus-5-thinking-high",
+  "owned_paths": [
+    "workstreams/po03/tools/control_plane.py",
+    "workstreams/po03/tests/test_control_plane.py",
+    "workstreams/po03/control/units/a11/",
+    "workstreams/po03/tests/test_a11_"
+  ],
+  "owner": "po03-worker-a11",
+  "result_slot": {
+    "branch": "cursor/po03-a11-custody-remediation-ed20",
+    "unit_record": "workstreams/po03/control/units/a11/a11-u10.json"
+  },
+  "source_hashes": {
+    "capsule_base_commit": "754aeda",
+    "note": "Pinned by commit rather than by working-tree hash, per the a12-u02 remediation and the source-capsule drift finding."
+  },
+  "unit_id": "a11-u10",
+  "wave_id": "po03-wave-a"
+}

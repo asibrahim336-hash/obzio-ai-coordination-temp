@@ -16,7 +16,7 @@
   "wave_state": {
     "wave_id": "po03-wave-a",
     "units_required": 64,
-    "units_registered": 83,
+    "units_registered": 91,
     "ledger_rows": 299,
     "ledger_chain_valid": true,
     "false_completions": 0,
@@ -32,19 +32,20 @@
     "units_set_to_COMPLETED": 0,
     "completion_note": "No unit has been set to COMPLETED. Ingestion verified 20 units by artifact read-back, but the coordinator withheld completion after cohort a2 proved that the completion path itself was unsound. Completion resumes only after the remediation cohort closes the actor-authority and commit-verification defects.",
     "cohorts_returned": [
+      "a1",
       "a2",
-      "a6"
+      "a4",
+      "a6",
+      "a7",
+      "a9"
     ],
     "cohorts_in_flight": [
-      "a1",
       "a3",
-      "a4",
       "a5",
-      "a7",
       "a8",
-      "a9",
       "a10",
-      "a11"
+      "a11",
+      "a12"
     ]
   },
   "reproduced_defects_in_the_coordinator_control_plane": [
@@ -167,6 +168,45 @@
       "state": "FIXED",
       "disposition": "RETAIN",
       "evidence": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32559213710"
+    },
+    {
+      "id": "DEF-13",
+      "severity": "CRITICAL",
+      "found_by": "po03-worker-a1 (claude-opus-5-thinking-high), FIND-A1-02; reproduced by the coordinator",
+      "defect": "A pure per-row hash chain cannot detect tail truncation or suffix rewrite with recomputed digests. verify_chain reports a clean chain after rows are removed from the end.",
+      "reproduction": "Appended five rows, truncated to two, ran verify_chain: zero errors reported.",
+      "why_it_matters": "The ledger's tamper detection is blind to precisely the attack that hides evidence. Every custody claim in this commission rests on the ledger being tamper-evident.",
+      "compounding_self_indictment": "The coordinator's own test test_truncation_is_detected_by_projection_gap asserts that verify_chain returns no errors after truncation, while its name claims detection. The gate encoded the blind spot as acceptable, which is a false green inside the acceptance mechanism itself.",
+      "remediation_unit": "a11-u10",
+      "state": "OPEN_UNDER_REMEDIATION"
+    },
+    {
+      "id": "DEF-14",
+      "severity": "MEDIUM",
+      "found_by": "po03-worker-a1, FIND-A1-01; reproduced by the coordinator",
+      "defect": "HEARTBEAT is not an admissible event kind and project_units has no case for it, so lease renewal cannot be recorded and a healthy renewing worker is reported as an expired lease.",
+      "reproduction": "HEARTBEAT is absent from EVENT_KINDS.",
+      "why_it_matters": "Cannot cause false completion, since fencing still refuses an evicted holder, but it can evict a live worker and inflate recovery counts, which corrupts the operating metrics.",
+      "remediation_unit": "a11-u11",
+      "state": "OPEN_UNDER_REMEDIATION"
+    },
+    {
+      "id": "DEF-15",
+      "severity": "MEDIUM",
+      "found_by": "po03-worker-a1, FIND-A1-03",
+      "defect": "make_result derives attempt.checkpoint_seq from the artifact count and takes lease_id and fence_token from CLI defaults rather than from the ledger, so the attempt block is decorative and unusable as recovery evidence.",
+      "remediation_unit": "a11-u12",
+      "state": "OPEN_UNDER_REMEDIATION"
+    },
+    {
+      "id": "DEF-16",
+      "severity": "HIGH",
+      "found_by": "po03-worker-a1, FIND-A1-04",
+      "defect": "Verifying artifacts only at the commit a result declares admits a false green: a result can attest to bytes a later commit superseded, stay VALID, and read back byte-identically while describing an ancestor.",
+      "significance": "This is the exact inverse of DEF-05, where reading only at branch tip falsely rejected honest work. Neither check alone is sufficient; ingestion needs both, verifying at the declared commit and flagging attestations the tip has superseded.",
+      "self_reported_instance": "a1-u01 attested 100% tamper detection for a ledger.py that had since gained set_fault_hook. a1 found this by auditing its own documents, re-ran the campaign on current bytes and re-emitted a1-u01 and a1-u05.",
+      "remediation_unit": "a11-u13",
+      "state": "OPEN_UNDER_REMEDIATION"
     }
   ],
   "findings_routed_to_other_cohorts": [
@@ -210,5 +250,11 @@
     "manual_subagent_launch_requested_of_ahmed": false
   },
   "outcome": "NOT_YET",
-  "outcome_basis": "Recovery acceptance currently FAILS on cohort a2's evidence, and the coordinator has withheld every completion until the remediation cohort closes the actor-authority and commit-verification defects. Reporting PASS at this checkpoint would itself be the false completion this commission forbids."
+  "outcome_basis": "Recovery acceptance currently FAILS on cohort a2's evidence, and the coordinator has withheld every completion until the remediation cohort closes the actor-authority and commit-verification defects. Reporting PASS at this checkpoint would itself be the false completion this commission forbids.",
+  "a1_positive_confirmation": {
+    "finding": "FIND-A1-05",
+    "result": "Driven over all fifteen Obzio states, the coordinator's cmd_complete refused completion from all thirteen states other than PARENT_INGESTED.",
+    "significance": "An independent cohort exhaustively confirmed the one invariant the commission cares about most, by search rather than by reading the code.",
+    "disposition": "RETAIN"
+  }
 }

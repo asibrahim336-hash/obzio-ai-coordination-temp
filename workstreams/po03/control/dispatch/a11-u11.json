@@ -1,0 +1,32 @@
+{
+  "acceptance": {
+    "artifact": "heartbeat handling plus recurrence tests",
+    "assertion": "A heartbeat is recordable, renewal advances the projected expires_at, and a worker renewing on schedule is never reported in expired_leases across a simulated long-running unit; recovery counts are not inflated by live workers. Reproduced by the coordinator: HEARTBEAT is absent from EVENT_KINDS.",
+    "falsified_if": "a renewing worker is still reported expired, or renewal is not durably recorded"
+  },
+  "acceptance_contract_sha256": "9d5bc512b0a07d6e7c898c294fb803083b38e70b3461548c7618f9042d11ca38",
+  "cohort_id": "a11",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "function_id": "F8",
+  "hypothesis": "Lease renewal cannot be recorded at all, because HEARTBEAT is not an admissible event kind and project_units has no case for it, so a healthy renewing worker is reported as an expired lease and can be evicted while alive.",
+  "idempotency_key": "a11-u11:8f9ddd3a47b68935",
+  "immutable_input_manifest_sha256": "8f9ddd3a47b6893515fa40a7aba43d9117dc0c94392706bb4e3d3e86f1e6bfce",
+  "model": "claude-opus-5-thinking-high",
+  "owned_paths": [
+    "workstreams/po03/tools/control_plane.py",
+    "workstreams/po03/tests/test_control_plane.py",
+    "workstreams/po03/control/units/a11/",
+    "workstreams/po03/tests/test_a11_"
+  ],
+  "owner": "po03-worker-a11",
+  "result_slot": {
+    "branch": "cursor/po03-a11-custody-remediation-ed20",
+    "unit_record": "workstreams/po03/control/units/a11/a11-u11.json"
+  },
+  "source_hashes": {
+    "capsule_base_commit": "754aeda",
+    "note": "Pinned by commit rather than by working-tree hash, per the a12-u02 remediation and the source-capsule drift finding."
+  },
+  "unit_id": "a11-u11",
+  "wave_id": "po03-wave-a"
+}
