@@ -89,6 +89,7 @@ class ImmutableReadbackTests(unittest.TestCase):
     def test_exact_hypothesis_on_unrelated_forced_branch_move(self):
         with tempfile.TemporaryDirectory(prefix="wa025-reproduction-test-") as temp:
             result = run_reproduction(Path(temp))
+            self.assertNotIn(temp, json.dumps(result))
         self.assertTrue(result["success"])
         self.assertEqual("SUPPORTED", result["hypothesis_outcome"])
         self.assertEqual(
