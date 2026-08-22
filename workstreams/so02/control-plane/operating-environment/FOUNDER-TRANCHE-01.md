@@ -5,6 +5,10 @@
 > - **The per-wave founder touch-point budget (Q7) is withdrawn.** It conflated not overburdening the founder with not sending him routine relay work; those are different axes.
 > - **One action was missing.** Authenticating MCP integrations is not the whole of the environment work. This environment is database-managed, established positively rather than inferred, so the applied `environment.json` is valid and inert until the environment record points at the repository file. That is a separate and prior action.
 >
+> - **The route to the existing key is a hand mirror, not an integration.** The Supabase MCP has no Edge-secrets tool, so authenticating it would never have reached the key. Reveal the key once in the Supabase dashboard and store that same value as a repository-scoped Cloud Agent secret named `CURSOR_API_KEY`. Every programmatic alternative requires first creating a Supabase token strictly more powerful than the key it would fetch.
+> - **MCP authentication does not need the desktop IDE.** There is a web OAuth callback, so it can be completed from `cursor.com/agents`.
+> - **Four `AUREA_E2E_*` secrets should be retired.** Their project does not resolve in public DNS, and two of them are a live email and password reaching every run for no benefit.
+>
 > Everything below is retained as written except where the notes above override it.
 
 # Founder tranche 01 — unblock programmatic control
