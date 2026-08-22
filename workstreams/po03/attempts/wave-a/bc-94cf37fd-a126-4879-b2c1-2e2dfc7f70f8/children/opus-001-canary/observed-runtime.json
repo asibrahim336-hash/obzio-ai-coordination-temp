@@ -1,0 +1,75 @@
+{
+  "evidence_version": "PO03-CHILD-CANARY-OBSERVED-RUNTIME-v1",
+  "observed_at": "2026-08-22T07:06:50Z",
+  "recording_rule": "Record what the provider actually exposes to this worker. Where an exact value is not exposed, record NOT_SUPPORTED with the observed boundary rather than asserting the requested value.",
+  "sources": [
+    {
+      "source": "cursor-cloud MCP run-info",
+      "observed_fields": {
+        "bcId": "bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8",
+        "branchName": "cursor/po03-independent-challenger-70f8",
+        "repoUrl": "github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+        "originalModelName": "gpt-5.6-sol-max-fast",
+        "status": "WAITING_FOR_BACKGROUND_WORK",
+        "setupStatus": "INSTALL_SUCCEEDED",
+        "source": "web",
+        "url": "https://cursor.com/agents/bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8"
+      },
+      "scope_note": "These fields describe the parent cloud-agent run. run-info exposes no per-subagent run identifier and no per-subagent model identifier."
+    },
+    {
+      "source": "cursor-cloud MCP environment-info",
+      "observed_fields": {
+        "environmentPublicId": "69dbfc52-9df5-11f1-a7d1-d6b4613131ce",
+        "environmentVersionPublicId": "69eb84fe-9df5-11f1-a7d1-d6b4613131ce",
+        "environmentSource": "Team",
+        "recordedVia": "RUNTIME_FORWARD_FILL",
+        "egressRestricted": false,
+        "buildResolution": "no_finished_builds"
+      }
+    },
+    {
+      "source": "worker runtime self-report",
+      "observed_fields": {
+        "model_family_self_report": "Claude Opus 5",
+        "reasoning_or_thinking_control_self_report": "NOT_SUPPORTED",
+        "execution_role": "subagent executing inside the parent cloud-agent run",
+        "auto_model_selection_self_report": "NOT_SUPPORTED"
+      },
+      "scope_note": "A self-report is worker-side testimony, not a provider-attested configuration record."
+    },
+    {
+      "source": "local shell",
+      "observed_fields": {
+        "python": "3.12.3 (main, Mar 23 2026, 19:04:32) [GCC 13.3.0]",
+        "uname": "Linux 6.12.94+ x86_64 GNU/Linux",
+        "workspace": "/workspace",
+        "git_user_name": "Cursor Agent",
+        "git_user_email": "cursoragent@cursor.com"
+      }
+    }
+  ],
+  "interpretation": {
+    "provider": "Cursor",
+    "requested_exact_model": "claude-opus-5-thinking-high",
+    "requested_reasoning_control": "high",
+    "observed_model_self_report": "claude-opus-5",
+    "observed_model_provider_attested": "NOT_SUPPORTED",
+    "observed_reasoning_control": "NOT_SUPPORTED",
+    "observed_auto_model_selection": "NOT_SUPPORTED",
+    "requested_configuration_match": "NOT_VERIFIABLE_BY_CHILD",
+    "model_exposure_boundary": "The only provider-exposed model string reachable from this worker is run-info.originalModelName = gpt-5.6-sol-max-fast, which is the parent run's model, not this worker's. No per-subagent model or reasoning-control field is exposed, so exact-configuration compliance with claude-opus-5-thinking-high cannot be proven from inside the child.",
+    "provider_run_id": "bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8",
+    "provider_run_id_scope": "PARENT_RUN_ONLY",
+    "child_provider_run_id": "NOT_SUPPORTED",
+    "child_provider_run_id_boundary": "This worker executes as a subagent of the parent cloud-agent run and is not issued a distinct provider run identifier.",
+    "isolation_observed": {
+      "separate_vm": false,
+      "separate_workspace_checkout": false,
+      "separate_branch": false,
+      "separate_os_process_for_readback": true,
+      "boundary": "Isolation here is subagent-level inside the parent run, sharing /workspace and branch cursor/po03-independent-challenger-70f8. It is not the isolated-cloud-VM/worktree isolation the commission assumes for independent work units. Write-collision safety for this unit rests on the owned-subtree path boundary, not on machine isolation."
+    }
+  },
+  "decision_changed": []
+}
