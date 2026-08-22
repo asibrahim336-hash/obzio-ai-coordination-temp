@@ -1,0 +1,73 @@
+{
+  "protocol_version": "PO03-WA-024-STRATEGY-PROPOSALS-v1",
+  "task_id": "PO03-WA-024",
+  "state": "STRATEGY_PROPOSAL",
+  "state_note": "This file records strategy proposals only. A strategy proposal is a recommendation about how the programme should operate; it is not a source claim, not a hypothesis, not a reproduction result and not a mechanism change. None of these proposals is executed by this unit, and none is an acceptance decision.",
+  "proposed_at": "2026-08-22T07:56:00Z",
+  "authority_note": "Proposals only. This producer holds no authority to change wave policy, the commission or any control surface, and claims none.",
+  "strategy_proposals": [
+    {
+      "proposal_id": "SP-01",
+      "title": "Decompose the clean-clone guardrail into four separately enforceable gates.",
+      "grounded_in": ["H-WA024-01", "H-WA024-02", "H-WA024-05", "H-WA024-07"],
+      "observation": "The commission states one guardrail: clean-clone reproduction without provider memory, /tmp, uncommitted files or a warm checkout. The reproduction shows that phrase covers four independent failure modes with different signatures. Worktree contamination shows up as AGREE across all environments and is invisible to any warm-versus-clean comparison. History depth shows up as DEPTH_SENSITIVE. Ref reachability fails in every freshly materialised tree regardless of depth. Ambient environment shows up as CLEAN_ONLY_PASS and depends on the invoking host rather than on repository content.",
+      "proposal": "State the guardrail as four gates a producer must pass separately, and require each Wave A return to report a disposition per gate: the workload leaves the tree byte-identical; the workload needs no history the checkout does not fetch; every identifier the return records is resolvable from a ref the return also records; the workload reads no ambient variable or temporary path.",
+      "why_it_matters": "A single composite guardrail is satisfiable by a producer that only checks the mode it happens to think of. Four named gates make an omission visible as a missing field rather than as an unstated assumption.",
+      "cost": "Four extra fields per return, and one additional harness invocation.",
+      "decision_owner": "coordinator"
+    },
+    {
+      "proposal_id": "SP-02",
+      "title": "Separate verified-at digests from frozen-forever digests in immutable inputs.",
+      "grounded_in": ["H-WA024-04"],
+      "observation": "All three mechanism changes this unit proposes are correct and independently verified, and every one of them invalidates a digest pinned in source_base of all 64 Wave A immutable inputs: workflow_sha256 for MC-01, minimum_protocol_ancestor for MC-02, and validator_sha256, transactional_schema_sha256 and seed_tests_sha256 for MC-03. As specified, fixing a defect that Wave A was commissioned to find breaks the provenance of the wave that found it.",
+      "proposal": "Record engineering-surface digests as verified_against rather than as frozen invariants, and add a change-control field naming the unit and commit that superseded each one. Keep genuinely immutable fields, such as the acceptance-contract digest and the attempt identity, frozen as they are now.",
+      "why_it_matters": "Without this, a producer faces a choice between leaving a known defect in place and invalidating the frozen inputs of 63 sibling attempts. That is a structural incentive against reporting findings, and it will bite hardest on the units that find the most.",
+      "cost": "One additional field per pinned digest, and a coordinator step to record supersession.",
+      "decision_owner": "coordinator"
+    },
+    {
+      "proposal_id": "SP-03",
+      "title": "Require every declared command to be runnable outside Actions.",
+      "grounded_in": ["H-WA024-06", "H-WA024-03"],
+      "observation": "Both repository workflows spell the interpreter as bare 'python', which resolves only because actions/setup-python ran in the same job. Probe p20 shows that name absent on a host where no setup action ran. The declared contract-test command also names a working-directory-relative start directory, so probe p12 shows it failing from a nested directory in all three environments. Neither is a CI defect: both commands are correct inside Actions. Both make the commission's clean-clone reproduction requirement harder to satisfy for a reader who is not on a runner.",
+      "proposal": "Require every command a workflow declares to be reproducible from a documented one-command entry point that names its interpreter explicitly and resolves paths from the repository root. This unit's harness/run.sh is offered as a worked example rather than as a standard.",
+      "why_it_matters": "The programme's evidence standard is clean-clone recurrence. A command that only runs on a runner cannot be re-derived by a reader, so the evidence is weaker than it looks.",
+      "cost": "One entry point per workload, and a small amount of duplication between the workflow and the entry point.",
+      "decision_owner": "coordinator"
+    },
+    {
+      "proposal_id": "SP-04",
+      "title": "Fetch the recorded ref before any custody read-back, and treat read-back as a distinct job.",
+      "grounded_in": ["H-WA024-07"],
+      "observation": "Probes p21 and p22 show that the result commits recorded in the PO-03 control files cannot be resolved from a freshly materialised single-ref tree at any depth, while probe p23 shows a commit reachable from the checked-out branch failing only at depth 1. Reachability, not depth, is the discriminating variable, so no fetch-depth setting fixes this.",
+      "proposal": "Give custody read-back its own job that fetches each recorded ref explicitly before reading, and require that job to fail closed when a recorded commit cannot be resolved. Pair it with MC-03, which is what makes the ref available to fetch.",
+      "why_it_matters": "Read-back is the step that converts a producer claim into evidence. A read-back that cannot run in CI as configured leaves the custody chain resting on whoever happened to have a multi-branch clone.",
+      "cost": "One extra job and one fetch per recorded ref.",
+      "decision_owner": "coordinator"
+    },
+    {
+      "proposal_id": "SP-05",
+      "title": "Keep the static control alongside the differential harness rather than choosing between them.",
+      "grounded_in": ["H-WA024-04", "H-WA024-02"],
+      "observation": "The two instruments in this unit have different reach. The differential harness found the bytecode contamination, which no amount of reading would have revealed, but it can only speak about the paths a probe happens to exercise. The static control found the prefix-only-correct identifier in 67 files, which the harness could only demonstrate for the single input this unit was given. Each instrument's blind spot is the other's strength.",
+      "proposal": "Retain both as standing Wave A instruments, and treat a finding confirmed by both as stronger evidence than a finding from either alone. Do not retire the static control on the grounds that the harness executes real workloads.",
+      "why_it_matters": "The largest single defect this unit found is a class defect spanning 67 files. Execution-only evidence would have reported it as one input's problem.",
+      "cost": "Two instruments to maintain, and a lint allowlist to keep current.",
+      "decision_owner": "coordinator"
+    }
+  ],
+  "not_proposed": [
+    {
+      "subject": "Any change to wave policy, dispatch order, model assignment or the acceptance contract",
+      "status": "NOT_SUPPORTED",
+      "boundary": "This unit produced no evidence bearing on those questions. Recording a recommendation without evidence would be invention."
+    },
+    {
+      "subject": "Promotion, acceptance or completion of this unit",
+      "status": "NOT_SUPPORTED",
+      "boundary": "Reserved to the coordinator. A producer cannot accept its own result, and this unit claims no COMPLETED or ACCEPTED state."
+    }
+  ],
+  "decision_changed": []
+}

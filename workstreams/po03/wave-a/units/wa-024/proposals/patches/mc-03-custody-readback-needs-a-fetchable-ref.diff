@@ -1,0 +1,168 @@
+diff --git a/workstreams/po03/contracts/transactional-result.schema.json b/workstreams/po03/contracts/transactional-result.schema.json
+index 1622fa9..fc96f20 100644
+--- a/workstreams/po03/contracts/transactional-result.schema.json
++++ b/workstreams/po03/contracts/transactional-result.schema.json
+@@ -96,7 +96,8 @@
+         "committed_at": { "type": ["string", "null"] },
+         "verified_at": { "type": ["string", "null"] },
+         "parent_ingested_at": { "type": ["string", "null"] },
+-        "result_commit_id": { "type": ["string", "null"] }
++        "result_commit_id": { "type": ["string", "null"] },
++        "result_commit_ref": { "type": ["string", "null"] }
+       }
+     },
+     "artifacts": {
+diff --git a/workstreams/po03/tests/test_validate_contracts.py b/workstreams/po03/tests/test_validate_contracts.py
+index 4b4549f..d53afe4 100644
+--- a/workstreams/po03/tests/test_validate_contracts.py
++++ b/workstreams/po03/tests/test_validate_contracts.py
+@@ -13,6 +13,7 @@ SPEC.loader.exec_module(MODULE)
+ 
+ 
+ H = "a" * 64
++C = "c" * 40
+ 
+ 
+ def committed_result():
+@@ -37,20 +38,20 @@ def committed_result():
+         "result_transaction": {
+             "result_txn_id": "result-1",
+             "state": "INGESTED",
+-            "manifest_uri": "git:po03/run/po03-test-1@abc:manifest.json",
++            "manifest_uri": f"git:po03/run/po03-test-1@{C}:manifest.json",
+             "manifest_sha256": H,
+             "artifact_count": 1,
+             "total_bytes": 7,
+             "committed_at": "2026-08-22T06:01:00Z",
+             "verified_at": "2026-08-22T06:02:00Z",
+             "parent_ingested_at": "2026-08-22T06:03:00Z",
+-            "result_commit_id": "abc123",
++            "result_commit_id": C,
+         },
+         "artifacts": [
+             {
+                 "artifact_id": "artifact-1",
+                 "logical_name": "result.json",
+-                "content_uri": "git:po03/run/po03-test-1@abc:result.json",
++                "content_uri": f"git:po03/run/po03-test-1@{C}:result.json",
+                 "sha256": H,
+                 "bytes": 7,
+                 "media_type": "application/json",
+@@ -93,6 +94,40 @@ class TransactionalResultTests(unittest.TestCase):
+     def test_valid_committed_result(self):
+         self.assertEqual([], MODULE.validate_result(committed_result()))
+ 
++    def test_ingested_custody_needs_a_fetchable_ref(self):
++        self.assert_invalid(
++            lambda d: d["result_transaction"].update(manifest_uri="manifest.json"),
++            "fetchable ref",
++        )
++
++    def test_a_bare_path_manifest_uri_is_accepted_before_ingestion(self):
++        doc = committed_result()
++        doc["obzio_state"] = "RESULT_COMMITTED"
++        doc["completion_actor"] = None
++        doc["independent_acceptance"] = {"state": "NOT_TESTED", "reviewer_id": None, "receipt_uri": None}
++        doc["result_transaction"]["manifest_uri"] = "manifest.json"
++        self.assertEqual([], MODULE.validate_result(doc))
++
++    def test_locator_commit_must_match_the_result_commit(self):
++        self.assert_invalid(
++            lambda d: d["result_transaction"].update(
++                manifest_uri=f"git:po03/run/po03-test-1@{'b' * 40}:manifest.json"
++            ),
++            "does not match result_commit_id",
++        )
++
++    def test_declared_ref_must_agree_with_the_locator(self):
++        self.assert_invalid(
++            lambda d: d["result_transaction"].update(result_commit_ref="refs/heads/other"),
++            "disagrees with the manifest_uri locator",
++        )
++
++    def test_readback_ref_is_recoverable_from_the_locator(self):
++        txn = committed_result()["result_transaction"]
++        self.assertEqual("po03/run/po03-test-1", MODULE.readback_ref(txn))
++        txn["result_commit_ref"] = "po03/run/po03-test-1"
++        self.assertEqual("po03/run/po03-test-1", MODULE.readback_ref(txn))
++
+     def test_completed_without_commit_is_impossible(self):
+         self.assert_invalid(
+             lambda d: d["result_transaction"].update(result_commit_id=None),
+diff --git a/workstreams/po03/tools/validate_contracts.py b/workstreams/po03/tools/validate_contracts.py
+index a75427f..df2be94 100644
+--- a/workstreams/po03/tools/validate_contracts.py
++++ b/workstreams/po03/tools/validate_contracts.py
+@@ -19,6 +19,8 @@ from typing import Any
+ 
+ SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+ 
++GIT_LOCATOR_RE = re.compile(r"^git:(?P<ref>[^@\s]+)@(?P<commit>[0-9a-f]{40}):(?P<path>\S+)$")
++
+ RESULT_STATES = {
+     "CREATED",
+     "LEASED",
+@@ -39,6 +41,8 @@ RESULT_STATES = {
+ 
+ TERMINAL_RESULT_STATES = {"RESULT_COMMITTED", "PARENT_INGESTED", "COMPLETED"}
+ 
++INGESTED_CUSTODY_STATES = {"PARENT_INGESTED", "COMPLETED"}
++
+ 
+ def _nonempty(value: Any) -> bool:
+     return isinstance(value, str) and bool(value.strip())
+@@ -52,6 +56,44 @@ def _required(obj: dict[str, Any], names: tuple[str, ...], prefix: str) -> list[
+     return [f"{prefix}.{name}: missing" for name in names if name not in obj]
+ 
+ 
++def _readback_ref_errors(txn: dict[str, Any]) -> list[str]:
++    """A recorded commit id is verifiable only if a fetchable ref accompanies it.
++
++    Producer result commits live on their own branches.  A single-ref checkout,
++    which is what actions/checkout produces, cannot resolve such a commit at any
++    depth, so custody read-back needs the ref as well as the object id.
++    """
++    errors: list[str] = []
++    declared_ref = txn.get("result_commit_ref")
++    locator = txn.get("manifest_uri")
++    match = GIT_LOCATOR_RE.fullmatch(locator) if isinstance(locator, str) else None
++    if match is None:
++        if not _nonempty(declared_ref):
++            errors.append(
++                "$.result_transaction: ingested custody needs a fetchable ref, either "
++                "result_commit_ref or a git:<ref>@<commit>:<path> manifest_uri"
++            )
++        return errors
++    if match.group("commit") != txn["result_commit_id"]:
++        errors.append(
++            "$.result_transaction.manifest_uri: locator commit does not match result_commit_id"
++        )
++    if _nonempty(declared_ref) and declared_ref != match.group("ref"):
++        errors.append(
++            "$.result_transaction.result_commit_ref: disagrees with the manifest_uri locator"
++        )
++    return errors
++
++
++def readback_ref(txn: dict[str, Any]) -> str | None:
++    """Return the ref a verifier must fetch before reading the result commit."""
++    if _nonempty(txn.get("result_commit_ref")):
++        return str(txn["result_commit_ref"]).strip()
++    locator = txn.get("manifest_uri")
++    match = GIT_LOCATOR_RE.fullmatch(locator) if isinstance(locator, str) else None
++    return match.group("ref") if match else None
++
++
+ def validate_result(doc: dict[str, Any]) -> list[str]:
+     errors: list[str] = []
+     required = (
+@@ -185,6 +227,9 @@ def validate_result(doc: dict[str, Any]) -> list[str]:
+             if isinstance(artifact, dict) and not _nonempty(artifact.get("readback_verified_at")):
+                 errors.append(f"$.artifacts[{index}].readback_verified_at: required after result commit")
+ 
++    if state in INGESTED_CUSTODY_STATES:
++        errors.extend(_readback_ref_errors(txn))
++
+     if state in {"PARENT_INGESTED", "COMPLETED"} and not _nonempty(txn["parent_ingested_at"]):
+         errors.append("$.result_transaction.parent_ingested_at: required after parent ingestion")
+     if state == "COMPLETED" and doc["completion_actor"] != "coordinator":
