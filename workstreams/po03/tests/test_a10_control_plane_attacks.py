@@ -6,6 +6,30 @@ workstreams/po03/review/sonnet/attacks/scratch_control_plane.py). No shared
 ledger, dispatch record or other cohort's path is touched. This follows the
 frozen plan in workstreams/po03/review/sonnet/criteria-coordinator-control-plane.json.
 
+v2 revision note (post coordinator follow-up on the v1 a10-u03/u01/u02/u04
+results): two structural fixes and a rewrite of every BREAK/BOUNDARY case's
+assertion direction.
+
+1. The scratch harness (scratch_control_plane.py) used to stage only two
+   hand-picked files. Cohort a12 made validate_contracts.py load its schema
+   from a sibling file at import time, and every subprocess here started
+   dying with FileNotFoundError before reaching the code under attack --
+   including every positive control, not a stale assertion. Root-caused and
+   fixed there as DEF-19; see that module's docstring.
+2. INV-6's original BREAK was reproduced against a pre-fix snapshot; the real
+   fix landed at commit 6f5e386 before the coordinator ingested this
+   reviewer's v1 result (a snapshot-coupling defect in the audit direction,
+   per workstreams/po03/evidence/snapshot-coupling.json). Every BREAK/BOUNDARY
+   case below now follows the binding rule stated by the coordinator: assert
+   an invariant, or assert reproduction at an explicit immutable pin --
+   never assert that a defect currently exists against a moving HEAD. Cases
+   for defects already fixed are pinned to the last pre-fix commit; cases for
+   defects still live with a named future remediation unit are rewritten as
+   `@unittest.expectedFailure` guards asserting the desired, fixed behaviour
+   (exactly as cohort a2 did for its eight), so they read red today and an
+   *unexpected success* -- not a silent pass -- is the signal that the
+   remediation landed.
+
 Run with:
     python3 -I -m unittest workstreams.po03.tests.test_a10_control_plane_attacks -v
 or via the full discovery gate:
@@ -25,6 +49,20 @@ _ATTACKS_DIR = Path(__file__).resolve().parents[1] / "review" / "sonnet" / "atta
 sys.path.insert(0, str(_ATTACKS_DIR))
 
 from scratch_control_plane import ScratchControlPlane, sha256_bytes  # noqa: E402
+
+# Last commit before 6f5e386 ("po03: fix allowlist path normalisation and
+# cover custody invariants"), which replaced the str.lstrip('./') normaliser
+# this reviewer's original INV-6 finding exploited. Pinning here means the
+# historical finding stays provable forever regardless of what HEAD contains.
+INV6_PRE_FIX_COMMIT = "dd2fcc63694bea365153a5930472816037b6e4ff"
+
+# origin/cursor/po03-wave-a-transactional-factory-ed20 as merged into this
+# reviewer's branch for this v2 audit cycle -- an already-pushed, shared,
+# immutable commit. Used to pin findings that are still live but have no
+# named remediation unit yet (so an expected-failure guard would have no
+# remediation to name), and for a boundary whose remediation contract
+# explicitly permits more than one shape of fix.
+AUDIT_SNAPSHOT_COMMIT = "083ff506cde258cc9cbfde2b49c3f61aa6c2401c"
 
 
 class ScratchCaseMixin(unittest.TestCase):
@@ -85,12 +123,22 @@ class TestInv2FenceToken(ScratchCaseMixin):
         self.assertNotEqual(outcome.returncode, 0, "HELD requires the stale fence to be rejected")
         self.assertIn("stale", (outcome.stdout + outcome.stderr).lower())
 
-    def test_b_never_leased_fence_token_is_accepted_BREAK(self):
-        """BREAK: ingest_result only checks `incoming_fence < unit['fence_token']`
-        (a monotonicity check), never that the fence token was actually granted
-        by a `lease` call. A unit that has *never* been leased starts at
-        fence_token == 0 in the projection, so any self-chosen fence_token >= 1
-        is accepted, impersonating a lease holder that never existed."""
+    @unittest.expectedFailure
+    def test_defect_never_leased_fence_token_must_be_rejected(self):
+        """Desired invariant, not yet held. Remediation dispatched as
+        a11-u03 ("hardened fence check plus recurrence test"; a2 measured 10
+        of 10 unissued higher fences accepted before the fix). Currently
+        BROKEN against current HEAD: ingest_result only checks
+        `incoming_fence < unit['fence_token']` (a monotonicity check), never
+        that the fence token was actually granted by a `lease` call. A unit
+        that has *never* been leased starts at fence_token == 0 in the
+        projection, so any self-chosen fence_token >= 1 is accepted,
+        impersonating a lease holder that never existed. Written for the
+        FIXED behaviour per the binding pin-or-invariant rule: fails today
+        (expected), and will surface as an *unexpected success* -- not a
+        silent pass -- the moment a11-u03 lands, which is the signal to
+        remove this decorator and promote it to a plain positive control.
+        """
         dispatch = self.scp.create_unit("inv2b-u1", "attacker", ["workstreams/po03/control/units/attacker/"])
         # Deliberately never call self.scp.lease(...): unit["fence_token"] stays 0.
         content = b'{"attempt": "never leased, fence fabricated"}'
@@ -109,14 +157,11 @@ class TestInv2FenceToken(ScratchCaseMixin):
             ],
         )
         outcome = self.scp.ingest(doc, tag="unleased")
-        self.assertEqual(
+        self.assertNotEqual(
             outcome.returncode,
             0,
-            f"expected the BREAK (ingestion succeeds with a never-leased fence token); got rejection: {outcome.stdout} {outcome.stderr}",
+            "desired: ingestion must reject a fence token that no `lease` call ever issued",
         )
-        rows = self.scp.ledger_rows()
-        ingested = [r for r in rows if r["unit_id"] == "inv2b-u1" and r["event"] == "PARENT_INGESTED"]
-        self.assertEqual(len(ingested), 1, "the never-leased fence token was committed into the ledger")
 
 
 class TestInv3DuplicateCallbacks(ScratchCaseMixin):
@@ -150,15 +195,27 @@ class TestInv3DuplicateCallbacks(ScratchCaseMixin):
         self.assertEqual(len(ingested), 1, "HELD requires exactly one PARENT_INGESTED row")
         self.assertEqual(len(duplicates), 1, "HELD requires the second call to be recorded as a duplicate")
 
-    def test_b_non_identical_resubmission_after_completed_enables_second_completion_BREAK(self):
-        """BREAK: dedup is keyed on sha256(canonical(full result document)), not on
-        task_id alone. A unit already COMPLETED that receives a *different*
-        result document (different artifact bytes, same dispatch/acceptance
-        hashes) is NOT recognised as a duplicate, is re-ingested, and the
-        generic `obzio_state = row['event']` fallback in project_units resets
-        the projected state from COMPLETED back to PARENT_INGESTED -- allowing
-        `complete` to run a second time and append a second COMPLETED row for
-        the same unit with different underlying artifacts."""
+    @unittest.expectedFailure
+    def test_defect_a_unit_must_never_accumulate_two_completed_events(self):
+        """Desired invariant, not yet held. This reviewer's original finding
+        (v1 a10-u03) was independently reproduced by the coordinator and is
+        now the single most severe finding of the wave -- registered as
+        a11-u14 at CRITICAL, above fabricated completion, because it
+        rewrites the content of an already-accepted deliverable while every
+        gate reports clean. Root causes, in the coordinator's own words:
+        dedup keys on sha256(canonical(the whole result document)) rather
+        than unit identity; ingestion has no terminal-state guard; the
+        projection lets a later event regress a unit out of COMPLETED; and
+        `cmd_complete` checks only the current state, never whether the unit
+        was EVER completed. This asserts the invariant a11-u14 is required
+        to hold -- at most one COMPLETED event may ever exist per unit --
+        rather than which specific call (ingest or complete) must be the one
+        to refuse the second attempt, so it stays meaningful regardless of
+        which of those four root causes a11 closes first. Per the binding
+        pin-or-invariant rule this is written for the desired behaviour, not
+        the current break, so it fails today (expected) and an unexpected
+        success is the signal a11-u14 landed.
+        """
         dispatch = self.scp.create_unit("inv3b-u1", "attacker", ["workstreams/po03/control/units/attacker/"])
         lease = self.scp.lease("inv3b-u1", "attacker")
         content_v1 = b'{"v": 1, "payload": "original"}'
@@ -203,29 +260,19 @@ class TestInv3DuplicateCallbacks(ScratchCaseMixin):
             checkpoint_seq=2,
             result_commit_id="e" * 40,
         )
-        ingest2 = self.scp.ingest(doc_v2, tag="v2")
-        self.assertEqual(
-            ingest2.returncode,
-            0,
-            f"expected the BREAK (second, non-identical ingestion accepted after COMPLETED); got: {ingest2.stdout} {ingest2.stderr}",
-        )
-        complete2 = self.scp.complete("inv3b-u1")
-        self.assertEqual(
-            complete2.returncode,
-            0,
-            f"expected the BREAK (second completion accepted for an already-COMPLETED unit); got: {complete2.stdout} {complete2.stderr}",
-        )
+        # Neither call's return code is asserted here: a11-u14 may close this
+        # by having `ingest` refuse the non-identical resubmission, by having
+        # `complete` refuse to run a second time, or both. What must hold
+        # regardless is the final ledger state.
+        self.scp.ingest(doc_v2, tag="v2")
+        self.scp.complete("inv3b-u1")
         rows = self.scp.ledger_rows()
         completed_rows = [r for r in rows if r["unit_id"] == "inv3b-u1" and r["event"] == "COMPLETED"]
         self.assertEqual(
             len(completed_rows),
-            2,
-            f"BREAK confirmed only if two distinct COMPLETED ledger rows exist for one unit; found {len(completed_rows)}",
-        )
-        self.assertNotEqual(
-            completed_rows[0]["payload"].get("result_commit_id"),
-            completed_rows[1]["payload"].get("result_commit_id"),
-            "the two COMPLETED rows reference two different result_commit_id values for the same unit_id",
+            1,
+            "desired invariant (a11-u14): at most one COMPLETED event may ever "
+            f"exist for one unit; found {len(completed_rows)}",
         )
 
 
@@ -306,7 +353,29 @@ class TestInv5WrongDispatchManifest(ScratchCaseMixin):
 
 class TestInv6AllowlistAndOwnershipEscape(ScratchCaseMixin):
     """INV-6: a write outside the allowlist or outside the owner's subtree
-    must not pass ingestion."""
+    must not pass ingestion.
+
+    This reviewer's v1 audit found `path_in_allowlist`/`check_ownership`
+    normalising with `path.strip().lstrip("./")`. Because `str.lstrip` treats
+    its argument as a character set, not a prefix, a leading run composed
+    only of '.' and '/' characters (e.g. "../") was stripped away entirely,
+    leaving a normalised string that looked safely inside an allowed/owned
+    prefix while the RAW string used for the actual filesystem join in
+    `ingest_result` still contained the traversal, resolved by the OS exactly
+    as written. That was fixed at commit 6f5e386, before the coordinator
+    ingested this reviewer's v1 result: `normalise_path` now returns None --
+    treated as "not in allowlist / not owned" by every caller -- for anything
+    absolute, empty, or containing a literal '.' or '..' *segment*, instead
+    of repairing it.
+
+    Per the binding "assert an invariant, or assert reproduction at an
+    explicit immutable pin" rule, the original finding is preserved forever
+    by pinning it to INV6_PRE_FIX_COMMIT rather than re-asserted against a
+    HEAD where it no longer reproduces. test_d/test_e below confirm the
+    corrected state against current code as live invariants, and test_f
+    reports one residual, still-live divergence in the same function this
+    reviewer's v1 audit did not find.
+    """
 
     def test_a_mid_string_traversal_is_rejected(self):
         dispatch = self.scp.create_unit("inv6a-u1", "attacker", ["workstreams/po03/control/units/attacker/"])
@@ -329,28 +398,139 @@ class TestInv6AllowlistAndOwnershipEscape(ScratchCaseMixin):
         outcome = self.scp.ingest(doc, tag="midtraversal")
         self.assertNotEqual(outcome.returncode, 0, "HELD requires a literal '..' segment to be rejected")
 
-    def test_b_leading_dotslash_traversal_escapes_repo_root_BREAK(self):
-        """BREAK: `path_in_allowlist`/`check_ownership` normalise with
-        `path.strip().lstrip("./")`. `str.lstrip` treats its argument as a set
-        of characters, not a prefix, so a leading run composed *only* of '.'
-        and '/' characters (e.g. "../") is stripped in its entirety, leaving a
-        normalised string that starts with an allowed/owned prefix and
-        contains no residual '..' component -- while the RAW string used for
-        the actual filesystem join (`artifact_root / relative`) still contains
-        the traversal and is resolved by the OS exactly as written, walking
-        out of the repo root before descending back into a path that merely
-        *looks* like it is inside workstreams/po03/control/units/attacker/.
+    def test_b_leading_dotslash_traversal_pinned_historical_BREAK(self):
+        """Pinned-historical: reproduces, forever, exactly as this reviewer
+        found it at INV6_PRE_FIX_COMMIT (dd2fcc6, the last commit before
+        6f5e386). Never re-targeted at a moving HEAD -- see class docstring.
         """
-        dispatch = self.scp.create_unit("inv6b-u1", "attacker", ["workstreams/po03/control/units/attacker/"])
-        lease = self.scp.lease("inv6b-u1", "attacker")
+        with tempfile.TemporaryDirectory(prefix="a10-attack-hist6b-") as histtmp:
+            historical = ScratchControlPlane(Path(histtmp), commit=INV6_PRE_FIX_COMMIT)
+            historical.write_ownership(
+                {
+                    "attacker": {"owned_prefixes": ["workstreams/po03/control/units/attacker/"]},
+                    "legit-reviewer": {"owned_prefixes": []},
+                }
+            )
+            dispatch = historical.create_unit("inv6b-u1", "attacker", ["workstreams/po03/control/units/attacker/"])
+            lease = historical.lease("inv6b-u1", "attacker")
 
-        decoy_content = b'{"not_owned_by_attacker": true, "lives_outside_repo_root": true}'
-        # Sibling of scp.root ("repo/"), i.e. genuinely outside the scratch
-        # repository / allowlist / owner subtree.
+            decoy_content = b'{"not_owned_by_attacker": true, "lives_outside_repo_root": true}'
+            # Sibling of historical.root ("repo/"), i.e. genuinely outside the
+            # scratch repository / allowlist / owner subtree.
+            historical.write_file_outside(
+                "workstreams/po03/control/units/attacker/escaped.json", decoy_content
+            )
+
+            traversal_uri = "../workstreams/po03/control/units/attacker/escaped.json"
+            doc = historical.build_result_doc(
+                dispatch,
+                fence_token=lease["fence_token"],
+                artifacts=[
+                    {
+                        "artifact_id": "a1",
+                        "logical_name": "inv6b-escaped",
+                        "content_uri": traversal_uri,
+                        "sha256": sha256_bytes(decoy_content),
+                        "bytes": len(decoy_content),
+                    }
+                ],
+            )
+            outcome = historical.ingest(doc, tag="leadingdotslash")
+            self.assertEqual(
+                outcome.returncode,
+                0,
+                f"historical reproduction at {INV6_PRE_FIX_COMMIT} must still hold "
+                f"(traversal outside repo root passes ingestion); got rejection: "
+                f"{outcome.stdout} {outcome.stderr}",
+            )
+            # Prove the decoy file genuinely lives outside the repo root, so this
+            # is not an accidental same-directory coincidence.
+            decoy_path = historical.base / "workstreams/po03/control/units/attacker/escaped.json"
+            self.assertTrue(decoy_path.exists())
+            self.assertFalse(str(decoy_path).startswith(str(historical.root)))
+
+    def test_c_string_level_divergence_absolute_path_pinned_historical(self):
+        """Pinned-historical companion (code-level, no subprocess needed) of
+        test_b, at the same immutable pre-fix commit: an absolute content_uri
+        that happens to start with an allowed prefix once its leading '/' is
+        lstripped was judged in-allowlist and in-ownership by the validator,
+        while pathlib's `/` operator treats an absolute right operand as a
+        full path override, discarding artifact_root entirely."""
+        with tempfile.TemporaryDirectory(prefix="a10-attack-hist6c-") as histtmp:
+            historical = ScratchControlPlane(Path(histtmp), commit=INV6_PRE_FIX_COMMIT)
+            historical.write_ownership(
+                {
+                    "attacker": {"owned_prefixes": ["workstreams/po03/control/units/attacker/"]},
+                    "legit-reviewer": {"owned_prefixes": []},
+                }
+            )
+            import importlib.util
+
+            spec = importlib.util.spec_from_file_location("scratch_cp_historical", historical.script)
+            module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(module)  # nosec - executing our own scratch copy only
+
+            absolute_uri = "/workstreams/po03/control/units/attacker/evil.json"
+            self.assertTrue(
+                module.path_in_allowlist(absolute_uri),
+                f"historical reproduction at {INV6_PRE_FIX_COMMIT} must still hold: "
+                "the absolute path is judged in-allowlist by the string check",
+            )
+            self.assertEqual(
+                module.check_ownership("attacker", [absolute_uri]),
+                [],
+                "the absolute path is judged fully owned by the string check",
+            )
+            joined = historical.root / absolute_uri
+            self.assertEqual(
+                joined,
+                Path(absolute_uri),
+                "pathlib's `/` operator discards artifact_root entirely for an absolute operand",
+            )
+            self.assertFalse(str(joined).startswith(str(historical.root)))
+
+    def test_d_corrected_state_rejects_all_four_coordinator_cited_escapes(self):
+        """Live invariant against CURRENT code (self.scp defaults to HEAD):
+        confirms the four escapes the coordinator explicitly named as
+        now-rejected. This is intentionally NOT pinned -- it is expected to
+        keep passing, and it going red on some future HEAD would itself be
+        exactly the live regression the coordinator asked this reviewer to
+        watch for.
+        """
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location("scratch_cp_current", self.scp.script)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)  # nosec - executing our own scratch copy only
+
+        for escape in (
+            "./../packs/x.json",
+            "workstreams/po03/engine/../../../etc/passwd",
+            "/etc/passwd",
+            "workstreams/po03/../po01/x",
+        ):
+            with self.subTest(escape=escape):
+                self.assertFalse(
+                    module.path_in_allowlist(escape), f"{escape!r} must not be judged in-allowlist"
+                )
+        violations = module.check_ownership(
+            "attacker",
+            ["workstreams/po03/engine/../../../etc/passwd", "/etc/passwd"],
+        )
+        self.assertEqual(
+            len(violations), 2, f"both traversal and absolute cases must be flagged; got {violations}"
+        )
+
+    def test_e_end_to_end_traversal_still_rejected_at_ingestion_current_code(self):
+        """End-to-end confirmation against current code, not just the
+        unit-level normaliser: the original test_b attack no longer reaches
+        ingestion. Live invariant, not pinned; see test_d docstring."""
+        dispatch = self.scp.create_unit("inv6d-u1", "attacker", ["workstreams/po03/control/units/attacker/"])
+        lease = self.scp.lease("inv6d-u1", "attacker")
+        decoy_content = b'{"not_owned_by_attacker": true}'
         self.scp.write_file_outside(
             "workstreams/po03/control/units/attacker/escaped.json", decoy_content
         )
-
         traversal_uri = "../workstreams/po03/control/units/attacker/escaped.json"
         doc = self.scp.build_result_doc(
             dispatch,
@@ -358,56 +538,74 @@ class TestInv6AllowlistAndOwnershipEscape(ScratchCaseMixin):
             artifacts=[
                 {
                     "artifact_id": "a1",
-                    "logical_name": "inv6b-escaped",
+                    "logical_name": "inv6d-escaped",
                     "content_uri": traversal_uri,
                     "sha256": sha256_bytes(decoy_content),
                     "bytes": len(decoy_content),
                 }
             ],
         )
-        outcome = self.scp.ingest(doc, tag="leadingdotslash")
-        self.assertEqual(
+        outcome = self.scp.ingest(doc, tag="leadingdotslash-current")
+        self.assertNotEqual(
             outcome.returncode,
             0,
-            f"expected the BREAK (traversal outside repo root passes ingestion); got rejection: {outcome.stdout} {outcome.stderr}",
+            f"corrected state requires this to be rejected now; got: {outcome.stdout} {outcome.stderr}",
         )
-        # Prove the decoy file genuinely lives outside the repo root, so this
-        # is not an accidental same-directory coincidence.
-        decoy_path = self.scp.base / "workstreams/po03/control/units/attacker/escaped.json"
-        self.assertTrue(decoy_path.exists())
-        self.assertFalse(str(decoy_path).startswith(str(self.scp.root)))
 
-    def test_c_string_level_divergence_absolute_path(self):
-        """Companion, code-level demonstration (no subprocess needed): an
-        absolute content_uri that happens to start with an allowed prefix once
-        its leading '/' is lstripped is judged in-allowlist and in-ownership
-        by the validator, while pathlib's `/` operator treats an absolute
-        right operand as a full path override, discarding artifact_root
-        entirely. This shows the class of bug is not limited to relative
-        '../' traversal."""
-        import importlib.util
-
-        spec = importlib.util.spec_from_file_location("scratch_cp", self.scp.script)
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)  # nosec - executing our own scratch copy only
-
-        absolute_uri = "/workstreams/po03/control/units/attacker/evil.json"
-        self.assertTrue(
-            module.path_in_allowlist(absolute_uri),
-            "the absolute path is judged in-allowlist by the string check",
-        )
-        self.assertEqual(
-            module.check_ownership("attacker", [absolute_uri]),
-            [],
-            "the absolute path is judged fully owned by the string check",
-        )
-        joined = self.scp.root / absolute_uri
-        self.assertEqual(
-            joined,
-            Path(absolute_uri),
-            "pathlib's `/` operator discards artifact_root entirely for an absolute operand",
-        )
-        self.assertFalse(str(joined).startswith(str(self.scp.root)))
+    def test_f_residual_divergence_exact_file_owned_prefix_permits_sibling_suffix_BREAK(self):
+        """LIVE, currently-unremediated residual finding (new in this v2
+        audit; not present in the a10-u03 v1 findings.json). `check_ownership`
+        still confines an owner using `normalised.startswith(prefixes)`, a
+        plain STRING prefix test with no path-segment boundary. That is safe
+        for every *directory-style* owned_prefix (all end in '/', so a
+        sibling directory's name can never share the string prefix), but the
+        real, current production path-ownership.json also grants several
+        cohorts (po03-worker-a2, a3, a4, a8 as of this audit) ownership of an
+        EXACT FILE with no trailing separator -- e.g. po03-worker-a2 owns the
+        literal string 'workstreams/po03/evidence/recovery-fault-matrix.json'.
+        For any such entry, `check_ownership` also accepts any path that
+        merely starts with that string, e.g. the same file name with an
+        arbitrary suffix appended, with no real relationship to the actual
+        named file. This is the same "string prefix diverges from the actual
+        object identity" root cause as the fixed traversal bug, one level up
+        (file identity instead of path traversal), and it is still present
+        in current code. Pinned to AUDIT_SNAPSHOT_COMMIT because no
+        remediation unit has been dispatched for it yet -- report and
+        dispatch one, then convert this to an expected-failure guard.
+        """
+        with tempfile.TemporaryDirectory(prefix="a10-attack-residual6-") as histtmp:
+            snap = ScratchControlPlane(Path(histtmp), commit=AUDIT_SNAPSHOT_COMMIT)
+            owned_file = "workstreams/po03/control/units/attacker/exact-file.json"
+            snap.write_ownership({"attacker": {"owned_prefixes": [owned_file]}})
+            dispatch = snap.create_unit("inv6residual-u1", "attacker", [owned_file])
+            lease = snap.lease("inv6residual-u1", "attacker")
+            content = b'{"sibling": "file, never named in owned_prefixes"}'
+            sibling_path = owned_file + "-EVIL-SIBLING-NOT-THE-REAL-FILE"
+            snap.write_file_at(sibling_path, content)
+            doc = snap.build_result_doc(
+                dispatch,
+                fence_token=lease["fence_token"],
+                artifacts=[
+                    {
+                        "artifact_id": "a1",
+                        "logical_name": "evil-sibling",
+                        "content_uri": sibling_path,
+                        "sha256": sha256_bytes(content),
+                        "bytes": len(content),
+                    }
+                ],
+            )
+            outcome = snap.ingest(doc, tag="residual")
+            self.assertEqual(
+                outcome.returncode,
+                0,
+                "expected the BREAK (a sibling file passes ownership on a bare "
+                f"string-prefix match of an exact-file owned_prefix, at pin "
+                f"{AUDIT_SNAPSHOT_COMMIT}); got rejection: {outcome.stdout} {outcome.stderr}",
+            )
+            self.assertNotEqual(
+                sibling_path, owned_file, "sanity: the sibling is a genuinely different path string"
+            )
 
 
 class TestInv7SelfAcceptance(ScratchCaseMixin):
@@ -437,37 +635,56 @@ class TestInv7SelfAcceptance(ScratchCaseMixin):
         self.assertNotEqual(outcome.returncode, 0, "HELD requires literal self-id rejection")
         self.assertIn("cannot accept or reject its own work", outcome.stdout + outcome.stderr)
 
-    def test_b_alias_reviewer_id_is_accepted_BOUNDARY(self):
-        """BOUNDARY (not a full break, but a real gap): the self-acceptance
-        guard is a byte-equality check against dispatch['owner']. There is no
-        mechanism binding the --reviewer argument to any authenticated
-        identity, so the *same* actor can self-review by passing any string
-        other than the exact owner id."""
-        dispatch = self.scp.create_unit("inv7b-u1", "attacker", ["workstreams/po03/control/units/attacker/"])
-        lease = self.scp.lease("inv7b-u1", "attacker")
-        content = b'{"self": "accept via alias"}'
-        self.scp.write_file_at("workstreams/po03/control/units/attacker/inv7b.json", content)
-        doc = self.scp.build_result_doc(
-            dispatch,
-            fence_token=lease["fence_token"],
-            artifacts=[
+    def test_b_alias_reviewer_id_pinned_historical_BOUNDARY(self):
+        """Pinned-historical: documents the boundary exactly as it stood at
+        AUDIT_SNAPSHOT_COMMIT -- the self-acceptance guard is a byte-equality
+        check against dispatch['owner'], with no mechanism binding the
+        --reviewer argument to any authenticated identity, so the *same*
+        actor can self-review by passing any string other than the exact
+        owner id. Remediation dispatched as a11-u15 ("identity binding or a
+        recorded boundary plus a tested compensating control"), but a11-u15's
+        own acceptance contract explicitly permits resolving this as a
+        documented NOT_SUPPORTED plus a compensating control rather than a
+        hard rejection -- unlike INV-2/3/8/9, this reviewer cannot write one
+        fixed-behaviour assertion guaranteed to match whichever of the two
+        acceptable resolutions a11 chooses (a compensating control might not
+        even change `review`'s exit code for this exact CLI shape). Pinning
+        preserves the finding without guessing the remediation's shape.
+        """
+        with tempfile.TemporaryDirectory(prefix="a10-attack-hist7b-") as histtmp:
+            historical = ScratchControlPlane(Path(histtmp), commit=AUDIT_SNAPSHOT_COMMIT)
+            historical.write_ownership(
                 {
-                    "artifact_id": "a1",
-                    "logical_name": "inv7b",
-                    "content_uri": "workstreams/po03/control/units/attacker/inv7b.json",
-                    "sha256": sha256_bytes(content),
-                    "bytes": len(content),
+                    "attacker": {"owned_prefixes": ["workstreams/po03/control/units/attacker/"]},
+                    "legit-reviewer": {"owned_prefixes": []},
                 }
-            ],
-        )
-        self.scp.ingest(doc, tag="aliasaccept")
-        self.scp.complete("inv7b-u1")
-        outcome = self.scp.review("inv7b-u1", "ACCEPTED", reviewer="attacker-alias-not-byte-equal")
-        self.assertEqual(
-            outcome.returncode,
-            0,
-            "documents the boundary: any non-exact-match reviewer string is accepted with no identity check",
-        )
+            )
+            dispatch = historical.create_unit("inv7b-u1", "attacker", ["workstreams/po03/control/units/attacker/"])
+            lease = historical.lease("inv7b-u1", "attacker")
+            content = b'{"self": "accept via alias"}'
+            historical.write_file_at("workstreams/po03/control/units/attacker/inv7b.json", content)
+            doc = historical.build_result_doc(
+                dispatch,
+                fence_token=lease["fence_token"],
+                artifacts=[
+                    {
+                        "artifact_id": "a1",
+                        "logical_name": "inv7b",
+                        "content_uri": "workstreams/po03/control/units/attacker/inv7b.json",
+                        "sha256": sha256_bytes(content),
+                        "bytes": len(content),
+                    }
+                ],
+            )
+            historical.ingest(doc, tag="aliasaccept")
+            historical.complete("inv7b-u1")
+            outcome = historical.review("inv7b-u1", "ACCEPTED", reviewer="attacker-alias-not-byte-equal")
+            self.assertEqual(
+                outcome.returncode,
+                0,
+                f"historical reproduction at {AUDIT_SNAPSHOT_COMMIT} must still hold: "
+                "any non-exact-match reviewer string is accepted with no identity check",
+            )
 
 
 class TestInv8LedgerTamper(ScratchCaseMixin):
@@ -483,17 +700,37 @@ class TestInv8LedgerTamper(ScratchCaseMixin):
         outcome = self.scp.verify()
         self.assertNotEqual(outcome.returncode, 0, "HELD requires an un-rehashed edit to break the chain")
 
-    def test_b_cascade_rehashed_tamper_passes_verification_BREAK(self):
-        """BREAK: verify_chain only checks internal self-consistency (each
-        row's own hash, and that it chains to the row before it). It has no
-        external anchor (no previously-recorded/pinned head hash outside the
-        file itself), so an actor with write access to the ledger file can
+    @unittest.expectedFailure
+    def test_defect_cascade_rehashed_tamper_must_not_pass_verification(self):
+        """Desired invariant, not yet held. Remediation dispatched as
+        a11-u10 ("anchored verify_chain plus recurrence tests plus the
+        corrected coordinator test"). Currently BROKEN: verify_chain only
+        checks internal self-consistency (each row's own hash, and that it
+        chains to the row before it), with no external anchor outside the
+        file itself, so an actor with write access to the ledger file can
         rewrite a row's payload and cascade-recompute every subsequent row's
         row_sha256/prev_sha256, producing a fully self-consistent chain that
-        `verify_chain`/`cmd_verify` reports as valid despite the tamper.
-        Because this is git-tracked content, the real deployment argues this
+        verify_chain/cmd_verify reports as valid despite the tamper. Because
+        this is git-tracked content, the real deployment argues the tamper
         is *evident* via git diff -- but nothing in the code itself detects
-        it, which is exactly what this unit was asked to attack.
+        it, which is exactly what this unit was asked to attack, and exactly
+        what a11-u10's own acceptance contract also names as a second,
+        related defect: the coordinator's test
+        test_truncation_is_detected_by_projection_gap asserts verify_chain
+        returns NO errors after truncation while claiming detection in its
+        name -- a false green baked into the gate itself. That second defect
+        lives in the coordinator/a11's own owned test file, not this
+        reviewer's paths, so only the cascade-rehash form is re-asserted
+        here.
+
+        The row this attack tampers is built, not searched for: its index is
+        captured as the ledger length immediately before the `review` call
+        that appends it, and its event is asserted to be REJECTED as a
+        sanity check, rather than located after the fact with a `next(...)`
+        scan that raises StopIteration the moment the fixture's shape
+        changes (which is exactly what happened when the DEF-19 schema
+        regression left this test's earlier ingest/complete/review calls
+        silently failing and the REJECTED row never appearing at all).
         """
         import hashlib as _hashlib
 
@@ -521,16 +758,31 @@ class TestInv8LedgerTamper(ScratchCaseMixin):
                 }
             ],
         )
-        self.scp.ingest(doc, tag="pretamper")
-        self.scp.complete("inv8b-u1")
-        # A legitimate reviewer rejects it.
-        self.scp.review("inv8b-u1", "REJECTED", reviewer="legit-reviewer", receipt="receipt://legit")
+        ingest_outcome = self.scp.ingest(doc, tag="pretamper")
+        self.assertEqual(ingest_outcome.returncode, 0, "sanity: ingest must succeed to set up the attack")
+        complete_outcome = self.scp.complete("inv8b-u1")
+        self.assertEqual(complete_outcome.returncode, 0, "sanity: complete must succeed to set up the attack")
+
+        # Build (do not search for) the REJECTED row this attack tampers: it
+        # is deterministically the very next ledger row appended by this
+        # `review` call, so its index is captured directly.
+        pre_review_row_count = len(self.scp.ledger_rows())
+        review_outcome = self.scp.review(
+            "inv8b-u1", "REJECTED", reviewer="legit-reviewer", receipt="receipt://legit"
+        )
+        self.assertEqual(review_outcome.returncode, 0, "sanity: the REJECTED review itself must succeed")
 
         rows = self.scp.ledger_rows()
+        target_index = pre_review_row_count
+        self.assertEqual(
+            rows[target_index]["event"],
+            "REJECTED",
+            "sanity: the row this attack tampers must be the REJECTED row just built",
+        )
+
         pre_verify = self.scp.verify()
         self.assertEqual(pre_verify.returncode, 0, "sanity: untampered chain verifies clean")
 
-        target_index = next(i for i, r in enumerate(rows) if r["event"] == "REJECTED")
         rows[target_index]["event"] = "ACCEPTED"
         rows[target_index]["payload"]["rationale"] = "silently swapped from REJECTED"
 
@@ -543,13 +795,11 @@ class TestInv8LedgerTamper(ScratchCaseMixin):
 
         self.scp.write_ledger_rows(rows)
         outcome = self.scp.verify()
-        self.assertEqual(
+        self.assertNotEqual(
             outcome.returncode,
             0,
-            f"expected the BREAK (cascade-rehashed tamper still verifies clean); got: {outcome.stdout} {outcome.stderr}",
+            "desired: a cascade-rehashed tamper must not verify as clean",
         )
-        tampered_rows = self.scp.ledger_rows()
-        self.assertEqual(tampered_rows[target_index]["event"], "ACCEPTED")
 
 
 class TestInv9ProviderCompletedUncommitted(ScratchCaseMixin):
@@ -593,13 +843,17 @@ class TestInv9ProviderCompletedUncommitted(ScratchCaseMixin):
             f"HELD requires the schema validator to force the honest label; errors={errors}",
         )
 
-    def test_fabricated_result_commit_id_over_uncommitted_working_tree_file_reaches_completed_BREAK(self):
-        """BREAK: `ingest_result` never checks that `result_commit_id` refers
-        to a real git commit. It only re-hashes whatever file currently sits
-        on disk at the claimed path. This scratch repo has no `.git` at all,
-        so *no* result_commit_id here could possibly be real, yet a
-        syntactically well-formed, entirely fabricated commit id is accepted
-        at face value and the unit reaches COMPLETED -- the exact
+    @unittest.expectedFailure
+    def test_defect_fabricated_result_commit_id_must_not_reach_completed(self):
+        """Desired invariant, not yet held. Remediation dispatched as
+        a11-u04 ("commit-resolution verification plus recurrence test"; a2
+        measured 10 of 10 invented locators accepted before the fix).
+        Currently BROKEN: `ingest_result` never checks that `result_commit_id`
+        refers to a real git commit. It only re-hashes whatever file
+        currently sits on disk at the claimed path. This scratch repo has no
+        `.git` at all, so *no* result_commit_id here could possibly be real,
+        yet a syntactically well-formed, entirely fabricated commit id is
+        accepted at face value and the unit reaches COMPLETED -- the exact
         PROVIDER_COMPLETED_UNCOMMITTED-as-COMPLETED failure mode the
         commission names as the reason this control plane exists.
         """
@@ -625,12 +879,10 @@ class TestInv9ProviderCompletedUncommitted(ScratchCaseMixin):
             result_commit_id=fabricated_commit_id,
         )
         ingest_outcome = self.scp.ingest(doc, tag="fakecommit")
-        self.assertEqual(ingest_outcome.returncode, 0, "ingest_result never validates result_commit_id against git")
-        complete_outcome = self.scp.complete("inv9b-u1")
-        self.assertEqual(
-            complete_outcome.returncode,
+        self.assertNotEqual(
+            ingest_outcome.returncode,
             0,
-            f"expected the BREAK (COMPLETED reached on a fabricated, unverified result_commit_id in a repo with no git history at all); got: {complete_outcome.stdout} {complete_outcome.stderr}",
+            "desired: ingest_result must resolve result_commit_id against real git history",
         )
 
 

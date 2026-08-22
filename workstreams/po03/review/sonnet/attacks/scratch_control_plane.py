@@ -1,11 +1,32 @@
 """Scratch harness for adversarially attacking the real control_plane.py.
 
 Owned by po03-worker-a10 (workstreams/po03/review/sonnet/**). Every method here
-invokes an unmodified byte-for-byte copy of the coordinator's real
-``tools/control_plane.py`` and ``tools/validate_contracts.py`` as a subprocess,
+invokes an unmodified copy of the coordinator's real tooling as a subprocess,
 exactly as a real actor would, inside an isolated scratch directory tree. The
 real, shared ledger under ``workstreams/po03/control/events/ledger.jsonl`` is
 never opened or written by this module.
+
+Post-mortem (DEF-19, credited to this harness by the coordinator): the
+original version of this file copied only ``tools/control_plane.py`` and
+``tools/validate_contracts.py`` with two hardcoded ``shutil.copyfile`` calls.
+When cohort a12 later made ``validate_contracts.py`` load
+``contracts/transactional-result.schema.json`` from disk at import, every
+subprocess spawned by this harness died with an uninformative
+``FileNotFoundError`` before reaching the code under attack -- including every
+positive control, not just the new BREAK cases. A hardcoded file list is a
+standing liability: it silently goes stale the moment the code under test
+grows one more sibling-file dependency, and the failure mode is a mass false
+red across the whole suite, not a clear signal pointing at the missing file.
+
+The fix here is structural, not a patch to the file list: ``git archive`` the
+*entire* ``workstreams/po03`` subtree at a given commit (default ``HEAD``,
+i.e. whatever this reviewer's own worktree currently has checked out) into the
+scratch root. This is also what lets ``ScratchControlPlane`` stage an
+*immutable historical* snapshot on request -- pass the exact commit SHA at
+which a since-fixed BREAK was demonstrated -- so a pinned-historical
+regression case never depends on, or is invalidated by, whatever the
+coordinator's tree currently contains (see the binding "assert an invariant,
+or assert reproduction at an explicit immutable pin" rule).
 
 Dependency-free standard library only, per the commission's portable-runtime
 standard.
@@ -14,14 +35,17 @@ standard.
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import shutil
 import subprocess
 import sys
+import tarfile
 from pathlib import Path
 from typing import Any
 
-REAL_TOOLS_DIR = Path(__file__).resolve().parents[3] / "tools"
+PO03_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(__file__).resolve().parents[5]
 PYTHON = sys.executable
 
 
@@ -40,24 +64,69 @@ class ScratchControlPlane:
     scratch repo root (siblings of ``repo/``) to test whether the real
     allowlist/ownership checks actually confine filesystem access to the
     repo root, or merely to a string that looks like it does.
+
+    ``commit`` selects what is staged: ``"HEAD"`` (the default) stages
+    whatever this reviewer's own worktree currently has checked out for
+    ``workstreams/po03/**`` -- i.e. "current code" for the purposes of the
+    binding pin-or-invariant rule. Any other value must be a commit-ish
+    resolvable by ``git rev-parse`` (a full or abbreviated SHA); it stages the
+    ``workstreams/po03`` subtree exactly as it existed at that commit,
+    regardless of what has landed since, which is what makes a
+    pinned-historical BREAK reproduction immutable.
     """
 
-    def __init__(self, base: Path):
+    def __init__(self, base: Path, commit: str = "HEAD"):
         self.base = base
         self.root = base / "repo"
-        tools_dir = self.root / "workstreams" / "po03" / "tools"
-        tools_dir.mkdir(parents=True, exist_ok=True)
-        real_control_plane = REAL_TOOLS_DIR / "control_plane.py"
-        real_validate = REAL_TOOLS_DIR / "validate_contracts.py"
+        self.root.mkdir(parents=True, exist_ok=True)
+        self.commit = commit
+        self.resolved_commit = (
+            subprocess.run(
+                ["git", "rev-parse", commit],
+                cwd=REPO_ROOT,
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            .stdout.strip()
+        )
+        archive = subprocess.run(
+            ["git", "archive", "--format=tar", self.resolved_commit, "--", "workstreams/po03"],
+            cwd=REPO_ROOT,
+            check=True,
+            capture_output=True,
+        )
+        with tarfile.open(fileobj=io.BytesIO(archive.stdout), mode="r:") as tar:
+            tar.extractall(self.root, filter="data")
+
+        po03_dir = self.root / "workstreams" / "po03"
+        real_control_plane = po03_dir / "tools" / "control_plane.py"
+        real_validate = po03_dir / "tools" / "validate_contracts.py"
         if not real_control_plane.is_file() or not real_validate.is_file():
-            raise RuntimeError(f"real tools not found under {REAL_TOOLS_DIR}")
+            raise RuntimeError(
+                f"expected tools not found in git archive of {self.resolved_commit} "
+                f"(workstreams/po03/tools/{{control_plane,validate_contracts}}.py)"
+            )
         self.control_plane_source_sha256 = sha256_bytes(real_control_plane.read_bytes())
         self.validate_source_sha256 = sha256_bytes(real_validate.read_bytes())
-        shutil.copyfile(real_control_plane, tools_dir / "control_plane.py")
-        shutil.copyfile(real_validate, tools_dir / "validate_contracts.py")
-        self.script = tools_dir / "control_plane.py"
-        self.control_dir = self.root / "workstreams" / "po03" / "control"
-        self.control_dir.mkdir(parents=True, exist_ok=True)
+        self.script = real_control_plane
+        self.control_dir = po03_dir / "control"
+        # The archive brings in whatever the REAL, shared control state looked
+        # like at `commit` (dispatch/, events/ledger.jsonl, units/, the real
+        # path-ownership.json, ...). Every attack case must start from a
+        # pristine, empty control plane it fully controls, so the projections
+        # this harness inspects (e.g. `ledger_rows()`) contain only rows this
+        # test itself produced -- never wipe workstreams/po03/tools/**,
+        # contracts/**, capsule/**, etc, only the mutable control-state
+        # subtree that create_unit/lease/ingest/complete/review/verify write.
+        for sub in ("dispatch", "events", "units", "work-unit-registry.jsonl", "recovery-state.json"):
+            target = self.control_dir / sub
+            if target.is_dir():
+                shutil.rmtree(target, ignore_errors=True)
+            elif target.exists():
+                target.unlink()
+        (self.control_dir / "events").mkdir(parents=True, exist_ok=True)
+        (self.control_dir / "dispatch").mkdir(parents=True, exist_ok=True)
 
     def write_ownership(self, owners: dict[str, Any]) -> None:
         payload = {"owners": owners}
