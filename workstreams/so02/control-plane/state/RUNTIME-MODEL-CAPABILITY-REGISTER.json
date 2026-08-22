@@ -1,0 +1,114 @@
+{
+  "register_id": "SCF01-RUNTIME-MODEL-CAPABILITY-REGISTER-20260822-v001",
+  "decision_changed": [],
+  "rule": "Record the exact configuration the runtime exposes, with the observation time and the instrument that observed it. Never infer an exact model behind an alias and never record Auto where an exact configuration is selectable.",
+  "records": [
+    {
+      "capability_id": "CAP-CURSOR-ORCHESTRATOR-MODEL",
+      "runtime": "Cursor Cloud Agents",
+      "kind": "exact_model_configuration",
+      "value": "claude-opus-5-thinking-max-fast",
+      "is_alias": false,
+      "observed_at": "2026-08-22T13:31:52Z",
+      "instrument": "cursor-cloud run-info, field originalModelName",
+      "qualification_state": "IN_USE_BY_THE_ORCHESTRATOR",
+      "expiry_rule": "Re-observe on every new orchestrator run; a model name is a runtime binding, not a durable authority."
+    },
+    {
+      "capability_id": "CAP-CURSOR-CONCURRENCY-OBSERVED",
+      "runtime": "Cursor Cloud Agents",
+      "kind": "observed_concurrent_top_level_runs",
+      "value": 9,
+      "denominator_detail": "8 pre-existing PO-03 top-level runs plus this orchestrator, all visible simultaneously in one account scope",
+      "observed_at": "2026-08-22T13:32:22Z",
+      "instrument": "cursor-cloud list-cloud-agents, totalMatched",
+      "qualification_state": "OBSERVED_CEILING_NOT_YET_PROBED",
+      "honest_gap": "This is an observed simultaneous count, not a measured admission ceiling. Adding a ninth concurrent run caused no observable PO-03 state change, which bounds the ceiling below but does not locate it."
+    },
+    {
+      "capability_id": "CAP-MODEL-FAMILY-DIVERSITY-IN-ACCOUNT",
+      "runtime": "Cursor Cloud Agents",
+      "kind": "distinct_exact_configurations_running_in_this_account",
+      "value": [
+        "claude-opus-5-thinking-max-fast",
+        "claude-opus-5-thinking-max",
+        "claude-sonnet-5-thinking-max",
+        "gpt-5.6-sol-max-fast",
+        "gpt-5.6-terra-max-fast"
+      ],
+      "observed_at": "2026-08-22T13:32:22Z",
+      "instrument": "cursor-cloud list-cloud-agents, field originalModelName across visible runs",
+      "qualification_state": "AVAILABLE_FOR_INDEPENDENT_COGNITION",
+      "use": "Two distinct families (Claude and GPT) are already operating in this account, which is the precondition for running distinct model families where independent cognition reduces correlated error."
+    },
+    {
+      "capability_id": "CAP-EGRESS",
+      "runtime": "Cursor Cloud Agents",
+      "kind": "network_egress_policy",
+      "value": "unrestricted",
+      "observed_at": "2026-08-22T13:34:05Z",
+      "instrument": "cursor-cloud environment-info, field egress.restricted=false, corroborated by direct HTTPS probes",
+      "qualification_state": "VERIFIED",
+      "consequence": "Any route that fails here fails on credentials or on tooling, not on network policy. That distinction is what makes OWNER_REQUIRED separable from NOT_SUPPORTED."
+    },
+    {
+      "capability_id": "CAP-ENVIRONMENT-BUILD",
+      "runtime": "Cursor Cloud Agents",
+      "kind": "environment_build_binding",
+      "value": "bld-20260822-015195f7-955b-445d-8b57-78bc58eec228",
+      "observed_at": "2026-08-22T13:34:05Z",
+      "instrument": "cursor-cloud environment-info, field build",
+      "qualification_state": "VERIFIED",
+      "detail": "gitSetup=reuse_then_checkout, warmFork=cold, environmentPublicId=69dbfc52-9df5-11f1-a7d1-d6b4613131ce"
+    },
+    {
+      "capability_id": "CAP-NESTED-AGENT-DISPATCH",
+      "runtime": "Cursor Cloud Agents",
+      "kind": "subagent_dispatch",
+      "value": "available",
+      "observed_at": "2026-08-22T13:33:00Z",
+      "instrument": "runtime tool enumeration",
+      "qualification_state": "AVAILABLE_DELIBERATELY_UNUSED",
+      "reason": "The commission permits exactly one top-level agent and no Cursor subagent during qualification. Capability presence is recorded so a later measured fan-out decision starts from evidence rather than rediscovery."
+    },
+    {
+      "capability_id": "CAP-EVENT-RETURN-SUBSCRIPTIONS",
+      "runtime": "Cursor Cloud Agents",
+      "kind": "asynchronous_event_return",
+      "value": ["subscribe_github_ci", "subscribe_github_pr", "subscribe_timer"],
+      "observed_at": "2026-08-22T13:33:00Z",
+      "instrument": "GetMcpTools inspection of the cursor-subscriptions server",
+      "qualification_state": "AVAILABLE_NOT_YET_QUALIFIED",
+      "significance": "This is the mechanism that lets one persistent orchestrator wait for external results without polling and without a founder relay. It is the natural successor route to qualify once a bounded external result exists to wait on."
+    },
+    {
+      "capability_id": "CAP-OPENAI-API",
+      "runtime": "OpenAI platform",
+      "kind": "external_model_api_route",
+      "value": "reachable_unauthenticated",
+      "observed_at": "2026-08-22T13:37:38Z",
+      "instrument": "unauthenticated POST https://api.openai.com/v1/responses returning HTTP 401",
+      "qualification_state": "OWNER_REQUIRED_CREDENTIAL_ABSENT",
+      "expiry_rule": "Re-probe whenever a credential is attached."
+    },
+    {
+      "capability_id": "CAP-CURSOR-REST-API",
+      "runtime": "Cursor platform",
+      "kind": "agent_run_creation_api",
+      "value": "reachable_unauthenticated",
+      "observed_at": "2026-08-22T13:37:38Z",
+      "instrument": "unauthenticated GET https://api.cursor.com/v0/agents returning HTTP 401 'Invalid User API Key'",
+      "qualification_state": "OWNER_REQUIRED_CREDENTIAL_ABSENT"
+    },
+    {
+      "capability_id": "CAP-BROWSER-CONTROL",
+      "runtime": "Cursor Cloud Agents",
+      "kind": "browser_or_computer_control",
+      "value": "absent",
+      "observed_at": "2026-08-22T13:33:00Z",
+      "instrument": "runtime tool enumeration",
+      "qualification_state": "NOT_SUPPORTED_IN_THIS_RUNTIME",
+      "promotion_impact": "none; the ChatGPT Projects UI probe is explicitly not a promotion gate"
+    }
+  ]
+}

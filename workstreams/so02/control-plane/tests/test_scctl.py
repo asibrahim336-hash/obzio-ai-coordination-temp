@@ -30,8 +30,12 @@ class ControlPlaneTests(unittest.TestCase):
 
     def test_project_rebuilds_from_event_head(self) -> None:
         projection = scctl.project(self.root)
-        self.assertEqual(19, projection["event_count"])
+        self.assertEqual(22, projection["event_count"])
         self.assertEqual("ACTIVE_INTERIM", projection["subjects"]["SCF-01/CGPT-01"]["state"])
+        self.assertEqual(
+            "PASS_TWO_OR_MORE_ROUTES_INDEPENDENT_ACCEPTANCE_REQUESTED_NOT_GRANTED",
+            projection["subjects"]["SCF-01/CUR-ORCH-QUAL-01"]["state"],
+        )
 
     def test_event_chain_is_valid(self) -> None:
         events = scctl.read_jsonl(self.root / "state/events.jsonl")
@@ -72,10 +76,27 @@ class ControlPlaneTests(unittest.TestCase):
 
     def test_cursor_cannot_be_promoted_without_two_route_evidence(self) -> None:
         changed = copy.deepcopy(self.control)
-        changed["orchestration_assignment"]["cursor_role_state"] = "MAJOR_ORCHESTRATION_LAYER_QUALIFIED"
+        orchestration = changed["orchestration_assignment"]
+        orchestration["cursor_role_state"] = "MAJOR_ORCHESTRATION_LAYER_QUALIFIED"
+        qualification = orchestration["cursor_control_surface_qualification"]
+        qualification["qualified_route_count"] = 1
+        qualification["required_end_to_end_evidence"] = {
+            key: False for key in qualification["required_end_to_end_evidence"]
+        }
         errors = self.errors_for(changed)
         self.assertTrue(any("promoted without two qualified routes" in item for item in errors))
         self.assertTrue(any("promoted without complete end-to-end evidence" in item for item in errors))
+
+    def test_current_cursor_promotion_carries_two_routes_and_complete_evidence(self) -> None:
+        qualification = self.control["orchestration_assignment"]["cursor_control_surface_qualification"]
+        self.assertEqual("MAJOR_ORCHESTRATION_LAYER_QUALIFIED", self.control["orchestration_assignment"]["cursor_role_state"])
+        self.assertGreaterEqual(qualification["qualified_route_count"], 2)
+        self.assertTrue(all(qualification["required_end_to_end_evidence"].values()))
+        self.assertEqual(1, qualification["maximum_cursor_top_level_agents"])
+        self.assertFalse(qualification["initial_subagents_allowed"])
+        self.assertFalse(qualification["projects_ui_probe_required_for_promotion"])
+        self.assertEqual("REQUESTED_NOT_GRANTED", qualification["independent_acceptance_state"])
+        self.assertFalse(qualification["self_accepted"])
 
     def test_chatgpt_projects_ui_cannot_be_made_promotion_gate(self) -> None:
         changed = copy.deepcopy(self.control)
@@ -91,33 +112,42 @@ class ControlPlaneTests(unittest.TestCase):
     def test_execution_claim_without_locator_is_rejected(self) -> None:
         changed = copy.deepcopy(self.control)
         cursor = next(item for item in changed["runtime_bindings"] if item["binding_id"] == "SCF-01/CUR-01")
-        cursor["state"] = "EXECUTING"
+        cursor.update({"state": "EXECUTING", "provider_locator": None})
         self.assertTrue(any("operational state without locator" in item for item in self.errors_for(changed)))
 
     def test_execution_claim_without_launch_receipt_is_rejected(self) -> None:
         changed = copy.deepcopy(self.control)
         cursor = next(item for item in changed["runtime_bindings"] if item["binding_id"] == "SCF-01/CUR-01")
-        cursor["state"] = "EXECUTING"
-        cursor["provider_locator"] = "agent/test"
+        cursor.update({"state": "EXECUTING", "provider_locator": "agent/test", "launch_receipt": None})
         self.assertTrue(any("without launch receipt" in item for item in self.errors_for(changed)))
 
     def test_durable_claim_without_commit_is_rejected(self) -> None:
         changed = copy.deepcopy(self.control)
         cursor = next(item for item in changed["runtime_bindings"] if item["binding_id"] == "SCF-01/CUR-01")
-        cursor.update({"state":"DURABLE","provider_locator":"agent/test","launch_receipt":"receipt/test"})
+        cursor.update({"state":"DURABLE","provider_locator":"agent/test","launch_receipt":"receipt/test","result_commit":None})
         self.assertTrue(any("without result commit" in item for item in self.errors_for(changed)))
 
     def test_durable_claim_without_readback_is_rejected(self) -> None:
         changed = copy.deepcopy(self.control)
         cursor = next(item for item in changed["runtime_bindings"] if item["binding_id"] == "SCF-01/CUR-01")
-        cursor.update({"state":"DURABLE","provider_locator":"agent/test","launch_receipt":"receipt/test","result_commit":"abc"})
+        cursor.update({"state":"DURABLE","provider_locator":"agent/test","launch_receipt":"receipt/test","result_commit":"abc","remote_readback_sha256":None})
         self.assertTrue(any("without read-back" in item for item in self.errors_for(changed)))
 
     def test_durable_claim_without_parent_ingestion_is_rejected(self) -> None:
         changed = copy.deepcopy(self.control)
         cursor = next(item for item in changed["runtime_bindings"] if item["binding_id"] == "SCF-01/CUR-01")
-        cursor.update({"state":"DURABLE","provider_locator":"agent/test","launch_receipt":"receipt/test","result_commit":"abc","remote_readback_sha256":"1" * 64})
+        cursor.update({"state":"DURABLE","provider_locator":"agent/test","launch_receipt":"receipt/test","result_commit":"abc","remote_readback_sha256":"1" * 64,"parent_ingested":False})
         self.assertTrue(any("without parent ingestion" in item for item in self.errors_for(changed)))
+
+    def test_current_cursor_binding_carries_full_durable_custody(self) -> None:
+        cursor = next(item for item in self.control["runtime_bindings"] if item["binding_id"] == "SCF-01/CUR-01")
+        self.assertEqual("DURABLE", cursor["state"])
+        self.assertTrue(cursor["provider_locator"].startswith("https://cursor.com/agents/"))
+        self.assertTrue(cursor["launch_receipt"])
+        self.assertRegex(cursor["result_commit"], r"^[0-9a-f]{40}$")
+        self.assertRegex(cursor["remote_readback_sha256"], r"^[0-9a-f]{64}$")
+        self.assertTrue(cursor["parent_ingested"])
+        self.assertFalse(cursor["independently_validated"])
 
     def test_provider_memory_cannot_be_canonical(self) -> None:
         changed = copy.deepcopy(self.control)
@@ -148,6 +178,17 @@ class ControlPlaneTests(unittest.TestCase):
         changed = copy.deepcopy(self.control)
         changed["current_founder_actions"][0]["nondelegable_reason"] = "convenient"
         self.assertTrue(any("unqualified founder action" in item for item in self.errors_for(changed)))
+
+    def test_credential_and_acceptor_actions_are_admitted_as_nondelegable(self) -> None:
+        reasons = {item["nondelegable_reason"] for item in self.control["current_founder_actions"]}
+        self.assertIn("owner_held_api_credential_issuance_and_attachment", reasons)
+        self.assertIn("independent_acceptor_appointment_is_an_authority_act", reasons)
+        self.assertEqual([], self.errors_for(self.control))
+
+    def test_no_founder_action_asks_for_retrieval_comparison_or_merge(self) -> None:
+        for action in self.control["current_founder_actions"]:
+            self.assertNotIn(action["nondelegable_reason"], {"convenient", "founder_review", "founder_merge"})
+            self.assertNotIn("merge", action["blocking_scope"].lower())
 
     def test_founder_action_cannot_gate_programme(self) -> None:
         changed = copy.deepcopy(self.control)
@@ -206,11 +247,22 @@ class ControlPlaneTests(unittest.TestCase):
 
     def test_pending_surface_cannot_contain_invented_locator(self) -> None:
         locators = scctl.read_json(self.root / "state/runtime-surface-locators.json")
-        cursor = next(item for item in locators["records"] if item["locator_id"] == "LOC-CURSOR-CUR01-AGENT")
-        cursor["stable_locator"] = "https://cursor.com/agents/invented"
+        pending = next(item for item in locators["records"] if item["state"] == "OWNER_CAPTURE_REQUIRED")
+        pending["stable_locator"] = "https://example.invalid/invented"
         errors: list[str] = []
         scctl.validate_locators(locators, errors)
         self.assertTrue(any("pending surface contains invented locator" in item for item in errors))
+
+    def test_captured_cursor_orchestrator_locator_is_recorded(self) -> None:
+        locators = scctl.read_json(self.root / "state/runtime-surface-locators.json")
+        cursor = next(item for item in locators["records"] if item["locator_id"] == "LOC-CURSOR-CUR01-AGENT")
+        self.assertEqual("VERIFIED", cursor["state"])
+        self.assertEqual(
+            "https://cursor.com/agents/bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+            cursor["stable_locator"],
+        )
+        self.assertTrue(cursor["resume_checkpoint"])
+        self.assertTrue(cursor["last_verified_at"])
 
     def test_known_error_controls_have_mechanisms_and_checks(self) -> None:
         controls = scctl.read_json(self.root / "errors/recurrence-controls.json")

@@ -1,0 +1,70 @@
+{
+  "record_id": "CUR-ORCH-QUAL-01-BLOCKED-AND-UNSUPPORTED-ROUTES",
+  "decision_changed": [],
+  "rule": "A route is recorded with its exact blocker and its exact owner action. No blocked route stopped work on an unaffected route.",
+  "routes": [
+    {
+      "route_id": "R4-OPENAI-RESPONSES-CONVERSATIONS",
+      "name": "Authorised OpenAI Responses and Conversations API route",
+      "availability": "OWNER_REQUIRED",
+      "reachable": true,
+      "blocked_by": "absent_api_credential",
+      "probe": {
+        "observed_at": "2026-08-22T13:37:38Z",
+        "request": "POST https://api.openai.com/v1/responses (unauthenticated)",
+        "http_status": 401,
+        "error_type": "invalid_request_error",
+        "error_message": "Missing bearer or basic authentication in header"
+      },
+      "credential_census": "No OPENAI_API_KEY is present in this runtime. The four injected secrets are unrelated project credentials.",
+      "interpretation": "The route is reachable and not blocked by egress policy. It is blocked purely by the absence of an authorised credential, so it is OWNER_REQUIRED rather than NOT_SUPPORTED.",
+      "owner_required_action": "Add an authorised OpenAI API key for the Obzio API project as a Cloud Agent secret named OPENAI_API_KEY in the Cursor Dashboard (Cloud Agents > Secrets), scoped to this repository. No other founder step is needed; the orchestrator will then qualify the route, record the conversation ID and never relay results through the founder."
+    },
+    {
+      "route_id": "R4A-CURSOR-AGENT-REST-API",
+      "name": "Cursor Agent REST API run creation and follow-up submission",
+      "availability": "OWNER_REQUIRED",
+      "reachable": true,
+      "blocked_by": "absent_api_credential",
+      "probe": {
+        "observed_at": "2026-08-22T13:37:38Z",
+        "request": "GET https://api.cursor.com/v0/agents (unauthenticated)",
+        "http_status": 401,
+        "error_body": "{\"code\":\"error\",\"message\":\"Invalid User API Key\"}"
+      },
+      "interpretation": "The REST surface that would let one orchestrator create new agent runs and post follow-ups is reachable but unauthenticated. The observation and artifact-retrieval half of the same capability is already qualified through R2 over the MCP surface, so the orchestration function is not blocked, only its run-creation half.",
+      "owner_required_action": "Issue a Cursor API key from the Cursor dashboard and add it as a Cloud Agent secret named CURSOR_API_KEY. This is the single action that converts the qualified observation route R2 into a full launch-and-retrieve route."
+    },
+    {
+      "route_id": "R5-CHATGPT-PROJECTS-BROWSER",
+      "name": "Native ChatGPT Projects UI via browser or computer control",
+      "availability": "NOT_SUPPORTED",
+      "reachable": false,
+      "blocked_by": "no_browser_or_computer_control_tool_in_this_runtime",
+      "probe": {
+        "observed_at": "2026-08-22T13:33:00Z",
+        "instrument": "runtime tool enumeration",
+        "result": "No browser, computer-control, web-search or web-fetch tool is exposed to this agent. There is additionally no owner-authenticated ChatGPT session available to it."
+      },
+      "promotion_impact": "NONE",
+      "promotion_note": "This is the optional probe. Per the commission and the launch sheet it is explicitly not a promotion gate, and its absence does not reduce the qualification result.",
+      "owner_required_action": "Only if the founder later wants this route: enable browser/computer tools on the orchestrator and complete the ChatGPT login, MFA and any OAuth consent once, keeping owner approval on for consequential browser writes. Nothing in the current qualification depends on it."
+    },
+    {
+      "route_id": "R6-SW-RETURN-EXCHANGE",
+      "name": "Parallel specialist isolated return-branch exchange",
+      "availability": "NOT_YET_CREATED",
+      "reachable": true,
+      "blocked_by": "return_branch_does_not_exist_yet",
+      "probe": {
+        "observed_at": "2026-08-22T13:37:38Z",
+        "instrument": "git ls-remote --heads origin refs/heads/capability-factory/return-20260822-v001",
+        "refs_returned": 0,
+        "capability_factory_namespace_refs": 0
+      },
+      "fail_closed_ingestion_proved": true,
+      "interpretation": "The receiving half of this route is built and executable now. `orchqual ingest` resolves the branch, requires descent from the recorded SO-02 source SHA, requires a hash-bound manifest and verifies every byte before reporting READY_TO_INGEST. It refuses and exits non-zero while the branch is absent, and it never merges.",
+      "owner_required_action": "SW launch is a founder-held provider action (FA-SCF01-SW-LAUNCH) because the SW surface needs a founder-authenticated client with a TLS certificate. Send the prepared SW-LAUNCH-NOW.md message once. Nothing else is required: the orchestrator will resolve, verify and ingest the return branch itself without the founder retrieving, comparing or merging anything."
+    }
+  ]
+}

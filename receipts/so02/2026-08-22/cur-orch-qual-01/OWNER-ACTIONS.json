@@ -1,0 +1,61 @@
+{
+  "record_id": "CUR-ORCH-QUAL-01-OWNER-ACTIONS",
+  "decision_changed": [],
+  "admission_rule": "This queue may contain only actions that are genuinely non-delegable because they require owner identity, an owner-held credential, an owner-authenticated client or a provider UI act. Retrieval, comparison, monitoring and merging are orchestrator work and must never appear here.",
+  "founder_retrieval_comparison_monitoring_or_merge_requested": false,
+  "blocking_scope_rule": "No action in this queue blocks the programme. Each names only the single route it unblocks.",
+  "actions": [
+    {
+      "action_id": "OA-CURORCH-01-OPENAI-KEY",
+      "unblocks_route": "R4-OPENAI-RESPONSES-CONVERSATIONS",
+      "state": "OWNER_REQUIRED",
+      "nondelegable_reason": "owner-held API credential; an agent cannot issue one for the founder's account",
+      "blocking_scope": "the OpenAI Responses/Conversations route only",
+      "exact_action": "In the Cursor Dashboard, open Cloud Agents > Secrets and add a repository-scoped secret named OPENAI_API_KEY containing an authorised key for the Obzio OpenAI API project.",
+      "verification_the_orchestrator_will_do_itself": "Probe the Responses endpoint, create one bounded conversation, retrieve its result by conversation ID, record the ID as a stable locator without the credential, reconcile into the hash-bound bundle and read it back remotely.",
+      "estimated_owner_effort": "one dashboard action",
+      "delegated_parallel_work": "R1 and R2 are already qualified and continue unaffected."
+    },
+    {
+      "action_id": "OA-CURORCH-02-CURSOR-API-KEY",
+      "unblocks_route": "R4A-CURSOR-AGENT-REST-API",
+      "state": "OWNER_REQUIRED",
+      "nondelegable_reason": "owner-held API credential issued against the founder's Cursor account",
+      "blocking_scope": "the Cursor Agent REST run-creation and follow-up route only",
+      "exact_action": "Issue a Cursor API key from the Cursor dashboard and add it as a Cloud Agent secret named CURSOR_API_KEY.",
+      "why_it_matters": "R2 already qualifies observation, result and artifact retrieval over MCP. This key adds programmatic run creation and follow-up submission, which is what converts a single persistent orchestrator into a durable launch-and-retrieve control plane without another Multiple Agents group.",
+      "verification_the_orchestrator_will_do_itself": "Create one bounded canary run, retrieve its result by run ID, reconcile and read back remotely, then measure concurrency ceiling against the recorded PO-03 baseline before any scale-up.",
+      "estimated_owner_effort": "one dashboard action",
+      "delegated_parallel_work": "All qualified routes continue unaffected."
+    },
+    {
+      "action_id": "OA-CURORCH-03-SW-LAUNCH",
+      "unblocks_route": "R6-SW-RETURN-EXCHANGE",
+      "state": "OWNER_REQUIRED_ALREADY_TRACKED_AS_FA-SCF01-SW-LAUNCH",
+      "nondelegable_reason": "the SW surface requires a founder-authenticated client with a TLS certificate",
+      "blocking_scope": "the parallel specialist return route only",
+      "exact_action": "Send the prepared message in workstreams/so02/control-plane/launch/SW-LAUNCH-NOW.md once, in space 1054976614269477.",
+      "duplicate_of_existing_founder_action": "FA-SCF01-SW-LAUNCH",
+      "verification_the_orchestrator_will_do_itself": "Resolve the return branch head, require descent from the recorded SO-02 source SHA, require a hash-bound manifest, verify every byte remotely and apply independent criteria. The founder is never asked to retrieve, compare or merge the specialist's output.",
+      "delegated_parallel_work": "All qualified routes continue unaffected."
+    },
+    {
+      "action_id": "OA-CURORCH-04-INDEPENDENT-ACCEPTOR",
+      "unblocks_route": null,
+      "state": "OWNER_REQUIRED",
+      "nondelegable_reason": "appointing an independent evaluator is an authority act; a producer cannot appoint its own acceptor",
+      "blocking_scope": "the acceptance record for this qualification only; it does not block execution",
+      "exact_action": "Name an independent actor — a different runtime, model family or human reviewer that did not produce this evidence — to issue or refuse the acceptance record for CUR-ORCH-QUAL-01.",
+      "what_the_acceptor_runs": "git clone the repository, checkout the immutable qualification commit, then run `python -I workstreams/so02/control-plane/tools/scctl.py validate`, `python -I workstreams/so02/control-plane/tools/orchqual.py verify` and `python -I -m unittest discover -s workstreams/so02/control-plane/tests`. Every claim in this bundle is replayable from a clean clone with no provider access.",
+      "producer_self_acceptance": "PROHIBITED_AND_NOT_PERFORMED"
+    }
+  ],
+  "explicitly_not_requested_of_the_founder": [
+    "retrieving any agent result",
+    "comparing candidate outputs",
+    "monitoring any run or thread",
+    "merging any branch or pull request",
+    "relaying results between runtimes",
+    "opening or watching PO-03 parent threads"
+  ]
+}

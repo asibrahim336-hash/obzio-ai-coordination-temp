@@ -1,0 +1,58 @@
+{
+  "route_id": "R1-GITHUB-IMMUTABLE-EXCHANGE",
+  "name": "GitHub isolated-branch exchange with immutable-SHA custody and dual-transport read-back",
+  "decision_changed": [],
+  "transport": "https_git_and_github_rest",
+  "independent_of": ["R2-CURSOR-AGENT-CONTROL-MCP"],
+  "independence_argument": "This route uses an authenticated GitHub identity over the git wire protocol and the GitHub REST API. It does not use the Cursor MCP surface and survives a total loss of the Cursor control plane, because the repository — not the provider — is canonical.",
+  "bounded_work_unit": {
+    "work_unit_id": "CUR-ORCH-QUAL-01/WU-R1-001",
+    "attempt_id": "CUR-ORCH-QUAL-01/WU-R1-001/A1",
+    "description": "Create an isolated branch from a resolved immutable source SHA, produce a hash-bound evidence bundle, publish it, then re-fetch and compare every byte against the remote.",
+    "source_sha": "a5adfdff6921b34b05c1ea6eed0c1752bb4ebbbb",
+    "isolated_branch": "cursor/so02-cur-orch-qual-01",
+    "shared_source_branch_treated_as": "READ_ONLY",
+    "instrument": "git 2.43.0 and gh 2.91.0"
+  },
+  "result_retrieval": {
+    "addressable": true,
+    "addressing_scheme": "immutable commit SHA -> tree path -> blob SHA-1 -> content bytes",
+    "transports": [
+      {
+        "transport_id": "git_protocol_fetch_by_immutable_sha",
+        "method": "git fetch --no-tags origin <sha> followed by git cat-file -p <sha>:<path>"
+      },
+      {
+        "transport_id": "github_rest_git_blobs_api",
+        "method": "gh api /repos/asibrahim336-hash/obzio-ai-coordination-temp/git/blobs/<blob_sha> --jq .content, base64-decoded"
+      }
+    ],
+    "comparison_rule": "Every manifested bundle file must be byte-identical to the remote object under both transports. Any single differing byte sets REMOTE_READBACK_MISMATCH and blocks the qualified state.",
+    "evidence_file": "receipts/so02/2026-08-22/cur-orch-qual-01/REMOTE-READBACK.json"
+  },
+  "stable_locators": [
+    {
+      "kind": "github_branch",
+      "locator": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/tree/cursor/so02-cur-orch-qual-01",
+      "resume_checkpoint": "resolve the branch head with git ls-remote and act only on the resolved immutable SHA",
+      "contains_credential_material": false
+    },
+    {
+      "kind": "github_immutable_source_commit",
+      "locator": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/commit/a5adfdff6921b34b05c1ea6eed0c1752bb4ebbbb",
+      "resume_checkpoint": "SO-02 source head at qualification start",
+      "contains_credential_material": false
+    }
+  ],
+  "failure_injection": {
+    "exercise_id": "FB-R1-WRITE-SCOPE-GUARD",
+    "injected": "Structural write attempts against protected targets: the selected SO-02 source branch, the PR #9 PO-03 branch, a cursor/po03-* branch, main, the PR #6 and PR #7 branches, workstreams/po03/**, global state/** and an unscoped workflow file.",
+    "observed": "Every attempt is refused by orchqual guard_paths before any write occurs; refusals are asserted by executable tests in tests/test_orchqual.py.",
+    "fail_closed": true,
+    "programme_continued": true
+  },
+  "limits_and_honest_gaps": [
+    "The GitHub identity available to this runtime is read-only for pull-request creation through the CLI; PR creation is performed through the runtime's own pull-request tool. Branch pushes are unaffected.",
+    "Remote read-back proves custody of what was pushed. It cannot prove intent; independent acceptance remains a separate, non-self-issued step."
+  ]
+}

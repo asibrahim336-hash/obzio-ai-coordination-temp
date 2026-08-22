@@ -1,0 +1,342 @@
+{
+  "qualification_id": "CUR-ORCH-QUAL-01",
+  "commission_id": "COM-SCF01-CUR01-20260822-v001",
+  "runtime_binding_id": "SCF-01/CUR-01",
+  "decision_changed": [],
+  "phase": "RECONCILED_COMPLETED",
+  "state": "TWO_INDEPENDENT_ROUTES_QUALIFIED_END_TO_END_WITH_IMMUTABLE_REMOTE_CUSTODY_AND_ZERO_PO03_INTERFERENCE",
+  "phase_rule": "A route may not be marked QUALIFIED before the reconciled phase, because remote byte-for-byte read-back by immutable SHA is part of its evidence. This mirrors the commission's READY_TO_COMMIT versus COMPLETED custody ladder and is enforced by orchqual.verify_qualification.",
+  "aggregate_classification": "PASS_TWO_OR_MORE_ROUTES",
+  "qualified_route_count": 2,
+  "capacity_verdict": "ZERO_PO03_CAPACITY_INTERFERENCE",
+  "result_custody": {
+    "evidence_commit": "04001dba1c689c90041ea383f3092213756c7ead",
+    "evidence_commit_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/commit/04001dba1c689c90041ea383f3092213756c7ead",
+    "bundle_sha256": "451352be9999caffd1fa35c7cdc41f33a8113ec5a03d46d07e8489927b3aeb52",
+    "remote_readback_record": "receipts/so02/2026-08-22/cur-orch-qual-01/REMOTE-READBACK.json",
+    "remote_readback_sha256": "a3ca0f3d25f1c568533768a3aed206b11bf881652ca1d0fcb436b6cf72cf5cf5",
+    "entries_compared": 11,
+    "bytes_compared": 108160,
+    "mismatches": 0,
+    "result": "REMOTE_BYTE_FOR_BYTE_IDENTICAL",
+    "custody_ladder": {
+      "immutable_input_configuration_and_acceptance_hashes": true,
+      "append_only_checkpoints": true,
+      "complete_artifact_manifest_and_content_hashes": true,
+      "committed_remote_result": true,
+      "independent_read_back_by_immutable_sha": true,
+      "parent_ingestion_acknowledgement": true,
+      "terminal_reconciliation_record": true
+    },
+    "parent_ingestion_note": "Ingestion here is the root controller accepting its own work unit into shared projection state. It is a custody step, not an acceptance. Independent acceptance remains REQUESTED_NOT_GRANTED and cannot be issued by this run."
+  },
+  "orchestrator": {
+    "provider": "Cursor Cloud Agents",
+    "stable_agent_url": "https://cursor.com/agents/bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+    "provider_run_id": "bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+    "exact_model_configuration": "claude-opus-5-thinking-max-fast",
+    "immutable_start_sha": "a5adfdff6921b34b05c1ea6eed0c1752bb4ebbbb",
+    "isolated_branch": "cursor/so02-cur-orch-qual-01",
+    "top_level_agent_count": 1,
+    "cursor_subagents_started": 0,
+    "multiple_agents_groups_started": 0,
+    "shared_state_writers": 1,
+    "tool_census": "receipts/so02/2026-08-22/cur-orch-qual-01/LAUNCH-RECEIPT.json",
+    "launch_receipt": "receipts/so02/2026-08-22/cur-orch-qual-01/LAUNCH-RECEIPT.json"
+  },
+  "routes": [
+    {
+      "route_id": "R1-GITHUB-IMMUTABLE-EXCHANGE",
+      "name": "GitHub isolated-branch exchange with immutable-SHA custody and dual-transport read-back",
+      "transport": "https_git_and_github_rest",
+      "independent_of": ["R2-CURSOR-AGENT-CONTROL-MCP"],
+      "availability": "QUALIFIED",
+      "instrument": "git 2.43.0, gh 2.91.0, GitHub REST git/blobs API",
+      "evidence": {
+        "bounded_launch_observed": true,
+        "addressable_result_retrieval_observed": true,
+        "stable_locator_recorded": true,
+        "reconciled_into_immutable_repository_custody": true,
+        "remote_byte_for_byte_readback": true,
+        "failure_or_unavailable_fallback_exercised": true,
+        "zero_po03_capacity_interference": true
+      },
+      "readback_proof": {
+        "immutable_commit": "04001dba1c689c90041ea383f3092213756c7ead",
+        "transports": ["clean_clone_git_fetch_by_immutable_sha", "github_rest_git_blobs_api"],
+        "entries": 11,
+        "bytes": 108160,
+        "mismatches": 0
+      },
+      "stable_locators": [
+        {
+          "kind": "github_branch",
+          "locator": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/tree/cursor/so02-cur-orch-qual-01",
+          "resume_checkpoint": "resolve the branch head with git ls-remote and act only on the resolved immutable SHA"
+        },
+        {
+          "kind": "github_immutable_source_commit",
+          "locator": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/commit/a5adfdff6921b34b05c1ea6eed0c1752bb4ebbbb",
+          "resume_checkpoint": "SO-02 source head at qualification start"
+        }
+      ],
+      "detail_record": "receipts/so02/2026-08-22/cur-orch-qual-01/routes/R1-github-immutable-exchange.json"
+    },
+    {
+      "route_id": "R2-CURSOR-AGENT-CONTROL-MCP",
+      "name": "Cursor agent-run control, results and artifact retrieval over the authenticated MCP surface",
+      "transport": "mcp_over_runtime_bound_auth",
+      "independent_of": ["R1-GITHUB-IMMUTABLE-EXCHANGE"],
+      "availability": "QUALIFIED",
+      "instrument": "cursor-cloud MCP server: run-info, list-cloud-agents, environment-info, batch-fetch-details",
+      "evidence": {
+        "bounded_launch_observed": true,
+        "addressable_result_retrieval_observed": true,
+        "stable_locator_recorded": true,
+        "reconciled_into_immutable_repository_custody": true,
+        "remote_byte_for_byte_readback": true,
+        "failure_or_unavailable_fallback_exercised": true,
+        "zero_po03_capacity_interference": true
+      },
+      "readback_proof": {
+        "immutable_commit": "04001dba1c689c90041ea383f3092213756c7ead",
+        "reconciled_artifact": "receipts/so02/2026-08-22/cur-orch-qual-01/routes/R2-cursor-agent-control-mcp.json",
+        "provider_artifact_hashes_carried": [
+          "e5849e68d8e0ecf1205b18a9c0bf64a7a6c61b3f82dee2a0b8f500eff7521b13",
+          "1b0c03ddfa9297a94d85f7267ad4316d6932125784335595dc3fcc7903bc3ec3"
+        ],
+        "note": "The provider run directory is VM-local and non-durable. What was read back byte-for-byte from the remote is the reconciled record carrying the retrieved content and its provider artifact hashes, which is the durable form of this route's result."
+      },
+      "stable_locators": [
+        {
+          "kind": "cursor_cloud_agent",
+          "locator": "https://cursor.com/agents/bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+          "resume_checkpoint": "bcId=bc-c6f63d58-9611-495a-96f6-2f2dcbef696d; resume by addressing the run id through cursor-cloud run-info or batch-fetch-details"
+        },
+        {
+          "kind": "cursor_cloud_environment",
+          "locator": "https://cursor.com/dashboard/cloud-agents/environments/e/69dbfc52-9df5-11f1-a7d1-d6b4613131ce",
+          "resume_checkpoint": "environmentPublicId=69dbfc52-9df5-11f1-a7d1-d6b4613131ce; build bld-20260822-015195f7-955b-445d-8b57-78bc58eec228"
+        }
+      ],
+      "detail_record": "receipts/so02/2026-08-22/cur-orch-qual-01/routes/R2-cursor-agent-control-mcp.json"
+    },
+    {
+      "route_id": "R3-EVENT-RETURN-SUBSCRIPTIONS",
+      "name": "Asynchronous event-return route for external results without polling or founder relay",
+      "transport": "mcp_event_subscription",
+      "independent_of": ["R1-GITHUB-IMMUTABLE-EXCHANGE", "R2-CURSOR-AGENT-CONTROL-MCP"],
+      "availability": "AVAILABLE_NOT_QUALIFIED",
+      "instrument": "cursor-subscriptions MCP server plus GitHub check-runs retrieval addressed by immutable commit SHA",
+      "evidence": {
+        "bounded_launch_observed": true,
+        "addressable_result_retrieval_observed": true,
+        "stable_locator_recorded": true,
+        "reconciled_into_immutable_repository_custody": true,
+        "remote_byte_for_byte_readback": false,
+        "failure_or_unavailable_fallback_exercised": true,
+        "zero_po03_capacity_interference": true
+      },
+      "stable_locators": [
+        {
+          "kind": "github_actions_workflow_run",
+          "locator": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32576767467",
+          "resume_checkpoint": "run id 32576767467, job id 97040137386, head_sha 7b6c10bd7087cc50574101c025c04693e2fca66a"
+        },
+        {
+          "kind": "cursor_event_subscription",
+          "locator": "sub_de5d1716-d939-4baf-be5f-dd3cbe011701",
+          "resume_checkpoint": "branch-scoped CI subscription on cursor/so02-cur-orch-qual-01; supersession by a newer push drops undelivered results, so addressable retrieval is the primary path"
+        }
+      ],
+      "why_not_yet_qualified": "Six of the seven evidence flags now hold: a bounded CI job was launched by the immutable push, its result was retrieved addressably by commit SHA, stable locators are recorded, the result is reconciled into repository custody and two fallbacks failed closed. Only its own remote byte-for-byte read-back is missing, and supplying it would require a further commit whose read-back would require another. The route is left honestly uncounted rather than padded into the total.",
+      "next_executable": "Fold the CI return into the next work unit's evidence commit, where its read-back rides along with that unit's own bundle rather than chasing its own tail.",
+      "corroboration_value": "Although uncounted, this route already produced the strongest external check in the bundle: an independent GitHub Actions runner re-executed both validators and all 92 tests from a fresh checkout at the immutable commit and passed."
+    },
+    {
+      "route_id": "R4-OPENAI-RESPONSES-CONVERSATIONS",
+      "name": "Authorised OpenAI Responses and Conversations API route",
+      "transport": "https_openai_rest",
+      "independent_of": ["R1-GITHUB-IMMUTABLE-EXCHANGE", "R2-CURSOR-AGENT-CONTROL-MCP"],
+      "availability": "OWNER_REQUIRED",
+      "instrument": "unauthenticated POST https://api.openai.com/v1/responses at 2026-08-22T13:37:38Z returning HTTP 401 'Missing bearer or basic authentication in header'",
+      "evidence": {
+        "bounded_launch_observed": false,
+        "addressable_result_retrieval_observed": false,
+        "stable_locator_recorded": false,
+        "reconciled_into_immutable_repository_custody": false,
+        "remote_byte_for_byte_readback": false,
+        "failure_or_unavailable_fallback_exercised": false,
+        "zero_po03_capacity_interference": true
+      },
+      "stable_locators": [],
+      "owner_required_action": "Add a repository-scoped Cloud Agent secret named OPENAI_API_KEY containing an authorised key for the Obzio OpenAI API project. Egress is unrestricted, so the credential is the only blocker.",
+      "blocking_scope": "this route only; it stopped no other work"
+    },
+    {
+      "route_id": "R4A-CURSOR-AGENT-REST-API",
+      "name": "Cursor Agent REST API run creation and follow-up submission",
+      "transport": "https_cursor_rest",
+      "independent_of": ["R1-GITHUB-IMMUTABLE-EXCHANGE"],
+      "availability": "OWNER_REQUIRED",
+      "instrument": "unauthenticated GET https://api.cursor.com/v0/agents at 2026-08-22T13:37:38Z returning HTTP 401 'Invalid User API Key'",
+      "evidence": {
+        "bounded_launch_observed": false,
+        "addressable_result_retrieval_observed": false,
+        "stable_locator_recorded": false,
+        "reconciled_into_immutable_repository_custody": false,
+        "remote_byte_for_byte_readback": false,
+        "failure_or_unavailable_fallback_exercised": false,
+        "zero_po03_capacity_interference": true
+      },
+      "stable_locators": [],
+      "owner_required_action": "Issue a Cursor API key and add it as a Cloud Agent secret named CURSOR_API_KEY. This adds programmatic run creation and follow-up to the already-qualified R2 observation and artifact-retrieval half.",
+      "blocking_scope": "this route only; it stopped no other work"
+    },
+    {
+      "route_id": "R5-CHATGPT-PROJECTS-BROWSER",
+      "name": "Native ChatGPT Projects UI via browser or computer control",
+      "transport": "browser_or_computer_control",
+      "independent_of": ["R1-GITHUB-IMMUTABLE-EXCHANGE", "R2-CURSOR-AGENT-CONTROL-MCP"],
+      "availability": "NOT_SUPPORTED",
+      "instrument": "runtime tool enumeration at 2026-08-22T13:33:00Z: no browser, computer-control, web-search or web-fetch tool is exposed to this agent",
+      "evidence": {
+        "bounded_launch_observed": false,
+        "addressable_result_retrieval_observed": false,
+        "stable_locator_recorded": false,
+        "reconciled_into_immutable_repository_custody": false,
+        "remote_byte_for_byte_readback": false,
+        "failure_or_unavailable_fallback_exercised": false,
+        "zero_po03_capacity_interference": true
+      },
+      "stable_locators": [],
+      "owner_required_action": "Optional only. Enable browser/computer tools on the orchestrator and complete the ChatGPT login, MFA and OAuth consent once, keeping owner approval on for consequential browser writes.",
+      "promotion_impact": "NONE",
+      "promotion_note": "This is the optional probe. Its absence does not reduce the qualification result and must never become a promotion gate.",
+      "blocking_scope": "this route only; it stopped no other work"
+    },
+    {
+      "route_id": "R6-SW-RETURN-EXCHANGE",
+      "name": "Parallel specialist isolated return-branch exchange",
+      "transport": "github_isolated_return_branch",
+      "independent_of": ["R2-CURSOR-AGENT-CONTROL-MCP"],
+      "availability": "NOT_YET_CREATED",
+      "instrument": "git ls-remote --heads origin refs/heads/capability-factory/return-20260822-v001 at 2026-08-22T13:37:38Z returning zero refs",
+      "evidence": {
+        "bounded_launch_observed": false,
+        "addressable_result_retrieval_observed": false,
+        "stable_locator_recorded": false,
+        "reconciled_into_immutable_repository_custody": false,
+        "remote_byte_for_byte_readback": false,
+        "failure_or_unavailable_fallback_exercised": true,
+        "zero_po03_capacity_interference": true
+      },
+      "stable_locators": [],
+      "receiving_half_built_and_executable": true,
+      "receiving_half_command": "python3 workstreams/so02/control-plane/tools/orchqual.py ingest",
+      "owner_required_action": "Send the prepared SW-LAUNCH-NOW.md message once in space 1054976614269477. This is already tracked as FA-SCF01-SW-LAUNCH and needs a founder-authenticated client with a TLS certificate.",
+      "blocking_scope": "this route only; it stopped no other work"
+    }
+  ],
+  "fallback_exercises": [
+    {
+      "exercise_id": "FB-01-UNAVAILABLE-RETURN-BRANCH",
+      "kind": "unavailable_route",
+      "route_id": "R6-SW-RETURN-EXCHANGE",
+      "injected": "ingest against a return branch that does not exist",
+      "observed": "NOT_YET_CREATED, exit code 2, exact owner action returned, nothing ingested",
+      "fail_closed": true,
+      "programme_continued": true
+    },
+    {
+      "exercise_id": "FB-02-UNRELATED-LINEAGE-REJECTION",
+      "kind": "adversarial_ingestion",
+      "route_id": "R6-SW-RETURN-EXCHANGE",
+      "injected": "ingest a real but unrelated branch while claiming the SO-02 source SHA as its base",
+      "observed": "REJECTED_UNRELATED_LINEAGE, exit code 2, non-descendant SHA named explicitly",
+      "fail_closed": true,
+      "programme_continued": true
+    },
+    {
+      "exercise_id": "FB-03-NONEXISTENT-PROVIDER-RUN",
+      "kind": "route_failure",
+      "route_id": "R2-CURSOR-AGENT-CONTROL-MCP",
+      "injected": "artifact retrieval addressed to a well-formed but non-existent provider run id",
+      "observed": "zero agents fetched, unavailable id named explicitly, no artifact written, no fabricated result",
+      "fail_closed": true,
+      "programme_continued": true
+    },
+    {
+      "exercise_id": "FB-04-WRITE-SCOPE-GUARD",
+      "kind": "wrong_target_write",
+      "route_id": "R1-GITHUB-IMMUTABLE-EXCHANGE",
+      "injected": "structural writes aimed at the SO-02 source branch, the PR #9 PO-03 branch, cursor/po03-*, main, the PR #6 and PR #7 branches, workstreams/po03/**, global state/** and an unscoped workflow path",
+      "observed": "every attempt refused before any write, asserted by executable tests",
+      "fail_closed": true,
+      "programme_continued": true
+    },
+    {
+      "exercise_id": "FB-05-CI-RESULT-FOR-UNBUILT-COMMIT",
+      "kind": "route_failure",
+      "route_id": "R3-EVENT-RETURN-SUBSCRIPTIONS",
+      "injected": "CI result retrieval for an immutable commit that had no CI run",
+      "observed": "total_count=0 and zero check runs; the absence of a run is not reported as a pass",
+      "fail_closed": true,
+      "programme_continued": true
+    },
+    {
+      "exercise_id": "FB-06-CI-RESULT-FOR-NONEXISTENT-COMMIT",
+      "kind": "route_failure",
+      "route_id": "R3-EVENT-RETURN-SUBSCRIPTIONS",
+      "injected": "CI result retrieval for an all-zero commit SHA",
+      "observed": "HTTP 422 'No commit found for SHA'; no result fabricated",
+      "fail_closed": true,
+      "programme_continued": true
+    }
+  ],
+  "independent_corroboration": {
+    "instrument": "GitHub Actions hosted runner, workflow run 32576767467, job 97040137386",
+    "immutable_commit": "7b6c10bd7087cc50574101c025c04693e2fca66a",
+    "conclusion": "success",
+    "steps_passed": ["Validate the control-plane seed", "Replay the route qualification evidence from this clean clone", "Run recurrence tests"],
+    "receipt": "receipts/so02/2026-08-22/cur-orch-qual-01/CLEAN-CLONE-REPLAY-RECEIPT.json",
+    "standing": "Corroboration by an instrument the producing run does not control. It is not an acceptance record and does not change independent_acceptance."
+  },
+  "admits": {
+    "persistent_single_agent_orchestrators": 1,
+    "only_individually_proved_routes": true,
+    "additional_cursor_multiple_agents_group": false,
+    "exclusive_dependence_on_cursor_or_sw": false,
+    "merge_promotion_or_cutover": false,
+    "strategy_binding": false,
+    "chatgpt_projects_ui_required": false
+  },
+  "does_not_admit": [
+    "a second Cursor Multiple Agents group",
+    "any route not individually proved end to end",
+    "exclusive dependence on Cursor or on SW",
+    "merge of this branch, promotion to production or SCF-01 cutover",
+    "producer self-acceptance",
+    "any binding of company strategy"
+  ],
+  "independent_acceptance": {
+    "state": "REQUESTED_NOT_GRANTED",
+    "self_accepted": false,
+    "acceptor": null,
+    "requested_action_id": "OA-CURORCH-04-INDEPENDENT-ACCEPTOR",
+    "replay_commands": [
+      "python -I workstreams/so02/control-plane/tools/scctl.py validate",
+      "python -I workstreams/so02/control-plane/tools/orchqual.py verify",
+      "python -I -m unittest discover -s workstreams/so02/control-plane/tests -p 'test_*.py'"
+    ],
+    "replay_property": "Every claim in this bundle is replayable from a clean clone at the immutable commit with no provider access and no network."
+  },
+  "protected_targets_untouched": {
+    "PO-01": "not contacted, not read, not mutated",
+    "PO-03": "observed read-only at the account run-listing layer only; no branch, path, thread or transcript touched",
+    "PR #9 and its branch": "not written",
+    "cursor/po03-* and po03/*": "not written",
+    "main, PR #6, PR #7": "not written",
+    "selected SO-02 source branch": "read-only source; not written"
+  }
+}
