@@ -1,0 +1,83 @@
+{
+  "changes_and_rejections": [
+    {
+      "change": "The simulator refuses execution when the frozen workload bytes or SHA-256 differ from the preregistration and refuses a renamed mechanism signature.",
+      "disposition": "RETAIN_IN_UNIT",
+      "evidence": [
+        "tests/test_simulator.py::FrozenInputsTests::test_tampered_workload_fails_closed",
+        "tests/test_simulator.py::FrozenInputsTests::test_renamed_mechanism_fails_closed"
+      ],
+      "mechanism_id": "M-017-01",
+      "scope": "LIVE_EXECUTABLE_MECHANISM",
+      "target": "simulator.py"
+    },
+    {
+      "change": "After a cross-shard collision, lease-shards marks the write key contested, rejects both collided attempts before acceptance, and applies recovery-only global exclusion with staggered retries.",
+      "disposition": "RETAIN_IN_UNIT",
+      "evidence": {
+        "collision_events": 3,
+        "false_completions": 0,
+        "recovery_events": 9,
+        "unverified_exposure_ticks": 0
+      },
+      "mechanism_id": "M-017-02",
+      "scope": "LIVE_EXECUTABLE_MECHANISM",
+      "target": "architectures/lease_shards.py"
+    },
+    {
+      "change": "The event-log candidate materializes acceptance only through an idempotent asynchronous reducer and reconstructs final accepted state by replaying MATERIALIZED_ACCEPTED events.",
+      "disposition": "RETAIN_IN_UNIT",
+      "evidence": {
+        "duplicate_external_effects": 0,
+        "event_replay_lost_committed_results": 0,
+        "false_completions": 0
+      },
+      "mechanism_id": "M-017-03",
+      "scope": "LIVE_EXECUTABLE_MECHANISM",
+      "target": "architectures/event_log.py"
+    },
+    {
+      "disposition": "EVIDENCE_BACKED_REJECTION",
+      "evidence": {
+        "central_gate_accepted_throughput": 0.444444,
+        "fastest_accepted_throughput": 1.333333,
+        "throughput_ratio_fastest_over_central": 3.000002,
+        "verification_backlog_peak": 17
+      },
+      "mechanism_id": "M-017-R1",
+      "reason": "Its safety profile remains a useful bound, but the frozen simulation shows a threefold accepted-throughput penalty and the largest verification backlog.",
+      "rejected_claim": "A single central synchronous gate should be the universal repository-factory default.",
+      "scope": "REJECTION_FOR_UNIVERSAL_DEFAULT_ONLY"
+    },
+    {
+      "disposition": "EVIDENCE_BACKED_REJECTION",
+      "evidence": {
+        "event_log_accepted_throughput": 1.2,
+        "lease_shards_accepted_throughput": 1.333333,
+        "preregistered_prediction": "event-log highest when the reducer keeps pace",
+        "unverified_exposure_ticks": 105
+      },
+      "mechanism_id": "M-017-R2",
+      "reason": "The reducer did not keep pace with the shard verifiers and the optimistic interface accumulated 105 task-ticks of unverified exposure.",
+      "rejected_claim": "The event-log candidate is the highest-throughput architecture under the frozen candidate parameters.",
+      "scope": "REJECTION_UNDER_FROZEN_SIMULATION"
+    },
+    {
+      "disposition": "EVIDENCE_BACKED_REJECTION",
+      "evidence": {
+        "collision_events": 3,
+        "false_completions": 0,
+        "recovery_events": 9
+      },
+      "mechanism_id": "M-017-R3",
+      "reason": "Local locks allowed cross-shard write collisions. Fences and recovery prevented false acceptance, but conflict detection after execution is not equivalent to pre-dispatch ownership safety.",
+      "rejected_claim": "Local shard ownership alone is sufficient for overlapping repository write keys.",
+      "scope": "REJECTION_UNDER_FROZEN_SIMULATION"
+    }
+  ],
+  "decision_changed": [],
+  "mechanism_change_count": 6,
+  "no_production_binding": "All retained mechanisms remain inside the owned simulator. No shared controller, protected state, production route, or strategy was changed.",
+  "protocol_version": "OBZIO-PO03-MECHANISM-DISPOSITION-v1",
+  "task_id": "PO03-WA-017"
+}
