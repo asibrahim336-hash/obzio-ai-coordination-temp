@@ -1,0 +1,622 @@
+"""
+Obzio operator spine (shared, byte-identical across all five packs).
+
+Provides:
+  * Phase           - the mandated nine-phase lifecycle
+  * Ledger          - append-only, hash-chained, on-disk (JSONL) run ledger
+  * AcceptanceGate  - HMAC gate; the key lives outside the producing process
+  * IndependentAcceptor - re-derives the verdict from artefacts on disk
+  * Run             - the state machine; refuses to self-advance past
+                      MACHINE_CHECKS_PASSED without a foreign acceptance token
+
+HARD RULE ENFORCED HERE (not prose):
+    Run.advance(target) raises SelfAcceptanceRefused when
+    target >= Phase.INDEPENDENT_ACCEPTANCE and the run holds no
+    verified AcceptanceToken minted by an acceptor_id != producer_id.
+
+Stdlib only.
+"""
+from __future__ import annotations
+
+import enum
+import hashlib
+import hmac
+import json
+import os
+import secrets
+import time
+import uuid
+from dataclasses import dataclass, field, asdict
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional
+
+SPINE_VERSION = "1.0.0"
+
+
+# --------------------------------------------------------------------------
+# Phases
+# --------------------------------------------------------------------------
+class Phase(enum.IntEnum):
+    PREFLIGHT = 0
+    CURRENT_STATE_RECOVERED = 1
+    INPUT_ADMITTED = 2
+    ACTION_EXECUTED = 3
+    REQUIRED_ARTEFACTS_PRESENT = 4
+    MACHINE_CHECKS_PASSED = 5
+    INDEPENDENT_ACCEPTANCE = 6
+    RETURN_STATE_WRITTEN = 7
+    COMPLETE = 8
+
+
+#: Highest phase the producing process may reach on its own authority.
+PRODUCER_CEILING = Phase.MACHINE_CHECKS_PASSED
+
+
+# --------------------------------------------------------------------------
+# Errors
+# --------------------------------------------------------------------------
+class SpineError(Exception):
+    """Base for every refusal raised by the spine."""
+
+
+class PhaseOrderError(SpineError):
+    pass
+
+
+class SelfAcceptanceRefused(SpineError):
+    pass
+
+
+class AcceptanceRefused(SpineError):
+    pass
+
+
+class TokenInvalid(SpineError):
+    pass
+
+
+class PeekedBeforeCommit(SpineError):
+    """The acceptor opened the producer's artefacts before committing its own
+    answer. That is the ANCHORED configuration and it is refused."""
+
+
+class NoPrecommitment(SpineError):
+    pass
+
+
+class CommitmentMismatch(SpineError):
+    pass
+
+
+class NoIndependentExpectation(SpineError):
+    """The objective has no independently derivable expectation. Refusing to
+    fabricate one - see BOUNDARIES.md, acceptance labelled BEHAVIOURAL_ONLY."""
+
+
+class AcceptanceBudgetExhausted(SpineError):
+    pass
+
+
+class LedgerTampered(SpineError):
+    pass
+
+
+# --------------------------------------------------------------------------
+# Primitives
+# --------------------------------------------------------------------------
+def canon(obj: Any) -> bytes:
+    return json.dumps(
+        obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False, default=str
+    ).encode("utf-8")
+
+
+def sha256_bytes(b: bytes) -> str:
+    return hashlib.sha256(b).hexdigest()
+
+
+def sha256_obj(obj: Any) -> str:
+    return sha256_bytes(canon(obj))
+
+
+def sha256_file(p: os.PathLike | str) -> str:
+    h = hashlib.sha256()
+    with open(p, "rb") as fh:
+        for chunk in iter(lambda: fh.read(65536), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def write_json(path: os.PathLike | str, obj: Any) -> None:
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    tmp = p.with_suffix(p.suffix + ".tmp")
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(obj, fh, indent=2, sort_keys=True, default=str)
+        fh.write("\n")
+        fh.flush()
+        os.fsync(fh.fileno())
+    os.replace(tmp, p)
+
+
+def read_json(path: os.PathLike | str) -> Any:
+    with open(path, "r", encoding="utf-8") as fh:
+        return json.load(fh)
+
+
+GENESIS = "GENESIS"
+
+
+# --------------------------------------------------------------------------
+# Append-only hash-chained ledger
+# --------------------------------------------------------------------------
+@dataclass(frozen=True)
+class Entry:
+    seq: int
+    ts: float
+    kind: str
+    payload: Dict[str, Any]
+    prev: str
+    digest: str
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+class Ledger:
+    """Append-only JSONL ledger. Every entry commits to the entry before it."""
+
+    def __init__(self, path: os.PathLike | str):
+        self.path = Path(path)
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.entries: List[Entry] = []
+        if self.path.exists():
+            with open(self.path, "r", encoding="utf-8") as fh:
+                for line in fh:
+                    line = line.strip()
+                    if line:
+                        self.entries.append(Entry(**json.loads(line)))
+
+    @staticmethod
+    def _digest(seq: int, ts: float, kind: str, payload: Dict[str, Any], prev: str) -> str:
+        return sha256_obj(
+            {"seq": seq, "ts": ts, "kind": kind, "payload": payload, "prev": prev}
+        )
+
+    def head(self) -> str:
+        return self.entries[-1].digest if self.entries else GENESIS
+
+    def append(self, kind: str, payload: Dict[str, Any]) -> Entry:
+        seq = len(self.entries)
+        ts = time.time()
+        prev = self.head()
+        e = Entry(
+            seq=seq,
+            ts=ts,
+            kind=kind,
+            payload=payload,
+            prev=prev,
+            digest=self._digest(seq, ts, kind, payload, prev),
+        )
+        with open(self.path, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(e.to_dict(), sort_keys=True, default=str) + "\n")
+            fh.flush()
+            os.fsync(fh.fileno())
+        self.entries.append(e)
+        return e
+
+    def verify_chain(self) -> None:
+        prev = GENESIS
+        for i, e in enumerate(self.entries):
+            if e.seq != i:
+                raise LedgerTampered(f"seq gap at index {i}: {e.seq}")
+            if e.prev != prev:
+                raise LedgerTampered(f"broken link at seq {e.seq}")
+            recomputed = self._digest(e.seq, e.ts, e.kind, e.payload, e.prev)
+            if recomputed != e.digest:
+                raise LedgerTampered(f"payload edited at seq {e.seq}")
+            prev = e.digest
+
+    def kinds(self) -> List[str]:
+        return [e.kind for e in self.entries]
+
+
+# --------------------------------------------------------------------------
+# Deterministic check reporting
+# --------------------------------------------------------------------------
+@dataclass
+class CheckReport:
+    checks: List[Dict[str, Any]] = field(default_factory=list)
+
+    def add(self, name: str, ok: bool, detail: str = "") -> None:
+        self.checks.append({"name": name, "ok": bool(ok), "detail": detail})
+
+    @property
+    def ok(self) -> bool:
+        return bool(self.checks) and all(c["ok"] for c in self.checks)
+
+    @property
+    def failed(self) -> List[str]:
+        return [c["name"] for c in self.checks if not c["ok"]]
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "ok": self.ok,
+            "n_checks": len(self.checks),
+            "failed": self.failed,
+            "checks": self.checks,
+        }
+
+    def digest(self) -> str:
+        return sha256_obj(self.to_dict())
+
+
+# --------------------------------------------------------------------------
+# Acceptance
+# --------------------------------------------------------------------------
+@dataclass(frozen=True)
+class AcceptanceToken:
+    run_id: str
+    ledger_head: str
+    acceptor_id: str
+    verdict: str
+    issued_at: float
+    check_digest: str
+    mac: str
+    precommit_digest: str = ""
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+class AcceptanceGate:
+    """
+    Holds the acceptance key. In deployment this key file is owned by the
+    acceptor principal and is NOT readable by the producing process
+    (see BOUNDARIES.md: enforcement is filesystem permissions, which a
+    single-uid sandbox cannot demonstrate).
+    """
+
+    def __init__(self, key: bytes):
+        if len(key) < 16:
+            raise ValueError("acceptance key too short")
+        self._key = key
+
+    @classmethod
+    def from_keyfile(cls, path: os.PathLike | str) -> "AcceptanceGate":
+        with open(path, "rb") as fh:
+            return cls(fh.read().strip())
+
+    @classmethod
+    def generate_keyfile(cls, path: os.PathLike | str) -> "AcceptanceGate":
+        key = secrets.token_hex(32).encode()
+        p = Path(path)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        with open(p, "wb") as fh:
+            fh.write(key)
+        os.chmod(p, 0o400)
+        return cls(key)
+
+    def _mac(self, run_id: str, head: str, acceptor_id: str, verdict: str,
+             issued_at: float, check_digest: str, precommit_digest: str = "") -> str:
+        return hmac.new(
+            self._key,
+            canon({
+                "run_id": run_id, "ledger_head": head, "acceptor_id": acceptor_id,
+                "verdict": verdict, "issued_at": issued_at,
+                "check_digest": check_digest, "precommit_digest": precommit_digest,
+            }),
+            hashlib.sha256,
+        ).hexdigest()
+
+    def mint(self, run_id: str, head: str, acceptor_id: str, verdict: str,
+             check_digest: str, precommit_digest: str = "") -> AcceptanceToken:
+        issued_at = time.time()
+        return AcceptanceToken(
+            run_id=run_id, ledger_head=head, acceptor_id=acceptor_id,
+            verdict=verdict, issued_at=issued_at, check_digest=check_digest,
+            precommit_digest=precommit_digest,
+            mac=self._mac(run_id, head, acceptor_id, verdict, issued_at,
+                          check_digest, precommit_digest),
+        )
+
+    def verify(self, token: AcceptanceToken, run_id: str, head: str,
+               producer_id: str) -> None:
+        if token.acceptor_id == producer_id:
+            raise SelfAcceptanceRefused(
+                f"acceptor_id {token.acceptor_id!r} == producer_id; "
+                "self-acceptance is refused"
+            )
+        if token.run_id != run_id:
+            raise TokenInvalid(f"token minted for run {token.run_id!r}, not {run_id!r}")
+        if token.ledger_head != head:
+            raise TokenInvalid(
+                "token does not bind the current ledger head "
+                f"(token={token.ledger_head[:12]}, actual={head[:12]}); "
+                "pre-minted or superseded acceptance is refused"
+            )
+        expect = self._mac(token.run_id, token.ledger_head, token.acceptor_id,
+                           token.verdict, token.issued_at, token.check_digest,
+                           token.precommit_digest)
+        if not hmac.compare_digest(expect, token.mac):
+            raise TokenInvalid("acceptance MAC does not verify")
+        if token.verdict != "PASS":
+            raise AcceptanceRefused(f"acceptance verdict is {token.verdict!r}")
+
+
+class AnchoredAcceptor:
+    """
+    THE REFUTED DESIGN. Kept so each pack can prove its token is now refused.
+
+    It reads the candidate (the producer's workdir) and then decides. A verifier
+    that reads first and judges after is anchored to what it read: it is
+    evaluating "is this defensible?" instead of "what is the answer?". Being
+    unforgeable does not make it unanchored.
+
+    `Run.advance` refuses any token from this class, because no
+    ACCEPTOR_PRECOMMIT precedes it in the ledger. Use CommitFirstAcceptor.
+    """
+
+    def __init__(self, acceptor_id: str, gate: AcceptanceGate,
+                 verifier: Callable[[Path], CheckReport]):
+        self.acceptor_id = acceptor_id
+        self._gate = gate
+        self._verifier = verifier
+
+    def review(self, run: "Run") -> AcceptanceToken:
+        if self.acceptor_id == run.producer_id:
+            raise SelfAcceptanceRefused(
+                f"acceptor {self.acceptor_id!r} is the producer; refused"
+            )
+        run.ledger.verify_chain()
+        report = self._verifier(Path(run.workdir))
+        run.ledger.append(
+            "INDEPENDENT_REVIEW",
+            {
+                "acceptor_id": self.acceptor_id,
+                "independent": True,
+                "report": report.to_dict(),
+                "check_digest": report.digest(),
+            },
+        )
+        if not report.ok:
+            raise AcceptanceRefused(
+                f"independent re-derivation failed: {report.failed}"
+            )
+        return self._gate.mint(run.run_id, run.ledger.head(), self.acceptor_id,
+                               "PASS", report.digest())
+
+
+# --------------------------------------------------------------------------
+# The state machine
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# COMMIT-FIRST ACCEPTANCE
+#
+# A verifier that reads the candidate and then judges it is anchored to the
+# candidate: it evaluates "is this defensible?" rather than "what is the
+# answer?". The correction is not to hide the candidate - obscurity is not the
+# active ingredient - but to make the verifier COMMIT ITS OWN ANSWER FIRST,
+# bound to the run, before any producer artefact is opened. The candidate may
+# then be fully visible.
+#
+# Three parts, all enforced below:
+#   1. precommit()  derives an expectation from the OBJECTIVE and the world.
+#                   It is never handed the workdir. It hash-commits the result
+#                   into the ledger before the artefact window can open.
+#   2. decide()     opens the window, compares producer artefacts to the
+#                   PRE-COMMITTED expectation. Divergence defaults REJECT.
+#   3. the channel  returns ONE BIT plus the commitment reveal. No rubric, no
+#                   diff, no failed-check list - a verbose channel leaks the
+#                   rubric and lets the producer hill-climb it.
+# --------------------------------------------------------------------------
+
+#: an objective whose expectation cannot be independently derived
+BASIS_NONE = "NONE"
+#: expectation derived from a source the producer does not control
+BASIS_INDEPENDENT_SOURCE = "INDEPENDENT_SOURCE"
+#: expectation derived from data the producer itself supplied - arithmetic can
+#: be checked, magnitudes cannot. Acceptance is BEHAVIOURAL_ONLY for magnitude.
+BASIS_PRODUCER_SUPPLIED = "PRODUCER_SUPPLIED"
+
+
+@dataclass(frozen=True)
+class Objective:
+    """What the run is for, declared before it starts, in terms the acceptor
+    can act on WITHOUT reading anything the producer wrote."""
+
+    objective_id: str
+    kind: str
+    declared: Dict[str, Any]
+    derivable: bool = True
+    independence_basis: str = BASIS_INDEPENDENT_SOURCE
+    note: str = ""
+
+    def digest(self) -> str:
+        return sha256_obj({"objective_id": self.objective_id, "kind": self.kind,
+                           "declared": self.declared,
+                           "derivable": self.derivable,
+                           "independence_basis": self.independence_basis})
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {**asdict(self), "digest": self.digest()}
+
+
+@dataclass(frozen=True)
+class Reveal:
+    """Opens the commitment. sha256(canon(expected) || nonce) must equal the
+    expected_digest recorded in the ledger before the window opened."""
+
+    expected: Any
+    nonce: str
+
+    def digest(self) -> str:
+        return sha256_bytes(canon(self.expected) + self.nonce.encode())
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"expected": self.expected, "nonce": self.nonce,
+                "digest": self.digest()}
+
+
+@dataclass(frozen=True)
+class Precommitment:
+    run_id: str
+    acceptor_id: str
+    objective_digest: str
+    expected_digest: str
+    ledger_head_at_commit: str
+    ledger_seq: int
+    committed_at: float
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(frozen=True)
+class AcceptanceOutcome:
+    """THE ACCEPTANCE CHANNEL. One bit, plus the reveal that proves the bit was
+    decided against a commitment made before the artefacts were opened.
+
+    There is deliberately no `reason`, `failed`, `report`, `diff` or `message`
+    field. Diagnostics go to the acceptor's own audit file, which the producer
+    is not meant to read (BEHAVIOURAL_ONLY under one uid - see BOUNDARIES)."""
+
+    run_id: str
+    accept: bool
+    reveal: Reveal
+    precommitment: Precommitment
+    token: Optional[AcceptanceToken] = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {"run_id": self.run_id, "accept": self.accept,
+                "reveal": self.reveal.to_dict(),
+                "precommitment": self.precommitment.to_dict(),
+                "token": self.token.to_dict() if self.token else None}
+
+
+class RejectedByAcceptor(AcceptanceRefused):
+    """Single bit: REJECT. Carries the reveal and nothing else."""
+
+    def __init__(self, outcome: AcceptanceOutcome):
+        super().__init__("REJECT")
+        self.outcome = outcome
+
+
+class ArtefactWindow:
+    """The only sanctioned way for an acceptor to reach producer artefacts.
+
+    Opening it writes ACCEPTOR_WINDOW_OPENED to the ledger. The precommitment
+    must already be there at a lower seq, so the ordering is evidence rather
+    than convention."""
+
+    def __init__(self, run: "Run", acceptor_id: str):
+        self.run = run
+        self.acceptor_id = acceptor_id
+        self._open = False
+        self.opened_seq: Optional[int] = None
+
+    def open(self) -> int:
+        e = self.run.ledger.append("ACCEPTOR_WINDOW_OPENED",
+                                   {"acceptor_id": self.acceptor_id})
+        self._open = True
+        self.opened_seq = e.seq
+        return e.seq
+
+    def path(self) -> Path:
+        if not self._open:
+            raise PeekedBeforeCommit(
+                f"acceptor {self.acceptor_id!r} tried to read producer artefacts "
+                "before committing its own answer")
+        return Path(self.run.workdir)
+
+
+def _last_seq(ledger: Ledger, kind: str, acceptor_id: str,
+              before: Optional[int] = None) -> Optional[int]:
+    """Highest seq of `kind` for this acceptor, optionally below `before`.
+
+    LAST, not first: an acceptance round that was rejected leaves its own
+    precommitment and window in the ledger, and a later round must be judged
+    against its OWN pair, not against the wreckage of the previous one."""
+    found = None
+    for e in ledger.entries:
+        if e.kind != kind or e.payload.get("acceptor_id") != acceptor_id:
+            continue
+        if before is not None and e.seq >= before:
+            continue
+        found = e.seq
+    return found
+
+
+def precommit_seq(ledger: Ledger, acceptor_id: str,
+                  before: Optional[int] = None) -> Optional[int]:
+    return _last_seq(ledger, "ACCEPTOR_PRECOMMIT", acceptor_id, before)
+
+
+def window_seq(ledger: Ledger, acceptor_id: str,
+               before: Optional[int] = None) -> Optional[int]:
+    return _last_seq(ledger, "ACCEPTOR_WINDOW_OPENED", acceptor_id, before)
+
+
+def decision_seq(ledger: Ledger, acceptor_id: str) -> int:
+    """Seq of this acceptor's most recent decision, or -1."""
+    s = _last_seq(ledger, "ACCEPTANCE_DECISION", acceptor_id)
+    return -1 if s is None else s
+
+
+class CommitFirstAcceptor:
+    """
+    `derive(objective) -> expected`   MUST NOT touch the producer's workdir.
+                                      It is not given the path.
+    `compare(expected, workdir) -> bool`  one bit, nothing else.
+    """
+
+    MAX_ATTEMPTS = 2
+
+    def __init__(self, acceptor_id: str, gate: AcceptanceGate,
+                 derive: Callable[[Objective], Any],
+                 compare: Callable[[Any, Path], bool],
+                 audit_path: Optional[os.PathLike | str] = None,
+                 max_attempts: int = MAX_ATTEMPTS):
+        self.acceptor_id = acceptor_id
+        self._gate = gate
+        self._derive = derive
+        self._compare = compare
+        self._audit_path = Path(audit_path) if audit_path else None
+        self.max_attempts = int(max_attempts)
+        self._reveal: Optional[Reveal] = None
+        self._pre: Optional[Precommitment] = None
+
+    # -- private diagnostics; never returned through the channel ----------
+    def _audit(self, row: Dict[str, Any]) -> None:
+        if self._audit_path is None:
+            return
+        self._audit_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(self._audit_path, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps({"ts": time.time(), **row},
+                                sort_keys=True, default=str) + "\n")
+            fh.flush()
+            os.fsync(fh.fileno())
+
+    # -- phase 1 ----------------------------------------------------------
+    def precommit(self, run: "Run", objective: Objective) -> Precommitment:
+        if self.acceptor_id == run.producer_id:
+            raise SelfAcceptanceRefused(
+                f"acceptor {self.acceptor_id!r} is the producer; refused")
+        if not objective.derivable or objective.independence_basis == BASIS_NONE:
+            raise NoIndependentExpectation(
+                f"objective {objective.objective_id!r} declares no independently "
+                f"derivable expectation ({objective.note or 'no basis given'}). "
+                "Refusing to fabricate a commitment; route to attested "
+                "acceptance and label it BEHAVIOURAL_ONLY.")
+
+        # No window may have been opened in THIS round, i.e. since this
+        # acceptor's last decision. Windows belonging to earlier, already
+        # decided rounds are history, not a peek.
+        last_decision = decision_seq(run.ledger, self.acceptor_id)
+        win = window_seq(run.ledger, self.acceptor_id)
+        if win is not None and win > last_decision:
+            raise PeekedBeforeCommit(
+                f"acceptor {self.acceptor_id!r} opened the artefact window at "
+                f"seq {win} in this round; a commitment made after reading the "
+                "candidate is anchored to it and is refused")
+
+        attempts = sum(1 for e in run.ledger.entries
