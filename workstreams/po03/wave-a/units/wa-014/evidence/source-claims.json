@@ -1,0 +1,81 @@
+{
+  "protocol_version": "PO03-SOURCE-CLAIMS-v1",
+  "task_id": "PO03-WA-014",
+  "state": "SOURCE_CLAIMS",
+  "state_note": "This file records only claims from sources actually read. Hypotheses, reproductions, mechanism changes, strategy proposals, and conclusions are separate artifacts.",
+  "immutable_controller_base": "2c05988f4fe156c32e8193287c95b8a2c4ff3114",
+  "claims": [
+    {
+      "claim_id": "SC-PO03-WA-014-01",
+      "classification": "TECHNICAL_HYPOTHESIS_SOURCE",
+      "statement": "The immutable A02 assignment requires testing whether monotonic fence tokens prevent an expired worker from committing after ownership transfer.",
+      "source": {
+        "path": "workstreams/po03/control/inputs/wave-a/wa-014-a02.json",
+        "uri": "git:2c05988f4fe156c32e8193287c95b8a2c4ff3114:workstreams/po03/control/inputs/wave-a/wa-014-a02.json",
+        "sha256": "b20db80d631d80e79ce9b2a7a01b742ac26194e3375f45fdcccb64c9e0d31555"
+      },
+      "bounded_support": "Assignment fields assignment.falsifiable_hypothesis and assignment.required_executable_output."
+    },
+    {
+      "claim_id": "SC-PO03-WA-014-02",
+      "classification": "GOVERNING_REQUIREMENT",
+      "statement": "The PO-03 commission requires leases, fencing, monotonic checkpoints, and rejection of an expired or stale worker after ownership transfer.",
+      "source": {
+        "path": "workstreams/po03/COMMISSION.md",
+        "uri": "git:2c05988f4fe156c32e8193287c95b8a2c4ff3114:workstreams/po03/COMMISSION.md",
+        "sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d"
+      },
+      "bounded_support": "Transactional result custody requirements at the immutable controller base."
+    },
+    {
+      "claim_id": "SC-PO03-WA-014-03",
+      "classification": "CONTRACT_CLAIM",
+      "statement": "The seeded transactional result schema requires attempt.fence_token to be an integer of at least one.",
+      "source": {
+        "path": "workstreams/po03/contracts/transactional-result.schema.json",
+        "uri": "git:2c05988f4fe156c32e8193287c95b8a2c4ff3114:workstreams/po03/contracts/transactional-result.schema.json",
+        "sha256": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1"
+      },
+      "bounded_support": "Syntactic result-envelope requirement only; it does not itself implement lease transfer or fence comparison."
+    },
+    {
+      "claim_id": "SC-PO03-WA-014-04",
+      "classification": "CONTROL_GAP_OBSERVATION",
+      "statement": "The seeded dependency-free result validator checks fence_token type and lower bound, but it has no durable current-lease row against which to reject a stale commit.",
+      "source": {
+        "path": "workstreams/po03/tools/validate_contracts.py",
+        "uri": "git:2c05988f4fe156c32e8193287c95b8a2c4ff3114:workstreams/po03/tools/validate_contracts.py",
+        "sha256": "ead7d6c78c1f60aaf5440db7fc00fc2ae57d773647ed3b24c279d1a59b43da03"
+      },
+      "bounded_support": "Observed scope of validate_result at this commit. No claim is made about later or external validators."
+    },
+    {
+      "claim_id": "SC-PO03-WA-014-05",
+      "classification": "ACCEPTANCE_REQUIREMENT",
+      "statement": "A material engineering attempt must include focused automated tests, command output, complete SHA-256/byte accounting, immutable remote read-back, and no producer self-acceptance.",
+      "source": {
+        "path": "workstreams/po03/control/acceptance/wave-a-material-v1.json",
+        "uri": "git:2c05988f4fe156c32e8193287c95b8a2c4ff3114:workstreams/po03/control/acceptance/wave-a-material-v1.json",
+        "sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a"
+      },
+      "bounded_support": "Producer-neutral assertions frozen before this producer conclusion."
+    }
+  ],
+  "source_claim_count": 5,
+  "external_sources_read": [],
+  "exclusions": [
+    {
+      "subject": "External lease-system documentation",
+      "reason": "Not required to test the repository-frozen engineering hypothesis; no external method claim is made."
+    },
+    {
+      "subject": "PO-01 and PR #8",
+      "reason": "Explicit non-contact and non-mutation boundary."
+    },
+    {
+      "subject": "Production databases and distributed lock services",
+      "reason": "External and protected effects are prohibited; the reproduction is local and sanitized."
+    }
+  ],
+  "decision_changed": []
+}

@@ -1,0 +1,52 @@
+{
+  "protocol_version": "PO03-FROZEN-HYPOTHESES-v1",
+  "task_id": "PO03-WA-014",
+  "hypothesis_id": "H-PO03-WA-014",
+  "state": "FROZEN_HYPOTHESES",
+  "state_note": "Predictions and falsifiers were frozen before execution. This artifact contains no reproduction result or mechanism disposition.",
+  "frozen_at": "2026-08-22T08:58:00Z",
+  "parent_hypothesis": {
+    "statement": "Monotonic fence tokens prevent an expired worker from committing after ownership transfer.",
+    "source_claim_ids": [
+      "SC-PO03-WA-014-01",
+      "SC-PO03-WA-014-02"
+    ],
+    "prediction": "After worker A's fence-1 lease expires and worker B atomically receives fence 2, every delayed A commit is rejected and only B's payload can occupy the durable task result.",
+    "falsifier": "Any post-transfer fence-1 commit is accepted, B receives a token other than 2, more than one transfer contender receives fence 2, or the durable commit differs from the current fence-2 worker's payload."
+  },
+  "adversarial_hypotheses": [
+    {
+      "hypothesis_id": "H-PO03-WA-014-ADV-01",
+      "statement": "A caller cannot bypass fencing by guessing a token greater than the current token.",
+      "prediction": "Exact equality with the store-issued current token is required; lower and higher values both fail.",
+      "falsifier": "Any non-current integer token authorizes a commit."
+    },
+    {
+      "hypothesis_id": "H-PO03-WA-014-ADV-02",
+      "statement": "An idempotency replay cannot revive authority that was lost in an ownership transfer.",
+      "prediction": "Fence and lease validation occurs before replay handling, so a historically valid callback is stale after transfer.",
+      "falsifier": "A stale worker receives an idempotent success after transfer."
+    },
+    {
+      "hypothesis_id": "H-PO03-WA-014-ADV-03",
+      "statement": "Concurrent transfer contenders cannot both acquire the next token.",
+      "prediction": "Transactional serialization permits one contender to receive fence 2 and rejects every other contender while that lease is active.",
+      "falsifier": "Two distinct grants for the same task carry fence 2 or the durable token skips because of contention."
+    },
+    {
+      "hypothesis_id": "H-PO03-WA-014-ADV-04",
+      "statement": "Expiry alone removes commit authority even before a successor claims the task.",
+      "prediction": "A grant observed at or after expires_at_ns cannot commit.",
+      "falsifier": "An expired current row can commit before transfer."
+    }
+  ],
+  "planned_reproduction": {
+    "sanitized": true,
+    "workers": 2,
+    "initial_token": 1,
+    "required_transfer_token": 2,
+    "coordination": "Two real threads synchronized so the stale attempt occurs only after successor commit.",
+    "external_effects": []
+  },
+  "decision_changed": []
+}
