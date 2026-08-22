@@ -81,6 +81,20 @@ def _manifest(content: bytes) -> list[dict[str, Any]]:
     ]
 
 
+def _sanitize_runtime_paths(value: Any, root: Path) -> Any:
+    marker = "<SANITIZED_TEMP_ROOT>"
+    root_text = str(root)
+    if isinstance(value, str):
+        return value.replace(root_text, marker)
+    if isinstance(value, list):
+        return [_sanitize_runtime_paths(item, root) for item in value]
+    if isinstance(value, dict):
+        return {
+            key: _sanitize_runtime_paths(item, root) for key, item in value.items()
+        }
+    return value
+
+
 def run_reproduction(root: Path) -> dict[str, Any]:
     """Create unrelated branch tips and prove pinned bytes survive the force move."""
 
@@ -186,6 +200,8 @@ def run_reproduction(root: Path) -> dict[str, Any]:
         stderr=subprocess.PIPE,
         env=_env(),
     ).stdout.decode("utf-8").strip()
+    before_move = _sanitize_runtime_paths(before_move, root)
+    after_move = _sanitize_runtime_paths(after_move, root)
     return {
         "protocol_version": "OBZIO-SANITIZED-REPRODUCTION-v1",
         "task_id": "PO03-WA-025",
