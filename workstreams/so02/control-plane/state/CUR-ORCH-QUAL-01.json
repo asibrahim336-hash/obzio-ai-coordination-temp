@@ -127,19 +127,31 @@
       "transport": "mcp_event_subscription",
       "independent_of": ["R1-GITHUB-IMMUTABLE-EXCHANGE", "R2-CURSOR-AGENT-CONTROL-MCP"],
       "availability": "AVAILABLE_NOT_QUALIFIED",
-      "instrument": "cursor-subscriptions MCP server: subscribe_github_ci, subscribe_github_pr, subscribe_timer",
+      "instrument": "cursor-subscriptions MCP server plus GitHub check-runs retrieval addressed by immutable commit SHA",
       "evidence": {
-        "bounded_launch_observed": false,
-        "addressable_result_retrieval_observed": false,
-        "stable_locator_recorded": false,
-        "reconciled_into_immutable_repository_custody": false,
+        "bounded_launch_observed": true,
+        "addressable_result_retrieval_observed": true,
+        "stable_locator_recorded": true,
+        "reconciled_into_immutable_repository_custody": true,
         "remote_byte_for_byte_readback": false,
-        "failure_or_unavailable_fallback_exercised": false,
+        "failure_or_unavailable_fallback_exercised": true,
         "zero_po03_capacity_interference": true
       },
-      "stable_locators": [],
-      "why_not_yet_qualified": "The subscription surface is present and inspected, but a completed asynchronous return requires an external result that terminates after this qualification's own commits exist. It is inventoried and left explicitly unproved rather than counted.",
-      "next_executable": "Subscribe to CI on the qualification branch head, let the clean-clone replay job terminate, then reconcile the returned result and read it back by immutable SHA."
+      "stable_locators": [
+        {
+          "kind": "github_actions_workflow_run",
+          "locator": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32576767467",
+          "resume_checkpoint": "run id 32576767467, job id 97040137386, head_sha 7b6c10bd7087cc50574101c025c04693e2fca66a"
+        },
+        {
+          "kind": "cursor_event_subscription",
+          "locator": "sub_de5d1716-d939-4baf-be5f-dd3cbe011701",
+          "resume_checkpoint": "branch-scoped CI subscription on cursor/so02-cur-orch-qual-01; supersession by a newer push drops undelivered results, so addressable retrieval is the primary path"
+        }
+      ],
+      "why_not_yet_qualified": "Six of the seven evidence flags now hold: a bounded CI job was launched by the immutable push, its result was retrieved addressably by commit SHA, stable locators are recorded, the result is reconciled into repository custody and two fallbacks failed closed. Only its own remote byte-for-byte read-back is missing, and supplying it would require a further commit whose read-back would require another. The route is left honestly uncounted rather than padded into the total.",
+      "next_executable": "Fold the CI return into the next work unit's evidence commit, where its read-back rides along with that unit's own bundle rather than chasing its own tail.",
+      "corroboration_value": "Although uncounted, this route already produced the strongest external check in the bundle: an independent GitHub Actions runner re-executed both validators and all 92 tests from a fresh checkout at the immutable commit and passed."
     },
     {
       "route_id": "R4-OPENAI-RESPONSES-CONVERSATIONS",
@@ -262,8 +274,34 @@
       "observed": "every attempt refused before any write, asserted by executable tests",
       "fail_closed": true,
       "programme_continued": true
+    },
+    {
+      "exercise_id": "FB-05-CI-RESULT-FOR-UNBUILT-COMMIT",
+      "kind": "route_failure",
+      "route_id": "R3-EVENT-RETURN-SUBSCRIPTIONS",
+      "injected": "CI result retrieval for an immutable commit that had no CI run",
+      "observed": "total_count=0 and zero check runs; the absence of a run is not reported as a pass",
+      "fail_closed": true,
+      "programme_continued": true
+    },
+    {
+      "exercise_id": "FB-06-CI-RESULT-FOR-NONEXISTENT-COMMIT",
+      "kind": "route_failure",
+      "route_id": "R3-EVENT-RETURN-SUBSCRIPTIONS",
+      "injected": "CI result retrieval for an all-zero commit SHA",
+      "observed": "HTTP 422 'No commit found for SHA'; no result fabricated",
+      "fail_closed": true,
+      "programme_continued": true
     }
   ],
+  "independent_corroboration": {
+    "instrument": "GitHub Actions hosted runner, workflow run 32576767467, job 97040137386",
+    "immutable_commit": "7b6c10bd7087cc50574101c025c04693e2fca66a",
+    "conclusion": "success",
+    "steps_passed": ["Validate the control-plane seed", "Replay the route qualification evidence from this clean clone", "Run recurrence tests"],
+    "receipt": "receipts/so02/2026-08-22/cur-orch-qual-01/CLEAN-CLONE-REPLAY-RECEIPT.json",
+    "standing": "Corroboration by an instrument the producing run does not control. It is not an acceptance record and does not change independent_acceptance."
+  },
   "admits": {
     "persistent_single_agent_orchestrators": 1,
     "only_individually_proved_routes": true,

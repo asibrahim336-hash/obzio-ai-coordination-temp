@@ -1,0 +1,82 @@
+{
+  "receipt_id": "CUR-ORCH-QUAL-01-CLEAN-CLONE-REPLAY",
+  "decision_changed": [],
+  "purpose": "Show that every claim in this bundle reconstructs from a clean clone at an immutable commit, and that at least one replay ran on an instrument that is not the producing run.",
+  "replays": [
+    {
+      "replay_id": "REPLAY-01-LOCAL-CLEAN-CLONE",
+      "instrument": "throwaway clean clone from the remote inside the orchestrator VM",
+      "independent_of_producing_run": false,
+      "immutable_commit": "7b6c10bd7087cc50574101c025c04693e2fca66a",
+      "observed_at": "2026-08-22T13:45:12Z",
+      "network_or_provider_access_required": false,
+      "results": {
+        "scctl validate": "PASS: SCF-01 seed contracts and state invariants",
+        "orchqual verify": "PASS: CUR-ORCH-QUAL-01 route qualification evidence",
+        "unittest discover": "Ran 92 tests, OK",
+        "scctl project": "event_count=22, head=0cf5cc66b623d158a2b278102517c85df235f01d56973a8afcc52fc29deaa1a8, SCF-01/CUR-ORCH-QUAL-01=PASS_TWO_OR_MORE_ROUTES_INDEPENDENT_ACCEPTANCE_REQUESTED_NOT_GRANTED"
+      }
+    },
+    {
+      "replay_id": "REPLAY-02-SUBSTITUTE-RUNTIME-GITHUB-ACTIONS",
+      "instrument": "GitHub Actions hosted runner",
+      "independent_of_producing_run": true,
+      "independence_argument": "A different machine, a different operating-system image and a different identity, with no access to this orchestrator's filesystem, memory or provider session. It re-derived every hash from a fresh checkout.",
+      "immutable_commit": "7b6c10bd7087cc50574101c025c04693e2fca66a",
+      "workflow": "SO-02 strategic control-plane contracts",
+      "workflow_run_id": 32576767467,
+      "workflow_run_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32576767467",
+      "job_id": 97040137386,
+      "job_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32576767467/job/97040137386",
+      "runner": "GitHub Actions 1000001008",
+      "trigger_event": "pull_request",
+      "started_at": "2026-08-22T13:47:02Z",
+      "completed_at": "2026-08-22T13:47:07Z",
+      "conclusion": "success",
+      "steps": [
+        {"name": "Run actions/checkout@v4", "conclusion": "success"},
+        {"name": "Validate the control-plane seed", "conclusion": "success"},
+        {"name": "Replay the route qualification evidence from this clean clone", "conclusion": "success"},
+        {"name": "Run recurrence tests", "conclusion": "success"}
+      ],
+      "significance": "The route qualification evidence was re-verified end to end by an instrument the producing run does not control. This is corroboration, not acceptance; it does not substitute for the independent acceptance record."
+    },
+    {
+      "replay_id": "REPLAY-03-OPERATOR-TAXONOMY",
+      "instrument": "GitHub Actions hosted runner",
+      "independent_of_producing_run": true,
+      "immutable_commit": "7b6c10bd7087cc50574101c025c04693e2fca66a",
+      "workflow": "Operator taxonomy currentness",
+      "job_id": 97040137314,
+      "job_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32576767458/job/97040137314",
+      "completed_at": "2026-08-22T13:47:10Z",
+      "conclusion": "success",
+      "significance": "Repository-wide operator taxonomy currentness still passes after this branch's writes."
+    }
+  ],
+  "ci_result_retrieval_route": {
+    "route_id": "R3-EVENT-RETURN-SUBSCRIPTIONS",
+    "addressing_scheme": "immutable commit SHA -> check runs, and workflow run id -> job id -> step conclusions",
+    "retrieval_instrument": "GET /repos/asibrahim336-hash/obzio-ai-coordination-temp/commits/{sha}/check-runs",
+    "delivery_independent": true,
+    "delivery_independence_note": "The result was retrieved by addressing the immutable commit directly, so it does not depend on an event being delivered. A push-delivery subscription was also created; its documented drop condition is that results for a commit superseded by a newer push are discarded, which is exactly why the addressable retrieval is the primary path and the subscription is the convenience path.",
+    "subscription_id": "sub_de5d1716-d939-4baf-be5f-dd3cbe011701",
+    "fallback_exercises": [
+      {
+        "exercise_id": "FB-05-CI-RESULT-FOR-UNBUILT-COMMIT",
+        "injected": "check-runs retrieval for commit 04001dba1c689c90041ea383f3092213756c7ead, which had no CI run",
+        "observed": "total_count=0 and zero check runs returned; the absence of a run is not reported as a pass",
+        "fail_closed": true,
+        "programme_continued": true
+      },
+      {
+        "exercise_id": "FB-06-CI-RESULT-FOR-NONEXISTENT-COMMIT",
+        "injected": "check-runs retrieval for an all-zero SHA",
+        "observed": "HTTP 422 'No commit found for SHA'; no result fabricated",
+        "fail_closed": true,
+        "programme_continued": true
+      }
+    ]
+  },
+  "why_r3_is_still_not_counted_as_qualified": "R3 now has bounded launch, addressable retrieval, a stable locator, reconciliation into repository custody and two fail-closed fallbacks. It lacks only its own remote byte-for-byte read-back, which would require a further commit whose read-back would in turn require another. R3 is therefore recorded honestly as AVAILABLE_NOT_QUALIFIED rather than padded into the count. The qualification already passes on two routes without it."
+}
