@@ -1,0 +1,52 @@
+{
+  "decision_changed": [],
+  "independent_acceptance": {
+    "reason": "Producer execution cannot independently accept its own result.",
+    "state": "NOT_TESTED"
+  },
+  "limitations": [
+    {
+      "id": "L-PO03-WA-011-001",
+      "statement": "Cursor's machine-readable run record identifies the observed model as gpt-5.6-sol-max-fast, not the requested gpt-5.6-sol-xhigh. The runtime did not expose a control in this attempt to replace the already-bound model.",
+      "status": "NOT_SUPPORTED"
+    },
+    {
+      "id": "L-PO03-WA-011-002",
+      "statement": "No separate machine-readable attestation of the active reasoning level was exposed; reasoning_observed is therefore NOT_SUPPORTED rather than inferred from the request.",
+      "status": "NOT_SUPPORTED"
+    },
+    {
+      "id": "L-PO03-WA-011-003",
+      "statement": "The demonstrated guarantee requires the same canonical relative-path set and exact file bytes. Renames, additions, removals, and byte changes correctly produce a different manifest.",
+      "status": "BOUNDED"
+    },
+    {
+      "id": "L-PO03-WA-011-004",
+      "statement": "Permissions, ownership, mtimes, inode numbers, and directory entries are intentionally outside the manifest content model; changes to only those fields do not change output.",
+      "status": "BOUNDED"
+    },
+    {
+      "id": "L-PO03-WA-011-005",
+      "statement": "UTF-8 NFC validation does not prove that every admitted filename is portable to case-insensitive filesystems or every target operating system.",
+      "status": "NOT_SUPPORTED"
+    },
+    {
+      "id": "L-PO03-WA-011-006",
+      "statement": "The reader rejects a final symlink and detects changes to inode, size, or mtime during an open-file read, but it does not claim resistance to a hostile concurrent writer able to mutate and restore observable metadata during the read.",
+      "status": "NOT_SUPPORTED"
+    },
+    {
+      "id": "L-PO03-WA-011-007",
+      "statement": "Cross-platform byte identity was not executed outside Linux 6.12.94+ with Python 3.12.3; the output format is platform-neutral, but that broader runtime claim remains untested.",
+      "status": "NOT_TESTED"
+    },
+    {
+      "id": "L-PO03-WA-011-008",
+      "statement": "Provider token counts, context-token admission, monetary cost, and an exact machine-recorded task-start timestamp before the first local observation were not exposed.",
+      "status": "NOT_SUPPORTED"
+    }
+  ],
+  "owner_blocked_acts": [],
+  "protocol_version": "OBZIO-LIMITATIONS-v1",
+  "task_id": "PO03-WA-011"
+}
