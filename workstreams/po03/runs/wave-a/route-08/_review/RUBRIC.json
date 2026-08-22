@@ -1,0 +1,56 @@
+{
+  "rubric_id": "PO03-WA-ROUTE-08-GPT-CHALLENGER-v1",
+  "frozen_at": "2026-08-22T08:18:23Z",
+  "reviewer_family": "gpt",
+  "exact_model_configuration": "gpt-5.6-sol-xhigh",
+  "base_commit": "081a7d709dee1af1ca47c1c69eb60085b9e59cd5",
+  "lease_fence_token": 1,
+  "criteria": {
+    "uri": "workstreams/po03/evidence/criteria-freeze.json",
+    "sha256": "901ecbffc27ecb2149c5a50c9c137618c8b6f568228e19f817cbdecc7d53cc31"
+  },
+  "source_lock": {
+    "uri": "workstreams/po03/evidence/source-lock.json",
+    "sha256": "f66ba25343ceb8ce7810a7b241dd80b042b3b888ba498dcd61e48a29863c2f66"
+  },
+  "transactional_schema": {
+    "uri": "workstreams/po03/contracts/transactional-result.schema.json",
+    "sha256": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1"
+  },
+  "allowed_recommendations": [
+    "RECOMMEND_ACCEPT",
+    "RECOMMEND_REJECT",
+    "RETEST"
+  ],
+  "critical_checks": [
+    "task input and acceptance bytes match their frozen registry hashes",
+    "completed result bytes match the coordinator completion receipt and result commit",
+    "result binds the frozen source lock and acceptance contract",
+    "every declared artifact exists and independently matches its SHA-256 and byte count",
+    "executable behavior is independently rerun rather than inferred from producer prose",
+    "all applicable evaluator-held cases pass",
+    "no producer self-acceptance or terminal acceptance is inferred",
+    "no false completion, founder relay, PO-01 contact, or out-of-allowlist write is observed"
+  ],
+  "recommendation_rules": {
+    "RECOMMEND_REJECT": "Any binding, hash, byte, ownership, self-acceptance, false-completion, critical-test, or applicable held-out-case failure.",
+    "RETEST": "Bindings remain intact but execution is unavailable, evidence is insufficient, a noncritical limitation prevents a conclusive recommendation, or an applicable case is NOT_SUPPORTED.",
+    "RECOMMEND_ACCEPT": "All bindings and artifact bytes reconcile; at least one independent executable test was rerun; every critical test and applicable held-out case passes; no critical defect remains."
+  },
+  "blind_order": {
+    "admitted_before_freeze": [
+      "frozen criteria",
+      "source lock",
+      "task input and acceptance contracts",
+      "schemas",
+      "coordinator completion receipts"
+    ],
+    "prohibited_until_rubric_commit": [
+      "target producer conclusions",
+      "FINDING and README narratives",
+      "producer route receipts",
+      "route-07 challenger outputs"
+    ]
+  },
+  "decision_changed": []
+}
