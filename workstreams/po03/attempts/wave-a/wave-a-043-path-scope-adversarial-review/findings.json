@@ -1,0 +1,162 @@
+{
+  "findings_version": "PO03-WAVE-A-043-FINDINGS-v1",
+  "task_id": "wave-a-043-path-scope-adversarial-review",
+  "decision_changed": [],
+  "guard_under_review": {
+    "path": "workstreams/po03/tools/check_path_scope.py",
+    "sha256": "d0c207b1710e5ea4026319d6250d1f85ec91c327f8250c552e2a0ed627881b97",
+    "evaluated_at_commit": "06210fb82ba2b0b9e30b2a9c752ca781c0d2d466"
+  },
+  "hypothesis": {
+    "statement": "The scope guard rejects modified, added, copied, renamed, and deleted out-of-allowlist paths.",
+    "verdict": "REFUTED",
+    "verdict_basis": "Two independent classes of out-of-allowlist mutation are admitted with exit code 0: the source side of a detected rename, and workflow-lookalike paths that cross a separator inside the workflow glob.",
+    "per_status_class": {
+      "modified": "PASS",
+      "added": "PASS",
+      "copied": "PASS",
+      "deleted": "PASS when Git reports the deletion as D; FAIL when the same deletion is reported as the source half of an R entry",
+      "renamed": "FAIL for the source path, PASS for the destination path"
+    }
+  },
+  "tally": {
+    "total_cases": 120,
+    "path_cases": 92,
+    "git_cases": 28,
+    "oracle_allow_cases": 28,
+    "oracle_reject_cases": 92,
+    "requirement_failures": 5,
+    "false_positives": 0,
+    "reviewer_predictions_refuted": 2
+  },
+  "findings": [
+    {
+      "id": "F-001",
+      "title": "The guard never sees the source path of a detected rename, so any read-only file can be deleted by renaming it into the PO-03 subtree",
+      "severity": "HIGH",
+      "class": "MISS_FALSE_GREEN",
+      "status": "OPEN_NOT_REPAIRED_BY_THIS_REVIEWER",
+      "evidence_cases": ["GIT-010", "GIT-012"],
+      "contrast_cases": ["GIT-009", "GIT-011", "GIT-013", "GIT-014"],
+      "mechanism": "changed_paths runs git diff --name-only --diff-filter=ACMRDTUXB -z base...head. Rename detection is on by default from Git 2.9, so a moved file is reported as a single R entry, and --name-only prints only that entry's destination path. The deleted source path is never emitted, so it never reaches normalize, is_allowed or violations. The allowlist logic itself is correct; the input to it is incomplete.",
+      "observed": {
+        "GIT-010": {
+          "mutation": "state/ACTIVE_CONTROL_POINTER_CURRENT.json renamed to workstreams/po03/control/absorbed.json",
+          "git_name_status": "R100\tstate/ACTIVE_CONTROL_POINTER_CURRENT.json\tworkstreams/po03/control/absorbed.json",
+          "git_name_only": ["workstreams/po03/control/absorbed.json"],
+          "guard_exit_code": 0,
+          "guard_stdout": "PO03_PATH_SCOPE_PASS changed_paths=1",
+          "head_tree_effect": "the protected path no longer exists at head"
+        },
+        "GIT-012": {
+          "mutation": "workstreams/po01/producer-result.json renamed to workstreams/po03/attempts/absorbed-po01.json",
+          "git_name_status": "R100\tworkstreams/po01/producer-result.json\tworkstreams/po03/attempts/absorbed-po01.json",
+          "git_name_only": ["workstreams/po03/attempts/absorbed-po01.json"],
+          "guard_exit_code": 0,
+          "boundary_crossed": "PO-01 non-interference, which the commission states is absolute"
+        }
+      },
+      "exploit_preconditions": [
+        "Git rename detection must fire, which needs similarity at or above the default 50 percent threshold and diff.renames left at its default true.",
+        "The rename destination must itself be inside the allowlist, otherwise the destination is reported and the guard fails as required (GIT-011).",
+        "The number of changed files must stay under diff.renameLimit, otherwise Git falls back to separate D and A entries. This bound was reasoned about, not exercised; see limitations."
+      ],
+      "why_the_existing_tests_miss_it": "Both committed test files exercise only violations() and is_allowed() with literal strings. Neither constructs a repository or calls changed_paths(), so no existing test can observe what git diff omits.",
+      "reachability_in_ci": "Both jobs in .github/workflows/po03-contracts.yml call the same helper. The contracts job uses the pinned base and HEAD, and the path-scope job uses the pull-request or push SHAs. The omission is in changed_paths, so it applies to every invocation that derives paths from Git rather than from --path.",
+      "falsification_route": "GIT-013 performs the same net mutation with rewritten content so similarity falls below the threshold; Git then reports D plus A and the guard correctly exits 1. GIT-014 repeats GIT-010 with diff.renames set to false and the guard also correctly exits 1. The defect is therefore located precisely in rename reporting, not in the allowlist.",
+      "candidate_remediation_not_applied": "Emit both halves of a rename or copy, for example by parsing git diff --raw -z or --name-status -z with -M -C rather than --name-only, or by adding --no-renames to the diff invocation so every move is reported as a delete plus an add. Either change belongs to the owner of the shared guard. This reviewer did not apply it."
+    },
+    {
+      "id": "F-002",
+      "title": "The workflow allowlist rule crosses a path separator, admitting paths the commission glob does not",
+      "severity": "MEDIUM",
+      "class": "OVER_PERMISSIVE_ALLOWLIST",
+      "status": "OPEN_NOT_REPAIRED_BY_THIS_REVIEWER",
+      "evidence_cases": ["PP-063", "PP-064", "PP-065"],
+      "contrast_cases": ["PP-057", "PP-058", "PP-059", "PP-060", "PP-061", "PP-062", "PP-066", "PP-067"],
+      "mechanism": "is_allowed tests path.startswith('.github/workflows/po03-') and path.endswith('.yml'). The commission writes the boundary as .github/workflows/po03-*.yml, and an ordinary pathname glob does not let * match a separator. The startswith and endswith pair places no such limit, so any .yml file at any depth below a directory whose name begins with po03- is admitted.",
+      "observed": {
+        "PP-063": ".github/workflows/po03-guard/payload.yml admitted",
+        "PP-064": ".github/workflows/po03-a/b/c/deep.yml admitted",
+        "PP-065": ".github/workflows/po03-a/.github/workflows/evil.yml admitted"
+      },
+      "effect": "A PO-03 branch can create arbitrary .yml content inside .github/**, a tree the commission places outside the writable set. The guard is the only mechanical control over that tree for PO-03 branches.",
+      "execution_risk_bound": "GitHub Actions loads workflow files placed directly in .github/workflows and not from nested directories, so an admitted nested file is unlikely to execute on its own. That mitigation was reasoned from the invocation surface and is recorded as NOT_TESTED in this attempt, so the finding rests on the commission boundary rather than on an execution claim.",
+      "candidate_remediation_not_applied": "Anchor the rule on the filename, for example by requiring that the path has exactly three components and that the final component matches po03-*.yml, or by using fnmatch against the commission glob. Not applied by this reviewer."
+    },
+    {
+      "id": "F-003",
+      "title": "The push-triggered path-scope job errors on the first push of every new po03 branch",
+      "severity": "LOW",
+      "class": "FAIL_CLOSED_BUT_UNCONDITIONALLY_RED",
+      "status": "OPEN_NOT_REPAIRED_BY_THIS_REVIEWER",
+      "evidence_cases": ["GIT-025"],
+      "mechanism": "The workflow passes github.event.before straight through as BASE_SHA. GitHub sets that field to forty zeros when a push creates a branch, and git diff refuses the range.",
+      "observed": {
+        "guard_exit_code": 2,
+        "guard_stderr": "PO03_PATH_SCOPE_ERROR: Command ('git', 'diff', '--name-only', '--diff-filter=ACMRDTUXB', '-z', '0000000000000000000000000000000000000000...HEAD') returned non-zero exit status 128."
+      },
+      "assessment": "This is correct fail-closed behaviour and produces no false green. It is reported because a step that is red for a benign reason on every branch creation trains reviewers to ignore it, which weakens the same control that F-001 already blunts.",
+      "candidate_remediation_not_applied": "Fall back to the pinned base SHA when github.event.before is the all-zero SHA. Not applied by this reviewer."
+    }
+  ],
+  "bounded_observations_not_defects": [
+    {
+      "id": "O-001",
+      "statement": "The guard compares committed trees, so a mutation left uncommitted in the working tree or staged in the index is outside its remit.",
+      "evidence_cases": ["GIT-027", "GIT-028"],
+      "assessment": "Correct for a change-scope control. Recorded so that the guard is not credited with a property it does not claim."
+    },
+    {
+      "id": "O-002",
+      "statement": "A path name that is not valid UTF-8 produces exit code 2 rather than a silent pass.",
+      "evidence_cases": ["GIT-021"],
+      "assessment": "UnicodeDecodeError is a subclass of ValueError, so the existing handler catches it and fails closed. This works by inheritance rather than by explicit intent, which is worth knowing if the handler is ever narrowed."
+    },
+    {
+      "id": "O-003",
+      "statement": "No false positive was produced by any of the 28 sanctioned cases, including names containing spaces, tabs, newlines, single and double quotes, zero-width characters, and both NFC and NFD forms of the same name.",
+      "evidence_cases": ["GIT-002", "GIT-004", "PP-008", "PP-009", "PP-010", "PP-011", "PP-013", "PP-014", "PP-015"],
+      "assessment": "The -z form of git diff is what makes the newline case safe. A line-oriented rewrite of changed_paths would regress GIT-004 immediately."
+    },
+    {
+      "id": "O-004",
+      "statement": "--diff-filter=ACMRDTUXB names every status letter Git can emit, so the filter neither widens nor narrows coverage.",
+      "assessment": "The coverage limit found by this review is --name-only, not the filter. Removing the filter would change nothing; changing --name-only changes everything."
+    },
+    {
+      "id": "O-005",
+      "statement": "Copy detection is not enabled, so a copy appears as an addition of the destination path.",
+      "evidence_cases": ["GIT-015", "GIT-016"],
+      "assessment": "Sufficient for this control. A copy landing outside the allowlist is reported as A and rejected; a copy landing inside is legitimately allowed because no protected path changed. Enabling -C would surface the source path and would also make F-001 reachable through copies."
+    },
+    {
+      "id": "O-006",
+      "statement": "Three-dot range semantics mean a protected-path change made on the base branch after the fork point is not attributed to the reviewed branch, while a protected-path change merged in from a side branch is attributed.",
+      "evidence_cases": ["GIT-023", "GIT-024"],
+      "assessment": "Both behaviours are correct for a change-scope control."
+    }
+  ],
+  "reviewer_prediction_refutations": [
+    {
+      "case_ids": ["GIT-010", "GIT-012"],
+      "what_happened": "The frozen record for these two cases is internally inconsistent. Its prose rationale predicted the miss in terms, stating that git diff --name-only prints only the rename destination so the deleted source never reaches the guard. Its numeric predicted_guard_exit_code field nevertheless carried 1. The harness compares the numeric field, so both cases are reported as refuted predictions.",
+      "resolution": "The frozen file was left byte-identical to the bytes that were evaluated rather than corrected after the observation, so the inconsistency is visible to any acceptor. Treat the prose as the reviewer's actual prediction and the numeric mismatch as a defect in this reviewer's own freeze discipline.",
+      "effect_on_findings": "None. The oracle verdict for both cases is derived from commission_requirement, which was and remains REJECT."
+    }
+  ],
+  "verdicts": {
+    "modified_out_of_allowlist_rejected": "PASS",
+    "added_out_of_allowlist_rejected": "PASS",
+    "copied_out_of_allowlist_rejected": "PASS",
+    "renamed_out_of_allowlist_rejected": "FAIL",
+    "deleted_out_of_allowlist_rejected": "FAIL",
+    "boundary_confusables_rejected": "PASS",
+    "traversal_and_backslash_forms_rejected": "PASS",
+    "unicode_confusables_rejected": "PASS",
+    "workflow_lookalikes_rejected": "FAIL",
+    "po01_paths_rejected": "PASS",
+    "no_false_positives_on_allowlist": "PASS",
+    "independent_acceptance": "NOT_YET"
+  }
+}

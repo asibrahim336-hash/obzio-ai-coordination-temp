@@ -1,0 +1,105 @@
+== implementation commit: 4097f24b0935dfc482d29bae7e1ce169d5f17340
+$ python3 -I workstreams/po03/attempts/wave-a/wave-a-043-path-scope-adversarial-review/tests/generate_cases.py --check
+HIDDEN_CASES_STABLE sha256=b2180bb19422b9d2272ef0dacb77e263766a437b0f2fb36005cb493acb7f143e
+  exit=0
+$ python3 -I workstreams/po03/attempts/wave-a/wave-a-043-path-scope-adversarial-review/tests/harness.py --out workstreams/po03/attempts/wave-a/wave-a-043-path-scope-adversarial-review/observed-results.json
+{
+  "false_negatives_against_readonly_estate": [
+    "GIT-010",
+    "GIT-012",
+    "PP-063",
+    "PP-064",
+    "PP-065"
+  ],
+  "false_positives_against_allowlist": [],
+  "git_cases_evaluated": 28,
+  "git_predictions_refuted": [
+    "GIT-010",
+    "GIT-012"
+  ],
+  "hypothesis_under_test": "The scope guard rejects modified, added, copied, renamed, and deleted out-of-allowlist paths.",
+  "hypothesis_verdict": "REFUTED",
+  "path_cases_evaluated": 92,
+  "path_predictions_refuted": [],
+  "requirement_failures": [
+    "GIT-010",
+    "GIT-012",
+    "PP-063",
+    "PP-064",
+    "PP-065"
+  ]
+}
+  exit=0
+$ python3 -I workstreams/po03/attempts/wave-a/wave-a-043-path-scope-adversarial-review/tests/harness.py --out /tmp/observed-determinism.json
+{
+  "false_negatives_against_readonly_estate": [
+    "GIT-010",
+    "GIT-012",
+    "PP-063",
+    "PP-064",
+    "PP-065"
+  ],
+  "false_positives_against_allowlist": [],
+  "git_cases_evaluated": 28,
+  "git_predictions_refuted": [
+    "GIT-010",
+    "GIT-012"
+  ],
+  "hypothesis_under_test": "The scope guard rejects modified, added, copied, renamed, and deleted out-of-allowlist paths.",
+  "hypothesis_verdict": "REFUTED",
+  "path_cases_evaluated": 92,
+  "path_predictions_refuted": [],
+  "requirement_failures": [
+    "GIT-010",
+    "GIT-012",
+    "PP-063",
+    "PP-064",
+    "PP-065"
+  ]
+}
+  exit=0
+DETERMINISM_REPEAT_RUN_IDENTICAL=True
+$ python3 -I -m unittest discover -s <slot>/tests -p 'test_*.py' -v
+test_positive_controls_are_allowed (test_path_scope_adversarial.AllowlistFalsePositiveTests.test_positive_controls_are_allowed) ... ok
+test_case_set_covers_every_required_status_class (test_path_scope_adversarial.FrozenCaseSetTests.test_case_set_covers_every_required_status_class) ... ok
+test_hidden_cases_match_their_generator (test_path_scope_adversarial.FrozenCaseSetTests.test_hidden_cases_match_their_generator) ... ok
+test_recorded_divergences_still_diverge (test_path_scope_adversarial.ReadOnlyEstateTests.test_recorded_divergences_still_diverge)
+Characterisation: these paths violate the commission glob but the guard admits them. ... ok
+test_rejects_every_out_of_allowlist_path_except_recorded_divergences (test_path_scope_adversarial.ReadOnlyEstateTests.test_rejects_every_out_of_allowlist_path_except_recorded_divergences) ... ok
+test_rename_into_out_of_allowlist_destination_is_reported (test_path_scope_adversarial.RenameReportingTests.test_rename_into_out_of_allowlist_destination_is_reported) ... ok
+test_rename_out_of_allowlist_into_allowlist_is_not_reported (test_path_scope_adversarial.RenameReportingTests.test_rename_out_of_allowlist_into_allowlist_is_not_reported)
+Characterisation of the headline defect. ... ok
+test_same_mutation_below_rename_threshold_is_reported (test_path_scope_adversarial.RenameReportingTests.test_same_mutation_below_rename_threshold_is_reported) ... ok
+test_harness_reproduces_committed_observed_results (test_path_scope_adversarial.ReproducibilityTests.test_harness_reproduces_committed_observed_results) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 15.398s
+
+OK
+{
+  "false_negatives_against_readonly_estate": [
+    "GIT-010",
+    "GIT-012",
+    "PP-063",
+    "PP-064",
+    "PP-065"
+  ],
+  "false_positives_against_allowlist": [],
+  "git_cases_evaluated": 28,
+  "git_predictions_refuted": [
+    "GIT-010",
+    "GIT-012"
+  ],
+  "hypothesis_under_test": "The scope guard rejects modified, added, copied, renamed, and deleted out-of-allowlist paths.",
+  "hypothesis_verdict": "REFUTED",
+  "path_cases_evaluated": 92,
+  "path_predictions_refuted": [],
+  "requirement_failures": [
+    "GIT-010",
+    "GIT-012",
+    "PP-063",
+    "PP-064",
+    "PP-065"
+  ]
+}
+  exit=0

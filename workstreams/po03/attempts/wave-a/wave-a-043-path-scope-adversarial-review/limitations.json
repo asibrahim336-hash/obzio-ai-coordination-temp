@@ -1,0 +1,92 @@
+{
+  "limitations_version": "PO03-WAVE-A-043-LIMITATIONS-v1",
+  "task_id": "wave-a-043-path-scope-adversarial-review",
+  "decision_changed": [],
+  "statement": "Every entry below bounds what this attempt did or did not establish. Nothing here is inferred from a producer narrative and nothing claims evidence that was not observed.",
+  "limitations": [
+    {
+      "id": "L-001",
+      "topic": "white-box case generation",
+      "text": "The guard source was inside the admitted context capsule before the cases were written, because the task instruction required reading it. The case set is therefore white-box informed. This makes the cases more likely to hit real weaknesses and less useful as evidence about what an unaided blind reviewer would find.",
+      "state": "DISCLOSED"
+    },
+    {
+      "id": "L-002",
+      "topic": "pre-commit execution of the frozen cases",
+      "text": "The harness was executed once against the frozen case bytes before the implementation commit, to confirm the harness itself ran. No case, requirement or prediction was edited afterwards; the committed hidden-cases.json hashes to b2180bb19422b9d2272ef0dacb77e263766a437b0f2fb36005cb493acb7f143e, which is the sha256 of the bytes that first run consumed. An acceptor who distrusts the ordering can re-derive every result from the committed harness.",
+      "state": "DISCLOSED"
+    },
+    {
+      "id": "L-003",
+      "topic": "frozen record inconsistency",
+      "text": "GIT-010 and GIT-012 carry a numeric predicted_guard_exit_code of 1 while their prose rationale in the same record predicts the miss. The frozen file was not corrected after the observation. Both cases therefore appear as refuted predictions in the summary.",
+      "state": "DISCLOSED"
+    },
+    {
+      "id": "L-004",
+      "topic": "diff.renameLimit",
+      "text": "F-001 depends on Git rename detection firing. Git abandons rename detection when the candidate set exceeds diff.renameLimit, at which point a move is reported as a delete plus an add and the guard would reject it. This bound was reasoned from Git behaviour and was not exercised, because reaching it requires a change set far larger than any case here.",
+      "state": "NOT_TESTED"
+    },
+    {
+      "id": "L-005",
+      "topic": "nested workflow execution",
+      "text": "F-002 notes that GitHub Actions loads workflow files placed directly in .github/workflows rather than from nested directories. That mitigation was reasoned from the invocation surface and was not verified by running GitHub Actions in this attempt. The finding rests on the commission glob, not on an execution claim.",
+      "state": "NOT_TESTED"
+    },
+    {
+      "id": "L-006",
+      "topic": "no GitHub Actions run",
+      "text": "Everything here was executed on the Cursor cloud VM with Git 2.43.0 and CPython 3.12.3 on linux. No workflow run was triggered, observed or cited, so no workflow-run URL is offered. F-003 was reproduced by passing the all-zero SHA to the guard directly, which reproduces the input GitHub would supply but not the GitHub runner itself.",
+      "state": "NOT_SUPPORTED"
+    },
+    {
+      "id": "L-007",
+      "topic": "single Git version",
+      "text": "Rename detection defaults and similarity scoring can differ between Git versions. Only git version 2.43.0 was exercised. The direction of F-001 is expected to hold for every version since 2.9, when diff.renames became true by default, but that was not measured across versions.",
+      "state": "NOT_TESTED"
+    },
+    {
+      "id": "L-008",
+      "topic": "case-insensitive and case-preserving filesystems",
+      "text": "Case-folding cases were evaluated as pure strings and inside repositories on a case-sensitive Linux filesystem. The behaviour of a checkout on a case-insensitive filesystem, where Workstreams/po03/x and workstreams/po03/x collide, was not exercised.",
+      "state": "NOT_TESTED"
+    },
+    {
+      "id": "L-009",
+      "topic": "symlink escape",
+      "text": "GIT-018 exercises a type change from a regular file to a symlink at a protected path. It does not test whether a symlink committed inside the allowlist could be used at checkout time to write outside it, which is a different control surface from change-scope enforcement.",
+      "state": "NOT_TESTED"
+    },
+    {
+      "id": "L-010",
+      "topic": "no repair applied",
+      "text": "Candidate remediations for F-001, F-002 and F-003 are described in findings.json and were deliberately not applied. The shared guard, its two test files and po03-contracts.yml were read and executed but never modified. No candidate patch file is offered either, so that the repair decision stays with the owner of the shared control.",
+      "state": "BY_DESIGN"
+    },
+    {
+      "id": "L-011",
+      "topic": "scope of the hypothesis",
+      "text": "The verdict addresses the guard's ability to reject out-of-allowlist changes across a commit range. It says nothing about whether the allowlist itself is the right boundary, whether CI actually runs on every branch, or whether branch protection enforces the check.",
+      "state": "OUT_OF_SCOPE"
+    },
+    {
+      "id": "L-012",
+      "topic": "reasoning-control observability",
+      "text": "The requested runtime is claude-opus-5-thinking-high. The runtime exposes no interface through which this subagent can read back its own reasoning-effort setting, so the high suffix is recorded as requested and not claimed as observed. See runtime-binding.json.",
+      "state": "NOT_SUPPORTED"
+    },
+    {
+      "id": "L-013",
+      "topic": "worker identity",
+      "text": "The RUNNING event names worker_agent_id 904cae6a-2c6c-4683-85ea-2ce337127eb9. This subagent cannot read back its own subagent identifier, so that value is recorded as controller-declared rather than independently observed. The enclosing cloud agent run id bc-13b664e4-a9eb-4a06-9b23-3283644e5b31 was observed directly.",
+      "state": "PARTIALLY_OBSERVABLE"
+    },
+    {
+      "id": "L-014",
+      "topic": "acceptance",
+      "text": "This attempt is a producer of an independent evaluation. It does not accept itself and does not mark the unit COMPLETED. Independent acceptance remains NOT_YET.",
+      "state": "BY_DESIGN"
+    }
+  ]
+}

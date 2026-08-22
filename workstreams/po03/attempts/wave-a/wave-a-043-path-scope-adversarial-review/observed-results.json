@@ -1,0 +1,2138 @@
+{
+  "case_set_version": "PO03-WAVE-A-043-HIDDEN-CASES-v1",
+  "decision_changed": [],
+  "git_results": [
+    {
+      "case_id": "GIT-001",
+      "commission_requirement": "ALLOW",
+      "description": "Modify a single in-allowlist file.",
+      "family": "positive-control",
+      "guard_stderr": "",
+      "guard_stdout": "PO03_PATH_SCOPE_PASS changed_paths=1",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "workstreams/po03/control/inside.json"
+      ],
+      "observed_git_name_status": [
+        "M\tworkstreams/po03/control/inside.json"
+      ],
+      "observed_guard_exit_code": 0,
+      "observed_violation_paths": [],
+      "predicted_guard_exit_code": 0,
+      "predicted_violation_paths": [],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "M",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-002",
+      "commission_requirement": "ALLOW",
+      "description": "Add a new in-allowlist file and a new PO-03 workflow.",
+      "family": "positive-control",
+      "guard_stderr": "",
+      "guard_stdout": "PO03_PATH_SCOPE_PASS changed_paths=2",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        ".github/workflows/po03-new.yml",
+        "receipts/po03/2026-08-22/new.json"
+      ],
+      "observed_git_name_status": [
+        "A\t.github/workflows/po03-new.yml",
+        "A\treceipts/po03/2026-08-22/new.json"
+      ],
+      "observed_guard_exit_code": 0,
+      "observed_violation_paths": [],
+      "predicted_guard_exit_code": 0,
+      "predicted_violation_paths": [],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "A",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-003",
+      "commission_requirement": "ALLOW",
+      "description": "Delete an in-allowlist file.",
+      "family": "positive-control",
+      "guard_stderr": "",
+      "guard_stdout": "PO03_PATH_SCOPE_PASS changed_paths=1",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "workstreams/po03/control/inside-two.json"
+      ],
+      "observed_git_name_status": [
+        "D\tworkstreams/po03/control/inside-two.json"
+      ],
+      "observed_guard_exit_code": 0,
+      "observed_violation_paths": [],
+      "predicted_guard_exit_code": 0,
+      "predicted_violation_paths": [],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "D",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-004",
+      "commission_requirement": "ALLOW",
+      "description": "Add an in-allowlist file whose name contains a newline.",
+      "family": "positive-control-exotic",
+      "guard_stderr": "",
+      "guard_stdout": "PO03_PATH_SCOPE_PASS changed_paths=1",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "workstreams/po03/control/new\nline.json"
+      ],
+      "observed_git_name_status": [
+        "A\t\"workstreams/po03/control/new\\nline.json\""
+      ],
+      "observed_guard_exit_code": 0,
+      "observed_violation_paths": [],
+      "predicted_guard_exit_code": 0,
+      "predicted_violation_paths": [],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "A",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-005",
+      "commission_requirement": "REJECT",
+      "description": "Modify a protected out-of-allowlist file.",
+      "family": "modified-out",
+      "guard_stderr": "PO03_PATH_SCOPE_VIOLATION: state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+      "guard_stdout": "",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "observed_git_name_status": [
+        "M\tstate/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "observed_guard_exit_code": 1,
+      "observed_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "M",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-006",
+      "commission_requirement": "REJECT",
+      "description": "Add a new out-of-allowlist file.",
+      "family": "added-out",
+      "guard_stderr": "PO03_PATH_SCOPE_VIOLATION: state/PO03-SHOULD-NOT-WRITE.json",
+      "guard_stdout": "",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "state/PO03-SHOULD-NOT-WRITE.json"
+      ],
+      "observed_git_name_status": [
+        "A\tstate/PO03-SHOULD-NOT-WRITE.json"
+      ],
+      "observed_guard_exit_code": 1,
+      "observed_violation_paths": [
+        "state/PO03-SHOULD-NOT-WRITE.json"
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_violation_paths": [
+        "state/PO03-SHOULD-NOT-WRITE.json"
+      ],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "A",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-007",
+      "commission_requirement": "REJECT",
+      "description": "Delete a protected out-of-allowlist file.",
+      "family": "deleted-out",
+      "guard_stderr": "PO03_PATH_SCOPE_VIOLATION: state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+      "guard_stdout": "",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "observed_git_name_status": [
+        "D\tstate/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "observed_guard_exit_code": 1,
+      "observed_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "D",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-008",
+      "commission_requirement": "REJECT",
+      "description": "Delete a PO-01 artefact.",
+      "family": "deleted-out-po01",
+      "guard_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/po01/producer-result.json",
+      "guard_stdout": "",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "workstreams/po01/producer-result.json"
+      ],
+      "observed_git_name_status": [
+        "D\tworkstreams/po01/producer-result.json"
+      ],
+      "observed_guard_exit_code": 1,
+      "observed_violation_paths": [
+        "workstreams/po01/producer-result.json"
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_violation_paths": [
+        "workstreams/po01/producer-result.json"
+      ],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "D",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-009",
+      "commission_requirement": "REJECT",
+      "description": "Rename an in-allowlist file to an out-of-allowlist destination.",
+      "family": "renamed-in-to-out",
+      "guard_stderr": "PO03_PATH_SCOPE_VIOLATION: state/escaped.json",
+      "guard_stdout": "",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "state/escaped.json"
+      ],
+      "observed_git_name_status": [
+        "R100\tworkstreams/po03/control/inside.json\tstate/escaped.json"
+      ],
+      "observed_guard_exit_code": 1,
+      "observed_violation_paths": [
+        "state/escaped.json"
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_violation_paths": [
+        "state/escaped.json"
+      ],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "R",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-010",
+      "commission_requirement": "REJECT",
+      "description": "Rename a protected out-of-allowlist file into the allowlist, deleting the protected path.",
+      "family": "renamed-out-to-in",
+      "guard_stderr": "",
+      "guard_stdout": "PO03_PATH_SCOPE_PASS changed_paths=1",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "workstreams/po03/control/absorbed.json"
+      ],
+      "observed_git_name_status": [
+        "R100\tstate/ACTIVE_CONTROL_POINTER_CURRENT.json\tworkstreams/po03/control/absorbed.json"
+      ],
+      "observed_guard_exit_code": 0,
+      "observed_violation_paths": [],
+      "predicted_guard_exit_code": 1,
+      "predicted_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "prediction_held": false,
+      "requirement_satisfied": false,
+      "status_class": "R",
+      "unreported_expected_violations": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ]
+    },
+    {
+      "case_id": "GIT-011",
+      "commission_requirement": "REJECT",
+      "description": "Rename one protected file to another protected path.",
+      "family": "renamed-out-to-out",
+      "guard_stderr": "PO03_PATH_SCOPE_VIOLATION: state/renamed-pointer.json",
+      "guard_stdout": "",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "state/renamed-pointer.json"
+      ],
+      "observed_git_name_status": [
+        "R100\tstate/ACTIVE_CONTROL_POINTER_CURRENT.json\tstate/renamed-pointer.json"
+      ],
+      "observed_guard_exit_code": 1,
+      "observed_violation_paths": [
+        "state/renamed-pointer.json"
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_violation_paths": [
+        "state/renamed-pointer.json"
+      ],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "R",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-012",
+      "commission_requirement": "REJECT",
+      "description": "Rename a PO-01 artefact into the PO-03 allowlist.",
+      "family": "renamed-out-to-in-po01",
+      "guard_stderr": "",
+      "guard_stdout": "PO03_PATH_SCOPE_PASS changed_paths=1",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "workstreams/po03/attempts/absorbed-po01.json"
+      ],
+      "observed_git_name_status": [
+        "R100\tworkstreams/po01/producer-result.json\tworkstreams/po03/attempts/absorbed-po01.json"
+      ],
+      "observed_guard_exit_code": 0,
+      "observed_violation_paths": [],
+      "predicted_guard_exit_code": 1,
+      "predicted_violation_paths": [
+        "workstreams/po01/producer-result.json"
+      ],
+      "prediction_held": false,
+      "requirement_satisfied": false,
+      "status_class": "R",
+      "unreported_expected_violations": [
+        "workstreams/po01/producer-result.json"
+      ]
+    },
+    {
+      "case_id": "GIT-013",
+      "commission_requirement": "REJECT",
+      "description": "Move a protected file into the allowlist while replacing its content, defeating rename detection.",
+      "family": "renamed-out-to-in-below-threshold",
+      "guard_stderr": "PO03_PATH_SCOPE_VIOLATION: state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+      "guard_stdout": "",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+        "workstreams/po03/control/rewritten.json"
+      ],
+      "observed_git_name_status": [
+        "D\tstate/ACTIVE_CONTROL_POINTER_CURRENT.json",
+        "A\tworkstreams/po03/control/rewritten.json"
+      ],
+      "observed_guard_exit_code": 1,
+      "observed_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "R",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-014",
+      "commission_requirement": "REJECT",
+      "description": "Repeat the GIT-010 mutation with diff.renames disabled in the repository config.",
+      "family": "renamed-out-to-in-renames-disabled",
+      "guard_stderr": "PO03_PATH_SCOPE_VIOLATION: state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+      "guard_stdout": "",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+        "workstreams/po03/control/absorbed.json"
+      ],
+      "observed_git_name_status": [
+        "D\tstate/ACTIVE_CONTROL_POINTER_CURRENT.json",
+        "A\tworkstreams/po03/control/absorbed.json"
+      ],
+      "observed_guard_exit_code": 1,
+      "observed_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "R",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-015",
+      "commission_requirement": "ALLOW",
+      "description": "Copy a protected file into the allowlist, leaving the original in place.",
+      "family": "copied-out-to-in",
+      "guard_stderr": "",
+      "guard_stdout": "PO03_PATH_SCOPE_PASS changed_paths=1",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "workstreams/po03/control/copied.json"
+      ],
+      "observed_git_name_status": [
+        "A\tworkstreams/po03/control/copied.json"
+      ],
+      "observed_guard_exit_code": 0,
+      "observed_violation_paths": [],
+      "predicted_guard_exit_code": 0,
+      "predicted_violation_paths": [],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "C",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-016",
+      "commission_requirement": "REJECT",
+      "description": "Copy an in-allowlist file to an out-of-allowlist destination.",
+      "family": "copied-in-to-out",
+      "guard_stderr": "PO03_PATH_SCOPE_VIOLATION: state/copied-out.json",
+      "guard_stdout": "",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "state/copied-out.json"
+      ],
+      "observed_git_name_status": [
+        "A\tstate/copied-out.json"
+      ],
+      "observed_guard_exit_code": 1,
+      "observed_violation_paths": [
+        "state/copied-out.json"
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_violation_paths": [
+        "state/copied-out.json"
+      ],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "C",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-017",
+      "commission_requirement": "REJECT",
+      "description": "Mix one legitimate in-allowlist change with one out-of-allowlist change.",
+      "family": "mixed",
+      "guard_stderr": "PO03_PATH_SCOPE_VIOLATION: modules/operators/runner.py",
+      "guard_stdout": "",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "modules/operators/runner.py",
+        "workstreams/po03/control/inside.json"
+      ],
+      "observed_git_name_status": [
+        "M\tmodules/operators/runner.py",
+        "M\tworkstreams/po03/control/inside.json"
+      ],
+      "observed_guard_exit_code": 1,
+      "observed_violation_paths": [
+        "modules/operators/runner.py"
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_violation_paths": [
+        "modules/operators/runner.py"
+      ],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "AM",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-018",
+      "commission_requirement": "REJECT",
+      "description": "Replace a protected regular file with a symlink.",
+      "family": "type-change",
+      "guard_stderr": "PO03_PATH_SCOPE_VIOLATION: state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+      "guard_stdout": "",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "observed_git_name_status": [
+        "T\tstate/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "observed_guard_exit_code": 1,
+      "observed_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "T",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-019",
+      "commission_requirement": "REJECT",
+      "description": "Change only the file mode of a protected file.",
+      "family": "mode-change",
+      "guard_stderr": "PO03_PATH_SCOPE_VIOLATION: modules/operators/runner.py",
+      "guard_stdout": "",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "modules/operators/runner.py"
+      ],
+      "observed_git_name_status": [
+        "M\tmodules/operators/runner.py"
+      ],
+      "observed_guard_exit_code": 1,
+      "observed_violation_paths": [
+        "modules/operators/runner.py"
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_violation_paths": [
+        "modules/operators/runner.py"
+      ],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "M",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-020",
+      "commission_requirement": "REJECT",
+      "description": "Add an out-of-allowlist gitlink entry.",
+      "family": "submodule",
+      "guard_stderr": "PO03_PATH_SCOPE_VIOLATION: modules/vendored",
+      "guard_stdout": "",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "modules/vendored"
+      ],
+      "observed_git_name_status": [
+        "A\tmodules/vendored"
+      ],
+      "observed_guard_exit_code": 1,
+      "observed_violation_paths": [
+        "modules/vendored"
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_violation_paths": [
+        "modules/vendored"
+      ],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "A",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-021",
+      "commission_requirement": "REJECT",
+      "description": "Add an out-of-allowlist file whose name is not valid UTF-8.",
+      "family": "encoding",
+      "guard_stderr": "PO03_PATH_SCOPE_ERROR: 'utf-8' codec can't decode byte 0xff in position 6: invalid start byte",
+      "guard_stdout": "",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "state/\udcff.json"
+      ],
+      "observed_git_name_status": [
+        "A\t\"state/\\377.json\""
+      ],
+      "observed_guard_exit_code": 2,
+      "observed_violation_paths": [],
+      "predicted_guard_exit_code": 2,
+      "predicted_violation_paths": [],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "A",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-022",
+      "commission_requirement": "REJECT",
+      "description": "Add an out-of-allowlist file whose name contains a newline.",
+      "family": "encoding",
+      "guard_stderr": "PO03_PATH_SCOPE_VIOLATION: state/new\nline.json",
+      "guard_stdout": "",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "state/new\nline.json"
+      ],
+      "observed_git_name_status": [
+        "A\t\"state/new\\nline.json\""
+      ],
+      "observed_guard_exit_code": 1,
+      "observed_violation_paths": [
+        "state/new"
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_violation_paths": [
+        "state/new\nline.json"
+      ],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "A",
+      "unreported_expected_violations": [
+        "state/new\nline.json"
+      ]
+    },
+    {
+      "case_id": "GIT-023",
+      "commission_requirement": "ALLOW",
+      "description": "Change a protected file on the base side only, after the fork point.",
+      "family": "history-shape",
+      "guard_stderr": "",
+      "guard_stdout": "PO03_PATH_SCOPE_PASS changed_paths=1",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "workstreams/po03/control/inside.json"
+      ],
+      "observed_git_name_status": [
+        "M\tworkstreams/po03/control/inside.json"
+      ],
+      "observed_guard_exit_code": 0,
+      "observed_violation_paths": [],
+      "predicted_guard_exit_code": 0,
+      "predicted_violation_paths": [],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "M",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-024",
+      "commission_requirement": "REJECT",
+      "description": "Merge a branch that changed a protected file, then diff from the pinned base.",
+      "family": "history-shape",
+      "guard_stderr": "PO03_PATH_SCOPE_VIOLATION: state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+      "guard_stdout": "",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+        "workstreams/po03/control/inside.json"
+      ],
+      "observed_git_name_status": [
+        "M\tstate/ACTIVE_CONTROL_POINTER_CURRENT.json",
+        "M\tworkstreams/po03/control/inside.json"
+      ],
+      "observed_guard_exit_code": 1,
+      "observed_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "M",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-025",
+      "commission_requirement": "REJECT",
+      "description": "Invoke the guard with the all-zero base SHA that GitHub sends as github.event.before on branch creation.",
+      "family": "invocation",
+      "guard_stderr": "PO03_PATH_SCOPE_ERROR: Command '('git', 'diff', '--name-only', '--diff-filter=ACMRDTUXB', '-z', '0000000000000000000000000000000000000000...HEAD')' returned non-zero exit status 128.",
+      "guard_stdout": "",
+      "observed_git_error": "fatal: Invalid symmetric difference expression 0000000000000000000000000000000000000000...HEAD",
+      "observed_git_name_only": [],
+      "observed_git_name_status": [],
+      "observed_guard_exit_code": 2,
+      "observed_violation_paths": [],
+      "predicted_guard_exit_code": 2,
+      "predicted_violation_paths": [],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "ERROR",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-026",
+      "commission_requirement": "ALLOW",
+      "description": "Run the guard over a range with no changes at all.",
+      "family": "invocation",
+      "guard_stderr": "",
+      "guard_stdout": "PO03_PATH_SCOPE_PASS changed_paths=0",
+      "observed_git_error": "",
+      "observed_git_name_only": [],
+      "observed_git_name_status": [],
+      "observed_guard_exit_code": 0,
+      "observed_violation_paths": [],
+      "predicted_guard_exit_code": 0,
+      "predicted_violation_paths": [],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "NONE",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-027",
+      "commission_requirement": "ALLOW",
+      "description": "Leave an out-of-allowlist modification uncommitted in the working tree.",
+      "family": "worktree-state",
+      "guard_stderr": "",
+      "guard_stdout": "PO03_PATH_SCOPE_PASS changed_paths=1",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "workstreams/po03/control/inside.json"
+      ],
+      "observed_git_name_status": [
+        "M\tworkstreams/po03/control/inside.json"
+      ],
+      "observed_guard_exit_code": 0,
+      "observed_violation_paths": [],
+      "predicted_guard_exit_code": 0,
+      "predicted_violation_paths": [],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "M",
+      "unreported_expected_violations": []
+    },
+    {
+      "case_id": "GIT-028",
+      "commission_requirement": "ALLOW",
+      "description": "Stage an out-of-allowlist modification without committing it.",
+      "family": "worktree-state",
+      "guard_stderr": "",
+      "guard_stdout": "PO03_PATH_SCOPE_PASS changed_paths=1",
+      "observed_git_error": "",
+      "observed_git_name_only": [
+        "workstreams/po03/control/inside.json"
+      ],
+      "observed_git_name_status": [
+        "M\tworkstreams/po03/control/inside.json"
+      ],
+      "observed_guard_exit_code": 0,
+      "observed_violation_paths": [],
+      "predicted_guard_exit_code": 0,
+      "predicted_violation_paths": [],
+      "prediction_held": true,
+      "requirement_satisfied": true,
+      "status_class": "M",
+      "unreported_expected_violations": []
+    }
+  ],
+  "guard_under_review": "workstreams/po03/tools/check_path_scope.py",
+  "path_results": [
+    {
+      "case_id": "PP-001",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'workstreams/po03/tools/check_path_scope.py'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-002",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'receipts/po03/2026-08-22/producer-execution.json'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-003",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'.github/workflows/po03-contracts.yml'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-004",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'workstreams/po03/attempts/wave-a/wave-a-043-path-scope-adversarial-review/manifest.json'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-005",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'workstreams/po03/.gitignore'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-006",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'receipts/po03/2026-08-22/nested/deeper/still/inside.json'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-007",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'workstreams/po03/control/events/wave-a-043/000001-created.json'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-008",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control-exotic",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'workstreams/po03/a file with spaces.json'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-009",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control-exotic",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'workstreams/po03/quote\\'and\"double.json'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-010",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control-exotic",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'workstreams/po03/tab\\tinside.json'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-011",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control-exotic",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'workstreams/po03/newline\\ninside.json'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-012",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control-exotic",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'workstreams/po03/\u30d5\u30a1\u30a4\u30eb.json'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-013",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control-exotic",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'workstreams/po03/caf\u00e9.json'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-014",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control-exotic",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'workstreams/po03/cafe\u0301.json'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-015",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control-exotic",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'workstreams/po03/x.py\\u200b'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-016",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'.github/workflows/po03-a.yml'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-017",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/po03x/file.json",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/po03x/file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-018",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/po030/file.json",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/po030/file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-019",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/po03-extra/file.json",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/po03-extra/file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-020",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/po03.bak/file.json",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/po03.bak/file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-021",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/po03",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/po03'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-022",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: receipts/po03x/file.json",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'receipts/po03x/file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-023",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: receipts/po03",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'receipts/po03'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-024",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams-po03/file.json",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams-po03/file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-025",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: aworkstreams/po03/file.json",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'aworkstreams/po03/file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-026",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: x/workstreams/po03/file.json",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'x/workstreams/po03/file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-027",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/po03suffix/receipts/po03/file.json",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/po03suffix/receipts/po03/file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-028",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: Workstreams/po03/file.json",
+      "commission_requirement": "REJECT",
+      "family": "case-folding",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'Workstreams/po03/file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-029",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/PO03/file.json",
+      "commission_requirement": "REJECT",
+      "family": "case-folding",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/PO03/file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-030",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: WORKSTREAMS/PO03/FILE.JSON",
+      "commission_requirement": "REJECT",
+      "family": "case-folding",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'WORKSTREAMS/PO03/FILE.JSON'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-031",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: Receipts/po03/file.json",
+      "commission_requirement": "REJECT",
+      "family": "case-folding",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'Receipts/po03/file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-032",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: .GitHub/workflows/po03-x.yml",
+      "commission_requirement": "REJECT",
+      "family": "case-folding",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'.GitHub/workflows/po03-x.yml'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-033",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: .github/Workflows/po03-x.yml",
+      "commission_requirement": "REJECT",
+      "family": "case-folding",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'.github/Workflows/po03-x.yml'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-034",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/po03/../po01/producer-result.json",
+      "commission_requirement": "REJECT",
+      "family": "traversal",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/po03/../po01/producer-result.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-035",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/po03/../../state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+      "commission_requirement": "REJECT",
+      "family": "traversal",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/po03/../../state/ACTIVE_CONTROL_POINTER_CURRENT.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-036",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/po03/./control/x.json",
+      "commission_requirement": "REJECT",
+      "family": "traversal",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/po03/./control/x.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-037",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams//po03/x.json",
+      "commission_requirement": "REJECT",
+      "family": "traversal",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams//po03/x.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-038",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: /workstreams/po03/x.json",
+      "commission_requirement": "REJECT",
+      "family": "traversal",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'/workstreams/po03/x.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-039",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: ./workstreams/po03/x.json",
+      "commission_requirement": "REJECT",
+      "family": "traversal",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'./workstreams/po03/x.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-040",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/po03/",
+      "commission_requirement": "REJECT",
+      "family": "traversal",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/po03/'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-041",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: ..",
+      "commission_requirement": "REJECT",
+      "family": "traversal",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'..'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-042",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: .",
+      "commission_requirement": "REJECT",
+      "family": "degenerate",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'.'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-043",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION:",
+      "commission_requirement": "REJECT",
+      "family": "degenerate",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "''",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-044",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION:  workstreams/po03/x.json",
+      "commission_requirement": "REJECT",
+      "family": "degenerate",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "' workstreams/po03/x.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-045",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "ALLOW",
+      "family": "degenerate",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'workstreams/po03/x.json '",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-046",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams\\po03\\x.json",
+      "commission_requirement": "REJECT",
+      "family": "separator",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams\\\\po03\\\\x.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-047",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/po03\\..\\..\\state\\x.json",
+      "commission_requirement": "REJECT",
+      "family": "separator",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/po03\\\\..\\\\..\\\\state\\\\x.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-048",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/po03/sub\\file.json",
+      "commission_requirement": "REJECT",
+      "family": "separator",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/po03/sub\\\\file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-049",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "NOT_APPLICABLE",
+      "cli_exit_code": null,
+      "cli_stderr": "argv cannot carry a NUL byte; in-process evaluation only",
+      "commission_requirement": "REJECT",
+      "family": "separator",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'state/x.json\\x00workstreams/po03/y.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-050",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "NOT_APPLICABLE",
+      "cli_exit_code": null,
+      "cli_stderr": "argv cannot carry a NUL byte; in-process evaluation only",
+      "commission_requirement": "REJECT",
+      "family": "separator",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/po03/y.json\\x00state/x.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-051",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/p\u043e03/file.json",
+      "commission_requirement": "REJECT",
+      "family": "unicode-confusable",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/p\u043e03/file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-052",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: works\u0442reams/po03/file.json",
+      "commission_requirement": "REJECT",
+      "family": "unicode-confusable",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'works\u0442reams/po03/file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-053",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: \uff57orkstreams/po03/file.json",
+      "commission_requirement": "REJECT",
+      "family": "unicode-confusable",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'\uff57orkstreams/po03/file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-054",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams\u2044po03\u2044file.json",
+      "commission_requirement": "REJECT",
+      "family": "unicode-confusable",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams\u2044po03\u2044file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-055",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/po03\u200b/file.json",
+      "commission_requirement": "REJECT",
+      "family": "unicode-confusable",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/po03\\u200b/file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-056",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/po\u30030\u33333/file.json",
+      "commission_requirement": "REJECT",
+      "family": "unicode-confusable",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/po\u30030\u33333/file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-057",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: .github/workflows/not-po03.yml",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'.github/workflows/not-po03.yml'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-058",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: .github/workflows/po03-guard.yaml",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'.github/workflows/po03-guard.yaml'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-059",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: .github/workflows/po03-guard.yml.bak",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'.github/workflows/po03-guard.yml.bak'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-060",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: .github/workflows/po03_guard.yml",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'.github/workflows/po03_guard.yml'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-061",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: .github/workflows/PO03-guard.yml",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'.github/workflows/PO03-guard.yml'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-062",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: .github/workflows/sub/po03-guard.yml",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'.github/workflows/sub/po03-guard.yml'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-063",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'.github/workflows/po03-guard/payload.yml'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": false
+    },
+    {
+      "case_id": "PP-064",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'.github/workflows/po03-a/b/c/deep.yml'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": false
+    },
+    {
+      "case_id": "PP-065",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'.github/workflows/po03-a/.github/workflows/evil.yml'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": false
+    },
+    {
+      "case_id": "PP-066",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: .github/workflowspo03-x.yml",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'.github/workflowspo03-x.yml'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-067",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: .github/actions/po03-x.yml",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'.github/actions/po03-x.yml'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-068",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "ALLOW",
+      "family": "workflow-lookalike",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'.github/workflows/po03-.yml'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-069",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "ALLOW",
+      "cli_exit_code": 0,
+      "cli_stderr": "",
+      "commission_requirement": "ALLOW",
+      "family": "workflow-lookalike",
+      "observed_error": null,
+      "observed_guard_disposition": "ALLOW",
+      "path_display": "'.github/workflows/po03-x.yml.yml'",
+      "predicted_guard_disposition": "ALLOW",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-070",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: .github/workflows/operator-taxonomy-currentness.yml",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'.github/workflows/operator-taxonomy-currentness.yml'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-071",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: .github/workflows/po03-x.yml/../../../state/x.json",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'.github/workflows/po03-x.yml/../../../state/x.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-072",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/po01/COMMISSION.md",
+      "commission_requirement": "REJECT",
+      "family": "po01",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/po01/COMMISSION.md'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-073",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/po01/producer-result.json",
+      "commission_requirement": "REJECT",
+      "family": "po01",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/po01/producer-result.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-074",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: receipts/po01/2026-08-22/pack.json",
+      "commission_requirement": "REJECT",
+      "family": "po01",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'receipts/po01/2026-08-22/pack.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-075",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: .github/workflows/po01-pack.yml",
+      "commission_requirement": "REJECT",
+      "family": "po01",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'.github/workflows/po01-pack.yml'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-076",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/po03/../po01/pack/manifest.json",
+      "commission_requirement": "REJECT",
+      "family": "po01",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/po03/../po01/pack/manifest.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-077",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: workstreams/po01x/file.json",
+      "commission_requirement": "REJECT",
+      "family": "po01",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'workstreams/po01x/file.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-078",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: packs/po01/pack.json",
+      "commission_requirement": "REJECT",
+      "family": "po01",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'packs/po01/pack.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-079",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'state/ACTIVE_CONTROL_POINTER_CURRENT.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-080",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: state/operator-system/ACTIVE_INSTRUCTION_STACK.json",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'state/operator-system/ACTIVE_INSTRUCTION_STACK.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-081",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: .cursor/environment.json",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'.cursor/environment.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-082",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: packs/operator-pack/manifest.json",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'packs/operator-pack/manifest.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-083",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: modules/operators/runner.py",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'modules/operators/runner.py'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-084",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: modules/work_unit_contract/contract.json",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'modules/work_unit_contract/contract.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-085",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: _transport/inbox/file.bin",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'_transport/inbox/file.bin'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-086",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: AGENTS.md",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'AGENTS.md'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-087",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: operations/README.md",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'operations/README.md'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-088",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: scripts/check_operator_taxonomy.py",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'scripts/check_operator_taxonomy.py'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-089",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: .gitattributes",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'.gitattributes'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-090",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: .gitmodules",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'.gitmodules'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-091",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: .github/CODEOWNERS",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'.github/CODEOWNERS'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    },
+    {
+      "case_id": "PP-092",
+      "cli_agrees_with_in_process": true,
+      "cli_disposition": "REJECT",
+      "cli_exit_code": 1,
+      "cli_stderr": "PO03_PATH_SCOPE_VIOLATION: dispatch/CURRENT.json",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "observed_error": null,
+      "observed_guard_disposition": "REJECT",
+      "path_display": "'dispatch/CURRENT.json'",
+      "predicted_guard_disposition": "REJECT",
+      "prediction_held": true,
+      "requirement_satisfied": true
+    }
+  ],
+  "results_version": "PO03-WAVE-A-043-OBSERVED-RESULTS-v1",
+  "runtime": {
+    "git": "git version 2.43.0",
+    "platform": "linux",
+    "python": "3.12.3"
+  },
+  "summary": {
+    "false_negatives_against_readonly_estate": [
+      "GIT-010",
+      "GIT-012",
+      "PP-063",
+      "PP-064",
+      "PP-065"
+    ],
+    "false_positives_against_allowlist": [],
+    "git_cases_evaluated": 28,
+    "git_predictions_refuted": [
+      "GIT-010",
+      "GIT-012"
+    ],
+    "hypothesis_under_test": "The scope guard rejects modified, added, copied, renamed, and deleted out-of-allowlist paths.",
+    "hypothesis_verdict": "REFUTED",
+    "path_cases_evaluated": 92,
+    "path_predictions_refuted": [],
+    "requirement_failures": [
+      "GIT-010",
+      "GIT-012",
+      "PP-063",
+      "PP-064",
+      "PP-065"
+    ]
+  },
+  "task_id": "wave-a-043-path-scope-adversarial-review"
+}
