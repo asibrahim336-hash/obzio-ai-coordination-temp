@@ -1,0 +1,115 @@
+{
+  "evidence_id": "EV-PO03-SOURCE-CAPSULE-DRIFT-20260822-v001",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "commission_revision": "v002",
+  "generated_at": "2026-08-22T07:32:00Z",
+  "decision_changed": [],
+  "finding_origin": {
+    "found_by": "po03-worker-a9 (gpt-5.6-sol-xhigh), unit a9-u03, open-discovery of a mechanism gap that neither the founder nor the commission named",
+    "a9_reported_scope": "one unique post-dispatch drifted source across the dispatches it inspected",
+    "coordinator_verified_scope": "four of the twelve frozen sources had drifted, so the real defect is broader than reported",
+    "coordinator_verification": "Recomputed the SHA-256 of every entry in wave-a-spec.json source_hashes against the working tree and traced each mismatch to its causal commit with git log --follow."
+  },
+  "defect": "The dispatch specification declared a frozen source capsule by SHA-256 of working-tree paths, then the coordinator legitimately repaired several of those same paths. Nothing detected or prevented it. The immutable input manifests remained internally valid because each hashes the manifest, not the sources it names, so an intact manifest hash gives no source-byte closure whatsoever. This is exactly the assumption cohort a9 set out to test and undermined.",
+  "severity": "HIGH",
+  "why_it_matters": "A subordinate that reads a frozen source at execution time may see different bytes than the capsule the coordinator pinned at dispatch. Acceptance evidence would then be traceable to a hash that no longer describes what was actually read, which is a provenance break of the same family as the result-custody defects this commission was written to close.",
+  "honest_framing": "Every drift below was caused by a correct and necessary repair, several of which closed real custody defects. The defect is not that the repairs happened; it is that the mechanism called them frozen and did not notice. The repairs are not being reverted.",
+  "drifted_sources": [
+    {
+      "path": "workstreams/po03/tools/control_plane.py",
+      "frozen_sha256": "9c3d3c95a7bd333c8e2e9f19c2095a9cfe7520ae5f1adafd71b4199b135f84c8",
+      "current_sha256": "c0c4064668d0a017ddf8018d496368ad484c59e8871d40860ac23f9566f09b59",
+      "state": "DRIFTED",
+      "causal_commits": [
+        { "sha": "6f5e386", "subject": "fix allowlist path normalisation and cover custody invariants", "legitimate": true },
+        { "sha": "075e854", "subject": "stop ingestion promoting honest failure into a committed state", "legitimate": true }
+      ]
+    },
+    {
+      "path": "workstreams/po03/control/path-ownership.json",
+      "frozen_sha256": "73f1fb811f18f8dc7c55cb99c82478f2899760f41003141257675ff8fabfa9a7",
+      "current_sha256": "5a8339e9755771aa2347b85520492d917c20bb525a25bf2ec8b5847727d68c13",
+      "state": "DRIFTED",
+      "causal_commits": [
+        { "sha": "dd2fcc6", "subject": "register the result emitter as coordinator-owned", "legitimate": true },
+        { "sha": "a23583f", "subject": "register po03-contracts.yml as coordinator-owned", "legitimate": true },
+        { "sha": "075e854", "subject": "register the ingestion driver as coordinator-owned", "legitimate": true },
+        { "sha": "b7b1888", "subject": "transfer control-plane tool ownership to po03-worker-a11", "legitimate": true }
+      ],
+      "note": "Ownership legitimately evolves during a wave, so this file is the clearest case that a mutable-path hash is the wrong pinning primitive for it."
+    },
+    {
+      "path": "workstreams/po03/control/model-capability-register.json",
+      "frozen_sha256": "2db828f503f76d6b3bd6c34479ed457b056cdfdea6834b814b6ccb700eee2db0",
+      "current_sha256": "a52aa48adca764268d5097688374fa03d536e156015327fc1a55a9d808326480",
+      "state": "DRIFTED",
+      "causal_commits": [
+        { "sha": "a2298fe", "subject": "record the observed concurrency measurement after dispatch", "legitimate": true }
+      ]
+    },
+    {
+      "path": ".github/workflows/po03-contracts.yml",
+      "frozen_sha256": "427949c07d93fe69bea6485a91ca58c4297be21759e6b0b00a0e5cc9f450c7cb",
+      "current_sha256": "58128e2b3b8e8b56ec662400f856db24ad83b026b73b3012aa14234633f6d9a3",
+      "state": "DRIFTED",
+      "causal_commits": [
+        { "sha": "a23583f", "subject": "fire the contract gate on this run's working branches", "legitimate": true }
+      ]
+    }
+  ],
+  "unchanged_sources": [
+    "workstreams/po03/COMMISSION.md",
+    "workstreams/po03/LAUNCH-NOW.md",
+    "workstreams/po03/contracts/transactional-result.schema.json",
+    "workstreams/po03/contracts/wave-compounding.schema.json",
+    "workstreams/po03/tools/validate_contracts.py",
+    "workstreams/po03/tests/test_validate_contracts.py",
+    "workstreams/po03/evidence/so02-operating-correction.json",
+    "receipts/po03/2026-08-22/appointment-seed.json"
+  ],
+  "hash_pinned_launch_evidence_intact": {
+    "claim": "COMMISSION.md, LAUNCH-NOW.md, both seeded schemas, the seeded validator, the seeded test suite, the SO-02 correction and the appointment seed are all byte-identical to their frozen hashes.",
+    "verified": true,
+    "significance": "The repository-wide instruction that hash-pinned launch evidence must remain byte-identical is satisfied. Every drift is in a coordinator-authored operating file, not in founder or SO-02 evidence."
+  },
+  "remediation": {
+    "not_doing": "Reverting the repairs. They closed real defects and reverting them would trade a provenance gap for a correctness regression.",
+    "doing": [
+      "Pin sources by git commit SHA, which is content-addressed and immutable, instead of by the SHA-256 of a mutable working-tree path.",
+      "Version the capsule: a legitimate change to a pinned source issues a new capsule version with explicit lineage, so drift becomes impossible by construction rather than merely detectable.",
+      "Adopt cohort a9's CURRENT / DRIFTED / MISSING classifier as a dispatch preflight that refuses to dispatch against a drifted or incomplete capsule."
+    ],
+    "remediation_units": ["a12-u02", "a12-u03", "a12-u04"],
+    "state": "OPEN_UNDER_REMEDIATION"
+  },
+  "second_finding_from_a9": {
+    "defect": "The executable result validator accepts undeclared fields, unknown provider states and unknown result-transaction states, while transactional-result.schema.json forbids all three via additionalProperties false and its enums. A document can therefore pass the executable gate while violating the contract the schema documents.",
+    "severity": "HIGH",
+    "why_it_matters": "This is a false-green vector in a seeded active control. The commission directs that these controls be strengthened, not bypassed, and the executable is what runs in clean runtimes where no schema validator is available.",
+    "coordinator_verification": "Confirmed by inspection: validate_result never checks for unexpected keys, never validates provider_state against its enum, and never validates result_transaction.state against its enum.",
+    "remediation_unit": "a12-u01",
+    "state": "OPEN_UNDER_REMEDIATION"
+  },
+  "a9_findings_requiring_the_founder_interlock": {
+    "rule": "Strategy findings remain proposals until the founder interlock binds them. None of the following changed any decision and decision_changed remains empty.",
+    "proposals": [
+      "The active instruction stack and authority registers do not resolve a PO-03 route. Recording one would touch state/** and dispatch/**, which are read-only to this commission, so it is raised as a proposal only.",
+      "COMMISSION.md still declares lifecycle COMMISSIONED_NOT_YET_EXECUTING while 83 leases exist. The file is hash-pinned launch evidence and must remain byte-identical, so the lifecycle transition is recorded in receipts/po03/2026-08-22/amendment-activation.json instead of by editing the commission. This is the correct resolution, not an outstanding defect.",
+      "Return and evaluation routes are implicit rather than declared in the instruction stack.",
+      "Two alias target namespaces are not machine-resolvable.",
+      "Repartitioning a successor wave by measured dependencies and service times, and binding a sharded or content-fan-in topology as company strategy."
+    ]
+  },
+  "a9_topology_measurement_retained": {
+    "result": "Simulated safe throughput over all 74 original units: central serial 0.949 units/tick, cohort shards 2.846, content fan-in 3.364, optimistic peers 0.949 with 630 collisions.",
+    "interpretation": "Singleton final authority is supported as a safety property rather than refuted as a throughput ceiling; sharding and content fan-in change throughput without giving up that safety. Optimistic peer writing is the only candidate that collides, and it collides badly.",
+    "honesty_note": "These are simulation ticks, not production latency, and cohort a9 said so. The measurement is retained as a comparison between designs, not as a performance claim.",
+    "disposition": "RETAIN"
+  },
+  "runtime_boundary_observed": {
+    "subject": "python launcher",
+    "state": "NOT_SUPPORTED",
+    "detail": "AGENTS.md rule 10 specifies `python scripts/check_operator_taxonomy.py`. No `python` executable exists in this runtime; `python3` does. Reported independently by cohorts a4 and a9.",
+    "resolution": "The gate was run as `python3 scripts/check_operator_taxonomy.py` and returned `OPERATOR TAXONOMY CHECK: PASS` with exit 0, active function obzio.function.strategic-operations-orchestration and 9 classified aliases. The requirement is satisfied in substance; the literal launcher name is recorded as an observed runtime boundary rather than treated as a failure or silently ignored."
+  }
+}

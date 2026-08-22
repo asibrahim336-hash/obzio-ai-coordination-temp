@@ -1,0 +1,35 @@
+{
+  "acceptance": {
+    "artifact": "workstreams/po03/capsule/ implementation plus tests including a fresh-clone resolution test",
+    "assertion": "A capsule is expressed as a set of (path, blob SHA, commit SHA) triples resolvable read-only from git alone; resolving a capsule from a fresh clone with no working tree yields byte-identical content; and a legitimate change to a pinned source produces a new capsule version with explicit lineage to its predecessor instead of mutating the frozen one.",
+    "falsified_if": "a capsule can be resolved to different bytes at two times, or a source change can occur without issuing a new capsule version"
+  },
+  "acceptance_contract_sha256": "5baf3b047b7361d3009246b1793ab7904e0dd528022caa7868764f239f45c711",
+  "cohort_id": "a12",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "function_id": "F7",
+  "hypothesis": "Pinning a source capsule by git commit SHA rather than by the hash of a mutable working-tree path makes post-dispatch drift impossible by construction rather than merely detectable.",
+  "idempotency_key": "a12-u02:2b207a89ee2df2fb",
+  "immutable_input_manifest_sha256": "2b207a89ee2df2fb1783481cd8c06939b3af96846818a9c4b75195e55efd8e86",
+  "model": "gpt-5.6-sol-xhigh",
+  "owned_paths": [
+    "workstreams/po03/capsule/",
+    "workstreams/po03/control/units/a12/",
+    "workstreams/po03/tests/test_a12_"
+  ],
+  "owner": "po03-worker-a12",
+  "result_slot": {
+    "branch": "cursor/po03-a12-capsule-closure-ed20",
+    "unit_record": "workstreams/po03/control/units/a12/a12-u02.json"
+  },
+  "source_hashes": {
+    "a9_evidence_branch": "cursor/po03-a9-strategy-discovery-ed20@a3a7e92e41bd3ff9386902a6f0348d3865ba640d",
+    "capsule_base_commit": "a39fe6bf94b75671d95ff33781da4e299d102ca7",
+    "drift_evidence": "workstreams/po03/evidence/source-capsule-drift.json",
+    "seeded_schema": "workstreams/po03/contracts/transactional-result.schema.json@bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1",
+    "seeded_validator": "workstreams/po03/tools/validate_contracts.py@ead7d6c78c1f60aaf5440db7fc00fc2ae57d773647ed3b24c279d1a59b43da03",
+    "seeded_validator_tests": "workstreams/po03/tests/test_validate_contracts.py@401a684c0a2d3817d08a76044a331f0f241b16d687d2dd12d9ea0f31612dc112"
+  },
+  "unit_id": "a12-u02",
+  "wave_id": "po03-wave-a"
+}

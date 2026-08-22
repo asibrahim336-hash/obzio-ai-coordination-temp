@@ -1,0 +1,35 @@
+{
+  "acceptance": {
+    "artifact": "preflight guard plus fixtures and tests",
+    "assertion": "The preflight adopts cohort a9's three-state classification, exits non-zero on DRIFTED or MISSING, and is proven against the four real drifts recorded in source-capsule-drift.json used as fixtures, plus a clean capsule that must pass. It is a standalone tool the controller invokes and must not modify control_plane.py, which another cohort owns.",
+    "falsified_if": "any of the four real drifts passes the preflight, or a clean capsule is wrongly rejected"
+  },
+  "acceptance_contract_sha256": "9d9d2fec38a5130e9946621a170212132e9f14fe6c4d97c2163866f53623c347",
+  "cohort_id": "a12",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "function_id": "F8",
+  "hypothesis": "A dispatch preflight that classifies every pinned source as CURRENT, DRIFTED or MISSING and refuses to dispatch on anything but CURRENT would have blocked the four real drifts before any subordinate read a stale source.",
+  "idempotency_key": "a12-u03:80ad2452f7626fc8",
+  "immutable_input_manifest_sha256": "80ad2452f7626fc8bacf444a9f4842e75ab5406071551f23e49fb7c3c6b18f8e",
+  "model": "gpt-5.6-sol-xhigh",
+  "owned_paths": [
+    "workstreams/po03/capsule/",
+    "workstreams/po03/control/units/a12/",
+    "workstreams/po03/tests/test_a12_"
+  ],
+  "owner": "po03-worker-a12",
+  "result_slot": {
+    "branch": "cursor/po03-a12-capsule-closure-ed20",
+    "unit_record": "workstreams/po03/control/units/a12/a12-u03.json"
+  },
+  "source_hashes": {
+    "a9_evidence_branch": "cursor/po03-a9-strategy-discovery-ed20@a3a7e92e41bd3ff9386902a6f0348d3865ba640d",
+    "capsule_base_commit": "a39fe6bf94b75671d95ff33781da4e299d102ca7",
+    "drift_evidence": "workstreams/po03/evidence/source-capsule-drift.json",
+    "seeded_schema": "workstreams/po03/contracts/transactional-result.schema.json@bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1",
+    "seeded_validator": "workstreams/po03/tools/validate_contracts.py@ead7d6c78c1f60aaf5440db7fc00fc2ae57d773647ed3b24c279d1a59b43da03",
+    "seeded_validator_tests": "workstreams/po03/tests/test_validate_contracts.py@401a684c0a2d3817d08a76044a331f0f241b16d687d2dd12d9ea0f31612dc112"
+  },
+  "unit_id": "a12-u03",
+  "wave_id": "po03-wave-a"
+}

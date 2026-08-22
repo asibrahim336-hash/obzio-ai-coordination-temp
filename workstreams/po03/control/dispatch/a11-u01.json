@@ -1,0 +1,35 @@
+{
+  "acceptance": {
+    "artifact": "hardened control_plane.py plus workstreams/po03/tests/test_a11_actor_authority.py",
+    "assertion": "Actor authority and transition order are enforced for every event kind, not only in cmd_complete: a non-coordinator actor cannot append COMPLETED, PARENT_INGESTED, LEASED or a disposition, and no event may advance a unit out of order. The scanner additionally reports any terminal commit id that cannot be resolved to a real commit. Reproduced by the coordinator on 2026-08-22 with a fabricated commit id that yielded zero reported false completions.",
+    "falsified_if": "any non-coordinator actor can reach COMPLETED, or a fabricated commit id passes the scanner"
+  },
+  "acceptance_contract_sha256": "89877436d00c2d4a79f71db4c560c460a3cd12adaa301bd12fb08fd1abf485b4",
+  "cohort_id": "a11",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "function_id": "F8",
+  "hypothesis": "The generic event command lets a non-coordinator actor append COMPLETED with a fabricated result_commit_id, and the recovery scanner does not notice because it only checks for a missing commit id rather than an unverifiable one.",
+  "idempotency_key": "a11-u01:30afafe0c63aa664",
+  "immutable_input_manifest_sha256": "30afafe0c63aa66488467b260374264f0551d7d34535233293a95c401722971b",
+  "model": "claude-opus-5-thinking-high",
+  "owned_paths": [
+    "workstreams/po03/tools/control_plane.py",
+    "workstreams/po03/control/units/a11/",
+    "workstreams/po03/tests/test_a11_"
+  ],
+  "owner": "po03-worker-a11",
+  "result_slot": {
+    "branch": "cursor/po03-a11-custody-remediation-ed20",
+    "unit_record": "workstreams/po03/control/units/a11/a11-u01.json"
+  },
+  "source_hashes": {
+    "a2_evidence_branch": "cursor/po03-a2-fault-recovery-ed20@1cb2ffceeaad99793c248cba6b0101aad9e286e1",
+    "a6_evidence_branch": "cursor/po03-a6-independent-review-ed20@c04bc0ed9f785ed29adaba94ad1f80c976911532",
+    "workstreams/po03/COMMISSION.md": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+    "workstreams/po03/contracts/transactional-result.schema.json": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1",
+    "workstreams/po03/control/wave-a-spec.json": "SEE_wave-a-spec.json",
+    "workstreams/po03/tools/validate_contracts.py": "ead7d6c78c1f60aaf5440db7fc00fc2ae57d773647ed3b24c279d1a59b43da03"
+  },
+  "unit_id": "a11-u01",
+  "wave_id": "po03-wave-a"
+}

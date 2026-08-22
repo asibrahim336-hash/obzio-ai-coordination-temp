@@ -1,0 +1,81 @@
+{
+  "artifact_id": "PO03-A9-TOPOLOGY-CANDIDATES-v001",
+  "decision_changed": [],
+  "topologies": [
+    {
+      "applied_to_active_wave": false,
+      "batch_size": 1,
+      "binding_state": "PROPOSAL_ONLY",
+      "collision_rule": "serialization prevents simultaneous mutation",
+      "decision_changed": [],
+      "final_promotion_authorities": 1,
+      "mutable_coordination_surfaces": [
+        "one global ledger head"
+      ],
+      "name": "single serialized integration controller",
+      "recovery_rule": "durable queue resumes after three downtime ticks; the interrupted item is replayed",
+      "scheduling": "FIFO, one unit verified and promoted per simulation tick",
+      "topology_id": "T1-CENTRAL-SERIAL",
+      "verification_writers": 1,
+      "worker_result_surface": "disjoint worker branches"
+    },
+    {
+      "applied_to_active_wave": false,
+      "batch_size": "one cohort checkpoint",
+      "binding_state": "PROPOSAL_ONLY",
+      "collision_rule": "cohort ownership prevents cross-shard mutation; promotion remains serialized",
+      "decision_changed": [],
+      "final_promotion_authorities": 1,
+      "mutable_coordination_surfaces": [
+        "ten disjoint cohort heads",
+        "one global cohort-promotion head"
+      ],
+      "name": "cohort-sharded verification with serialized promotion",
+      "recovery_rule": "only the interrupted shard pauses for three ticks and replays one item",
+      "scheduling": "each shard verifies one unit per tick; one compact cohort checkpoint is promoted per tick after verification",
+      "topology_id": "T2-COHORT-SHARDS",
+      "verification_writers": 10,
+      "worker_result_surface": "one isolated verification shard per Wave A cohort"
+    },
+    {
+      "applied_to_active_wave": false,
+      "batch_size": 1,
+      "binding_state": "PROPOSAL_ONLY",
+      "collision_rule": "each losing compare-and-swap is a measured collision",
+      "decision_changed": [],
+      "final_promotion_authorities": 10,
+      "mutable_coordination_surfaces": [
+        "one global ledger head"
+      ],
+      "name": "optimistic peer integration against a shared head",
+      "recovery_rule": "after three downtime ticks, every in-flight peer retries",
+      "scheduling": "all available peers attempt compare-and-swap each tick; one wins and losers retry",
+      "topology_id": "T3-OPTIMISTIC-PEERS",
+      "verification_writers": 10,
+      "worker_result_surface": "ten peers contend directly on one global mutable head"
+    },
+    {
+      "applied_to_active_wave": false,
+      "batch_size": 8,
+      "binding_state": "PROPOSAL_ONLY",
+      "collision_rule": "content IDs are immutable and duplicate references are idempotent",
+      "decision_changed": [],
+      "final_promotion_authorities": 1,
+      "mutable_coordination_surfaces": [
+        "one append-only batched reference index"
+      ],
+      "name": "content-addressed immutable manifests with batched fan-in",
+      "recovery_rule": "after three downtime ticks, the interrupted reference batch is replayed without re-running producers",
+      "scheduling": "ten manifests stage per tick; the singleton authority appends up to eight verified references per tick",
+      "topology_id": "T4-CONTENT-FANIN",
+      "verification_writers": 10,
+      "worker_result_surface": "ten peers write immutable content IDs to disjoint branches"
+    }
+  ],
+  "unit_id": "a9-u02",
+  "wave_source": {
+    "declared_units": 74,
+    "path": "workstreams/po03/control/wave-a-spec.json",
+    "sha256": "3652f17f4469c7f6f299f12bc4bca204a9083028e412876923cbf541fc01a32d"
+  }
+}

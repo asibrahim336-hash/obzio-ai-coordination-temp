@@ -1,0 +1,35 @@
+{
+  "acceptance": {
+    "artifact": "hardened append path plus a multi-process concurrency test",
+    "assertion": "Under at least 200 concurrent append interleavings from separate processes, sequence numbers remain unique and monotonic and the chain verifies, using advisory file locking with a bounded wait and a documented behaviour on lock timeout. Cohort a2 measured 200 of 200 violations before the fix.",
+    "falsified_if": "any interleaving yields a duplicate sequence number or a broken chain"
+  },
+  "acceptance_contract_sha256": "046e16c96c2ba5d306c92f781a6a90107158880397fd09c2b434c33c8a6706f2",
+  "cohort_id": "a11",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "function_id": "F8",
+  "hypothesis": "append_event performs an unlocked read-verify-append, so concurrent appends assign duplicate sequence numbers and break the hash chain.",
+  "idempotency_key": "a11-u02:fa2443d6d3bb0d44",
+  "immutable_input_manifest_sha256": "fa2443d6d3bb0d4465f8bf722d8d502a7dabd9f74beee966ada0fe08bb51b098",
+  "model": "claude-opus-5-thinking-high",
+  "owned_paths": [
+    "workstreams/po03/tools/control_plane.py",
+    "workstreams/po03/control/units/a11/",
+    "workstreams/po03/tests/test_a11_"
+  ],
+  "owner": "po03-worker-a11",
+  "result_slot": {
+    "branch": "cursor/po03-a11-custody-remediation-ed20",
+    "unit_record": "workstreams/po03/control/units/a11/a11-u02.json"
+  },
+  "source_hashes": {
+    "a2_evidence_branch": "cursor/po03-a2-fault-recovery-ed20@1cb2ffceeaad99793c248cba6b0101aad9e286e1",
+    "a6_evidence_branch": "cursor/po03-a6-independent-review-ed20@c04bc0ed9f785ed29adaba94ad1f80c976911532",
+    "workstreams/po03/COMMISSION.md": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+    "workstreams/po03/contracts/transactional-result.schema.json": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1",
+    "workstreams/po03/control/wave-a-spec.json": "SEE_wave-a-spec.json",
+    "workstreams/po03/tools/validate_contracts.py": "ead7d6c78c1f60aaf5440db7fc00fc2ae57d773647ed3b24c279d1a59b43da03"
+  },
+  "unit_id": "a11-u02",
+  "wave_id": "po03-wave-a"
+}

@@ -1,0 +1,338 @@
+{
+  "artifact_id": "PO03-A9-ZERO-BASE-CHALLENGE-v001",
+  "assumptions": [
+    {
+      "assumption_id": "A-WAVE-SHAPE",
+      "load_bearing_because": "The partition fixes parallelism, review dependencies and the number of independently counted attempts.",
+      "proposal": {
+        "applied_to_active_wave": false,
+        "binding_state": "PROPOSAL_ONLY",
+        "decision_changed": [],
+        "founder_interlock": "REQUIRED_BEFORE_DECISION_CHANGE",
+        "proposal": "Evaluate a successor queue that partitions by dependency and observed service time after Wave A; do not repartition or delay the active Wave A.",
+        "proposal_id": "P-WAVE-SHAPE-01"
+      },
+      "reason": "The shape satisfies the 64-unit floor and covers all ten functions, but committed evidence contains no executed alternative partition and no completed or independently reviewed outcomes. Adequacy is evidenced; optimality is not.",
+      "statement": "Seventy-four units in ten fixed cohorts is the right partition for Wave A.",
+      "test": {
+        "method": "Count units by function and cohort and search the committed ledger for outcome evidence that compares this partition with another.",
+        "observations": {
+          "cohort_unit_counts": {
+            "a1": 8,
+            "a10": 4,
+            "a2": 12,
+            "a3": 8,
+            "a4": 8,
+            "a5": 12,
+            "a6": 6,
+            "a7": 6,
+            "a8": 6,
+            "a9": 4
+          },
+          "completed_or_reviewed_outcomes": 0,
+          "declared_vs_minimum": [
+            74,
+            64
+          ],
+          "function_unit_counts": {
+            "F1": 16,
+            "F10": 1,
+            "F2": 2,
+            "F3": 12,
+            "F4": 4,
+            "F5": 11,
+            "F6": 3,
+            "F7": 3,
+            "F8": 16,
+            "F9": 6
+          }
+        }
+      },
+      "verdict": "NOT_YET_SUPPORTED"
+    },
+    {
+      "assumption_id": "A-SINGLE-INTEGRATOR",
+      "load_bearing_because": "Changing writer cardinality could trade custody safety for speed.",
+      "proposal": {
+        "applied_to_active_wave": false,
+        "binding_state": "PROPOSAL_ONLY",
+        "decision_changed": [],
+        "founder_interlock": "NOT_INVOKED",
+        "proposal": "Retain a singleton authority for final promotion while simulating sharded verification and content-addressed fan-in as throughput alternatives.",
+        "proposal_id": "P-INTEGRATION-TOPOLOGY-01"
+      },
+      "reason": "The committed mechanism uses one controller as a safety boundary around shared mutable state. No PARENT_INGESTED event exists, so the claim that it is already a measured throughput ceiling is unsupported.",
+      "statement": "The single integration controller should be treated primarily as a throughput ceiling.",
+      "test": {
+        "method": "Inspect committed ownership and control-plane code for the controller's enforced responsibility, then inspect the ledger for measured integration throughput.",
+        "observations": {
+          "control_plane_declares_single_shared_writer": true,
+          "controller_shared_prefix_count": 17,
+          "measured_result_ingestions": 0,
+          "subordinate_prefix_collisions": []
+        }
+      },
+      "verdict": "UNDERMINED"
+    },
+    {
+      "assumption_id": "A-GIT-SINK",
+      "load_bearing_because": "Provider-loss recovery and immutable read-back depend on the selected sink.",
+      "proposal": {
+        "applied_to_active_wave": false,
+        "binding_state": "PROPOSAL_ONLY",
+        "decision_changed": [],
+        "founder_interlock": "NOT_INVOKED",
+        "proposal": "Measure git read-back, callback-loss recovery and batching against an in-memory message-only baseline without changing the active durable sink.",
+        "proposal_id": "P-DURABLE-SINK-01"
+      },
+      "reason": "Git is the commissioned sink and the emitter encodes immutable commit locators, but this committed ledger snapshot has no result commit or ingestion. Compliance is implemented; recovery and throughput superiority are not yet observed.",
+      "statement": "Git remote custody is empirically the right durable result sink for this workload.",
+      "test": {
+        "method": "Check committed code for git-backed result locators and count durable result events in the committed ledger.",
+        "observations": {
+          "parent_ingested_events": 0,
+          "result_committed_events": 0,
+          "result_emitter_present": true,
+          "result_emitter_sha256": "35d330d3293e91ee3f50bba79f6ac10067d2733dc33692c290bb93075fe08e89"
+        }
+      },
+      "verdict": "NOT_YET_SUPPORTED"
+    },
+    {
+      "assumption_id": "A-HASHED-JSONL",
+      "load_bearing_because": "Every append, projection and recovery scan depends on the ledger's integrity and access cost.",
+      "proposal": {
+        "applied_to_active_wave": false,
+        "binding_state": "PROPOSAL_ONLY",
+        "decision_changed": [],
+        "founder_interlock": "NOT_INVOKED",
+        "proposal": "Benchmark checkpointed chain segments and cohort shards while preserving an immutable global head and the current JSONL as the active source of truth.",
+        "proposal_id": "P-LEDGER-SUBSTRATE-01"
+      },
+      "reason": "The 148-row chain is valid, which supports integrity. The implementation re-reads and re-hashes the full history on each append, implying quadratic cumulative verification work; no substrate comparison establishes that this remains the right scale choice.",
+      "statement": "One hash-chained JSONL file is the right ledger substrate at Wave A scale.",
+      "test": {
+        "method": "Independently verify every committed row and inspect append_event for full-history verification before each append.",
+        "observations": {
+          "append_verifies_full_history": true,
+          "chain_valid": true,
+          "historical_prior_row_verifications_implied": 10878,
+          "next_append_rows_reverified": 148,
+          "rows_verified": 148
+        }
+      },
+      "verdict": "NOT_YET_SUPPORTED"
+    },
+    {
+      "assumption_id": "A-CRITERIA-BEHAVIOUR",
+      "load_bearing_because": "Blind review and successor claims rely on the freeze being behavioural, not ceremonial.",
+      "proposal": {
+        "applied_to_active_wave": false,
+        "binding_state": "PROPOSAL_ONLY",
+        "decision_changed": [],
+        "founder_interlock": "NOT_INVOKED",
+        "proposal": "Keep freeze ordering as a safety control, but reserve any behavioural-effect claim for the registered matched comparisons and independent dispositions.",
+        "proposal_id": "P-CRITERIA-BEHAVIOUR-01"
+      },
+      "reason": "The wave preregisters tests of criteria freezing, but there are no ACCEPTED or REJECTED events and no matched behavioural outcome in the committed snapshot.",
+      "statement": "Freezing acceptance criteria changes reviewer behaviour and reduces escaped defects.",
+      "test": {
+        "method": "Identify preregistration units and count committed terminal review outcomes in the same ledger snapshot.",
+        "observations": {
+          "accepted_events": 0,
+          "criteria_related_units": [
+            "a10-u01",
+            "a10-u04",
+            "a4-u02",
+            "a5-u05",
+            "a6-u01",
+            "a6-u06"
+          ],
+          "rejected_events": 0
+        }
+      },
+      "verdict": "NOT_YET_SUPPORTED"
+    },
+    {
+      "assumption_id": "A-MODEL-MATCH",
+      "load_bearing_because": "Allocation determines heterogeneous cognition, review independence and claimed strongest-model use.",
+      "proposal": {
+        "applied_to_active_wave": false,
+        "binding_state": "PROPOSAL_ONLY",
+        "decision_changed": [],
+        "founder_interlock": "NOT_INVOKED",
+        "proposal": "Retain exact current assignments for continuity and use per-model dispositions plus matched evaluations before claiming work-class fit or changing allocation.",
+        "proposal_id": "P-MODEL-ALLOCATION-01"
+      },
+      "reason": "Every allocated slug is observed as exposed and exact slugs are frozen, but role fit is asserted rather than measured: no accepted result, defect attribution or matched model comparison exists in this snapshot.",
+      "statement": "The model allocation is well matched to each work class.",
+      "test": {
+        "method": "Join exact dispatched model slugs to observed exposure and search committed outcomes for per-model acceptance or defect evidence.",
+        "observations": {
+          "all_allocated_models_exposed": true,
+          "allocated_models": {
+            "claude-opus-5-thinking-high": 22,
+            "claude-sonnet-5-thinking-high": 6,
+            "claude-sonnet-5-thinking-xhigh": 16,
+            "gpt-5.6-luna-high": 6,
+            "gpt-5.6-sol-xhigh": 24
+          },
+          "not_supported_families": [
+            "gemini-3.1-pro",
+            "composer-2.5"
+          ],
+          "terminal_model_outcomes": 0
+        }
+      },
+      "verdict": "NOT_YET_SUPPORTED"
+    },
+    {
+      "assumption_id": "A-SOURCE-CAPSULE-CLOSURE",
+      "load_bearing_because": "Acceptance hashes are only meaningful if every source named by the dispatch still has the frozen content.",
+      "proposal": {
+        "applied_to_active_wave": false,
+        "binding_state": "PROPOSAL_ONLY",
+        "decision_changed": [],
+        "founder_interlock": "NOT_INVOKED",
+        "proposal": "Add a read-only source-capsule verifier that reports CURRENT, DRIFTED and MISSING before material execution; do not rewrite immutable dispatch records.",
+        "proposal_id": "P-SOURCE-CAPSULE-01"
+      },
+      "reason": "The immutable dispatch record remains unchanged, but path-ownership.json changed after dispatch. The current emitter verifies the manifest reference, not source-byte closure, so a valid result can describe work executed against drifted control input.",
+      "statement": "Referencing an immutable dispatch-manifest hash is sufficient to ensure workers execute the frozen source bytes.",
+      "test": {
+        "method": "Re-hash every source path in immutable dispatch a9-u01 and compare it with the hash frozen before dispatch.",
+        "observations": {
+          "checked_paths": 12,
+          "drift": [
+            {
+              "expected_sha256": "73f1fb811f18f8dc7c55cb99c82478f2899760f41003141257675ff8fabfa9a7",
+              "observed_sha256": "27deb4602ac8ca39084b7f8e30210fbb67553207ee0fb00e526f5981b81aab2b",
+              "path": "workstreams/po03/control/path-ownership.json",
+              "state": "DRIFTED"
+            }
+          ],
+          "drift_count": 1
+        }
+      },
+      "verdict": "UNDERMINED"
+    },
+    {
+      "assumption_id": "A-DISJOINT-WRITER-PREFIXES",
+      "load_bearing_because": "Parallel writers are safe only if their accepted outputs cannot contend for the same path.",
+      "proposal": null,
+      "reason": "No subordinate prefix equals or contains another subordinate's prefix in the committed ownership register. This upholds structural collision isolation, not end-to-end ingestion success.",
+      "statement": "Disjoint subordinate ownership prefixes remove direct worker-to-worker path collisions.",
+      "test": {
+        "method": "Compare every subordinate owned prefix against every other subordinate prefix for equality or nesting.",
+        "observations": {
+          "prefix_collisions": [],
+          "worker_count": 10
+        }
+      },
+      "verdict": "UPHELD"
+    }
+  ],
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "commission_revision": "v002",
+  "decision_changed": [],
+  "evidence": [
+    {
+      "bytes": 63268,
+      "path": "workstreams/po03/control/wave-a-spec.json",
+      "sha256": "3652f17f4469c7f6f299f12bc4bca204a9083028e412876923cbf541fc01a32d"
+    },
+    {
+      "bytes": 6677,
+      "path": "workstreams/po03/control/path-ownership.json",
+      "sha256": "27deb4602ac8ca39084b7f8e30210fbb67553207ee0fb00e526f5981b81aab2b"
+    },
+    {
+      "bytes": 5804,
+      "path": "workstreams/po03/control/model-capability-register.json",
+      "sha256": "2db828f503f76d6b3bd6c34479ed457b056cdfdea6834b814b6ccb700eee2db0"
+    },
+    {
+      "bytes": 83375,
+      "path": "workstreams/po03/control/events/ledger.jsonl",
+      "sha256": "447dd9542a2f53a769783060230cbd5f62aeeb1e36719148bfe92bb50656b8cd"
+    },
+    {
+      "bytes": 29552,
+      "path": "workstreams/po03/tools/control_plane.py",
+      "sha256": "9c3d3c95a7bd333c8e2e9f19c2095a9cfe7520ae5f1adafd71b4199b135f84c8"
+    },
+    {
+      "bytes": 5776,
+      "path": "workstreams/po03/tools/make_result.py",
+      "sha256": "35d330d3293e91ee3f50bba79f6ac10067d2733dc33692c290bb93075fe08e89"
+    },
+    {
+      "bytes": 2810,
+      "path": "workstreams/po03/control/dispatch/a9-u01.json",
+      "sha256": "b7adf5b208d4807136f505b5432d80306954c80bbfdb009721e11aea93c4a519"
+    }
+  ],
+  "evidence_policy": "Only bytes in the current committed baseline are treated as evidence; absence of a completed outcome is NOT_YET rather than inferred success.",
+  "observations": {
+    "cohort_count": 10,
+    "cohort_unit_counts": {
+      "a1": 8,
+      "a10": 4,
+      "a2": 12,
+      "a3": 8,
+      "a4": 8,
+      "a5": 12,
+      "a6": 6,
+      "a7": 6,
+      "a8": 6,
+      "a9": 4
+    },
+    "declared_units": 74,
+    "dispatch_source_drift": [
+      {
+        "expected_sha256": "73f1fb811f18f8dc7c55cb99c82478f2899760f41003141257675ff8fabfa9a7",
+        "observed_sha256": "27deb4602ac8ca39084b7f8e30210fbb67553207ee0fb00e526f5981b81aab2b",
+        "path": "workstreams/po03/control/path-ownership.json",
+        "state": "DRIFTED"
+      }
+    ],
+    "function_unit_counts": {
+      "F1": 16,
+      "F10": 1,
+      "F2": 2,
+      "F3": 12,
+      "F4": 4,
+      "F5": 11,
+      "F6": 3,
+      "F7": 3,
+      "F8": 16,
+      "F9": 6
+    },
+    "ledger_chain_errors": [],
+    "ledger_chain_valid": true,
+    "ledger_event_counts": {
+      "CREATED": 74,
+      "LEASED": 74
+    },
+    "ledger_rows": 148,
+    "minimum_required_units": 64,
+    "model_unit_counts": {
+      "claude-opus-5-thinking-high": 22,
+      "claude-sonnet-5-thinking-high": 6,
+      "claude-sonnet-5-thinking-xhigh": 16,
+      "gpt-5.6-luna-high": 6,
+      "gpt-5.6-sol-xhigh": 24
+    },
+    "result_custody_events": 0,
+    "terminal_review_events": 0,
+    "worker_prefix_collisions": []
+  },
+  "strategy_restarted": false,
+  "summary": {
+    "not_yet_supported": 5,
+    "proposals_only": 7,
+    "undermined": 2,
+    "upheld": 1
+  },
+  "unit_id": "a9-u01"
+}

@@ -1,0 +1,51 @@
+{
+  "unit_id": "a6-u02",
+  "case_set": "workstreams/po03/review/luna/hidden-cases/cases.json",
+  "case_set_sha256_at_authoring": "52ac6507f66086ff339c3659b681986f1337cea08411d099493b14b65c3d90ef",
+  "producer_branches_observed": [],
+  "producer_cases": {
+    "status": "NOT_YET",
+    "count": null,
+    "passed": null,
+    "failed": null,
+    "rate": null,
+    "boundary": "No reviewed producer branch or producer-authored test set was published when this score was recorded."
+  },
+  "hidden_cases": {
+    "status": "EXECUTED",
+    "count": 6,
+    "passed": 6,
+    "failed": 0,
+    "rate": "6/6 (100%)",
+    "scope": [
+      "H01-provider-completed-without-commit",
+      "H02-noncoordinator-completion",
+      "H03-terminal-without-readback",
+      "H04-accounting-drift",
+      "H05-duplicate-artifact-id",
+      "H06-self-acceptance"
+    ],
+    "deferred_cases": [
+      {
+        "id": "H07-duplicate-callback",
+        "reason": "requires a producer custody engine or outbox implementation"
+      },
+      {
+        "id": "H08-stale-fence-after-transfer",
+        "reason": "requires a producer lease/fence implementation"
+      },
+      {
+        "id": "H09-corrupt-readback",
+        "reason": "requires a committed remote artifact to attack"
+      },
+      {
+        "id": "H10-parent-restart",
+        "reason": "requires a producer ingestion/recovery implementation"
+      }
+    ]
+  },
+  "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a6_hidden_cases.py'",
+  "observed_output": "Ran 7 tests in 0.000s; OK",
+  "result": "NOT_YET",
+  "limitation": "The six executed cases exercise the seeded result validator. They do not establish custody-engine behavior or permit a hidden-versus-producer rate comparison."
+}

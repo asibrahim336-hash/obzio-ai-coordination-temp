@@ -1,0 +1,76 @@
+{
+  "evidence_id": "EV-PO03-SNAPSHOT-COUPLING-20260822-v001",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "commission_revision": "v002",
+  "generated_at": "2026-08-22T07:36:00Z",
+  "decision_changed": [],
+  "found_by": "coordinator, when merging the four returned cohorts into the integration branch and running the combined suite",
+  "defect_class": "FALSE_RED_GENERATOR",
+  "defect": "Two cohorts wrote tests asserting that a recorded snapshot of live, mutating shared state equals a fresh recomputation of that state. Those tests pass at the moment they are written and are then guaranteed to fail as the wave progresses, because the state they measure keeps changing. They are the mirror image of a false green: a false red, which is just as corrosive to an acceptance gate because it trains a reader to discount failures.",
+  "why_it_matters": "The commission requires that a fresh checkout reproduce the complete suite and that escaped-defect and false-green rates be measured. A suite containing snapshot-equality assertions over mutating shared state cannot serve as a stable acceptance gate, and it cannot distinguish a real regression from ordinary wave progress.",
+  "root_cause": "The same snapshot-versus-live coupling that cohort a9 itself discovered in the dispatch source capsule. a9 identified the defect in the coordinator's pinning primitive and then reproduced it in its own test suite. The lesson generalises: any assertion over shared mutating state must either pin the state by immutable commit or assert an invariant rather than a value.",
+  "observed_failures": [
+    {
+      "test": "test_a6_readback_audit.ReadbackAuditTests.test_missing_result_is_not_invented",
+      "owner": "po03-worker-a6",
+      "assertion": "expected status UNAVAILABLE, observed AUDITED",
+      "cause": "a6 recorded a unit's result as UNAVAILABLE because the producing branch was not yet pushed at its scoring time. That result has since been pushed, so the audit correctly now reports AUDITED. The test asserts the snapshot value, so it fails precisely because reality improved.",
+      "is_a_real_regression": false,
+      "underlying_property_worth_asserting": "that a missing result is never invented, which is the actual intent and is invariant"
+    },
+    {
+      "test": "test_a9_source_capsule.SourceCapsuleTests.test_report_reproduces_from_immutable_dispatches",
+      "owner": "po03-worker-a9",
+      "assertion": "recorded report equals capsule.build_report(ROOT)",
+      "cause": "a9 recorded aggregate_state DRIFTED with a specific drift set. Additional dispatches and further coordinator repairs have since changed that set, so the recomputation no longer equals the recorded report.",
+      "is_a_real_regression": false,
+      "underlying_property_worth_asserting": "that drift is detected and classified, and that the classifier is deterministic for a fixed input capsule"
+    },
+    {
+      "test": "test_a9_challenge.ZeroBaseChallengeTests.test_artifact_is_reproducible_from_current_committed_evidence",
+      "owner": "po03-worker-a9",
+      "cause": "same class: asserts a recorded challenge artifact reproduces against current committed evidence, which has moved.",
+      "is_a_real_regression": false
+    },
+    {
+      "test": "test_a9_semantic_check.SemanticCheckTests.test_results_reproduce_from_current_pointer_chain",
+      "owner": "po03-worker-a9",
+      "cause": "same class: asserts recorded semantic-check results reproduce against the current pointer chain and unit population, which has grown from 74 to 87 registered units.",
+      "is_a_real_regression": false
+    },
+    {
+      "test": "test_a9_semantic_check.SemanticCheckTests.test_check_requires_no_outside_allowlist_write",
+      "owner": "po03-worker-a9",
+      "cause": "same class: depends on the recorded run snapshot rather than on the invariant.",
+      "is_a_real_regression": false
+    }
+  ],
+  "integration_branch_suite_state": {
+    "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py'",
+    "result": "FAILED (failures=5, expected failures=8) out of 137 tests",
+    "honest_reading": "The integration branch does not currently pass its own suite. The five failures are the snapshot-coupling class described here and none is a real regression. The eight expected failures are cohort a2's frozen reproductions of open control-plane defects and are supposed to fail until cohort a11 lands its remediation. Reporting a green suite at this checkpoint would be false.",
+    "state": "FAIL"
+  },
+  "remediation": {
+    "routing": "The failing tests are owned by cohorts a6 and a9. The coordinator does not edit another cohort's paths, so both cohorts were resumed with the specific defect and the required fix rather than having their tests rewritten across an ownership boundary.",
+    "required_fix": "Replace snapshot-equality assertions over mutating shared state with either an invariant assertion, or an assertion pinned to the immutable commit at which the snapshot was computed, so the test remains meaningful and stays true as the wave progresses.",
+    "state": "ROUTED_TO_OWNERS"
+  },
+  "coordinator_defect_found_in_the_same_pass": {
+    "defect": "Tracked generated bytecode in the repository: four .pyc files under workstreams/po03/tests/__pycache__ and workstreams/po03/tools/__pycache__.",
+    "originally_reported_by": "po03-worker-a6, unit a6-u04, recorded as ESCAPE_FOUND against the clean-clone claim and attributed to cohort a3",
+    "true_origin": "The coordinator. Introduced by commits 04827c3 and 6f5e386, where a broad `git add -A` swept up bytecode generated by running the test suite. Cohort a3 branched from the coordinator and inherited the files, which is why the reviewer attributed them to a3.",
+    "significance": "The reviewer's finding was correct and its attribution was wrong. The escape it identified against the clean-clone and byte-determinism claims was real: committed bytecode makes a tree non-reproducible and can shadow a source change.",
+    "repair": "Removed all four files from the index and added workstreams/po03/.gitignore covering __pycache__, *.pyc and *.pyo so the sweep cannot recur inside the allowlist.",
+    "verified": "git ls-files reports zero tracked bytecode.",
+    "disposition": "RETAIN",
+    "lesson": "A broad `git add -A` is unsafe for a writer that also runs the code it commits. This is recorded as a lesson for the successor-generation comparison, not only as a fix."
+  },
+  "merge_integrity_observation": {
+    "claim": "Disjoint per-owner subtrees prevent write collisions between concurrent subordinates.",
+    "test": "Four independently developed cohort branches (a2, a4, a6, a9) were merged into the integration branch in sequence.",
+    "result": "All four merged with zero conflicts.",
+    "interpretation": "This is direct evidence for the ownership design and it corroborates cohort a9's upheld assumption that disjoint ownership prefixes structurally prevent worker-path collisions. A conflict would itself have been the signal of an ownership violation, so the clean merge is the positive result rather than merely an absence of trouble.",
+    "path_collisions": 0
+  }
+}

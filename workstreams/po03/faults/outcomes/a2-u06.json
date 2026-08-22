@@ -1,0 +1,144 @@
+{
+  "acceptance_met": false,
+  "automatic_transfers": 0,
+  "command": "python3 -I workstreams/po03/faults/inject_stale_lease.py --output workstreams/po03/faults/outcomes/a2-u06.json",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "complete_hash_coverage": true,
+  "control_plane_sha256": "9c3d3c95a7bd333c8e2e9f19c2095a9cfe7520ae5f1adafd71b4199b135f84c8",
+  "decision_changed": [],
+  "duplicate_external_effect_count": 0,
+  "execution": {
+    "exit_code": 0,
+    "stdout": "INJECTION_RECORDED a2-u06"
+  },
+  "false_completion_count": 10,
+  "fault_class": "stale lease",
+  "findings": [
+    "scan_recovery reports expiry but does not append LEASE_EXPIRED or grant a replacement lease.",
+    "ingest_result rejects only fence tokens lower than current; an unissued higher token is accepted."
+  ],
+  "founder_relay_count": 0,
+  "injection_count": 10,
+  "lifecycle_transitions": [
+    "CREATED",
+    "LEASED",
+    "RUNNING",
+    "CHECKPOINTED",
+    "RESULT_STAGING",
+    "RESULT_STAGED",
+    "RESULT_VERIFIED",
+    "RESULT_COMMITTED",
+    "PARENT_INGESTED",
+    "COMPLETED"
+  ],
+  "limitations": [],
+  "measurements": [
+    {
+      "automatic_lease_expired_event": false,
+      "false_completion_count": 1,
+      "recovery_time_ns": 3323046,
+      "scanner_reported_expired": false,
+      "stale_fence_rejected": true,
+      "transition": "CREATED",
+      "unissued_future_fence_accepted": true
+    },
+    {
+      "automatic_lease_expired_event": false,
+      "false_completion_count": 1,
+      "recovery_time_ns": 12858891,
+      "scanner_reported_expired": true,
+      "stale_fence_rejected": true,
+      "transition": "LEASED",
+      "unissued_future_fence_accepted": true
+    },
+    {
+      "automatic_lease_expired_event": false,
+      "false_completion_count": 1,
+      "recovery_time_ns": 5803399,
+      "scanner_reported_expired": true,
+      "stale_fence_rejected": true,
+      "transition": "RUNNING",
+      "unissued_future_fence_accepted": true
+    },
+    {
+      "automatic_lease_expired_event": false,
+      "false_completion_count": 1,
+      "recovery_time_ns": 3261141,
+      "scanner_reported_expired": true,
+      "stale_fence_rejected": true,
+      "transition": "CHECKPOINTED",
+      "unissued_future_fence_accepted": true
+    },
+    {
+      "automatic_lease_expired_event": false,
+      "false_completion_count": 1,
+      "recovery_time_ns": 3186402,
+      "scanner_reported_expired": true,
+      "stale_fence_rejected": true,
+      "transition": "RESULT_STAGING",
+      "unissued_future_fence_accepted": true
+    },
+    {
+      "automatic_lease_expired_event": false,
+      "false_completion_count": 1,
+      "recovery_time_ns": 2979076,
+      "scanner_reported_expired": true,
+      "stale_fence_rejected": true,
+      "transition": "RESULT_STAGED",
+      "unissued_future_fence_accepted": true
+    },
+    {
+      "automatic_lease_expired_event": false,
+      "false_completion_count": 1,
+      "recovery_time_ns": 3788135,
+      "scanner_reported_expired": true,
+      "stale_fence_rejected": true,
+      "transition": "RESULT_VERIFIED",
+      "unissued_future_fence_accepted": true
+    },
+    {
+      "automatic_lease_expired_event": false,
+      "false_completion_count": 1,
+      "recovery_time_ns": 4927656,
+      "scanner_reported_expired": false,
+      "stale_fence_rejected": true,
+      "transition": "RESULT_COMMITTED",
+      "unissued_future_fence_accepted": true
+    },
+    {
+      "automatic_lease_expired_event": false,
+      "false_completion_count": 1,
+      "recovery_time_ns": 4641616,
+      "scanner_reported_expired": false,
+      "stale_fence_rejected": true,
+      "transition": "PARENT_INGESTED",
+      "unissued_future_fence_accepted": true
+    },
+    {
+      "automatic_lease_expired_event": false,
+      "false_completion_count": 1,
+      "recovery_time_ns": 3247660,
+      "scanner_reported_expired": false,
+      "stale_fence_rejected": true,
+      "transition": "COMPLETED",
+      "unissued_future_fence_accepted": true
+    }
+  ],
+  "protocol_version": "OBZIO-A2-FAULT-INJECTION-v1",
+  "recovery_time": {
+    "maximum": 12858891,
+    "median": 3555590,
+    "minimum": 2979076,
+    "total": 48017022,
+    "unit": "nanoseconds",
+    "wall_total": 96147491
+  },
+  "sandbox_root": "workstreams/po03/control/units/a2/runtime-sandboxes/ (ephemeral and removed)",
+  "stale_commits": {
+    "injected": 10,
+    "rejected": 10
+  },
+  "status": "FAIL",
+  "unissued_future_fences_accepted": 10,
+  "unit_id": "a2-u06"
+}

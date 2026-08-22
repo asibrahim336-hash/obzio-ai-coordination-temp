@@ -31,18 +31,26 @@
         "workstreams/po03/control/model-capability-register.json",
         "workstreams/po03/control/wave-a-spec.json",
         ".github/workflows/po03-contracts.yml",
-        "workstreams/po03/tools/control_plane.py",
-        "workstreams/po03/tools/make_result.py",
-        "workstreams/po03/tools/ingest_wave.py",
-        "workstreams/po03/tests/test_control_plane.py",
         "workstreams/po03/evidence/scale-ladder.json",
         "workstreams/po03/evidence/model-allocation-and-exceptions.json",
         "workstreams/po03/evidence/compounding-results.json",
         "workstreams/po03/MANIFEST.sha256",
         "receipts/po03/2026-08-22/amendment-activation.json",
         "receipts/po03/2026-08-22/producer-execution.json",
-        "receipts/po03/2026-08-22/independent-acceptance-request.json"
-      ]
+        "receipts/po03/2026-08-22/independent-acceptance-request.json",
+        "workstreams/po03/evidence/source-capsule-drift.json",
+        "workstreams/po03/control/wave-a-capsule-spec.json",
+        "workstreams/po03/control/wave-a-remediation-spec.json",
+        "workstreams/po03/.gitignore",
+        "workstreams/po03/evidence/snapshot-coupling.json"
+      ],
+      "stood_off_paths": [
+        "workstreams/po03/tools/control_plane.py",
+        "workstreams/po03/tools/make_result.py",
+        "workstreams/po03/tools/ingest_wave.py",
+        "workstreams/po03/tests/test_control_plane.py"
+      ],
+      "stand_off_reason": "Transferred to po03-worker-a11 for the custody remediation cohort. The single-writer invariant is what prevents collision, not the identity of the writer; the controller resumes ownership on ingestion."
     },
     "po03-worker-a1": {
       "role": "transactional custody engine",
@@ -153,6 +161,33 @@
         "workstreams/po03/review/sonnet/",
         "workstreams/po03/tests/test_a10_"
       ]
+    },
+    "po03-worker-a11": {
+      "role": "custody remediation compiled from a2 and a6 findings",
+      "model": "claude-opus-5-thinking-high",
+      "branch": "cursor/po03-a11-custody-remediation-ed20",
+      "owned_prefixes": [
+        "workstreams/po03/tools/control_plane.py",
+        "workstreams/po03/tools/make_result.py",
+        "workstreams/po03/tools/ingest_wave.py",
+        "workstreams/po03/tests/test_control_plane.py",
+        "workstreams/po03/control/units/a11/",
+        "workstreams/po03/tests/test_a11_"
+      ],
+      "ownership_transferred_from": "coordinator"
+    },
+    "po03-worker-a12": {
+      "role": "source-capsule closure and seeded-validator strengthening, compiled from a9 findings",
+      "model": "gpt-5.6-sol-xhigh",
+      "branch": "cursor/po03-a12-capsule-closure-ed20",
+      "owned_prefixes": [
+        "workstreams/po03/tools/validate_contracts.py",
+        "workstreams/po03/tests/test_validate_contracts.py",
+        "workstreams/po03/capsule/",
+        "workstreams/po03/control/units/a12/",
+        "workstreams/po03/tests/test_a12_"
+      ],
+      "note": "Seeded controls: strengthen, never weaken. Must not touch control_plane.py, owned by po03-worker-a11."
     }
   },
   "cross_family_review_matrix": {
@@ -162,13 +197,15 @@
       "po03-worker-a3",
       "po03-worker-a5",
       "po03-worker-a7",
-      "po03-worker-a8"
+      "po03-worker-a8",
+      "po03-worker-a12"
     ],
     "po03-worker-a10": [
       "po03-worker-a2",
       "po03-worker-a4",
       "po03-worker-a9",
-      "coordinator"
+      "coordinator",
+      "po03-worker-a11"
     ]
   }
 }

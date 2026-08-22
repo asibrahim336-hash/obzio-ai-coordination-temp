@@ -1,0 +1,3249 @@
+{
+  "acceptance_met": false,
+  "command": "python3 -I workstreams/po03/faults/inject_concurrent_duplicate.py --output workstreams/po03/faults/outcomes/a2-u07.json",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "complete_hash_coverage": true,
+  "control_plane_sha256": "9c3d3c95a7bd333c8e2e9f19c2095a9cfe7520ae5f1adafd71b4199b135f84c8",
+  "decision_changed": [],
+  "duplicate_external_effect_count": 200,
+  "execution": {
+    "exit_code": 0,
+    "stdout": "INJECTION_RECORDED a2-u07"
+  },
+  "false_completion_count": 0,
+  "fault_class": "duplicate callback under concurrency",
+  "findings": [
+    "append_event performs read/verify/append without a lock or compare-and-swap; two callbacks can append the same sequence and predecessor hash."
+  ],
+  "founder_relay_count": 0,
+  "injection_count": 200,
+  "interleavings": 200,
+  "lifecycle_transitions": [
+    "CREATED",
+    "LEASED",
+    "RUNNING",
+    "CHECKPOINTED",
+    "RESULT_STAGING",
+    "RESULT_STAGED",
+    "RESULT_VERIFIED",
+    "RESULT_COMMITTED",
+    "PARENT_INGESTED",
+    "COMPLETED"
+  ],
+  "limitations": [],
+  "measurements": [
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 5791773,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 1
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3592895,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 2
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3857915,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 3
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3439209,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 4
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4206392,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 5
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3348050,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 6
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3443478,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 7
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 6370240,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 8
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4009591,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 9
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4541143,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 10
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3288677,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 11
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3879605,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 12
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3452053,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 13
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3476163,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 14
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3953935,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 15
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3847274,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 16
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4965369,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 17
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4437919,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 18
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4594934,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 19
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3620447,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 20
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3412047,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 21
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3482897,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 22
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3514525,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 23
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3852233,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 24
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4289865,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 25
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3672701,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 26
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4492662,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 27
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3969825,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 28
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 5103622,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 29
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3363820,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 30
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2494246,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 31
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3768922,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 32
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4321909,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 33
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3010547,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 34
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2672784,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 35
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3205470,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 36
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3731716,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 37
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3546440,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 38
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3084887,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 39
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3518811,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 40
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3561531,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 41
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3615531,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 42
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2926075,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 43
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2989590,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 44
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4724925,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 45
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3352950,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 46
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3067322,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 47
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3366778,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 48
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3494834,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 49
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3950198,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 50
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3011537,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 51
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3170162,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 52
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3170097,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 53
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2770656,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 54
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3848465,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 55
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3427960,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 56
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3349880,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 57
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3623151,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 58
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3420049,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 59
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3366865,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 60
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3605090,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 61
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2810484,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 62
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3060819,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 63
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3229187,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 64
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3539600,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 65
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3654100,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 66
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3196293,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 67
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3367869,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 68
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3460362,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 69
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3180287,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 70
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2864852,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 71
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3330962,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 72
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2470613,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 73
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2880514,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 74
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2596347,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 75
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3479566,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 76
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3359156,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 77
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2792875,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 78
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3335880,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 79
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3714029,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 80
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2996934,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 81
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3215650,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 82
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2980648,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 83
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2915343,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 84
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2914581,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 85
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3312076,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 86
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3436539,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 87
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4077691,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 88
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3555168,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 89
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3815495,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 90
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2817255,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 91
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2911947,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 92
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3033766,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 93
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2594468,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 94
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3015722,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 95
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3100092,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 96
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4229434,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 97
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3405195,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 98
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4028414,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 99
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3781930,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 100
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2901798,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 101
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2890114,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 102
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2630127,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 103
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3006268,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 104
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3167697,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 105
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2705877,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 106
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2951078,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 107
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3205329,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 108
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3520758,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 109
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2891283,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 110
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2584187,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 111
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3265020,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 112
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3115844,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 113
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3100482,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 114
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2824626,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 115
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2947320,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 116
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3327847,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 117
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2872389,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 118
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4763275,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 119
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3312428,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 120
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2693550,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 121
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2909788,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 122
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3300069,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 123
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2909254,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 124
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3273868,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 125
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3098141,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 126
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3157890,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 127
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3711256,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 128
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3662154,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 129
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3630764,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 130
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2790494,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 131
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2523221,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 132
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3082104,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 133
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2633630,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 134
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2675364,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 135
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3222238,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 136
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2979293,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 137
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2879128,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 138
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3472871,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 139
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4050316,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 140
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3267575,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 141
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3759640,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 142
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3261402,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 143
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2994172,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 144
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2965537,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 145
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4527345,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 146
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3700432,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 147
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3649395,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 148
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3913438,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 149
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4479030,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 150
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2743003,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 151
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2825096,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 152
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2888908,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 153
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2873611,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 154
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3078700,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 155
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3092749,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 156
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3649812,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 157
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3027263,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 158
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3101513,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 159
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3251144,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 160
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2773713,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 161
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3218755,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 162
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3160344,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 163
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3931320,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 164
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2978376,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 165
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4080620,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 166
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3039900,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 167
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3581111,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 168
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3221860,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 169
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3404041,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 170
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2897213,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 171
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3021645,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 172
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4600213,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 173
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2729723,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 174
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2933031,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 175
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2926148,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 176
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3064316,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 177
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3794560,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 178
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3415852,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 179
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3277214,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 180
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2426995,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 181
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2564359,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 182
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2833260,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 183
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2672288,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 184
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3384322,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 185
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3688637,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 186
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3190387,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 187
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2983348,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 188
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3538950,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 189
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2896612,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 190
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 2: seq 2 is not monotonic (expected 3)",
+        "seq 2: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2721522,
+      "successful_calls": 2,
+      "transition": "CREATED",
+      "trial": 191
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 3: seq 3 is not monotonic (expected 4)",
+        "seq 3: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2782185,
+      "successful_calls": 2,
+      "transition": "LEASED",
+      "trial": 192
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 4: seq 4 is not monotonic (expected 5)",
+        "seq 4: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3699985,
+      "successful_calls": 2,
+      "transition": "RUNNING",
+      "trial": 193
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 5: seq 5 is not monotonic (expected 6)",
+        "seq 5: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2764755,
+      "successful_calls": 2,
+      "transition": "CHECKPOINTED",
+      "trial": 194
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 6: seq 6 is not monotonic (expected 7)",
+        "seq 6: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2821817,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGING",
+      "trial": 195
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 7: seq 7 is not monotonic (expected 8)",
+        "seq 7: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 2996742,
+      "successful_calls": 2,
+      "transition": "RESULT_STAGED",
+      "trial": 196
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 8: seq 8 is not monotonic (expected 9)",
+        "seq 8: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4203814,
+      "successful_calls": 2,
+      "transition": "RESULT_VERIFIED",
+      "trial": 197
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 9: seq 9 is not monotonic (expected 10)",
+        "seq 9: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3199181,
+      "successful_calls": 2,
+      "transition": "RESULT_COMMITTED",
+      "trial": 198
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 10: seq 10 is not monotonic (expected 11)",
+        "seq 10: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 4610398,
+      "successful_calls": 2,
+      "transition": "PARENT_INGESTED",
+      "trial": 199
+    },
+    {
+      "callbacks": 2,
+      "duplicate_external_effect_count": 1,
+      "errors": [],
+      "false_completion_count": 0,
+      "ledger_chain_errors": [
+        "row 11: seq 11 is not monotonic (expected 12)",
+        "seq 11: prev_sha256 does not chain to the preceding row"
+      ],
+      "ledger_chain_valid": false,
+      "parent_ingested_rows": 2,
+      "recovery_time_ns": 3409247,
+      "successful_calls": 2,
+      "transition": "COMPLETED",
+      "trial": 200
+    }
+  ],
+  "protocol_version": "OBZIO-A2-FAULT-INJECTION-v1",
+  "recovery_time": {
+    "maximum": 6370240,
+    "median": 3270721,
+    "minimum": 2426995,
+    "total": 674030444,
+    "unit": "nanoseconds",
+    "wall_total": 1486361309
+  },
+  "sandbox_root": "workstreams/po03/control/units/a2/runtime-sandboxes/ (ephemeral and removed)",
+  "status": "FAIL",
+  "unit_id": "a2-u07",
+  "violating_interleavings": 200
+}
