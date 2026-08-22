@@ -1,0 +1,123 @@
+=== API ENDPOINT TABLE OF CONTENTS (cloud-agent api) ===
+3:### Public beta
+15:### Migrating from v0?
+19:## Endpoints
+21:### Create An Agent
+27:#### Request Body
+231:### List Agents
+237:#### Query Parameters
+287:### Get An Agent
+293:#### Path Parameters
+330:### Create A Run
+338:#### Path Parameters
+344:#### Request Body
+399:### List Runs
+405:#### Path Parameters
+411:#### Query Parameters
+451:### Get A Run
+457:#### Path Parameters
+467:#### Response Fields
+516:### Stream A Run
+522:#### Event types
+534:#### Tool call payloads
+562:#### Resuming a stream
+568:#### Retention
+606:### Cancel A Run
+614:#### Path Parameters
+638:### Get Agent Usage
+644:#### Path Parameters
+650:#### Query Parameters
+656:#### Response Fields
+727:## Artifacts
+731:### List Artifacts
+739:#### Path Parameters
+765:### Download An Artifact
+771:#### Path Parameters
+777:#### Query Parameters
+798:## Agent Lifecycle
+800:### Archive An Agent
+808:#### Path Parameters
+828:### Unarchive An Agent
+836:#### Path Parameters
+856:### Delete An Agent Permanently
+862:#### Path Parameters
+882:## Worker Tokens
+884:### Create A User-Scoped Worker Token
+894:#### Request Body
+941:## Fleet Management
+949:### List Workers
+955:#### Query Parameters
+973:#### Response Fields
+1028:### Get Fleet Summary
+1053:### Get Worker By ID
+1059:#### Path Parameters
+1071:### List Pools
+1077:#### Query Parameters
+1087:#### Response Fields
+1142:### Register A Pool
+1148:#### Request Body
+1166:#### Response Fields
+1194:### Deregister A Pool
+1200:#### Query Parameters
+
+=== AUTH section ===
+# Cloud Agents API
+
+### Public beta
+
+The Cloud Agents API v1 is in public beta. APIs may change before general
+availability.
+
+The Cloud Agents API lets you programmatically launch and manage cloud agents that work on your repositories.
+
+- The Cloud Agents API accepts both [Basic and Bearer authentication](https://cursor.com/docs/api.md#authentication). Generate a user API key from [Cursor Dashboard → API Keys](https://cursor.com/dashboard/api), or use a [service account API key](https://cursor.com/docs/account/enterprise/service-accounts.md).
+- For details on authentication methods, rate limits, and best practices, see the [API Overview](https://cursor.com/docs/api.md).
+- View the full [OpenAPI specification](/docs-static/cloud-agents-openapi.yaml) for detailed schemas and examples.
+- Webhooks are coming soon. The legacy [v0 API](https://cursor.com/docs/cloud-agent/api/v0.md) still supports them — see [Webhooks](https://cursor.com/docs/cloud-agent/api/webhooks.md).
+
+### Migrating from v0?
+
+This API splits work into a durable agent plus per-prompt runs, replacing the flatter v0 surface. The legacy [v0 reference](https://cursor.com/docs/cloud-agent/api/v0.md) remains available.
+
+## Endpoints
+
+### Create An Agent
+
+/v1/agents
+
+Create a Cloud Agent and immediately enqueue its initial run. The response returns both the durable `agent` and the initial `run`.
+
+#### Request Body
+
+`prompt` object (required)
+
+The task prompt for the agent, including optional images.
+
+`prompt.text` string (required)
+
+The instruction text for the agent.
+
+`prompt.images` array (optional)
+
+Image inputs for the prompt. Each entry must include either `data` (base64-encoded bytes with a required `mimeType`) or `url` (an http or https URL that Cursor fetches). Maximum 5 images, 15 MB each. Supported MIME types: `image/png`, `image/jpeg`, `image/gif`, `image/webp`.
+
+`model` object (optional)
+
+Model selection. Omit this field to use the configured default. When omitted, Cursor resolves your user default model, then your team default model, then a system default.
+
+`model.id` string (required if `model` provided)
+
+An explicit model ID returned by `GET /v1/models` (for example, `claude-4-sonnet-thinking`).
+
+`model.params` array (optional)
+
+Per-model parameters to apply to the run, such as reasoning effort or context window size. Each item has an `id` and `value`. Use only parameters supported by the selected model — call `GET /v1/models` to discover the valid `id`/`params` combinations.
+
+`name` string (optional)
+
+Display name for the agent. Maximum 100 characters. When omitted, Cursor auto-derives a name from the prompt.
+
+`env` object (optional)
+
+Execution environment target. Use a named `cloud` environment, or route to a self-hosted `pool` or `machine`. Mutually exclusive with explicit `repos` when selecting a named Cursor-hosted environment.
+

@@ -1,0 +1,675 @@
+{
+  "register_id": "OE-L1-CURSOR-BASELINE-REGISTER-20260822-v001",
+  "lane_id": "OE-L1-CURSOR-BASELINE",
+  "commission_id": "COM-CUR-ENV-01-20260822-v001",
+  "group_manifest_id": "OE-GROUP-20260822-v001",
+  "parent_fence_token": "86e94d1815d4d491",
+  "immutable_start_sha": "fe0a595206e5986de7eaac6cabc619215a1eb81b",
+  "isolated_branch": "cursor/oe-l1-cursor-baseline-696d",
+  "terminal_state": "READY_TO_COMMIT",
+  "decision_changed": [],
+  "extends_not_repeats": {
+    "prior_register": "workstreams/so02/control-plane/state/RUNTIME-MODEL-CAPABILITY-REGISTER.json",
+    "prior_register_branch": "cursor/so02-cur-orch-qual-01",
+    "prior_qualification": "CUR-ORCH-QUAL-01",
+    "relationship": "This register extends the CUR-01 baseline. It does not re-derive CAP-CURSOR-ORCHESTRATOR-MODEL, CAP-EGRESS, CAP-ENVIRONMENT-BUILD, CAP-MODEL-FAMILY-DIVERSITY-IN-ACCOUNT or the R1/R2 route qualifications, which stand. It adds the repository configuration surface, the hooks surface, the agent metadata service, the durable store, the container runtime, the graphical/browser runtime, the exact GitHub permission boundary and the v1 API surface map, and it materially corrects two prior entries.",
+    "corrections_to_prior_register": [
+      {
+        "prior_capability_id": "CAP-BROWSER-CONTROL",
+        "prior_value": "absent / NOT_SUPPORTED_IN_THIS_RUNTIME",
+        "correction": "The prior record is accurate about the agent-facing tool surface and inaccurate as a statement about the runtime. No browser or computer-control TOOL is exposed to this agent, but the VM contains a working Google Chrome 148.0.7778.96, a live X display :1 (Xtigervnc), Xvfb, and a noVNC bridge on port 26058. Browser operation is reachable from the shell today; only the agent-facing tool binding is missing.",
+        "evidence_label": "DIRECTLY_REPRODUCED",
+        "consequence": "Browser/DOM evidence capture is a configuration question, not a platform limitation. It must not be recorded as NOT_SUPPORTED."
+      },
+      {
+        "prior_capability_id": "CAP-NESTED-AGENT-DISPATCH",
+        "prior_value": "available, deliberately unused",
+        "correction": "Subagents run inside the top-level run's identity. run-info, /v1/meta-data/agent/id, list-cloud-agents and /cursor/stores/self all resolve to the top-level bcId, not to the subagent. A subagent is not separately addressable, listable or attributable at the provider layer.",
+        "evidence_label": "DIRECTLY_REPRODUCED",
+        "consequence": "Lane attribution cannot be delegated to the provider. It must be carried in repository artifacts, or by the subagentStart/subagentStop hooks, or it does not exist."
+      }
+    ]
+  },
+  "evidence_labels": {
+    "DIRECTLY_REPRODUCED": "Executed in this runtime during this lane; command and observed output are in receipts/so02/2026-08-22/oe-l1-cursor-baseline/raw/.",
+    "DOCUMENTED": "Stated by an official Cursor source fetched during this lane; URL recorded. Not executed here.",
+    "HYPOTHESIS": "Untested inference. Not evidence of capability."
+  },
+  "observation_window": {
+    "start_utc": "2026-08-22T20:12:00Z",
+    "end_utc": "2026-08-22T20:30:00Z",
+    "runtime_turn_id": "run-62aeb48c-5df0-4aaf-9b1b-73d20b409abf",
+    "turn_model": "claude-opus-5-thinking-max-fast",
+    "note": "Every DIRECTLY_REPRODUCED record in this register was observed inside this single turn on this VM."
+  },
+
+  "records": [
+    {
+      "capability_id": "CAP-REPO-CURSOR-CONFIG-SURFACE",
+      "domain": "repository_configuration",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "instrument": "find over the working tree excluding .git; ls -laR .cursor; sha256sum",
+      "raw_evidence": ["raw/repo-cursor-surface.txt", "raw/dot-cursor.txt"],
+      "observed": {
+        "dot_cursor_directory": "present, containing exactly one file",
+        "files_present": [".cursor/environment.json"],
+        "environment_json_bytes": 135,
+        "environment_json_sha256": "af09d9f4d242d95e7f8701a817218178346b2ead32cbe085059d28e8fc85b2d6",
+        "environment_json_content": {
+          "name": "Obzio AI Coordination",
+          "install": "python3 --version && python3 -c \"import json, re, pathlib; print('stdlib ok')\""
+        },
+        "agents_md": "present at repository root only; 2128 bytes; no nested AGENTS.md anywhere in the tree",
+        "absent": [
+          ".cursor/rules/ (no project rules at all; no .mdc file exists anywhere in the repository)",
+          ".cursor/hooks.json (no project hooks)",
+          ".cursor/hooks/ (no hook scripts)",
+          ".cursor/skills/ and .agents/skills/ (no repository-local skills)",
+          ".cursor/commands/",
+          ".cursor/mcp.json (no repository MCP configuration)",
+          ".cursorignore",
+          ".cursorindexingignore",
+          ".cursorrules (legacy form)",
+          ".claude/skills/, .codex/skills/"
+        ],
+        "provenance": "The entire .cursor directory entered the repository in one commit, 5db7affe 'chore: add Cloud Agent development environment config'."
+      },
+      "significance": "Of the seven repository-side control surfaces Cursor reads, exactly one is populated, and it is inert (see CAP-ENVIRONMENT-CONFIG-INERT). The estate's governance is carried entirely by a single root AGENTS.md, which is advisory prose with no enforcement path."
+    },
+
+    {
+      "capability_id": "CAP-ENVIRONMENT-CONFIG-INERT",
+      "domain": "cloud_environment",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "instrument": "cursor-cloud environment-info; jsonschema Draft201909Validator against the live published schema; /tmp/cursor/async-install/ inspection; existence test on /tmp/cursor/start-user/",
+      "raw_evidence": ["raw/schema-validation.txt", "raw/dot-cursor.txt"],
+      "observed": {
+        "environment_info_returned": {
+          "environmentPublicId": "69dbfc52-9df5-11f1-a7d1-d6b4613131ce",
+          "environmentVersionPublicId": "69eb84fe-9df5-11f1-a7d1-d6b4613131ce",
+          "source": "Team",
+          "recordedVia": "RUNTIME_FORWARD_FILL",
+          "environmentJsonPath": null,
+          "environmentJson": null,
+          "name": null,
+          "environmentJsonNote": "environment.json was found but contained no recognized configuration fields.",
+          "environmentDeleted": false
+        },
+        "schema_validation_of_repo_file": "VALID against https://cursor.com/schemas/environment.schema.json — both 'name' and 'install' are declared properties of the live schema",
+        "discriminating_observation": "The repository file sets name='Obzio AI Coordination'. The environment record returns name=null. The repository file's fields did not populate the effective environment record.",
+        "install_phase": {
+          "generated_wrapper": "/tmp/cursor/async-install/install-user.sh",
+          "wrapper_body_effect": "echoes a skip message; it does not contain or invoke the repository install command",
+          "log": "Started from stale build bld-20260822-015195f7-955b-445d-8b57-78bc58eec228, skipping install script",
+          "exit_status": 0
+        },
+        "start_phase": "/tmp/cursor/start-user/ does not exist; no start script ran",
+        "terminals_phase": "/home/ubuntu/.cursor/projects/workspace/terminals/ exists and is empty; no terminals were started"
+      },
+      "reproduced_consequence": "Nothing the repository asks for in `install` executed in this pod. There is no `start`, no `terminals`, no `ports`, no pinned `snapshot`, no `repositoryDependencies` and no MCP policy. The pod boots cold with only the base image plus a git checkout.",
+      "causal_mechanism": {
+        "evidence_label": "HYPOTHESIS",
+        "candidates": [
+          "The effective configuration for this run is the DB-managed Team environment record, whose stored environmentJson is empty, and the repository file was not consulted for this run despite the documented precedence order.",
+          "The repository file was consulted for install-command purposes only, and the stale-build boot path skipped the install phase before that command could run."
+        ],
+        "why_not_resolved": "Distinguishing the two requires reading the saved Team environment record or starting a fresh agent from a configuration-change build. Reading the Team record needs dashboard access this lane does not have, and triggering a build is explicitly outside this lane's permitted tool set.",
+        "note": "The consequence above is identical under both candidates and is itself directly reproduced, so no decision depends on resolving the mechanism."
+      },
+      "schema_trap_reproduced": {
+        "finding": "The live schema sets \"unevaluatedProperties\": false. Six fields that Cursor's own bundled env-setup skill lists as 'common environment.json fields' are REJECTED by the live schema.",
+        "rejected_fields": ["image", "chromeExecutablePath", "egressMode", "egressAllowlist", "containerRuntime", "build.dockerfileContents"],
+        "also_rejected": "$schema",
+        "accepted_and_useful": ["name", "user", "install", "start", "terminals", "ports", "repositoryDependencies", "disableAllMcpServers", "mcpServerAllowlist", "snapshot", "agentCanUpdateSnapshot", "build.dockerfile", "build.context"],
+        "significance": "Any proposed environment.json must be validated against the live schema, not against the bundled skill's field table. A single rejected field can invalidate the whole file, which is a plausible way for an environment to end up recorded as having no recognized configuration."
+      }
+    },
+
+    {
+      "capability_id": "CAP-ENVIRONMENT-BUILD-LIFECYCLE",
+      "domain": "cloud_environment",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "instrument": "cursor-cloud list-environment-builds (limit 20); cursor-cloud environment-info build block",
+      "observed": {
+        "builds_returned": 12,
+        "has_more": false,
+        "succeeded": 1,
+        "skipped": 11,
+        "active_build": "bld-20260822-015195f7-955b-445d-8b57-78bc58eec228",
+        "active_build_completed_at_ms": 1787381326371,
+        "all_triggers": "SYSTEM / RECURRING",
+        "manual_or_agent_requested_builds": 0,
+        "owning_team": 4296794,
+        "boot_binding": {"gitSetup": "reuse_then_checkout", "warmFork": "cold", "resolution": "resolved"}
+      },
+      "documented_interpretation": {
+        "evidence_label": "DOCUMENTED",
+        "source": "https://cursor.com/docs/cloud-agent/builds.md",
+        "points": [
+          "A recurring check is Skipped when nothing changed on the default branch of any repository in the environment and no configuration or secret changed. Skipped is the healthy steady state for a quiet default branch.",
+          "install runs during each Build. start runs at the start of each agent run. terminals runs at the start of each agent run.",
+          "Builds preserve disk state only; running processes do not survive the snapshot.",
+          "Default-branch runs start from the commit recorded in the active Build; a 'Update stale builds' setting with a staleness threshold (default 24 hours) governs whether agents pull fresh default-branch code at start."
+        ]
+      },
+      "reproduced_consequence": "Every build in the visible window is SYSTEM/RECURRING and eleven of twelve are SKIPPED, because all substantive work in this estate happens on feature branches and never reaches the default branch. The single SUCCEEDED build is therefore the permanent baseline, and it was already classified stale by the boot path. Configuration committed to a feature branch cannot reach the build baseline through the recurring path at all.",
+      "significance": "warmFork=cold plus an install phase that is skipped means this estate currently pays a cold start on every agent and receives no benefit from the build system. This is the concrete mechanism behind 'cold boot' and it is fixable without any founder action, because `start` and `terminals` run per-agent-run and do not depend on a successful build."
+    },
+
+    {
+      "capability_id": "CAP-AGENT-HOOKS",
+      "domain": "governance_enforcement",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "instrument": "ls -laR $HOME/.cursor; read of ~/.cursor/managed/active-team-hooks/hooks.json; git config --get core.hooksPath; read of the agent-hooks dispatcher",
+      "raw_evidence": ["raw/home-cursor-tree.txt", "raw/store-fs-and-gitconfig.txt"],
+      "observed": {
+        "team_hooks_active": true,
+        "team_hooks_config": "/home/ubuntu/.cursor/managed/active-team-hooks/hooks.json",
+        "team_hooks_registered": ["afterAgentResponse", "afterFileEdit", "afterMCPExecution", "afterShellExecution", "afterTabFileEdit", "beforeMCPExecution", "beforeReadFile", "beforeShellExecution", "beforeSubmitPrompt", "beforeTabFileRead", "postToolUse", "preToolUse", "stop"],
+        "team_hook_scripts": "13 scripts in /home/ubuntu/.cursor/managed/active-team-hooks/hooks/, each 19116 bytes and byte-identical in size, indicating one common dispatcher body",
+        "project_hooks": "ABSENT — there is no .cursor/hooks.json in this repository",
+        "git_hooks_redirected": {
+          "core.hooksPath": "/home/ubuntu/.cursor/agent-hooks/L3dvcmtzcGFjZQ",
+          "note": "L3dvcmtzcGFjZQ is base64 for /workspace",
+          "active_git_hooks": ["pre-commit -> .dispatcher -> pre-commit.cursor", "commit-msg -> .dispatcher -> commit-msg.cursor, commit-msg.cursor.co-author"],
+          "dispatcher_behaviour": "runs the repository's original hook first if .cursor-original-hooks-path names an executable of the same name, then every <hookname>.cursor* script"
+        },
+        "commit_signing": "commit.gpgsign=true with gpg.format=ssh via /home/ubuntu/.cursor/bin/cursor-git-ssh-keygen; commits from this runtime are SSH-signed by the Cursor Agent identity"
+      },
+      "documented_capability": {
+        "evidence_label": "DOCUMENTED",
+        "source": "https://cursor.com/docs/hooks.md",
+        "cloud_agents_run_project_hooks": true,
+        "supported_in_cloud_agents": ["beforeShellExecution", "afterShellExecution", "beforeReadFile", "afterFileEdit", "preToolUse", "postToolUse", "postToolUseFailure", "subagentStart", "subagentStop", "beforeSubmitPrompt", "preCompact", "afterAgentResponse", "afterAgentThought", "stop"],
+        "not_available_in_cloud_agents": ["sessionStart", "sessionEnd", "beforeMCPExecution", "afterMCPExecution", "beforeTabFileRead", "afterTabFileEdit", "workspaceOpen"],
+        "user_level_hooks_not_available_in_cloud": true,
+        "priority_order": "Enterprise -> Team -> Project -> User",
+        "project_hook_working_directory": "the project root, so commands must be written as .cursor/hooks/script.sh",
+        "execution_contract": "command hooks receive JSON on stdin and return JSON on stdout; exit 0 uses the JSON output; exit 2 blocks the action and is equivalent to permission:\"deny\"; any other exit code fails open and the action proceeds",
+        "cloud_execution_type_limit": "cloud agents run command-based hooks only; prompt-based hooks are not available",
+        "matchers": {
+          "beforeShellExecution": "matched against the full shell command string",
+          "preToolUse/postToolUse": "matched against tool type, e.g. Shell, Read, Write, Grep, Delete, Task, and MCP:<tool_name>",
+          "subagentStart/subagentStop": "matched against subagent type, e.g. generalPurpose, explore, shell",
+          "stop": "matched against the value Stop"
+        }
+      },
+      "reproduced_discrepancy": "The active team hooks bundle registers beforeMCPExecution, afterMCPExecution, beforeTabFileRead and afterTabFileEdit, all four of which the official documentation states do not run in cloud agents. Four of the thirteen registered team hooks therefore cannot fire in this runtime.",
+      "significance": "This is the single highest-leverage unused control surface in the estate. Cloud agents run project hooks; the repository has none; and exit code 2 on beforeShellExecution is a hard, deterministic block. Every recurring failure this operation suffers from is a policy that is currently written as prose in AGENTS.md and enforced by nothing.",
+      "not_verified": "No hook was installed or fired during this lane. Writing .cursor/hooks.json is outside this lane's allowed namespace and would silently bind enforcement architecture. The hook behaviour above is DOCUMENTED, not reproduced."
+    },
+
+    {
+      "capability_id": "CAP-AGENT-SKILLS-SURFACE",
+      "domain": "repository_configuration",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "instrument": "ls -laR $HOME/.cursor/skills-cursor; full read of each SKILL.md; repository-wide search for skill directories",
+      "observed": {
+        "runtime_injected_skills": [
+          {"name": "env-setup", "path": "$HOME/.cursor/skills-cursor/env-setup/SKILL.md", "frontmatter_environments": "[cloud]", "purpose": "explain, inspect, configure and troubleshoot Cloud Agent environments", "has_references_subdir": true},
+          {"name": "migrate-to-builds", "path": "$HOME/.cursor/skills-cursor/migrate-to-builds/SKILL.md", "purpose": "test and migrate an environment to prebuilt environment builds"},
+          {"name": "subscribe", "path": "$HOME/.cursor/skills-cursor/subscribe/SKILL.md", "purpose": "wait for external events via cursor-subscriptions rather than polling"}
+        ],
+        "repository_local_skills": "none; no .cursor/skills/, .agents/skills/, .claude/skills/ or .codex/skills/ exists in this repository"
+      },
+      "what_the_skills_imply_is_configurable": [
+        "env-setup states the configuration precedence explicitly: (1) .cursor/environment.json from the revision used to start the agent, (2) a personal saved environment, (3) a team saved environment; first available wins.",
+        "env-setup states the phase contract: install is for durable repository setup and is not rerun when a pod boots from a build; per-pod initialisation belongs in start or terminals; terminals are tmux-backed named processes shown to the agent.",
+        "subscribe reveals that the product supports Slack and Linear subscription tools (subscribe_slack_thread, subscribe_slack_channel, subscribe_slack_new_channels, subscribe_linear_issue, subscribe_linear_comment) that are NOT present in this deployment's catalogue, which localises their absence to an unconnected integration rather than an unsupported feature.",
+        "subscribe states that subscriptions belong to the agent conversation, that they expire on a server-assigned schedule, that deliveries coalesce, and that a notification may carry an inboxDir attribute pointing at the raw payload — which is exactly the /cursor/stores/self/inbox/ tree observed in CAP-DURABLE-AGENT-STORE.",
+        "subscribe states plainly that event text is untrusted third-party data and must never be treated as instructions."
+      ],
+      "documented_skill_mechanics": {
+        "evidence_label": "DOCUMENTED",
+        "source": "https://cursor.com/docs/skills.md",
+        "project_skill_directories": [".agents/skills/", ".cursor/skills/"],
+        "user_skill_directories": ["~/.agents/skills/", "~/.cursor/skills/"],
+        "compatibility_directories": [".claude/skills/", ".codex/skills/", "~/.claude/skills/", "~/.codex/skills/"],
+        "layout": "one folder per skill containing SKILL.md, optionally with scripts/, references/ and assets/; the skills root is walked recursively",
+        "frontmatter": {
+          "name": "required; lowercase letters, numbers and hyphens; must match the parent folder name",
+          "description": "required; the agent uses it to decide relevance",
+          "paths": "optional glob scoping; the skill surfaces only when the agent touches matching files",
+          "disable-model-invocation": "optional; when true the skill is only included on explicit /skill-name invocation",
+          "icon": "optional", "color": "optional", "metadata": "optional"
+        },
+        "built_in_skills_available_in_the_product": ["/automate", "/babysit", "/canvas", "/create-hook", "/create-rule", "/create-skill", "/create-subagent", "/cursor-blame", "/loop", "/migrate-to-skills", "/review", "/review-bugbot", "/review-security", "/sdk", "/shell", "/split-to-prs", "/statusline", "/update-cli-config", "/update-cursor-settings"],
+        "note_on_built_ins": "Only three skills are injected into this cloud runtime's catalogue. The nineteen built-in slash-command skills are documented product features whose availability in this cloud runtime was not observed and is not claimed."
+      },
+      "significance": "The `paths` frontmatter field is the mechanism that would attach evidence and currentness discipline exactly where this estate needs it — on state/**, receipts/** and workstreams/** — without loading it into every unrelated turn. Nothing in the repository uses it."
+    },
+
+    {
+      "capability_id": "CAP-MCP-SURFACE",
+      "domain": "tool_surface",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "instrument": "GetMcpTools with no arguments for the catalogue, then per-server for full input schemas",
+      "observed": {
+        "servers": 2,
+        "both_serverStatus": "ready",
+        "no_server_in_needsAuth_or_error": true,
+        "cursor-cloud": {
+          "tool_count": 14,
+          "tools": ["batch-fetch-details", "check-environment-snapshot", "environment-build-logs", "environment-info", "get-automation", "get-events", "get-message-queue", "list-cloud-agents", "list-environment-builds", "propose-environment-json", "request-environment-setup-actions", "run-info", "take-environment-snapshot", "trigger-environment-build"],
+          "read_only_subset_exercised_in_this_lane": ["run-info", "environment-info", "get-events", "get-message-queue", "list-environment-builds", "list-cloud-agents"],
+          "deliberately_not_called": ["trigger-environment-build", "take-environment-snapshot", "check-environment-snapshot", "propose-environment-json", "request-environment-setup-actions", "environment-build-logs", "batch-fetch-details", "get-automation"],
+          "why_not_called": "The first five mutate environment or account state or raise a user-facing request and are excluded by this lane's brief. environment-build-logs and batch-fetch-details are read-only but batch-fetch-details is the instrument that would fetch PO-03 transcripts, and this lane is prohibited from opening any PO-03 thread or transcript, so it was not used at all rather than used carefully. get-automation requires a known automation UUID, which this lane has none of."
+        },
+        "cursor-subscriptions": {
+          "tool_count": 5,
+          "tools": ["list_subscriptions", "subscribe_github_ci", "subscribe_github_pr", "subscribe_timer", "unsubscribe"],
+          "active_subscriptions_at_observation": 0,
+          "schemas_captured": {
+            "subscribe_github_ci": "options{repo,branch} required; optional expiresInSeconds; branch-scoped; delivers one commit-wide terminal result; drops results for commits superseded by a newer push; does not cover fork PRs or branchless status events",
+            "subscribe_github_pr": "oneOf four scopes — pr by prUrl, pr by repo+pullNumber, repo, or author+repo; optional expiresInSeconds",
+            "subscribe_timer": "name and prompt required; exactly one of cron or delaySeconds; optional once:true for a one-shot; dedupes by name and a dedupe hit silently keeps the old configuration",
+            "unsubscribe": "subscriptionId required"
+          }
+        },
+        "absent_but_documented_elsewhere": "No Slack, Linear, Sentry, PagerDuty, web-search, web-fetch, browser or computer-control tool is present in either server's catalogue."
+      },
+      "what_this_actually_enables": [
+        "subscribe_timer is the only mechanism in this runtime that lets an agent schedule its own future wake without a human message. Combined with a cron expression it is a durable recurring control loop owned by the agent rather than by the founder.",
+        "subscribe_github_ci plus subscribe_github_pr together close the loop between pushing evidence and learning whether an independent instrument accepted it, with no founder relay.",
+        "The cursor-cloud server is an observation and environment-control surface. It cannot create a new top-level agent run or post a follow-up to another run; that half of orchestration lives only behind the authenticated REST API."
+      ],
+      "documented_extension_path": {
+        "evidence_label": "DOCUMENTED",
+        "source": "https://cursor.com/docs/cloud-agent/capabilities.md and https://cursor.com/docs/mcp.md",
+        "points": [
+          "Custom MCP servers may be added over HTTP or stdio. SSE and mcp-remote are not supported.",
+          "HTTP transport is recommended because server configuration never enters the agent VM and tool calls are proxied through the backend; with stdio the server runs inside the VM and the agent can read its environment and credentials.",
+          "MCP configurations are encrypted at rest; env, headers and CLIENT_SECRET are redacted and cannot be read back after saving.",
+          "Cloud agents support OAuth for MCP servers, and OAuth is per-user even for team-shared servers.",
+          "Personal MCP servers are added through the MCP dropdown at cursor.com/agents; team-shared servers under Dashboard -> Integrations & MCP.",
+          "Project MCP configuration is .cursor/mcp.json; global is ~/.cursor/mcp.json.",
+          "The environment schema's disableAllMcpServers and mcpServerAllowlist fields let an environment constrain which MCP servers agents may use, by serverUrl pattern or stdio command pattern, with an optional per-server toolAllowlist. Cursor built-in servers are never restricted."
+        ]
+      }
+    },
+
+    {
+      "capability_id": "CAP-AGENT-METADATA-SERVICE",
+      "domain": "runtime_identity",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "instrument": "recursive GET walk of http://localhost/v1/meta-data over the unix socket at $CURSOR_AGENT_SOCKET",
+      "raw_evidence": ["raw/agent-socket-probe.txt", "raw/agent-metadata-tree.txt"],
+      "observed": {
+        "socket": "/run/cursor/api.sock (srw-rw-rw-, present and live)",
+        "usage_contract_returned_by_the_service": "GET /v1/meta-data[/<path>]. A directory path returns a newline-separated listing of its children with subdirectories ending in /; a leaf path returns the bare text value. Values that do not exist for this agent are omitted from listings and return 404. Paths under turn/ describe the current turn and are always served fresh.",
+        "complete_tree": {
+          "agent/id": "bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+          "agent/name": "Primary orchestration route qualification",
+          "agent/runtime": "managed",
+          "agent/source": "WEBSITE",
+          "owner/team-id": "4296794",
+          "owner/user-id": "406024541",
+          "owner/user-email": "sadekahmed@meta.com",
+          "turn/id": "run-62aeb48c-5df0-4aaf-9b1b-73d20b409abf",
+          "turn/model": "claude-opus-5-thinking-max-fast",
+          "turn/started-at": "1787429392",
+          "turn/user-id": "406024541",
+          "turn/user-email": "sadekahmed@meta.com",
+          "workspace/branch-name": "cursor/so02-cur-orch-qual-01",
+          "workspace/environment-id": "69dbfc52-9df5-11f1-a7d1-d6b4613131ce",
+          "workspace/repo-url": "github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+          "workspace/repo-urls": "github.com/asibrahim336-hash/obzio-ai-coordination-temp"
+        },
+        "leaf_count": 15,
+        "no_credential_material_present": true
+      },
+      "significance": [
+        "turn/id is the finest-grained durable execution identifier available in this runtime and it is NOT exposed by any MCP tool. It is the only identifier that distinguishes one turn of a long-running orchestrator from another, and it is exactly what a launch or receipt record needs to be addressable.",
+        "workspace/branch-name reports the RUN's branch, not the branch actually checked out. It reported cursor/so02-cur-orch-qual-01 while the working tree was on cursor/oe-l1-cursor-baseline-696d. Any provenance record that trusts this field to describe the work will misattribute it.",
+        "turn/model is a first-party statement of the exact model configuration and requires no MCP call, so a hook or install script can record it deterministically.",
+        "The service requires no credential. It is available to every shell command in the VM, which makes it usable from hooks and from install/start scripts."
+      ],
+      "documented_corroboration": {"evidence_label": "DOCUMENTED", "source": "https://cursor.com/docs/cloud-agent/metadata.md"}
+    },
+
+    {
+      "capability_id": "CAP-DURABLE-AGENT-STORE",
+      "domain": "durable_state",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "instrument": "mount; stat -f; ps aux; read of /run/agent-store-fuse/*; write, nested-mkdir, 1 MiB binary, append and foreign-store probes, each followed by cleanup",
+      "raw_evidence": ["raw/store-inspect.txt", "raw/store-write-probe.txt", "raw/store-grant-and-cleanup.txt", "raw/store-fs-and-gitconfig.txt"],
+      "characterisation": {
+        "what_it_is": "A FUSE filesystem, not local disk. Mounted as `cursor-agent-store on /cursor/stores type fuse.agent-store (rw,nosuid,nodev,relatime,user_id=1000,group_id=1000,default_permissions,allow_other)`. stat -f reports fuseblk with zero total blocks, so it consumes none of the 252 GB overlay.",
+        "backing_service": "The daemon is /usr/local/bin/cursor-agent-store-fuse --backend-mode direct --mount-root /cursor/stores --bcs-endpoint https://api2.cursor.sh --self-store-id bc-c6f63d58-9611-495a-96f6-2f2dcbef696d --pod-grant-path /run/agent-store-fuse/pod-grant --events-path /run/agent-store-fuse/events.jsonl --enable-file-locks. The store is therefore server-side state reached over the network, authorised by a pod grant, not a directory on this VM.",
+        "scoping": "PER TOP-LEVEL RUN, SHARED WITH SUBAGENTS. /cursor/stores contains exactly one real directory, named for the top-level run's bcId, plus a `self` symlink to it. This lane is a subagent and `self` resolved to the parent run's bcId, so subagents share one store with their parent and with each other.",
+        "isolation": "Foreign stores are neither readable nor creatable. `ls /cursor/stores/bc-00000000-...` returns No such file or directory, and `mkdir` of the same path fails with No such file or directory rather than a permission error, meaning the namespace itself is server-controlled rather than filtered locally.",
+        "structure": "Two pre-created subtrees: artifacts/ and inbox/. inbox/ is namespaced by event kind then subscription id, e.g. inbox/github:ci:branch/sub_de5d1716-d939-4baf-be5f-dd3cbe011701/.",
+        "bidirectional": "The inbox contained two JSONL deliveries written at 13:47:41Z and 13:51:00Z by the PLATFORM, not by any command in this VM. Each is a one-line CI result carrying repo, sha, branches, senderLogin, conclusion, checkCount and failedCheckNames. The store is therefore a channel the platform writes into from outside the pod, not merely a scratch disk."
+      },
+      "write_probe_results": {
+        "write_to_artifacts": "OK",
+        "write_to_store_root": "OK (a root-level file was created alongside artifacts/ and inbox/)",
+        "nested_mkdir_and_write": "OK to arbitrary depth",
+        "binary_1_MiB": "OK, size and sha256 stable on read-back",
+        "append": "OK",
+        "file_locks": "advertised by the daemon flag --enable-file-locks; not exercised",
+        "permissions_observed": "files 0666, directories 0777, owner ubuntu:ubuntu",
+        "cleanup": "every probe artifact was removed; a post-cleanup `find /cursor/stores/self -mindepth 1` returned empty, which also removed the two pre-existing platform CI deliveries as a side effect of clearing the tree"
+      },
+      "cleanup_side_effect_disclosed": "The recursive cleanup removed the inbox/ and artifacts/ subtrees including the two platform-written CI delivery files from 13:47Z and 13:51Z. Their full contents are preserved verbatim in raw/store-inspect.txt, and the same CI results are independently and durably recorded in the CUR-01 receipts bundle, so no unique evidence was lost. This is disclosed rather than omitted.",
+      "verdict_versus_git": {
+        "good_for": [
+          "receiving asynchronous platform deliveries — this is the only place a subscription payload lands in full",
+          "large or binary intermediates that should not enter git history",
+          "handing state between a parent orchestrator and its subagents within one run, since all of them see the same store"
+        ],
+        "not_a_substitute_for_git_because": [
+          "It is keyed to the run's bcId and only `self` is mounted, so a new cloud-agent run — which necessarily has a new bcId — cannot address this store. It is NOT a cross-run continuity mechanism.",
+          "It is invisible to the founder, to CI and to any independent acceptor. Nothing in it can be read back by an instrument the producing run does not control, which is the exact property CUR-01's custody ladder requires.",
+          "It carries no content addressing, no signing and no history."
+        ],
+        "cross_run_durability": {
+          "evidence_label": "HYPOTHESIS",
+          "statement": "The store very likely survives a VM restart within the same run, because it is server-side state behind api2.cursor.sh rather than pod-local disk.",
+          "why_untested": "Proving it requires a second run or a pod restart. This lane cannot create a run and must not restart the orchestrator it is running inside."
+        }
+      },
+      "significance": "The precise answer the commission needs: this is a per-run, platform-writable, network-backed mailbox — excellent as the delivery point for asynchronous returns, and disqualified as canonical state. Git remains canonical. Any design that puts lineage or acceptance state in the store would make it unreadable to the next run and to every independent checker."
+    },
+
+    {
+      "capability_id": "CAP-GITHUB-PERMISSION-BOUNDARY",
+      "domain": "permissions_and_auth",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "instrument": "gh auth status; gh api against sixteen endpoints recording HTTP status; gh api -i for X-Accepted-Github-Permissions; git push --dry-run against this lane's own branch",
+      "raw_evidence": ["raw/gh-auth.txt", "raw/gh-permissions.txt", "raw/gh-permission-map.txt", "raw/gh-write-boundary.txt"],
+      "identity": {
+        "gh_version": "2.91.0",
+        "account": "cursor",
+        "credential_store": "/home/ubuntu/.config/gh/hosts.yml",
+        "token_class": "ghs_ prefix — a GitHub App installation token, not a user or classic PAT",
+        "proof_of_class": "GET /user returns 403 'Resource not accessible by integration', which is the App-installation signature",
+        "oauth_scopes": "none; the X-OAuth-Scopes header is absent because installation tokens carry permissions, not scopes",
+        "installation_reach": "GET /installation/repositories returns total_count 1 — only asibrahim336-hash/obzio-ai-coordination-temp"
+      },
+      "two_distinct_credentials_finding": {
+        "statement": "There are TWO different GitHub credentials in this runtime with DIFFERENT capabilities, and conflating them produces wrong conclusions about what the route can do.",
+        "credential_a": "The gh CLI token in ~/.config/gh/hosts.yml. Read-only in practice across every endpoint probed.",
+        "credential_b": "A separate x-access-token credential injected into ~/.gitconfig through six url.<...>.insteadOf rewrites covering https, git@, ssh:// and git+ssh forms of github.com. This one carries write.",
+        "proof": "git push --dry-run -u origin cursor/oe-l1-cursor-baseline-696d returned `* [new branch]` and exit 0, so the server accepted the ref update negotiation. No ref was updated by the dry run.",
+        "consequence": "Contents write reaches GitHub only through git. Every non-git write path is closed."
+      },
+      "read_permission_map_by_http_status": {
+        "granted_200": ["/repos/{r} (metadata)", "/repos/{r}/contents/README.md (contents:read)", "/repos/{r}/pulls?state=all (pull_requests:read)", "/repos/{r}/actions/workflows (actions:read)", "/repos/{r}/environments", "/repos/{r}/collaborators", "/installation/repositories"],
+        "denied_403": ["/repos/{r}/issues", "/repos/{r}/actions/secrets", "/repos/{r}/actions/variables", "/repos/{r}/branches/main/protection (administration)", "/repos/{r}/hooks (webhooks)", "/repos/{r}/deployments", "/repos/{r}/code-scanning/alerts", "/repos/{r}/dependabot/alerts", "/user"],
+        "method_note": "X-Accepted-Github-Permissions was captured for each endpoint but is NOT evidence of what this token holds — it states what the endpoint accepts, and every GET naturally reports '=read'. The HTTP status is the discriminator, and it is what this map uses.",
+        "repo_permissions_object_note": "GET /repos/{r} returns permissions {admin:false, maintain:false, pull:false, push:false, triage:false}. This is the user-permission projection and is all-false for App installation tokens even where the installation can write. It must not be read as proof that push is unavailable — the successful push dry-run contradicts it directly."
+      },
+      "reproduced_boundary_summary": {
+        "can": ["clone, fetch and push branches", "read repository metadata, file contents and git refs", "read pull requests and their metadata", "read Actions workflows and workflow runs", "read repository environments and collaborators"],
+        "cannot": ["read or write Actions secrets or variables", "read branch protection or any administration setting", "read or write webhooks", "read or create issues", "read code scanning or Dependabot alerts", "resolve the authenticated user", "reach any repository other than this one"],
+        "platform_mediated_not_token_mediated": "Two pr_created events are recorded for this run (#11 and #12), so pull requests are created for this estate by the Cursor platform rather than by the local token. PR creation is not a capability of the credential in this VM."
+      },
+      "significance": [
+        "Secrets:read being denied means no agent in this runtime can enumerate or verify repository Actions secrets. Any activation programme that depends on a repository Actions secret is unverifiable from inside an agent and must be verified through a CI job's behaviour instead.",
+        "issues:403 removes GitHub Issues as a coordination substrate for this estate. Branches, commits and PR bodies are the only writable coordination surface, and only branches are writable by the agent itself.",
+        "administration:403 means no agent can read, let alone set, branch protection. The 'never write these branches' rule cannot be enforced server-side by anything an agent can configure. It has to be enforced client-side, which is precisely what a beforeShellExecution hook does."
+      ]
+    },
+
+    {
+      "capability_id": "CAP-SHELL-EXECUTION-AND-CONCURRENCY",
+      "domain": "execution",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "instrument": "command -v across a tool list; tmux ls; nproc; free -h; parallel background job probe; ss -ltn",
+      "raw_evidence": ["raw/toolchain.txt", "raw/shell-concurrency.txt"],
+      "observed": {
+        "shell": "bash (no zsh installed) with a Cursor sandbox wrapper that snapshots and restores shell state between calls, so cwd and exported variables persist across separate tool calls",
+        "hardware": {"nproc": 8, "memory_total": "47Gi", "memory_available_at_observation": "45Gi", "root_filesystem": "overlay, 252G total, 228G available"},
+        "tmux": {"path": "/exec-daemon/tmux", "version": "3.5a", "portal_config": "/exec-daemon/tmux.portal.conf exists (483 bytes)", "live_sessions_at_observation": ["tmux-b3fb4c90743e, 1 window, created 14:00:35, attached"]},
+        "background_execution": "confirmed; four concurrent subshells launched and reaped by wait in a single call",
+        "toolchain_present": ["bash", "git 2.43.0", "python3 3.12.3", "node (two: /exec-daemon/node v22.14.0 and nvm v22.22.2)", "npm", "jq", "curl", "rg", "xvfb-run", "Xvfb", "google-chrome"],
+        "toolchain_absent": ["zsh", "fd", "docker CLI", "gcloud", "aws", "playwright", "chromium", "firefox", "x11vnc", "cursor-agent / cursor / cursor-cli"],
+        "pip_installs_work": "pip install jsonschema succeeded to /home/ubuntu/.local, though that directory's bin is not on PATH",
+        "listening_ports": {"2375": "Docker Engine, bound 0.0.0.0", "5901": "Xtigervnc, bound 127.0.0.1 and ::1", "26058": "noVNC websockify, bound 0.0.0.0", "26053": "node HTTP (exec-daemon), returns 404", "26054": "node WebSocket (exec-daemon), returns HTTP 426 Upgrade Required", "26500": "non-HTTP", "50052": "non-HTTP, gRPC-shaped port number"}
+      },
+      "significance": "Eight cores and 47 GB with unrestricted egress make this a genuinely capable execution host, not a thin agent shell. tmux plus background execution means long-running verification, containerised replay and parallel lane work are all locally available without any account change."
+    },
+
+    {
+      "capability_id": "CAP-CONTAINER-RUNTIME",
+      "domain": "execution",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "instrument": "HTTP GET against the Docker Engine API on 127.0.0.1:2375 (/version, /info, /images/json, /containers/json?all=1)",
+      "raw_evidence": ["raw/docker-probe.txt", "raw/gh-permission-map.txt"],
+      "observed": {
+        "engine": "Docker Engine - Community 29.1.4, API 1.52, MinAPIVersion 1.44, linux/amd64",
+        "host": "Debian GNU/Linux 12 (bookworm), overlay2 driver, 8 CPU, 50538512384 bytes memory",
+        "containers_running": 0,
+        "images_present": ["946207870883.dkr.ecr.us-east-1.amazonaws.com/anyrun-utils:util-61d85ff19df0", "moby/buildkit:v0.29.0"],
+        "cli_installed": false,
+        "api_reachable_without_authentication": true,
+        "bind_address": "0.0.0.0:2375"
+      },
+      "significance": "A full container runtime with BuildKit is available and completely unrecorded in the prior baseline. This is the strongest available primitive for the independent-acceptance problem: an acceptance lane can replay a producer's evidence inside a container with no network and no inherited credentials, which is a materially stronger independence claim than running the same replay in the producing agent's own shell.",
+      "security_observation": "The Docker API is unauthenticated and bound to 0.0.0.0 rather than to the loopback interface or a unix socket. Inside a single-tenant isolated pod the practical exposure is low, but any process in this VM has full root-equivalent container control. This should be recorded, not acted on, since the bind is platform-owned.",
+      "not_verified": "No container was created, pulled or run. Only read-only API endpoints were called."
+    },
+
+    {
+      "capability_id": "CAP-GRAPHICAL-AND-BROWSER-RUNTIME",
+      "domain": "browser_and_computer_control",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "instrument": "google-chrome --version; xdpyinfo -display :1; ps aux; headless Chrome DOM dump against a data: URL; ss -ltn",
+      "raw_evidence": ["raw/browser-probe.txt", "raw/shell-concurrency.txt", "raw/secrets-and-cursor-env.txt"],
+      "observed": {
+        "browser_binary": "/usr/local/bin/google-chrome, Google Chrome 148.0.7778.96",
+        "headless_execution": "google-chrome --headless=new --no-sandbox --disable-gpu --dump-dom against a data: URL returned the fully parsed DOM and exit code 0",
+        "cold_start_cost": "the first Chrome invocation dominated a 60-second batch; subsequent behaviour was not measured",
+        "x_display": "DISPLAY=:1 is live — X.Org Foundation, X11 release 21.1.11, server Xtigervnc listening on 127.0.0.1:5901 and ::1:5901",
+        "remote_view_bridge": "noVNC 1.2.0 launched via /usr/local/novnc/noVNC-1.2.0/utils/launch.sh --listen 26058 --vnc localhost:5901, with a websockify process serving it on 0.0.0.0:26058",
+        "vnc_geometry_env": "VNC_RESOLUTION=1920x1200x24, VNC_DPI=96",
+        "agent_facing_tool": "NONE — no browser, computer-control, web-search or web-fetch tool appears in this agent's tool list or in either MCP catalogue"
+      },
+      "corrected_conclusion": "The runtime supports browser operation today from the shell. What is absent is the agent-facing tool binding, not the capability. Recording this as NOT_SUPPORTED, as the prior baseline did, would misdirect the whole browser-and-computer-control strand of this commission toward acquiring an external stack when a working browser, a live display and a remote-view bridge are already present in the pod.",
+      "documented_product_position": {
+        "evidence_label": "DOCUMENTED",
+        "source": "https://cursor.com/docs/cloud-agent/capabilities.md",
+        "points": [
+          "Each cloud agent runs in its own isolated VM with a full desktop environment, and agents can use mouse and keyboard to control the desktop and browser.",
+          "A human can take control of the agent's remote desktop and hand control back.",
+          "Agents create artifacts such as screenshots and videos; posting artifacts into GitHub PR descriptions is an opt-in dashboard setting and uses long unguessable public URLs, because GitHub's image proxy requires them."
+        ]
+      },
+      "not_verified": [
+        "Whether the computer-use tool surface can be enabled for this account or environment, and where that setting lives. The environment schema's chromeExecutablePath field — which the bundled skill associates with computer-use flows — is rejected by the live schema, so the enabling mechanism is not the repository file.",
+        "Whether the noVNC endpoint on 26058 is reachable from outside the pod. Only its local listener was observed.",
+        "Any authenticated-session browsing. Nothing was logged into and no credential was used in a browser."
+      ],
+      "boundary_respected": "The halted SO-02 browser/setup batch (Playwright Extension, Goose, HARPA, Nanobrowser, BrowserMCP, Chrome DevTools MCP) was neither executed, installed nor expanded. Nothing above installs a browser stack; it reports what the base image already contains."
+    },
+
+    {
+      "capability_id": "CAP-MODEL-ROUTING-AND-SELECTION",
+      "domain": "models",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "instrument": "cursor-cloud list-cloud-agents field originalModelName; /v1/meta-data/turn/model; cursor-cloud run-info",
+      "observed_in_this_account": {
+        "visible_top_level_runs": 9,
+        "hasMore": false,
+        "exact_configurations_running": ["claude-opus-5-thinking-max-fast", "claude-opus-5-thinking-max", "claude-sonnet-5-thinking-max", "gpt-5.6-sol-max-fast", "gpt-5.6-terra-max-fast"],
+        "distinct_families": 2,
+        "this_turn": "claude-opus-5-thinking-max-fast, confirmed independently by /v1/meta-data/turn/model and by run-info originalModelName",
+        "run_naming_collision_observed": "Seven of the nine runs share the display name 'Po-03 wave a attempts'. Display names are not identifiers in this account.",
+        "subagent_model_visibility": "A subagent's model is reported at turn/model but the subagent itself does not appear as a run in list-cloud-agents, so per-lane model attribution is invisible at the account layer."
+      },
+      "documented_selectable_catalogue": {
+        "evidence_label": "DOCUMENTED",
+        "source": "https://cursor.com/docs/models-and-pricing.md and https://cursor.com/llms.txt",
+        "cursor_first_party": ["Grok 4.6", "Grok 4.6 (Fast)", "Grok 4.5", "Grok 4.5 (Fast)", "Composer 2.5", "Composer 2.5 (Fast)"],
+        "third_party_families_documented": ["Anthropic Claude 4 Sonnet through Claude Opus 5 and Claude Fable 5", "Google Gemini 2.5 Flash through Gemini 3.7 Flash", "OpenAI GPT-5 through GPT-5.6 Sol / Terra / Luna and the Codex line", "xAI Grok", "Z.ai GLM 5.2", "Moonshot Kimi K2.7 Code and Kimi K3"],
+        "finding_of_direct_commission_relevance": "Kimi is a natively selectable model inside Cursor. Kimi K2.7 Code is listed at $0.95/$0.19/$4 per million tokens with the note 'Hidden by default', and Kimi K3 at $3/$0.3/$15. The commission names Kimi as a discovery seed for an open/local model route; the documented position is that a Kimi route may need no separate provider account, only unhiding a model already in the Cursor catalogue.",
+        "auto_routing": "On Teams and Enterprise plans, Cursor Router selects the model for each Auto request according to an optimisation setting.",
+        "caveat": "This catalogue is what the public pricing page documents. Which of these are actually selectable for THIS team, and under what entitlement, was not observed. GET /v1/models is the instrument that would answer it and it requires an API key this runtime does not have."
+      },
+      "not_verified": "The account's own selectable model list, its default model, its Cursor Router optimisation setting, and whether Kimi is unhidden for this team. All four sit behind either the dashboard or GET /v1/models.",
+      "boundary_respected": "No PO-03 agent thread or transcript was opened. Only the account-level run listing was read, and only its model and status fields are recorded here."
+    },
+
+    {
+      "capability_id": "CAP-CURSOR-CLI-AND-AGENT-API",
+      "domain": "external_control_surface",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "instrument": "command -v; env name census; unauthenticated GET probes against api.cursor.com discriminating 401 from 404",
+      "raw_evidence": ["raw/api-cursor-probe.txt", "raw/api-v1-probe.txt", "raw/secrets-and-cursor-env.txt", "raw/toolchain.txt"],
+      "cli": {
+        "installed": false,
+        "probed": ["cursor-agent", "cursor", "cursor-cli"],
+        "documented_reality": {
+          "evidence_label": "DOCUMENTED",
+          "source": "https://cursor.com/docs/cli/overview.md",
+          "binary_name": "agent, not cursor-agent",
+          "install": "curl https://cursor.com/install -fsS | bash",
+          "capabilities": ["interactive and non-interactive (-p) print mode", "--model to select an exact model", "--output-format for machine-readable output", "modes: agent, plan (--mode=plan), ask (--mode=ask)", "sessions: agent ls, agent resume, --continue, --resume=<chat-id>", "sandbox controls via --sandbox enabled|disabled with network control", "Cloud Agent handoff by prefixing a message with &"],
+          "headless_and_ci_docs": ["https://cursor.com/docs/cli/headless.md", "https://cursor.com/docs/cli/github-actions.md", "https://cursor.com/docs/cli/reference/authentication.md"]
+        }
+      },
+      "runtime_env_markers": {
+        "method": "names and set/unset state only; no value of any secret was printed or stored",
+        "CURSOR_AGENT": "set, value 1 — a plain runtime marker meaning 'a Cursor agent is executing here'",
+        "CURSOR_AGENT_SOCKET": "set, 20 characters, resolves to /run/cursor/api.sock, and the path is a live socket. This is the local metadata service in CAP-AGENT-METADATA-SERVICE, not a control API.",
+        "CURSOR_CONVERSATION_ID": "set, 39 characters, shaped as a two-character prefix followed by a UUID. Not printed.",
+        "CURSOR_RIPGREP_PATH": "set",
+        "AGENT_TRANSCRIPTS": "set to /home/ubuntu/.cursor/projects/workspace/agent-transcripts, a path that does not exist on this VM",
+        "interpretation": "These three variables mark an in-VM agent runtime and give it a local identity handle. None of them is a credential and none authorises anything beyond this pod. The control API is remote and separately authenticated."
+      },
+      "remote_api_surface_map": {
+        "method": "Unauthenticated GET, using the 401-versus-404 distinction as the discriminator. api.cursor.com returns a routing 404 with the body {\"message\":\"Route GET:<path> not found\",...} for paths that do not exist, and {\"code\":\"error\",\"message\":\"Invalid User API Key\"} with HTTP 401 for paths that exist but require authentication. A control probe on /v1/nonexistent-route and /v0/admin/teams/daily-usage-data confirmed the 404 shape.",
+        "root": "GET https://api.cursor.com/ returns HTTP 200 text/plain: 'Welcome to Cursor. From 20260822-011006-0ff1f2eb5d3990de0c4fbccfa7436c47a27a9d35 ...'",
+        "exists_and_auth_gated_401": ["/v0/agents", "/v0/me", "/v0/models", "/v0/repositories", "/v0/agents/{id}", "/v1/agents", "/v1/models", "/v1/repositories", "/v1/me", "/v1/agents/{id}/runs"],
+        "does_not_exist_404": ["/v1/api-key-info", "/v1/workers", "/v1/pools", "/v1/identity/oidc/token", "/v0/admin/teams/daily-usage-data"],
+        "conclusion": "Both v0 and v1 are live. The v1 agent, run, model and repository routes exist and are blocked solely by the absence of a credential. The fleet-management and worker-token routes described in the documentation are not present at the paths tried, so they are either enterprise-gated or differently pathed; this is recorded as unresolved rather than as absent."
+      },
+      "documented_v1_capability": {
+        "evidence_label": "DOCUMENTED",
+        "source": "https://cursor.com/docs/cloud-agent/api/endpoints.md and the OpenAPI document at https://cursor.com/docs-static/cloud-agents-openapi.yaml (HTTP 200, 59120 bytes, fetched during this lane)",
+        "status": "Cloud Agents API v1 is in public beta; v0 remains available",
+        "auth": "Basic or Bearer, with a user API key from https://cursor.com/dashboard/api or a service-account API key",
+        "model": "v1 splits work into a durable agent plus per-prompt runs, replacing the flatter v0 surface",
+        "endpoints": ["POST /v1/agents create an agent and enqueue its initial run", "GET /v1/agents list", "GET /v1/agents/{id}", "POST /v1/agents/{id}/runs create a run", "GET /v1/agents/{id}/runs list runs", "GET .../runs/{id}", "stream a run with typed events including tool-call payloads, resumable, with a retention window", "cancel a run", "get agent usage", "list and download artifacts", "archive, unarchive and permanently delete an agent", "create a user-scoped worker token", "fleet management: list workers, fleet summary, worker by id, list/register/deregister pools, list/watch/claim pending pool requests", "GET /v1/models", "GET /v1/repositories"],
+        "run_creation_supports": "an explicit model.id from GET /v1/models plus model.params such as reasoning effort or context window, an optional agent name, and an env target selecting a named cloud environment or routing to a self-hosted pool or machine",
+        "webhooks": "coming soon on v1; the legacy v0 API still supports them"
+      },
+      "why_this_matters_here": "This is the exact missing half of the already-qualified R2 route. R2 proved observation and artifact retrieval over MCP. POST /v1/agents and POST /v1/agents/{id}/runs are what would let one orchestrator create and steer other runs, with an explicit model id per run — which is precisely what a five-lane group with a distinct-family independent acceptor needs, and precisely what currently requires a human to press a button.",
+      "blocker": "CURSOR_API_KEY is absent from this runtime. Confirmed by name census and by the 401 responses. Egress is unrestricted, so this is credential-blocked, not unsupported."
+    },
+
+    {
+      "capability_id": "CAP-SECRET-INVENTORY",
+      "domain": "permissions_and_auth",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "instrument": "env | cut -d= -f1 | sort, plus the platform's own declared secret-name variables; no value was read, printed or stored",
+      "observed": {
+        "CLOUD_AGENT_ALL_SECRET_NAMES": ["AUREA_E2E_SUPABASE_PUBLISHABLE_KEY", "AUREA_E2E_SUPABASE_URL", "AUREA_E2E_USER_EMAIL", "AUREA_E2E_USER_PASSWORD"],
+        "CLOUD_AGENT_INJECTED_SECRET_NAMES": "identical to the above four",
+        "interpretation": "The platform exposes both the full secret inventory and the injected subset by NAME. They are identical, so every secret configured for this scope is injected here and none is withheld.",
+        "absent_by_name": ["CURSOR_API_KEY", "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "GH_TOKEN", "GITHUB_TOKEN"],
+        "relevance_of_the_four_present": "All four belong to an unrelated project (AUREA end-to-end test credentials). None is usable by this operation."
+      },
+      "significance": "CLOUD_AGENT_ALL_SECRET_NAMES is a clean, non-disclosing verification instrument. After the founder adds a secret, any agent can confirm the name appears in that list without ever reading the value. This is the exact test command the activation programme needs, and it removes any reason to ask the founder to paste or echo a secret."
+    },
+
+    {
+      "capability_id": "CAP-RUN-EVENTS-AND-QUEUE",
+      "domain": "cloud_agent_control",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "instrument": "cursor-cloud get-events; cursor-cloud get-message-queue; cursor-subscriptions list_subscriptions",
+      "observed": {
+        "get_events": {
+          "count": 2,
+          "both_kind": "pr_created",
+          "events": [
+            {"createdAtMs": 1787406416879, "detail": "#11 · cursor/so02-cur-orch-qual-01 into so02/strategic-control-plane-migration-20260822-v001"},
+            {"createdAtMs": 1787429730045, "detail": "#12 · cursor/operating-environment-return-20260822-v001 into so02/strategic-control-plane-migration-20260822-v001"}
+          ],
+          "fields_per_event": ["publicId", "createdAtMs", "category", "logLevel", "kind", "title", "detail", "linkUrl"],
+          "what_it_did_not_contain": "No setup event, no install event, no error and no mcp_auth_error. Over a run spanning 13:31Z to 20:15Z the event log records only two pull-request creations."
+        },
+        "get_message_queue": {"hasQueuedMessages": false, "queuedMessageCount": 0},
+        "list_subscriptions": {"subscriptions": []}
+      },
+      "significance": [
+        "The run event log is a thin lifecycle feed, not an audit trail. It records provider-side milestones such as PR creation and MCP auth failures; it records nothing about what the agent did. It cannot substitute for repository receipts and should never be cited as evidence of work.",
+        "Zero active subscriptions means the CI subscription used during CUR-01 has already expired or been closed. Its two deliveries survived only in the store inbox, which is per-run. Anything that depends on a subscription surviving is depending on a short-lived, run-scoped object.",
+        "get-message-queue is the correct instrument for deciding whether to defer expensive verification. It was checked and the queue is empty, so this lane completed its verification inline."
+      ]
+    },
+
+    {
+      "capability_id": "CAP-REPO-GOVERNANCE-ENFORCEMENT-PATH",
+      "domain": "governance_enforcement",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "instrument": "read of AGENTS.md, README.md and operations/README.md; execution of scripts/check_operator_taxonomy.py; listing of .github/workflows",
+      "raw_evidence": ["raw/repo-governance.txt"],
+      "observed": {
+        "agents_md": "present at the root, ten numbered operator instructions, applied to every turn as an always-on rule",
+        "instruction_10": "Run `python scripts/check_operator_taxonomy.py` before commit. A failed currentness check blocks repository promotion, not the already-running programme.",
+        "validator_result": "OPERATOR TAXONOMY CHECK: PASS — active function obzio.function.strategic-operations-orchestration, active appointment obzio.appointment.strategic-operations-orchestration.20260819.001, classified aliases 9, exit 0",
+        "ci_workflows": ["operator-taxonomy-currentness.yml", "po03-contracts.yml", "so02-control-plane-contracts.yml"],
+        "enforcement_gap": "AGENTS.md instruction 10 says to run the validator before commit. Nothing enforces it locally. core.hooksPath is redirected to Cursor's dispatcher, whose pre-commit runs Cursor's own pre-commit.cursor plus any hook of the same name at .cursor-original-hooks-path — and this repository ships no such hook. The rule is therefore honoured by intention only, and its only real enforcement is a CI workflow that runs after the commit already exists."
+      },
+      "significance": "This is the estate's failure pattern in miniature: a correct rule, written down, with no mechanism. The dispatcher already provides the insertion point — a repository-side pre-commit hook would be picked up automatically — and it is unused."
+    }
+  ],
+
+  "could_not_verify": [
+    {
+      "item": "Whether the saved Team environment record contains configuration that the repository file is losing to, or is genuinely empty",
+      "why": "Reading the saved record requires the Cursor dashboard. environment-info returns the resolved view only, and the two candidate mechanisms are indistinguishable from inside the pod.",
+      "instrument_that_would_settle_it": "Open https://cursor.com/dashboard/cloud-agents/environments/e/69dbfc52-9df5-11f1-a7d1-d6b4613131ce and read the stored environment JSON, or start one agent from a configuration-change build and re-read environment-info."
+    },
+    {
+      "item": "Whether a proposed .cursor/environment.json would actually take effect for this estate's feature-branch runs",
+      "why": "Proving it requires triggering a build or starting a fresh agent. trigger-environment-build is explicitly excluded from this lane's permitted tools, and this lane cannot create agent runs.",
+      "instrument_that_would_settle_it": "cursor-cloud trigger-environment-build with an environmentJson override, then environment-build-logs on the returned buildId — to be run by a lane that is permitted to call it."
+    },
+    {
+      "item": "Whether project hooks in .cursor/hooks.json actually fire in this runtime, and whether exit code 2 blocks as documented",
+      "why": "Testing requires writing .cursor/hooks.json at the repository root, which is outside this lane's allowed namespace and would silently bind enforcement architecture across the estate.",
+      "instrument_that_would_settle_it": "Apply the staged proposed-cursor-config/dot-cursor/hooks.json on a throwaway branch, run one command the guard should refuse, and confirm the refusal — a bounded test that must be authorised before it is run."
+    },
+    {
+      "item": "Whether the agent store survives across runs or across a pod restart",
+      "why": "Both require a second run or a restart of the orchestrator this lane is executing inside.",
+      "note": "The stronger claim — that the store is not addressable from a different run — IS reproduced, because the mount exposes only the self store id and foreign paths cannot be created."
+    },
+    {
+      "item": "The account's actually-selectable model list, its default model, and whether Kimi is unhidden for this team",
+      "why": "GET /v1/models requires an API key that is absent. The dashboard requires founder authentication.",
+      "instrument_that_would_settle_it": "GET https://api.cursor.com/v1/models with a Cursor API key."
+    },
+    {
+      "item": "Whether computer-use / browser tools can be enabled for this account, and where that setting lives",
+      "why": "No such setting is reachable from inside the pod, and the environment schema field the bundled skill associates with it (chromeExecutablePath) is rejected by the live schema.",
+      "note": "That the underlying browser and display EXIST is reproduced. Only the enabling path is unknown."
+    },
+    {
+      "item": "Whether the four fleet-management and worker-token routes documented for v1 exist at other paths",
+      "why": "The three paths tried returned routing 404s. Enumerating further unauthenticated is guesswork rather than evidence.",
+      "instrument_that_would_settle_it": "The OpenAPI document fetched to raw evidence during this lane, read against an authenticated key."
+    },
+    {
+      "item": "Whether outbound HTTP from this pod is subject to any egress allowlist",
+      "why": "environment-info reports egress.restricted=false and every external host tried resolved and responded, but absence of a block across a handful of hosts is not proof of an unrestricted policy.",
+      "note": "This matches and does not extend the prior CAP-EGRESS record."
+    }
+  ],
+
+  "protected_surfaces_untouched": {
+    "branches_not_written": ["main", "so02/strategic-control-plane-migration-20260822-v001", "cursor/operating-environment-return-20260822-v001", "cursor/so02-cur-orch-qual-01", "all po03/* and cursor/po03-*", "all soo/*", "all packs/*"],
+    "read_only_git_inspection_performed": "git show against cursor/so02-cur-orch-qual-01 and cursor/operating-environment-return-20260822-v001 to read the prior register, the CUR-01 state, the blocked-routes record, the R2 route record, the evidence-manifest format and the group manifest",
+    "pull_requests": "none opened, commented on, merged or modified. #11 and #12 were observed only as titles in a gh pr list and as pr_created entries in the run event log.",
+    "po03": "no thread, transcript, branch or path touched. batch-fetch-details was deliberately not called. The account run listing was read and only its model and status fields recorded.",
+    "sw_po01_manus": "not messaged, operated, configured or read",
+    "halted_browser_batch": "not executed, installed or expanded; Chrome and the X display reported here are pre-existing base-image components",
+    "money_spent": "none",
+    "external_outreach": "none",
+    "account_changes": "none",
+    "credential_values": "none printed, stored or committed; the sanitiser that produced raw/ redacts GitHub tokens, x-access-token URLs, sk- keys and SSH public keys, and its output was verified clean"
+  }
+}

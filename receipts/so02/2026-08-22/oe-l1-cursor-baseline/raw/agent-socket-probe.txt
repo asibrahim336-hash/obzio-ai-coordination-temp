@@ -1,0 +1,39 @@
+=== /run/cursor socket dir ===
+total 8
+drwxr-xr-x 2 root root 4096 Aug 22 13:31 .
+drwxr-xr-x 6 root root 4096 Aug 22 13:31 ..
+srw-rw-rw- 1 root root    0 Aug 22 13:31 api.sock
+=== GET / over agent socket ===
+HTTP/1.1 200 OK
+content-type: text/plain; charset=utf-8
+connection: close
+content-length: 4
+date: Sat, 22 Aug 2026 20:14:24 GMT
+
+v1/
+
+=== GET /v1 ===
+HTTP/1.1 200 OK
+content-type: text/plain; charset=utf-8
+connection: close
+content-length: 11
+date: Sat, 22 Aug 2026 20:14:24 GMT
+
+meta-data/
+
+=== GET /health ===
+HTTP/1.1 404 Not Found
+content-type: application/json
+connection: close
+content-length: 554
+date: Sat, 22 Aug 2026 20:14:24 GMT
+
+{"error":"not_found","usage":"GET /v1/meta-data[/<path>] on the Unix socket at $CURSOR_AGENT_SOCKET (default /run/cursor/api.sock). A directory path returns a newline-separated listing of its children (subdirectories end with /); a leaf path returns the bare text value. Start at GET /v1/meta-data/ and follow listings to discover every valid path; values that do not exist for this agent are omitted from listings and return 404. Paths under turn/ describe the current turn (e.g. turn/user-id is the user who submitted it) and are always served fresh."}
+=== GET /openapi.json ===
+HTTP/1.1 404 Not Found
+content-type: application/json
+connection: close
+content-length: 554
+date: Sat, 22 Aug 2026 20:14:24 GMT
+
+{"error":"not_found","usage":"GET /v1/meta-data[/<path>] on the Unix socket at $CURSOR_AGENT_SOCKET (default /run/cursor/api.sock). A directory path returns a newline-separated listing of its children (subdirectories end with /); a leaf path returns the bare text value. Start at GET /v1/meta-data/ and follow listings to discover every valid path; values that do not exist for this agent are omitted from listings and return 404. Paths under turn/ describe the current turn (e.g. turn/user-id is the user who submitted it) and are always served fresh."}
