@@ -1,0 +1,47 @@
+{
+  "task_id": "po03-wa-b2e7-049-hypothesis-register",
+  "cohort": "c7",
+  "producer": "gpt-5.6-sol-xhigh",
+  "ref_reviewed": "refs/heads/po03/wa-b2e7-c7",
+  "reviewer_id": "po03-reviewer-b-claude-sonnet-5",
+  "protocol": {
+    "step1_frozen_acceptance_sha256_recorded_before_disclosure": "1e93376305ad5a1379bcd8ee3b11f86ea6dcb08325afe4d200b80c5348ea72c8",
+    "step1_frozen_hypothesis": "At least twelve current external method claims can be stated as falsifiable hypotheses with frozen source identity and a preregistered refutation condition.",
+    "step2_archive_command": "git archive po03/wa-b2e7-c7 workstreams/po03/attempts/po03-wa-b2e7-049-hypothesis-register | tar -x -C /home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-049-hypothesis-register",
+    "step3_independent_execution": "executed build_register.py and test_hypothesis_register.py myself under python3 -I before reading manifest.json/result.json"
+  },
+  "independent_execution": {
+    "command": "python3 -I test_hypothesis_register.py -v",
+    "cwd": "/home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-049-hypothesis-register/workstreams/po03/attempts/po03-wa-b2e7-049-hypothesis-register",
+    "raw_output": "test_register_has_at_least_twelve_valid_entries (__main__.HypothesisRegisterTests.test_register_has_at_least_twelve_valid_entries) ... ok\ntest_strategy_interlock_is_empty (__main__.HypothesisRegisterTests.test_strategy_interlock_is_empty) ... ok\ntest_validator_refuses_non_falsifiable_entry (__main__.HypothesisRegisterTests.test_validator_refuses_non_falsifiable_entry) ... ok\ntest_validator_refuses_tampered_source (__main__.HypothesisRegisterTests.test_validator_refuses_tampered_source) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.001s\n\nOK\n{\"entries\": 12, \"ledger_sha256\": \"69166f9947e7e863fdefc60239743ac2dabea03be4351cf801a957234df22eb1\"}",
+    "exit_code": 0
+  },
+  "notable_independent_verification": {
+    "description": "The register hardcodes a 'page_sha256' per source, implicitly claiming a real HTTP fetch of the full page (fetch_status: HTTP_200), separate from the short quoted 'text' excerpt (whose hash is separately and correctly computed as relied_text_sha256). Since the task capsule's listed tools are only ['git','python','repository file tools'] with no browser/fetch tool named, I treated this as a serious candidate for a fabricated/invented hash and independently live-fetched 4 of the 12 cited URLs myself (this reviewer's sandbox does have outbound network access) to compare byte-for-byte.",
+    "command": "curl -sS -L <url> | sha256sum, compared against the corresponding page_sha256 field in build_register.py's SOURCES dict, for 4 of 12 sources",
+    "raw_output": "martinfowler.com/.../write-ahead-log.html: claimed 7195b75918c1d8ddea5cecdc8b3567c966eae69e2daa414e62f86e538cd79d73 == actual 7195b75918c1d8ddea5cecdc8b3567c966eae69e2daa414e62f86e538cd79d73 (MATCH)\nmicroservices.io/.../transactional-outbox.html: claimed 4a86d3fb29ea43f67802cbe0ed94763ab0691684525e394d8e6619842b8cc3a5 == actual 4a86d3fb29ea43f67802cbe0ed94763ab0691684525e394d8e6619842b8cc3a5 (MATCH)\nsre.google/sre-book/handling-overload/: claimed 8ca912a82390e7f61e8bbae7baab3a74489f5068d71dee1ff24aed99375e0373 == actual 8ca912a82390e7f61e8bbae7baab3a74489f5068d71dee1ff24aed99375e0373 (MATCH)\ndocs.temporal.io/workflow-execution: claimed ff54921cd385e396ede8ca74ce7525f1e93f9e5af1cbf7f1c563ab4e30774561 == actual ff54921cd385e396ede8ca74ce7525f1e93f9e5af1cbf7f1c563ab4e30774561 (MATCH)",
+    "conclusion": "All 4 spot-checked page_sha256 values are byte-for-byte identical to a live fetch of the cited URL performed independently by this reviewer today. A coincidental SHA-256 collision is not a realistic explanation for a multi-kilobyte HTML page. This is strong evidence the producer genuinely fetched these pages rather than inventing the hashes, directly satisfying the frozen acceptance criterion 'no value, hash, metric or provider capability is invented' for the source-identity claims. This is a genuinely positive, verified finding, not merely a self-report."
+  },
+  "hidden_case": {
+    "description": "The validator checks that 'reject_when' is a non-empty string free of a short list of vague words, and separately checks comparator is one of a fixed executable set and threshold is numeric -- but never cross-checks that the free-text 'reject_when' description is semantically consistent with the actual (comparator, threshold) pair it is supposed to describe. Constructed an entry where reject_when contradicts comparator/threshold, then recomputed a self-consistent hypothesis_hash over the tampered-but-internally-consistent entry.",
+    "command": "set refutation_condition.reject_when to a contradictory statement, recompute hypothesis_hash correctly over the modified entry, then run validate_entry()",
+    "raw_output": "HIDDEN CASE errors for internally-inconsistent-but-hash-consistent reject_when: []\ncomparator/threshold actually says: less_than_or_equal 0.2\nreject_when text says something different: 'rejected only if the metric exceeds one million (contradicts comparator/threshold below)'",
+    "outcome": "FAILS",
+    "analysis": "The validator accepts an entry whose human-readable refutation description contradicts its own machine-executable comparator/threshold, as long as the entry is internally hash-consistent. The hash proves the entry has not been tampered with post-hoc, but does not prove the free-text 'reject_when' field was ever derived from, or consistent with, the executable (metric, comparator, threshold) triple. A downstream reader relying on the human-readable reject_when text for interpretation could be misled about what will actually be tested, even though this specific register's own build_register.py always derives reject_when programmatically as f'{metric} is {comparator} {threshold}' (so this gap is not exploited by the register as actually built, only by a hypothetical adversarially-constructed entry)."
+  },
+  "producer_claim": {
+    "verdict": "PASS",
+    "evidence_text": "Built 12-entry hypotheses.jsonl from actually fetched source excerpts, validated all hashes and executable thresholds, and ran 4 tests; malformed nonnumeric refutation and tampered source cases were refused.",
+    "manifest_artifact_count": 7
+  },
+  "independent_verdict": "PASS",
+  "agreement": "AGREE",
+  "divergence_reason": null,
+  "vacuous_test_check": {
+    "performed": true,
+    "method": "Considered whether a stub validator that always returns [] (no errors) would pass; tests 2 and 3 assert specific error strings are present, which an always-valid stub would fail.",
+    "result": "NOT_VACUOUS"
+  },
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "All 8 acceptance criteria are met, tests are non-vacuous, and -- unusually among this cohort -- I was able to independently corroborate the claimed source evidence against the live internet, confirming the page hashes are real rather than invented. The reject_when semantic-consistency gap found via the hidden case is real but does not affect this specific register (which always derives reject_when programmatically) and is a design note for the validator's future hardening rather than a defect in the delivered artifact."
+}
