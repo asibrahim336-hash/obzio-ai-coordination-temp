@@ -77,6 +77,25 @@ def lesson_record(lesson: dict) -> dict:
         }
         for item in lesson["support"]
     ]
+    # A residual is only closed by naming who closed it, with the same citation
+    # discipline as support: an owner, a commit, a blob and a digest.  Recorded
+    # apart from ``support`` because closing a residual is not evidence for the
+    # lesson's statement, and folding the two would inflate independence counts.
+    closure = None
+    if lesson.get("residual_closed_by") is not None:
+        entry = lesson["residual_closed_by"]
+        record = EVIDENCE[entry["evidence"]]
+        closure = {
+            "evidence_id": entry["evidence"],
+            "owner": record["owner"],
+            "role": record["role"],
+            "commit": record["commit"],
+            "path": record["path"],
+            "blob": record["blob"],
+            "sha256": record["sha256"],
+            "observed": record["observed"],
+            "detail": entry["detail"],
+        }
     return {
         "lesson_id": lesson["lesson_id"],
         "statement": lesson["statement"],
@@ -90,7 +109,10 @@ def lesson_record(lesson: dict) -> dict:
         "internal_reproduction": lesson.get("internal_reproduction"),
         "disposition": lesson["disposition"],
         "disposition_basis": lesson["disposition_basis"],
+        "disposition_change": lesson.get("disposition_change"),
         "residual_boundary": lesson["residual_boundary"],
+        "residual_closed_by": closure,
+        "attribution_precision": lesson.get("attribution_precision"),
         "lineage": lesson["lineage"],
     }
 

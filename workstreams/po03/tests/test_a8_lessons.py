@@ -214,31 +214,109 @@ class HygieneMechanismTests(unittest.TestCase):
         ):
             self.assertFalse(module.is_derived(evidence), evidence)
 
-    def test_the_residual_boundary_is_still_true(self):
-        """L-13 stays RETEST only while coordinator-owned paths remain unclean.
+    def test_no_derived_file_is_tracked_in_the_wave_one_allowlist(self):
+        """The invariant L-13 now stands on, asserted forward rather than backward.
 
-        If the named files are cleaned by their owner, this test fails and the
-        disposition must be revisited. That is the retest, made automatic rather
-        than left to memory.
+        This replaces an earlier test that asserted the defect was still present,
+        so that a repair would fail the test rather than leave a stale RETEST
+        standing. That did its job - the repair at ``e19982d`` was noticed
+        because of it - but a defect-presence assertion is a signal, not a guard:
+        it can only fire once, and after it fires it is a false red. What is
+        worth holding permanently is the property the signal stood in for, which
+        is that no build product is tracked anywhere the commission may write.
         """
-        record = {lesson["lesson_id"]: lesson for lesson in register()["lessons"]}["L-13"]
-        self.assertEqual(record["disposition"], "RETEST")
-        completed = subprocess.run(
-            ["git", "ls-files", "--", "workstreams/po03/"],
+        tracked = subprocess.run(
+            ["git", "ls-files", "--", "workstreams/po03/", "receipts/po03/", ".github/workflows/"],
             cwd=REPO_ROOT,
             capture_output=True,
             text=True,
             check=True,
+        ).stdout.splitlines()
+        self.assertTrue(tracked, "expected the allowlist to contain tracked files at all")
+        derived = [line for line in tracked if "__pycache__" in line.split("/") or line.endswith((".pyc", ".pyo"))]
+        self.assertEqual(derived, [], "derived bytecode is tracked inside the wave-one write allowlist")
+
+    def test_l13_is_retained_and_names_who_closed_the_residual_that_held_it_open(self):
+        """A disposition that moved owes the reader the citation it moved on.
+
+        RETAIN is only honest here because the residual was closed by the party
+        that owned it. The closure carries the same citation discipline as
+        support - owner, commit, blob, digest - so the move can be checked rather
+        than believed, and it is recorded apart from ``support`` so that closing
+        a residual never inflates the independent-support count.
+        """
+        record = {lesson["lesson_id"]: lesson for lesson in register()["lessons"]}["L-13"]
+        self.assertEqual(record["disposition"], "RETAIN")
+
+        change = record["disposition_change"]
+        self.assertEqual((change["from"], change["to"]), ("RETEST", "RETAIN"))
+        self.assertIn("test_the_residual_boundary_is_still_true", change["signalled_by"])
+        self.assertIn("test_no_derived_file_is_tracked_in_the_wave_one_allowlist", change["replaced_by"])
+
+        closure = record["residual_closed_by"]
+        self.assertEqual(closure["evidence_id"], change["closed_by"])
+        self.assertNotEqual(closure["owner"], "po03-worker-a8", "a residual this cohort closed itself is not closure")
+        self.assertRegex(closure["commit"], r"^[0-9a-f]{40}$")
+        self.assertRegex(closure["sha256"], r"^[0-9a-f]{64}$")
+        self.assertNotIn(
+            closure["owner"],
+            record["support_owners"],
+            "the closing party must not also be counted as support for the statement",
         )
-        tracked_derived = [
-            line for line in completed.stdout.splitlines() if "__pycache__" in line or line.endswith(".pyc")
-        ]
-        self.assertTrue(
-            tracked_derived,
-            "no derived file is tracked anywhere any more, so L-13 should move from RETEST to RETAIN",
+
+    def test_the_recorded_residual_that_remains_is_one_this_cohort_may_not_close(self):
+        """RETAIN with a residual note is only truthful if the note is accurate.
+
+        The remaining gap is that no ignore rule covers ``receipts/po03/**``,
+        where this cohort holds a file-shaped grant and so cannot add one. Both
+        halves are checked: that git really does not ignore a derived path there,
+        and that the mechanism reports it instead of claiming coverage.
+        """
+        record = {lesson["lesson_id"]: lesson for lesson in register()["lessons"]}["L-13"]
+        self.assertIn("receipts/po03/", record["residual_boundary"])
+
+        ignored = subprocess.run(
+            ["git", "check-ignore", "-q", "--", "receipts/po03/2026-08-22/__pycache__/probe.pyc"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            check=False,
         )
-        for path in tracked_derived:
-            self.assertNotIn("successor/", path, "an owned path regressed")
+        reported = subprocess.run(
+            [sys.executable, "-I", HYGIENE],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        ).stdout
+        if ignored.returncode == 0:
+            # The owner of receipts/po03/ supplied a rule; then the mechanism must
+            # say so, and the residual note in the register is out of date.
+            self.assertIn("PREVENTED", reported)
+        else:
+            self.assertIn("UNPREVENTED", reported)
+            self.assertIn("receipts/po03/", reported)
+
+    def test_the_prevention_half_of_the_mechanism_is_in_force_where_this_cohort_owns_it(self):
+        """Removal without prevention leaves the escape one `git add -A` away.
+
+        a6's corrected attribution located the origin in staging, so the property
+        that matters is not only that no bytecode is tracked but that it would be
+        ignored if it appeared. Asked of git rather than of a named .gitignore, so
+        the assertion is about the rule being in force and not about its location.
+        """
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location("check_custody_hygiene", REPO_ROOT / HYGIENE)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        for prefix in ("workstreams/po03/successor/", "workstreams/po03/control/units/a8/"):
+            for probe in (f"{prefix}__pycache__/probe.cpython-312.pyc", f"{prefix}probe.pyc"):
+                self.assertTrue(module.is_ignored(probe), f"no ignore rule in force for {probe}")
+        self.assertFalse(
+            module.is_ignored("workstreams/po03/successor/g1/factory.py"),
+            "the probe must distinguish residue from source, or it proves nothing",
+        )
 
 
 class WithdrawnBeliefTests(unittest.TestCase):

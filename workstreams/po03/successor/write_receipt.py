@@ -205,12 +205,16 @@ def build_document() -> dict:
                 ),
             },
             {
-                "boundary": "derived bytecode remains tracked outside this cohort's ownership",
-                "status": "NOT_YET",
+                "boundary": "recurrence of tracked bytecode cannot be prevented under receipts/po03/",
+                "status": "NOT_SUPPORTED",
                 "detail": (
-                    "Two tracked .pyc files remain under workstreams/po03/tests/ and workstreams/po03/tools/. "
-                    "check_custody_hygiene.py reports them and refuses any under owned paths; lesson L-13 is "
-                    "held at RETEST rather than closed."
+                    "The residual that held L-13 at RETEST is closed: the coordinator removed both tracked "
+                    ".pyc files at e19982d and added workstreams/po03/.gitignore in the same commit, so L-13 "
+                    "now reads RETAIN. What remains is narrower. No ignore rule covers receipts/po03/**, "
+                    "which is inside the wave-one allowlist, and this cohort's grant there is the single file "
+                    "receipts/po03/2026-08-22/successor-generation.json, so it cannot add one without writing "
+                    "outside its ownership. check_custody_hygiene.py refuses derived files there and reports "
+                    "the missing prevention as UNPREVENTED rather than claiming coverage it does not have."
                 ),
             },
         ],

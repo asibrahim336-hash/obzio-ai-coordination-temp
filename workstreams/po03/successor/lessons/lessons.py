@@ -46,6 +46,12 @@ A10 = {
     "branch": "cursor/po03-a10-crossfamily-review-ed20",
     "commit": "af2e2c08a6ca158d527b88e12f4075f03528a225",
 }
+COORDINATOR = {
+    "owner": "po03-integration-controller",
+    "role": "integration controller (the only writer of shared PO-03 control state)",
+    "branch": "cursor/po03-wave-a-transactional-factory-ed20",
+    "commit": "e19982d852ea5621fa4a835413fb4fc48ae4991c",
+}
 
 EVIDENCE: dict[str, dict[str, Any]] = {
     "a6-readback-audit": {
@@ -87,6 +93,14 @@ EVIDENCE: dict[str, dict[str, Any]] = {
         "sha256": "8510b731fd9be42a8d0506df8c65374ea9e2551ec96b058438cd41898c6ce94c",
         "finding": "9 invariants attacked, 5 broken, 1 boundary",
         "observed": "adversarial audit of the same control_plane.py G1 ports, at the same file digest this cohort ported from",
+    },
+    "coordinator-bytecode-repair": {
+        **COORDINATOR,
+        "path": "workstreams/po03/.gitignore",
+        "blob": "3bbe7b6f921890134bd22373cfdd89e91d5e788f",
+        "sha256": "ac2de72f51a815d5d4c3b2c16f8aa800a4c817c4b4f5e054218e300c661b47fa",
+        "finding": "residual_closed_by_the_owner",
+        "observed": "the two tracked .pyc files under coordinator-owned paths removed from the index, and an ignore rule covering __pycache__, *.pyc and *.pyo added across workstreams/po03/, in the same commit",
     },
 }
 
@@ -272,12 +286,25 @@ LESSONS: tuple[dict[str, Any], ...] = (
         "mechanism": {
             "kind": "repository_mechanism",
             "path": "workstreams/po03/successor/check_custody_hygiene.py",
-            "detail": "refuses tracked derived files under this cohort's owned prefixes and reports, without failing, those remaining outside its ownership",
+            "detail": "refuses tracked derived files under this cohort's owned prefixes, verifies that an ignore rule covers those prefixes so a broad `git add -A` cannot re-admit residue, and reports without failing on anything remaining outside its ownership",
         },
         "recurrence_test": "test_a8_lessons.HygieneMechanismTests.test_no_derived_bytecode_is_tracked_under_owned_paths",
-        "disposition": "RETEST",
-        "disposition_basis": "The mechanism belongs where files enter the repository, not in the custody engine, because a6's corrected attribution shows the escape came from how work was staged. This cohort's owned prefixes are clean and the check enforces that. Two tracked bytecode files remain under coordinator-owned paths, which this cohort is forbidden to modify, so the lesson cannot be closed: it is retested by the same mechanism once those paths are cleaned by their owner. Recording this as RETAIN would claim a boundary this cohort does not control.",
-        "residual_boundary": "workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc and workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc are still tracked. Both are outside this cohort's ownership. Running `unittest discover` also regenerates caches under coordinator-owned paths, which is why the check reports rather than fails on them.",
+        "disposition": "RETAIN",
+        "disposition_basis": "The mechanism belongs where files enter the repository, not in the custody engine, because a6's corrected attribution shows the escape came from how work was staged. The lesson was held at RETEST while two tracked bytecode files remained under coordinator-owned paths this cohort must not modify. The owner has now cleaned them: at e19982d the coordinator removed both from the index and, in the same commit, added workstreams/po03/.gitignore covering __pycache__, *.pyc and *.pyo, so recurrence is prevented structurally rather than by staging discipline. The named residual that kept the question open is closed by the party who owned it, so the disposition moves to RETAIN. The prevention, not merely the removal, is what makes RETAIN honest: a deletion alone would leave the same escape one broad `git add -A` away.",
+        "disposition_change": {
+            "from": "RETEST",
+            "to": "RETAIN",
+            "closed_by": "coordinator-bytecode-repair",
+            "signalled_by": "test_a8_lessons.HygieneMechanismTests.test_the_residual_boundary_is_still_true, which was written to fail once the residual closed, and did",
+            "replaced_by": "test_a8_lessons.HygieneMechanismTests.test_no_derived_file_is_tracked_in_the_wave_one_allowlist, which asserts the invariant going forward instead of the historical presence of the defect",
+            "why_the_old_test_had_to_go": "It asserted that a defect currently exists, which makes a test that fails when the defect is fixed. That is the shape the wave's binding anti-coupling rule forbids, and this cohort's own instance of it. Writing it that way was deliberate - it is why the closure was noticed at all rather than left as a stale claim - but a defect-presence assertion is a signal, not a guard, and once it has fired it must be replaced by the invariant it was standing in for.",
+        },
+        "residual_boundary": "One boundary remains and it is narrower than the one that closed. No ignore rule covers receipts/po03/**, which is inside the wave-one write allowlist and inside this mechanism's OWNED prefixes; `git check-ignore` reports receipts/po03/2026-08-22/__pycache__/x.pyc as not ignored. This cohort cannot close it: its grant under receipts/po03/ is the single file receipts/po03/2026-08-22/successor-generation.json, a file-shaped grant, so creating receipts/po03/.gitignore would be a write outside its ownership. The mechanism therefore refuses derived files there but cannot prevent them, and reports the missing prevention rather than claiming coverage it does not have.",
+        "residual_closed_by": {
+            "evidence": "coordinator-bytecode-repair",
+            "detail": "removal of the two tracked .pyc files and the ignore rule that prevents their return, both at e19982d",
+        },
+        "attribution_precision": "The coordinator's earlier correction to this cohort - that zero tracked bytecode remained, citing `git ls-files` - was true on the integration branch and not yet true on this cohort's branch, whose head predated e19982d. The RETEST disposition was accurate for the working state it was recorded against. The origin of the two files was the coordinator's own broad `git add -A` at 04827c3 and 6f5e386, which is a6's corrected attribution and not a cohort's defect. Recorded because a disposition that changes on a merge should say which branch state each reading was taken from, or a later reader cannot tell a repair from a mistake.",
         "lineage": {"derived_from": [], "supersedes": [], "superseded_by": []},
     },
     {

@@ -24,11 +24,11 @@
       "L-06",
       "L-08",
       "L-11",
-      "L-12"
+      "L-12",
+      "L-13"
     ],
     "RETEST": [
-      "L-07",
-      "L-13"
+      "L-07"
     ],
     "SUPERSEDE": [
       "L-04",
@@ -43,8 +43,10 @@
   "lesson_count": 14,
   "lessons": [
     {
+      "attribution_precision": null,
       "disposition": "RETAIN",
       "disposition_basis": "The change closed both the frozen case P08 and a6's independently authored H02, and the recurrence test asserts G1's behaviour as well as G2's. The residual - that principal identity is still asserted by the caller rather than bound to a credential - was declared in G2's own docstring before a10 published, and a10's D6 independently confirms it as a boundary rather than contradicting the change.",
+      "disposition_change": null,
       "independently_supported": true,
       "internal_reproduction": null,
       "lesson_id": "L-01",
@@ -61,6 +63,7 @@
       "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c03_worker_cannot_complete",
       "recurrence_test_author": "po03-worker-a8",
       "residual_boundary": "Binding a principal to a credential needs a transport this in-process, dependency-free controller does not have. Not claimable as closed.",
+      "residual_closed_by": null,
       "statement": "Authority over a state transition has to be an authorisation decision at the moment of the transition. Writing the authorised actor's name onto the event records who was supposed to act, not who did.",
       "support": [
         {
@@ -96,8 +99,10 @@
       ]
     },
     {
+      "attribution_precision": null,
       "disposition": "RETAIN",
       "disposition_basis": "G1 hashed artifacts at ingestion and never again; a6's H09 and the frozen case P21 both measured that, and both pass under G2's custody manifest with re-verification on every sweep.",
+      "disposition_change": null,
       "independently_supported": true,
       "internal_reproduction": null,
       "lesson_id": "L-02",
@@ -114,6 +119,7 @@
       "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c05_post_admission_drift_detected",
       "recurrence_test_author": "po03-worker-a8",
       "residual_boundary": null,
+      "residual_closed_by": null,
       "statement": "Verifying artifact bytes once, at admission, proves only that the bytes were right once. Custody is a continuing claim, so it needs continuing verification.",
       "support": [
         {
@@ -135,8 +141,10 @@
       ]
     },
     {
+      "attribution_precision": null,
       "disposition": "RETAIN",
       "disposition_basis": "G1 treated RESULT_COMMITTED as terminal for the recovery scanner and had no outbox, so such a result was stranded rather than replayed or re-run. This is the shape of the lost PO-02 Code-2 return that the commission was written around, and it is the only lesson here whose absence is measured by both a frozen case (P30) and an independently authored one (H10).",
+      "disposition_change": null,
       "independently_supported": true,
       "internal_reproduction": null,
       "lesson_id": "L-03",
@@ -153,6 +161,7 @@
       "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c08_lost_callback_is_replayed_once",
       "recurrence_test_author": "po03-worker-a8",
       "residual_boundary": null,
+      "residual_closed_by": null,
       "statement": "A result that was committed but never ingested is the failure mode that costs the most work, because nothing is wrong with the result. The commit and the intent to deliver it must be recorded together so recovery can replay the delivery instead of re-running the work.",
       "support": [
         {
@@ -174,8 +183,10 @@
       ]
     },
     {
+      "attribution_precision": null,
       "disposition": "SUPERSEDE",
       "disposition_basis": "The earlier formulation - 'fence tokens must increase monotonically' - is retained as a record and superseded by 'a fence must correspond to a grant issued to this worker, and that grant must still be live'. Monotonicity was not wrong, it was insufficient: it is one of the two conditions, and G1 implemented only that one. C-02 completes the pair by evaluating the lease deadline at the moment of commit rather than only in the recovery scanner.",
+      "disposition_change": null,
       "independently_supported": true,
       "internal_reproduction": null,
       "lesson_id": "L-04",
@@ -197,6 +208,7 @@
       "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c01_forged_fence_is_refused",
       "recurrence_test_author": "po03-worker-a8",
       "residual_boundary": null,
+      "residual_closed_by": null,
       "statement": "A fence token has to be checked against the grants that were actually issued. Comparing it to a high-water mark tests that the holder is not behind, which is a different question from whether the holder ever held the lease.",
       "support": [
         {
@@ -218,8 +230,10 @@
       ]
     },
     {
+      "attribution_precision": null,
       "disposition": "RETAIN",
       "disposition_basis": "Supported by this cohort's own cross-generation measurement, not by an independent evaluator: G0 detected pinned-input drift (P05) and G1 did not, which is a regression in the direction of travel and is reported rather than suppressed. Recorded here with independent support absent, because a lesson this cohort found itself must not be presented as externally confirmed.",
+      "disposition_change": null,
       "independently_supported": false,
       "internal_reproduction": null,
       "lesson_id": "L-05",
@@ -236,13 +250,16 @@
       "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c04_dispatch_tamper_and_input_drift_detected",
       "recurrence_test_author": "po03-worker-a8",
       "residual_boundary": "No evaluator cohort has examined this claim. It is a measured regression, not an independently supported lesson.",
+      "residual_closed_by": null,
       "statement": "A pinned input is only pinned if something recomputes the pin. G1 carried the dispatch manifest digest and never re-derived it, and in doing so lost a check the pre-amendment controller had.",
       "support": [],
       "support_owners": []
     },
     {
+      "attribution_precision": null,
       "disposition": "RETAIN",
       "disposition_basis": "G2 adjudicates on the idempotency key: identical content is a harmless duplicate, different content under the same key is a refused conflict, and neither produces a second ingestion. Frozen case P26 measured this and a10 independently reached the same root cause from an adversarial direction.",
+      "disposition_change": null,
       "independently_supported": true,
       "internal_reproduction": null,
       "lesson_id": "L-06",
@@ -259,6 +276,7 @@
       "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c06_conflicting_replay_refused",
       "recurrence_test_author": "po03-worker-a8",
       "residual_boundary": null,
+      "residual_closed_by": null,
       "statement": "Deduplicating a callback on the digest of its whole payload answers 'have I seen these exact bytes', when the question that matters is 'have I already admitted a result for this task'. Only the second question distinguishes a harmless retry from a conflicting one.",
       "support": [
         {
@@ -280,8 +298,10 @@
       ]
     },
     {
+      "attribution_precision": null,
       "disposition": "RETEST",
       "disposition_basis": "The anchor closes the truncation case (P29) and is guarded by a recurrence test, and a companion test shows why a row-count-only anchor would not have. But a10's D5 is broader than truncation: an actor with write access to the whole store can rewrite the ledger and the anchor together, and G2's anchor lives in the same store as the ledger it protects. That residual is demonstrated by an executable test rather than described, and the lesson stays open until an anchor outside the store - a signed remote ref - exists to retest against.",
+      "disposition_change": null,
       "independently_supported": true,
       "internal_reproduction": null,
       "lesson_id": "L-07",
@@ -298,6 +318,7 @@
       "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c07_tail_truncation_detected",
       "recurrence_test_author": "po03-worker-a8",
       "residual_boundary": "test_a8_g2_changes.DispositionEvidenceTests.test_retest_the_anchor_shares_the_store_it_protects asserts the exposure, so the claim cannot quietly widen.",
+      "residual_closed_by": null,
       "statement": "Hash-chaining proves that the rows present are consistent with each other. It says nothing about rows that are gone, so a log needs its length and head anchored as well as its links.",
       "support": [
         {
@@ -319,8 +340,10 @@
       ]
     },
     {
+      "attribution_precision": null,
       "disposition": "RETAIN",
       "disposition_basis": "The most heavily supported lesson in the register: two evaluator cohorts of different owners, working from different directions, reached it independently, and a6 reached it by auditing real committed records rather than by attacking a fixture. G2 refuses admission unless the record resolves at its declared locator and the bytes there match the result being admitted. Retained with the sharpest evidence available - this cohort ran the same audit inward and every one of its own records fails it, including one that resolves to a stale earlier version rather than to nothing.",
+      "disposition_change": null,
       "independently_supported": true,
       "internal_reproduction": {
         "cause": "make_result.py resolves result_commit_id to HEAD as it writes the record, which is necessarily before that record is committed. No sequence of correct operator behaviour can satisfy the locator, so this is a property of coordinator-owned tooling and not of how this cohort used it.",
@@ -345,6 +368,7 @@
       "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c09_unresolvable_locator_refused",
       "recurrence_test_author": "po03-worker-a8",
       "residual_boundary": "Two residuals, and the second is live. G2 resolves against a modelled immutable store; the live equivalent is `git cat-file blob <commit>:<path>`, which is what the integration proposal recommends, and this cohort has not changed the live control plane. Separately, this cohort's own six records carry locators that do not resolve to them, because the coordinator-owned tool that writes them is read-only here. A parent ingesting a8 must resolve these records at the branch head rather than at their declared commit.",
+      "residual_closed_by": null,
       "statement": "'Committed' is a claim about an immutable store, so it has to be checked against that store. A result record that cannot be read back at the locator it declares has not been committed, whatever its own contents assert.",
       "support": [
         {
@@ -393,8 +417,10 @@
       ]
     },
     {
+      "attribution_precision": null,
       "disposition": "REJECT",
       "disposition_basis": "Refused on executed evidence rather than on taste. Applied to a real pair of score sets, the weighted candidate reports progress for a change that reintroduces a false completion - the precise outcome the preregistered guard exists to refuse. A metric that can be improved by regressing on safety is not a measure of progress. The guarded rule is retained.",
+      "disposition_change": null,
       "independently_supported": false,
       "internal_reproduction": null,
       "lesson_id": "L-09",
@@ -411,13 +437,16 @@
       "recurrence_test": "test_a8_g2_changes.DispositionEvidenceTests.test_reject_a_weighted_single_score_would_have_passed_a_safety_regression",
       "recurrence_test_author": "po03-worker-a8",
       "residual_boundary": null,
+      "residual_closed_by": null,
       "statement": "A single weighted headline score should replace the primary metric and its separate guards, because one number is easier to compare across generations.",
       "support": [],
       "support_owners": []
     },
     {
+      "attribution_precision": null,
       "disposition": "SUPERSEDE",
       "disposition_basis": "Built and shown insufficient rather than argued against: under truncate-then-forge, where the last row is dropped and a correctly chained replacement appended, the row count is unchanged and reports a healthy log. The head digest catches it. Superseded by the anchor in C-07, whose own residual is held open under L-07.",
+      "disposition_change": null,
       "independently_supported": false,
       "internal_reproduction": null,
       "lesson_id": "L-10",
@@ -436,13 +465,16 @@
       "recurrence_test": "test_a8_g2_changes.DispositionEvidenceTests.test_supersede_row_count_alone_cannot_detect_truncation",
       "recurrence_test_author": "po03-worker-a8",
       "residual_boundary": null,
+      "residual_closed_by": null,
       "statement": "A row-count anchor is sufficient to detect a log that lost its tail.",
       "support": [],
       "support_owners": []
     },
     {
+      "attribution_precision": null,
       "disposition": "RETAIN",
       "disposition_basis": "This lesson also falsifies something this cohort wrote down. G2's original lineage recorded that an independent traversal check was declined because 'the allowlist already refuses traversal before ownership is consulted, so no case measured a failure and no lesson supported it'. The premise was false, and the reason no case measured it is that the frozen public case P24 happens to use a mid-string traversal, which the character-strip does catch. An evaluator of a different owner found the shape this cohort's own suite was blind to. The declined entry is kept in lineage.json with an explicit SUPERSEDED_BY_C-10 disposition rather than deleted.",
+      "disposition_change": null,
       "independently_supported": true,
       "internal_reproduction": null,
       "lesson_id": "L-11",
@@ -461,6 +493,7 @@
       "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c10_path_escape_refused",
       "recurrence_test_author": "po03-worker-a8",
       "residual_boundary": "The escape was reproduced against the packaged G1 and against G2 before the fix; both admitted an artifact living outside the store they verify against. The live control plane still carries the defect, which is a coordinator-owned file this cohort must not modify.",
+      "residual_closed_by": null,
       "statement": "A path-scope guard has to normalise the declared path exactly as the code that opens the file will. A validator that reasons about a different string than the filesystem receives is not a weaker guard, it is a guard that can be walked around.",
       "support": [
         {
@@ -482,8 +515,10 @@
       ]
     },
     {
+      "attribution_precision": null,
       "disposition": "RETAIN",
       "disposition_basis": "Reproduced against both the packaged G1 and G2 before the fix: after a unit reached COMPLETED, a resubmission was admitted, the projection fell back to RESULT_COMMITTED, and a second completion was recorded. Fixing it required naming the closed states separately from the merely committed ones, because refusing every unit that already holds a result would have made C-06's replay adjudication unreachable. G1's single TERMINAL_STATES set, which mixes the two, is the defect underneath a10's finding.",
+      "disposition_change": null,
       "independently_supported": true,
       "internal_reproduction": null,
       "lesson_id": "L-12",
@@ -500,6 +535,7 @@
       "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c11_terminal_state_cannot_be_re_entered",
       "recurrence_test_author": "po03-worker-a8",
       "residual_boundary": null,
+      "residual_closed_by": null,
       "statement": "A state machine needs to distinguish 'this unit holds a durable result' from 'this unit is closed'. Collapsing the two lets replayed work walk a projection backwards out of a terminal state.",
       "support": [
         {
@@ -521,8 +557,17 @@
       ]
     },
     {
-      "disposition": "RETEST",
-      "disposition_basis": "The mechanism belongs where files enter the repository, not in the custody engine, because a6's corrected attribution shows the escape came from how work was staged. This cohort's owned prefixes are clean and the check enforces that. Two tracked bytecode files remain under coordinator-owned paths, which this cohort is forbidden to modify, so the lesson cannot be closed: it is retested by the same mechanism once those paths are cleaned by their owner. Recording this as RETAIN would claim a boundary this cohort does not control.",
+      "attribution_precision": "The coordinator's earlier correction to this cohort - that zero tracked bytecode remained, citing `git ls-files` - was true on the integration branch and not yet true on this cohort's branch, whose head predated e19982d. The RETEST disposition was accurate for the working state it was recorded against. The origin of the two files was the coordinator's own broad `git add -A` at 04827c3 and 6f5e386, which is a6's corrected attribution and not a cohort's defect. Recorded because a disposition that changes on a merge should say which branch state each reading was taken from, or a later reader cannot tell a repair from a mistake.",
+      "disposition": "RETAIN",
+      "disposition_basis": "The mechanism belongs where files enter the repository, not in the custody engine, because a6's corrected attribution shows the escape came from how work was staged. The lesson was held at RETEST while two tracked bytecode files remained under coordinator-owned paths this cohort must not modify. The owner has now cleaned them: at e19982d the coordinator removed both from the index and, in the same commit, added workstreams/po03/.gitignore covering __pycache__, *.pyc and *.pyo, so recurrence is prevented structurally rather than by staging discipline. The named residual that kept the question open is closed by the party who owned it, so the disposition moves to RETAIN. The prevention, not merely the removal, is what makes RETAIN honest: a deletion alone would leave the same escape one broad `git add -A` away.",
+      "disposition_change": {
+        "closed_by": "coordinator-bytecode-repair",
+        "from": "RETEST",
+        "replaced_by": "test_a8_lessons.HygieneMechanismTests.test_no_derived_file_is_tracked_in_the_wave_one_allowlist, which asserts the invariant going forward instead of the historical presence of the defect",
+        "signalled_by": "test_a8_lessons.HygieneMechanismTests.test_the_residual_boundary_is_still_true, which was written to fail once the residual closed, and did",
+        "to": "RETAIN",
+        "why_the_old_test_had_to_go": "It asserted that a defect currently exists, which makes a test that fails when the defect is fixed. That is the shape the wave's binding anti-coupling rule forbids, and this cohort's own instance of it. Writing it that way was deliberate - it is why the closure was noticed at all rather than left as a stale claim - but a defect-presence assertion is a signal, not a guard, and once it has fired it must be replaced by the invariant it was standing in for."
+      },
       "independently_supported": true,
       "internal_reproduction": null,
       "lesson_id": "L-13",
@@ -532,14 +577,25 @@
         "supersedes": []
       },
       "mechanism": {
-        "detail": "refuses tracked derived files under this cohort's owned prefixes and reports, without failing, those remaining outside its ownership",
+        "detail": "refuses tracked derived files under this cohort's owned prefixes, verifies that an ignore rule covers those prefixes so a broad `git add -A` cannot re-admit residue, and reports without failing on anything remaining outside its ownership",
         "kind": "repository_mechanism",
         "path": "workstreams/po03/successor/check_custody_hygiene.py"
       },
       "mechanism_is_live": true,
       "recurrence_test": "test_a8_lessons.HygieneMechanismTests.test_no_derived_bytecode_is_tracked_under_owned_paths",
       "recurrence_test_author": "po03-worker-a8",
-      "residual_boundary": "workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc and workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc are still tracked. Both are outside this cohort's ownership. Running `unittest discover` also regenerates caches under coordinator-owned paths, which is why the check reports rather than fails on them.",
+      "residual_boundary": "One boundary remains and it is narrower than the one that closed. No ignore rule covers receipts/po03/**, which is inside the wave-one write allowlist and inside this mechanism's OWNED prefixes; `git check-ignore` reports receipts/po03/2026-08-22/__pycache__/x.pyc as not ignored. This cohort cannot close it: its grant under receipts/po03/ is the single file receipts/po03/2026-08-22/successor-generation.json, a file-shaped grant, so creating receipts/po03/.gitignore would be a write outside its ownership. The mechanism therefore refuses derived files there but cannot prevent them, and reports the missing prevention rather than claiming coverage it does not have.",
+      "residual_closed_by": {
+        "blob": "3bbe7b6f921890134bd22373cfdd89e91d5e788f",
+        "commit": "e19982d852ea5621fa4a835413fb4fc48ae4991c",
+        "detail": "removal of the two tracked .pyc files and the ignore rule that prevents their return, both at e19982d",
+        "evidence_id": "coordinator-bytecode-repair",
+        "observed": "the two tracked .pyc files under coordinator-owned paths removed from the index, and an ignore rule covering __pycache__, *.pyc and *.pyo added across workstreams/po03/, in the same commit",
+        "owner": "po03-integration-controller",
+        "path": "workstreams/po03/.gitignore",
+        "role": "integration controller (the only writer of shared PO-03 control state)",
+        "sha256": "ac2de72f51a815d5d4c3b2c16f8aa800a4c817c4b4f5e054218e300c661b47fa"
+      },
       "statement": "A custody engine that admits artifacts by digest cannot tell evidence from build residue. Derived files have stable hashes and real byte counts, so they satisfy every integrity check while being regenerated on the next import.",
       "support": [
         {
@@ -574,8 +630,10 @@
       ]
     },
     {
+      "attribution_precision": null,
       "disposition": "DELETE",
       "disposition_basis": "Withdrawn on the evaluator's own correction. a6 initially disposed a8-u01..a8-u06 as REJECTED, and then recorded that those labels 'conflated unavailable evidence with a quality judgment': the branch was absent from a6's fetch at its scoring snapshot, so there was nothing to test. a6 reclassified 27 of its 30 rejections, including all six a8 rows, as availability boundaries and named only three units as quality-relevant, none of them a8's. Deleted rather than rejected because the claim was never evidenced in the first place - there is no finding to keep on file, only a misreading to withdraw. The correction is preserved by reference, not restated as vindication: a6's basis remains that no a8 result was available to test.",
+      "disposition_change": null,
       "independently_supported": false,
       "internal_reproduction": null,
       "lesson_id": "L-14",
@@ -596,6 +654,7 @@
       "recurrence_test": "test_a8_lessons.WithdrawnBeliefTests.test_the_rejection_of_this_cohort_was_an_availability_boundary",
       "recurrence_test_author": "po03-worker-a8",
       "residual_boundary": "No a8 unit has yet been independently accepted. Absence of an adverse finding is not acceptance, and this cohort cannot accept its own work.",
+      "residual_closed_by": null,
       "statement": "Cohort a8's units are quality-deficient, since an independent evaluator rejected all six of them.",
       "support": [],
       "support_owners": []
