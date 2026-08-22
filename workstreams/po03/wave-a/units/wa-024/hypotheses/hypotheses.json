@@ -20,7 +20,7 @@
       "statement": "Because actions/checkout defaults to fetch-depth 1, the provenance checks the PO-03 transactional protocol requires of every producer - that the start commit descends from the minimum protocol ancestor, and that the commission commit and pinned base are readable - succeed in a warm full-history checkout and fail on a default clean runner.",
       "prediction": "The ancestry and object-readability probes classify DEPTH_SENSITIVE: PASS in warm and clean_full, FAIL in clean_shallow.",
       "refutation_condition": "The probes pass in clean_shallow, or fail in clean_full, which would mean depth is not the discriminating variable.",
-      "measured_by": ["p09-protocol-ancestor-verification", "p10-commission-commit-readable", "p11-pinned-base-readable"]
+      "measured_by": ["p15-protocol-ancestor-verification", "p16-commission-commit-readable", "p17-pinned-base-readable"]
     },
     {
       "hypothesis_id": "H-WA024-02",
@@ -34,7 +34,8 @@
         "p02-contract-tests-bytecode-free",
         "p03-cleanliness-gate-after-bytecode-free",
         "p04-contract-tests-as-declared",
-        "p05-cleanliness-gate-after-declared"
+        "p05-cleanliness-gate-after-declared",
+        "p24-cleanliness-gate-final"
       ]
     },
     {
@@ -80,7 +81,7 @@
       "statement": "The warm agent checkout runs inside an ambient environment that carries provider-specific and credential-shaped variable names and a temporary directory already holding PO-03 run state. Any workload that reads either surface would pass warm and fail on a clean runner.",
       "prediction": "Environment and temporary-directory portability probes fail in warm and pass in both clean modes.",
       "refutation_condition": "The warm environment carries no provider-shaped variables and no PO-03 temporary state.",
-      "measured_by": ["p15-no-provider-environment-leak", "p16-no-tmpdir-carryover"],
+      "measured_by": ["p18-no-provider-environment-leak", "p19-no-tmpdir-carryover"],
       "expectation_binding": "advisory",
       "binding_note": "The outcome depends on the invoking host rather than on repository content, so it is recorded as an observation and is not enforced for clean-clone recurrence."
     },
@@ -91,12 +92,25 @@
       "statement": "Both repository workflows depend on actions/setup-python to make the bare name 'python' resolvable. The commands are therefore not reproducible outside Actions, which weakens the commission's clean-clone reproduction requirement even though the workflows themselves are correct.",
       "prediction": "A bare 'python' invocation errors with executable-not-found identically in all three environments on a host without setup-python.",
       "refutation_condition": "A bare 'python' resolves on a host where no setup action ran.",
-      "measured_by": ["p17-bare-python-interpreter-available"],
+      "measured_by": ["p20-bare-python-interpreter-available"],
       "expectation_binding": "advisory",
       "binding_note": "Depends on the invoking host's PATH, not on repository content."
+    },
+    {
+      "hypothesis_id": "H-WA024-07",
+      "derived_from_source_claims": ["SC-WA024-01", "SC-WA024-02", "SC-WA024-R5"],
+      "current_method_claim": "Record a producer result as an immutable commit id and have a distinct process read every artifact back by that id.",
+      "statement": "The result commit ids recorded in PO-03 control files are reachable only from separate producer branches, and the control files record no ref that makes them reachable. A multi-branch developer clone resolves them, so the custody chain looks verifiable; a single-ref checkout of the kind actions/checkout produces cannot resolve them at all, so the read-back the commission requires is not verifiable in CI as configured.",
+      "prediction": "Reading a recorded canary result commit fails in both clean modes, while a commit reachable from the checked-out branch fails only at depth 1.",
+      "refutation_condition": "A recorded canary result commit is readable in a clean tree materialised from the checked-out commit alone, which would mean reachability is not the discriminating variable.",
+      "measured_by": [
+        "p21-canary-result-commit-readable",
+        "p22-earlier-canary-result-commit-readable",
+        "p23-wave-branch-tip-readable"
+      ]
     }
   ],
-  "counted_current_method_hypotheses": 7,
+  "counted_current_method_hypotheses": 8,
   "minimum_required_by_input": 2,
   "decision_changed": []
 }
