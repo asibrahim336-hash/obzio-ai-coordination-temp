@@ -2,10 +2,19 @@
 """Coordinator-side ingestion driver for a wave of subordinate results.
 
 Ingestion is deliberately paranoid.  For each cohort the driver fetches the
-subordinate branch, materialises it as a detached worktree at an immutable SHA,
-and re-reads every declared artifact from that tree by hash and byte count.
+subordinate branch and re-reads every declared artifact by hash and byte count.
 The subordinate's own worktree is never trusted and never consulted: the only
 thing that counts is what the remote actually holds.
+
+Read-back is anchored to the commit each artifact names, not to the branch tip.
+Materialising the branch at its HEAD and hashing files out of that tree looks
+equivalent but is not: as soon as a later commit touches an artifact, an honest
+earlier result stops verifying even though its bytes are still durable at the
+commit it declared.  That is not a hypothetical -- it is why cohort a2's unit
+a2-u01 was really rejected for a fault_lab.py hash mismatch.
+
+A working tree is therefore materialised only when a result does *not* claim
+durability, because an uncommitted artifact has no object to read.
 
 A cohort branch that has not been pushed yields no ingestion at all, which is
 the correct outcome.  Provider completion is not result custody.
@@ -43,14 +52,41 @@ def git(*args: str, cwd: Path | None = None, check: bool = True) -> str:
 
 
 def cohort_branches() -> dict[str, str]:
-    ownership = json.loads((CP.CONTROL_ROOT / "control" / "path-ownership.json").read_text(encoding="utf-8"))
+    """Read the committed cohort roster.
+
+    The roster is read through ``CP.PATH_OWNERSHIP_PATH`` rather than by
+    rebuilding the path, so a fresh clone or a relocated control root resolves
+    the same way the rest of the control plane does.
+    """
+    ownership = json.loads(Path(CP.PATH_OWNERSHIP_PATH).read_text(encoding="utf-8"))
     branches: dict[str, str] = {}
     for owner, entry in ownership["owners"].items():
-        if owner == "coordinator":
+        if owner == "coordinator" or "branch" not in entry:
             continue
         cohort = owner.rsplit("-", 1)[-1]
         branches[cohort] = entry["branch"]
     return branches
+
+
+def is_sha(value: str) -> bool:
+    return len(value) == 40 and all(char in "0123456789abcdef" for char in value)
+
+
+def unit_record_paths(sha: str, cohort: str) -> list[str]:
+    """List the unit-record blobs a cohort published, straight from the tree."""
+    prefix = f"workstreams/po03/control/units/{cohort}/"
+    listing = git("ls-tree", "-r", "--name-only", sha, "--", prefix, check=False)
+    return sorted(line for line in listing.splitlines() if line.endswith(".json"))
+
+
+def read_record(sha: str, path: str) -> bytes | None:
+    proc = subprocess.run(
+        ["git", "cat-file", "blob", f"{sha}:{path}"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        check=False,
+    )
+    return proc.stdout if proc.returncode == 0 else None
 
 
 def ingest_cohort(cohort: str, branch: str, *, complete: bool) -> dict[str, object]:
@@ -64,35 +100,55 @@ def ingest_cohort(cohort: str, branch: str, *, complete: bool) -> dict[str, obje
         "rejected": [],
         "completed": [],
         "state": "NOT_PUSHED",
+        "worktree_materialised": False,
     }
     git("fetch", "origin", branch, check=False)
     # --verify --quiet is required: plain rev-parse echoes an unresolvable ref
     # back on stdout, which would make an unpushed cohort look resolvable.
     sha = git("rev-parse", "--verify", "--quiet", f"refs/remotes/origin/{branch}", check=False)
-    if not CP.SHA256_RE.fullmatch(sha) and not (len(sha) == 40 and all(c in "0123456789abcdef" for c in sha)):
+    if not is_sha(sha):
         return outcome
     outcome["remote_sha"] = sha
     outcome["state"] = "PUSHED"
 
-    scratch = Path(tempfile.mkdtemp(prefix=f"po03-ingest-{cohort}-"))
-    tree = scratch / "tree"
+    records: list[tuple[str, dict]] = []
+    for path in unit_record_paths(sha, cohort):
+        raw = read_record(sha, path)
+        if raw is None:
+            outcome["rejected"].append({"file": path, "reason": "record blob could not be read"})
+            continue
+        try:
+            doc = json.loads(raw.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            outcome["rejected"].append({"file": path, "reason": f"unparseable: {exc}"})
+            continue
+        if not isinstance(doc, dict) or doc.get("protocol_version") != RESULT_PROTOCOL:
+            continue  # canaries and scratch files are not results
+        records.append((path, doc))
+
+    outcome["results_found"] = len(records)
+    if not records:
+        return outcome
+
+    # Only an uncommitted result needs a checkout; a durable one is read out of
+    # the object database at the commit it declared.
+    needs_tree = any(doc.get("obzio_state") != "RESULT_COMMITTED" for _path, doc in records)
+    scratch: Path | None = None
+    tree: Path | None = None
     try:
-        git("worktree", "add", "--detach", "--quiet", str(tree), sha)
-        unit_dir = tree / "workstreams" / "po03" / "control" / "units" / cohort
-        if not unit_dir.is_dir():
-            return outcome
-        for record in sorted(unit_dir.glob("*.json")):
+        if needs_tree:
+            scratch = Path(tempfile.mkdtemp(prefix=f"po03-ingest-{cohort}-"))
+            tree = scratch / "tree"
+            git("worktree", "add", "--detach", "--quiet", str(tree), sha)
+            outcome["worktree_materialised"] = True
+        for path, doc in records:
+            unit_id = doc.get("task_id", Path(path).stem)
             try:
-                doc = json.loads(record.read_text(encoding="utf-8"))
-            except json.JSONDecodeError as exc:
-                outcome["rejected"].append({"file": record.name, "reason": f"unparseable: {exc}"})
-                continue
-            if not isinstance(doc, dict) or doc.get("protocol_version") != RESULT_PROTOCOL:
-                continue  # canaries and scratch files are not results
-            outcome["results_found"] += 1
-            unit_id = doc.get("task_id", record.stem)
-            try:
-                admitted = CP.ingest_result(doc, artifact_root=tree)
+                admitted = CP.ingest_result(
+                    doc,
+                    artifact_root=tree if tree is not None else Path(REPO_ROOT),
+                    repo=Path(REPO_ROOT),
+                )
             except CP.ControlPlaneError as exc:
                 outcome["rejected"].append({"unit_id": unit_id, "reason": str(exc)})
                 continue
@@ -107,8 +163,10 @@ def ingest_cohort(cohort: str, branch: str, *, complete: bool) -> dict[str, obje
                 except CP.ControlPlaneError as exc:
                     outcome["rejected"].append({"unit_id": unit_id, "reason": f"completion refused: {exc}"})
     finally:
-        git("worktree", "remove", "--force", str(tree), check=False)
-        shutil.rmtree(scratch, ignore_errors=True)
+        if tree is not None:
+            git("worktree", "remove", "--force", str(tree), check=False)
+        if scratch is not None:
+            shutil.rmtree(scratch, ignore_errors=True)
     return outcome
 
 

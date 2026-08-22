@@ -31,8 +31,12 @@ PO03_ROOT = Path(__file__).resolve().parents[1]
 CONTROL_PLANE_PATH = Path(
     os.environ.get("PO03_A11_CONTROL_PLANE") or (PO03_ROOT / "tools" / "control_plane.py")
 )
-MAKE_RESULT_PATH = PO03_ROOT / "tools" / "make_result.py"
-INGEST_WAVE_PATH = PO03_ROOT / "tools" / "ingest_wave.py"
+MAKE_RESULT_PATH = Path(
+    os.environ.get("PO03_A11_MAKE_RESULT") or (PO03_ROOT / "tools" / "make_result.py")
+)
+INGEST_WAVE_PATH = Path(
+    os.environ.get("PO03_A11_INGEST_WAVE") or (PO03_ROOT / "tools" / "ingest_wave.py")
+)
 
 COMMISSION_ID = "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001"
 OWNER = "po03-worker-a11test"
@@ -340,6 +344,197 @@ class ControlPlaneHarness(unittest.TestCase):
 
     def state_of(self, unit_id: str) -> str:
         return self.cp.project_units()[unit_id]["obzio_state"]
+
+
+class WaveFixture(ControlPlaneHarness):
+    """A remote, a producer clone and a coordinator clone.
+
+    Ingestion is a distributed act: the coordinator must recover a result from
+    bytes on a remote, in a repository that never saw the producer's working
+    tree.  A fixture that shares one directory cannot show that, so this builds
+    a real bare remote and two independent clones.
+    """
+
+    #: Cohort id, derived by the driver from the owner name's last segment.
+    cohort = "h"
+    producer_owner = "po03-worker-h"
+    branch = "cursor/po03-h-results-ed20"
+
+    def setUp(self) -> None:
+        super().setUp()
+        self.require_git()
+        self.remote = self.base / "remote.git"
+        subprocess.run(
+            ["git", "init", "--bare", "--quiet", "--initial-branch", "main", str(self.remote)],
+            check=True,
+            capture_output=True,
+        )
+        self.producer = self.base / "producer"
+        init_repo(self.producer)
+        git("remote", "add", "origin", str(self.remote), cwd=self.producer)
+        (self.producer / "README.md").write_text("wave fixture\n", encoding="utf-8")
+        commit_all(self.producer, "seed")
+        git("push", "--quiet", "origin", f"HEAD:{self.branch}", cwd=self.producer)
+        git("checkout", "--quiet", "-b", self.branch, cwd=self.producer)
+
+        self.coordinator = self.base / "coordinator"
+        subprocess.run(
+            ["git", "clone", "--quiet", str(self.remote), str(self.coordinator)],
+            check=True,
+            capture_output=True,
+        )
+        git("config", "user.name", "PO03 A11 Coordinator", cwd=self.coordinator)
+        git("config", "user.email", "po03-a11@example.invalid", cwd=self.coordinator)
+
+    def load_ingest_wave(self):
+        """Load the ingestion driver bound to this fixture's coordinator clone."""
+        module = load_module(INGEST_WAVE_PATH, "iw")
+        module.REPO_ROOT = self.coordinator
+        module.CP.LEDGER_PATH = self.cp.LEDGER_PATH
+        module.CP.REGISTRY_PATH = self.cp.REGISTRY_PATH
+        module.CP.RECOVERY_PATH = self.cp.RECOVERY_PATH
+        module.CP.DISPATCH_DIR = self.cp.DISPATCH_DIR
+        module.CP.PATH_OWNERSHIP_PATH = self.cp.PATH_OWNERSHIP_PATH
+        module.CP.REPO_ROOT = self.coordinator
+        return module
+
+    def write_cohort_ownership(self) -> None:
+        self.cp.write_json(
+            self.cp.PATH_OWNERSHIP_PATH,
+            {
+                "owners": {
+                    "coordinator": {"owned_prefixes": ["workstreams/po03/control/"]},
+                    self.producer_owner: {
+                        "owned_prefixes": [
+                            f"workstreams/po03/control/units/{self.cohort}/",
+                            OWNED_PREFIX,
+                        ],
+                        "branch": self.branch,
+                    },
+                }
+            },
+        )
+
+    def producer_commit(self, relative: str, body: bytes, message: str) -> str:
+        target = self.producer / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(body)
+        return commit_all(self.producer, message)
+
+    def publish(self) -> str:
+        git("push", "--quiet", "origin", f"HEAD:{self.branch}", cwd=self.producer)
+        return git("rev-parse", "HEAD", cwd=self.producer)
+
+    def producer_result(
+        self,
+        unit_id: str,
+        *,
+        relative: str,
+        body: bytes,
+        artifact_commit: str,
+        result_commit_id: str | None = None,
+        state: str = "RESULT_COMMITTED",
+        fence: int = 1,
+    ) -> dict[str, Any]:
+        """Build the result record the producer will commit on its own branch."""
+        dispatch = json.loads((self.cp.DISPATCH_DIR / f"{unit_id}.json").read_text(encoding="utf-8"))
+        committed = state == "RESULT_COMMITTED"
+        now = "2026-08-22T07:00:00Z"
+        result_commit_id = result_commit_id or artifact_commit
+        artifacts = [
+            {
+                "artifact_id": f"{unit_id}-art-01",
+                "logical_name": relative.rsplit("/", 1)[-1],
+                "content_uri": f"git:{self.branch}@{artifact_commit}:{relative}",
+                "sha256": sha256_bytes(body),
+                "bytes": len(body),
+                "media_type": "text/plain",
+                "readback_verified_at": now if committed else None,
+            }
+        ]
+        return {
+            "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+            "task_id": unit_id,
+            "commission_id": dispatch["commission_id"],
+            "immutable_input_manifest_sha256": dispatch["immutable_input_manifest_sha256"],
+            "acceptance_contract_sha256": dispatch["acceptance_contract_sha256"],
+            "provider_state": "COMPLETED" if committed else "UNKNOWN",
+            "obzio_state": state,
+            "attempt": {
+                "attempt_id": f"{unit_id}-attempt-{fence}",
+                "idempotency_key": dispatch["idempotency_key"],
+                "lease_id": f"lease-{unit_id}-{fence}",
+                "fence_token": fence,
+                "provider_run_id": "po03-a11-harness",
+                "worker_id": self.producer_owner,
+                "heartbeat_at": now,
+                "checkpoint_seq": 1,
+            },
+            "result_transaction": {
+                "result_txn_id": f"{unit_id}-txn-{fence}",
+                "state": "COMMITTED" if committed else "RESERVED",
+                "manifest_uri": f"git:{self.branch}@{result_commit_id}:{unit_id}" if committed else None,
+                "manifest_sha256": sha256_bytes(f"{unit_id}:{result_commit_id}".encode()) if committed else None,
+                "artifact_count": 1,
+                "total_bytes": len(body),
+                "committed_at": now if committed else None,
+                "verified_at": now if committed else None,
+                "parent_ingested_at": None,
+                "result_commit_id": result_commit_id if committed else None,
+            },
+            "artifacts": artifacts,
+            "completion_actor": None,
+            "independent_acceptance": {"state": "NOT_TESTED", "reviewer_id": None, "receipt_uri": None},
+        }
+
+    def publish_unit(
+        self,
+        unit_id: str,
+        *,
+        body: bytes = b"durable-result\n",
+        state: str = "RESULT_COMMITTED",
+        advance_branch_after: bool = False,
+    ) -> dict[str, Any]:
+        """Commit an artifact, then its result record, then push the branch."""
+        self.dispatch_record(unit_id, self.producer_owner)
+        relative = f"{OWNED_PREFIX}{unit_id}.txt"
+        artifact_commit = self.producer_commit(relative, body, f"{unit_id} artifact")
+        record = self.producer_result(
+            unit_id, relative=relative, body=body, artifact_commit=artifact_commit, state=state
+        )
+        record_path = f"workstreams/po03/control/units/{self.cohort}/{unit_id}.json"
+        self.producer_commit(
+            record_path,
+            (json.dumps(record, indent=2, sort_keys=True) + "\n").encode("utf-8"),
+            f"{unit_id} result record",
+        )
+        if advance_branch_after:
+            # A later unit edits the same file.  The earlier result must still
+            # verify, because it named an immutable commit.
+            self.producer_commit(relative, b"a later unit edited this file\n", "later work")
+        self.publish()
+        return record
+
+    def seed_unit_events(self, unit_id: str, fence: int = 1) -> None:
+        self.cp.append_event(
+            unit_id,
+            "CREATED",
+            actor="coordinator",
+            provider_state="QUEUED",
+            payload={"owner": self.producer_owner},
+        )
+        self.cp.append_event(
+            unit_id,
+            "LEASED",
+            actor="coordinator",
+            provider_state="RUNNING",
+            fence_token=fence,
+            payload={
+                "lease_id": f"lease-{unit_id}-{fence}",
+                "worker_id": self.producer_owner,
+                "expires_at": "2099-01-01T00:00:00Z",
+            },
+        )
 
 
 def env_without_git() -> dict[str, str]:
