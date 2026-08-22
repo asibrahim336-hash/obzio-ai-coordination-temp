@@ -1,0 +1,17 @@
+$ python3 -I workstreams/po03/successor/g1/run.py --suite public
+generation G1: high-scale transactional factory
+provenance: port of workstreams/po03/tools/control_plane.py and tools/make_result.py at branch cursor/po03-wave-a-transactional-factory-ed20 commit dd2fcc6, re-rooted for standalone execution
+capabilities: create, lease, submit, ingest, complete, review, state, restart, recover, verify, tamper, advance_clock, write_artifact
+absent capabilities: none
+[public] 21/31 passed rate=0.6774 critical=0.6087 false_completions=1 unsupported_cases=0
+  FAIL P04-acceptance-contract-tamper-detected: detail@verify: detail.input_tampered=[] expected=['u1']
+  FAIL P05-pinned-input-drift-detected: detail@verify: detail.input_drift=[] expected=['u1']
+  FAIL P08-completion-authority-is-enforced-not-labelled: admitted@complete: admitted=True expected=False; reason_code@complete: reason_code=OK expected=NOT_COORDINATOR; detail@observe: detail.obzio_state='COMPLETED' expected='PARENT_INGESTED'
+  FAIL P13-forged-fence-token-refused: admitted@submit: admitted=True expected=False; reason_code@submit: reason_code=OK expected=FORGED_FENCE
+  FAIL P14-expired-lease-cannot-commit: admitted@submit: admitted=True expected=False; reason_code@submit: reason_code=OK expected=EXPIRED_LEASE
+  FAIL P21-drift-after-admission-is-detected: detail@verify: detail.drift_detected=[] expected=['workstreams/po03/successor/scores/probe.json']; detail@verify: detail.artifacts_reverified=0 expected=1
+  FAIL P26-conflicting-replay-refused: reason_code@ingest2: reason_code=OK expected one of ['CONFLICTING_REPLAY', 'DUPLICATE_IGNORED']; admitted@ingest2: admitted=True expected=False; detail@observe: detail.ingest_count=2 expected=1
+  FAIL P29-log-tail-truncation-detected: reason_code@verify: reason_code=OK expected one of ['LEDGER_TRUNCATED', 'LEDGER_CORRUPT']; detail@verify: detail.ledger_truncated=False expected=True
+  FAIL P30-lost-callback-is-replayed-not-rerun: detail@recover: detail.replayed_ingestions=0 expected=1; detail@observe: detail.obzio_state='RESULT_COMMITTED' expected='PARENT_INGESTED'
+  FAIL P31-declared-locator-must-resolve-before-ingestion: admitted@ingest: admitted=True expected=False; reason_code@ingest: reason_code=OK expected=LOCATOR_UNRESOLVED; detail@observe: detail.ingest_count=1 expected=0
+exit_code=0

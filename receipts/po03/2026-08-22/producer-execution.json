@@ -16,7 +16,7 @@
   "wave_state": {
     "wave_id": "po03-wave-a",
     "units_required": 64,
-    "units_registered": 94,
+    "units_registered": 101,
     "ledger_rows": 299,
     "ledger_chain_valid": true,
     "false_completions": 0,
@@ -35,17 +35,18 @@
       "a1",
       "a2",
       "a4",
+      "a5",
       "a6",
       "a7",
+      "a8",
       "a9",
       "a10",
       "a12"
     ],
     "cohorts_in_flight": [
       "a3",
-      "a5",
-      "a8",
-      "a11"
+      "a11",
+      "a13"
     ]
   },
   "reproduced_defects_in_the_coordinator_control_plane": [
@@ -91,7 +92,7 @@
       "defect": "The ingestion driver materialises a subordinate branch at HEAD rather than at the commit each result declares, so it was not reading back by immutable SHA. Unit a2-u01 was rejected for a fault_lab.py hash mismatch caused solely by a later commit on the same branch, not by any dishonesty.",
       "remediation_unit": "a11-u05",
       "state": "OPEN_UNDER_REMEDIATION",
-      "live_recurrences": 2,
+      "live_recurrences": 7,
       "fixtures_for_remediation": [
         {
           "unit": "a2-u01",
@@ -106,10 +107,22 @@
           "recorded_hash_matches_declared_commit": true,
           "attributed_to": "coordinator",
           "producer_at_fault": false
+        },
+        {
+          "units": [
+            "a12-u01",
+            "a12-u03",
+            "a12-u04"
+          ],
+          "cause": "declared commits 7e224c36, db44722c, cf964998 all verify correctly; rejected only because the branch advanced during the follow-up",
+          "artifacts_verified_at_declared_commit": 13,
+          "attributed_to": "coordinator",
+          "producer_at_fault": false
         }
       ],
       "escalation_reason": "Escalated from HIGH. This defect has now falsely rejected honest work from two different cohorts in two different families. A verification step that rejects correct results is worse than no verification, because it destroys trust in the one control that distinguishes a real result from a claimed one.",
-      "remediation_note": "a11-u05 now has two real fixtures rather than one."
+      "remediation_note": "a11-u05 now has two real fixtures rather than one.",
+      "operational_impact": "Now falsely rejecting on essentially every cohort follow-up. Five instances across three model families. The coordinator has had to ingest correctly by hand each time by materialising the declared commit, which is exactly what a11-u05 must make automatic and what a11-u13 must pair with a branch-tip comparison so a superseded attestation is still flagged."
     },
     {
       "id": "DEF-06",
@@ -241,7 +254,9 @@
       "why_it_matters": "The commission requires clean-runtime execution and process-boundary isolation. A validator that dies on import in a partial checkout is a false-green risk in the opposite direction: a caller that swallows the exception skips validation entirely.",
       "discovery_significance": "Neither cohort could see this alone. a12 made a correct change in isolation; a10's harness, which copies tools/ without contracts/, is what exposed it. This is direct evidence that integration is a distinct test surface from any single cohort's gate.",
       "remediation_unit": "a12-u05",
-      "state": "OPEN_UNDER_REMEDIATION"
+      "state": "FIXED_WITH_RECURRENCE_TESTS",
+      "disposition": "RETAIN",
+      "fix": "a12 embedded the schema bytes in the validator and added a parity test asserting the embedded rules equal the seeded on-disk schema exactly, so the two cannot silently diverge. Independently verified by the coordinator: the validator imports and validates in a directory containing nothing but itself, and an invalid document still exits 1 with a precise diagnostic rather than crashing."
     },
     {
       "id": "DEF-20",
@@ -251,6 +266,17 @@
       "why_it_matters": "Two reviewers from two families still left an attack surface untested, because both were reviewing artifacts rather than the executable entry point. Cross-family review is necessary but not sufficient; the review target matters as much as the reviewer.",
       "state": "ROUTED_TO_a6",
       "disposition": "RETAIN as an operating lesson for the successor generation"
+    },
+    {
+      "id": "DEF-21",
+      "severity": "CRITICAL",
+      "found_by": "po03-worker-a5 (claude-sonnet-5-thinking-xhigh), unit a5-u07, by deterministic simulation testing; reproduced by the coordinator",
+      "defect": "cmd_lease reads the current fence token, computes its successor and appends in three unsynchronised steps, so concurrent lease grants for one unit mint identical fence tokens.",
+      "reproduction": "Three concurrent grants for the same unit all minted fence token 1. Three holders shared one fence.",
+      "why_it_matters": "Fencing is the control that makes single-writer ownership real. If two holders share a fence, every downstream stale-worker protection is decorative under concurrency. The ledger chain still verified clean throughout, so chain integrity does not imply fence uniqueness and a11-u02 passing will not imply this is fixed.",
+      "method_significance": "Sequential fault injection found 0 of 24 violations; deterministic simulation testing found 84 of 90 exhaustive and 298 of 300 sampled. This is the clearest evidence in the wave that interleaving-aware testing reaches defects that sequential injection cannot, and it validates a5's own registered hypothesis a5-u07.",
+      "remediation_unit": "a11-u16",
+      "state": "OPEN_UNDER_REMEDIATION"
     }
   ],
   "findings_routed_to_other_cohorts": [
@@ -316,5 +342,69 @@
     "capsule": "commit-pinned (path, blob, commit) triples resolving from a bare clone",
     "preflight": "four-drift fixture exits 3, missing exits 4, clean exits 0",
     "lineage": "all four paths, hashes, causal commits and ordering agree with the coordinator's record; eight commit-subject discrepancies reported without editing either input"
+  },
+  "a5_research_conversion": {
+    "hypotheses_registered": 12,
+    "registered_before_reproduction": 12,
+    "reproductions_executed": 12,
+    "both_arms_actually_run": 12,
+    "mechanism_changes_with_evidence": 2,
+    "recurrence_tested": 2,
+    "commission_minimums": {
+      "hypotheses": 12,
+      "reproductions": 6,
+      "mechanism_changes": 2
+    },
+    "minimums_met": true,
+    "hypotheses_refined_or_falsified": [
+      "a5-u01 checkpoint is a precondition beneath idempotency-key dedup, not an independent lever",
+      "a5-u08 lease TTL has a real optimum but the argmin moves with cost weighting, so it is not a retainable constant",
+      "a5-u09 producer self-certification was not the plurality causal category in the available evidence; discretionary persistence was, 3 of 5 against 2 of 5"
+    ],
+    "honest_boundaries_recorded": [
+      "no live frontier-model call was available in the dependency-free runtime, so the cross-family and equal-reasoning claims are documented proxies marked PARTIALLY_SUPPORTED rather than literal multi-model measurement",
+      "a5-u12 recurrence testing was independent-process and independent-seed but not different-owner as the frozen acceptance literally required, recorded as an explicit NOT_YET boundary rather than silently satisfied"
+    ],
+    "coordinator_action": "The different-owner boundary is closed by a6-u07 and the time-bound NOT_YET by a5-u13. Neither was accepted as-is."
+  },
+  "successor_generation_result": {
+    "preregistered_metric": "holdout_pass_rate, frozen at workstreams/po03/successor/suite/lift-preregistration.json before G2 existed in the tree and before any generation was scored, with six guard conditions",
+    "scores": {
+      "G0": {
+        "public": "3/31",
+        "holdout": "0/10",
+        "false_completions": "3 public, 3 holdout"
+      },
+      "G1": {
+        "public": "21/31",
+        "holdout": "7/10",
+        "false_completions": "1 public, 2 holdout"
+      },
+      "G2": {
+        "public": "31/31",
+        "holdout": "10/10",
+        "false_completions": "0, 0"
+      }
+    },
+    "verdict_g1_to_g2": "PASS, lift 0.30 on holdout, every preregistered guard held",
+    "verdict_g0_to_g1": "NOT_YET despite larger raw lift of 0.58 public and 0.70 holdout, because it fails the no-false-completion and critical-correctness guards",
+    "why_that_matters": "The guards demonstrably bite. A raw improvement larger than the one that passed was refused because the generation still admitted false completions. That is the difference between a preregistered metric and a headline number.",
+    "reproducible_by": "python3 -I workstreams/po03/successor/score_generations.py --check",
+    "lessons": "14 recorded, 10 with independent support and a live mechanism against a threshold of 3, support pinned by owner, branch, commit, blob id and digest",
+    "all_five_dispositions_used": true,
+    "notable_reject": "a8 rejected a single weighted headline score on executed evidence: applied to a real score pair it reports progress for a change that reintroduces a false completion",
+    "notable_delete": "a8 deleted its own belief that its units were quality-deficient, withdrawn on a6's correction reclassifying them as availability boundaries",
+    "outstanding_boundaries": [
+      "G2 is a proposal, not a deployment. control_plane.py is coordinator-owned and untouched, so the live control plane still carries the defects G2 fixes.",
+      "a8's recurrence tests are authored by a8 itself, not by a different owner as its frozen acceptance requires. Recorded NOT_YET and routed to a6-u07.",
+      "No a8 unit has been independently accepted; a6 scored while a8's branch was absent from its fetch. Absence of an adverse finding is not acceptance.",
+      "The holdout was sourced from a6's cases but selected and bound by the generation author, which is weaker independence than authorship by a non-author. a13 is authoring a genuinely blind holdout to close this."
+    ],
+    "a8_self_audit": {
+      "finding": "a8 ran a6's read-back audit inward and found all six of its own result records fail their declared result_commit_id locator, because make_result.py resolves HEAD before the record is written.",
+      "sharper_than_a6": "Two records are worse than absent: a record does exist at the declared commit but is a stale earlier version of itself, so an existence check would accept it.",
+      "coordinator_verification": "All 17 artifacts across the two rejected a8 units verify byte-exact at the commit named in each artifact's own content_uri, and several differ at branch HEAD. Neither a single declared commit nor branch HEAD is a correct verification root: it must be per artifact at its own commit, with a HEAD comparison used to flag supersession. DEF-05 and DEF-16 are the two halves of this and a11-u13 must implement both.",
+      "disposition": "a8's L-13 custody-hygiene lesson can move off RETEST: zero tracked bytecode remains, its claim reflected pre-cleanup state inherited from the coordinator."
+    }
   }
 }

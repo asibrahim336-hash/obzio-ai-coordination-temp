@@ -1,0 +1,319 @@
+{
+  "change_count": 11,
+  "changes": [
+    {
+      "all_named_failures_closed": true,
+      "caused_by_failures": [
+        "P13-forged-fence-token-refused"
+      ],
+      "caused_by_lessons": [
+        "L-04"
+      ],
+      "change": "a commit is admitted only if the ledger shows that exact (unit, worker, fence) grant, so a token that was never issued is refused instead of being trusted for being large",
+      "change_id": "C-01",
+      "evidence": [
+        {
+          "case_id": "P13-forged-fence-token-refused",
+          "case_present_in_frozen_suite": true,
+          "closed_by_this_change": true,
+          "g1_verdict": "FAIL",
+          "g2_verdict": "PASS"
+        }
+      ],
+      "evidence_basis": "frozen_suite_case",
+      "g1_behaviour": "the fence check was `incoming < current`, so any token above the current grant was accepted",
+      "name": "grant-bound fencing",
+      "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c01_forged_fence_is_refused",
+      "unknown_case_ids": []
+    },
+    {
+      "all_named_failures_closed": true,
+      "caused_by_failures": [
+        "P14-expired-lease-cannot-commit"
+      ],
+      "caused_by_lessons": [
+        "L-04"
+      ],
+      "change": "the lease deadline is evaluated at the moment of commit, so an expired worker cannot enter custody even holding the newest fence",
+      "change_id": "C-02",
+      "evidence": [
+        {
+          "case_id": "P14-expired-lease-cannot-commit",
+          "case_present_in_frozen_suite": true,
+          "closed_by_this_change": true,
+          "g1_verdict": "FAIL",
+          "g2_verdict": "PASS"
+        }
+      ],
+      "evidence_basis": "frozen_suite_case",
+      "g1_behaviour": "expiry was reported by the recovery scanner but never checked when a result was offered",
+      "name": "lease expiry enforced at commit",
+      "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c02_expired_lease_cannot_commit",
+      "unknown_case_ids": []
+    },
+    {
+      "all_named_failures_closed": true,
+      "caused_by_failures": [
+        "P08-completion-authority-is-enforced-not-labelled",
+        "H02-noncoordinator-completion"
+      ],
+      "caused_by_lessons": [
+        "L-01"
+      ],
+      "change": "each transition is authorised against a principal-to-capability table before it is recorded, so a worker driving completion is refused rather than relabelled",
+      "change_id": "C-03",
+      "evidence": [
+        {
+          "case_id": "P08-completion-authority-is-enforced-not-labelled",
+          "case_present_in_frozen_suite": true,
+          "closed_by_this_change": true,
+          "g1_verdict": "FAIL",
+          "g2_verdict": "PASS"
+        },
+        {
+          "case_id": "H02-noncoordinator-completion",
+          "case_present_in_frozen_suite": true,
+          "closed_by_this_change": true,
+          "g1_verdict": "FAIL",
+          "g2_verdict": "PASS"
+        }
+      ],
+      "evidence_basis": "frozen_suite_case",
+      "g1_behaviour": "`cmd_complete` wrote actor=\"coordinator\" unconditionally, so whoever invoked it became the coordinator in the record",
+      "name": "authenticated transition authority",
+      "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c03_worker_cannot_complete",
+      "unknown_case_ids": []
+    },
+    {
+      "all_named_failures_closed": true,
+      "caused_by_failures": [
+        "P04-acceptance-contract-tamper-detected",
+        "P05-pinned-input-drift-detected"
+      ],
+      "caused_by_lessons": [
+        "L-05"
+      ],
+      "change": "the dispatch record is sealed over its own canonical body and the pinned inputs are re-hashed on every verification sweep, so tampering with the frozen acceptance contract or a pinned source is detected",
+      "change_id": "C-04",
+      "evidence": [
+        {
+          "case_id": "P04-acceptance-contract-tamper-detected",
+          "case_present_in_frozen_suite": true,
+          "closed_by_this_change": true,
+          "g1_verdict": "FAIL",
+          "g2_verdict": "PASS"
+        },
+        {
+          "case_id": "P05-pinned-input-drift-detected",
+          "case_present_in_frozen_suite": true,
+          "closed_by_this_change": true,
+          "g1_verdict": "FAIL",
+          "g2_verdict": "PASS"
+        }
+      ],
+      "evidence_basis": "frozen_suite_case",
+      "g1_behaviour": "the dispatch record carried its own manifest digest but nothing ever recomputed it, so an edit to dispatched immutable input was invisible; G0 detected pinned-input drift and G1 had lost that check",
+      "name": "dispatch input seal",
+      "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c04_dispatch_tamper_and_input_drift_detected",
+      "unknown_case_ids": []
+    },
+    {
+      "all_named_failures_closed": true,
+      "caused_by_failures": [
+        "P21-drift-after-admission-is-detected",
+        "H09-corrupt_readback"
+      ],
+      "caused_by_lessons": [
+        "L-02"
+      ],
+      "change": "admitted artifacts are recorded in a custody manifest and re-hashed on every verification sweep, so drift after admission is reported instead of assumed away",
+      "change_id": "C-05",
+      "evidence": [
+        {
+          "case_id": "P21-drift-after-admission-is-detected",
+          "case_present_in_frozen_suite": true,
+          "closed_by_this_change": true,
+          "g1_verdict": "FAIL",
+          "g2_verdict": "PASS"
+        },
+        {
+          "case_id": "H09-corrupt_readback",
+          "case_present_in_frozen_suite": true,
+          "closed_by_this_change": true,
+          "g1_verdict": "FAIL",
+          "g2_verdict": "PASS"
+        }
+      ],
+      "evidence_basis": "frozen_suite_case",
+      "g1_behaviour": "artifacts were hashed once at ingestion and never looked at again, so bytes that changed afterwards stayed in custody unnoticed",
+      "name": "continuous artifact re-verification",
+      "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c05_post_admission_drift_detected",
+      "unknown_case_ids": []
+    },
+    {
+      "all_named_failures_closed": true,
+      "caused_by_failures": [
+        "P26-conflicting-replay-refused"
+      ],
+      "caused_by_lessons": [
+        "L-06"
+      ],
+      "change": "replays are adjudicated on the idempotency key: identical content is a harmless duplicate, different content is a refused conflict, and neither produces a second ingestion",
+      "change_id": "C-06",
+      "evidence": [
+        {
+          "case_id": "P26-conflicting-replay-refused",
+          "case_present_in_frozen_suite": true,
+          "closed_by_this_change": true,
+          "g1_verdict": "FAIL",
+          "g2_verdict": "PASS"
+        }
+      ],
+      "evidence_basis": "frozen_suite_case",
+      "g1_behaviour": "duplicates were matched on the result digest, so a replay under the same idempotency key carrying different content did not match and was ingested a second time",
+      "name": "idempotency-keyed replay adjudication",
+      "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c06_conflicting_replay_refused",
+      "unknown_case_ids": []
+    },
+    {
+      "all_named_failures_closed": true,
+      "caused_by_failures": [
+        "P29-log-tail-truncation-detected"
+      ],
+      "caused_by_lessons": [
+        "L-07"
+      ],
+      "change": "the row count and head digest are anchored after every append and compared on verification, so a lost tail is reported rather than accepted as a shorter valid history",
+      "change_id": "C-07",
+      "evidence": [
+        {
+          "case_id": "P29-log-tail-truncation-detected",
+          "case_present_in_frozen_suite": true,
+          "closed_by_this_change": true,
+          "g1_verdict": "FAIL",
+          "g2_verdict": "PASS"
+        }
+      ],
+      "evidence_basis": "frozen_suite_case",
+      "g1_behaviour": "`verify_chain` validated links between the rows that remained, so losing the tail of the log left a self-consistent chain",
+      "name": "ledger head anchor",
+      "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c07_tail_truncation_detected",
+      "unknown_case_ids": []
+    },
+    {
+      "all_named_failures_closed": true,
+      "caused_by_failures": [
+        "P30-lost-callback-is-replayed-not-rerun",
+        "H10-parent-restart"
+      ],
+      "caused_by_lessons": [
+        "L-03"
+      ],
+      "change": "a commit writes a pending outbox entry and recovery replays it into ingestion exactly once, so a lost callback costs a replay rather than a result",
+      "change_id": "C-08",
+      "evidence": [
+        {
+          "case_id": "P30-lost-callback-is-replayed-not-rerun",
+          "case_present_in_frozen_suite": true,
+          "closed_by_this_change": true,
+          "g1_verdict": "FAIL",
+          "g2_verdict": "PASS"
+        },
+        {
+          "case_id": "H10-parent-restart",
+          "case_present_in_frozen_suite": true,
+          "closed_by_this_change": true,
+          "g1_verdict": "FAIL",
+          "g2_verdict": "PASS"
+        }
+      ],
+      "evidence_basis": "frozen_suite_case",
+      "g1_behaviour": "RESULT_COMMITTED was terminal for the recovery scanner and there was no outbox, so a result that was committed but never ingested was neither replayed nor re-run: it was stranded, which is the shape of the lost PO-02 Code-2 return",
+      "name": "transactional outbox with recovery replay",
+      "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c08_lost_callback_is_replayed_once",
+      "unknown_case_ids": []
+    },
+    {
+      "all_named_failures_closed": true,
+      "caused_by_failures": [
+        "P31-declared-locator-must-resolve-before-ingestion"
+      ],
+      "caused_by_lessons": [
+        "L-08"
+      ],
+      "change": "admission requires the result record to be readable at the immutable locator it declares and to match the submitted bytes, so a locator that holds nothing is refused",
+      "change_id": "C-09",
+      "evidence": [
+        {
+          "case_id": "P31-declared-locator-must-resolve-before-ingestion",
+          "case_present_in_frozen_suite": true,
+          "closed_by_this_change": true,
+          "g1_verdict": "FAIL",
+          "g2_verdict": "PASS"
+        }
+      ],
+      "evidence_basis": "frozen_suite_case",
+      "g1_behaviour": "the declared result locator was recorded and never resolved; artifacts were verified against the working tree while `result_commit_id` was taken on trust",
+      "name": "locator resolution before admission",
+      "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c09_unresolvable_locator_refused",
+      "unknown_case_ids": []
+    },
+    {
+      "all_named_failures_closed": "NOT_APPLICABLE",
+      "caused_by_failures": [],
+      "caused_by_lessons": [
+        "L-11"
+      ],
+      "change": "a declared path is normalised with the same semantics the filesystem join uses and must resolve inside the artifact store; the allowlist and ownership checks then run on that resolved relative path, so the string judged and the bytes read are the same file",
+      "change_id": "C-10",
+      "evidence": [],
+      "evidence_basis": "independently_supported_lesson",
+      "g1_behaviour": "`path_in_allowlist` and `check_ownership` normalised with `str.lstrip('./')`, which strips a *character set* rather than a prefix; a declared path whose leading run is only dots and slashes was judged in-allowlist and owned, while the raw string was joined to the artifact root and the filesystem walked out of it",
+      "name": "path scope judged with filesystem semantics",
+      "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c10_path_escape_refused",
+      "unknown_case_ids": []
+    },
+    {
+      "all_named_failures_closed": "NOT_APPLICABLE",
+      "caused_by_failures": [],
+      "caused_by_lessons": [
+        "L-12"
+      ],
+      "change": "a submission against a closed unit is refused before anything is written, and `COMPLETED`, `FAILED_TERMINAL` and `CANCELLED` are named as closed separately from the merely committed states so that replay adjudication stays reachable",
+      "change_id": "C-11",
+      "evidence": [],
+      "evidence_basis": "independently_supported_lesson",
+      "g1_behaviour": "the state projection assigned `obzio_state` from the newest matching row with no monotonicity guard, so a resubmission against an already COMPLETED unit reset the projection to RESULT_COMMITTED and a second completion could be recorded against a different result_commit_id",
+      "name": "terminal states are not re-enterable",
+      "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c11_terminal_state_cannot_be_re_entered",
+      "unknown_case_ids": []
+    }
+  ],
+  "compilation_rule": "Every change traces to a specific case G1 was measured to fail, or to a lesson independently supported by an evaluator cohort of a different owner, or to both. A change with no such trace falsifies a8-u04 regardless of its effect on the score.",
+  "document_id": "po03-a8-g2-lineage-v001",
+  "generated_by": "workstreams/po03/successor/g2/build_lineage.py",
+  "generation_id": "G2",
+  "inherited_from_g1_unchanged": [
+    "the hash-chained append-only ledger and its row schema",
+    "the state projection that rebuilds the fleet from the ledger alone",
+    "the allowlist and ownership prefix rules",
+    "artifact digest and byte-count verification at admission",
+    "the refusal to treat provider completion as Obzio completion",
+    "the requirement that completion follow parent ingestion",
+    "the self-acceptance refusal on the dispatched owner"
+  ],
+  "not_changed_and_why": [
+    {
+      "candidate": "independent rejection of path traversal inside the ownership check",
+      "disposition": "SUPERSEDED_BY_C-10",
+      "disposition_basis": "Cohort a10's audit finding D1 (INV-6) showed the premise was false: the allowlist check normalised the declared path with a character-class lstrip that does not match the join used for I/O, so traversal was not refused before ownership was consulted. The entry is retained rather than deleted because it records what was believed, and on what basis, at the time G2 was first compiled.",
+      "reason": "the allowlist already refuses traversal before ownership is consulted, so no case measured a failure and no lesson supported it. Adding it would have been an untraceable change, which the compilation rule forbids even when the change is harmless.",
+      "superseded_by": "C-10",
+      "superseding_lesson": "L-11"
+    }
+  ],
+  "owner": "po03-worker-a8",
+  "revision_note": "C-10 and C-11 were added after the first scoring run, in response to findings published by an independent evaluator cohort rather than to anything measured on the frozen suites. The suites were not modified. The pre-revision score is preserved in git at commit 91452a0 and the score was re-derived afterwards; see workstreams/po03/successor/lessons/lessons.json for the comparison.",
+  "unit_id": "a8-u04",
+  "verification": "workstreams/po03/tests/test_a8_g2_lineage.py asserts this document matches the change table in the code, that every named case exists in a frozen suite, that G1 fails it and G2 passes it, that a change with no named case names an independently supported lesson instead, and that every change names a recurrence test that exists."
+}

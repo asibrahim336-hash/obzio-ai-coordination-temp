@@ -1,0 +1,279 @@
+{
+  "protocol_version": "OBZIO-WAVE-COMPOUNDING-v1",
+  "wave_id": "po03-wave-a",
+  "baseline": {
+    "metrics_uri": "git:cursor/po03-wave-a-transactional-factory-ed20:workstreams/po03/metrics/work-unit-runs.jsonl",
+    "sha256": "4132ecfaa3fb6adf4c3d9934e210fad10cb2b2d132dbedc2d4b932dc4924f5f1"
+  },
+  "observations": [
+    {
+      "id": "o1",
+      "observation": "Provider COMPLETED was observed for units with no durable result commit; the recovery scanner correctly reclassified them rather than accepting completion.",
+      "source": "ledger"
+    },
+    {
+      "id": "o2",
+      "observation": "Ingestion falsely rejected honest work seven times across four cohorts and three model families, always because the branch advanced after emission.",
+      "source": "ledger"
+    },
+    {
+      "id": "o3",
+      "observation": "Four cohort branches merged with zero conflicts, then nine more, confirming disjoint per-owner subtrees prevent write collisions.",
+      "source": "git"
+    },
+    {
+      "id": "o4",
+      "observation": "A snapshot-versus-live coupling defect appeared eight-plus times across four model families, including inside the document written to describe it.",
+      "source": "workstreams/po03/evidence/snapshot-coupling.json"
+    },
+    {
+      "id": "o5",
+      "observation": "One dispatch failed at the provider with zero work produced and was recovered from immutable input at a higher fence with no founder relay.",
+      "source": "workstreams/po03/evidence/scale-ladder.json"
+    }
+  ],
+  "challenges": [
+    {
+      "id": "c1",
+      "challenge": "a2 falsified ten of its own twelve hypotheses against the coordinator's control plane and returned nine reproducible defects.",
+      "by": "po03-worker-a2"
+    },
+    {
+      "id": "c2",
+      "challenge": "a10 attacked nine named invariants and broke or bounded six, including a path to completing one unit twice with different artifacts.",
+      "by": "po03-worker-a10"
+    },
+    {
+      "id": "c3",
+      "challenge": "a9 undermined two load-bearing coordinator assumptions and showed an intact manifest hash gives no source-byte closure.",
+      "by": "po03-worker-a9"
+    },
+    {
+      "id": "c4",
+      "challenge": "a1 showed a pure hash chain cannot detect tail truncation, and that the coordinator's own test encoded that blindness as acceptable.",
+      "by": "po03-worker-a1"
+    },
+    {
+      "id": "c5",
+      "challenge": "a5 found a fence-token collision by deterministic simulation that sequential injection missed entirely.",
+      "by": "po03-worker-a5"
+    },
+    {
+      "id": "c6",
+      "challenge": "a8 ran a6's read-back audit inward and found all six of its own result records fail their declared locator.",
+      "by": "po03-worker-a8"
+    }
+  ],
+  "external_hypotheses": [
+    {
+      "id": "h1",
+      "hypothesis": "Durable-execution invariants (idempotency key, fence, checkpoint, outbox) predict which fault classes are survivable.",
+      "outcome": "PARTIALLY_SUPPORTED — checkpoint is a precondition beneath idempotency-key dedup, not an independent lever."
+    },
+    {
+      "id": "h2",
+      "hypothesis": "Content-addressed custody beats message-passing return under callback loss.",
+      "outcome": "SUPPORTED — 100% recovery at 0 to 100% drop, against message-passing tracking 1 minus drop probability exactly."
+    },
+    {
+      "id": "h3",
+      "hypothesis": "Preregistered acceptance criteria reduce escaped defects.",
+      "outcome": "SUPPORTED — 5 of 5 defects caught preregistered against 0 of 5 post-hoc."
+    },
+    {
+      "id": "h4",
+      "hypothesis": "Deterministic simulation testing reaches interleavings sequential injection cannot.",
+      "outcome": "SUPPORTED — 84 of 90 exhaustive violations found against 0 of 24 sequential."
+    },
+    {
+      "id": "h5",
+      "hypothesis": "An append-only log with projections beats mutable status files for this programme.",
+      "outcome": "SUPPORTED — 148 of 148 recovered with tamper detection against 74 of 148 and 4 of 6 lost updates."
+    },
+    {
+      "id": "h6",
+      "hypothesis": "Lease TTL has a single workload-optimal value.",
+      "outcome": "REJECTED with evidence — the argmin moves with cost weighting, so no single constant is retainable."
+    },
+    {
+      "id": "h7",
+      "hypothesis": "Producer self-certification is the dominant cause of false completion.",
+      "outcome": "NOT_SUPPORTED on available evidence — discretionary persistence was the plurality category, 3 of 5 against 2 of 5."
+    },
+    {
+      "id": "h8",
+      "hypothesis": "Bounded hashed context capsules beat whole-tree admission at equal reasoning.",
+      "outcome": "PARTIALLY_SUPPORTED — recall precondition holds; the live-model claim is NOT_YET, no model access in this runtime."
+    },
+    {
+      "id": "h9",
+      "hypothesis": "Cross-family blind review catches a different defect class than same-family review.",
+      "outcome": "SUPPORTED — two independently coded methodologies caught disjoint 4 of 8 sets pooling to 8 of 8."
+    },
+    {
+      "id": "h10",
+      "hypothesis": "Property and mutation testing find custody defects example tests miss.",
+      "outcome": "SUPPORTED — two mutants survived the example suite and were caught by the harness."
+    },
+    {
+      "id": "h11",
+      "hypothesis": "Structured hypothesis registration raises research-to-mechanism conversion.",
+      "outcome": "SUPPORTED — 0.750 against 0.632, and correctness given a decisive verdict 0.981 against 0.483."
+    },
+    {
+      "id": "h12",
+      "hypothesis": "A single weighted headline score is a sound summary of generation quality.",
+      "outcome": "REJECTED with executed evidence — on a real score pair it reports progress for a change that reintroduces a false completion."
+    }
+  ],
+  "reproductions": [
+    {
+      "id": "r1",
+      "subject": "twelve a5 reproductions, each with both arms actually executed",
+      "locator": "workstreams/po03/research/reproduction-ledger.jsonl"
+    },
+    {
+      "id": "r2",
+      "subject": "twelve a2 fault-class injections against the live control plane",
+      "locator": "workstreams/po03/evidence/recovery-fault-matrix.json"
+    },
+    {
+      "id": "r3",
+      "subject": "eight a4 PO-01 pack qualifications re-executed from pinned immutable SHAs",
+      "locator": "workstreams/po03/evidence/reproduction-results.json"
+    },
+    {
+      "id": "r4",
+      "subject": "a10 independent re-execution of every a4 and a9 claim, matching byte-for-byte",
+      "locator": "workstreams/po03/review/sonnet/a4-reexecution.json"
+    },
+    {
+      "id": "r5",
+      "subject": "coordinator reproduction of DEF-01, DEF-13, DEF-17 and DEF-21 directly against live code",
+      "locator": "receipts/po03/2026-08-22/producer-execution.json"
+    },
+    {
+      "id": "r6",
+      "subject": "three generations scored on a frozen public suite and an evaluator-sourced holdout",
+      "locator": "workstreams/po03/successor/scores/generation-comparison.json"
+    }
+  ],
+  "live_mechanism_changes": [
+    {
+      "id": "m1",
+      "change": "Allowlist normalisation refuses absolute, empty and dot-segment paths instead of repairing them; ownership shares the normaliser.",
+      "disposition_ref": "DEF-10"
+    },
+    {
+      "id": "m2",
+      "change": "Ingestion records what a subordinate actually achieved, so an honest failure is never promoted into a committed state.",
+      "disposition_ref": "DEF-11"
+    },
+    {
+      "id": "m3",
+      "change": "The contract gate fires on the branches the work is actually done on.",
+      "disposition_ref": "DEF-12"
+    },
+    {
+      "id": "m4",
+      "change": "The seeded validator enforces all twelve schema keywords and is self-contained, with a parity test preventing silent divergence.",
+      "disposition_ref": "DEF-19"
+    },
+    {
+      "id": "m5",
+      "change": "Source capsules are pinned by (path, blob, commit) triples with versioned lineage and a three-state dispatch preflight.",
+      "disposition_ref": "a12-u02, a12-u03"
+    },
+    {
+      "id": "m6",
+      "change": "Property and mutation harness plus a deterministic simulation scheduler adopted as standing test mechanisms.",
+      "disposition_ref": "a5-u06, a5-u07"
+    }
+  ],
+  "independent_tests": [
+    {
+      "id": "t1",
+      "test": "a6 froze criteria and pushed them before the reviewed branches existed, then ran a mutation-based false-green detector.",
+      "by": "po03-worker-a6"
+    },
+    {
+      "id": "t2",
+      "test": "a10 re-executed every a4 and a9 claim from pinned SHAs rather than reading and agreeing.",
+      "by": "po03-worker-a10"
+    },
+    {
+      "id": "t3",
+      "test": "a1 drove all fifteen Obzio states by exhaustive search and confirmed no path reaches COMPLETED without coordinator ingestion.",
+      "by": "po03-worker-a1"
+    },
+    {
+      "id": "t4",
+      "test": "Coordinator independently verified the validator imports and validates with only its own file present, and fails loudly on a bad document.",
+      "by": "coordinator"
+    },
+    {
+      "id": "t5",
+      "test": "a8 scored G0, G1 and G2 on identical frozen inputs with recorded transcripts, reproducible via score_generations.py --check.",
+      "by": "po03-worker-a8"
+    }
+  ],
+  "dispositions": [
+    {
+      "subject": "DEF-10 allowlist normalisation",
+      "decision": "RETAIN",
+      "evidence_uri": "workstreams/po03/tests/test_control_plane.py"
+    },
+    {
+      "subject": "DEF-11 ingestion state promotion",
+      "decision": "RETAIN",
+      "evidence_uri": "workstreams/po03/tests/test_control_plane.py"
+    },
+    {
+      "subject": "DEF-12 CI trigger scope",
+      "decision": "RETAIN",
+      "evidence_uri": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32559213710"
+    },
+    {
+      "subject": "DEF-19 validator self-containment",
+      "decision": "RETAIN",
+      "evidence_uri": "workstreams/po03/tests/test_a12_validate_contracts.py"
+    },
+    {
+      "subject": "h6 single optimal lease TTL",
+      "decision": "REJECT",
+      "evidence_uri": "workstreams/po03/research/reproduction-ledger.jsonl"
+    },
+    {
+      "subject": "h12 single weighted headline score",
+      "decision": "REJECT",
+      "evidence_uri": "workstreams/po03/successor/lessons/lessons.json"
+    },
+    {
+      "subject": "a8 L-10 row-count anchor",
+      "decision": "SUPERSEDE",
+      "evidence_uri": "workstreams/po03/successor/lessons/lessons.json"
+    },
+    {
+      "subject": "a8 L-07 residual attack surface",
+      "decision": "RETEST",
+      "evidence_uri": "workstreams/po03/successor/lessons/lessons.json"
+    },
+    {
+      "subject": "a8 L-14 self-assessed quality deficit, withdrawn on a6's correction",
+      "decision": "DELETE",
+      "evidence_uri": "workstreams/po03/review/luna/rejection-assessment-correction.json"
+    },
+    {
+      "subject": "G0 to G1 lift on the preregistered metric",
+      "decision": "RETEST",
+      "evidence_uri": "workstreams/po03/successor/scores/generation-comparison.json"
+    },
+    {
+      "subject": "G1 to G2 lift on the preregistered metric",
+      "decision": "RETAIN",
+      "evidence_uri": "workstreams/po03/successor/scores/generation-comparison.json"
+    }
+  ],
+  "successor_manifest_uri": "git:cursor/po03-wave-a-transactional-factory-ed20:workstreams/po03/successor/suite/suite-manifest.json",
+  "decision_changed": []
+}

@@ -68,10 +68,40 @@ def compute(root: Path) -> dict[str, Any]:
 
     wave_spec = json.loads((root / "workstreams/po03/control/wave-a-spec.json").read_text(encoding="utf-8"))
     declared_units = wave_spec["declared_units"]
+    registry_rows = load_jsonl(root / "workstreams/po03/control/work-unit-registry.jsonl")
+    registered_population = len(registry_rows)
 
     # --- independently_accepted_throughput ---
+    # a7-u01 froze this metric's denominator as wave_a_spec.declared_units
+    # (74) before any value was computed; that frozen denominator is kept
+    # as the primary reported value below rather than silently moved, even
+    # though the registered population has since grown to 87 units (74
+    # original + 9 cohort-a11 custody remediation + 4 cohort-a12 capsule
+    # closure -- see workstreams/po03/control/work-unit-registry.jsonl). The
+    # wider population is reported alongside it, not instead of it, so a
+    # reader sees both without either number overwriting the other.
     accepted_count = sum(1 for r in unit_rows if r["independent_disposition"] == "ACCEPTED")
     independently_accepted_throughput = rate(accepted_count, declared_units)
+    independently_accepted_throughput["denominator_provenance"] = (
+        "wave_a_spec.declared_units, frozen by a7-u01 before any value in this report was computed"
+    )
+    independently_accepted_throughput["structural_gating_note"] = (
+        "This numerator is 0 because the coordinator has deliberately set no unit to COMPLETED, "
+        "after cohort a2 proved the completion path itself was unsound (a worker-actor could append "
+        "COMPLETED with a fabricated result_commit_id and the recovery scanner reported zero false "
+        "completions). No ACCEPTED disposition can exist until cmd_review has a COMPLETED unit to "
+        "act on, which is blocked on cohort a11's remediation. This is a deliberate custody hold on "
+        "the completion path, not a measurement of zero producer output."
+    )
+    independently_accepted_throughput["alternate_denominator_registered_population"] = {
+        **rate(accepted_count, registered_population),
+        "denominator_provenance": (
+            "len(workstreams/po03/control/work-unit-registry.jsonl) at measurement time: 74 original "
+            "wave-a units + 9 cohort-a11 custody-remediation units + 4 cohort-a12 capsule-closure "
+            "units = 87. Reported side by side with the frozen wave_a_spec denominator above, not as "
+            "a replacement for it."
+        ),
+    }
 
     # --- first_pass_acceptance_rate ---
     terminal_rows = [r for r in unit_rows if r["first_pass_outcome"] in TERMINAL_OUTCOMES]

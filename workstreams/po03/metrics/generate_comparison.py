@@ -109,13 +109,31 @@ def run_git(root: Path, args: list[str]) -> tuple[int, str, str]:
     return proc.returncode, proc.stdout.strip(), proc.stderr.strip()
 
 
-def resolve_successor_ref(root: Path) -> tuple[str | None, str]:
+def resolve_successor_ref(root: Path, successor_pin: str | None = None) -> tuple[str | None, str]:
     """Return (commit_sha_or_None, boundary_message).
 
-    Never fetches. Only resolves a remote-tracking ref that a prior, operator-run
-    ``git fetch origin cursor/po03-a8-successor-generations-ed20`` may already
-    have populated in the local object store.
+    Never fetches. With no pin, resolves the remote-tracking ref that a prior,
+    operator-run ``git fetch origin cursor/po03-a8-successor-generations-ed20``
+    may already have populated in the local object store -- this is what the
+    live CLI does, and it is a *moving* answer: the same ref resolves to a
+    different commit as a8 lands more of the branch.
+
+    ``successor_pin``, when given, is resolved instead of the live ref: an
+    explicit, immutable commit reference (a full or abbreviated SHA, or any
+    other git revision expression, e.g. "743fbcf" or "dae0598~1") that always
+    resolves to the same commit regardless of what the remote-tracking ref
+    currently points at. This is what
+    workstreams/po03/evidence/snapshot-coupling.json's binding operating rule
+    requires a reproduction test to assert against, instead of live state.
     """
+    if successor_pin is not None:
+        code, out, err = run_git(root, ["rev-parse", "--verify", f"{successor_pin}^{{commit}}"])
+        if code == 0 and out:
+            return out, f"pinned to explicit immutable commit {successor_pin} -> {out}"
+        return None, (
+            f"git rev-parse --verify {successor_pin}^{{commit}} failed (exit {code}): "
+            f"{err or 'no output'}. The pin does not resolve to a commit in the local object store."
+        )
     code, out, err = run_git(root, ["rev-parse", "--verify", f"{SUCCESSOR_REMOTE_REF}^{{commit}}"])
     if code == 0 and out:
         return out, f"resolved {SUCCESSOR_REMOTE_REF} -> {out}"
@@ -249,8 +267,8 @@ def compare_pair(later: dict[str, Any], earlier: dict[str, Any]) -> dict[str, An
     return {suite: compare_suite(later["suites"][suite], earlier["suites"][suite]) for suite in SUITES}
 
 
-def compute(root: Path) -> dict[str, Any]:
-    sha, fetch_boundary = resolve_successor_ref(root)
+def compute(root: Path, successor_pin: str | None = None) -> dict[str, Any]:
+    sha, fetch_boundary = resolve_successor_ref(root, successor_pin)
     generations = {gen: load_generation(root, sha, gen, fetch_boundary) for gen in GENERATIONS}
 
     lift = {
@@ -321,10 +339,19 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", default=".")
     parser.add_argument("--out", default="workstreams/po03/metrics/generation-comparison.json")
+    parser.add_argument(
+        "--successor-pin",
+        default=None,
+        help=(
+            "Explicit immutable commit to resolve instead of the live "
+            f"{SUCCESSOR_REMOTE_REF} ref, for reproducing a past measurement "
+            "exactly regardless of what a8 has landed since."
+        ),
+    )
     args = parser.parse_args(argv)
 
     root = Path(args.root).resolve()
-    report = compute(root)
+    report = compute(root, successor_pin=args.successor_pin)
 
     out_path = root / args.out if not Path(args.out).is_absolute() else Path(args.out)
     out_path.parent.mkdir(parents=True, exist_ok=True)

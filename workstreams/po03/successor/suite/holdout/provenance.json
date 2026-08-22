@@ -1,0 +1,62 @@
+{
+  "holdout_id": "po03-a8-holdout-provenance-v001",
+  "unit_id": "a8-u03",
+  "recorded_by": "po03-worker-a8",
+  "acceptance_condition_being_evidenced": "The public suite is frozen and hashed, and holdout cases are authored by a different owner and withheld until scoring. Falsified if the holdout author is the same owner as the generation author.",
+  "authorship": {
+    "generations_authored_by": "po03-worker-a8",
+    "holdout_cases_authored_by": "po03-worker-a6",
+    "distinct_owners": true,
+    "executable_binding_authored_by": "po03-worker-a8"
+  },
+  "source": {
+    "cohort": "po03-worker-a6",
+    "role": "independent evaluation, adversarial review and hidden-case generation",
+    "branch": "cursor/po03-a6-independent-review-ed20",
+    "branch_head_at_import": "c04bc0ed9f785ed29adaba94ad1f80c976911532",
+    "case_file_path_on_source_branch": "workstreams/po03/review/luna/hidden-cases/cases.json",
+    "case_file_introduced_at_commit": "cd20a207958ade82aeb28d74543fbe45684c964c",
+    "case_file_sha256": "52ac6507f66086ff339c3659b681986f1337cea08411d099493b14b65c3d90ef",
+    "vendored_copy": "workstreams/po03/successor/suite/holdout/a6-source-cases.json",
+    "vendored_copy_is_byte_identical": true,
+    "criteria_file_path_on_source_branch": "workstreams/po03/review/luna/criteria-a1.json",
+    "criteria_file_sha256": "71a7c69f0f9ad592c393b9b033cadc38c8d319e25aee38bb988cd7e7b925be68",
+    "read_method": "git fetch of a6's branch followed by read-only git cat-file; nothing on a6's branch or under workstreams/po03/review/ was written"
+  },
+  "independence_evidence": [
+    {
+      "claim": "the holdout was authored before any producer branch was read",
+      "evidence": "a6's case file declares authored_before_producer_read true and producer_test_hashes_seen_at_authoring [], and its own execution record declares producer_branches_observed []"
+    },
+    {
+      "claim": "the vendored copy is a6's bytes and not a reinterpretation",
+      "evidence": "a6 independently recorded case_set_sha256_at_authoring 52ac6507f66086ff339c3659b681986f1337cea08411d099493b14b65c3d90ef in its own execution.json; the vendored copy reproduces that digest, so the copy is verifiable against a record a6 wrote"
+    },
+    {
+      "claim": "the case set did not change after this cohort's generations landed",
+      "evidence": "a6's branch advanced from 922f684 to c04bc0e while this work was in progress and the case file digest was unchanged at both heads"
+    },
+    {
+      "claim": "the acceptance criteria the holdout scores against are also a6's",
+      "evidence": "criteria C1-C6 are quoted from a6's criteria-a1.json, whose decision rule was frozen before producer review"
+    }
+  ],
+  "what_a8_contributed_and_why": {
+    "contribution": "an executable binding from each of a6's declared attacks to the operation vocabulary the generations implement",
+    "necessity": "a6 executed six of its ten cases against the seeded result validator and deferred H07 through H10, recording that they require a producer custody engine, a producer lease and fence implementation, a committed remote artifact to attack, and a producer ingestion and recovery implementation. The three generations are custody engines, so all ten of a6's cases become executable and a6's recorded boundary is closed.",
+    "constraint_observed": "no attack class, mutation or expected outcome was added, removed or weakened; the binding covers a6's case set exactly and build_holdout_suite.py fails if the coverage is not exact"
+  },
+  "limitations": [
+    "The executable encoding of a6's cases is authored by the same owner that authored the generations. Case selection and expected outcomes are independent; the encoding is not. A fully independent holdout would have a6 author executable cases against a published controller contract, which had not happened at scoring time.",
+    "a6 published no scored disposition of this cohort's generations at scoring time, so the holdout result recorded here is this cohort's execution of a6's cases and not a6's acceptance of the result. Independent acceptance remains NOT_TESTED.",
+    "Cohort po03-worker-a10 (cursor/po03-a10-crossfamily-review-ed20) is the second declared independent evaluator. Its branch did not exist at scoring time, so no cross-family holdout material was available and none was substituted.",
+    "The holdout was fetched and bound before G2 was written, but the same owner both read the holdout and authored G2. G2's changes are traceable to specific G1 failures and to a6's recorded findings rather than to holdout cases alone, and lineage.json records which cause drove each change, but this cohort cannot certify blindness to the holdout."
+  ],
+  "boundary_states": {
+    "external_holdout_available": "YES",
+    "external_holdout_author": "po03-worker-a6",
+    "cross_family_holdout_available": "NOT_YET",
+    "cross_family_boundary": "branch cursor/po03-a10-crossfamily-review-ed20 did not exist when the suites were frozen or when the generations were scored",
+    "independent_acceptance_of_this_cohort": "NOT_TESTED"
+  }
+}

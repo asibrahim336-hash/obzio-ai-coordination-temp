@@ -1,0 +1,455 @@
+{
+  "aggregate": {
+    "artifact_claims_audited": 50,
+    "artifact_verification_failures": 0,
+    "artifacts_verified": 50,
+    "records_absent_at_declared_commit": 5,
+    "records_audited": 6,
+    "records_resolving_to_themselves": 0,
+    "records_stale_at_declared_commit": 1,
+    "result": "DISCREPANCY_FOUND"
+  },
+  "document_id": "po03-a8-self-readback-audit-v001",
+  "findings_by_class": {
+    "ABSENT_AT_DECLARED_COMMIT": [
+      "a8-u01",
+      "a8-u02",
+      "a8-u03",
+      "a8-u04",
+      "a8-u06"
+    ],
+    "STALE_AT_DECLARED_COMMIT": [
+      "a8-u05"
+    ]
+  },
+  "generated_by": "workstreams/po03/successor/audit_own_records.py",
+  "impact": "Artifact bytes are independently recoverable at the declared commits, so no evidence is lost. What is not true is the stronger claim the protocol appears to make: that a result record is self-locating from its own declared commit. A parent ingesting these records must resolve them at the branch head.",
+  "lesson": "L-08",
+  "mechanism_that_would_refuse_this": "C-09",
+  "method": "For each of this cohort's result records: resolve every artifact at the commit its own content_uri names and compare digest and byte count, then test whether the record itself is readable at its declared result_commit_id and whether the bytes there are the current record. This is the check cohort a6 applied to other cohorts, turned inward.",
+  "observed_at_commit": "bb7c24e947eabfdea8761e4d2dfdd6c8966185a4",
+  "owner": "po03-worker-a8",
+  "proposed_repair": "Either declare the locator after committing the record - write the record, commit, then rewrite result_commit_id to the new HEAD and amend, which is a two-phase commit - or declare the locator as branch-relative and require the parent to resolve the record at the branch head rather than at a fixed commit. C-09 in G2 takes the second form: the locator is a name that must resolve to the submitted bytes, and admission fails if it does not.",
+  "root_cause": "workstreams/po03/tools/make_result.py resolves result_commit_id to HEAD at the moment it writes the record (line 127, `commit if committed else None`), which is necessarily before that record is committed. No sequence of correct operator behaviour can make the declared commit contain the record, so this is a property of the tool and not of how it was used.",
+  "snapshot_semantics": "An observation of the records as they stood at observed_at_commit, not a digest to be re-derived. Records cite this audit and this audit describes records, so re-recording a unit necessarily moves it: its declared commit changes, and a unit recorded a second time moves from ABSENT to STALE because by then a record does exist at the commit it names. The claims that hold regardless of when this was written are checked by `audit_own_records.py --verify-invariant` and pinned by test_a8_lessons.SelfReadbackTests.",
+  "unit_id": "a8-u06",
+  "units": [
+    {
+      "artifact_count": 10,
+      "artifacts": [
+        {
+          "bytes_match": true,
+          "declared_commit": "92776f174b51531fafb45b6d6e8f9df712a21d25",
+          "path": "workstreams/po03/successor/g0/controller.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "92776f174b51531fafb45b6d6e8f9df712a21d25",
+          "path": "workstreams/po03/successor/g0/provenance.json",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "92776f174b51531fafb45b6d6e8f9df712a21d25",
+          "path": "workstreams/po03/successor/g0/run.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "92776f174b51531fafb45b6d6e8f9df712a21d25",
+          "path": "workstreams/po03/successor/harness/controller_api.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "92776f174b51531fafb45b6d6e8f9df712a21d25",
+          "path": "workstreams/po03/successor/harness/generation_support.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "92776f174b51531fafb45b6d6e8f9df712a21d25",
+          "path": "workstreams/po03/successor/harness/runner.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "92776f174b51531fafb45b6d6e8f9df712a21d25",
+          "path": "workstreams/po03/successor/harness/score.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "92776f174b51531fafb45b6d6e8f9df712a21d25",
+          "path": "workstreams/po03/successor/suite/public/cases.json",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "92776f174b51531fafb45b6d6e8f9df712a21d25",
+          "path": "workstreams/po03/successor/transcripts/g0-public.txt",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "92776f174b51531fafb45b6d6e8f9df712a21d25",
+          "path": "workstreams/po03/tests/test_a8_g0_reconstruction.py",
+          "present": true,
+          "sha256_matches": true
+        }
+      ],
+      "artifacts_verified": 10,
+      "declared_result_commit_id": "92776f174b51531fafb45b6d6e8f9df712a21d25",
+      "obzio_state": "RESULT_COMMITTED",
+      "record_finding": "ABSENT_AT_DECLARED_COMMIT",
+      "record_path": "workstreams/po03/control/units/a8/a8-u01.json",
+      "unit_id": "a8-u01"
+    },
+    {
+      "artifact_count": 5,
+      "artifacts": [
+        {
+          "bytes_match": true,
+          "declared_commit": "7a540c824c0f96984666f0be3921cecd0d294c91",
+          "path": "workstreams/po03/successor/g1/factory.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "7a540c824c0f96984666f0be3921cecd0d294c91",
+          "path": "workstreams/po03/successor/g1/packaging.json",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "7a540c824c0f96984666f0be3921cecd0d294c91",
+          "path": "workstreams/po03/successor/g1/run.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "7a540c824c0f96984666f0be3921cecd0d294c91",
+          "path": "workstreams/po03/successor/transcripts/g1-public.txt",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "7a540c824c0f96984666f0be3921cecd0d294c91",
+          "path": "workstreams/po03/tests/test_a8_g1_fidelity.py",
+          "present": true,
+          "sha256_matches": true
+        }
+      ],
+      "artifacts_verified": 5,
+      "declared_result_commit_id": "7a540c824c0f96984666f0be3921cecd0d294c91",
+      "obzio_state": "RESULT_COMMITTED",
+      "record_finding": "ABSENT_AT_DECLARED_COMMIT",
+      "record_path": "workstreams/po03/control/units/a8/a8-u02.json",
+      "unit_id": "a8-u02"
+    },
+    {
+      "artifact_count": 8,
+      "artifacts": [
+        {
+          "bytes_match": true,
+          "declared_commit": "44cc9f458bb5c14748826d5899ca30bbea9482e8",
+          "path": "workstreams/po03/successor/suite/build_holdout_suite.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "44cc9f458bb5c14748826d5899ca30bbea9482e8",
+          "path": "workstreams/po03/successor/suite/freeze_suites.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "44cc9f458bb5c14748826d5899ca30bbea9482e8",
+          "path": "workstreams/po03/successor/suite/holdout/a6-source-cases.json",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "44cc9f458bb5c14748826d5899ca30bbea9482e8",
+          "path": "workstreams/po03/successor/suite/holdout/cases.json",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "44cc9f458bb5c14748826d5899ca30bbea9482e8",
+          "path": "workstreams/po03/successor/suite/holdout/provenance.json",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "44cc9f458bb5c14748826d5899ca30bbea9482e8",
+          "path": "workstreams/po03/successor/suite/lift-preregistration.json",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "44cc9f458bb5c14748826d5899ca30bbea9482e8",
+          "path": "workstreams/po03/successor/suite/suite-manifest.json",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "44cc9f458bb5c14748826d5899ca30bbea9482e8",
+          "path": "workstreams/po03/tests/test_a8_suite_freeze.py",
+          "present": true,
+          "sha256_matches": true
+        }
+      ],
+      "artifacts_verified": 8,
+      "declared_result_commit_id": "44cc9f458bb5c14748826d5899ca30bbea9482e8",
+      "obzio_state": "RESULT_COMMITTED",
+      "record_finding": "ABSENT_AT_DECLARED_COMMIT",
+      "record_path": "workstreams/po03/control/units/a8/a8-u03.json",
+      "unit_id": "a8-u03"
+    },
+    {
+      "artifact_count": 7,
+      "artifacts": [
+        {
+          "bytes_match": true,
+          "declared_commit": "fc4b52937d29f11981c6287ab95634ce1df1b42a",
+          "path": "workstreams/po03/successor/g2/build_lineage.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "fc4b52937d29f11981c6287ab95634ce1df1b42a",
+          "path": "workstreams/po03/successor/g2/lineage.json",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "fc4b52937d29f11981c6287ab95634ce1df1b42a",
+          "path": "workstreams/po03/successor/g2/run.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "fc4b52937d29f11981c6287ab95634ce1df1b42a",
+          "path": "workstreams/po03/successor/g2/successor.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "fc4b52937d29f11981c6287ab95634ce1df1b42a",
+          "path": "workstreams/po03/successor/transcripts/g2-public.txt",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "fc4b52937d29f11981c6287ab95634ce1df1b42a",
+          "path": "workstreams/po03/tests/test_a8_g2_changes.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "fc4b52937d29f11981c6287ab95634ce1df1b42a",
+          "path": "workstreams/po03/tests/test_a8_g2_lineage.py",
+          "present": true,
+          "sha256_matches": true
+        }
+      ],
+      "artifacts_verified": 7,
+      "declared_result_commit_id": "fc4b52937d29f11981c6287ab95634ce1df1b42a",
+      "obzio_state": "RESULT_COMMITTED",
+      "record_finding": "ABSENT_AT_DECLARED_COMMIT",
+      "record_path": "workstreams/po03/control/units/a8/a8-u04.json",
+      "unit_id": "a8-u04"
+    },
+    {
+      "artifact_count": 11,
+      "artifacts": [
+        {
+          "bytes_match": true,
+          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "path": "receipts/po03/2026-08-22/successor-generation.json",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "path": "workstreams/po03/successor/score_generations.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "path": "workstreams/po03/successor/scores/generation-comparison.json",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "path": "workstreams/po03/successor/transcripts/g0-holdout.txt",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "path": "workstreams/po03/successor/transcripts/g0-public.txt",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "path": "workstreams/po03/successor/transcripts/g1-holdout.txt",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "path": "workstreams/po03/successor/transcripts/g1-public.txt",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "path": "workstreams/po03/successor/transcripts/g2-holdout.txt",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "path": "workstreams/po03/successor/transcripts/g2-public.txt",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "path": "workstreams/po03/successor/write_receipt.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "path": "workstreams/po03/tests/test_a8_scores.py",
+          "present": true,
+          "sha256_matches": true
+        }
+      ],
+      "artifacts_verified": 11,
+      "declared_result_commit_id": "feef275261eb55d8549bdbab24077dcfe788d714",
+      "obzio_state": "RESULT_COMMITTED",
+      "record_finding": "STALE_AT_DECLARED_COMMIT",
+      "record_path": "workstreams/po03/control/units/a8/a8-u05.json",
+      "unit_id": "a8-u05"
+    },
+    {
+      "artifact_count": 9,
+      "artifacts": [
+        {
+          "bytes_match": true,
+          "declared_commit": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+          "path": "workstreams/po03/successor/check_custody_hygiene.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+          "path": "workstreams/po03/successor/g2/lineage.json",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+          "path": "workstreams/po03/successor/g2/successor.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+          "path": "workstreams/po03/successor/lessons/build_lessons.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+          "path": "workstreams/po03/successor/lessons/lessons.json",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+          "path": "workstreams/po03/successor/lessons/lessons.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+          "path": "workstreams/po03/tests/test_a8_g2_changes.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+          "path": "workstreams/po03/tests/test_a8_g2_lineage.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+          "path": "workstreams/po03/tests/test_a8_lessons.py",
+          "present": true,
+          "sha256_matches": true
+        }
+      ],
+      "artifacts_verified": 9,
+      "declared_result_commit_id": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+      "obzio_state": "RESULT_COMMITTED",
+      "record_finding": "ABSENT_AT_DECLARED_COMMIT",
+      "record_path": "workstreams/po03/control/units/a8/a8-u06.json",
+      "unit_id": "a8-u06"
+    }
+  ],
+  "why_not_fixed_here": "workstreams/po03/tools/make_result.py is coordinator-owned and strictly read-only for this cohort. The defect is reported with a reproducer rather than patched."
+}

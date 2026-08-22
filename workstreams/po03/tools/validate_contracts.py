@@ -18,8 +18,151 @@ from typing import Any
 
 
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
-RESULT_SCHEMA_PATH = Path(__file__).parents[1] / "contracts" / "transactional-result.schema.json"
-RESULT_SCHEMA = json.loads(RESULT_SCHEMA_PATH.read_text(encoding="utf-8"))
+EMBEDDED_RESULT_SCHEMA_BYTES = b"""{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obzio.internal/contracts/transactional-result-v1.schema.json",
+  "title": "Obzio Transactional Result Contract v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "protocol_version",
+    "task_id",
+    "commission_id",
+    "immutable_input_manifest_sha256",
+    "acceptance_contract_sha256",
+    "provider_state",
+    "obzio_state",
+    "attempt",
+    "result_transaction",
+    "artifacts",
+    "completion_actor",
+    "independent_acceptance"
+  ],
+  "properties": {
+    "protocol_version": { "const": "OBZIO-TRANSACTIONAL-RESULT-v1" },
+    "task_id": { "$ref": "#/$defs/nonempty" },
+    "commission_id": { "$ref": "#/$defs/nonempty" },
+    "immutable_input_manifest_sha256": { "$ref": "#/$defs/sha256" },
+    "acceptance_contract_sha256": { "$ref": "#/$defs/sha256" },
+    "provider_state": {
+      "enum": ["QUEUED", "RUNNING", "COMPLETED", "FAILED", "CANCELLED", "UNKNOWN"]
+    },
+    "obzio_state": {
+      "enum": [
+        "CREATED",
+        "LEASED",
+        "RUNNING",
+        "CHECKPOINTED",
+        "RESULT_STAGING",
+        "RESULT_STAGED",
+        "RESULT_VERIFIED",
+        "RESULT_COMMITTED",
+        "PARENT_INGESTED",
+        "COMPLETED",
+        "PROVIDER_COMPLETED_UNCOMMITTED",
+        "RECOVERY_REQUIRED",
+        "RETRY_SCHEDULED",
+        "FAILED_TERMINAL",
+        "CANCELLED"
+      ]
+    },
+    "attempt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "attempt_id",
+        "idempotency_key",
+        "lease_id",
+        "fence_token",
+        "provider_run_id",
+        "worker_id",
+        "checkpoint_seq"
+      ],
+      "properties": {
+        "attempt_id": { "$ref": "#/$defs/nonempty" },
+        "idempotency_key": { "$ref": "#/$defs/nonempty" },
+        "lease_id": { "$ref": "#/$defs/nonempty" },
+        "fence_token": { "type": "integer", "minimum": 1 },
+        "provider_run_id": { "$ref": "#/$defs/nonempty" },
+        "worker_id": { "$ref": "#/$defs/nonempty" },
+        "heartbeat_at": { "type": ["string", "null"] },
+        "checkpoint_seq": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "result_transaction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "result_txn_id",
+        "state",
+        "manifest_uri",
+        "manifest_sha256",
+        "artifact_count",
+        "total_bytes",
+        "committed_at",
+        "verified_at",
+        "parent_ingested_at",
+        "result_commit_id"
+      ],
+      "properties": {
+        "result_txn_id": { "$ref": "#/$defs/nonempty" },
+        "state": {
+          "enum": ["RESERVED", "STAGING", "STAGED", "VERIFIED", "COMMITTED", "INGESTED"]
+        },
+        "manifest_uri": { "type": ["string", "null"] },
+        "manifest_sha256": { "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
+        "artifact_count": { "type": "integer", "minimum": 0 },
+        "total_bytes": { "type": "integer", "minimum": 0 },
+        "committed_at": { "type": ["string", "null"] },
+        "verified_at": { "type": ["string", "null"] },
+        "parent_ingested_at": { "type": ["string", "null"] },
+        "result_commit_id": { "type": ["string", "null"] }
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "artifact_id",
+          "logical_name",
+          "content_uri",
+          "sha256",
+          "bytes",
+          "media_type",
+          "readback_verified_at"
+        ],
+        "properties": {
+          "artifact_id": { "$ref": "#/$defs/nonempty" },
+          "logical_name": { "$ref": "#/$defs/nonempty" },
+          "content_uri": { "$ref": "#/$defs/nonempty" },
+          "sha256": { "$ref": "#/$defs/sha256" },
+          "bytes": { "type": "integer", "minimum": 1 },
+          "media_type": { "$ref": "#/$defs/nonempty" },
+          "readback_verified_at": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "completion_actor": { "type": ["string", "null"] },
+    "independent_acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "reviewer_id", "receipt_uri"],
+      "properties": {
+        "state": { "enum": ["NOT_TESTED", "PENDING", "ACCEPTED", "REJECTED"] },
+        "reviewer_id": { "type": ["string", "null"] },
+        "receipt_uri": { "type": ["string", "null"] }
+      }
+    }
+  },
+  "$defs": {
+    "nonempty": { "type": "string", "minLength": 1 },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}
+"""
+RESULT_SCHEMA = json.loads(EMBEDDED_RESULT_SCHEMA_BYTES)
 SUPPORTED_SCHEMA_KEYWORDS = {
     "$ref",
     "additionalProperties",

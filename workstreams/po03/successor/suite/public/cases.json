@@ -1,0 +1,2641 @@
+{
+  "authored_by": "po03-worker-a8",
+  "case_count": 31,
+  "case_set_id": "po03-a8-public-custody-suite-v001",
+  "cases": [
+    {
+      "assert": [
+        {
+          "check": "admitted",
+          "expect": true,
+          "step": "create"
+        },
+        {
+          "absent": false,
+          "check": "detail",
+          "path": "input_manifest_sha256",
+          "step": "create"
+        },
+        {
+          "check": "admitted",
+          "expect": true,
+          "step": "observe"
+        }
+      ],
+      "commission_basis": "Before dispatch, durably write immutable task input, configuration, source hashes.",
+      "criteria": [
+        "C3"
+      ],
+      "critical": false,
+      "family": "dispatch_durability",
+      "id": "P01-dispatch-input-durably-recorded",
+      "intent": "Immutable task input is durably recorded before dispatch and is readable afterwards.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "unit_id": "u1"
+          },
+          "label": "observe",
+          "op": "state"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "absent": false,
+          "check": "detail",
+          "path": "acceptance_contract_sha256",
+          "step": "create"
+        }
+      ],
+      "commission_basis": "durably write ... acceptance hashes ... before dispatch.",
+      "criteria": [
+        "C3"
+      ],
+      "critical": false,
+      "family": "dispatch_durability",
+      "id": "P02-acceptance-contract-hashed-at-dispatch",
+      "intent": "The frozen acceptance contract is hashed at dispatch so it cannot be renegotiated later.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "absent": false,
+          "check": "detail",
+          "path": "idempotency_key",
+          "step": "create"
+        }
+      ],
+      "commission_basis": "durably write ... idempotency key, lease and fence token.",
+      "criteria": [
+        "C5",
+        "C6"
+      ],
+      "critical": false,
+      "family": "dispatch_durability",
+      "id": "P03-idempotency-key-issued-at-dispatch",
+      "intent": "An idempotency key is issued at dispatch so retries can be deduplicated.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "detail",
+          "expect": [
+            "u1"
+          ],
+          "path": "input_tampered",
+          "step": "verify"
+        }
+      ],
+      "commission_basis": "immutable task input ... acceptance hashes written before dispatch.",
+      "criteria": [
+        "C3"
+      ],
+      "critical": true,
+      "family": "dispatch_durability",
+      "id": "P04-acceptance-contract-tamper-detected",
+      "intent": "Editing the frozen acceptance contract after dispatch is detected rather than silently honoured.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "fields": {
+              "acceptance": {
+                "assertion": "anything the producer likes"
+              }
+            },
+            "kind": "edit",
+            "target": "record",
+            "unit_id": "u1"
+          },
+          "label": "tamper",
+          "op": "tamper"
+        },
+        {
+          "args": {},
+          "label": "verify",
+          "op": "verify"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "detail",
+          "expect": [
+            "u1"
+          ],
+          "path": "input_drift",
+          "step": "verify"
+        }
+      ],
+      "commission_basis": "Every claimed input is pinned by repository and SHA.",
+      "criteria": [
+        "C3"
+      ],
+      "critical": false,
+      "family": "dispatch_durability",
+      "id": "P05-pinned-input-drift-detected",
+      "intent": "Drift in a pinned input hash is detected by re-hashing, not assumed away.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "fields": {
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "1111111111111111111111111111111111111111111111111111111111111111"
+              }
+            },
+            "kind": "edit",
+            "target": "record",
+            "unit_id": "u1"
+          },
+          "label": "tamper",
+          "op": "tamper"
+        },
+        {
+          "args": {},
+          "label": "verify",
+          "op": "verify"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "admitted",
+          "expect": false,
+          "step": "submit"
+        },
+        {
+          "check": "reason_code",
+          "expect": "NO_RESULT_COMMIT",
+          "step": "submit"
+        },
+        {
+          "check": "detail",
+          "expect": "PROVIDER_COMPLETED_UNCOMMITTED",
+          "path": "obzio_state",
+          "step": "observe"
+        }
+      ],
+      "commission_basis": "If no verified durable result commit exists, Obzio state is PROVIDER_COMPLETED_UNCOMMITTED, never COMPLETED.",
+      "criteria": [
+        "C1"
+      ],
+      "critical": true,
+      "family": "false_completion",
+      "id": "P06-provider-completion-is-not-obzio-completion",
+      "intent": "A provider report of COMPLETED with no durable result commit never becomes Obzio COMPLETED.",
+      "safety_class": "false_completion",
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "artifacts": [],
+            "claimed_state": "COMPLETED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": false,
+            "result_commit_id": null,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        },
+        {
+          "args": {
+            "unit_id": "u1"
+          },
+          "label": "observe",
+          "op": "state"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "admitted",
+          "expect": false,
+          "step": "complete"
+        },
+        {
+          "check": "reason_code",
+          "expect": "NOT_INGESTED",
+          "step": "complete"
+        },
+        {
+          "check": "detail",
+          "one_of": [
+            "RESULT_COMMITTED",
+            "RESULT_VERIFIED"
+          ],
+          "path": "obzio_state",
+          "step": "observe"
+        }
+      ],
+      "commission_basis": "the parent records ingestion; only the coordinator sets COMPLETED.",
+      "criteria": [
+        "C2"
+      ],
+      "critical": true,
+      "family": "false_completion",
+      "id": "P07-completion-requires-parent-ingestion",
+      "intent": "Completion is refused before the parent has ingested and re-verified the result.",
+      "safety_class": "false_completion",
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/successor/scores/probe.json"
+          },
+          "label": "write",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/successor/scores/probe.json",
+                "sha256": "@auto"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        },
+        {
+          "args": {
+            "actor": "coordinator",
+            "unit_id": "u1"
+          },
+          "label": "complete",
+          "op": "complete"
+        },
+        {
+          "args": {
+            "unit_id": "u1"
+          },
+          "label": "observe",
+          "op": "state"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "admitted",
+          "expect": false,
+          "step": "complete"
+        },
+        {
+          "check": "reason_code",
+          "expect": "NOT_COORDINATOR",
+          "step": "complete"
+        },
+        {
+          "check": "detail",
+          "expect": "PARENT_INGESTED",
+          "path": "obzio_state",
+          "step": "observe"
+        }
+      ],
+      "commission_basis": "only the coordinator sets COMPLETED.",
+      "criteria": [
+        "C2",
+        "C6"
+      ],
+      "critical": true,
+      "family": "authority",
+      "id": "P08-completion-authority-is-enforced-not-labelled",
+      "intent": "A non-coordinator principal cannot reach COMPLETED even when every custody precondition holds.",
+      "safety_class": "false_completion",
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/successor/scores/probe.json"
+          },
+          "label": "write",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/successor/scores/probe.json",
+                "sha256": "@auto"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        },
+        {
+          "args": {
+            "actor": "coordinator",
+            "unit_id": "u1"
+          },
+          "label": "ingest",
+          "op": "ingest"
+        },
+        {
+          "args": {
+            "actor": "w1",
+            "unit_id": "u1"
+          },
+          "label": "complete",
+          "op": "complete"
+        },
+        {
+          "args": {
+            "unit_id": "u1"
+          },
+          "label": "observe",
+          "op": "state"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "admitted",
+          "expect": false,
+          "step": "review"
+        },
+        {
+          "check": "reason_code",
+          "expect": "SELF_ACCEPTANCE",
+          "step": "review"
+        }
+      ],
+      "commission_basis": "a different producer may then accept or reject it.",
+      "criteria": [
+        "C2",
+        "C6"
+      ],
+      "critical": true,
+      "family": "authority",
+      "id": "P09-producer-cannot-accept-its-own-work",
+      "intent": "The producing owner cannot record acceptance of its own result.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/successor/scores/probe.json"
+          },
+          "label": "write",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/successor/scores/probe.json",
+                "sha256": "@auto"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        },
+        {
+          "args": {
+            "actor": "coordinator",
+            "unit_id": "u1"
+          },
+          "label": "ingest",
+          "op": "ingest"
+        },
+        {
+          "args": {
+            "actor": "coordinator",
+            "unit_id": "u1"
+          },
+          "label": "complete",
+          "op": "complete"
+        },
+        {
+          "args": {
+            "decision": "ACCEPTED",
+            "reviewer": "po03-worker-a8",
+            "unit_id": "u1"
+          },
+          "label": "review",
+          "op": "review"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "detail",
+          "expect": "NOT_TESTED",
+          "path": "acceptance",
+          "step": "observe"
+        }
+      ],
+      "commission_basis": "Use only PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED.",
+      "criteria": [
+        "C2"
+      ],
+      "critical": false,
+      "family": "authority",
+      "id": "P10-acceptance-starts-untested",
+      "intent": "A freshly dispatched unit is NOT_TESTED rather than presumed acceptable.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "unit_id": "u1"
+          },
+          "label": "observe",
+          "op": "state"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "admitted",
+          "expect": true,
+          "step": "lease"
+        },
+        {
+          "check": "detail",
+          "expect": 1,
+          "path": "fence_token",
+          "step": "lease"
+        }
+      ],
+      "commission_basis": "Use ... leases, fencing, monotonic checkpoints.",
+      "criteria": [
+        "C5"
+      ],
+      "critical": false,
+      "family": "fencing",
+      "id": "P11-lease-grants-a-fence-token",
+      "intent": "Work is leased with a monotonic fence token rather than assigned informally.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "admitted",
+          "expect": false,
+          "step": "submit"
+        },
+        {
+          "check": "reason_code",
+          "expect": "STALE_FENCE",
+          "step": "submit"
+        }
+      ],
+      "commission_basis": "An expired/stale worker must not commit after ownership transfers.",
+      "criteria": [
+        "C5"
+      ],
+      "critical": true,
+      "family": "fencing",
+      "id": "P12-stale-worker-cannot-commit-after-transfer",
+      "intent": "After ownership transfers, the evicted worker's commit is refused.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w2"
+          },
+          "label": "lease2",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/successor/scores/probe.json"
+          },
+          "label": "write",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/successor/scores/probe.json",
+                "sha256": "@auto"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "admitted",
+          "expect": false,
+          "step": "submit"
+        },
+        {
+          "check": "reason_code",
+          "expect": "FORGED_FENCE",
+          "step": "submit"
+        }
+      ],
+      "commission_basis": "Use ... leases, fencing ... an expired/stale worker must not commit.",
+      "criteria": [
+        "C5"
+      ],
+      "critical": true,
+      "family": "fencing",
+      "id": "P13-forged-fence-token-refused",
+      "intent": "A fence token that was never granted to this worker is refused, not accepted for being large.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/successor/scores/probe.json"
+          },
+          "label": "write",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/successor/scores/probe.json",
+                "sha256": "@auto"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 99,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "admitted",
+          "expect": false,
+          "step": "submit"
+        },
+        {
+          "check": "reason_code",
+          "expect": "EXPIRED_LEASE",
+          "step": "submit"
+        }
+      ],
+      "commission_basis": "An expired/stale worker must not commit after ownership transfers.",
+      "criteria": [
+        "C5"
+      ],
+      "critical": true,
+      "family": "fencing",
+      "id": "P14-expired-lease-cannot-commit",
+      "intent": "A worker whose lease deadline has passed cannot commit, even with the newest fence token.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 60,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/successor/scores/probe.json"
+          },
+          "label": "write",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "seconds": 600
+          },
+          "label": "wait",
+          "op": "advance_clock"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/successor/scores/probe.json",
+                "sha256": "@auto"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "detail",
+          "expect": [
+            "u1"
+          ],
+          "path": "expired_leases",
+          "step": "recover"
+        }
+      ],
+      "commission_basis": "Use ... a recovery scanner.",
+      "criteria": [
+        "C4",
+        "C5"
+      ],
+      "critical": false,
+      "family": "recovery",
+      "id": "P15-expired-lease-surfaces-in-recovery",
+      "intent": "An expired lease is reported by the recovery scanner so the unit can be re-dispatched.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 60,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "seconds": 600
+          },
+          "label": "wait",
+          "op": "advance_clock"
+        },
+        {
+          "args": {},
+          "label": "recover",
+          "op": "recover"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "admitted",
+          "expect": false,
+          "step": "submit"
+        },
+        {
+          "check": "reason_code",
+          "expect": "ARTIFACT_MISSING",
+          "step": "submit"
+        }
+      ],
+      "commission_basis": "another process reads every artifact back by immutable SHA.",
+      "criteria": [
+        "C3"
+      ],
+      "critical": true,
+      "family": "artifact_integrity",
+      "id": "P16-missing-artifact-refused-on-readback",
+      "intent": "A result naming an artifact that does not exist is refused on read-back.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": 42,
+                "path": "workstreams/po03/successor/scores/probe.json",
+                "sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "admitted",
+          "expect": false,
+          "step": "submit"
+        },
+        {
+          "check": "reason_code",
+          "expect": "ARTIFACT_HASH_MISMATCH",
+          "step": "submit"
+        }
+      ],
+      "commission_basis": "hashes and byte counts are verified.",
+      "criteria": [
+        "C3"
+      ],
+      "critical": true,
+      "family": "artifact_integrity",
+      "id": "P17-artifact-hash-mismatch-refused",
+      "intent": "A result whose claimed digest disagrees with the stored bytes is refused.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/successor/scores/probe.json"
+          },
+          "label": "write",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/successor/scores/probe.json",
+                "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "admitted",
+          "expect": false,
+          "step": "submit"
+        },
+        {
+          "check": "reason_code",
+          "expect": "ACCOUNTING_MISMATCH",
+          "step": "submit"
+        }
+      ],
+      "commission_basis": "hashes and byte counts are verified.",
+      "criteria": [
+        "C3"
+      ],
+      "critical": true,
+      "family": "artifact_integrity",
+      "id": "P18-byte-accounting-mismatch-refused",
+      "intent": "A result whose manifest accounting disagrees with its artifacts is refused.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/successor/scores/probe.json"
+          },
+          "label": "write",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "accounting": {
+              "artifact_count": 2,
+              "total_bytes": 999999
+            },
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/successor/scores/probe.json",
+                "sha256": "@auto"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "admitted",
+          "expect": false,
+          "step": "submit"
+        },
+        {
+          "check": "reason_code",
+          "expect": "DUPLICATE_ARTIFACT_ID",
+          "step": "submit"
+        }
+      ],
+      "commission_basis": "complete artifact manifest ... complete hash coverage.",
+      "criteria": [
+        "C3",
+        "C6"
+      ],
+      "critical": false,
+      "family": "artifact_integrity",
+      "id": "P19-duplicate-artifact-identity-refused",
+      "intent": "Two artifacts cannot share one identity inside a single result manifest.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/successor/scores/probe.json"
+          },
+          "label": "write",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/successor/scores/probe2.json"
+          },
+          "label": "write2",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/successor/scores/probe.json",
+                "sha256": "@auto"
+              },
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/successor/scores/probe2.json",
+                "sha256": "@auto"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "admitted",
+          "expect": false,
+          "step": "submit"
+        },
+        {
+          "check": "reason_code",
+          "expect": "READBACK_MISSING",
+          "step": "submit"
+        }
+      ],
+      "commission_basis": "another process reads every artifact back by immutable SHA.",
+      "criteria": [
+        "C3"
+      ],
+      "critical": true,
+      "family": "artifact_integrity",
+      "id": "P20-readback-evidence-required-for-terminal-state",
+      "intent": "A terminal committed state requires read-back evidence for every artifact.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/successor/scores/probe.json"
+          },
+          "label": "write",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/successor/scores/probe.json",
+                "sha256": "@auto"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": false,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "detail",
+          "expect": [
+            "workstreams/po03/successor/scores/probe.json"
+          ],
+          "path": "drift_detected",
+          "step": "verify"
+        },
+        {
+          "check": "detail",
+          "expect": 1,
+          "path": "artifacts_reverified",
+          "step": "verify"
+        }
+      ],
+      "commission_basis": "complete hash coverage ... 100% recovery of committed results.",
+      "criteria": [
+        "C3",
+        "C4"
+      ],
+      "critical": true,
+      "family": "artifact_integrity",
+      "id": "P21-drift-after-admission-is-detected",
+      "intent": "Artifact bytes that change after admission into custody are detected by re-verification.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/successor/scores/probe.json"
+          },
+          "label": "write",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/successor/scores/probe.json",
+                "sha256": "@auto"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        },
+        {
+          "args": {
+            "actor": "coordinator",
+            "unit_id": "u1"
+          },
+          "label": "ingest",
+          "op": "ingest"
+        },
+        {
+          "args": {
+            "kind": "corrupt",
+            "path": "workstreams/po03/successor/scores/probe.json",
+            "target": "artifact"
+          },
+          "label": "tamper",
+          "op": "tamper"
+        },
+        {
+          "args": {},
+          "label": "verify",
+          "op": "verify"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "admitted",
+          "expect": false,
+          "step": "submit"
+        },
+        {
+          "check": "reason_code",
+          "expect": "OUT_OF_ALLOWLIST",
+          "step": "submit"
+        }
+      ],
+      "commission_basis": "A path-scope guard must fail CI for writes outside the allowlist.",
+      "criteria": [
+        "C6"
+      ],
+      "critical": true,
+      "family": "path_scope",
+      "id": "P22-out-of-allowlist-artifact-refused",
+      "intent": "A result claiming an artifact outside the wave-one allowlist is refused at ingestion.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "packs/injected.json"
+          },
+          "label": "write",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "packs/injected.json",
+                "sha256": "@auto"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "admitted",
+          "expect": false,
+          "step": "submit"
+        },
+        {
+          "check": "reason_code",
+          "expect": "NOT_OWNED",
+          "step": "submit"
+        }
+      ],
+      "commission_basis": "every subordinate writer receives a unique worktree/branch and owned subtree.",
+      "criteria": [
+        "C6"
+      ],
+      "critical": true,
+      "family": "path_scope",
+      "id": "P23-cross-owner-artifact-refused",
+      "intent": "A result claiming another cohort's owned path is refused even inside the allowlist.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/metrics/generation-comparison.json"
+          },
+          "label": "write",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/metrics/generation-comparison.json",
+                "sha256": "@auto"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "admitted",
+          "expect": false,
+          "step": "submit"
+        },
+        {
+          "check": "reason_code",
+          "one_of": [
+            "OUT_OF_ALLOWLIST",
+            "NOT_OWNED"
+          ],
+          "step": "submit"
+        }
+      ],
+      "commission_basis": "Never write outside it, and within it never outside your owned prefixes.",
+      "criteria": [
+        "C6"
+      ],
+      "critical": true,
+      "family": "path_scope",
+      "id": "P24-path-traversal-refused",
+      "intent": "A traversal escape from an owned subtree is refused.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/successor/../../../etc/passwd"
+          },
+          "label": "write",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/successor/../../../etc/passwd",
+                "sha256": "@auto"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "reason_code",
+          "expect": "DUPLICATE_IGNORED",
+          "step": "ingest2"
+        },
+        {
+          "check": "detail",
+          "expect": 1,
+          "path": "ingest_count",
+          "step": "observe"
+        }
+      ],
+      "commission_basis": "Duplicate callbacks must be harmless.",
+      "criteria": [
+        "C5",
+        "C6"
+      ],
+      "critical": true,
+      "family": "replay",
+      "id": "P25-identical-replay-is-harmless",
+      "intent": "A byte-identical duplicate callback leaves exactly one durable result.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/successor/scores/probe.json"
+          },
+          "label": "write",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/successor/scores/probe.json",
+                "sha256": "@auto"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        },
+        {
+          "args": {
+            "actor": "coordinator",
+            "unit_id": "u1"
+          },
+          "label": "ingest",
+          "op": "ingest"
+        },
+        {
+          "args": {
+            "actor": "coordinator",
+            "unit_id": "u1"
+          },
+          "label": "ingest2",
+          "op": "ingest"
+        },
+        {
+          "args": {
+            "unit_id": "u1"
+          },
+          "label": "observe",
+          "op": "state"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "reason_code",
+          "one_of": [
+            "CONFLICTING_REPLAY",
+            "DUPLICATE_IGNORED"
+          ],
+          "step": "ingest2"
+        },
+        {
+          "check": "admitted",
+          "expect": false,
+          "step": "ingest2"
+        },
+        {
+          "check": "detail",
+          "expect": 1,
+          "path": "ingest_count",
+          "step": "observe"
+        }
+      ],
+      "commission_basis": "zero duplicate external effects.",
+      "criteria": [
+        "C5",
+        "C6"
+      ],
+      "critical": true,
+      "family": "replay",
+      "id": "P26-conflicting-replay-refused",
+      "intent": "A replay under the same idempotency key carrying different content is refused, not ingested twice.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/successor/scores/probe.json"
+          },
+          "label": "write",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/successor/scores/probe2.json"
+          },
+          "label": "write2",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/successor/scores/probe.json",
+                "sha256": "@auto"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        },
+        {
+          "args": {
+            "actor": "coordinator",
+            "unit_id": "u1"
+          },
+          "label": "ingest",
+          "op": "ingest"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/successor/scores/probe2.json",
+                "sha256": "@auto"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "d3adb33fd3adb33fd3adb33fd3adb33fd3adb33f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit2",
+          "op": "submit"
+        },
+        {
+          "args": {
+            "actor": "coordinator",
+            "unit_id": "u1"
+          },
+          "label": "ingest2",
+          "op": "ingest"
+        },
+        {
+          "args": {
+            "unit_id": "u1"
+          },
+          "label": "observe",
+          "op": "state"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "reason_code",
+          "one_of": [
+            "LEDGER_CORRUPT"
+          ],
+          "step": "verify"
+        },
+        {
+          "check": "detail",
+          "expect": false,
+          "path": "ledger_chain_valid",
+          "step": "verify"
+        }
+      ],
+      "commission_basis": "Use an append-only ledger.",
+      "criteria": [
+        "C4"
+      ],
+      "critical": true,
+      "family": "log_integrity",
+      "id": "P27-in-place-log-edit-detected",
+      "intent": "An in-place edit of the append-only history is detected.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "kind": "edit",
+            "target": "ledger"
+          },
+          "label": "tamper",
+          "op": "tamper"
+        },
+        {
+          "args": {},
+          "label": "verify",
+          "op": "verify"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "reason_code",
+          "one_of": [
+            "LEDGER_CORRUPT"
+          ],
+          "step": "verify"
+        },
+        {
+          "check": "detail",
+          "expect": false,
+          "path": "ledger_chain_valid",
+          "step": "verify"
+        }
+      ],
+      "commission_basis": "Use an append-only ledger ... monotonic checkpoints.",
+      "criteria": [
+        "C4"
+      ],
+      "critical": true,
+      "family": "log_integrity",
+      "id": "P28-log-reordering-detected",
+      "intent": "Reordering the append-only history is detected.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "kind": "reorder",
+            "target": "ledger"
+          },
+          "label": "tamper",
+          "op": "tamper"
+        },
+        {
+          "args": {},
+          "label": "verify",
+          "op": "verify"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "reason_code",
+          "one_of": [
+            "LEDGER_TRUNCATED",
+            "LEDGER_CORRUPT"
+          ],
+          "step": "verify"
+        },
+        {
+          "check": "detail",
+          "expect": true,
+          "path": "ledger_truncated",
+          "step": "verify"
+        }
+      ],
+      "commission_basis": "truncation, reordering and in-place edits are detectable.",
+      "criteria": [
+        "C4"
+      ],
+      "critical": true,
+      "family": "log_integrity",
+      "id": "P29-log-tail-truncation-detected",
+      "intent": "Losing the most recent rows of the append-only history is detected, not silently accepted.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/successor/scores/probe.json"
+          },
+          "label": "write",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/successor/scores/probe.json",
+                "sha256": "@auto"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        },
+        {
+          "args": {
+            "kind": "truncate",
+            "target": "ledger"
+          },
+          "label": "tamper",
+          "op": "tamper"
+        },
+        {
+          "args": {},
+          "label": "verify",
+          "op": "verify"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "detail",
+          "expect": 1,
+          "path": "replayed_ingestions",
+          "step": "recover"
+        },
+        {
+          "check": "detail",
+          "expect": [],
+          "path": "rerun_required",
+          "step": "recover"
+        },
+        {
+          "check": "detail",
+          "expect": "PARENT_INGESTED",
+          "path": "obzio_state",
+          "step": "observe"
+        }
+      ],
+      "commission_basis": "Lost callbacks must replay ... transactional outbox ... 100% recovery of committed results.",
+      "criteria": [
+        "C4",
+        "C6"
+      ],
+      "critical": true,
+      "family": "recovery",
+      "id": "P30-lost-callback-is-replayed-not-rerun",
+      "intent": "A committed result whose callback was lost is replayed into custody rather than re-run.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/successor/scores/probe.json"
+          },
+          "label": "write",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/successor/scores/probe.json",
+                "sha256": "@auto"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        },
+        {
+          "args": {},
+          "label": "restart",
+          "op": "restart"
+        },
+        {
+          "args": {},
+          "label": "recover",
+          "op": "recover"
+        },
+        {
+          "args": {
+            "unit_id": "u1"
+          },
+          "label": "observe",
+          "op": "state"
+        }
+      ]
+    },
+    {
+      "assert": [
+        {
+          "check": "admitted",
+          "expect": false,
+          "step": "ingest"
+        },
+        {
+          "check": "reason_code",
+          "expect": "LOCATOR_UNRESOLVED",
+          "step": "ingest"
+        },
+        {
+          "check": "detail",
+          "expect": 0,
+          "path": "ingest_count",
+          "step": "observe"
+        }
+      ],
+      "commission_basis": "another process reads every artifact back by immutable SHA; every counted unit has a terminal durable disposition and immutable locator.",
+      "criteria": [
+        "C3",
+        "C4"
+      ],
+      "critical": true,
+      "family": "recovery",
+      "id": "P31-declared-locator-must-resolve-before-ingestion",
+      "intent": "A result is admitted only if its record is actually readable at the immutable locator it declares.",
+      "safety_class": null,
+      "steps": [
+        {
+          "args": {
+            "spec": {
+              "acceptance": {
+                "assertion": "the unit leaves a durable, hash-verified result"
+              },
+              "owned_prefixes": [
+                "workstreams/po03/successor/",
+                "workstreams/po03/control/units/a8/"
+              ],
+              "owner": "po03-worker-a8",
+              "pinned_inputs": {
+                "workstreams/po03/COMMISSION.md": "0000000000000000000000000000000000000000000000000000000000000000"
+              }
+            },
+            "unit_id": "u1"
+          },
+          "label": "create",
+          "op": "create"
+        },
+        {
+          "args": {
+            "ttl": 3600,
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "lease",
+          "op": "lease"
+        },
+        {
+          "args": {
+            "content": "{\"probe\":\"durable result bytes\"}",
+            "path": "workstreams/po03/successor/scores/probe.json"
+          },
+          "label": "write",
+          "op": "write_artifact"
+        },
+        {
+          "args": {
+            "artifacts": [
+              {
+                "artifact_id": "art-01",
+                "bytes": "@auto",
+                "path": "workstreams/po03/successor/scores/probe.json",
+                "sha256": "@auto"
+              }
+            ],
+            "claimed_state": "RESULT_COMMITTED",
+            "fence_token": 1,
+            "idempotency_key": "u1:key-001",
+            "provider_state": "COMPLETED",
+            "readback_verified": true,
+            "result_commit_id": "1f0e4c2b9a7d5e3f8c1b6a4d2e9f7c5b3a1d8e6f",
+            "unit_id": "u1",
+            "worker": "w1"
+          },
+          "label": "submit",
+          "op": "submit"
+        },
+        {
+          "args": {
+            "kind": "delete",
+            "target": "locator",
+            "unit_id": "u1"
+          },
+          "label": "tamper",
+          "op": "tamper"
+        },
+        {
+          "args": {
+            "actor": "coordinator",
+            "unit_id": "u1"
+          },
+          "label": "ingest",
+          "op": "ingest"
+        },
+        {
+          "args": {
+            "unit_id": "u1"
+          },
+          "label": "observe",
+          "op": "state"
+        }
+      ]
+    }
+  ],
+  "criteria_source": {
+    "criteria_id": "po03-a6-custody-engine-v002",
+    "note": "criterion identifiers C1-C6 are a6's independently frozen custody criteria",
+    "owner": "po03-worker-a6",
+    "path": "workstreams/po03/review/luna/criteria-a1.json"
+  },
+  "frozen": true,
+  "generated_by": "workstreams/po03/successor/suite/build_public_suite.py",
+  "role": "public"
+}

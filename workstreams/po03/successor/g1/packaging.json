@@ -1,0 +1,97 @@
+{
+  "generation_id": "G1",
+  "label": "high-scale transactional factory",
+  "unit_id": "a8-u02",
+  "owner": "po03-worker-a8",
+  "packaged_from": {
+    "source_files": [
+      "workstreams/po03/tools/control_plane.py",
+      "workstreams/po03/tools/make_result.py",
+      "workstreams/po03/tools/validate_contracts.py"
+    ],
+    "source_branch": "cursor/po03-wave-a-transactional-factory-ed20",
+    "source_commit": "dd2fcc63694bea365153a5930472816037b6e4ff",
+    "read_method": "read-only; the live modules are never written to and never imported at runtime by the packaged generation"
+  },
+  "why_a_port_and_not_an_import": "control_plane.py binds its ledger, registry, dispatch and recovery paths to module-level constants under workstreams/po03/control/, which is coordinator-owned shared state. Importing it would make the generation unable to run from a clean clone without that directory, and scoring it would write into another owner's files. The port keeps the algorithms, the row schema and the hash chain, and takes every path from a constructor argument.",
+  "independence_evidence": {
+    "reads_live_control_directory": false,
+    "entry_point": "python3 -I workstreams/po03/successor/g1/run.py",
+    "state_root": "supplied by the caller; the generation creates control/dispatch, control/events, control/results, artifacts and locators beneath it",
+    "third_party_packages": [],
+    "verified_by": "workstreams/po03/tests/test_a8_g1_fidelity.py::NonInterferenceTests::test_exercising_the_live_module_writes_nothing_to_shared_control_state"
+  },
+  "fidelity_evidence": {
+    "method": "the live control_plane.py is loaded read-only with its writable path constants rebound to a scratch directory, and the port is compared against it on ledger row schema, row digest computation, chain verdicts, allowlist and ownership rules, state projection, and real ingest_result admit/reject decisions",
+    "test_file": "workstreams/po03/tests/test_a8_g1_fidelity.py",
+    "test_count": 17,
+    "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a8_g1_fidelity.py'",
+    "decisions_compared": [
+      "well-formed result admitted",
+      "artifact hash mismatch refused",
+      "artifact missing on read-back refused",
+      "out-of-allowlist artifact refused",
+      "cross-owner artifact refused",
+      "byte accounting drift refused",
+      "provider completion without a result commit refused",
+      "stale fence after ownership transfer refused",
+      "forged fence above the current grant admitted by both"
+    ]
+  },
+  "intentional_divergences": [
+    {
+      "divergence": "time comes from an injectable clock rather than time.time()",
+      "reason": "a lease-expiry score that depends on wall clock is not reproducible, and reproducibility is a precondition of the comparison",
+      "scope": "affects only when a deadline is judged to have passed; no decision rule changes"
+    },
+    {
+      "divergence": "admission is adjudicated once, at submit",
+      "reason": "the live factory splits the same checks between make_result.py on the worker side and ingest_result on the parent side. The custody guarantee is identical, because a result that fails any check never enters custody, so the port adjudicates once and the fidelity test compares decisions rather than call sites.",
+      "scope": "check placement only; the set of checks and their grounds are unchanged"
+    }
+  ],
+  "gaps_preserved_deliberately": [
+    {
+      "gap": "the dispatch record's own manifest digest is never recomputed, so an edit to dispatched immutable input is invisible",
+      "measured_by": ["P04-acceptance-contract-tamper-detected", "P05-pinned-input-drift-detected"]
+    },
+    {
+      "gap": "cmd_complete writes actor=\"coordinator\" unconditionally, so completion authority is a naming convention rather than an authorisation check",
+      "measured_by": ["P08-completion-authority-is-enforced-not-labelled", "H02-noncoordinator-completion"]
+    },
+    {
+      "gap": "the fence check is incoming < current, so a token that was never granted is accepted for being larger",
+      "measured_by": ["P13-forged-fence-token-refused"]
+    },
+    {
+      "gap": "lease expiry is reported by the recovery scanner but never enforced at commit",
+      "measured_by": ["P14-expired-lease-cannot-commit"]
+    },
+    {
+      "gap": "artifacts are hashed once at ingestion and never re-verified",
+      "measured_by": ["P21-drift-after-admission-is-detected", "H09-corrupt_readback"]
+    },
+    {
+      "gap": "duplicate detection matches on the result digest, so a replay under one idempotency key carrying different content is ingested a second time",
+      "measured_by": ["P26-conflicting-replay-refused"]
+    },
+    {
+      "gap": "verify_chain validates links between the rows that remain, so a lost tail leaves a self-consistent chain",
+      "measured_by": ["P29-log-tail-truncation-detected"]
+    },
+    {
+      "gap": "RESULT_COMMITTED is terminal for the recovery scanner and there is no outbox, so a committed but uningested result is stranded rather than replayed or re-run",
+      "measured_by": ["P30-lost-callback-is-replayed-not-rerun", "H10-parent-restart"]
+    },
+    {
+      "gap": "the declared result locator is recorded and never resolved; artifacts are verified against the working tree while result_commit_id is taken on trust",
+      "measured_by": ["P31-declared-locator-must-resolve-before-ingestion"],
+      "independently_observed_by": "po03-worker-a6 rejected unit a3-u01 because the result record was absent at its declared result_commit_id ee29582dde5c868ac3819a69986c34777d2575ec"
+    }
+  ],
+  "fidelity_rule": "The port must not be quieter or stronger than what it represents. Every gap above is asserted somewhere: the forged-fence gap is asserted against the live module directly, and the truncation gap is asserted against the live verify_chain. A port that had silently fixed a gap would manufacture lift for G2, so the fidelity tests are part of the measurement, not decoration.",
+  "limitations": [
+    "Fidelity is established on the decision surface the suite scores: row schema, chain verdicts, path rules, projection and ingest decisions. It is not a line-by-line equivalence proof, and behaviour outside that surface, for example the CLI argument handling and the create-from-wave-spec path, is not compared.",
+    "The source commit is the wave-A factory branch head that this cohort merged. If the coordinator changes control_plane.py afterwards, this packaging describes the commit named above and not the newer file."
+  ]
+}
