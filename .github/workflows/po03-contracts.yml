@@ -27,5 +27,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Enforce the immutable PO-03 path boundary
+        run: python -I workstreams/po03/tools/check_path_scope.py
       - name: Run dependency-free contract tests
         run: python -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v
