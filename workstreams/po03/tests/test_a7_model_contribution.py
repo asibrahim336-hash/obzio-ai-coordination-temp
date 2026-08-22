@@ -6,12 +6,24 @@ committed dispositions, with counts and no attribution to Auto."
 Falsified if any unit lacks an exact model slug attribution.
 """
 
+"""workstreams/po03/evidence/snapshot-coupling.json: reproduction is asserted
+against the exact immutable commit this cohort's own tools last regenerated
+work-unit-runs.jsonl, model-capability-register.json, path-ownership.json and
+model-contribution-report.json in lock-step (PIN_COMMIT), never against
+whatever those files happen to be live on disk.
+"""
+
 import importlib.util
 import json
+import sys
+import tempfile
 import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).parents[3]
+sys.path.insert(0, str(REPO_ROOT / "workstreams/po03/metrics"))
+from pin_support import materialize_commit_subset  # noqa: E402
+
 MODULE_PATH = Path(__file__).parents[1] / "metrics" / "model_contribution.py"
 SPEC = importlib.util.spec_from_file_location("model_contribution", MODULE_PATH)
 MODULE = importlib.util.module_from_spec(SPEC)
@@ -21,6 +33,20 @@ SPEC.loader.exec_module(MODULE)
 REPORT_PATH = REPO_ROOT / "workstreams/po03/metrics/model-contribution-report.json"
 RUNS_PATH = REPO_ROOT / "workstreams/po03/metrics/work-unit-runs.jsonl"
 REGISTER_PATH = REPO_ROOT / "workstreams/po03/control/model-capability-register.json"
+
+PIN_COMMIT = "79453a7033d34cf7cfbbe3e64f4fab6ed1bbd34e"
+REQUIRED_RELATIVE_PATHS = [
+    "workstreams/po03/metrics/work-unit-runs.jsonl",
+    "workstreams/po03/control/model-capability-register.json",
+    "workstreams/po03/control/path-ownership.json",
+]
+
+
+def _compute_at_pin(commit: str = PIN_COMMIT):
+    with tempfile.TemporaryDirectory() as tmp:
+        dest = Path(tmp)
+        materialize_commit_subset(REPO_ROOT, commit, REQUIRED_RELATIVE_PATHS, dest)
+        return MODULE.compute(dest)
 
 
 def load_unit_runs():
@@ -35,9 +61,29 @@ class TestModelContribution(unittest.TestCase):
     def setUp(self):
         self.report = json.loads(REPORT_PATH.read_text(encoding="utf-8"))
 
-    def test_recomputation_matches_committed_report(self):
-        recomputed = MODULE.compute(REPO_ROOT)
+    def test_recomputation_matches_committed_report_at_the_recorded_pin(self):
+        recomputed = _compute_at_pin()
         self.assertEqual(recomputed, self.report)
+
+    def test_pinned_reproduction_would_catch_a_mutated_report(self):
+        recomputed = _compute_at_pin()
+        mutated_report = json.loads(json.dumps(self.report))
+        mutated_report["auto_attribution_count"] += 1
+        self.assertNotEqual(recomputed, mutated_report)
+
+    def test_pinned_reproduction_would_catch_a_generator_regression(self):
+        original_resolve_family = MODULE.resolve_family
+        try:
+            MODULE.resolve_family = lambda slug, register: "TAMPERED_FAMILY"
+            tampered = _compute_at_pin()
+        finally:
+            MODULE.resolve_family = original_resolve_family
+        self.assertNotEqual(tampered, self.report)
+
+    def test_pinned_reproduction_would_catch_the_wrong_pin(self):
+        older = _compute_at_pin("dae059819d845c25dfc22ea7031c0988b07db23d")
+        self.assertNotEqual(older["measured_against"]["ledger_rows"], self.report["measured_against"]["ledger_rows"])
+        self.assertNotEqual(older, self.report)
 
     def test_every_dispatched_unit_is_attributed_to_exactly_one_model_bucket_or_excluded(self):
         runs = load_unit_runs()
