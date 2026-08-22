@@ -1,0 +1,612 @@
+{
+  "fixtures_version": "PO03-WAVE-A-041-HARDENED-FIXTURES-v1",
+  "purpose": "Regression fixtures for the unapplied candidate repair. Each exploit case must be refused for its own stated reason, and every truthful custody state must remain expressible.",
+  "expected_hardened_rejection": {
+    "C02-recovery-required-ingested-wildcard": {
+      "level": "document",
+      "error_substring": "required after result commit",
+      "closed_by": "H4"
+    },
+    "C03-failed-terminal-committed-wildcard": {
+      "level": "document",
+      "error_substring": "required after result commit",
+      "closed_by": "H4"
+    },
+    "C04-negated-readback-and-nonexistent-commit": {
+      "level": "document",
+      "error_substring": "must be a lowercase object id",
+      "closed_by": "H5"
+    },
+    "C05-causally-impossible-custody-order": {
+      "level": "document",
+      "error_substring": "must not precede committed_at",
+      "closed_by": "H6"
+    },
+    "C06-manifest-covers-nothing": {
+      "level": "document",
+      "error_substring": "must carry this digest",
+      "closed_by": "H7"
+    },
+    "C07-logical-name-collision": {
+      "level": "document",
+      "error_substring": "logical_name: duplicate",
+      "closed_by": "H8"
+    },
+    "C08-self-accept-trailing-whitespace-alias": {
+      "level": "document",
+      "error_substring": "producer cannot self-accept",
+      "closed_by": "H2"
+    },
+    "C09-self-accept-zero-width-alias": {
+      "level": "document",
+      "error_substring": "producer cannot self-accept",
+      "closed_by": "H2"
+    },
+    "C10-self-accept-unicode-normalisation-alias": {
+      "level": "document",
+      "error_substring": "producer cannot self-accept",
+      "closed_by": "H2"
+    },
+    "C11-producer-occupies-coordinator-identity": {
+      "level": "document",
+      "error_substring": "may not occupy the reserved identity",
+      "closed_by": "H3"
+    },
+    "C13-cross-task-idempotency-key": {
+      "level": "document",
+      "error_substring": "must contain $.task_id as a segment",
+      "closed_by": "H9"
+    },
+    "C14-acceptance-receipt-inside-producer-custody": {
+      "level": "document",
+      "error_substring": "must not reside in the producer's owned slot",
+      "closed_by": "H10",
+      "context": {
+        "producer_path_prefix": "workstreams/po03/attempts/wave-a/wave-a-041-c14"
+      }
+    },
+    "C15-unknown-property-injection": {
+      "level": "document",
+      "error_substring": "undeclared property",
+      "closed_by": "H1"
+    },
+    "C01-custody-skip-snapshot": {
+      "level": "ledger",
+      "error_substring": "ledger must open at CREATED",
+      "closed_by": "H13",
+      "note": "A snapshot validator structurally cannot detect custody skipping. Only the ledger gate closes this."
+    },
+    "C12-stale-fence-commits-after-transfer": {
+      "level": "ledger",
+      "error_substring": "stale fence",
+      "closed_by": "H13",
+      "note": "Fence staleness is a relation between ledger entries, not a property of one document."
+    }
+  },
+  "migration_impact": [
+    "H5 requires result_commit_id to be 7 to 64 lowercase hex digits. The existing shared fixture in workstreams/po03/tests/test_validate_contracts.py uses 'abc123', which is six characters and would need to become a real abbreviated object id.",
+    "H7 requires the manifest to appear as an artifact named manifest.json carrying manifest_sha256. Existing committed documents that manifest only result.json would need one additional artifact entry.",
+    "H9 requires idempotency_key to contain both commission_id and task_id as colon-delimited segments. Keys abbreviated to 'COM-PO03:...' would need the full commission id.",
+    "H12 relaxes artifacts[].bytes to a minimum of zero. The JSON Schema would need the same relaxation to stay aligned.",
+    "H11 widens the transaction states permitted under PROVIDER_COMPLETED_UNCOMMITTED, which is a relaxation and cannot invalidate an existing accepted document.",
+    "H1 rejects undeclared properties, which the JSON Schema already forbids. Any existing document carrying extra keys was already schema-invalid."
+  ],
+  "ledger_probes": {
+    "note": "The raw C01 and C12 fixtures also carry incidental document-level defects, so they cannot demonstrate that the ledger gate is what catches custody skipping and fence staleness. These probes are minimally repaired so that every document passes the hardened single-document gate and the ledger relation is the only remaining defect. That is the point of the H13 finding: a snapshot validator cannot see either defect no matter how strict it is.",
+    "C01-custody-skip-snapshot": {
+      "error_substring": "ledger must open at CREATED",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-c01r",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "COMPLETED",
+          "attempt": {
+            "attempt_id": "wave-a-041-c01r-attempt-1",
+            "idempotency_key": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001:wave-a-041-c01r:attempt-1",
+            "lease_id": "lease-c01r-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-c01r-run",
+            "worker_id": "producer-1",
+            "heartbeat_at": null,
+            "checkpoint_seq": 0
+          },
+          "result_transaction": {
+            "result_txn_id": "result-c01r-1",
+            "state": "INGESTED",
+            "manifest_uri": "git:po03/c01r@1111111111111111111111111111111111111111:manifest.json",
+            "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "artifact_count": 2,
+            "total_bytes": 192,
+            "committed_at": "2026-08-22T06:01:00Z",
+            "verified_at": "2026-08-22T06:02:00Z",
+            "parent_ingested_at": "2026-08-22T06:03:00Z",
+            "result_commit_id": "1111111111111111111111111111111111111111"
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/c01r@1111111111111111111111111111111111111111:result.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 128,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T06:02:30Z"
+            },
+            {
+              "artifact_id": "artifact-2",
+              "logical_name": "manifest.json",
+              "content_uri": "git:po03/c01r@1111111111111111111111111111111111111111:manifest.json",
+              "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "bytes": 64,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T06:02:30Z"
+            }
+          ],
+          "completion_actor": "coordinator",
+          "independent_acceptance": {
+            "state": "NOT_TESTED",
+            "reviewer_id": null,
+            "receipt_uri": null
+          }
+        }
+      ]
+    },
+    "C12-stale-fence-commits-after-transfer": {
+      "error_substring": "stale fence",
+      "documents": [
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-c12r",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "RESULT_COMMITTED",
+          "attempt": {
+            "attempt_id": "wave-a-041-c12r-attempt-2",
+            "idempotency_key": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001:wave-a-041-c12r:attempt-2",
+            "lease_id": "lease-c12r-2",
+            "fence_token": 2,
+            "provider_run_id": "bc-c12r-run-2",
+            "worker_id": "producer-current",
+            "heartbeat_at": "2026-08-22T07:00:00Z",
+            "checkpoint_seq": 3
+          },
+          "result_transaction": {
+            "result_txn_id": "result-c12r-2",
+            "state": "COMMITTED",
+            "manifest_uri": "git:po03/c12r@aaaa000000000000000000000000000000000000:manifest.json",
+            "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            "artifact_count": 2,
+            "total_bytes": 192,
+            "committed_at": "2026-08-22T07:05:00Z",
+            "verified_at": "2026-08-22T07:06:00Z",
+            "parent_ingested_at": null,
+            "result_commit_id": "aaaa000000000000000000000000000000000000"
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/c12r@aaaa000000000000000000000000000000000000:result.json",
+              "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+              "bytes": 128,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T07:06:00Z"
+            },
+            {
+              "artifact_id": "artifact-2",
+              "logical_name": "manifest.json",
+              "content_uri": "git:po03/c12r@aaaa000000000000000000000000000000000000:manifest.json",
+              "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "bytes": 64,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T07:06:00Z"
+            }
+          ],
+          "completion_actor": null,
+          "independent_acceptance": {
+            "state": "NOT_TESTED",
+            "reviewer_id": null,
+            "receipt_uri": null
+          }
+        },
+        {
+          "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+          "task_id": "wave-a-041-c12r",
+          "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+          "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "provider_state": "COMPLETED",
+          "obzio_state": "RESULT_COMMITTED",
+          "attempt": {
+            "attempt_id": "wave-a-041-c12r-attempt-1",
+            "idempotency_key": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001:wave-a-041-c12r:attempt-1",
+            "lease_id": "lease-c12r-1",
+            "fence_token": 1,
+            "provider_run_id": "bc-c12r-run-1",
+            "worker_id": "producer-evicted",
+            "heartbeat_at": "2026-08-22T06:30:00Z",
+            "checkpoint_seq": 1
+          },
+          "result_transaction": {
+            "result_txn_id": "result-c12r-1",
+            "state": "COMMITTED",
+            "manifest_uri": "git:po03/c12r@bbbb000000000000000000000000000000000000:manifest.json",
+            "manifest_sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "artifact_count": 2,
+            "total_bytes": 192,
+            "committed_at": "2026-08-22T07:20:00Z",
+            "verified_at": "2026-08-22T07:21:00Z",
+            "parent_ingested_at": null,
+            "result_commit_id": "bbbb000000000000000000000000000000000000"
+          },
+          "artifacts": [
+            {
+              "artifact_id": "artifact-1",
+              "logical_name": "result.json",
+              "content_uri": "git:po03/c12r@bbbb000000000000000000000000000000000000:result.json",
+              "sha256": "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+              "bytes": 128,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T07:21:00Z"
+            },
+            {
+              "artifact_id": "artifact-2",
+              "logical_name": "manifest.json",
+              "content_uri": "git:po03/c12r@bbbb000000000000000000000000000000000000:manifest.json",
+              "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+              "bytes": 64,
+              "media_type": "application/json",
+              "readback_verified_at": "2026-08-22T07:21:00Z"
+            }
+          ],
+          "completion_actor": null,
+          "independent_acceptance": {
+            "state": "NOT_TESTED",
+            "reviewer_id": null,
+            "receipt_uri": null
+          }
+        }
+      ]
+    }
+  },
+  "honest_control_v2": {
+    "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+    "task_id": "wave-a-041-control",
+    "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+    "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "provider_state": "COMPLETED",
+    "obzio_state": "COMPLETED",
+    "attempt": {
+      "attempt_id": "wave-a-041-control-attempt-1",
+      "idempotency_key": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001:wave-a-041-control:attempt-1",
+      "lease_id": "lease-wave-a-041-control-1",
+      "fence_token": 1,
+      "provider_run_id": "bc-control-run",
+      "worker_id": "producer-1",
+      "heartbeat_at": "2026-08-22T06:00:00Z",
+      "checkpoint_seq": 4
+    },
+    "result_transaction": {
+      "result_txn_id": "result-wave-a-041-control-1",
+      "state": "INGESTED",
+      "manifest_uri": "git:po03/wave-a-041-control@cafebabecafebabecafebabecafebabecafebabe:manifest.json",
+      "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "artifact_count": 2,
+      "total_bytes": 192,
+      "committed_at": "2026-08-22T06:01:00Z",
+      "verified_at": "2026-08-22T06:02:00Z",
+      "parent_ingested_at": "2026-08-22T06:03:00Z",
+      "result_commit_id": "cafebabecafebabecafebabecafebabecafebabe"
+    },
+    "artifacts": [
+      {
+        "artifact_id": "artifact-1",
+        "logical_name": "result.json",
+        "content_uri": "git:po03/wave-a-041-control@cafebabecafebabecafebabecafebabecafebabe:result.json",
+        "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "bytes": 128,
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T06:02:30Z"
+      },
+      {
+        "artifact_id": "artifact-2",
+        "logical_name": "manifest.json",
+        "content_uri": "git:po03/wave-a-041-control@cafebabecafebabecafebabecafebabecafebabe:manifest.json",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "bytes": 64,
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T06:02:30Z"
+      }
+    ],
+    "completion_actor": "coordinator",
+    "independent_acceptance": {
+      "state": "ACCEPTED",
+      "reviewer_id": "reviewer-2",
+      "receipt_uri": "git:po03/review@deadbeefdeadbeefdeadbeefdeadbeefdeadbeef:receipt.json"
+    }
+  },
+  "truthful_staged_provider_loss": {
+    "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+    "task_id": "wave-a-041-u01",
+    "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+    "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "provider_state": "COMPLETED",
+    "obzio_state": "PROVIDER_COMPLETED_UNCOMMITTED",
+    "attempt": {
+      "attempt_id": "wave-a-041-u01-attempt-1",
+      "idempotency_key": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001:wave-a-041-u01:attempt-1",
+      "lease_id": "lease-u01-1",
+      "fence_token": 1,
+      "provider_run_id": "bc-u01-run",
+      "worker_id": "producer-1",
+      "heartbeat_at": "2026-08-22T06:10:00Z",
+      "checkpoint_seq": 2
+    },
+    "result_transaction": {
+      "result_txn_id": "result-u01-1",
+      "state": "STAGED",
+      "manifest_uri": "file:staging/manifest.json",
+      "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "artifact_count": 1,
+      "total_bytes": 1,
+      "committed_at": null,
+      "verified_at": null,
+      "parent_ingested_at": null,
+      "result_commit_id": null
+    },
+    "artifacts": [
+      {
+        "artifact_id": "artifact-1",
+        "logical_name": "staged-result.json",
+        "content_uri": "file:staging/result.json",
+        "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "bytes": 1,
+        "media_type": "application/json",
+        "readback_verified_at": null
+      }
+    ],
+    "completion_actor": null,
+    "independent_acceptance": {
+      "state": "NOT_TESTED",
+      "reviewer_id": null,
+      "receipt_uri": null
+    }
+  },
+  "truthful_zero_byte_artifact": {
+    "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+    "task_id": "wave-a-041-u02",
+    "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+    "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "provider_state": "COMPLETED",
+    "obzio_state": "RESULT_COMMITTED",
+    "attempt": {
+      "attempt_id": "wave-a-041-u02-attempt-1",
+      "idempotency_key": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001:wave-a-041-u02:attempt-1",
+      "lease_id": "lease-u02-1",
+      "fence_token": 1,
+      "provider_run_id": "bc-u02-run",
+      "worker_id": "producer-1",
+      "heartbeat_at": null,
+      "checkpoint_seq": 1
+    },
+    "result_transaction": {
+      "result_txn_id": "result-u02-1",
+      "state": "COMMITTED",
+      "manifest_uri": "git:po03/u02@acacacacacacacacacacacacacacacacacacacac:manifest.json",
+      "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "artifact_count": 2,
+      "total_bytes": 64,
+      "committed_at": "2026-08-22T06:01:00Z",
+      "verified_at": "2026-08-22T06:02:00Z",
+      "parent_ingested_at": null,
+      "result_commit_id": "acacacacacacacacacacacacacacacacacacacac"
+    },
+    "artifacts": [
+      {
+        "artifact_id": "artifact-1",
+        "logical_name": "empty.log",
+        "content_uri": "git:po03/u02@acacacacacacacacacacacacacacacacacacacac:empty.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0,
+        "media_type": "text/plain",
+        "readback_verified_at": "2026-08-22T06:02:00Z"
+      },
+      {
+        "artifact_id": "artifact-2",
+        "logical_name": "manifest.json",
+        "content_uri": "git:po03/u02@acacacacacacacacacacacacacacacacacacacac:manifest.json",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "bytes": 64,
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T06:02:00Z"
+      }
+    ],
+    "completion_actor": null,
+    "independent_acceptance": {
+      "state": "NOT_TESTED",
+      "reviewer_id": null,
+      "receipt_uri": null
+    }
+  },
+  "honest_ledger": {
+    "note": "One task advancing through the entire mandated custody chain. Built from a committed base plus a committed per-step override table, so it stays deterministic and auditable with no clock or randomness.",
+    "base": {
+      "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+      "task_id": "wave-a-041-ledger",
+      "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+      "immutable_input_manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "acceptance_contract_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "provider_state": "RUNNING",
+      "obzio_state": "CREATED",
+      "attempt": {
+        "attempt_id": "wave-a-041-ledger-attempt-1",
+        "idempotency_key": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001:wave-a-041-ledger:attempt-1",
+        "lease_id": "lease-ledger-1",
+        "fence_token": 1,
+        "provider_run_id": "bc-ledger-run",
+        "worker_id": "producer-1",
+        "heartbeat_at": "2026-08-22T06:00:00Z",
+        "checkpoint_seq": 0
+      },
+      "result_transaction": {
+        "result_txn_id": "result-ledger-1",
+        "state": "RESERVED",
+        "manifest_uri": null,
+        "manifest_sha256": null,
+        "artifact_count": 0,
+        "total_bytes": 0,
+        "committed_at": null,
+        "verified_at": null,
+        "parent_ingested_at": null,
+        "result_commit_id": null
+      },
+      "artifacts": [],
+      "completion_actor": null,
+      "independent_acceptance": {
+        "state": "NOT_TESTED",
+        "reviewer_id": null,
+        "receipt_uri": null
+      }
+    },
+    "staged_artifacts": [
+      {
+        "artifact_id": "artifact-1",
+        "logical_name": "result.json",
+        "content_uri": "git:po03/ledger@bdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbd:result.json",
+        "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "bytes": 128,
+        "media_type": "application/json",
+        "readback_verified_at": null
+      },
+      {
+        "artifact_id": "artifact-2",
+        "logical_name": "manifest.json",
+        "content_uri": "git:po03/ledger@bdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbd:manifest.json",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "bytes": 64,
+        "media_type": "application/json",
+        "readback_verified_at": null
+      }
+    ],
+    "committed_artifacts": [
+      {
+        "artifact_id": "artifact-1",
+        "logical_name": "result.json",
+        "content_uri": "git:po03/ledger@bdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbd:result.json",
+        "sha256": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+        "bytes": 128,
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T06:07:30Z"
+      },
+      {
+        "artifact_id": "artifact-2",
+        "logical_name": "manifest.json",
+        "content_uri": "git:po03/ledger@bdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbd:manifest.json",
+        "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "bytes": 64,
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T06:07:30Z"
+      }
+    ],
+    "steps": [
+      {
+        "obzio_state": "CREATED",
+        "provider_state": "QUEUED",
+        "checkpoint_seq": 0,
+        "transaction_state": "RESERVED"
+      },
+      {
+        "obzio_state": "LEASED",
+        "provider_state": "QUEUED",
+        "checkpoint_seq": 0,
+        "transaction_state": "RESERVED"
+      },
+      {
+        "obzio_state": "RUNNING",
+        "provider_state": "RUNNING",
+        "checkpoint_seq": 0,
+        "transaction_state": "RESERVED"
+      },
+      {
+        "obzio_state": "CHECKPOINTED",
+        "provider_state": "RUNNING",
+        "checkpoint_seq": 1,
+        "transaction_state": "RESERVED"
+      },
+      {
+        "obzio_state": "CHECKPOINTED",
+        "provider_state": "RUNNING",
+        "checkpoint_seq": 2,
+        "transaction_state": "RESERVED"
+      },
+      {
+        "obzio_state": "RESULT_STAGING",
+        "provider_state": "RUNNING",
+        "checkpoint_seq": 3,
+        "transaction_state": "STAGING"
+      },
+      {
+        "obzio_state": "RESULT_STAGED",
+        "provider_state": "RUNNING",
+        "checkpoint_seq": 3,
+        "transaction_state": "STAGED",
+        "artifacts": "staged"
+      },
+      {
+        "obzio_state": "RESULT_VERIFIED",
+        "provider_state": "RUNNING",
+        "checkpoint_seq": 4,
+        "transaction_state": "VERIFIED",
+        "artifacts": "staged"
+      },
+      {
+        "obzio_state": "RESULT_COMMITTED",
+        "provider_state": "COMPLETED",
+        "checkpoint_seq": 4,
+        "transaction_state": "COMMITTED",
+        "artifacts": "committed",
+        "committed": true
+      },
+      {
+        "obzio_state": "PARENT_INGESTED",
+        "provider_state": "COMPLETED",
+        "checkpoint_seq": 4,
+        "transaction_state": "INGESTED",
+        "artifacts": "committed",
+        "committed": true,
+        "ingested": true
+      },
+      {
+        "obzio_state": "COMPLETED",
+        "provider_state": "COMPLETED",
+        "checkpoint_seq": 4,
+        "transaction_state": "INGESTED",
+        "artifacts": "committed",
+        "committed": true,
+        "ingested": true,
+        "completion_actor": "coordinator"
+      }
+    ],
+    "commit_evidence": {
+      "manifest_uri": "git:po03/ledger@bdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbd:manifest.json",
+      "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "committed_at": "2026-08-22T06:06:00Z",
+      "verified_at": "2026-08-22T06:07:00Z",
+      "parent_ingested_at": "2026-08-22T06:08:00Z",
+      "result_commit_id": "bdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbdbd"
+    },
+    "staged_manifest": {
+      "manifest_uri": "file:staging/manifest.json",
+      "manifest_sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+    }
+  }
+}
