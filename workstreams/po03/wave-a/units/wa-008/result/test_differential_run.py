@@ -115,6 +115,66 @@ class CleanControlTests(unittest.TestCase):
             report["hidden_state_inventory"]["class_present"],
         )
 
+    def test_volatile_output_control_is_clean_only_because_it_is_scrubbed(self):
+        factory = F.FixtureFactory()
+        try:
+            spec = factory.build("clean-control-volatile-output")
+            scrubbed = F.run_fixture(spec, repeats=2)
+            self.assertEqual(D.VERDICT_CLEAN, scrubbed["verdict"])
+            self.assertIn("<DURATION>", scrubbed["warm"]["stdout"])
+            self.assertIn("<TIMESTAMP>", scrubbed["warm"]["stdout"])
+            self.assertIn("total=1999000", scrubbed["warm"]["stdout"])
+
+            unscrubbed = D.differential_run(
+                repo=spec["repo"],
+                commit=spec["commit"],
+                command=spec["command"],
+                warm_checkout=spec["warm_checkout"],
+                warm_env=spec["warm_env"],
+                warm_cache_root=spec["warm_cache_root"],
+                volatile_patterns=(),
+                repeats=2,
+            )
+            self.assertNotEqual(D.VERDICT_CLEAN, unscrubbed["verdict"])
+        finally:
+            factory.cleanup()
+
+    def test_scrubbing_does_not_mask_a_real_content_difference(self):
+        root = Path(tempfile.mkdtemp(prefix="po03-wa-008-scrub-"))
+        try:
+            repo = root / "source"
+            commit = make_repo(
+                repo,
+                {
+                    "workload.py": (
+                        "import pathlib, sys, time\n"
+                        "sys.stdout.write('elapsed {:.6f}s\\n'.format(time.perf_counter()))\n"
+                        "sys.stdout.write('payload ' + pathlib.Path('data.txt').read_text() )\n"
+                    ),
+                    "data.txt": "committed\n",
+                },
+            )
+            warm = root / "warm"
+            D.materialise_clean_checkout(repo, commit, warm)
+            (warm / "data.txt").write_text("edited\n", encoding="utf-8")
+            report = D.differential_run(
+                repo=repo,
+                commit=commit,
+                command=[sys.executable, "workload.py"],
+                warm_checkout=warm,
+                warm_env=D.sanitised_environment(root / "h", root / "t", root / "c"),
+                warm_cache_root=root / "c",
+                repeats=2,
+            )
+            self.assertTrue(report["divergent"])
+            self.assertIn("<DURATION>", report["warm"]["stdout"])
+            self.assertIn("payload edited", report["warm"]["stdout"])
+            self.assertIn("payload committed", report["clean"]["stdout"])
+        finally:
+            import shutil
+
+            shutil.rmtree(root, ignore_errors=True)
+
     def test_present_but_unused_hidden_state_is_not_a_false_positive(self):
         spec, report = build_and_run("clean-control-contaminated-but-unused")
         self.assertEqual(
@@ -538,12 +598,12 @@ class FixtureMatrixTests(unittest.TestCase):
         self.assertEqual(len(F.FIXTURE_IDS), summary["fixture_count"])
         self.assertEqual("PASS", summary["outcome"])
         self.assertGreaterEqual(summary["warm_only_green_mutant_count"], 5)
-        self.assertGreaterEqual(summary["clean_control_count"], 2)
+        self.assertGreaterEqual(summary["clean_control_count"], 3)
         self.assertEqual(1, summary["known_false_negative_count"])
         covered = {row["class_under_test"] for row in summary["fixtures"]}
         for name in D.HIDDEN_STATE_CLASSES:
             self.assertIn(name, covered, name)
-        self.assertEqual(11, summary["fixture_count"])
+        self.assertEqual(12, summary["fixture_count"])
         self.assertEqual(
             2,
             sum(1 for row in summary["fixtures"] if row["observed_verdict"] == D.VERDICT_UNATTRIBUTED),

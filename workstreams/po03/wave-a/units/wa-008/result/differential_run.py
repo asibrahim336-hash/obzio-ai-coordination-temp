@@ -92,6 +92,17 @@ SANITISED_BASE_KEYS = (
 
 DEFAULT_TIMEOUT_SECONDS = 120
 
+# Volatile text that varies between any two runs of the same command and is not
+# evidence of hidden state. Scrubbed after path tokenisation. Kept deliberately
+# narrow: durations and wall-clock timestamps only, never digests or ids.
+DEFAULT_VOLATILE_PATTERNS = (
+    (r"\b\d+(?:\.\d+)?s\b", "<DURATION>"),
+    (
+        r"\b\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:?\d{2})?",
+        "<TIMESTAMP>",
+    ),
+)
+
 
 class DifferentialRunError(RuntimeError):
     """Raised when the differential run cannot be set up honestly."""
@@ -375,12 +386,14 @@ def copy_paths(source_root: Path, destination_root: Path, records) -> int:
     return copied
 
 
-def normalise_output(text: str, replacements) -> str:
+def normalise_output(text: str, replacements, volatile_patterns=DEFAULT_VOLATILE_PATTERNS) -> str:
     normalised = text
     # Longest first so that nested sandbox roots collapse to the outer token.
     for needle, token in sorted(replacements, key=lambda pair: len(pair[0]), reverse=True):
         if needle:
             normalised = normalised.replace(needle, token)
+    for pattern, token in volatile_patterns or ():
+        normalised = re.sub(pattern, token, normalised)
     normalised = "\n".join(line.rstrip() for line in normalised.splitlines())
     return normalised.strip()
 
@@ -394,7 +407,7 @@ def outcome_digest(exit_code: int, stdout: str, stderr: str) -> str:
     return sha256_text(payload)
 
 
-def execute(command, cwd: Path, env: dict, timeout: int, replacements):
+def execute(command, cwd: Path, env: dict, timeout: int, replacements, volatile_patterns):
     started = time.monotonic()
     try:
         completed = subprocess.run(
@@ -418,8 +431,8 @@ def execute(command, cwd: Path, env: dict, timeout: int, replacements):
         if isinstance(stderr, bytes):
             stderr = stderr.decode("utf-8", "replace")
         timed_out = True
-    normalised_stdout = normalise_output(stdout, replacements)
-    normalised_stderr = normalise_output(stderr, replacements)
+    normalised_stdout = normalise_output(stdout, replacements, volatile_patterns)
+    normalised_stderr = normalise_output(stderr, replacements, volatile_patterns)
     return {
         "exit_code": exit_code,
         "timed_out": timed_out,
@@ -430,8 +443,11 @@ def execute(command, cwd: Path, env: dict, timeout: int, replacements):
     }
 
 
-def run_side(command, cwd: Path, env: dict, timeout: int, replacements, repeats: int):
-    runs = [execute(command, cwd, env, timeout, replacements) for _ in range(repeats)]
+def run_side(command, cwd: Path, env: dict, timeout: int, replacements, repeats: int, volatile_patterns):
+    runs = [
+        execute(command, cwd, env, timeout, replacements, volatile_patterns)
+        for _ in range(repeats)
+    ]
     digests = sorted({run["digest"] for run in runs})
     return {
         "digest": runs[0]["digest"],
@@ -457,6 +473,7 @@ class DifferentialRun:
         warm_env=None,
         warm_cache_root=None,
         cache_globs=DEFAULT_CACHE_GLOBS,
+        volatile_patterns=DEFAULT_VOLATILE_PATTERNS,
         repeats=2,
         timeout=DEFAULT_TIMEOUT_SECONDS,
         sandbox=None,
@@ -468,6 +485,7 @@ class DifferentialRun:
         self.warm_env = dict(os.environ if warm_env is None else warm_env)
         self.warm_cache_root = Path(warm_cache_root).resolve() if warm_cache_root else None
         self.cache_globs = GlobSet(cache_globs)
+        self.volatile_patterns = tuple(volatile_patterns or ())
         self.repeats = max(1, int(repeats))
         self.timeout = int(timeout)
         self._sandbox = Path(sandbox).resolve() if sandbox else None
@@ -535,6 +553,7 @@ class DifferentialRun:
             self.timeout,
             self._side_replacements(self.warm_checkout, warm_env),
             self.repeats,
+            self.volatile_patterns,
         )
         clean_result = run_side(
             self.command,
@@ -543,6 +562,7 @@ class DifferentialRun:
             self.timeout,
             self._side_replacements(clean["checkout"], baseline_env),
             self.repeats,
+            self.volatile_patterns,
         )
 
         inventory = {
@@ -577,6 +597,7 @@ class DifferentialRun:
             "command": self.command,
             "repeats": self.repeats,
             "cache_globs": list(self.cache_globs.patterns),
+            "volatile_patterns": [pattern for pattern, _ in self.volatile_patterns],
             "warm": warm_result,
             "clean": clean_result,
             "divergent": warm_result["digest"] != clean_result["digest"],
@@ -636,6 +657,7 @@ class DifferentialRun:
             self.timeout,
             self._side_replacements(target["checkout"], env),
             self.repeats,
+            self.volatile_patterns,
         )
         return {
             "label": label,
@@ -750,6 +772,7 @@ def classification_digest(report: dict) -> str:
         "command": report["command"],
         "repeats": report["repeats"],
         "cache_globs": report["cache_globs"],
+        "volatile_patterns": report["volatile_patterns"],
         "warm": {
             "digest": report["warm"]["digest"],
             "exit_code": report["warm"]["exit_code"],
@@ -806,6 +829,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--warm-cache-root", default=None, help="external cache root of the warm side")
     parser.add_argument("--cache-glob", action="append", default=None, help="additional cache glob")
+    parser.add_argument(
+        "--keep-volatile-output",
+        action="store_true",
+        help="do not scrub durations and timestamps from command output",
+    )
     parser.add_argument("--repeats", type=int, default=2, help="runs per side for the determinism control")
     parser.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT_SECONDS)
     parser.add_argument("--json", dest="json_path", default=None, help="write the report to this path")
@@ -822,6 +850,7 @@ def main(argv=None) -> int:
         warm_checkout=args.warm_checkout,
         warm_cache_root=args.warm_cache_root,
         cache_globs=cache_globs,
+        volatile_patterns=() if args.keep_volatile_output else DEFAULT_VOLATILE_PATTERNS,
         repeats=args.repeats,
         timeout=args.timeout,
     )
