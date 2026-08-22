@@ -1,0 +1,75 @@
+{
+  "evidence_id": "EV-PO03-SCALE-LADDER-20260822-v001",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "commission_revision": "v002",
+  "generated_at": "2026-08-22T07:14:00Z",
+  "decision_changed": [],
+  "counting_rule": "A unit counts only if it owns a distinct falsifiable hypothesis, an executable component, a reproduction, a test, an adversarial case or an acceptance decision, and leaves a durable result verified by hash on read-back. Renamed clones, inventories, plans, idle sessions and duplicated summaries do not count.",
+  "waves": [
+    {
+      "wave_id": "po03-wave-a",
+      "required_units": 64,
+      "registered_units": 74,
+      "headroom_over_requirement": 10,
+      "state": "IN_FLIGHT",
+      "registered_at": "2026-08-22T07:01:19Z",
+      "dispatched_at": "2026-08-22T07:10:19Z",
+      "dispatch_base_sha": "04827c3cca829ece4ccca87e3d4196cc1b64a7a7",
+      "ledger_head_sha256_at_dispatch": "74e9389448f90f749fa7defaa79a2f743b13107be3a31ea2dcd39de250cb3a8c",
+      "units_by_cohort": { "a1": 8, "a2": 12, "a3": 8, "a4": 8, "a5": 12, "a6": 6, "a7": 6, "a8": 6, "a9": 4, "a10": 4 },
+      "units_by_function": {
+        "F1_current_plan_engineering_and_clean_runtime": 16,
+        "F2_zero_base_strategy_challenge": 2,
+        "F3_current_frontier_research": 12,
+        "F4_controlled_reproduction": 5,
+        "F5_independent_evaluation_and_adversarial_review": 13,
+        "F6_model_tool_runtime_context_topology": 3,
+        "F7_semantic_ontology_state_contract": 4,
+        "F8_operating_system_measurement_and_recovery": 17,
+        "F9_successor_compilation_and_comparison": 6,
+        "F10_open_discovery": 1
+      },
+      "units_by_model_family": {
+        "claude-opus-5": 22,
+        "gpt-5.6-sol": 24,
+        "claude-sonnet-5": 22,
+        "gpt-5.6-luna": 6
+      },
+      "terminal_dispositions_recorded": 0,
+      "false_completions": 0,
+      "result_loss_events": 0,
+      "path_collisions": 0,
+      "orphans": 0,
+      "expired_leases": 0,
+      "note": "Counts of completions, dispositions and defects remain zero because Wave A results have not yet been ingested. They are reported as measured zeros at the dispatch checkpoint, not as achieved outcomes."
+    },
+    {
+      "wave_id": "po03-wave-b",
+      "required_units": 128,
+      "registered_units": 0,
+      "state": "NOT_YET",
+      "gate": "Wave B opens only after Wave A demonstrates zero false completion, zero result loss and zero path collision, each evidenced from the ledger rather than asserted.",
+      "gate_state_now": "NOT_YET — Wave A results are not yet ingested, so the gate is untested rather than failed."
+    }
+  ],
+  "concurrency_saturation": {
+    "target": "Begin at the maximum safe active concurrency the provider exposes and keep every available slot filled.",
+    "mechanism_used": "One background Cursor subagent per cohort, each bound to an exclusive git worktree and an exclusive branch. Worktrees were created serially by the controller before dispatch so that concurrent workers never contend for the git configuration lock.",
+    "simultaneous_background_subagents_dispatched": 10,
+    "provider_rejections": 0,
+    "queued_cohorts_required": false,
+    "observed_ceiling": "NOT_REACHED_AT_10",
+    "ceiling_measurement_honesty": "Ten concurrent background subagents were accepted with zero provider rejection. That establishes a measured floor on available concurrency; it does not establish the true ceiling, and no ceiling value is asserted. If a later dispatch is rejected, the exact observed ceiling will be recorded here and the remaining attempts completed in queued cohorts.",
+    "internal_parallelism": "Each cohort may additionally parallelise inside its own worktree, so the effective attempt concurrency is at or above the cohort count. Effective concurrency is measured from ledger timestamps by cohort a7 rather than assumed here.",
+    "host_capacity_bound": { "vcpu": 8, "memory_gb": 47, "disk_available_gb": 228 }
+  },
+  "expansion_rule": "Continue expanding beyond Wave B only while independently accepted throughput and discovery yield both improve. Scale is not increased on the strength of dispatched volume; it is increased on the strength of independently accepted results.",
+  "guardrails_held_at_this_checkpoint": {
+    "out_of_allowlist_writes": 0,
+    "po01_contact_or_mutation": 0,
+    "protected_acts_or_secret_exposure": 0,
+    "false_completion": 0,
+    "merge_or_promotion": 0,
+    "founder_relay_events": 0
+  }
+}
