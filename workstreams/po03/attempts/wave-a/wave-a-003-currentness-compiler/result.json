@@ -167,6 +167,25 @@
       }
     },
     {
+      "experiment_id": "wave-a-003-e6-shared-ci-observation",
+      "question": "Does the shared PO-03 workflow evaluate this unit's pushes, and are its failures attributable to unit content?",
+      "command": "gh run list --branch po03/wave-a-003-currentness-compiler; gh run view <id> --log-failed",
+      "evidence": "evidence/ci-observations.json",
+      "outcome": "PASS_WITH_SHARED_DEFECT_REPORTED",
+      "observed": {
+        "unit_runs_observed": 6,
+        "unit_runs_successful": 4,
+        "unit_runs_failed": 2,
+        "failed_runs_all_branch_creation_pushes": true,
+        "failure_cause": "github.event.before is the zero SHA on branch creation, so the path-scope range comparison errors with exit 2",
+        "independent_recurrence_branches": [
+          "po03/wave-a-001-source-lock-reproduction",
+          "po03/po03-route-isolation-canary-a"
+        ],
+        "allowlist_violation_observed": false
+      }
+    },
+    {
       "experiment_id": "wave-a-003-e5-seeded-contract-suite",
       "question": "Does the seeded PO-03 custody suite still pass in this clone alongside the new unit?",
       "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py'",
@@ -206,6 +225,13 @@
       "regression_test": "tests/test_currentness_compiler.py::HelperUnitTests::test_role_skips_generic_locator_keys"
     },
     {
+      "discovery_id": "wave-a-003-d6",
+      "statement": "The shared path-scope CI job fails deterministically on the push that creates any po03/** route branch, because GitHub sets github.event.before to the zero SHA and git diff rejects it. Reproduced on three independent branches: this unit's result branch, this unit's lease branch, and earlier producers' wave-a-001 and route-isolation-canary-a branches. The first commit's changed-path range is therefore never compared, while the second job's working-tree scan still passes.",
+      "evidence": "evidence/ci-observations.json",
+      "attribution": "shared controller-owned workflow, not unit content",
+      "remediation_state": "PROPOSAL_ONLY_NO_SHARED_WRITE"
+    },
+    {
       "discovery_id": "wave-a-003-d5",
       "statement": "Three superseded rows in the current disposition table name object families in prose rather than repository paths, so a path-level compiler cannot enforce them. The rows are reported as unresolved rather than silently dropped.",
       "evidence": "evidence/live-compilation.json",
@@ -223,6 +249,14 @@
       "proposal": "Adopt anchored supersession declarations, lineage roles, declared-absence roles and enclosing-key role naming as the shared currentness contract, and run the compiler in CI as a fail-closed currentness gate over the entrypoint chain.",
       "state": "PROPOSAL_NOT_APPLIED_OUTSIDE_OWNED_SUBTREE",
       "reason": "Shared PO-03 control and workflow paths belong to the integration controller. This unit ships the executable mechanism and evidence inside its owned slot only."
+    },
+    {
+      "proposal_id": "wave-a-003-p3",
+      "target": ".github/workflows/po03-contracts.yml path-scope job",
+      "proposal": "When github.event.before is absent or all zeros, resolve the comparison base from the merge base against the shared PO-03 branch or from the commit's first parent, so branch creation is scope-checked instead of erroring.",
+      "state": "PROPOSAL_ONLY_NO_SHARED_WRITE",
+      "reason": "The workflow path is inside the commission allowlist but is assigned to the integration controller by path-ownership.json.",
+      "evidence": "evidence/ci-observations.json"
     },
     {
       "proposal_id": "wave-a-003-p2",

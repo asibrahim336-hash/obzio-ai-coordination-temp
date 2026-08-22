@@ -1,0 +1,103 @@
+{
+  "ci_observations_version": "PO03-WAVE-A-CI-OBSERVATIONS-v1",
+  "task_id": "wave-a-003-currentness-compiler",
+  "workflow": ".github/workflows/po03-contracts.yml",
+  "workflow_owner": "integration-controller",
+  "observed_at": "2026-08-22",
+  "this_unit_runs": [
+    {
+      "branch": "po03/wave-a-003-currentness-compiler",
+      "commit": "8edc4d1f984f29de3437567cc96a66252233a7fa",
+      "push_kind": "BRANCH_CREATION",
+      "run_id": "32562124513",
+      "run_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32562124513",
+      "conclusion": "failure",
+      "failing_job": "path-scope",
+      "failing_step": "Reject changed paths outside the PO-03 allowlist",
+      "observed_environment": {
+        "BASE_SHA": "0000000000000000000000000000000000000000",
+        "HEAD_SHA": "8edc4d1f984f29de3437567cc96a66252233a7fa"
+      },
+      "observed_error": "PO03_PATH_SCOPE_ERROR: git diff 0000000000000000000000000000000000000000...8edc4d1f984f29de3437567cc96a66252233a7fa returned non-zero exit status 128",
+      "attribution": "SHARED_WORKFLOW_DEFECT_NOT_UNIT_CONTENT"
+    },
+    {
+      "branch": "po03/wave-a-003-currentness-compiler",
+      "commit": "da51d2dfcfc1a3914812441ab13edab0eda985b6",
+      "push_kind": "FAST_FORWARD",
+      "run_id": "32562422564",
+      "run_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32562422564",
+      "conclusion": "success"
+    },
+    {
+      "branch": "po03/wave-a-003-currentness-compiler",
+      "commit": "6ed7703654f925863709d57185721150b3d61bf2",
+      "push_kind": "FAST_FORWARD",
+      "run_id": "32562556250",
+      "run_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32562556250",
+      "conclusion": "success"
+    },
+    {
+      "branch": "po03/lease/wave-a-003-currentness-compiler",
+      "commit": "85515f0b18f99ba026f2ec2a2c9cf4c888b50ac2",
+      "push_kind": "BRANCH_CREATION_ATOMIC_LEASE_CLAIM",
+      "run_id": "32561457485",
+      "run_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32561457485",
+      "conclusion": "failure",
+      "failing_job": "path-scope",
+      "attribution": "SHARED_WORKFLOW_DEFECT_NOT_UNIT_CONTENT",
+      "note": "This run checked the unmodified base commit of the shared PO-03 branch, so no unit content was involved at all."
+    },
+    {
+      "branch": "po03/lease/wave-a-003-currentness-compiler",
+      "commit": "d722d9bb62cdec9d552ed94e52c62c0d5bfb30a1",
+      "push_kind": "FAST_FORWARD",
+      "run_id": "32561527630",
+      "run_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32561527630",
+      "conclusion": "success"
+    },
+    {
+      "branch": "po03/lease/wave-a-003-currentness-compiler",
+      "commit": "7c37139383cc872c6a07f967538c1250d547bce9",
+      "push_kind": "FAST_FORWARD",
+      "run_id": "32562594469",
+      "run_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32562594469",
+      "conclusion": "success"
+    }
+  ],
+  "independent_recurrence": [
+    {
+      "branch": "po03/wave-a-001-source-lock-reproduction",
+      "run_id": "32558881826",
+      "run_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32558881826",
+      "conclusion": "failure",
+      "observed_base_sha": "0000000000000000000000000000000000000000",
+      "note": "Different unit, different producer, same branch-creation push, same zero base SHA."
+    },
+    {
+      "branch": "po03/po03-route-isolation-canary-a",
+      "run_id": "32560593600",
+      "run_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32560593600",
+      "conclusion": "failure",
+      "observed_base_sha": "0000000000000000000000000000000000000000",
+      "observed_error": "PO03_PATH_SCOPE_ERROR: git diff 0000000000000000000000000000000000000000...a9f6a41b415c59679b6881197522f15391c1f8e6 returned non-zero exit status 128"
+    },
+    {
+      "branch": "po03/wave-a-041-schema-adversarial-review",
+      "run_id": null,
+      "conclusion": "success_only",
+      "note": "This branch shows no failure because its first observed run was not a branch-creation push, which is consistent with the diagnosis rather than a counterexample."
+    }
+  ],
+  "diagnosis": {
+    "statement": "On a push that creates a branch, GitHub sets github.event.before to the zero SHA. The shared path-scope job passes that value to check_path_scope.py --base, git diff rejects it, and the job exits 2. Every newly created po03/** route branch therefore reports a red first run, and the changed-path comparison for that first commit is never evaluated by this job.",
+    "coverage_effect": "The second job's unconditional working-tree scan still runs and passed on every observed run, so the allowlist was never actually violated. The gap is in the range comparison, not in the tree scan.",
+    "operational_risk": "A reproducible red first run on every isolated route branch trains operators to discount this workflow's failures, which is the condition under which a genuine out-of-allowlist first commit would pass unnoticed."
+  },
+  "remediation_proposal": {
+    "proposal": "When github.event.before is absent or all zeros, fall back to the merge base against the shared PO-03 branch, or to the commit's first parent, instead of failing the step.",
+    "state": "PROPOSAL_ONLY_NO_SHARED_WRITE",
+    "reason": ".github/workflows/po03-*.yml is inside the commission allowlist but is owned by the integration controller under workstreams/po03/control/path-ownership.json, so this unit reports the defect instead of editing the shared gate."
+  },
+  "decision_changed": []
+}
