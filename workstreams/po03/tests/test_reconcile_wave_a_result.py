@@ -150,5 +150,16 @@ class ProjectionTimeTests(unittest.TestCase):
         )
 
 
+class ActiveProjectionTests(unittest.TestCase):
+    def test_completion_decrements_observed_active_count_once(self):
+        self.assertEqual(TOOL._reconciled_active_count(8, 5, True), 7)
+
+    def test_idempotent_reconciliation_does_not_decrement_again(self):
+        self.assertEqual(TOOL._reconciled_active_count(7, 5, False), 7)
+
+    def test_registry_count_repairs_low_observed_projection(self):
+        self.assertEqual(TOOL._reconciled_active_count(3, 5, False), 5)
+
+
 if __name__ == "__main__":
     unittest.main()

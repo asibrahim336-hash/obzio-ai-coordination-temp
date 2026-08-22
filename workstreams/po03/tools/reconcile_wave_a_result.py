@@ -155,6 +155,14 @@ def _later_time(existing: Any, candidate: Any) -> Any:
     return max(values) if values else None
 
 
+def _reconciled_active_count(
+    previous_count: Any, registry_running: int, was_active: bool
+) -> int:
+    previous = max(0, int(previous_count))
+    projected = previous - 1 if was_active and previous > 0 else previous
+    return max(registry_running, projected)
+
+
 def _args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--task-number", type=int, required=True)
@@ -285,6 +293,10 @@ def main() -> int:
     control_result_rel = f"control/results/wave-a/{slug}.json"
     control_result = _read_json(control_result_rel)
     attempt = control_result["attempt"]
+    was_active = (
+        control_result.get("provider_state") == "RUNNING"
+        or control_result.get("obzio_state") == "RUNNING"
+    )
     _validate_producer_attempt(task_id, attempt, ready, producer_result)
     input_rel, outbox_id = _attempt_projection(task_id, slug, attempt)
     input_bytes = (ROOT / input_rel).read_bytes()
@@ -494,12 +506,17 @@ def main() -> int:
         if row.get("material") is True
         and row.get("independent_acceptance") == "ACCEPTED"
     )
+    registry_running = sum(
+        1
+        for row in registry
+        if row.get("material") is True
+        and row.get("provider_state") == "RUNNING"
+    )
     wave.update(
-        active_provider_runs=sum(
-            1
-            for row in registry
-            if row.get("material") is True
-            and row.get("provider_state") == "RUNNING"
+        active_provider_runs=_reconciled_active_count(
+            wave.get("active_provider_runs", 0),
+            registry_running,
+            was_active,
         ),
         completed_durable=completed,
         independently_accepted=accepted,
