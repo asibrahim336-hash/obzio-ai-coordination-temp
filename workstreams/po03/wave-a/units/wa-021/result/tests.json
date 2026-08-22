@@ -1,0 +1,91 @@
+{
+  "protocol_version": "PO03-WAVE-A-MATERIAL-TESTS-v1",
+  "task_id": "PO03-WA-021",
+  "state": "TEST_EVIDENCE",
+  "recorded_at": "2026-08-22T09:40:17Z",
+  "commit_under_test": "b03052416792157682e4b2509fe5a38337142b5f",
+  "first_pass_outcome": "PASS",
+  "toolchain": {
+    "python3": "3.12.3",
+    "git": "git version 2.43.0",
+    "third_party_packages": "none"
+  },
+  "totals": {
+    "focused_tests": 21,
+    "seeded_contract_tests": 68,
+    "unittest_tests": 89,
+    "deterministic_recurrence_runs": 2,
+    "taxonomy_checks": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "groups": [
+    {
+      "group_id": "TG-WA021-01-FOCUSED",
+      "name": "Focused scanner and artifact-accounting tests",
+      "command": "python3 -B -I -m unittest discover -s workstreams/po03/wave-a/units/wa-021/tests -p 'test_*.py' -v",
+      "tests": 21,
+      "outcome": "PASS",
+      "output": "workstreams/po03/wave-a/units/wa-021/result/focused-tests-output.txt",
+      "covers": [
+        "frozen weights, threshold, population breaks, and source base",
+        "exact parent hypothesis and expected ranking",
+        "rejection of already-named, circular, and unsupported candidates",
+        "immutable non-circular evidence provenance",
+        "byte-deterministic CLI output",
+        "fail-closed invalid source commit",
+        "complete artifact digest and byte accounting"
+      ]
+    },
+    {
+      "group_id": "TG-WA021-02-RECURRENCE",
+      "name": "Independent deterministic recurrence",
+      "command": "Run the scanner twice into separate temporary files and compare with cmp",
+      "runs": 2,
+      "outcome": "PASS",
+      "byte_identical": true,
+      "sha256": "f9c593973df4c4daefc62cabef965f179ab3ad5e1f4bf289d74b65509861faa2",
+      "output": "workstreams/po03/wave-a/units/wa-021/result/recurrence-output.txt"
+    },
+    {
+      "group_id": "TG-WA021-03-SEEDED",
+      "name": "Current seeded PO-03 contract tests, unmodified",
+      "command": "python3 -B -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+      "tests": 68,
+      "outcome": "PASS",
+      "output": "workstreams/po03/wave-a/units/wa-021/result/seeded-tests-output.txt"
+    },
+    {
+      "group_id": "TG-WA021-04-TAXONOMY",
+      "name": "Operator taxonomy currentness",
+      "command": "python3 -B scripts/check_operator_taxonomy.py",
+      "checks": 1,
+      "outcome": "PASS",
+      "output": "workstreams/po03/wave-a/units/wa-021/result/taxonomy-output.txt"
+    }
+  ],
+  "adversarial_cases": [
+    {
+      "candidate_id": "OP-WA021-03-PROVENANCE-OBJECT-GUARD",
+      "expected": "A high recurrence score does not make already-named work eligible.",
+      "observed": "Scored 65 and rejected with ALREADY_NAMED_WORK."
+    },
+    {
+      "candidate_id": "OP-WA021-90-CIRCULAR-SCANNER-CONFIRMATION",
+      "expected": "An own-output evidence path is rejected.",
+      "observed": "Scored 0 and rejected with CIRCULAR_EVIDENCE."
+    },
+    {
+      "candidate_id": "OP-WA021-91-UNSUPPORTED-PRODUCTION-FAILURES",
+      "expected": "Repository test-discovery evidence cannot establish production causation.",
+      "observed": "Scored 0 and rejected as unsupported."
+    },
+    {
+      "case": "Nonexistent forty-character source base",
+      "expected": "Fail closed rather than scanning the mutable checkout.",
+      "observed": "ScannerError and non-successful CLI disposition."
+    }
+  ],
+  "decision_changed": []
+}
