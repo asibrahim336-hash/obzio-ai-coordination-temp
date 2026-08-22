@@ -44,7 +44,8 @@
         "workstreams/po03/.gitignore",
         "workstreams/po03/evidence/snapshot-coupling.json",
         "workstreams/po03/control/wave-a-integrity-spec.json",
-        "workstreams/po03/control/wave-a-integrity-2-spec.json"
+        "workstreams/po03/control/wave-a-integrity-2-spec.json",
+        "workstreams/po03/control/wave-a-holdout-spec.json"
       ],
       "stood_off_paths": [
         "workstreams/po03/tools/control_plane.py",
@@ -190,6 +191,17 @@
         "workstreams/po03/tests/test_a12_"
       ],
       "note": "Seeded controls: strengthen, never weaken. Must not touch control_plane.py, owned by po03-worker-a11."
+    },
+    "po03-worker-a13": {
+      "role": "evaluator-held holdout authoring and compounding verdict",
+      "model": "gpt-5.6-sol-xhigh",
+      "branch": "cursor/po03-a13-evaluator-holdout-ed20",
+      "owned_prefixes": [
+        "workstreams/po03/holdout/",
+        "workstreams/po03/control/units/a13/",
+        "workstreams/po03/tests/test_a13_"
+      ],
+      "independence_note": "Must not read a8's generations, harness or scoring code before its freeze commit. Different owner and different model family from the generation author."
     }
   },
   "cross_family_review_matrix": {
@@ -200,7 +212,8 @@
       "po03-worker-a5",
       "po03-worker-a7",
       "po03-worker-a8",
-      "po03-worker-a12"
+      "po03-worker-a12",
+      "po03-worker-a13"
     ],
     "po03-worker-a10": [
       "po03-worker-a2",
