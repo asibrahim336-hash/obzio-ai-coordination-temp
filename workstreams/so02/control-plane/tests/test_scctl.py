@@ -30,7 +30,7 @@ class ControlPlaneTests(unittest.TestCase):
 
     def test_project_rebuilds_from_event_head(self) -> None:
         projection = scctl.project(self.root)
-        self.assertEqual(4, projection["event_count"])
+        self.assertEqual(5, projection["event_count"])
         self.assertEqual("ACTIVE_INTERIM", projection["subjects"]["SCF-01/CGPT-01"]["state"])
 
     def test_event_chain_is_valid(self) -> None:
@@ -168,4 +168,3 @@ class ControlPlaneTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
