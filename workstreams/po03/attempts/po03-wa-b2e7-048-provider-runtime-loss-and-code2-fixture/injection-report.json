@@ -1,0 +1,150 @@
+{
+  "code2_is_a_completed_deliverable": false,
+  "false_completions_observed": 0,
+  "fault_classes": 5,
+  "results": [
+    {
+      "crash": {
+        "killed_by_sigkill": true,
+        "loss_point": "AFTER_PROVIDER_REPORTED_COMPLETION_BEFORE_ANY_COMMIT",
+        "returncode": -9,
+        "stderr_tail": ""
+      },
+      "fault_class": "TOTAL_PROVIDER_RUNTIME_LOSS_AFTER_PROVIDER_REPORTED_COMPLETION_BEFORE_ANY_COMMIT",
+      "injected_at_state_transition": "RUNNING -> PROVIDER_COMPLETED_UNCOMMITTED -> (runtime gone)",
+      "observed": {
+        "completion_file_present": false,
+        "durable_result_committed": [],
+        "event_chain_errors": [],
+        "event_states": [
+          "CREATED",
+          "LEASED",
+          "RUNNING",
+          "PROVIDER_COMPLETED_UNCOMMITTED"
+        ],
+        "false_completion_count": 0,
+        "immutable_input_available_for_rerun": true,
+        "ingestion_records": 0,
+        "obzio_completed_event_present": false,
+        "provider_reported_completion": true,
+        "recovery_action": "RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT"
+      },
+      "verdict": "PASS"
+    },
+    {
+      "crash": {
+        "killed_by_sigkill": true,
+        "loss_point": "AFTER_STAGING_BEFORE_PROVIDER_REPORT",
+        "returncode": -9,
+        "stderr_tail": ""
+      },
+      "fault_class": "TOTAL_PROVIDER_RUNTIME_LOSS_AFTER_STAGING_BEFORE_PROVIDER_REPORT",
+      "injected_at_state_transition": "RUNNING -> (runtime gone before any report)",
+      "observed": {
+        "completion_file_present": false,
+        "durable_result_committed": [],
+        "event_chain_errors": [],
+        "event_states": [
+          "CREATED",
+          "LEASED",
+          "RUNNING"
+        ],
+        "false_completion_count": 0,
+        "immutable_input_available_for_rerun": true,
+        "ingestion_records": 0,
+        "obzio_completed_event_present": false,
+        "provider_reported_completion": false,
+        "recovery_action": "RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT"
+      },
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "PROVIDER_COMPLETION_WITH_NO_DURABLE_RESULT_CLAIMS_COMPLETED",
+      "injected_at_state_transition": "PROVIDER_COMPLETED_UNCOMMITTED -> COMPLETED (attempted)",
+      "observed": {
+        "complete_unit_refusal": "po03-c6-048-contract-unit: cannot complete before PARENT_INGESTED",
+        "completed_claim_errors": [
+          "$.result_transaction.manifest_uri: required after result commit",
+          "$.result_transaction.manifest_sha256: required after result commit",
+          "$.result_transaction.committed_at: required after result commit",
+          "$.result_transaction.verified_at: required after result commit",
+          "$.result_transaction.result_commit_id: required after result commit",
+          "$.artifacts: committed result requires at least one artifact",
+          "$.result_transaction.parent_ingested_at: required after parent ingestion",
+          "$.obzio_state: provider completion without result commit must be PROVIDER_COMPLETED_UNCOMMITTED"
+        ],
+        "completed_claim_refused": true,
+        "ingestion_errors": [
+          "result carries no artifacts; nothing durable to ingest"
+        ],
+        "ingestion_state": "RECOVERY_REQUIRED",
+        "provider_completed_uncommitted_is_the_only_legal_state": true,
+        "self_acceptance_errors": [
+          "$.result_transaction.manifest_uri: required after result commit",
+          "$.result_transaction.manifest_sha256: required after result commit",
+          "$.result_transaction.committed_at: required after result commit",
+          "$.result_transaction.verified_at: required after result commit",
+          "$.result_transaction.result_commit_id: required after result commit",
+          "$.artifacts: committed result requires at least one artifact",
+          "$.result_transaction.parent_ingested_at: required after parent ingestion",
+          "$.obzio_state: provider completion without result commit must be PROVIDER_COMPLETED_UNCOMMITTED",
+          "$.independent_acceptance.reviewer_id: producer cannot self-accept"
+        ],
+        "self_acceptance_refused": true
+      },
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "FROZEN_CODE2_FAULT_FIXTURE",
+      "injected_at_state_transition": "n/a (frozen historical fault)",
+      "observed": {
+        "durable_artifacts": [],
+        "durable_result_commit_id": null,
+        "evidence_acceptance_state": "NOT_TESTED",
+        "evidence_hash_matches": true,
+        "evidence_obzio_state": "PROVIDER_COMPLETED_UNCOMMITTED",
+        "evidence_provider_state": "COMPLETION_REPORTED_OR_LIVE_CONFLICT",
+        "evidence_result_state": "UNRECOVERED_AFTER_FOUR_FOUNDER_REPORTED_ROUTES",
+        "evidence_sha256_observed": "646bc5f36f4e18af543364dbfd432ccd7cc4bd7e1d35e229e462ea64ec56b148",
+        "evidence_sha256_recorded": "646bc5f36f4e18af543364dbfd432ccd7cc4bd7e1d35e229e462ea64ec56b148",
+        "founder_relay_required_for_recovery": false,
+        "frozen_states": {
+          "acceptance_state": "NOT_ACCEPTED",
+          "obzio_state": "PROVIDER_COMPLETED_UNCOMMITTED",
+          "provider_state": "COMPLETION_REPORTED_OR_LIVE_CONFLICT",
+          "result_state": "UNRECOVERED_AFTER_FOUR_REPORTED_ROUTES"
+        },
+        "frozen_states_match_commission": true,
+        "is_a_completed_deliverable": false,
+        "no_forbidden_deliverable_claim": true,
+        "reconciliation_covers_every_state": true,
+        "recorded_values_quoted_verbatim": true,
+        "reported_routes_count": 4
+      },
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "RECOVERY_WITHOUT_FOUNDER_RELAY",
+      "injected_at_state_transition": "n/a (static and behavioural check)",
+      "observed": {
+        "founder_supplied_inputs": [],
+        "recovery_inputs": [
+          "control/tasks/<task>/input.json (immutable capsule)",
+          "control/events/<task>/*.json (hash-chained events)",
+          "control/tasks/<task>/ingestion-*.json (ingestion records)",
+          "control/leases/<task>.json (fence token)",
+          "git objects reached by immutable object id"
+        ],
+        "scan_recovery_parameters": [
+          "run_id",
+          "head_sha"
+        ],
+        "scan_recovery_reads_only_repository_state": true
+      },
+      "verdict": "PASS"
+    }
+  ],
+  "unit": "po03-wa-b2e7-048-provider-runtime-loss-and-code2-fixture",
+  "verdict": "PASS",
+  "verdict_basis": "total provider-runtime loss after a reported completion leaves the unit at PROVIDER_COMPLETED_UNCOMMITTED with no durable commit, no ingestion and no completion; the seeded contract refuses a COMPLETED claim without a result commit; complete_unit refuses a unit that never reached PARENT_INGESTED; and the frozen Code-2 fixture keeps its four commissioned states with no founder relay in the recovery path"
+}

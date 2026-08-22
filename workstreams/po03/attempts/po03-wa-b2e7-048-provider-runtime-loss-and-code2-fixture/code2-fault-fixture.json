@@ -1,0 +1,82 @@
+{
+  "fixture_id": "FIX-PO03-C6-048-PO02-CODE2-LOST-PACKAGING-RETURN",
+  "fixture_version": "PO03-PERMANENT-FAULT-FIXTURE-v1",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "cohort": "c6",
+  "task_id": "po03-wa-b2e7-048-provider-runtime-loss-and-code2-fixture",
+  "subject": "the lost PO-02 Code-2 packaging return",
+  "classification": "PERMANENT_FAULT_FIXTURE",
+  "is_a_completed_deliverable": false,
+  "may_be_described_as_a_deliverable": false,
+  "frozen_states": {
+    "provider_state": "COMPLETION_REPORTED_OR_LIVE_CONFLICT",
+    "obzio_state": "PROVIDER_COMPLETED_UNCOMMITTED",
+    "result_state": "UNRECOVERED_AFTER_FOUR_REPORTED_ROUTES",
+    "acceptance_state": "NOT_ACCEPTED"
+  },
+  "reported_routes_count": 4,
+  "durable_result_commit_id": null,
+  "durable_artifacts": [],
+  "why_it_can_never_be_completed": "a provider-reported completion carries no durable result commit. Obzio COMPLETED requires PARENT_INGESTED, PARENT_INGESTED requires an ingested result, and ingestion requires every artifact to read back from an immutable Git object. With durable_result_commit_id null and durable_artifacts empty there is nothing to read back, so no path to COMPLETED exists.",
+  "founder_relay_required_for_recovery": false,
+  "recovery_route_without_founder_relay": "rerun the unit from its immutable input capsule, which is durable in the repository; no founder message, memory export or relay is an input to that decision",
+  "corroborating_recorded_evidence": {
+    "path": "workstreams/po03/evidence/so02-operating-correction.json",
+    "sha256": "646bc5f36f4e18af543364dbfd432ccd7cc4bd7e1d35e229e462ea64ec56b148",
+    "bytes": 3904,
+    "git_blob_id": "a96001c8eb77580bb0b48de33eef088ee536b41b",
+    "access": "READ_ONLY_NOT_MODIFIED_BY_THIS_UNIT",
+    "recorded_values_verbatim": {
+      "code2_provider_state": "COMPLETION_REPORTED_OR_LIVE_CONFLICT",
+      "code2_obzio_state": "PROVIDER_COMPLETED_UNCOMMITTED",
+      "code2_result_state": "UNRECOVERED_AFTER_FOUR_FOUNDER_REPORTED_ROUTES",
+      "code2_acceptance_state": "NOT_TESTED"
+    }
+  },
+  "state_reconciliation": [
+    {
+      "field": "provider_state",
+      "commissioned_fixture_value": "COMPLETION_REPORTED_OR_LIVE_CONFLICT",
+      "recorded_evidence_value": "COMPLETION_REPORTED_OR_LIVE_CONFLICT",
+      "agreement": "EXACT"
+    },
+    {
+      "field": "obzio_state",
+      "commissioned_fixture_value": "PROVIDER_COMPLETED_UNCOMMITTED",
+      "recorded_evidence_value": "PROVIDER_COMPLETED_UNCOMMITTED",
+      "agreement": "EXACT"
+    },
+    {
+      "field": "result_state",
+      "commissioned_fixture_value": "UNRECOVERED_AFTER_FOUR_REPORTED_ROUTES",
+      "recorded_evidence_value": "UNRECOVERED_AFTER_FOUR_FOUNDER_REPORTED_ROUTES",
+      "agreement": "SAME_MEANING_DIFFERENT_LABEL",
+      "note": "the recorded evidence names the four routes as founder-reported. The fixture label drops that qualifier. Both assert the same fact: four reported routes, no recovered result. The producer records both labels verbatim rather than silently rewriting either."
+    },
+    {
+      "field": "acceptance_state",
+      "commissioned_fixture_value": "NOT_ACCEPTED",
+      "recorded_evidence_value": "NOT_TESTED",
+      "agreement": "NARROWER_IN_THE_FIXTURE",
+      "note": "NOT_TESTED is the recorded acceptance state; NOT_ACCEPTED is the commissioned fixture state. NOT_TESTED implies NOT_ACCEPTED, so the fixture value is consistent with the evidence and strictly weaker in what it claims about review. The producer records both and does not upgrade either."
+    }
+  ],
+  "causal_defects_recorded_by_the_evidence": [
+    "worker self-report could represent completion",
+    "durable result persistence was discretionary",
+    "task schema allowed completed with null result and empty artifacts",
+    "no lease, fence token, checkpoint, result transaction, commit marker, parent acknowledgement or replay",
+    "provider return route was treated as result custody",
+    "scale increased without proportional recovery and acceptance capacity"
+  ],
+  "invariants_this_fixture_pins": [
+    "a provider-reported completion with no durable result commit can never reach Obzio COMPLETED",
+    "the seeded contract forces such a document to obzio_state PROVIDER_COMPLETED_UNCOMMITTED",
+    "complete_unit refuses any unit that has not reached PARENT_INGESTED",
+    "a producer can never set COMPLETED or accept its own work",
+    "recovery of this fault requires no founder relay"
+  ],
+  "obzio_state_claim": "READY_TO_COMMIT",
+  "producer_may_not_accept_own_work": true,
+  "decision_changed": []
+}
