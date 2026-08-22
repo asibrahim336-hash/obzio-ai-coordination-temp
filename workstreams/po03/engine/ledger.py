@@ -487,6 +487,16 @@ class HashChainedLedger:
         if self._fault_hook is not None:
             self._fault_hook(point)
 
+    def set_fault_hook(self, hook: Callable[[str], None] | None) -> None:
+        """Install a fault-injection hook for the named append checkpoints.
+
+        Exposed rather than private because injecting a fault *inside* the
+        append is the only way to exercise the append/seal crash window from a
+        real process, and a recovery claim that is only tested at clean
+        boundaries is not a recovery claim.
+        """
+        self._fault_hook = hook
+
     # -- convenience -------------------------------------------------------
 
     def events_for(self, unit_id: str) -> list[dict[str, Any]]:
