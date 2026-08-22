@@ -234,7 +234,42 @@ class IngestionTests(IsolatedControlPlane):
     def test_verified_result_is_ingested(self):
         outcome = self.ingest(self.result_doc())
         self.assertFalse(outcome["duplicate"])
+        self.assertEqual("PARENT_INGESTED", outcome["ingest_event"])
         self.assertEqual("PARENT_INGESTED", CP.project_units()["a1-u01"]["obzio_state"])
+
+    def failed_doc(self, state="FAILED_TERMINAL"):
+        doc = self.result_doc()
+        doc["obzio_state"] = state
+        doc["provider_state"] = "UNKNOWN"
+        doc["result_transaction"].update(
+            state="RESERVED", manifest_uri=None, manifest_sha256=None, committed_at=None,
+            verified_at=None, result_commit_id=None,
+        )
+        doc["artifacts"][0]["readback_verified_at"] = None
+        return doc
+
+    def test_honest_failure_is_not_promoted_to_a_committed_state(self):
+        outcome = self.ingest(self.failed_doc())
+        self.assertEqual("FAILED_TERMINAL", outcome["ingest_event"])
+        unit = CP.project_units()["a1-u01"]
+        self.assertEqual("FAILED_TERMINAL", unit["obzio_state"])
+        self.assertIsNone(unit["result_commit_id"])
+        self.assertEqual([], CP.scan_recovery()["false_completions"])
+
+    def test_uncommitted_provider_completion_is_ingested_as_such(self):
+        outcome = self.ingest(self.failed_doc("PROVIDER_COMPLETED_UNCOMMITTED"))
+        self.assertEqual("PROVIDER_COMPLETED_UNCOMMITTED", outcome["ingest_event"])
+        state = CP.scan_recovery()
+        self.assertEqual([], state["false_completions"])
+        self.assertEqual("PROVIDER_COMPLETED_UNCOMMITTED", CP.project_units()["a1-u01"]["obzio_state"])
+
+    def test_replayed_failure_is_as_harmless_as_a_replayed_success(self):
+        doc = self.failed_doc()
+        self.ingest(doc)
+        again = self.ingest(copy.deepcopy(doc))
+        self.assertTrue(again["duplicate"])
+        events = [r["event"] for r in CP.ledger_rows() if r["event"] in CP.INGESTION_EVENTS]
+        self.assertEqual(["FAILED_TERMINAL"], events)
 
     def test_duplicate_callback_is_harmless(self):
         doc = self.result_doc()
@@ -361,9 +396,10 @@ class CompletionAuthorityTests(IsolatedControlPlane):
         )
         doc["artifacts"] = []
         self.ingest(doc)
+        self.assertEqual("PROVIDER_COMPLETED_UNCOMMITTED", CP.project_units()["a1-u01"]["obzio_state"])
         with self.assertRaises(CP.ControlPlaneError) as ctx:
             self._complete()
-        self.assertIn("no durable result commit", str(ctx.exception))
+        self.assertIn("completion requires PARENT_INGESTED", str(ctx.exception))
 
     def test_producer_cannot_accept_its_own_work(self):
         self.ingest(self.result_doc())
