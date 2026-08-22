@@ -1,0 +1,59 @@
+{
+  "protocol_version": "PO03-WAVE-A-LIMITATIONS-v1",
+  "task_id": "PO03-WA-023",
+  "limitations": [
+    {
+      "limitation_id": "LIM-WA-023-01",
+      "subject": "Cursor worktree implementation and deployment revision",
+      "status": "NOT_SUPPORTED",
+      "boundary": "The official page was readable, but this runner had no Cursor implementation repository or immutable deployment SHA.",
+      "effect": "The refutation is bounded to the observed assigned checkout in this run and is not generalized to every Cursor route."
+    },
+    {
+      "limitation_id": "LIM-WA-023-02",
+      "subject": "Cursor documentation immutability",
+      "status": "NOT_SUPPORTED",
+      "boundary": "The mutable official URL exposed no documentation source SHA.",
+      "mitigation": "The exact URL, retrieval time, byte count, SHA-256, and excerpts actually read are frozen in source-claims.json."
+    },
+    {
+      "limitation_id": "LIM-WA-023-03",
+      "subject": "Exact Git-source retrieval time",
+      "status": "NOT_SUPPORTED",
+      "boundary": "The shell result exposed ordering and the UTC date but no command timestamp.",
+      "mitigation": "Both Git sources are pinned to commit 1a3e64c6c4a623626ff0687008732a8e007e2a1c and content SHA-256."
+    },
+    {
+      "limitation_id": "LIM-WA-023-04",
+      "subject": "Platform and repository-shape coverage",
+      "status": "NOT_SUPPORTED",
+      "boundary": "The reproduction used Git 2.43.0 on Linux with no submodules. Windows, submodules, sparse checkout, forced duplicate checkouts, worktree cleanup races, and Cursor 3.5 cleanup were not exercised."
+    },
+    {
+      "limitation_id": "LIM-WA-023-05",
+      "subject": "Deterministic cross-agent branch-switch injection",
+      "status": "NOT_SUPPORTED",
+      "boundary": "No authorized controller API exposed a safe way to force another cloud runner to switch /workspace on demand.",
+      "mitigation": "The real drift was directly observed twice, while deterministic branch drift and occupied-branch cases were independently reproduced in sanitized repositories."
+    },
+    {
+      "limitation_id": "LIM-WA-023-06",
+      "subject": "Exact reasoning, token, context-window, and cost telemetry",
+      "status": "NOT_SUPPORTED",
+      "boundary": "The runtime exposed originalModelName but not those values."
+    },
+    {
+      "limitation_id": "LIM-WA-023-07",
+      "subject": "Independent acceptance",
+      "status": "PENDING",
+      "boundary": "The producer is prohibited from self-acceptance and cannot set COMPLETED or ACCEPTED.",
+      "next_actor": "integration controller followed by a different independent evaluator"
+    }
+  ],
+  "owner_blocked_acts": [],
+  "external_outreach": "NONE",
+  "external_mutation": "NONE",
+  "protected_mutation": "NONE",
+  "po01_contact_or_mutation": "NONE",
+  "pr8_contact_or_mutation": "NONE"
+}

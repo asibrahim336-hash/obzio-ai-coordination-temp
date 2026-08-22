@@ -1,0 +1,138 @@
+{
+  "protocol_version": "PO03-WAVE-A-UNIT-RESULT-v1",
+  "task_id": "PO03-WA-023",
+  "hypothesis_id": "H-PO03-WA-023",
+  "hypothesis_outcome": "REFUTED",
+  "outcome_summary": "The local Git worktree mechanism passed every sanitized branch-switch, concurrent-write, controller-stability, and occupied-branch assertion, but the assigned best-of-N /workspace checkout moved across WA-002, WA-023, and WA-025 branches. The exact Cursor-runtime hypothesis is therefore refuted for this run; a distinct linked worktree plus a fail-closed identity guard is retained as the tested mechanism change.",
+  "method": {
+    "source_claims": "workstreams/po03/wave-a/units/wa-023/source-claims.json",
+    "frozen_hypotheses": "workstreams/po03/wave-a/units/wa-023/hypotheses.json",
+    "runtime_observation": "workstreams/po03/wave-a/units/wa-023/runtime-observation.json",
+    "sanitized_reproduction": "workstreams/po03/wave-a/units/wa-023/reproduction.json",
+    "executable": "workstreams/po03/wave-a/units/wa-023/probe_worktree_isolation.py",
+    "test": "workstreams/po03/wave-a/units/wa-023/test_worktree_isolation.py",
+    "reproduction_command": "python3 workstreams/po03/wave-a/units/wa-023/probe_worktree_isolation.py reproduce --scratch-root workstreams/po03/wave-a/units/wa-023 --output workstreams/po03/wave-a/units/wa-023/reproduction.json",
+    "focused_test_command": "PYTHONDONTWRITEBYTECODE=1 python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-023 -p 'test_*.py' -v"
+  },
+  "artifacts": [
+    "workstreams/po03/wave-a/units/wa-023/probe_worktree_isolation.py",
+    "workstreams/po03/wave-a/units/wa-023/test_worktree_isolation.py",
+    "workstreams/po03/wave-a/units/wa-023/source-claims.json",
+    "workstreams/po03/wave-a/units/wa-023/hypotheses.json",
+    "workstreams/po03/wave-a/units/wa-023/runtime-observation.json",
+    "workstreams/po03/wave-a/units/wa-023/reproduction.json",
+    "workstreams/po03/wave-a/units/wa-023/result.json",
+    "workstreams/po03/wave-a/units/wa-023/tests.json",
+    "workstreams/po03/wave-a/units/wa-023/limitations.json",
+    "workstreams/po03/wave-a/units/wa-023/artifact-manifest.json",
+    "workstreams/po03/wave-a/units/wa-023/ready-to-commit.json"
+  ],
+  "tests": {
+    "focused": {
+      "count": 5,
+      "final_outcome": "PASS"
+    },
+    "seeded_contracts": {
+      "count": 23,
+      "final_outcome": "PASS"
+    },
+    "taxonomy": {
+      "count": 1,
+      "final_outcome": "PASS"
+    },
+    "sanitized_reproduction_assertions": {
+      "count": 9,
+      "final_outcome": "PASS"
+    },
+    "first_pass_outcome": "FAIL",
+    "first_pass_defect": "The focused occupied-branch test expected wording from another Git release; Git 2.43.0 emitted the equivalent 'already used by worktree' diagnostic. The assertion was made version-portable and rerun."
+  },
+  "source_claims": {
+    "path": "workstreams/po03/wave-a/units/wa-023/source-claims.json",
+    "source_count": 3,
+    "claim_count": 7,
+    "official_source_count": 2,
+    "practitioner_source_count": 1
+  },
+  "current_method_hypotheses": [
+    {
+      "method_hypothesis_id": "MH-WA-023-01",
+      "outcome": "SUPPORTED",
+      "evidence": "reproduction.json assertions distinct_toplevels, distinct_git_dirs, worker_branch_switch_did_not_move_controller_identity, and controller_file_untouched"
+    },
+    {
+      "method_hypothesis_id": "MH-WA-023-02",
+      "outcome": "SUPPORTED",
+      "evidence": "reproduction.json concurrent-write and occupied-branch assertions"
+    }
+  ],
+  "reproductions": [
+    {
+      "reproduction_id": "REPRO-WA-023-01",
+      "workload": "sanitized repository-native Obzio controller plus two worker worktrees",
+      "outcome": "PASS",
+      "assertion_count": 9,
+      "external_effects": "NONE"
+    }
+  ],
+  "mechanism_changes": [
+    {
+      "mechanism_change_id": "MC-WA-023-01",
+      "state": "RETAIN",
+      "change": "Add a checkout-identity precondition that binds expected toplevel, branch, and optionally HEAD, returns machine-readable mismatches, and exits 3 on drift. Allocate a distinct linked worktree before material writes when the assigned checkout fails that precondition.",
+      "implementation": "probe_worktree_isolation.py identity_mismatches(), guard_checkout(), and the guard CLI",
+      "independent_recurrence_tests": [
+        "test_guard_passes_for_stable_checkout",
+        "test_guard_fails_closed_after_branch_switch",
+        "test_guard_cli_uses_nonzero_exit_for_checkout_drift"
+      ],
+      "evidence": [
+        "runtime-observation.json",
+        "reproduction.json",
+        "tests.json"
+      ]
+    }
+  ],
+  "evidence_backed_rejections": [
+    {
+      "rejection_id": "REJECT-WA-023-01",
+      "subject": "Treating the initially assigned /workspace checkout as isolated solely because the route was configured as isolated-git-worktree",
+      "disposition": "REJECT",
+      "evidence": "runtime-observation.json OBS-WA-023-01 through OBS-WA-023-04"
+    }
+  ],
+  "strategy_proposals": [],
+  "limitations": [
+    "Cursor implementation and deployment SHA: NOT_SUPPORTED.",
+    "Exact upstream Git-source retrieval times: NOT_SUPPORTED beyond the UTC date.",
+    "Windows, submodules, worktree cleanup races, and forced duplicate checkout were not exercised.",
+    "Independent acceptance remains PENDING and cannot be set by this producer."
+  ],
+  "model_observed": "gpt-5.6-sol-max-fast",
+  "model_observation_evidence": "cursor-cloud run-info originalModelName",
+  "model_requested": "gpt-5.6-sol-xhigh",
+  "reasoning_observed": "NOT_SUPPORTED",
+  "reasoning_requested": "xhigh",
+  "started_at": "2026-08-22T07:16:00Z",
+  "finished_at": "2026-08-22T07:25:49Z",
+  "preregistered_metrics": {
+    "wall_time": "NOT_SUPPORTED_EXACT_START_SECOND",
+    "test_count": 29,
+    "first_pass_outcome": "FAIL",
+    "artifact_count": 11,
+    "artifact_bytes": "POPULATED_BY_ARTIFACT_MANIFEST",
+    "source_claim_count": 7,
+    "reproduction_count": 1,
+    "mechanism_change_count": 1,
+    "defects": 3,
+    "rework": 2,
+    "provider_block": "RECOVERED_CHECKOUT_ISOLATION_DEFECT",
+    "collision": "DETECTED_AND_AVOIDED",
+    "recovery_events": 1
+  },
+  "provider_state": "RUNNING",
+  "obzio_state": "RESULT_STAGING",
+  "independent_acceptance": "PENDING",
+  "completion_actor": null,
+  "decision_changed": []
+}
