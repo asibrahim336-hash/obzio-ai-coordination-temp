@@ -197,12 +197,41 @@ class CleanCloneRunner(unittest.TestCase):
         )
 
 
-# The gate over the committed real-remote transcript is deliberately absent at
-# this commit.  A clean clone of a commit cannot satisfy a test that demands a
-# transcript of a clean clone of that same commit, so the first real-remote run
-# is taken here and the strict gate is added in the following commit together
-# with the transcript it describes.  The committed transcript therefore always
-# describes an earlier commit; that lag is the price of a non-circular gate.
+class CommittedTranscript(unittest.TestCase):
+    """The recorded real-remote transcript must exist and record a passing run.
+
+    The transcript necessarily describes an earlier commit: a clean clone of
+    commit X cannot satisfy a gate that demands a transcript of a clean clone of
+    commit X.  The one-commit lag is what keeps the gate non-circular, so the
+    recorded commit is checked for shape rather than for equality with HEAD.
+    """
+
+    TRANSCRIPT = REPO_ROOT / "workstreams" / "po03" / "runtime" / "transcripts" / "clean-clone.json"
+
+    def load(self) -> dict:
+        self.assertTrue(self.TRANSCRIPT.is_file(), f"missing transcript: {self.TRANSCRIPT}")
+        return json.loads(self.TRANSCRIPT.read_text(encoding="utf-8"))
+
+    def test_transcript_records_a_passing_real_remote_run(self) -> None:
+        transcript = self.load()
+        self.assertEqual(transcript["schema"], "po03-clean-clone-transcript-v1")
+        self.assertEqual(transcript["unit_id"], "a3-u01")
+        self.assertEqual(transcript["status"], "PASS")
+        self.assertGreater(transcript["tests_run"], 0)
+        self.assertRegex(transcript["cloned_commit"], r"^[0-9a-f]{40}$")
+        self.assertIn("github.com/", transcript["remote"])
+        self.assertFalse(transcript["scratch_inside_repository"])
+        self.assertEqual(transcript["environment"]["inherited_variables"], 0)
+        self.assertEqual(transcript["leftovers"]["after_no_bytecode_run"], 0)
+        self.assertEqual(transcript["leftovers"]["unexpected_after_canonical_run"], 0)
+        self.assertTrue(all(step["exit_code"] == 0 for step in transcript["steps"]))
+
+    def test_transcript_contains_no_credentials(self) -> None:
+        text = self.TRANSCRIPT.read_text(encoding="utf-8")
+        self.assertNotIn("x-access-token:", text)
+        self.assertNotIn("ghp_", text)
+        self.assertNotIn("github_pat_", text)
+        self.assertIn("://***@", json.loads(text)["remote"])
 
 
 if __name__ == "__main__":
