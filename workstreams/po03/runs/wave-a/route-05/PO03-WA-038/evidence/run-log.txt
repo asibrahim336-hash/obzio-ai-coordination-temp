@@ -1,0 +1,53 @@
+PO03-WA-038 execution evidence
+captured_at_utc: 2026-08-22T07:16:31Z
+python: Python 3.12.3
+platform: Linux 6.12.94+ x86_64
+worktree_head: 44de68e52a0baa480a8a8c0b95fd5071391dd4a1
+base_commit: 44de68e52a0baa480a8a8c0b95fd5071391dd4a1
+cwd: workstreams/po03/runs/wave-a/route-05/PO03-WA-038
+
+$ python3 -m unittest discover -s tests -p 'test_*.py' -v
+test_broken_lineage_exits_one (test_lineage_recorder.CommandLineTests.test_broken_lineage_exits_one) ... ok
+test_intact_lineage_exits_zero (test_lineage_recorder.CommandLineTests.test_intact_lineage_exits_zero) ... ok
+test_unreadable_ledger_exits_two (test_lineage_recorder.CommandLineTests.test_unreadable_ledger_exits_two) ... ok
+test_configuration_tampering_is_caught (test_lineage_recorder.DriftDetectionTests.test_configuration_tampering_is_caught) ... ok
+test_field_edit_without_reseal_is_caught (test_lineage_recorder.DriftDetectionTests.test_field_edit_without_reseal_is_caught) ... ok
+test_missing_source_file_is_caught (test_lineage_recorder.DriftDetectionTests.test_missing_source_file_is_caught) ... ok
+test_output_mutation_after_recording_is_caught (test_lineage_recorder.DriftDetectionTests.test_output_mutation_after_recording_is_caught) ... ok
+test_resealing_a_tampered_record_still_fails_on_the_bytes (test_lineage_recorder.DriftDetectionTests.test_resealing_a_tampered_record_still_fails_on_the_bytes)
+An attacker who reseals must still make the filesystem agree. ... ok
+test_source_mutation_after_recording_is_caught (test_lineage_recorder.DriftDetectionTests.test_source_mutation_after_recording_is_caught) ... ok
+test_tool_source_change_is_caught_even_at_the_same_version (test_lineage_recorder.DriftDetectionTests.test_tool_source_change_is_caught_even_at_the_same_version) ... ok
+test_cycle_is_detected (test_lineage_recorder.LineageStructureTests.test_cycle_is_detected) ... ok
+test_malformed_ledger_is_refused (test_lineage_recorder.LineageStructureTests.test_malformed_ledger_is_refused) ... ok
+test_missing_parent_is_broken_lineage (test_lineage_recorder.LineageStructureTests.test_missing_parent_is_broken_lineage) ... ok
+test_record_missing_a_field_is_refused (test_lineage_recorder.LineageStructureTests.test_record_missing_a_field_is_refused) ... ok
+test_self_parent_is_a_cycle (test_lineage_recorder.LineageStructureTests.test_self_parent_is_a_cycle) ... ok
+test_unrecorded_source_is_caught_when_declared (test_lineage_recorder.LineageStructureTests.test_unrecorded_source_is_caught_when_declared) ... ok
+test_ancestry_walks_to_the_root (test_lineage_recorder.RecordingTests.test_ancestry_walks_to_the_root) ... ok
+test_attestation_is_stable_across_a_round_trip (test_lineage_recorder.RecordingTests.test_attestation_is_stable_across_a_round_trip) ... ok
+test_configuration_key_order_does_not_change_the_digest (test_lineage_recorder.RecordingTests.test_configuration_key_order_does_not_change_the_digest) ... ok
+test_configuration_value_change_does_change_the_digest (test_lineage_recorder.RecordingTests.test_configuration_value_change_does_change_the_digest) ... ok
+test_duplicate_record_id_is_refused (test_lineage_recorder.RecordingTests.test_duplicate_record_id_is_refused) ... ok
+test_intact_lineage_verifies (test_lineage_recorder.RecordingTests.test_intact_lineage_verifies) ... ok
+test_record_pins_all_four_provenance_facts (test_lineage_recorder.RecordingTests.test_record_pins_all_four_provenance_facts) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 0.513s
+
+OK
+[exit code: 0]
+
+$ python3 src/lineage_recorder.py --ledger lineage.json --root .
+summary: records=2 findings=0
+[exit code: 0]
+
+$ python3 src/lineage_recorder.py --ledger lineage.json --root .   # after tampering
+FAIL SOURCE_DRIFT           rec-stage1  (input.txt changed after recording)
+FAIL TOOL_DRIFT             rec-stage1  (tool source changed after recording)
+FAIL ATTESTATION_MISMATCH   rec-stage2  (record fields were edited without resealing)
+FAIL TOOL_DRIFT             rec-stage2  (tool source changed after recording)
+FAIL BROKEN_LINEAGE         rec-stage2  (declared parent rec-missing-parent is not in the ledger)
+summary: records=2 findings=5
+[exit code: 1]
+
