@@ -1111,6 +1111,308 @@ def rehash_committed_artifacts(
 
 
 # ---------------------------------------------------------------------------
+# Recovery actuation
+# ---------------------------------------------------------------------------
+#
+# The scanner detects; this remediates.  They are separate on purpose: the
+# scanner is called by ``verify``, by subordinates and by a read-only
+# clean-clone check, and a detector that appends to the shared ledger every
+# time somebody asks it a question cannot be run safely.  Everything below is
+# the writer, and it writes only what a worker needs to continue without a
+# human deciding anything.
+
+#: States whose problem is the work itself rather than the lease.
+RERUN_STATES = frozenset({"RECOVERY_REQUIRED", "PROVIDER_COMPLETED_UNCOMMITTED", "RETRY_SCHEDULED"})
+#: Actions that append to the ledger and hand the unit back to its worker.
+ACTUATING_ACTIONS = frozenset({"re_lease", "rerun", "resume"})
+DEFAULT_LEASE_TTL_SECONDS = 5400
+DEFAULT_MAX_ATTEMPTS = 4
+
+
+def _lease_deadline(lease: dict[str, Any] | None) -> float | None:
+    if not lease or not lease.get("expires_at"):
+        return None
+    try:
+        parsed = datetime.strptime(lease["expires_at"], "%Y-%m-%dT%H:%M:%SZ")
+    except (TypeError, ValueError):
+        return None
+    return parsed.replace(tzinfo=timezone.utc).timestamp()
+
+
+def _last_checkpoint(rows: list[dict[str, Any]], unit_id: str) -> dict[str, Any] | None:
+    for row in reversed(rows):
+        if row["unit_id"] == unit_id and row["event"] == "CHECKPOINTED":
+            return dict(row.get("payload") or {})
+    return None
+
+
+def _plan_recovery(
+    unit_id: str,
+    unit: dict[str, Any],
+    rows: list[dict[str, Any]],
+    *,
+    now: float,
+    max_attempts: int,
+) -> dict[str, Any] | None:
+    """Decide what one unit needs, or None if it needs nothing.
+
+    Order matters.  A stale lease is diagnosed before a failed attempt, because
+    a unit whose lease has gone has no worker to rerun it, and the projection
+    collapses ``LEASE_EXPIRED`` into the same state a refusal produces.
+    """
+    state = unit["obzio_state"]
+    if state == "COMPLETED" or unit.get("acceptance") in ("ACCEPTED", "REJECTED"):
+        return None
+    if state in ("FAILED_TERMINAL", "CANCELLED"):
+        # An honestly declared terminal failure is a result, not a fault.
+        return None
+    if state == "PARENT_INGESTED":
+        # Ingested and waiting on coordinator completion: not a recovery matter.
+        return None
+    if state == "RESULT_COMMITTED":
+        return {
+            "unit_id": unit_id,
+            "action": "awaiting_ingestion",
+            "reason": (
+                "the worker committed a durable result that has not been ingested; "
+                "re-running would destroy work that already exists"
+            ),
+            "result_commit_id": unit.get("result_commit_id"),
+            "resume_from_checkpoint": unit.get("checkpoint_seq", 0),
+        }
+
+    lease = unit.get("lease")
+    deadline = _lease_deadline(lease)
+    lease_lost = lease is None or (deadline is not None and deadline < now)
+    if lease_lost:
+        action = "re_lease"
+        reason = (
+            "the lease expired and was never transferred"
+            if lease is not None
+            else "the unit holds no lease, so no worker is responsible for it"
+        )
+    elif state in RERUN_STATES:
+        action = "rerun"
+        reason = f"the unit is {state}: its last attempt produced nothing durable"
+    else:
+        return None
+
+    checkpoint_seq = int(unit.get("checkpoint_seq") or 0)
+    if checkpoint_seq > 0:
+        # Restarting a checkpointed unit at zero throws away work the ledger
+        # already proves happened.
+        action = "resume"
+        reason = f"{reason}; a checkpoint at {checkpoint_seq} is available to resume from"
+
+    attempts = int(unit.get("retries") or 0)
+    plan = {
+        "unit_id": unit_id,
+        "action": action,
+        "reason": reason,
+        "state_before": state,
+        "attempts": attempts,
+        "resume_from_checkpoint": checkpoint_seq,
+        "resume_checkpoint": _last_checkpoint(rows, unit_id) if checkpoint_seq else None,
+        "expire_lease": lease is not None and lease_lost,
+        "lease_before": lease,
+    }
+    if attempts >= max_attempts:
+        plan.update(
+            action="escalate",
+            reason=(
+                f"the retry budget is exhausted after {attempts} scheduled retries "
+                f"(limit {max_attempts}); unbounded automatic retry is its own defect"
+            ),
+        )
+        return plan
+
+    dispatch_path = DISPATCH_DIR / f"{unit_id}.json"
+    if not dispatch_path.exists():
+        plan.update(
+            action="escalate",
+            reason=(
+                f"no immutable dispatch record at {dispatch_path}; a rerun input cannot be "
+                "reconstructed and must not be guessed"
+            ),
+        )
+        return plan
+    try:
+        dispatch = json.loads(dispatch_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        plan.update(action="escalate", reason=f"the dispatch record for {unit_id} is unreadable: {exc}")
+        return plan
+    owner = dispatch.get("owner") or unit.get("owner")
+    if not owner:
+        plan.update(
+            action="escalate",
+            reason="the dispatch record names no owner, so there is no worker to lease to",
+        )
+        return plan
+    plan["worker_id"] = owner
+    plan["dispatch"] = {
+        "dispatch_path": str(dispatch_path),
+        "immutable_input_manifest_sha256": dispatch.get("immutable_input_manifest_sha256"),
+        "acceptance_contract_sha256": dispatch.get("acceptance_contract_sha256"),
+        "idempotency_key": dispatch.get("idempotency_key"),
+        "result_slot": dispatch.get("result_slot"),
+    }
+    plan["fence_token"] = int(unit.get("fence_token") or 0) + 1
+    return plan
+
+
+def _enact_recovery(plan: dict[str, Any], *, ttl_seconds: int, now: float, rows: list[dict[str, Any]]) -> bool:
+    """Apply one plan.  Returns True when the unit was handed back to a worker."""
+    unit_id = plan["unit_id"]
+    if plan["action"] == "awaiting_ingestion":
+        return False
+    if plan["action"] == "escalate":
+        already = any(
+            row["unit_id"] == unit_id
+            and (row.get("payload") or {}).get("escalated_after_attempts") == plan["attempts"]
+            for row in rows
+        )
+        if not already:
+            record_rejection(
+                unit_id,
+                f"recovery escalated: {plan['reason']}",
+                extra={
+                    "reason": "automatic recovery cannot proceed without a decision",
+                    "escalated_after_attempts": plan["attempts"],
+                    "state_before": plan["state_before"],
+                },
+                rejected_by="recover_units",
+            )
+        return False
+
+    fence = plan["fence_token"]
+    dispatch = plan["dispatch"]
+    if plan["expire_lease"]:
+        append_event(
+            unit_id,
+            "LEASE_EXPIRED",
+            actor=COORDINATOR,
+            fence_token=(plan["lease_before"] or {}).get("fence_token"),
+            payload={
+                "reason": "lease deadline passed without a durable result",
+                "lease_id": (plan["lease_before"] or {}).get("lease_id"),
+                "expired_at": (plan["lease_before"] or {}).get("expires_at"),
+                "recovered_by": "recover_units",
+            },
+        )
+    append_event(
+        unit_id,
+        "RETRY_SCHEDULED",
+        actor=COORDINATOR,
+        fence_token=fence,
+        payload={
+            "reason": plan["reason"],
+            "action": plan["action"],
+            "attempt": plan["attempts"] + 1,
+            "resume_from_checkpoint": plan["resume_from_checkpoint"],
+            "recovered_by": "recover_units",
+            **dispatch,
+        },
+    )
+    expires_at = datetime.fromtimestamp(now + ttl_seconds, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    append_event(
+        unit_id,
+        "LEASED",
+        actor=COORDINATOR,
+        provider_state="QUEUED",
+        fence_token=fence,
+        payload={
+            "lease_id": f"lease-{unit_id}-{fence}",
+            "worker_id": plan["worker_id"],
+            "expires_at": expires_at,
+            "ttl_seconds": ttl_seconds,
+            "resume_from_checkpoint": plan["resume_from_checkpoint"],
+            "resume_checkpoint": plan["resume_checkpoint"],
+            "recovered_by": "recover_units",
+            "recovery_action": plan["action"],
+            "immutable_input_manifest_sha256": dispatch["immutable_input_manifest_sha256"],
+            "idempotency_key": dispatch["idempotency_key"],
+        },
+    )
+    return True
+
+
+def recover_units(
+    *,
+    unit_ids: Iterable[str] | None = None,
+    now: float | None = None,
+    ttl_seconds: int = DEFAULT_LEASE_TTL_SECONDS,
+    max_attempts: int = DEFAULT_MAX_ATTEMPTS,
+    apply: bool = True,
+) -> dict[str, Any]:
+    """Re-lease, rerun and resume every unit that cannot make progress alone.
+
+    Detection was never the missing half.  Cohort a2 measured seven in-flight
+    units and none of them resumed, because nothing in the control plane acted
+    on what the scanner reported.  This does:
+
+    * a lease that expired is expired explicitly and re-issued with a fresh
+      fence, which also evicts the previous holder, since ingestion admits only
+      the current issued token;
+    * a unit whose attempt produced nothing durable is rerun from its immutable
+      dispatch input, never from a worker's self-report;
+    * a unit with a checkpoint resumes at that checkpoint, and the resume point
+      is written into the ledger so it survives the actuating process;
+    * a unit that has exhausted its retry budget, or that has no immutable
+      dispatch record to rerun from, is escalated rather than guessed at.
+
+    Idempotent by construction: every action it takes removes the condition
+    that selected the unit, so a second invocation finds nothing to do.
+    """
+    now_ts = time.time() if now is None else now
+    with ledger_lock():
+        rows = ledger_rows()
+        units = project_units(rows)
+        if unit_ids is None:
+            selected = dict(units)
+        else:
+            wanted = list(dict.fromkeys(unit_ids))
+            missing = [unit_id for unit_id in wanted if unit_id not in units]
+            if missing:
+                raise ControlPlaneError(f"unknown unit(s): {', '.join(missing)}")
+            selected = {unit_id: units[unit_id] for unit_id in wanted}
+
+        actions: list[dict[str, Any]] = []
+        for unit_id in sorted(selected):
+            plan = _plan_recovery(
+                unit_id, selected[unit_id], rows, now=now_ts, max_attempts=max_attempts
+            )
+            if plan is not None:
+                actions.append(plan)
+
+        actuated = 0
+        if apply:
+            for plan in actions:
+                if _enact_recovery(plan, ttl_seconds=ttl_seconds, now=now_ts, rows=rows):
+                    actuated += 1
+            if actions:
+                materialize()
+
+    report = {
+        "generated_at": utc_now(),
+        "dry_run": not apply,
+        "ttl_seconds": ttl_seconds,
+        "max_attempts": max_attempts,
+        "units_considered": len(selected),
+        "units_planned": len(actions),
+        "units_actuated": actuated,
+        "actions": actions,
+        "re_leased": [item["unit_id"] for item in actions if item["action"] == "re_lease"],
+        "rerun": [item["unit_id"] for item in actions if item["action"] == "rerun"],
+        "resumed": [item["unit_id"] for item in actions if item["action"] == "resume"],
+        "awaiting_ingestion": [
+            item["unit_id"] for item in actions if item["action"] == "awaiting_ingestion"
+        ],
+        "escalated": [item["unit_id"] for item in actions if item["action"] == "escalate"],
+    }
+    return report
+
+
+# ---------------------------------------------------------------------------
 # Commands
 # ---------------------------------------------------------------------------
 
@@ -1637,6 +1939,18 @@ def cmd_scan(args: argparse.Namespace) -> int:
     return 1 if state["recovery_required"] and args.strict else 0
 
 
+def cmd_recover(args: argparse.Namespace) -> int:
+    """Actuate recovery.  Exit 1 when a unit needs a human, not a retry."""
+    report = recover_units(
+        unit_ids=args.unit or None,
+        ttl_seconds=args.ttl,
+        max_attempts=args.max_attempts,
+        apply=not args.dry_run,
+    )
+    print(canonical(report))
+    return 1 if report["escalated"] else 0
+
+
 def cmd_rehash(args: argparse.Namespace) -> int:
     """Re-prove that every ingested artifact is still readable at its commit.
 
@@ -1717,6 +2031,13 @@ def build_parser() -> argparse.ArgumentParser:
     scan = sub.add_parser("scan", help="run the recovery scanner")
     scan.add_argument("--strict", action="store_true")
     scan.set_defaults(func=cmd_scan)
+
+    recover = sub.add_parser("recover", help="re-lease, rerun and resume stalled units")
+    recover.add_argument("--unit", action="append", default=[])
+    recover.add_argument("--ttl", type=int, default=DEFAULT_LEASE_TTL_SECONDS)
+    recover.add_argument("--max-attempts", dest="max_attempts", type=int, default=DEFAULT_MAX_ATTEMPTS)
+    recover.add_argument("--dry-run", dest="dry_run", action="store_true")
+    recover.set_defaults(func=cmd_recover)
 
     rehash = sub.add_parser("rehash", help="re-hash ingested artifacts at their commits")
     rehash.add_argument("--repo", default=None)
