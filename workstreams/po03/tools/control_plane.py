@@ -18,8 +18,16 @@ parent process possible.
 Safety properties enforced here
 -------------------------------
 * Provider completion never becomes Obzio completion without a verified commit.
-* A stale worker (lower fence token) cannot commit after ownership transfers.
+* Actor authority and transition order are checked on the single append path,
+  so the generic ``event`` subcommand is exactly as safe as ``complete``.
+* A declared result commit must resolve to a real git commit object before it
+  counts as durable, and an unresolvable one is a false completion.
+* A fence token is admissible only if the coordinator issued it in a ``LEASED``
+  event for that unit and it is the current lease.
+* Appends are serialised by an advisory file lock, so concurrent multi-process
+  callbacks cannot duplicate a sequence number or fork the hash chain.
 * Duplicate callbacks carrying an identical payload are harmless no-ops.
+* Every ingestion rejection leaves a durable ``RECOVERY_REQUIRED`` row.
 * A subordinate cannot write outside its owned subtree or the commission
   allowlist, and cannot set ``COMPLETED`` or accept its own work.
 
@@ -30,15 +38,19 @@ fresh clone with no third-party packages, no ``/tmp`` state and no warm cache.
 from __future__ import annotations
 
 import argparse
+import errno
 import hashlib
 import json
 import os
 import re
+import subprocess
 import sys
+import threading
 import time
+from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Iterator
 
 CONTROL_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = CONTROL_ROOT.parents[1]
@@ -93,9 +105,79 @@ EVENT_KINDS = {
     "FAULT_INJECTED",
 }
 
+COORDINATOR = "coordinator"
+
+# Authority is a property of the event kind, not of the entry point.  The defect
+# this table closes was that ``cmd_complete`` checked authority while the
+# generic ``event`` subcommand did not, so a worker could append COMPLETED with
+# a fabricated commit id and the projection believed it.
+COORDINATOR_ONLY_EVENTS = frozenset(
+    {
+        "CREATED",
+        "LEASED",
+        "PARENT_INGESTED",
+        "COMPLETED",
+        "PROVIDER_COMPLETED_UNCOMMITTED",
+        "RECOVERY_REQUIRED",
+        "RETRY_SCHEDULED",
+        "CANCELLED",
+        "LEASE_EXPIRED",
+        "FENCE_REJECTED",
+        "DUPLICATE_IGNORED",
+    }
+)
+# A disposition may only come from an actor that is not the unit's producer.
+DISPOSITION_EVENTS = frozenset({"ACCEPTED", "REJECTED"})
+# Progress a subordinate is entitled to report about its own attempt.
+WORKER_EVENTS = frozenset(
+    {
+        "RUNNING",
+        "CHECKPOINTED",
+        "RESULT_STAGING",
+        "RESULT_STAGED",
+        "RESULT_VERIFIED",
+        "RESULT_COMMITTED",
+        "FAILED_TERMINAL",
+        "FAULT_INJECTED",
+    }
+)
+
+# Custody order.  ``COMPLETED`` is rank 9 and reachable only from rank 8.
+LIFECYCLE_RANK = {
+    "CREATED": 0,
+    "LEASED": 1,
+    "RUNNING": 2,
+    "CHECKPOINTED": 3,
+    "RESULT_STAGING": 4,
+    "RESULT_STAGED": 5,
+    "RESULT_VERIFIED": 6,
+    "RESULT_COMMITTED": 7,
+    "PARENT_INGESTED": 8,
+    "COMPLETED": 9,
+}
+PRODUCTION_EVENTS = frozenset(
+    {"RUNNING", "CHECKPOINTED", "RESULT_STAGING", "RESULT_STAGED", "RESULT_VERIFIED", "RESULT_COMMITTED"}
+)
+# Events that legitimately move a unit backwards; recovery is not an attack.
+RECOVERY_EVENTS = frozenset({"RECOVERY_REQUIRED", "LEASE_EXPIRED", "RETRY_SCHEDULED"})
+# Events that record an observation without advancing custody state.
+OBSERVABILITY_EVENTS = frozenset({"DUPLICATE_IGNORED", "FENCE_REJECTED", "FAULT_INJECTED"})
+
+LOCK_TIMEOUT_SECONDS = 30.0
+LOCK_POLL_SECONDS = 0.005
+
 
 class ControlPlaneError(RuntimeError):
     """Raised when an operation would violate a custody invariant."""
+
+
+class LedgerLockUnavailable(ControlPlaneError):
+    """Raised when the advisory lock cannot be taken within the bounded wait.
+
+    Failing the append is the documented behaviour on lock timeout: an append
+    that proceeds without the lock is exactly the defect the lock exists to
+    prevent, so a caller must retry or escalate rather than race.
+    """
 
 
 def utc_now() -> str:
@@ -138,6 +220,218 @@ def write_json(path: Path, payload: Any) -> str:
     text = json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
     path.write_text(text, encoding="utf-8")
     return sha256_text(text)
+
+
+# ---------------------------------------------------------------------------
+# Git object resolution
+# ---------------------------------------------------------------------------
+#
+# A locator is a claim about bytes.  Until the named object is resolved in an
+# object database, "committed" is a string a worker typed.  Everything below
+# fails closed: an unavailable git, an unreadable repository and an absent
+# object are all "not resolved", never "assume durable".
+
+
+def _git(args: list[str], *, cwd: Path, stdin: str | None = None, timeout: float = 60.0):
+    try:
+        return subprocess.run(
+            ["git", *args],
+            cwd=str(cwd),
+            input=stdin,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=timeout,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
+def git_repo_root(repo: Path | None = None) -> Path | None:
+    """Return the repository that owns ``repo``, or None if there is none."""
+    candidate = Path(repo) if repo is not None else REPO_ROOT
+    if not candidate.exists():
+        return None
+    proc = _git(["rev-parse", "--show-toplevel"], cwd=candidate)
+    if proc is None or proc.returncode != 0:
+        return None
+    top = proc.stdout.strip()
+    return Path(top) if top else None
+
+
+def resolve_commits(commit_ids: Iterable[str], repo: Path | None = None) -> dict[str, bool]:
+    """Resolve each id to a real commit object, in one batch.
+
+    A tree or blob sha is not a commit: ``^{commit}`` peeling makes the type
+    check explicit, so a caller cannot be fooled by a well-formed sha that
+    names something other than a commit.
+    """
+    wanted = [cid for cid in dict.fromkeys(commit_ids) if isinstance(cid, str) and cid.strip()]
+    resolved = {cid: False for cid in wanted}
+    if not wanted:
+        return resolved
+    root = git_repo_root(repo)
+    if root is None:
+        return resolved
+    stdin = "".join(f"{cid}^{{commit}}\n" for cid in wanted)
+    proc = _git(["cat-file", "--batch-check"], cwd=root, stdin=stdin)
+    if proc is None or proc.returncode != 0:
+        return resolved
+    for cid, line in zip(wanted, proc.stdout.splitlines()):
+        fields = line.split()
+        resolved[cid] = len(fields) >= 2 and fields[1] == "commit"
+    return resolved
+
+
+def commit_resolves(commit_id: str | None, repo: Path | None = None) -> bool:
+    if not isinstance(commit_id, str) or not commit_id.strip():
+        return False
+    return resolve_commits([commit_id], repo).get(commit_id, False)
+
+
+def read_blob(commit_id: str, relative: str, repo: Path | None = None) -> bytes | None:
+    """Return the bytes of ``relative`` as it existed in ``commit_id``.
+
+    This is the read-back that matters: it is anchored to an immutable commit,
+    so an honest earlier result still verifies after its branch advances.
+    """
+    root = git_repo_root(repo)
+    if root is None:
+        return None
+    try:
+        # Binary mode: an artifact is bytes, and decoding it would corrupt any
+        # non-UTF-8 payload before its hash could be checked.
+        proc = subprocess.run(
+            ["git", "cat-file", "blob", f"{commit_id}:{relative}"],
+            cwd=str(root),
+            capture_output=True,
+            check=False,
+            timeout=120.0,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if proc.returncode != 0:
+        return None
+    return proc.stdout
+
+
+def parse_content_uri(content_uri: str) -> tuple[str | None, str | None, str]:
+    """Split ``git:<branch>@<commit>:<path>`` into its parts.
+
+    Returns ``(branch, commit, relative_path)``.  Anything that does not carry a
+    commit yields ``None`` for the commit so the caller can refuse to treat it
+    as an immutable locator instead of quietly reading the working tree.
+    """
+    text = content_uri.strip()
+    scheme, _, remainder = text.partition(":")
+    if not remainder:
+        return None, None, text
+    if scheme != "git":
+        return None, None, text.split(":", 2)[-1]
+    ref, _, relative = remainder.partition(":")
+    if not relative:
+        return None, None, remainder
+    branch, sep, commit = ref.partition("@")
+    if not sep:
+        return branch or None, None, relative
+    return branch or None, commit or None, relative
+
+
+# ---------------------------------------------------------------------------
+# Advisory locking
+# ---------------------------------------------------------------------------
+
+try:  # POSIX advisory locking
+    import fcntl as _fcntl
+except ImportError:  # pragma: no cover - exercised only on non-POSIX platforms
+    _fcntl = None
+
+try:  # Windows advisory locking
+    import msvcrt as _msvcrt
+except ImportError:
+    _msvcrt = None
+
+LOCK_MECHANISM = "fcntl.flock" if _fcntl is not None else ("msvcrt.locking" if _msvcrt is not None else "NOT_SUPPORTED")
+
+_THREAD_LOCK = threading.RLock()
+_LOCAL = threading.local()
+
+
+def lock_path() -> Path:
+    return LEDGER_PATH.with_suffix(LEDGER_PATH.suffix + ".lock")
+
+
+def _acquire_os_lock(handle, timeout: float) -> None:
+    deadline = time.monotonic() + timeout
+    while True:
+        try:
+            if _fcntl is not None:
+                _fcntl.flock(handle.fileno(), _fcntl.LOCK_EX | _fcntl.LOCK_NB)
+            elif _msvcrt is not None:  # pragma: no cover - Windows only
+                _msvcrt.locking(handle.fileno(), _msvcrt.LK_NBLCK, 1)
+            else:  # pragma: no cover - no advisory locking on this platform
+                raise LedgerLockUnavailable(
+                    "advisory file locking is NOT_SUPPORTED on this platform: "
+                    "neither fcntl nor msvcrt is importable, so concurrent multi-process "
+                    "appends cannot be serialised"
+                )
+            return
+        except LedgerLockUnavailable:
+            raise
+        except OSError as exc:
+            if exc.errno not in (errno.EACCES, errno.EAGAIN, errno.EDEADLK):
+                raise
+            if time.monotonic() >= deadline:
+                raise LedgerLockUnavailable(
+                    f"could not acquire the ledger lock within {timeout:g}s; "
+                    "refusing to append without exclusion"
+                ) from exc
+            time.sleep(LOCK_POLL_SECONDS)
+
+
+def _release_os_lock(handle) -> None:
+    try:
+        if _fcntl is not None:
+            _fcntl.flock(handle.fileno(), _fcntl.LOCK_UN)
+        elif _msvcrt is not None:  # pragma: no cover - Windows only
+            _msvcrt.locking(handle.fileno(), _msvcrt.LK_UNLCK, 1)
+    except OSError:
+        pass
+
+
+@contextmanager
+def ledger_lock(timeout: float = LOCK_TIMEOUT_SECONDS) -> Iterator[None]:
+    """Serialise the read-verify-append critical section.
+
+    The lock is reentrant within a thread so ``ingest_result`` can hold it
+    across its idempotency check and its append, which is what makes a
+    duplicate concurrent callback resolve to exactly one ingestion row.  A
+    threading lock is held as well as the file lock because ``flock`` is shared
+    between threads of one process and would not exclude them from each other.
+    """
+    if getattr(_LOCAL, "depth", 0):
+        _LOCAL.depth += 1
+        try:
+            yield
+        finally:
+            _LOCAL.depth -= 1
+        return
+    if not _THREAD_LOCK.acquire(timeout=timeout):
+        raise LedgerLockUnavailable(f"could not acquire the in-process ledger lock within {timeout:g}s")
+    handle = None
+    try:
+        target = lock_path()
+        target.parent.mkdir(parents=True, exist_ok=True)
+        handle = target.open("a+")
+        _acquire_os_lock(handle, timeout)
+        _LOCAL.depth = 1
+        yield
+    finally:
+        _LOCAL.depth = 0
+        if handle is not None:
+            _release_os_lock(handle)
+            handle.close()
+        _THREAD_LOCK.release()
 
 
 # ---------------------------------------------------------------------------
@@ -220,6 +514,16 @@ def ledger_rows() -> list[dict[str, Any]]:
     return read_jsonl(LEDGER_PATH)
 
 
+def _rows_for_append() -> list[dict[str, Any]]:
+    """Read the ledger inside the append critical section.
+
+    Deliberately not routed through ``ledger_rows`` so that a caller which has
+    wrapped the public reader cannot re-open the read-verify-append race the
+    lock closes.
+    """
+    return read_jsonl(LEDGER_PATH)
+
+
 def verify_chain(rows: list[dict[str, Any]]) -> list[str]:
     errors: list[str] = []
     previous = GENESIS_HASH
@@ -237,6 +541,124 @@ def verify_chain(rows: list[dict[str, Any]]) -> list[str]:
     return errors
 
 
+def unit_owner(unit_id: str, unit: dict[str, Any] | None = None) -> str | None:
+    """Resolve the producer of a unit from its immutable dispatch record.
+
+    The dispatch record is the authority, because it was written before the
+    unit was handed out.  The ``CREATED`` payload is a fallback for a unit whose
+    dispatch file is not reachable from this process.
+    """
+    dispatch_path = DISPATCH_DIR / f"{unit_id}.json"
+    if dispatch_path.exists():
+        try:
+            owner = json.loads(dispatch_path.read_text(encoding="utf-8")).get("owner")
+        except (json.JSONDecodeError, OSError):
+            owner = None
+        if owner:
+            return owner
+    return (unit or {}).get("owner")
+
+
+def check_actor_authority(unit_id: str, event: str, actor: str, unit: dict[str, Any] | None) -> None:
+    """Refuse an event the actor has no standing to author.
+
+    Enforced here rather than in a command handler so every entry point --
+    ``event``, ``complete``, ``review``, ``ingest`` and the recovery actuator --
+    inherits the same rule.
+    """
+    if not isinstance(actor, str) or not actor.strip():
+        raise ControlPlaneError(f"{event} requires a named actor")
+    if event in COORDINATOR_ONLY_EVENTS and actor != COORDINATOR:
+        raise ControlPlaneError(
+            f"actor {actor!r} may not append {event} for {unit_id}: "
+            f"{event} is coordinator-only custody authority"
+        )
+    if event in DISPOSITION_EVENTS:
+        owner = unit_owner(unit_id, unit)
+        if owner is not None and actor == owner:
+            raise ControlPlaneError(
+                f"actor {actor!r} may not append {event} for {unit_id}: "
+                "a producer cannot accept or reject its own work"
+            )
+        roster = load_path_ownership().get("owners", {})
+        if roster and actor != COORDINATOR and actor not in roster:
+            raise ControlPlaneError(
+                f"actor {actor!r} may not append {event} for {unit_id}: "
+                "a disposition requires a registered independent reviewer"
+            )
+    if event in WORKER_EVENTS:
+        owner = unit_owner(unit_id, unit)
+        if owner is not None and actor not in (owner, COORDINATOR):
+            raise ControlPlaneError(
+                f"actor {actor!r} may not append {event} for {unit_id}: "
+                f"the unit is leased to {owner!r}"
+            )
+
+
+def check_transition(unit_id: str, event: str, unit: dict[str, Any] | None, payload: dict[str, Any]) -> None:
+    """Refuse an event that would advance a unit out of order.
+
+    The rule is a precondition table rather than a strict single-step ladder,
+    because ingestion legitimately verifies durability itself and therefore
+    admits ``RUNNING -> PARENT_INGESTED``.  What it never admits is reaching a
+    terminal claim without the evidence that claim asserts.
+    """
+    if event == "CREATED":
+        if unit is not None:
+            raise ControlPlaneError(f"{unit_id} already exists; CREATED is not repeatable")
+        return
+    if unit is None:
+        raise ControlPlaneError(f"unknown unit: {unit_id}; CREATED must come first")
+    if event in OBSERVABILITY_EVENTS:
+        return
+
+    state = unit["obzio_state"]
+    rank = LIFECYCLE_RANK.get(state)
+    acceptance = unit.get("acceptance")
+
+    if event in RECOVERY_EVENTS:
+        if state == "COMPLETED" and event != "RECOVERY_REQUIRED":
+            raise ControlPlaneError(f"{unit_id} is COMPLETED; {event} would regress a completed unit")
+        return
+    if event == "LEASED":
+        if state == "COMPLETED" or acceptance in ("ACCEPTED", "REJECTED"):
+            raise ControlPlaneError(f"{unit_id} is {state}/{acceptance}; a completed unit cannot be re-leased")
+        return
+    if event in PRODUCTION_EVENTS:
+        if rank is None and state not in ("RECOVERY_REQUIRED", "RETRY_SCHEDULED", "PROVIDER_COMPLETED_UNCOMMITTED"):
+            raise ControlPlaneError(f"{unit_id} is {state}; {event} requires an active lease")
+        if rank is not None and rank < LIFECYCLE_RANK["LEASED"]:
+            raise ControlPlaneError(f"{unit_id} is {state}; {event} requires a lease granted by the coordinator")
+        if rank is not None and rank >= LIFECYCLE_RANK["PARENT_INGESTED"]:
+            raise ControlPlaneError(
+                f"{unit_id} is {state}; {event} cannot resume production after ingestion without a re-lease"
+            )
+        return
+    if event in ("FAILED_TERMINAL", "CANCELLED", "PROVIDER_COMPLETED_UNCOMMITTED"):
+        if state == "COMPLETED":
+            raise ControlPlaneError(f"{unit_id} is COMPLETED; {event} would regress a completed unit")
+        return
+    if event == "PARENT_INGESTED":
+        if rank is not None and rank < LIFECYCLE_RANK["LEASED"]:
+            raise ControlPlaneError(f"{unit_id} is {state}; ingestion requires a leased attempt")
+        if state == "COMPLETED":
+            raise ControlPlaneError(f"{unit_id} is already COMPLETED; refusing to re-ingest")
+        if not str(payload.get("result_commit_id") or "").strip():
+            raise ControlPlaneError(f"{unit_id}: PARENT_INGESTED requires a declared result_commit_id")
+        return
+    if event == "COMPLETED":
+        if state != "PARENT_INGESTED":
+            raise ControlPlaneError(f"{unit_id} is {state}; completion requires PARENT_INGESTED")
+        commit_id = payload.get("result_commit_id") or unit.get("result_commit_id")
+        if not str(commit_id or "").strip():
+            raise ControlPlaneError(f"{unit_id} has no durable result commit; cannot complete")
+        return
+    if event in DISPOSITION_EVENTS:
+        if state != "COMPLETED":
+            raise ControlPlaneError(f"{unit_id} is {state}; independent disposition requires a COMPLETED unit")
+        return
+
+
 def append_event(
     unit_id: str,
     event: str,
@@ -246,13 +668,75 @@ def append_event(
     provider_state: str | None = None,
     fence_token: int | None = None,
     payload: dict[str, Any] | None = None,
+    dedupe_key: str | None = None,
+    dedupe_events: Iterable[str] | None = None,
 ) -> dict[str, Any]:
+    """Append one custody row after checking authority, order and integrity.
+
+    ``dedupe_key`` closes the concurrency hole that a lock alone cannot: two
+    callbacks can both pass an idempotency check taken before the lock, so the
+    check is repeated inside the critical section and the loser is recorded as
+    ``DUPLICATE_IGNORED`` instead of appending a second ingestion row.
+    """
     if event not in EVENT_KINDS:
         raise ControlPlaneError(f"unknown event kind: {event}")
-    rows = ledger_rows()
-    chain_errors = verify_chain(rows)
-    if chain_errors:
-        raise ControlPlaneError("ledger integrity failure: " + "; ".join(chain_errors))
+    payload = dict(payload or {})
+    with ledger_lock():
+        rows = _rows_for_append()
+        chain_errors = verify_chain(rows)
+        if chain_errors:
+            raise ControlPlaneError("ledger integrity failure: " + "; ".join(chain_errors))
+        units = project_units(rows)
+        unit = units.get(unit_id)
+        check_actor_authority(unit_id, event, actor, unit)
+        check_transition(unit_id, event, unit, payload)
+        if dedupe_key is not None:
+            watched = frozenset(dedupe_events or (event,))
+            duplicate = any(
+                row["unit_id"] == unit_id
+                and row["event"] in watched
+                and (row.get("payload") or {}).get("result_sha256") == dedupe_key
+                for row in rows
+            )
+            if duplicate:
+                return _write_row(
+                    rows,
+                    unit_id,
+                    "DUPLICATE_IGNORED",
+                    actor=COORDINATOR,
+                    obzio_state=None,
+                    provider_state=None,
+                    fence_token=fence_token,
+                    payload={
+                        "result_sha256": dedupe_key,
+                        "reason": "idempotent replay of an already ingested result",
+                        "suppressed_event": event,
+                    },
+                )
+        return _write_row(
+            rows,
+            unit_id,
+            event,
+            actor=actor,
+            obzio_state=obzio_state,
+            provider_state=provider_state,
+            fence_token=fence_token,
+            payload=payload,
+        )
+
+
+def _write_row(
+    rows: list[dict[str, Any]],
+    unit_id: str,
+    event: str,
+    *,
+    actor: str,
+    obzio_state: str | None,
+    provider_state: str | None,
+    fence_token: int | None,
+    payload: dict[str, Any],
+) -> dict[str, Any]:
+    """Serialise one row.  Only ever called with the ledger lock held."""
     body = {
         "seq": len(rows) + 1,
         "ts": utc_now(),
@@ -262,7 +746,7 @@ def append_event(
         "provider_state": provider_state,
         "actor": actor,
         "fence_token": fence_token,
-        "payload": payload or {},
+        "payload": payload,
         "prev_sha256": rows[-1]["row_sha256"] if rows else GENESIS_HASH,
     }
     body["row_sha256"] = sha256_text(canonical(body))
@@ -301,6 +785,8 @@ def project_units(rows: list[dict[str, Any]] | None = None) -> dict[str, dict[st
                 "last_event_ts": row["ts"],
                 "last_event_seq": row["seq"],
                 "lease": None,
+                "owner": None,
+                "issued_fence_tokens": [],
                 "result_commit_id": None,
                 "result_locator": None,
                 "artifact_count": 0,
@@ -324,6 +810,8 @@ def project_units(rows: list[dict[str, Any]] | None = None) -> dict[str, dict[st
         if event in {"DUPLICATE_IGNORED", "FENCE_REJECTED", "FAULT_INJECTED"}:
             # Observability events never advance custody state.
             continue
+        if event == "CREATED" and payload.get("owner"):
+            unit["owner"] = payload["owner"]
         if event == "LEASED":
             unit["lease"] = {
                 "lease_id": payload.get("lease_id"),
@@ -332,6 +820,13 @@ def project_units(rows: list[dict[str, Any]] | None = None) -> dict[str, dict[st
                 "expires_at": payload.get("expires_at"),
             }
             unit["attempts"] += 1
+            # Only a coordinator-issued LEASED row makes a fence token real.
+            # Ingestion compares against this list, so an arbitrary higher
+            # token cannot be self-promoted into ownership.
+            if row.get("fence_token") is not None:
+                token = int(row["fence_token"])
+                if token not in unit["issued_fence_tokens"]:
+                    unit["issued_fence_tokens"].append(token)
         if event == "LEASE_EXPIRED":
             unit["lease"] = None
             unit["obzio_state"] = "RECOVERY_REQUIRED"
@@ -362,22 +857,42 @@ def materialize() -> dict[str, Any]:
     return units
 
 
-def scan_recovery(now: float | None = None) -> dict[str, Any]:
+def scan_recovery(now: float | None = None, *, repo: Path | None = None) -> dict[str, Any]:
     """Detect every unit that cannot be truthfully called complete.
 
     ``false_completion`` is the assertion that matters most: a unit whose
     provider said COMPLETED but which has no verified durable commit must be
     reported as PROVIDER_COMPLETED_UNCOMMITTED and re-run from immutable input.
+
+    Checking only for a *missing* commit id was the defect that let a fabricated
+    one through, so every terminal commit id is additionally resolved against
+    the object database.  A unit whose obzio state is COMPLETED while its
+    declared commit does not resolve is a false completion, not a durable
+    result.  Units that merely reached ``RESULT_COMMITTED`` or
+    ``PARENT_INGESTED`` with an unresolvable id are reported separately,
+    because a locator can also be unresolvable in this checkout simply because
+    its branch has not been fetched here.
+
+    The scan is a pure detector: it writes only the recovery projection and
+    never appends to the ledger, so it stays safe to run in a read-only clean
+    clone check.  Remediation is the explicit job of ``recover_units``.
     """
     now = time.time() if now is None else now
     rows = ledger_rows()
     chain_errors = verify_chain(rows)
     units = project_units(rows)
+    terminal_commits = {
+        unit["result_commit_id"]
+        for unit in units.values()
+        if unit["obzio_state"] in COMMITTED_STATES and unit["result_commit_id"]
+    }
+    resolved = resolve_commits(terminal_commits, repo)
     expired: list[str] = []
     uncommitted: list[str] = []
     orphaned: list[str] = []
     resumable: list[str] = []
     false_completions: list[str] = []
+    unresolvable: list[str] = []
     for unit_id, unit in sorted(units.items()):
         lease = unit.get("lease")
         if lease and lease.get("expires_at"):
@@ -395,6 +910,11 @@ def scan_recovery(now: float | None = None) -> dict[str, Any]:
                 false_completions.append(unit_id)
         if unit["obzio_state"] in COMMITTED_STATES and not unit["result_commit_id"]:
             false_completions.append(unit_id)
+        if unit["obzio_state"] in COMMITTED_STATES and unit["result_commit_id"]:
+            if not resolved.get(unit["result_commit_id"], False):
+                unresolvable.append(unit_id)
+                if unit["obzio_state"] == "COMPLETED":
+                    false_completions.append(unit_id)
         if unit["obzio_state"] not in TERMINAL_STATES:
             resumable.append(unit_id)
             if not lease:
@@ -411,7 +931,9 @@ def scan_recovery(now: float | None = None) -> dict[str, Any]:
         "orphaned_units": orphaned,
         "resumable_units": resumable,
         "false_completions": sorted(set(false_completions)),
-        "recovery_required": bool(chain_errors or expired or uncommitted or false_completions),
+        "unresolvable_result_commits": sorted(set(unresolvable)),
+        "commit_resolution_available": git_repo_root(repo) is not None,
+        "recovery_required": bool(chain_errors or expired or uncommitted or false_completions or unresolvable),
     }
     write_json(RECOVERY_PATH, state)
     return state
@@ -424,9 +946,17 @@ def scan_recovery(now: float | None = None) -> dict[str, Any]:
 
 def cmd_create(args: argparse.Namespace) -> int:
     spec = json.loads(Path(args.spec).read_text(encoding="utf-8"))
+    existing = set(project_units())
     created = 0
+    skipped = 0
     for unit in spec["units"]:
         unit_id = unit["unit_id"]
+        if unit_id in existing:
+            # Re-running create against a spec that has grown must extend the
+            # wave, not append a second CREATED row for units already in
+            # flight.  CREATED is not repeatable on the append path.
+            skipped += 1
+            continue
         manifest = {
             "unit_id": unit_id,
             "commission_id": spec["commission_id"],
@@ -467,7 +997,7 @@ def cmd_create(args: argparse.Namespace) -> int:
         )
         created += 1
     materialize()
-    print(f"CREATED {created} units")
+    print(f"CREATED {created} units" + (f" (skipped {skipped} already registered)" if skipped else ""))
     return 0
 
 

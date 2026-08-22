@@ -45,7 +45,14 @@ class IsolatedControlPlane(unittest.TestCase):
 
         CP.write_json(
             CP.PATH_OWNERSHIP_PATH,
-            {"owners": {"po03-worker-a1": {"owned_prefixes": ["workstreams/po03/engine/"]}}},
+            {
+                "owners": {
+                    "po03-worker-a1": {"owned_prefixes": ["workstreams/po03/engine/"]},
+                    # A disposition requires a registered independent reviewer,
+                    # so the roster the guard consults must contain one.
+                    "po03-worker-a6": {"owned_prefixes": ["workstreams/po03/review/luna/"]},
+                }
+            },
         )
 
     def seed_unit(self, unit_id="a1-u01", owner="po03-worker-a1"):
@@ -64,8 +71,48 @@ class IsolatedControlPlane(unittest.TestCase):
                 "result_slot": {"unit_record": f"units/{unit_id}.json"},
             },
         )
-        CP.append_event(unit_id, "CREATED", actor="coordinator", provider_state="QUEUED")
+        CP.append_event(
+            unit_id, "CREATED", actor="coordinator", provider_state="QUEUED", payload={"owner": owner}
+        )
         return manifest_sha, acceptance_sha
+
+    def lease_unit(self, unit_id="a1-u01", owner="po03-worker-a1", fence=1,
+                   expires_at="2099-01-01T00:00:00Z"):
+        CP.append_event(
+            unit_id,
+            "LEASED",
+            actor="coordinator",
+            provider_state="RUNNING",
+            fence_token=fence,
+            payload={"lease_id": f"lease-{unit_id}-{fence}", "worker_id": owner, "expires_at": expires_at},
+        )
+
+    def forge_row(self, unit_id, event, actor, payload=None, provider_state="COMPLETED", fence_token=1):
+        """Append a chained row without the append guard.
+
+        Several invariants must hold for rows that already exist -- rows written
+        by an earlier version of this module, or by any process that bypasses
+        ``append_event``.  Those cases can no longer be produced through the
+        guarded path, so they are constructed directly.
+        """
+        rows = CP.ledger_rows()
+        body = {
+            "seq": len(rows) + 1,
+            "ts": "2026-08-22T07:30:00Z",
+            "unit_id": unit_id,
+            "event": event,
+            "obzio_state": event,
+            "provider_state": provider_state,
+            "actor": actor,
+            "fence_token": fence_token,
+            "payload": payload or {},
+            "prev_sha256": rows[-1]["row_sha256"] if rows else CP.GENESIS_HASH,
+        }
+        body["row_sha256"] = CP.sha256_text(CP.canonical(body))
+        CP.LEDGER_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with CP.LEDGER_PATH.open("a", encoding="utf-8") as handle:
+            handle.write(CP.canonical(body) + "\n")
+        return body
 
     def write_artifact(self, relative=OWNED, body=b"payload\n"):
         target = self.root / relative
@@ -173,28 +220,33 @@ class LedgerIntegrityTests(IsolatedControlPlane):
     def setUp(self):
         super().setUp()
         self._shas = self.seed_unit()
+        # Progress events require a coordinator-issued lease, so the fixture
+        # leases the unit rather than reporting work that was never granted.
+        self.lease_unit()
 
     def test_clean_chain_verifies(self):
-        CP.append_event("a1-u01", "RUNNING", actor="coordinator")
+        CP.append_event("a1-u01", "RUNNING", actor="po03-worker-a1", fence_token=1)
         self.assertEqual([], CP.verify_chain(CP.ledger_rows()))
 
     def test_row_mutation_is_detected(self):
-        CP.append_event("a1-u01", "RUNNING", actor="coordinator")
+        CP.append_event("a1-u01", "RUNNING", actor="po03-worker-a1", fence_token=1)
         rows = [json.loads(line) for line in CP.LEDGER_PATH.read_text().splitlines()]
         rows[0]["event"] = "COMPLETED"
         CP.LEDGER_PATH.write_text("\n".join(CP.canonical(r) for r in rows) + "\n")
         self.assertTrue(CP.verify_chain(CP.ledger_rows()))
 
     def test_row_reorder_is_detected(self):
-        CP.append_event("a1-u01", "RUNNING", actor="coordinator")
+        CP.append_event("a1-u01", "RUNNING", actor="po03-worker-a1", fence_token=1)
         rows = [json.loads(line) for line in CP.LEDGER_PATH.read_text().splitlines()]
         rows.reverse()
         CP.LEDGER_PATH.write_text("\n".join(CP.canonical(r) for r in rows) + "\n")
         self.assertTrue(CP.verify_chain(CP.ledger_rows()))
 
     def test_truncation_is_detected_by_projection_gap(self):
-        CP.append_event("a1-u01", "RUNNING", actor="coordinator")
-        CP.append_event("a1-u01", "CHECKPOINTED", actor="coordinator", payload={"checkpoint_seq": 3})
+        CP.append_event("a1-u01", "RUNNING", actor="po03-worker-a1", fence_token=1)
+        CP.append_event(
+            "a1-u01", "CHECKPOINTED", actor="po03-worker-a1", fence_token=1, payload={"checkpoint_seq": 3}
+        )
         rows = CP.LEDGER_PATH.read_text().splitlines()
         CP.LEDGER_PATH.write_text("\n".join(rows[:-1]) + "\n")
         surviving = CP.ledger_rows()
@@ -213,7 +265,7 @@ class LedgerIntegrityTests(IsolatedControlPlane):
             CP.append_event("a1-u01", "DEFINITELY_DONE", actor="coordinator")
 
     def test_registry_is_a_pure_projection(self):
-        CP.append_event("a1-u01", "RUNNING", actor="coordinator")
+        CP.append_event("a1-u01", "RUNNING", actor="po03-worker-a1", fence_token=1)
         first = CP.materialize()
         CP.REGISTRY_PATH.unlink()
         self.assertEqual(first, CP.materialize())
@@ -478,7 +530,11 @@ class RecoveryScannerTests(IsolatedControlPlane):
         self.assertEqual([], state["false_completions"])
 
     def test_completed_without_commit_is_a_false_completion(self):
-        CP.append_event("a1-u01", "COMPLETED", actor="coordinator", provider_state="COMPLETED")
+        # The guarded append path now refuses this row outright; the scanner
+        # must still catch one that already exists in the ledger.
+        with self.assertRaises(CP.ControlPlaneError):
+            CP.append_event("a1-u01", "COMPLETED", actor="coordinator", provider_state="COMPLETED")
+        self.forge_row("a1-u01", "COMPLETED", "coordinator", {})
         state = CP.scan_recovery()
         self.assertIn("a1-u01", state["false_completions"])
         self.assertTrue(state["recovery_required"])
@@ -487,22 +543,23 @@ class RecoveryScannerTests(IsolatedControlPlane):
         self.assertIn("a1-u01", CP.scan_recovery()["orphaned_units"])
 
     def test_parent_restart_rebuilds_identical_state(self):
+        self.lease_unit()
         CP.append_event(
-            "a1-u01",
-            "LEASED",
-            actor="coordinator",
-            fence_token=1,
-            payload={"lease_id": "l", "worker_id": "po03-worker-a1", "expires_at": "2099-01-01T00:00:00Z"},
+            "a1-u01", "CHECKPOINTED", actor="po03-worker-a1", fence_token=1, payload={"checkpoint_seq": 2}
         )
-        CP.append_event("a1-u01", "CHECKPOINTED", actor="po03-worker-a1", payload={"checkpoint_seq": 2})
         before = CP.project_units()
         CP.REGISTRY_PATH.unlink(missing_ok=True)
         CP.RECOVERY_PATH.unlink(missing_ok=True)
         self.assertEqual(before, CP.project_units())
 
     def test_checkpoints_are_monotonic(self):
-        CP.append_event("a1-u01", "CHECKPOINTED", actor="w", payload={"checkpoint_seq": 5})
-        CP.append_event("a1-u01", "CHECKPOINTED", actor="w", payload={"checkpoint_seq": 2})
+        self.lease_unit()
+        CP.append_event(
+            "a1-u01", "CHECKPOINTED", actor="po03-worker-a1", fence_token=1, payload={"checkpoint_seq": 5}
+        )
+        CP.append_event(
+            "a1-u01", "CHECKPOINTED", actor="po03-worker-a1", fence_token=1, payload={"checkpoint_seq": 2}
+        )
         self.assertEqual(5, CP.project_units()["a1-u01"]["checkpoint_seq"])
 
 
