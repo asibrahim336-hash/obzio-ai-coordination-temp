@@ -1,0 +1,24 @@
+{
+  "protocol": "PO03-REPRODUCTION-v1",
+  "hypothesis_id": "H-006",
+  "hypothesis": "Attempt concurrency above fixed acceptance and recovery capacity reduces independently accepted good-result throughput.",
+  "registered_at": "2026-08-22T07:12:00Z",
+  "seed": 55055,
+  "sample_size_slots_per_level": 200,
+  "concurrency_levels": [
+    2,
+    4,
+    8,
+    16,
+    32
+  ],
+  "acceptance_capacity_per_slot": 4,
+  "recovery_capacity_per_slot": 2,
+  "defect_probability_formula": "min(0.80, 0.04 + 0.025 * max(0, concurrency - acceptance_capacity))",
+  "review_detection_formula": "max(0.25, 0.98 - 0.02 * max(0, concurrency - acceptance_capacity))",
+  "primary_metric": "independently_accepted_good_results_per_slot",
+  "secondary_metric": "escaped_defect_fraction_of_accepted",
+  "accept_when": "concurrency_32 good throughput < concurrency_4 good throughput and concurrency_32 escaped defect fraction > concurrency_4",
+  "refute_when": "concurrency_32 good throughput >= concurrency_4 good throughput or concurrency_32 escaped defect fraction <= concurrency_4",
+  "decision_changed": []
+}
