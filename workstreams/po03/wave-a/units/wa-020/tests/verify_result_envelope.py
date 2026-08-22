@@ -149,6 +149,49 @@ class AccountingChainTests(unittest.TestCase):
         self.assertIn("ready-to-commit.json", chain[1]["recorded_in"])
         self.assertIn("return commit", chain[2]["recorded_in"])
 
+    def test_the_inline_artifact_list_digests_every_file_except_the_three_it_cannot(self) -> None:
+        listed = {item["logical_name"] for item in load("result.json")["artifacts"]}
+        owned = set(emit_result.owned_files(UNIT_ROOT))
+        self.assertEqual(listed, owned - set(emit_result.SELF_EXCLUDED) - {"result/result.json"})
+
+    def test_every_inline_digest_matches_the_file_on_disk(self) -> None:
+        for artifact in load("result.json")["artifacts"]:
+            with self.subTest(artifact=artifact["logical_name"]):
+                payload = (UNIT_ROOT / artifact["logical_name"]).read_bytes()
+                self.assertEqual(digest_bytes(payload), artifact["sha256"])
+                self.assertEqual(len(payload), artifact["bytes"])
+
+    def test_the_inline_list_agrees_with_the_manifest_on_every_shared_file(self) -> None:
+        """Two independent lists of the same bytes must not disagree."""
+        manifest = {item["logical_name"]: item for item in load("artifact-manifest.json")["artifacts"]}
+        for artifact in load("result.json")["artifacts"]:
+            with self.subTest(artifact=artifact["logical_name"]):
+                self.assertEqual(artifact["sha256"], manifest[artifact["logical_name"]]["sha256"])
+                self.assertEqual(artifact["bytes"], manifest[artifact["logical_name"]]["bytes"])
+
+    def test_the_three_files_not_digested_inline_are_declared_with_their_location(self) -> None:
+        accounting = load("result.json")["artifact_accounting"]
+        declared = {item["logical_name"]: item for item in accounting["not_digested_here"]}
+        self.assertEqual(
+            set(declared),
+            {"result/result.json", "result/artifact-manifest.json", "result/ready-to-commit.json"},
+        )
+        for item in declared.values():
+            self.assertTrue(item["reason"].strip())
+            self.assertTrue(item["digest_recorded_in"].strip())
+
+    def test_the_inline_accounting_counts_the_whole_tree(self) -> None:
+        accounting = load("result.json")["artifact_accounting"]
+        self.assertEqual(accounting["digested_in_this_document"], len(load("result.json")["artifacts"]))
+        self.assertEqual(accounting["owned_file_count"], len(emit_result.owned_files(UNIT_ROOT)))
+        self.assertEqual(accounting["owned_file_count"], load("artifact-manifest.json")["owned_file_count"])
+
+    def test_result_json_states_no_byte_total_it_would_invalidate(self) -> None:
+        """The total belongs to the manifest alone; stating it here could never be right."""
+        accounting = load("result.json")["artifact_accounting"]
+        self.assertNotIn("total_bytes", accounting)
+        self.assertNotIn("total_bytes", load("result.json"))
+
     def test_ready_to_commit_totals_agree_with_the_manifest(self) -> None:
         manifest = load("artifact-manifest.json")
         ready = load("ready-to-commit.json")

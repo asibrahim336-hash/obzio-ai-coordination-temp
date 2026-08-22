@@ -509,6 +509,22 @@ def main(argv: list[str] | None = None) -> int:
         "tests": total_tests,
     }
 
+    # tests.json and limitations.json are written before the artifact list is taken so
+    # that the digests recorded for them are the ones the commit will carry.
+    written = emit_result.write_documents(
+        UNIT_ROOT,
+        {"limitations.json": limitations_document, "tests.json": tests_document},
+    )
+
+    # Every owned file this document is able to digest: all of them except itself and
+    # the two written after it. Listing its own digest here is impossible, and listing
+    # a byte total would change the total, so both are left to the manifest.
+    inline_artifacts = [
+        emit_result.describe(UNIT_ROOT, name)
+        for name in emit_result.owned_files(UNIT_ROOT)
+        if name not in emit_result.SELF_EXCLUDED and name != "result/result.json"
+    ]
+
     result_document = {
         "acceptance_contract": {"observed_sha256": ACCEPTANCE_SHA256, "path": ACCEPTANCE},
         "artifact_accounting": {
@@ -517,11 +533,32 @@ def main(argv: list[str] | None = None) -> int:
                 {"covers": "result/artifact-manifest.json", "recorded_in": "result/ready-to-commit.json:manifest_sha256"},
                 {"covers": "result/ready-to-commit.json", "recorded_in": "the git tree of the return commit"},
             ],
+            "digested_in_this_document": len(inline_artifacts),
+            "not_digested_here": [
+                {
+                    "logical_name": "result/result.json",
+                    "reason": "a document cannot contain its own digest",
+                    "digest_recorded_in": "result/artifact-manifest.json",
+                },
+                {
+                    "logical_name": "result/artifact-manifest.json",
+                    "reason": "a manifest cannot contain its own digest",
+                    "digest_recorded_in": "result/ready-to-commit.json:manifest_sha256",
+                },
+                {
+                    "logical_name": "result/ready-to-commit.json",
+                    "reason": "written after the result commit so the manifest stays immutable at it",
+                    "digest_recorded_in": "the git tree of the return commit",
+                },
+            ],
             "note": (
                 "No document can contain its own digest, so the accounting is a chain rather than a "
-                "single list. Every owned file appears in exactly one link."
+                "single list. Every owned file appears in exactly one link. The byte total is held only "
+                "in the manifest: a document that stated it would change its own size and so change it."
             ),
+            "owned_file_count": len(inline_artifacts) + 3,
         },
+        "artifacts": inline_artifacts,
         "attempt": ATTEMPT,
         "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
         "criteria_freeze": {
@@ -706,17 +743,10 @@ def main(argv: list[str] | None = None) -> int:
     }
 
     # The dependency runs one way only: result.json restates no figure the manifest
-    # derives from it, so the three inner documents are final before the manifest is
-    # built over them and there is no fixed point to converge on.
+    # derives from it, so each document is final before the next is built over it and
+    # there is no fixed point to converge on.
     result_document["acceptance_self_assessment"] = acceptance_self_assessment(facts)
-    written = emit_result.write_documents(
-        UNIT_ROOT,
-        {
-            "limitations.json": limitations_document,
-            "result.json": result_document,
-            "tests.json": tests_document,
-        },
-    )
+    written.update(emit_result.write_documents(UNIT_ROOT, {"result.json": result_document}))
     manifest = emit_result.build_manifest(UNIT_ROOT, ATTEMPT, TASK_ID)
     written.update(emit_result.write_documents(UNIT_ROOT, {"artifact-manifest.json": manifest}))
 
