@@ -93,6 +93,18 @@ class TransactionalResultTests(unittest.TestCase):
     def test_valid_committed_result(self):
         self.assertEqual([], MODULE.validate_result(committed_result()))
 
+    def test_zero_byte_artifact_is_valid_and_reconciled(self):
+        doc = committed_result()
+        doc["artifacts"][0]["bytes"] = 0
+        doc["result_transaction"]["total_bytes"] = 0
+        self.assertEqual([], MODULE.validate_result(doc))
+
+    def test_negative_artifact_size_is_rejected(self):
+        self.assert_invalid(
+            lambda d: d["artifacts"][0].update(bytes=-1),
+            "must be an integer >= 0",
+        )
+
     def test_completed_without_commit_is_impossible(self):
         self.assert_invalid(
             lambda d: d["result_transaction"].update(result_commit_id=None),

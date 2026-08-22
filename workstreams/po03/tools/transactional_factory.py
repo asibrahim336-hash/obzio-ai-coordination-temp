@@ -858,6 +858,41 @@ def _result_media_type(path: str) -> str:
     return "application/octet-stream"
 
 
+def _result_manifest_declaration(
+    manifest: dict[str, Any],
+    *,
+    task_id: str,
+    normalized_slot: str,
+) -> tuple[list[Any], int | None]:
+    """Normalize the two frozen Wave A manifest envelopes without weakening scope checks."""
+    if manifest.get("task_id") != task_id:
+        raise FactoryError("result manifest task_id does not match custody task")
+    if manifest.get("decision_changed", []) != []:
+        raise FactoryError("result manifest decision_changed must remain empty")
+
+    if isinstance(manifest.get("artifacts"), list):
+        if str(manifest.get("result_slot", "")).rstrip("/") != normalized_slot:
+            raise FactoryError("result manifest slot does not match frozen task ownership")
+        declared = manifest["artifacts"]
+        if manifest.get("artifact_count") != len(declared):
+            raise FactoryError("result manifest artifact_count does not match declared artifacts")
+        declared_total = manifest.get("total_artifact_bytes_excluding_manifest")
+        if not isinstance(declared_total, int) or declared_total < 0:
+            raise FactoryError("result manifest total artifact bytes must be a non-negative integer")
+        return declared, declared_total
+
+    if manifest.get("manifest_version") == "PO03-ATTEMPT-MANIFEST-v1" and isinstance(
+        manifest.get("sources"), list
+    ):
+        if str(manifest.get("unit_root", "")).rstrip("/") != normalized_slot:
+            raise FactoryError("result manifest unit_root does not match frozen task ownership")
+        if manifest.get("self_excluded") != "manifest.json":
+            raise FactoryError("source manifest must explicitly exclude manifest.json from itself")
+        return manifest["sources"], None
+
+    raise FactoryError("result manifest requires a supported artifacts or sources declaration")
+
+
 def _resolve_result_commit(
     *,
     result_commit_id: str,
@@ -902,15 +937,13 @@ def _result_manifest_artifacts(
         raise FactoryError("result manifest is not an immutable JSON object at the result commit") from exc
     if not isinstance(manifest, dict):
         raise FactoryError("result manifest must be an object")
-    if manifest.get("task_id") != task_id:
-        raise FactoryError("result manifest task_id does not match custody task")
-    if str(manifest.get("result_slot", "")).rstrip("/") != normalized_slot:
-        raise FactoryError("result manifest slot does not match frozen task ownership")
-    declared = manifest.get("artifacts")
-    if not isinstance(declared, list) or not declared:
+    declared, declared_total = _result_manifest_declaration(
+        manifest,
+        task_id=task_id,
+        normalized_slot=normalized_slot,
+    )
+    if not declared:
         raise FactoryError("result manifest requires at least one declared artifact")
-    if manifest.get("artifact_count") != len(declared):
-        raise FactoryError("result manifest artifact_count does not match declared artifacts")
 
     artifacts: list[dict[str, Any]] = []
     expected_paths = {manifest_path}
@@ -935,6 +968,15 @@ def _result_manifest_artifacts(
             raise FactoryError(f"declared result artifact hash does not match immutable bytes: {relative}")
         if item.get("bytes") != len(content):
             raise FactoryError(f"declared result artifact byte count does not match immutable bytes: {relative}")
+        declared_git_blob = item.get("git_blob_sha")
+        if declared_git_blob is not None:
+            observed_git_blob = hashlib.sha1(
+                b"blob " + str(len(content)).encode("ascii") + b"\0" + content
+            ).hexdigest()
+            if declared_git_blob != observed_git_blob:
+                raise FactoryError(
+                    f"declared result artifact Git blob does not match immutable bytes: {relative}"
+                )
         declared_bytes += len(content)
         artifacts.append(
             {
@@ -947,7 +989,7 @@ def _result_manifest_artifacts(
                 "readback_verified_at": observed_at,
             }
         )
-    if manifest.get("total_artifact_bytes_excluding_manifest") != declared_bytes:
+    if declared_total is not None and declared_total != declared_bytes:
         raise FactoryError("result manifest total artifact bytes do not match immutable bytes")
     try:
         changed_paths = {

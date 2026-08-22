@@ -219,8 +219,8 @@ def validate_result(doc: dict[str, Any]) -> list[str]:
                 errors.append(f"{prefix}.{field}: must be non-empty")
         if not _sha256(artifact["sha256"]):
             errors.append(f"{prefix}.sha256: must be a lowercase SHA-256")
-        if not isinstance(artifact["bytes"], int) or artifact["bytes"] < 1:
-            errors.append(f"{prefix}.bytes: must be an integer >= 1")
+        if not isinstance(artifact["bytes"], int) or artifact["bytes"] < 0:
+            errors.append(f"{prefix}.bytes: must be an integer >= 0")
         else:
             byte_sum += artifact["bytes"]
     if txn["total_bytes"] != byte_sum:

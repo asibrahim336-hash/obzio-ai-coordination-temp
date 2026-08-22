@@ -1,3 +1,4 @@
+import hashlib
 import importlib.util
 import json
 import subprocess
@@ -65,7 +66,7 @@ class TransactionalFactoryTests(unittest.TestCase):
             text=True,
         ).stdout.strip()
 
-    def _committed_ready_result(self, *, include_scope_escape=False):
+    def _committed_ready_result(self, *, include_scope_escape=False, source_manifest=False):
         self._create_task()
         MODULE.advance_task(
             "po03-test-task",
@@ -89,21 +90,34 @@ class TransactionalFactoryTests(unittest.TestCase):
 
         result_root = MODULE.REPO_ROOT / "workstreams" / "po03" / "attempts" / "test"
         result_root.mkdir(parents=True)
-        artifact_bytes = b'{"outcome":"ready"}\n'
-        (result_root / "result.json").write_bytes(artifact_bytes)
-        manifest = {
-            "task_id": "po03-test-task",
-            "result_slot": "workstreams/po03/attempts/test",
-            "artifact_count": 1,
-            "total_artifact_bytes_excluding_manifest": len(artifact_bytes),
-            "artifacts": [
-                {
-                    "path": "result.json",
-                    "sha256": MODULE.sha256_bytes(artifact_bytes),
-                    "bytes": len(artifact_bytes),
-                }
-            ],
+        artifact_path = "empty.txt" if source_manifest else "result.json"
+        artifact_bytes = b"" if source_manifest else b'{"outcome":"ready"}\n'
+        (result_root / artifact_path).write_bytes(artifact_bytes)
+        artifact = {
+            "path": artifact_path,
+            "sha256": MODULE.sha256_bytes(artifact_bytes),
+            "bytes": len(artifact_bytes),
         }
+        if source_manifest:
+            artifact["git_blob_sha"] = hashlib.sha1(
+                b"blob " + str(len(artifact_bytes)).encode("ascii") + b"\0" + artifact_bytes
+            ).hexdigest()
+            manifest = {
+                "manifest_version": "PO03-ATTEMPT-MANIFEST-v1",
+                "task_id": "po03-test-task",
+                "unit_root": "workstreams/po03/attempts/test",
+                "self_excluded": "manifest.json",
+                "sources": [artifact],
+                "decision_changed": [],
+            }
+        else:
+            manifest = {
+                "task_id": "po03-test-task",
+                "result_slot": "workstreams/po03/attempts/test",
+                "artifact_count": 1,
+                "total_artifact_bytes_excluding_manifest": len(artifact_bytes),
+                "artifacts": [artifact],
+            }
         (result_root / "manifest.json").write_bytes(MODULE.canonical_json(manifest))
         if include_scope_escape:
             escaped = MODULE.REPO_ROOT / "state" / "scope-escape.json"
@@ -443,6 +457,26 @@ class TransactionalFactoryTests(unittest.TestCase):
             provider_run_id="provider-execution-1",
         )
         self.assertEqual("ALREADY_INGESTED", replay["status"])
+
+    def test_source_manifest_with_zero_byte_artifact_is_ingested(self):
+        result_base_commit, result_commit_id = self._committed_ready_result(source_manifest=True)
+        result = MODULE.ingest_committed_result(
+            "po03-test-task",
+            result_commit_id=result_commit_id,
+            result_base_commit_id=result_base_commit,
+            result_ref="HEAD",
+            provider_run_id="provider-execution-1",
+        )
+        transaction = json.loads(
+            (MODULE.CONTROL_ROOT / "tasks" / "po03-test-task" / "transaction-ingested.json").read_text()
+        )
+        self.assertEqual("PARENT_INGESTED", result["status"])
+        self.assertEqual(2, result["artifact_count"])
+        self.assertEqual(0, transaction["artifacts"][0]["bytes"])
+        self.assertEqual(
+            transaction["artifacts"][1]["bytes"],
+            transaction["result_transaction"]["total_bytes"],
+        )
 
     def test_ingestion_rejects_commit_that_escapes_owned_result_slot(self):
         result_base_commit, result_commit_id = self._committed_ready_result(include_scope_escape=True)
