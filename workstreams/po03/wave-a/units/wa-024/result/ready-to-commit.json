@@ -1,0 +1,992 @@
+{
+  "protocol_version": "OBZIO-PRODUCER-RETURN-v1",
+  "terminal_report": "READY_TO_COMMIT",
+  "task_id": "PO03-WA-024",
+  "hypothesis_id": "H-PO03-WA-024",
+  "hypothesis": "A clean Actions runner exposes hidden local-state assumptions that a warm checkout misses.",
+  "hypothesis_outcome": "SUPPORTED",
+  "runner_id": "obzio.worker.po03-wa-024-producer-a01",
+  "provider_run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+  "model_observed": "gpt-5.6-sol-max-fast",
+  "reasoning_observed": "high",
+  "remote_branch": "cursor/po03-wa-024-b195-a01-1a9f",
+  "result_commit_id": "9851db70231d3c21adb8ed0e40db979628bf02ad",
+  "return_commit_id": null,
+  "return_commit_id_note": "Assigned when this document is committed and reported in the producer READY_TO_COMMIT terminal report. Its tree contains all five required artifacts.",
+  "manifest_path": "workstreams/po03/wave-a/units/wa-024/result/artifact-manifest.json",
+  "manifest_sha256": "523fe8caeda110fd49f2a3e31a72dc14624f7cadc34f2967663264e4e896276e",
+  "manifest_bytes": 18364,
+  "artifact_count": 40,
+  "total_bytes": 483483,
+  "changed_files": [
+    "workstreams/po03/wave-a/units/wa-024/README.md",
+    "workstreams/po03/wave-a/units/wa-024/harness/clean_runner_probe.py",
+    "workstreams/po03/wave-a/units/wa-024/harness/external-object-ids.json",
+    "workstreams/po03/wave-a/units/wa-024/harness/local_state_lint.py",
+    "workstreams/po03/wave-a/units/wa-024/harness/probes.json",
+    "workstreams/po03/wave-a/units/wa-024/harness/run.sh",
+    "workstreams/po03/wave-a/units/wa-024/hypotheses/hypotheses.json",
+    "workstreams/po03/wave-a/units/wa-024/proposals/mechanism-changes.json",
+    "workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-01-contract-tests-leave-no-bytecode.diff",
+    "workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-02-verify-frozen-object-ids.diff",
+    "workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-03-custody-readback-needs-a-fetchable-ref.diff",
+    "workstreams/po03/wave-a/units/wa-024/proposals/strategy-proposals.json",
+    "workstreams/po03/wave-a/units/wa-024/proposals/verify_mechanism_changes.py",
+    "workstreams/po03/wave-a/units/wa-024/result/artifact-manifest.json",
+    "workstreams/po03/wave-a/units/wa-024/result/build_manifest.py",
+    "workstreams/po03/wave-a/units/wa-024/result/limitations.json",
+    "workstreams/po03/wave-a/units/wa-024/result/lint-output.txt",
+    "workstreams/po03/wave-a/units/wa-024/result/lint-report.json",
+    "workstreams/po03/wave-a/units/wa-024/result/mechanism-output.txt",
+    "workstreams/po03/wave-a/units/wa-024/result/mechanism-verification.json",
+    "workstreams/po03/wave-a/units/wa-024/result/probe-output.txt",
+    "workstreams/po03/wave-a/units/wa-024/result/probe-report.json",
+    "workstreams/po03/wave-a/units/wa-024/result/result.json",
+    "workstreams/po03/wave-a/units/wa-024/result/run-console.txt",
+    "workstreams/po03/wave-a/units/wa-024/result/seeded-tests-output.txt",
+    "workstreams/po03/wave-a/units/wa-024/result/taxonomy-output.txt",
+    "workstreams/po03/wave-a/units/wa-024/result/tests-output.txt",
+    "workstreams/po03/wave-a/units/wa-024/result/tests.json",
+    "workstreams/po03/wave-a/units/wa-024/result/validator-output.txt",
+    "workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-01-checkout-fetch-depth.txt",
+    "workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-02-checkout-readme.txt",
+    "workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-03-fresh-virtual-machine.txt",
+    "workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-04-workspace-variables.txt",
+    "workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-05-setup-python.txt",
+    "workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-06-cpython-cmdline.txt",
+    "workstreams/po03/wave-a/units/wa-024/sources/source-claims.json",
+    "workstreams/po03/wave-a/units/wa-024/tests/_support.py",
+    "workstreams/po03/wave-a/units/wa-024/tests/test_clean_runner_probe.py",
+    "workstreams/po03/wave-a/units/wa-024/tests/test_local_state_lint.py",
+    "workstreams/po03/wave-a/units/wa-024/tests/test_proposals.py",
+    "workstreams/po03/wave-a/units/wa-024/tests/test_run_script.py"
+  ],
+  "changed_file_count": 41,
+  "tests": {
+    "register": "workstreams/po03/wave-a/units/wa-024/result/tests.json",
+    "first_pass_outcome": "PASS",
+    "unit_tests": 86,
+    "seeded_contract_tests": 23,
+    "mechanism_verification_checks": 43,
+    "binding_probe_expectations": 22,
+    "total_assertions_executed": 174,
+    "failures": 0,
+    "errors": 0,
+    "commands": [
+      "python3 -B -I -m unittest discover -s workstreams/po03/wave-a/units/wa-024/tests -p 'test_*.py' -v",
+      "python3 -B -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+      "python3 -B scripts/check_operator_taxonomy.py",
+      "python3 -B workstreams/po03/tools/validate_contracts.py result <document>",
+      "workstreams/po03/wave-a/units/wa-024/harness/run.sh --commit 9851db70231d3c21adb8ed0e40db979628bf02ad --out <absolute-dir>"
+    ]
+  },
+  "limitations": [
+    "L-01: Behaviour observed on a real GitHub-hosted Actions runner — NOT_SUPPORTED. Dispatching a workflow run would mutate the repository's CI surface and would require creating or modifying a pull request. Both are explicitly forbidden to this unit.",
+    "L-02: Read-time byte counts and digests for the two github/docs Markdown sources — NOT_SUPPORTED. Those two files were read for their verbatim claim text and their transfer digests were not captured at the moment of reading.",
+    "L-03: The model that actually executed this attempt — PARTIALLY_SUPPORTED. The immutable input requests configuration.model_slug claude-opus-5-thinking-high with auto_model_selection false. The provider exposes no per-subagent model field, and the enclosing run reports gpt-5.6-sol-max-fast.",
+    "L-04: Independent acceptance of this result — NOT_SUPPORTED. A producer cannot accept its own result, and only the coordinator may record COMPLETED.",
+    "L-05: Windows and macOS runners — scope exclusion. All reproductions ran on Linux. Path semantics, the default shell and the filesystem differ enough that extrapolating would be invention.",
+    "L-06: Self-hosted runners and GitHub Enterprise Server — scope exclusion. A self-hosted runner can reuse a workspace between jobs, which would change the conclusions materially: the bytecode contamination that a hosted runner discards would persist exactly as it does in the warm checkout.",
+    "L-07: The runner image inventory — scope exclusion. actions/runner-images was not consulted. Preinstalled-software questions were outside this unit's hypotheses and would have added unverified breadth.",
+    "L-08: Practitioner sources — scope exclusion. No blog, forum thread or social post was admitted as evidence. Every claim rests on an immutable upstream commit or an immutable repository digest.",
+    "L-09: The differential harness only speaks about paths a probe exercises — instrument limitation. Twenty-four probes cover the two declared CI commands, the protocol's provenance checks, custody read-back, environment portability and interpreter availability. A hidden dependence in an unprobed path would not be found.",
+    "L-10: AGREE does not mean clean — instrument limitation. Seventeen of twenty-four probes agree across all three environments, and the unit's single most consequential finding is among them. A reader who treats the classification counts as a defect tally will draw the wrong conclusion.",
+    "L-11: The warm mode is not reproducible by construction — instrument limitation. Warm-mode results depend on the invoking host's environment and existing tree, so probes p18, p19 and p20 would give different answers elsewhere.",
+    "L-12: The static control's R1 rule counts this unit's own documentation — instrument limitation. Four files inside this unit quote the defective identifier in order to document or test it: harness/probes.json, sources/source-claims.json, proposals/mechanism-changes.json and the MC-02 patch. They appear among the 69 PREFIX_ONLY_CORRECT findings.",
+    "L-13: The workflow parser is a minimal YAML subset, not a YAML implementation — instrument limitation. The static control parses workflow files with a purpose-built subset parser, because the reproduction must run with no third-party package.",
+    "L-14: The mechanism verifier proves a patch works, not that it should be applied — instrument limitation. All 43 checks passing establishes that each change removes its defect without breaking the seeded suite or the taxonomy check. It does not establish that the coordinator should accept the cost.",
+    "L-15: An earlier revision of this unit's own reproduction script carried the defect class it studies — self-inflicted, detected and fixed. run.sh accepted a relative --out and passed it to stages that run with the clean clone as their working directory, so the JSON reports were written into the clone. They were discarded with it, and the writes dirtied the tree the probes measure, flipping four cleanliness gates from AGREE to CLEAN_ONLY_PASS.",
+    "Producer self-verification only. independent_acceptance is NOT_TESTED: the producer does not accept its own result, and no COMPLETED or ACCEPTED state is claimed.",
+    "This document's own SHA-256 and byte count cannot appear inside itself. They are reported in the producer terminal report and are recomputable from the immutable commit tree.",
+    "result_commit_id names the commit that durably carries all 40 accounted artifacts. A file cannot contain the identifier of the commit that contains it, so the commit adding this document is reported separately as return_commit_id and is null here.",
+    "Lease lease-po03-wa-024-a01 with fence token 1 expires at 2026-08-22T13:13:11Z; work completed inside the lease window."
+  ],
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "controller_run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+  "wave_id": "PO03-WAVE-A",
+  "attempt_id": "PO03-WA-024-A01",
+  "idempotency_key": "po03:100bc20:wa-024:a01",
+  "lease_id": "lease-po03-wa-024-a01",
+  "fence_token": 1,
+  "checkpoint_seq": 1,
+  "immutable_input_path": "workstreams/po03/control/inputs/wave-a/wa-024.json",
+  "immutable_input_sha256": "2aeadce77e14e21185ed0e633a3abb7540235a339670e23f5aba8f1d91350fd0",
+  "acceptance_contract_path": "workstreams/po03/control/acceptance/wave-a-material-v1.json",
+  "acceptance_contract_sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a",
+  "acceptance_contract_sha256_matches_input": true,
+  "generated_at": "2026-08-22T08:20:00Z",
+  "material_work": true,
+  "owned_subtree": "workstreams/po03/wave-a/units/wa-024/",
+  "result_slot": "workstreams/po03/wave-a/units/wa-024/result/",
+  "required_artifacts": [
+    "workstreams/po03/wave-a/units/wa-024/result/result.json",
+    "workstreams/po03/wave-a/units/wa-024/result/tests.json",
+    "workstreams/po03/wave-a/units/wa-024/result/limitations.json",
+    "workstreams/po03/wave-a/units/wa-024/result/artifact-manifest.json",
+    "workstreams/po03/wave-a/units/wa-024/result/ready-to-commit.json"
+  ],
+  "runtime_binding": {
+    "note": "Runtime detail is execution evidence only and grants no authority.",
+    "execution_environment": "isolated-git-worktree inside a cloud run",
+    "worktree": "an isolated best-of-N worktree; the shared checkout was never written",
+    "provider": "cursor-cloud-agent",
+    "provider_run_url": "https://cursor.com/agents/bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+    "subagent_type": "best-of-n-runner",
+    "requested_model_slug": "claude-opus-5-thinking-high",
+    "requested_reasoning": "high",
+    "auto_model_selection": false,
+    "provider_reported_run_model": "gpt-5.6-sol-max-fast",
+    "provider_run_id_equals_controller_run_id": true,
+    "provider_run_id_note": "This producer executes as an isolated subagent inside the controller's cloud run, so the provider exposes one run identifier for both. Write isolation is enforced by the separate branch and the declared owned subtree, not by a distinct run id.",
+    "git": "git version 2.43.0",
+    "python3": "3.12.3",
+    "third_party_packages": "none"
+  },
+  "source_base": {
+    "repository": "github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+    "declared_branch": "po03/repository-engineering-portable-runtime-20260822-v001",
+    "commission_commit": "552b12eacee637716451492a98980fb0da19ff3e",
+    "producer_base_commit": "e56eda6e8e4a4e958795f7157839926d93272b30",
+    "minimum_protocol_ancestor_as_recorded": "100bc20ad5eec62a4f35b60921423135cc0b9d9a",
+    "minimum_protocol_ancestor_as_recorded_status": "UNRESOLVABLE",
+    "minimum_protocol_ancestor_actual": "100bc2079cedc193af3524234ab833cc9f9f4669",
+    "minimum_protocol_ancestor_note": "The identifier frozen in the immutable input names no object in this repository; its seven-character prefix resolves to 100bc2079cedc193af3524234ab833cc9f9f4669, which is an ancestor of this attempt's every commit. This is finding F-03 and the subject of MC-02, not an execution error: ancestry was verified against the object the prefix names.",
+    "descends_from_minimum_protocol_ancestor": true
+  },
+  "readback_verification": {
+    "method": "git show <commit>:<path> from a clone fetched fresh from origin, piped to an independent SHA-256 and byte count",
+    "independence": "Verified from a clone initialised empty and fetched fresh from the origin remote over HTTPS, not from the producer's worktree. The producer's local object store was not consulted.",
+    "remote": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+    "commit": "9851db70231d3c21adb8ed0e40db979628bf02ad",
+    "verified_at": "2026-08-22T08:18:00Z",
+    "artifact_count": 40,
+    "total_bytes": 483483,
+    "manifest_sha256": "523fe8caeda110fd49f2a3e31a72dc14624f7cadc34f2967663264e4e896276e",
+    "manifest_bytes": 18364,
+    "mismatches": [],
+    "all_match": true,
+    "independent_manifest_verification": {
+      "command": "python3 -B workstreams/po03/wave-a/units/wa-024/result/build_manifest.py --verify",
+      "run_inside": "the fresh clone of the result commit fetched from origin",
+      "result": "MANIFEST: 40 artifacts, 483483 bytes, CURRENT",
+      "exit_status": 0
+    },
+    "clean_clone_recurrence": {
+      "command": "workstreams/po03/wave-a/units/wa-024/harness/run.sh --commit 9851db70231d3c21adb8ed0e40db979628bf02ad --out <absolute-dir>",
+      "run_inside": "the same fresh clone fetched from origin",
+      "exit_status": 0,
+      "probe_classifications_identical_to_canonical_run": true,
+      "probe_summary_identical_to_canonical_run": true,
+      "mechanism_checks_identical_to_canonical_run": true,
+      "real_defect_sites_outside_this_unit": 65,
+      "note": "The static control's total finding count rises from 104 to 140 between the canonical run and this one, because the committed result artifacts themselves quote the defective identifier in order to document it, so the unit's own self-references grow from 4 to 9. The invariant that matters is unchanged: 65 real defect sites outside this unit, being all 64 Wave A immutable inputs and the generator."
+    },
+    "checks": [
+      {
+        "logical_name": "README.md",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/README.md",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/README.md",
+        "sha256": "3eaa6cfe6460355e52ddff3b1f476d2bf62929e6a5b90c1d38e919affa29fc2d",
+        "bytes": 4708,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "harness/clean_runner_probe.py",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/harness/clean_runner_probe.py",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/harness/clean_runner_probe.py",
+        "sha256": "82117a74ca32a85bff2aa0347f096357100e1567c833534bd9bf9f63af43c526",
+        "bytes": 22058,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "harness/external-object-ids.json",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/harness/external-object-ids.json",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/harness/external-object-ids.json",
+        "sha256": "c8e5bd4162c40254ae804af5617304e154476b4dc888e5145cdc07044257da7b",
+        "bytes": 1484,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "harness/local_state_lint.py",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/harness/local_state_lint.py",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/harness/local_state_lint.py",
+        "sha256": "8d47413b252dd8b8604c557204ebbbcd5172acb2c8572b24825330f39bc2fdcc",
+        "bytes": 23214,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "harness/probes.json",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/harness/probes.json",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/harness/probes.json",
+        "sha256": "c027e931e69cb84ec86b176521fc51eea783e969c4e2c09a32d063402ef5bce4",
+        "bytes": 17881,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "harness/run.sh",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/harness/run.sh",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/harness/run.sh",
+        "sha256": "f0a4dd6e81fa313da7683725b8a3d1d370ca595503d2f3ef722668aab05f20da",
+        "bytes": 5574,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "hypotheses/hypotheses.json",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/hypotheses/hypotheses.json",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/hypotheses/hypotheses.json",
+        "sha256": "8f0464d95eabbf33eda40368fc57a8553d37925ba9e750d1e3df1b325f20d919",
+        "bytes": 10340,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "proposals/mechanism-changes.json",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/proposals/mechanism-changes.json",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/proposals/mechanism-changes.json",
+        "sha256": "bb517fca2611e28a2fa31ca99404016730dad43cf77aaf667a0fce6fa9c67400",
+        "bytes": 11134,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "proposals/patches/mc-01-contract-tests-leave-no-bytecode.diff",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-01-contract-tests-leave-no-bytecode.diff",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-01-contract-tests-leave-no-bytecode.diff",
+        "sha256": "0b2ba91d63d05ae85d418cbf96dc7b24ad86bc273dcb813524c3d471ec234e11",
+        "bytes": 895,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "proposals/patches/mc-02-verify-frozen-object-ids.diff",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-02-verify-frozen-object-ids.diff",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-02-verify-frozen-object-ids.diff",
+        "sha256": "9e56ec26fea03e539c1703dc334e1be06fab3c2b7730ce8b06fa041efb3fdd55",
+        "bytes": 3318,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "proposals/patches/mc-03-custody-readback-needs-a-fetchable-ref.diff",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-03-custody-readback-needs-a-fetchable-ref.diff",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-03-custody-readback-needs-a-fetchable-ref.diff",
+        "sha256": "43d43f4bac030158009cb85e5d937e313d3a539f98917184a78efdd9dc575c19",
+        "bytes": 7450,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "proposals/strategy-proposals.json",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/proposals/strategy-proposals.json",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/proposals/strategy-proposals.json",
+        "sha256": "0ee54a64eb3903cdb63916c59dd9a797613059c1031e70bdd243cb5498b275f2",
+        "bytes": 8037,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "proposals/verify_mechanism_changes.py",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/proposals/verify_mechanism_changes.py",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/proposals/verify_mechanism_changes.py",
+        "sha256": "1ca09ca8be5bdf05d9fc7d1e58bf599cc45cdeb58cb1a74f8bf6ec777297b29a",
+        "bytes": 29406,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "result/build_manifest.py",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/result/build_manifest.py",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/build_manifest.py",
+        "sha256": "0b7a4114f25b95ed658921cf2b485048a034e5f3a460b92db1fcafbd611a6e9b",
+        "bytes": 7332,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "result/limitations.json",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/result/limitations.json",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/limitations.json",
+        "sha256": "3b0e2b840ecc0e29be33b421c24c72ff4f92943d9d5438d2b6071aff0a19851d",
+        "bytes": 11083,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "result/lint-output.txt",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/result/lint-output.txt",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/lint-output.txt",
+        "sha256": "b71faa3d10f498551e2cb8403fa9307daa238955fc6bb56f6b0a75418ef503e5",
+        "bytes": 31270,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "result/lint-report.json",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/result/lint-report.json",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/lint-report.json",
+        "sha256": "b3b4827ac25eaa85a9540d7ada7dab43c6c944200aeaed3896a58d006341523b",
+        "bytes": 58506,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "result/mechanism-output.txt",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/result/mechanism-output.txt",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/mechanism-output.txt",
+        "sha256": "c83caddd980a4f5fc4f5911a313216f8fc3da771eb3e82be6af03c77cd96b662",
+        "bytes": 46,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "result/mechanism-verification.json",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/result/mechanism-verification.json",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/mechanism-verification.json",
+        "sha256": "03ec879586e0d5c6cb2366fde39d89da6401389bfc6c695fcdd6461032db40d0",
+        "bytes": 12945,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "result/probe-output.txt",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/result/probe-output.txt",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/probe-output.txt",
+        "sha256": "a12037eae1dcef73436b476279d6ebed0cd29b9507496b763d27e0741bdf48a1",
+        "bytes": 109,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "result/probe-report.json",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/result/probe-report.json",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/probe-report.json",
+        "sha256": "0783ac856d91592454ac28a2437c210740b097eb3741cad3e6a254bf8e00d1c4",
+        "bytes": 79174,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "result/result.json",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/result/result.json",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/result.json",
+        "sha256": "73a49d2c0cb92b6bb9f2e7a501d553b7b6f24328405533cf3f7c32c0adc30fb0",
+        "bytes": 32451,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "result/run-console.txt",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/result/run-console.txt",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/run-console.txt",
+        "sha256": "1d5f14c6ad6510d04d3f3ed1f9f1510bedba22724c81f9676a1ba33b71c24c5d",
+        "bytes": 1738,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "result/seeded-tests-output.txt",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/result/seeded-tests-output.txt",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/seeded-tests-output.txt",
+        "sha256": "3e406ae83667f02bdeeca9c636a64d95c276154299ccf1d5937c93e90bf4df43",
+        "bytes": 3307,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "result/taxonomy-output.txt",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/result/taxonomy-output.txt",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/taxonomy-output.txt",
+        "sha256": "7c4cd3c2e49f49b7cf4aa9b4657f9634fcdda03fcb06d29a01558a212fb787a5",
+        "bytes": 345,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "result/tests-output.txt",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/result/tests-output.txt",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/tests-output.txt",
+        "sha256": "296fd693534b4aedfdb287a91791972ee089f40c2e1a6b15b4bfada90af1354f",
+        "bytes": 17135,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "result/tests.json",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/result/tests.json",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/tests.json",
+        "sha256": "9aae70e41a4b61490b6d5d85c614c4b6f3b0f7fd42f441945ce06a330ee64718",
+        "bytes": 12543,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "result/validator-output.txt",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/result/validator-output.txt",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/validator-output.txt",
+        "sha256": "cefddd247bd1da067d7ec744edd8dac8b1baad16f892df4f9ce73b347113bf8a",
+        "bytes": 571,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "sources/capsules/sc-wa024-01-checkout-fetch-depth.txt",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-01-checkout-fetch-depth.txt",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-01-checkout-fetch-depth.txt",
+        "sha256": "21d109954db06e415e09e4e2c62740038af5eb0549a18220df29cd838d1a0171",
+        "bytes": 952,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "sources/capsules/sc-wa024-02-checkout-readme.txt",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-02-checkout-readme.txt",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-02-checkout-readme.txt",
+        "sha256": "7a1adb2958db251de8a047cc3516589a7c5525800ad3d2922484029d2d69c9b2",
+        "bytes": 1081,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "sources/capsules/sc-wa024-03-fresh-virtual-machine.txt",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-03-fresh-virtual-machine.txt",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-03-fresh-virtual-machine.txt",
+        "sha256": "ff36b6d5f1d6edeb27e30de56d8d00286736a9d3b031dac163fa2e0fa09a344f",
+        "bytes": 1024,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "sources/capsules/sc-wa024-04-workspace-variables.txt",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-04-workspace-variables.txt",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-04-workspace-variables.txt",
+        "sha256": "c5caf169c452daffe437a2d8771198ce0cd5efc82b9c6ab382e94e56ad8e7593",
+        "bytes": 1471,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "sources/capsules/sc-wa024-05-setup-python.txt",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-05-setup-python.txt",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-05-setup-python.txt",
+        "sha256": "77d75571bc83a8ee994e4d0f71b1cfec7101d3fd3b3543caf9fbe57e1badced9",
+        "bytes": 605,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "sources/capsules/sc-wa024-06-cpython-cmdline.txt",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-06-cpython-cmdline.txt",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-06-cpython-cmdline.txt",
+        "sha256": "e437e492ecbef6235bbf1390b9ba53c46a65e7321e457518ec54fb697929ba60",
+        "bytes": 1651,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "sources/source-claims.json",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/sources/source-claims.json",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/sources/source-claims.json",
+        "sha256": "e26bf80d65837d6a187fd70bf400441f68cf2a492302ca0e552d7fc2b560b505",
+        "bytes": 12842,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "tests/_support.py",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/tests/_support.py",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/tests/_support.py",
+        "sha256": "3a3237bfbe774d8582d1dc4010950b7dd922a3a6d1fbd7fee8aada6a6ec0ea31",
+        "bytes": 2532,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "tests/test_clean_runner_probe.py",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/tests/test_clean_runner_probe.py",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/tests/test_clean_runner_probe.py",
+        "sha256": "318b9942d61dda61f87d4e7e8459c5fd10bb83c4e23d3ce3fe4d37b13333c293",
+        "bytes": 16757,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "tests/test_local_state_lint.py",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/tests/test_local_state_lint.py",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/tests/test_local_state_lint.py",
+        "sha256": "13c61fd2430c14dfea85e778e6d8d4ace35609272930dd58cf0cc948b32ba160",
+        "bytes": 16024,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "tests/test_proposals.py",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/tests/test_proposals.py",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/tests/test_proposals.py",
+        "sha256": "13e1061370702482722bee1f386189ab03a7242480a7433c384fabec7293df6c",
+        "bytes": 10425,
+        "matches_manifest": true
+      },
+      {
+        "logical_name": "tests/test_run_script.py",
+        "content_uri": "workstreams/po03/wave-a/units/wa-024/tests/test_run_script.py",
+        "command": "git show 9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/tests/test_run_script.py",
+        "sha256": "6f4f00fbff9fec6aa57cd9476ee19f546b2253cb2a3f1ddcb7789eb4e817bd6d",
+        "bytes": 4065,
+        "matches_manifest": true
+      }
+    ]
+  },
+  "contract_validation": {
+    "note": "The transactional_result block below was extracted and run through the repository's own seeded validator, so this return is checked by the contract it is filed under rather than only by the producer's assertion.",
+    "seeded_validator": {
+      "command": "python3 -B workstreams/po03/tools/validate_contracts.py result <extracted transactional_result>",
+      "validator_sha256": "ead7d6c78c1f60aaf5440db7fc00fc2ae57d773647ed3b24c279d1a59b43da03",
+      "validator_sha256_matches_input": true,
+      "exit_status": 0,
+      "result": "VALID"
+    },
+    "under_the_mechanism_change_this_unit_proposes": {
+      "note": "MC-03 would require an ingested record to carry a ref a verifier can fetch. This return already satisfies that rule, which is why the rule is proposed as enforceable rather than aspirational.",
+      "as_committed": "VALID",
+      "raised_to_parent_ingested": "VALID",
+      "readback_ref_recovered": "cursor/po03-wa-024-b195-a01-1a9f"
+    }
+  },
+  "acceptance_self_check": [
+    {
+      "assertion": "The attempt tests the exact falsifiable hypothesis in its immutable task input and does not substitute a plan, inventory, renamed clone, idle session, or narrative-only summary.",
+      "disposition": "PASS",
+      "evidence": "The hypothesis is restated verbatim in hypotheses/hypotheses.json as the parent hypothesis, operationalised into a measurable criterion with an explicit refutation condition, and tested by 24 executed probes over the repository's own workloads. The disposition is SUPPORTED with a recorded correction to the mechanism the hypothesis names."
+    },
+    {
+      "assertion": "The attempt leaves at least one executable component, reproduction, test, adversarial case, acceptance decision, or evidence-backed rejection in its owned subtree.",
+      "disposition": "PASS",
+      "evidence": "Four executables: harness/clean_runner_probe.py, harness/local_state_lint.py, harness/run.sh and proposals/verify_mechanism_changes.py. 86 unit tests, six adversarial cases, four negative controls, and four evidence-backed rejections in proposals/mechanism-changes.json."
+    },
+    {
+      "assertion": "A research attempt records current source claims separately from hypotheses, reproductions, mechanism changes, and strategy proposals; a source summary alone fails.",
+      "disposition": "PASS",
+      "evidence": "Five files, each declaring one state and explaining what it is not: sources/source-claims.json (SOURCE_CLAIM), hypotheses/hypotheses.json (FROZEN_HYPOTHESIS), result/probe-report.json and result/result.json (REPRODUCTION_RESULT), proposals/mechanism-changes.json (MECHANISM_CHANGE_PROPOSAL) and proposals/strategy-proposals.json (STRATEGY_PROPOSAL). tests/test_proposals.py enforces the separation, including that no register carries another's payload keys."
+    },
+    {
+      "assertion": "An engineering attempt includes focused automated tests and command output; unexecuted code fails.",
+      "disposition": "PASS",
+      "evidence": "174 assertions executed with zero failures. Command output is committed verbatim: result/tests-output.txt, result/seeded-tests-output.txt, result/lint-output.txt, result/probe-output.txt, result/mechanism-output.txt, result/taxonomy-output.txt, result/validator-output.txt and result/run-console.txt."
+    },
+    {
+      "assertion": "A reproduction attempt runs on a sanitized repository-native Obzio workload and records enough detail for clean-clone recurrence.",
+      "disposition": "PASS",
+      "evidence": "Every probe runs a repository-native workload: the two declared CI commands, the protocol's own provenance checks and its custody read-back. One command reproduces all four stages. Recurrence is demonstrated rather than asserted: the reproduction was re-run inside an independent clone fetched from origin and produced identical probe classifications, an identical probe summary and identical mechanism checks."
+    },
+    {
+      "assertion": "The producer records exact source URLs or immutable repository SHAs actually read, plus exclusions and limitations; unsupported facts use NOT_SUPPORTED rather than invention.",
+      "disposition": "PASS",
+      "evidence": "Six external claims pinned to immutable upstream commits with bounded verbatim capsules, five repository claims pinned to measured digests, five exclusions, and NOT_SUPPORTED recorded where evidence is absent: no live workflow run, and no read-time digests for the two github/docs sources rather than digests computed after the fact."
+    },
+    {
+      "assertion": "The producer writes only its declared owned subtree in an isolated best-of-N worktree and causes no external effect.",
+      "disposition": "PASS",
+      "evidence": "All 41 changed paths are under workstreams/po03/wave-a/units/wa-024/, checked against the declared allowed_write_globs before every commit. Each proposed repair to a read-only path is a unified diff applied only inside a throwaway clone. No workflow run was dispatched, no pull request was created or modified, and no secret was read."
+    },
+    {
+      "assertion": "The result contains result.json, tests.json, limitations.json, artifact-manifest.json, and ready-to-commit.json, with complete SHA-256 and byte accounting.",
+      "disposition": "PASS",
+      "evidence": "All five are present in the result slot. The manifest accounts for 40 artifacts totalling 483483 bytes, is generated by the committed build_manifest.py so a reader can re-derive it, and verifies CURRENT inside a clone of the result commit. The manifest and this document cannot carry their own digests; both are reported in the terminal report."
+    },
+    {
+      "assertion": "The producer validates changed paths, commits, pushes a unique branch, and reads every artifact back from an immutable remote commit.",
+      "disposition": "PASS",
+      "evidence": "Branch cursor/po03-wa-024-b195-a01-1a9f is unique to this attempt and carries the declared prefix cursor/po03-wa-024-b195-. All 40 artifacts were read back with git show from commit 9851db70231d3c21adb8ed0e40db979628bf02ad in a clone fetched fresh from origin, and every SHA-256 and byte count matched with zero mismatches."
+    },
+    {
+      "assertion": "The producer reports only READY_TO_COMMIT; provider completion without a durable commit is PROVIDER_COMPLETED_UNCOMMITTED.",
+      "disposition": "PASS",
+      "evidence": "Not triggered: a durable result commit exists on the remote and every artifact read back byte-identical, so the producer reports READY_TO_COMMIT."
+    },
+    {
+      "assertion": "Only the coordinator may record COMPLETED, and a producer cannot independently accept its own result.",
+      "disposition": "PASS",
+      "evidence": "obzio_state is RESULT_COMMITTED, completion_actor is null and independent_acceptance.state is NOT_TESTED. tests/test_proposals.py asserts that every strategy proposal names the coordinator as decision owner and that no register claims COMPLETED or ACCEPTED."
+    },
+    {
+      "assertion": "PO-01, PR #8, protected state, shared current pointers, and every path outside the PO-03 allowlist remain untouched.",
+      "disposition": "PASS",
+      "evidence": "No path under state/**, dispatch/**, receipts/po01/**, workstreams/po01/** or .cursor/environment.json was read for writing or modified. PR #8 was not touched and no pull request was created or modified. The repository taxonomy check passes."
+    },
+    {
+      "assertion": "The coordinator reads every artifact back and independently accepts the result.",
+      "disposition": "NOT_YET",
+      "evidence": "Producer read-back from the immutable remote commit passed for all 40 artifacts, but authoritative read-back and acceptance are reserved to the coordinator or a distinct verifier."
+    }
+  ],
+  "transactional_result": {
+    "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+    "task_id": "PO03-WA-024",
+    "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+    "immutable_input_manifest_sha256": "2aeadce77e14e21185ed0e633a3abb7540235a339670e23f5aba8f1d91350fd0",
+    "acceptance_contract_sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a",
+    "provider_state": "RUNNING",
+    "obzio_state": "RESULT_COMMITTED",
+    "attempt": {
+      "attempt_id": "PO03-WA-024-A01",
+      "idempotency_key": "po03:100bc20:wa-024:a01",
+      "lease_id": "lease-po03-wa-024-a01",
+      "fence_token": 1,
+      "provider_run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+      "worker_id": "obzio.worker.po03-wa-024-producer-a01",
+      "heartbeat_at": "2026-08-22T08:20:00Z",
+      "checkpoint_seq": 1
+    },
+    "result_transaction": {
+      "result_txn_id": "txn-po03-wa-024-a01",
+      "state": "COMMITTED",
+      "manifest_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/artifact-manifest.json",
+      "manifest_sha256": "523fe8caeda110fd49f2a3e31a72dc14624f7cadc34f2967663264e4e896276e",
+      "artifact_count": 40,
+      "total_bytes": 483483,
+      "committed_at": "2026-08-22T08:16:00Z",
+      "verified_at": "2026-08-22T08:18:00Z",
+      "parent_ingested_at": null,
+      "result_commit_id": "9851db70231d3c21adb8ed0e40db979628bf02ad",
+      "result_commit_ref": "cursor/po03-wa-024-b195-a01-1a9f",
+      "result_commit_ref_note": "Recorded so a verifier can fetch the ref before reading the commit. This is finding F-05 and mechanism change MC-03 applied to this unit's own return: the field is not yet required by the schema, and is supplied here because a single-ref checkout cannot resolve the commit without it."
+    },
+    "artifacts": [
+      {
+        "artifact_id": "art-po03-wa-024-readme-md",
+        "logical_name": "README.md",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/README.md",
+        "sha256": "3eaa6cfe6460355e52ddff3b1f476d2bf62929e6a5b90c1d38e919affa29fc2d",
+        "bytes": 4708,
+        "media_type": "text/markdown; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-harness-clean-runner-probe-py",
+        "logical_name": "harness/clean_runner_probe.py",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/harness/clean_runner_probe.py",
+        "sha256": "82117a74ca32a85bff2aa0347f096357100e1567c833534bd9bf9f63af43c526",
+        "bytes": 22058,
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-harness-external-object-ids-json",
+        "logical_name": "harness/external-object-ids.json",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/harness/external-object-ids.json",
+        "sha256": "c8e5bd4162c40254ae804af5617304e154476b4dc888e5145cdc07044257da7b",
+        "bytes": 1484,
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-harness-local-state-lint-py",
+        "logical_name": "harness/local_state_lint.py",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/harness/local_state_lint.py",
+        "sha256": "8d47413b252dd8b8604c557204ebbbcd5172acb2c8572b24825330f39bc2fdcc",
+        "bytes": 23214,
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-harness-probes-json",
+        "logical_name": "harness/probes.json",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/harness/probes.json",
+        "sha256": "c027e931e69cb84ec86b176521fc51eea783e969c4e2c09a32d063402ef5bce4",
+        "bytes": 17881,
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-harness-run-sh",
+        "logical_name": "harness/run.sh",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/harness/run.sh",
+        "sha256": "f0a4dd6e81fa313da7683725b8a3d1d370ca595503d2f3ef722668aab05f20da",
+        "bytes": 5574,
+        "media_type": "text/x-shellscript; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-hypotheses-hypotheses-json",
+        "logical_name": "hypotheses/hypotheses.json",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/hypotheses/hypotheses.json",
+        "sha256": "8f0464d95eabbf33eda40368fc57a8553d37925ba9e750d1e3df1b325f20d919",
+        "bytes": 10340,
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-proposals-mechanism-changes-json",
+        "logical_name": "proposals/mechanism-changes.json",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/proposals/mechanism-changes.json",
+        "sha256": "bb517fca2611e28a2fa31ca99404016730dad43cf77aaf667a0fce6fa9c67400",
+        "bytes": 11134,
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-proposals-patches-mc-01-contract-tests-leave-no-bytecode-diff",
+        "logical_name": "proposals/patches/mc-01-contract-tests-leave-no-bytecode.diff",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-01-contract-tests-leave-no-bytecode.diff",
+        "sha256": "0b2ba91d63d05ae85d418cbf96dc7b24ad86bc273dcb813524c3d471ec234e11",
+        "bytes": 895,
+        "media_type": "text/x-diff; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-proposals-patches-mc-02-verify-frozen-object-ids-diff",
+        "logical_name": "proposals/patches/mc-02-verify-frozen-object-ids.diff",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-02-verify-frozen-object-ids.diff",
+        "sha256": "9e56ec26fea03e539c1703dc334e1be06fab3c2b7730ce8b06fa041efb3fdd55",
+        "bytes": 3318,
+        "media_type": "text/x-diff; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-proposals-patches-mc-03-custody-readback-needs-a-fetchable-ref-diff",
+        "logical_name": "proposals/patches/mc-03-custody-readback-needs-a-fetchable-ref.diff",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-03-custody-readback-needs-a-fetchable-ref.diff",
+        "sha256": "43d43f4bac030158009cb85e5d937e313d3a539f98917184a78efdd9dc575c19",
+        "bytes": 7450,
+        "media_type": "text/x-diff; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-proposals-strategy-proposals-json",
+        "logical_name": "proposals/strategy-proposals.json",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/proposals/strategy-proposals.json",
+        "sha256": "0ee54a64eb3903cdb63916c59dd9a797613059c1031e70bdd243cb5498b275f2",
+        "bytes": 8037,
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-proposals-verify-mechanism-changes-py",
+        "logical_name": "proposals/verify_mechanism_changes.py",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/proposals/verify_mechanism_changes.py",
+        "sha256": "1ca09ca8be5bdf05d9fc7d1e58bf599cc45cdeb58cb1a74f8bf6ec777297b29a",
+        "bytes": 29406,
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-result-build-manifest-py",
+        "logical_name": "result/build_manifest.py",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/build_manifest.py",
+        "sha256": "0b7a4114f25b95ed658921cf2b485048a034e5f3a460b92db1fcafbd611a6e9b",
+        "bytes": 7332,
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-result-limitations-json",
+        "logical_name": "result/limitations.json",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/limitations.json",
+        "sha256": "3b0e2b840ecc0e29be33b421c24c72ff4f92943d9d5438d2b6071aff0a19851d",
+        "bytes": 11083,
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-result-lint-output-txt",
+        "logical_name": "result/lint-output.txt",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/lint-output.txt",
+        "sha256": "b71faa3d10f498551e2cb8403fa9307daa238955fc6bb56f6b0a75418ef503e5",
+        "bytes": 31270,
+        "media_type": "text/plain; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-result-lint-report-json",
+        "logical_name": "result/lint-report.json",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/lint-report.json",
+        "sha256": "b3b4827ac25eaa85a9540d7ada7dab43c6c944200aeaed3896a58d006341523b",
+        "bytes": 58506,
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-result-mechanism-output-txt",
+        "logical_name": "result/mechanism-output.txt",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/mechanism-output.txt",
+        "sha256": "c83caddd980a4f5fc4f5911a313216f8fc3da771eb3e82be6af03c77cd96b662",
+        "bytes": 46,
+        "media_type": "text/plain; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-result-mechanism-verification-json",
+        "logical_name": "result/mechanism-verification.json",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/mechanism-verification.json",
+        "sha256": "03ec879586e0d5c6cb2366fde39d89da6401389bfc6c695fcdd6461032db40d0",
+        "bytes": 12945,
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-result-probe-output-txt",
+        "logical_name": "result/probe-output.txt",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/probe-output.txt",
+        "sha256": "a12037eae1dcef73436b476279d6ebed0cd29b9507496b763d27e0741bdf48a1",
+        "bytes": 109,
+        "media_type": "text/plain; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-result-probe-report-json",
+        "logical_name": "result/probe-report.json",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/probe-report.json",
+        "sha256": "0783ac856d91592454ac28a2437c210740b097eb3741cad3e6a254bf8e00d1c4",
+        "bytes": 79174,
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-result-result-json",
+        "logical_name": "result/result.json",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/result.json",
+        "sha256": "73a49d2c0cb92b6bb9f2e7a501d553b7b6f24328405533cf3f7c32c0adc30fb0",
+        "bytes": 32451,
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-result-run-console-txt",
+        "logical_name": "result/run-console.txt",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/run-console.txt",
+        "sha256": "1d5f14c6ad6510d04d3f3ed1f9f1510bedba22724c81f9676a1ba33b71c24c5d",
+        "bytes": 1738,
+        "media_type": "text/plain; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-result-seeded-tests-output-txt",
+        "logical_name": "result/seeded-tests-output.txt",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/seeded-tests-output.txt",
+        "sha256": "3e406ae83667f02bdeeca9c636a64d95c276154299ccf1d5937c93e90bf4df43",
+        "bytes": 3307,
+        "media_type": "text/plain; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-result-taxonomy-output-txt",
+        "logical_name": "result/taxonomy-output.txt",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/taxonomy-output.txt",
+        "sha256": "7c4cd3c2e49f49b7cf4aa9b4657f9634fcdda03fcb06d29a01558a212fb787a5",
+        "bytes": 345,
+        "media_type": "text/plain; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-result-tests-output-txt",
+        "logical_name": "result/tests-output.txt",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/tests-output.txt",
+        "sha256": "296fd693534b4aedfdb287a91791972ee089f40c2e1a6b15b4bfada90af1354f",
+        "bytes": 17135,
+        "media_type": "text/plain; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-result-tests-json",
+        "logical_name": "result/tests.json",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/tests.json",
+        "sha256": "9aae70e41a4b61490b6d5d85c614c4b6f3b0f7fd42f441945ce06a330ee64718",
+        "bytes": 12543,
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-result-validator-output-txt",
+        "logical_name": "result/validator-output.txt",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/result/validator-output.txt",
+        "sha256": "cefddd247bd1da067d7ec744edd8dac8b1baad16f892df4f9ce73b347113bf8a",
+        "bytes": 571,
+        "media_type": "text/plain; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-sources-capsules-sc-wa024-01-checkout-fetch-depth-txt",
+        "logical_name": "sources/capsules/sc-wa024-01-checkout-fetch-depth.txt",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-01-checkout-fetch-depth.txt",
+        "sha256": "21d109954db06e415e09e4e2c62740038af5eb0549a18220df29cd838d1a0171",
+        "bytes": 952,
+        "media_type": "text/plain; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-sources-capsules-sc-wa024-02-checkout-readme-txt",
+        "logical_name": "sources/capsules/sc-wa024-02-checkout-readme.txt",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-02-checkout-readme.txt",
+        "sha256": "7a1adb2958db251de8a047cc3516589a7c5525800ad3d2922484029d2d69c9b2",
+        "bytes": 1081,
+        "media_type": "text/plain; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-sources-capsules-sc-wa024-03-fresh-virtual-machine-txt",
+        "logical_name": "sources/capsules/sc-wa024-03-fresh-virtual-machine.txt",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-03-fresh-virtual-machine.txt",
+        "sha256": "ff36b6d5f1d6edeb27e30de56d8d00286736a9d3b031dac163fa2e0fa09a344f",
+        "bytes": 1024,
+        "media_type": "text/plain; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-sources-capsules-sc-wa024-04-workspace-variables-txt",
+        "logical_name": "sources/capsules/sc-wa024-04-workspace-variables.txt",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-04-workspace-variables.txt",
+        "sha256": "c5caf169c452daffe437a2d8771198ce0cd5efc82b9c6ab382e94e56ad8e7593",
+        "bytes": 1471,
+        "media_type": "text/plain; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-sources-capsules-sc-wa024-05-setup-python-txt",
+        "logical_name": "sources/capsules/sc-wa024-05-setup-python.txt",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-05-setup-python.txt",
+        "sha256": "77d75571bc83a8ee994e4d0f71b1cfec7101d3fd3b3543caf9fbe57e1badced9",
+        "bytes": 605,
+        "media_type": "text/plain; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-sources-capsules-sc-wa024-06-cpython-cmdline-txt",
+        "logical_name": "sources/capsules/sc-wa024-06-cpython-cmdline.txt",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/sources/capsules/sc-wa024-06-cpython-cmdline.txt",
+        "sha256": "e437e492ecbef6235bbf1390b9ba53c46a65e7321e457518ec54fb697929ba60",
+        "bytes": 1651,
+        "media_type": "text/plain; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-sources-source-claims-json",
+        "logical_name": "sources/source-claims.json",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/sources/source-claims.json",
+        "sha256": "e26bf80d65837d6a187fd70bf400441f68cf2a492302ca0e552d7fc2b560b505",
+        "bytes": 12842,
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-tests--support-py",
+        "logical_name": "tests/_support.py",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/tests/_support.py",
+        "sha256": "3a3237bfbe774d8582d1dc4010950b7dd922a3a6d1fbd7fee8aada6a6ec0ea31",
+        "bytes": 2532,
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-tests-test-clean-runner-probe-py",
+        "logical_name": "tests/test_clean_runner_probe.py",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/tests/test_clean_runner_probe.py",
+        "sha256": "318b9942d61dda61f87d4e7e8459c5fd10bb83c4e23d3ce3fe4d37b13333c293",
+        "bytes": 16757,
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-tests-test-local-state-lint-py",
+        "logical_name": "tests/test_local_state_lint.py",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/tests/test_local_state_lint.py",
+        "sha256": "13c61fd2430c14dfea85e778e6d8d4ace35609272930dd58cf0cc948b32ba160",
+        "bytes": 16024,
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-tests-test-proposals-py",
+        "logical_name": "tests/test_proposals.py",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/tests/test_proposals.py",
+        "sha256": "13e1061370702482722bee1f386189ab03a7242480a7433c384fabec7293df6c",
+        "bytes": 10425,
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      },
+      {
+        "artifact_id": "art-po03-wa-024-tests-test-run-script-py",
+        "logical_name": "tests/test_run_script.py",
+        "content_uri": "git:cursor/po03-wa-024-b195-a01-1a9f@9851db70231d3c21adb8ed0e40db979628bf02ad:workstreams/po03/wave-a/units/wa-024/tests/test_run_script.py",
+        "sha256": "6f4f00fbff9fec6aa57cd9476ee19f546b2253cb2a3f1ddcb7789eb4e817bd6d",
+        "bytes": 4065,
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:18:00Z"
+      }
+    ],
+    "completion_actor": null,
+    "independent_acceptance": {
+      "state": "NOT_TESTED",
+      "reviewer_id": null,
+      "receipt_uri": null
+    }
+  },
+  "decision_changed": []
+}
