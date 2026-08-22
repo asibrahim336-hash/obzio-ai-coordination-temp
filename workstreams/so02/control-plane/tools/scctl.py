@@ -348,10 +348,10 @@ def validate_instruction_contracts(root: Path, errors: list[str]) -> None:
     add(errors, "stable agent URL or exact provider ID" in launch, "cursor launch: stable agent locator capture missing")
     add(errors, "Do not write PR #9" in launch, "cursor launch: PO-03 write prohibition missing")
     add(errors, "capability-factory/return-20260822-v001" in sw_launch, "SW launch: isolated return branch missing")
-    add(errors, "do not write to the selected source branch" in sw_launch, "SW launch: shared source branch write not rejected")
+    add(errors, "treat the selected source branch as read-only" in sw_launch, "SW launch: shared source branch write not rejected")
     add(errors, "1054976614269477" in sw_launch, "SW launch: founder-verified space ID missing")
     add(errors, "Capability Extraction Lab" in sw_launch, "SW launch: neutral provider-visible rename missing")
-    add(errors, "operation/thread/coworker/automation URLs or exact provider IDs" in sw_launch, "SW launch: stable provider locator capture missing")
+    add(errors, "every operation, thread, coworker, automation and return-branch URL or exact provider ID" in sw_launch, "SW launch: stable provider locator capture missing")
 
     lanes = (root / "launch/CHATGPT-LANES-NOW.md").read_text(encoding="utf-8")
     add(errors, lanes.count("## CGPT-") >= 12, "chatgpt lanes: fewer than twelve launch sheets")
