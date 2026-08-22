@@ -1,0 +1,91 @@
+{
+  "limitations_version": "PO03-WAVE-A-LIMITATIONS-v1",
+  "task_id": "wave-a-003-currentness-compiler",
+  "limitations": [
+    {
+      "limitation_id": "wave-a-003-l1",
+      "statement": "Only JSON pointer documents are traversed. Markdown and JSONL objects are classified when a JSON pointer names them, but their own internal references are not expanded, so a pointer expressed only in Markdown prose is invisible to the graph.",
+      "consequence": "The compiled current set is a lower bound on reachability for prose-carried instructions.",
+      "evidence": "tools/currentness_compiler.py traverses only paths ending in .json"
+    },
+    {
+      "limitation_id": "wave-a-003-l2",
+      "statement": "The entrypoint extractor reads backticked paths from exactly one named Markdown section. A reading order moved to a different heading, or written without backticks, would silently yield fewer roots.",
+      "consequence": "Entrypoint drift degrades quietly rather than failing closed.",
+      "evidence": "tests/test_currentness_compiler.py::HelperUnitTests::test_entrypoint_section_is_scoped_to_its_heading"
+    },
+    {
+      "limitation_id": "wave-a-003-l3",
+      "statement": "Broken-reference detection depends on a heuristic: an untracked string counts as a repository file only when it contains a separator and a short extension. An extensionless or directory-shaped target that was meant to exist is not reported.",
+      "consequence": "Missing-object detection is conservative and can under-report.",
+      "evidence": "tests/test_currentness_compiler.py::HelperUnitTests::test_only_extension_bearing_paths_count_as_broken_references"
+    },
+    {
+      "limitation_id": "wave-a-003-l4",
+      "statement": "Role classes are pattern-driven. A future pointer key that expresses supersession, lineage or declared absence with new vocabulary is treated as an ordinary active role until the spec pattern is extended.",
+      "consequence": "The gate can produce a false failure or a false pass on unfamiliar vocabulary; the spec must be reviewed when pointer schemas change.",
+      "evidence": "fixtures/spec/currentness.spec.json pattern fields"
+    },
+    {
+      "limitation_id": "wave-a-003-l5",
+      "statement": "Ambiguity is checked only for the four single-valued roles named in the spec, and globally across the estate rather than per pointer document.",
+      "consequence": "Two documents legitimately scoping the same role to different subjects would be reported as ambiguous.",
+      "evidence": "fixtures/synthetic/cases.json (ambiguous-single-valued-role)"
+    },
+    {
+      "limitation_id": "wave-a-003-l6",
+      "statement": "The compiler judges declared currentness, not truthfulness. It cannot tell whether a standing value is factually correct, only whether the estate declares it consistently.",
+      "consequence": "A pointer that falsely declares itself current still compiles as a current launch surface.",
+      "evidence": "mechanism design; no external verification source is consulted"
+    },
+    {
+      "limitation_id": "wave-a-003-l7",
+      "statement": "The three prose-only superseded disposition rows cannot be enforced at path level. At this commit none of their objects is reachable from the entrypoint, so none is classified current: the two v007 route files and the three Operator D files are present in the repository but absent from the pointer graph, and the one reachable v009 object, state/ACTIVE_CONTROL_POINTER_20260819_01.json, is excluded through an anchored pointer key and standing rather than through the disposition table.",
+      "consequence": "Disposition-table enforcement is partial. The current exclusions rest on pointer-level declarations, so a future pointer that reaches one of those families would not be caught by the disposition rows.",
+      "evidence": "evidence/live-compilation.json unresolved_disposition_rows and node set"
+    },
+    {
+      "limitation_id": "wave-a-003-l8",
+      "statement": "The clean-clone reproduction ran on this VM with the system Python 3.12.3 and system git. It demonstrates independence from the warm checkout, provider memory and HOME, not independence from the operating-system image or the interpreter version.",
+      "consequence": "Portability beyond this image remains untested by this unit; the GitHub Actions run of the seeded workflow is the controller's separate evidence.",
+      "evidence": "evidence/clean-clone-run.log"
+    },
+    {
+      "limitation_id": "wave-a-003-l9",
+      "statement": "Custody events for this unit were written by the producer with the shared factory API on a separate lease branch rather than by the integration controller in the shared checkout. The appended registry row and the recovery projection entry touch controller-owned files, restricted to this task's own records.",
+      "consequence": "The controller must reconcile the lease branch into shared control state; two concurrent workers on separate branches cannot both be fast-forwarded without controller merge.",
+      "evidence": "po03/lease/wave-a-003-currentness-compiler at d722d9bb62cdec9d552ed94e52c62c0d5bfb30a1"
+    }
+  ],
+  "negative_outcomes": [
+    {
+      "outcome_id": "wave-a-003-n1",
+      "statement": "The first implementation of the gate failed the live estate three separate times with false positives: a self-describing manifest reference, a legitimate entrypoint back-reference and the deliberately preserved absent v008 object. The naive rules were rejected on measured evidence, not on preference.",
+      "evidence": "evidence/counterfactual.json"
+    },
+    {
+      "outcome_id": "wave-a-003-n2",
+      "statement": "Immutable-evidence-only classification is empty on the live estate: every object named by immutable_execution_evidence is also named by an active pointer role, so the class is exercised only by design and not by live data.",
+      "evidence": "evidence/live-compilation.json counts.immutable_evidence == 0"
+    },
+    {
+      "outcome_id": "wave-a-003-n3",
+      "statement": "One frozen source hash in the task capsule no longer matches the current file. The transactional result schema was hardened by the controller after this capsule was frozen. The mismatch is reported rather than repaired, because the schema is a shared controller-owned control.",
+      "evidence": "result.json input_verification.transaction_schema_drift_note"
+    },
+    {
+      "outcome_id": "wave-a-003-n4",
+      "statement": "The compiler was not wired into CI and the shared currentness contract was not changed. Both remain proposals because the workflow and control paths belong to the integration controller.",
+      "evidence": "result.json mechanism_change_proposals"
+    }
+  ],
+  "not_done": [
+    "no write outside workstreams/po03/attempts/wave-a/wave-a-003-currentness-compiler on the result branch",
+    "no RESULT_STAGING, RESULT_STAGED, RESULT_VERIFIED, RESULT_COMMITTED, PARENT_INGESTED or COMPLETED transition",
+    "no independent acceptance, self-acceptance or completion claim",
+    "no PO-01 read-write contact, no PR #8 change, no merge, no promotion",
+    "no modification of another task's ownership, lease, event chain or recovery record",
+    "no third-party outreach, spend, secret, account, OAuth, DNS, deployment or security act"
+  ],
+  "decision_changed": []
+}

@@ -1,0 +1,296 @@
+{
+  "result_version": "PO03-WAVE-A-RESULT-v1",
+  "task_id": "wave-a-003-currentness-compiler",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "function": "current-plan-engineering",
+  "hypothesis": {
+    "frozen_statement": "Current sources can be compiled from explicit pointers while excluding superseded evidence.",
+    "falsification_conditions": [
+      "a declared-superseded object appears in the compiled current source set",
+      "a live pointer chain cannot be compiled from the entrypoint without manual narrative",
+      "the compiled result depends on the working tree instead of the pinned commit"
+    ],
+    "outcome": "SUPPORTED_WITH_QUALIFICATION",
+    "qualification": "Compilation from explicit pointers works and excludes superseded evidence, but only because four anchored classification rules replace the naive rules a first implementation would use. Each naive rule was measured to give a different and wrong answer on the live estate."
+  },
+  "base": {
+    "repository": "github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+    "branch": "po03/wave-a-003-currentness-compiler",
+    "result_base_commit_id": "85515f0b18f99ba026f2ec2a2c9cf4c888b50ac2",
+    "mechanism_commit_id": "8edc4d1f984f29de3437567cc96a66252233a7fa",
+    "lease_branch": "po03/lease/wave-a-003-currentness-compiler",
+    "lease_control_commit_id": "d722d9bb62cdec9d552ed94e52c62c0d5bfb30a1"
+  },
+  "input_verification": {
+    "input_path": "workstreams/po03/control/tasks/wave-a-003-currentness-compiler/input.json",
+    "input_sha256": "6becbfe934f1c695c6661551beb8c786c35084ec67252e856f9b568503c88962",
+    "input_bytes": 1796,
+    "acceptance_path": "workstreams/po03/control/tasks/wave-a-003-currentness-compiler/acceptance.json",
+    "acceptance_sha256_frozen": "902e49ab74d987092361456c5288e80c90d7f030b10f8f64e18aea11defeb69c",
+    "acceptance_sha256_recomputed": "902e49ab74d987092361456c5288e80c90d7f030b10f8f64e18aea11defeb69c",
+    "acceptance_match": true,
+    "commission_sha256_frozen": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+    "commission_sha256_recomputed": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+    "commission_match": true,
+    "transaction_schema_sha256_frozen": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1",
+    "transaction_schema_sha256_at_result_base": "91fb63c1238a895dc7be8e837c7e101522ac12984aff2a62ea6bc78e98152102",
+    "transaction_schema_match": false,
+    "transaction_schema_drift_note": "The frozen hash reproduces exactly at the capsule's controller_head_sha 1bb843b2a81fd8d73617caf2f1db81909266bb6e. The controller hardened the shared result gate afterwards in commits e15f95c and 1571e76, so the current file differs. The capsule and the acceptance contract governing this unit are unchanged; this is recorded as observed controller-side drift, not as a repaired or ignored mismatch."
+  },
+  "runtime_observed": {
+    "provider": "Cursor",
+    "route": "isolated clone per material unit under the reactivated PO-03 route",
+    "requested_model": "claude-opus-5-thinking-high",
+    "reasoning_control": "high",
+    "capsule_binding_match": "EXACT_FAMILY_AND_REASONING",
+    "parent_run_id": "bc-7137a066-3242-43a2-a30e-9a352047b759",
+    "subagent_identifier": "NOT_SUPPORTED",
+    "subagent_identifier_note": "The provider does not expose a distinct subagent identifier to this runtime, so the parent run identifier plus the logical worker identifier are recorded instead of a manufactured value.",
+    "worker_id": "wave-a-003-currentness-compiler-producer",
+    "clone_path": "/home/ubuntu/po03-wave-a-003-currentness-compiler",
+    "authorized_concurrency_ceiling": 2,
+    "observed_concurrent_material_units": [
+      "wave-a-002-clean-clone-smoke",
+      "wave-a-003-currentness-compiler"
+    ],
+    "shared_checkout_material_writes": false
+  },
+  "mechanism": {
+    "entrypoint": "tools/currentness_compiler.py",
+    "summary": "A pointer-driven compiler that reads a declarative spec and every referenced object through git cat-file at one pinned commit, walks the pointer graph from the repository entrypoint's reading order, classifies each reachable object as a current launch surface, immutable evidence or retained superseded evidence, and fails closed on broken active references, routing cycles and ambiguous single-valued pointer roles.",
+    "gate_rules": [
+      "MISSING_REFERENCED_OBJECT when an active role names a path absent at the commit",
+      "SUPERSEDED_OBJECT_REACHED_BY_ACTIVE_ROLE when a superseded object is also named by a live launch role",
+      "ROUTING_POINTER_CYCLE when routing roles form a cycle",
+      "AMBIGUOUS_SINGLE_VALUED_ROLE when one single-valued role resolves to more than one live target"
+    ],
+    "anchored_classification_rules": [
+      "supersession is declared by a superseded* pointer key, by a standing value that starts with the superseded prefix, by an explicit spec entry, or by a disposition row; a standing that merely mentions supersession is not a declaration",
+      "pointer roles skip generic locator keys such as path and uri, so the enclosing pointer key carries the routing meaning",
+      "backward lineage roles may name superseded objects without promoting them or failing the gate",
+      "roles that declare an absence preserve an evidential defect instead of reporting a broken reference"
+    ],
+    "supporting_tools": [
+      "tools/run_cases.py materialises each synthetic estate as a real repository and checks frozen expectations",
+      "tools/counterfactual.py replays naive rule variants over one compiled report",
+      "tools/build_manifest.py hashes every owned artifact",
+      "tools/run_clean_clone.sh reproduces the unit from a fresh clone with an emptied environment"
+    ],
+    "hermetic_properties": [
+      "all bytes read through git cat-file at an explicit commit",
+      "standard library only, runs under python3 -I",
+      "deterministic output digest with no timestamps in the compiled report",
+      "no network, no /tmp state reuse, no provider memory"
+    ]
+  },
+  "experiments": [
+    {
+      "experiment_id": "wave-a-003-e1-live-compilation",
+      "question": "Does the live instruction estate compile to a current source set that excludes superseded evidence?",
+      "command": "python3 -I tools/currentness_compiler.py --commit 8edc4d1f984f29de3437567cc96a66252233a7fa --out evidence/live-compilation.json",
+      "evidence": "evidence/live-compilation.json",
+      "outcome": "PASS",
+      "observed": {
+        "gate": "PASS",
+        "pinned_commit": "8edc4d1f984f29de3437567cc96a66252233a7fa",
+        "determinism_digest": "3c5ab1c8e99a9ba07a63ac40fa61daad04af6fd673fea908139ed476df99d3ca",
+        "nodes": 35,
+        "edges": 67,
+        "current_launch_surfaces": 33,
+        "retained_superseded_evidence": 2,
+        "immutable_evidence_only": 0,
+        "missing_references": 0,
+        "declared_absent_objects": 2,
+        "substring_near_misses": 1,
+        "lineage_references": 1,
+        "self_describing_references": 2,
+        "non_routing_back_references": 1,
+        "unresolved_disposition_rows": 3
+      },
+      "excluded_superseded_objects": [
+        "state/ACTIVE_CONTROL_POINTER_20260819_01.json",
+        "commissions/METAMATE_BOOTSTRAP_COMMISSION_DRAFT_20260816.md"
+      ]
+    },
+    {
+      "experiment_id": "wave-a-003-e2-synthetic-case-matrix",
+      "question": "Do the gate rules hold on eleven frozen synthetic estates, including the required superseded-pointer exclusion case?",
+      "command": "python3 -I tools/run_cases.py --out evidence/case-results.json",
+      "evidence": "evidence/case-results.json",
+      "outcome": "PASS",
+      "observed": {
+        "cases": 11,
+        "passed": 11,
+        "failed": 0,
+        "cases_sha256": "0b432d5835b2fdf05f10c17b5e2ada4809979083bb16db4b3394f1eb3ad075aa",
+        "compiler_sha256": "26f326609a0293cfc30726f3e42c33177057d5a72cb04c778e9e0c30f45ba843"
+      }
+    },
+    {
+      "experiment_id": "wave-a-003-e3-naive-rule-counterfactual",
+      "question": "Would a simpler classifier have produced the same verdict on the live estate?",
+      "command": "python3 -I tools/counterfactual.py --report evidence/live-compilation.json --spec fixtures/spec/currentness.spec.json --out evidence/counterfactual.json",
+      "evidence": "evidence/counterfactual.json",
+      "outcome": "PASS",
+      "observed": {
+        "rules_evaluated": 4,
+        "rules_defended_by_measurement": 4,
+        "standing_substring_supersession_false_exclusions": [
+          "dispatch/CLAUDE_CHROME_FULL_SCALE_CHATGPT_ACCOUNT_OPERATION_SUCCESSOR_20260819_v010.md"
+        ],
+        "any_absent_path_fails_false_failures": [
+          "dispatch/CLAUDE_EXTENSION_LAUNCH_ROUTE_20260818_v008.md"
+        ],
+        "any_repeated_node_is_a_cycle_false_failures": [
+          "dispatch/SC_CIEG_V010_FULL_SCALE_CHATGPT_LAUNCH_MANIFEST_20260819_v001.json",
+          "state/operator-system/ACTIVE_OPERATOR_SYSTEM_POINTER_CURRENT.json"
+        ],
+        "leaf_key_role_naming_lost_ambiguity_checks": [
+          "canonical_command",
+          "selected_manifest",
+          "selected_payload",
+          "selected_pointer"
+        ]
+      }
+    },
+    {
+      "experiment_id": "wave-a-003-e4-unit-suite",
+      "question": "Is every rule covered by a dependency-free test, including hermeticity and CLI exit separation?",
+      "command": "python3 -I -m unittest discover -s tests -p 'test_*.py' -v",
+      "evidence": "evidence/test-run.log",
+      "outcome": "PASS",
+      "observed": {
+        "tests_run": 21,
+        "failures": 0,
+        "errors": 0
+      }
+    },
+    {
+      "experiment_id": "wave-a-003-e5-seeded-contract-suite",
+      "question": "Does the seeded PO-03 custody suite still pass in this clone alongside the new unit?",
+      "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py'",
+      "outcome": "PASS",
+      "observed": {
+        "tests_run": 76,
+        "failures": 0,
+        "errors": 0,
+        "path_scope_guard": "PO03_PATH_SCOPE_PASS",
+        "operator_taxonomy_check": "PASS"
+      }
+    }
+  ],
+  "discoveries": [
+    {
+      "discovery_id": "wave-a-003-d1",
+      "statement": "A substring test for supersession misclassifies the live v010 payload, whose own current standing names the superseded v009 predecessor. Supersession must be read from an anchored declaration.",
+      "evidence": "evidence/counterfactual.json",
+      "regression_test": "tests/test_currentness_compiler.py::LiveRepositoryTests::test_live_v010_payload_survives_a_supersession_mentioning_standing"
+    },
+    {
+      "discovery_id": "wave-a-003-d2",
+      "statement": "The live estate distinguishes supersedes_pointer from superseded_pointer by one character. A prefix rule that ignores the difference either promotes retired evidence or fails a valid lineage edge, so lineage roles need their own class.",
+      "evidence": "evidence/live-compilation.json",
+      "regression_test": "tests/test_currentness_compiler.py::SyntheticCaseMatrixTests (lineage-role-names-superseded-target)"
+    },
+    {
+      "discovery_id": "wave-a-003-d3",
+      "statement": "The estate deliberately preserves the absent v008 object as an evidential defect. A blanket broken-reference gate fails the healthy repository, so declared absence and broken reference are separate states.",
+      "evidence": "evidence/counterfactual.json",
+      "regression_test": "tests/test_currentness_compiler.py::LiveRepositoryTests::test_live_missing_v008_object_stays_declared_absence_evidence"
+    },
+    {
+      "discovery_id": "wave-a-003-d4",
+      "statement": "Obzio pointers wrap targets in locator objects, so a leaf-key role reading resolves every pointer to the role name 'path' and silently disables single-valued ambiguity detection on all four control roles.",
+      "evidence": "evidence/counterfactual.json",
+      "regression_test": "tests/test_currentness_compiler.py::HelperUnitTests::test_role_skips_generic_locator_keys"
+    },
+    {
+      "discovery_id": "wave-a-003-d5",
+      "statement": "Three superseded rows in the current disposition table name object families in prose rather than repository paths, so a path-level compiler cannot enforce them. The rows are reported as unresolved rather than silently dropped.",
+      "evidence": "evidence/live-compilation.json",
+      "unresolved_rows": [
+        "v007 Claude Extension route/reference",
+        "v009 payload/command/manifest/pointer",
+        "Operator D directive, reference, recovery state and preflight"
+      ]
+    }
+  ],
+  "mechanism_change_proposals": [
+    {
+      "proposal_id": "wave-a-003-p1",
+      "target": "PO-03 currentness and supersession compilation",
+      "proposal": "Adopt anchored supersession declarations, lineage roles, declared-absence roles and enclosing-key role naming as the shared currentness contract, and run the compiler in CI as a fail-closed currentness gate over the entrypoint chain.",
+      "state": "PROPOSAL_NOT_APPLIED_OUTSIDE_OWNED_SUBTREE",
+      "reason": "Shared PO-03 control and workflow paths belong to the integration controller. This unit ships the executable mechanism and evidence inside its owned slot only."
+    },
+    {
+      "proposal_id": "wave-a-003-p2",
+      "target": "operations/INSTRUCTION_ESTATE_DISPOSITION",
+      "proposal": "Add backticked repository paths to the three prose-only superseded rows so a compiler can enforce their disposition.",
+      "state": "PROPOSAL_ONLY_NO_SHARED_WRITE",
+      "reason": "The disposition document is outside this unit's owned paths and is founder-facing routing evidence."
+    }
+  ],
+  "sanitized_environment": {
+    "interpreter": "python3 -I (isolated mode)",
+    "environment": "env -i HOME=/nonexistent PATH=/usr/bin:/bin LANG=C.UTF-8",
+    "third_party_packages": "NONE",
+    "network_access": "NOT_USED",
+    "tmp_state_reuse": "NONE"
+  },
+  "clean_clone_reproduction": {
+    "command": "tools/run_clean_clone.sh <origin> 8edc4d1f984f29de3437567cc96a66252233a7fa /home/ubuntu/wa003-cleanclone",
+    "evidence": "evidence/clean-clone-run.log",
+    "clone_commit": "8edc4d1f984f29de3437567cc96a66252233a7fa",
+    "dirty_files": 0,
+    "tests_run": 21,
+    "failures": 0,
+    "case_matrix": "11/11",
+    "outcome": "PASS"
+  },
+  "durability": {
+    "route_state": "DISPATCH_AUTHORIZED_ISOLATED_CLONES",
+    "route_reactivation_receipt": "receipts/po03/2026-08-22/route-isolation-reactivation-001.json",
+    "route_reactivation_receipt_sha256": "d0a43e54ac668cb8969288c310848af14f60a425607fab141bf76893fe1faeca",
+    "isolated_clone": true,
+    "distinct_git_index_and_branch": true,
+    "atomic_lease_claim": {
+      "mechanism": "git push --force-with-lease with an empty expected value, which only succeeds when the remote ref does not exist",
+      "ref": "refs/heads/po03/lease/wave-a-003-currentness-compiler",
+      "claim_base": "85515f0b18f99ba026f2ec2a2c9cf4c888b50ac2",
+      "outcome": "CLAIM_WON"
+    },
+    "custody_events": [
+      "workstreams/po03/control/events/wave-a-003-currentness-compiler/000002-leased.json",
+      "workstreams/po03/control/events/wave-a-003-currentness-compiler/000003-running.json"
+    ],
+    "custody_events_branch": "po03/lease/wave-a-003-currentness-compiler",
+    "fence_token": 1,
+    "result_range_contains_control_paths": false
+  },
+  "boundary_compliance": {
+    "changed_paths_inside_owned_slot_only": true,
+    "owned_slot": "workstreams/po03/attempts/wave-a/wave-a-003-currentness-compiler",
+    "po01_contact_or_mutation": false,
+    "pr8_modified": false,
+    "shared_po03_control_paths_written_on_result_branch": false,
+    "merge_or_promotion": false,
+    "secrets_accounts_oauth_dns_deployment_acts": false,
+    "external_outreach_or_spend": false,
+    "read_only_surfaces_touched": false
+  },
+  "subordinate_report": "READY_TO_COMMIT",
+  "obzio_state_claim": "RUNNING_RESULT_PUSHED_AWAITING_CONTROLLER_INGESTION",
+  "obzio_state_note": "This producer does not set RESULT_STAGING or later custody states. The controller ingests the immutable result commit through transactional_factory.ingest_committed_result, and a different producer performs independent acceptance.",
+  "independent_acceptance": {
+    "state": "NOT_REQUESTED_BY_PRODUCER",
+    "note": "Producer self-acceptance is forbidden by the acceptance contract; the controller routes independent review."
+  },
+  "transaction": {
+    "idempotency_key": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001:wave-a-003-currentness-compiler:attempt-1",
+    "lease_id": "lease-wave-a-003-currentness-compiler-1",
+    "attempt_number": 1,
+    "fence_token": 1
+  },
+  "decision_changed": []
+}
