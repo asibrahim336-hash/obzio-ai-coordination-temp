@@ -160,6 +160,41 @@ def build_document() -> dict:
                 "did not write into workstreams/po03/metrics/"
             )
         },
+        "observation_for_the_consumer": {
+            "observed_by": "po03-worker-a8, while running the combined suite as a gate",
+            "test": "test_a7_generation_comparison.TestGenerationComparison.test_recomputation_matches_committed_report_at_the_recorded_pin",
+            "owner": "po03-worker-a7",
+            "reported_not_repaired": (
+                "a7 owns the file and this cohort must not edit it. Recorded here because the failure "
+                "concerns a report computed from this cohort's output, so a8 is the cohort that notices it."
+            ),
+            "finding": (
+                "The failure is not a score discrepancy. a7's pinned reproduction is sound and every score "
+                "and lift verdict in it matches. Three fields differ, and all three are git's own error "
+                "wording captured verbatim into the committed report: for the g0, g1 and g2 holdout "
+                "transcripts the report records 'does not exist in <commit>' while a recomputation in a "
+                "worktree that has those files checked out gets 'exists on disk, but not in <commit>'. Git "
+                "chooses between those two messages by looking at the working tree, so the captured string "
+                "depends on which branch the tool is run from rather than on anything measured."
+            ),
+            "why_it_is_the_same_defect_class": (
+                "It is a fourth flavour of the snapshot-coupling class in "
+                "workstreams/po03/evidence/snapshot-coupling.json. a7 correctly pinned the commit, which "
+                "fixes the scores, and then recorded a value that is not a function of the pin at all. The "
+                "immutable pin makes the measurement reproducible; it cannot make a diagnostic message "
+                "about the local filesystem reproducible."
+            ),
+            "suggested_remedy": (
+                "Record that the path was absent at the pin, which is the fact, rather than the subprocess "
+                "stderr that reported it; or normalise the message before comparing. Either keeps the "
+                "assertion falsifiable while making it independent of the checkout it runs in."
+            ),
+            "not_caused_by_this_dispatch": (
+                "The three transcript files existed at 01dfb05 and at f15928a, both before this dispatch, so "
+                "the failure reproduces on the integration branch independently of anything changed here. "
+                "Every file this dispatch touched is inside this cohort's owned paths."
+            ),
+        },
         "artifacts": [
             {"path": path, "sha256": sha256(REPO_ROOT / path)} for path in ARTIFACTS
         ],
