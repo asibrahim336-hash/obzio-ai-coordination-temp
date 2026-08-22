@@ -1,0 +1,132 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-sol-xhigh",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-024-forged-completeness-adversarial",
+  "cohort": "c3",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c3",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "746ad51dc701a97ce570295ad3b779cd8dd39d6e42c433885e93d03646031c90",
+  "frozen_hypothesis": "A pack forged to look complete must fail qualification, proving the engine is not merely reading self-reported status.",
+  "frozen_required_deliverable": "An adversarial forged-pack fixture whose self-declared completeness contradicts its bytes, plus the assertion that qualification refuses it.",
+
+  "adversarial_unit_note": "The commission names 008, 024 and 040 as the units that exist to prove a detector is not vacuous, and instructs me to verify both that the detector fires and that it does not fire on the negative control. Unit 024 contains no negative control at all: the committed fixture is the only input it is ever run against. That absence is the root of every finding below.",
+
+  "po01_contact_check": "READ-ONLY CONFIRMED. The unit reads only its own synthetic fixture directory. No packs/**, modules/**, state/** or _transport/** path is touched. My own hidden cases created throwaway packs and one throwaway git repository entirely inside /home/ubuntu/po03-review-scratch-a/_hidden/024, never inside the repository.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -I (CPython 3.12.3)",
+    "producer_test_command": "python3 -I test_forged_completeness.py",
+    "producer_test_exit_code": 0,
+    "producer_test_output_verbatim": "{\n  \"evidence_table\": [\n    {\n      \"accepted\": false,\n      \"declared_bytes\": 15,\n      \"declared_sha256\": \"0000000000000000000000000000000000000000000000000000000000000000\",\n      \"observed_bytes\": 15,\n      \"observed_sha256\": \"b939c035f3f856c3806bd49b612548b889b4f052dd7b87107f90ad078f1b8e1f\",\n      \"path\": \"payload.txt\",\n      \"present\": true\n    }\n  ],\n  \"fixture_label\": \"SYNTHETIC_FORGED_COMPLETENESS_FIXTURE\",\n  \"qualification\": \"FAIL\",\n  \"self_report_ignored\": true,\n  \"self_reported_status\": \"COMPLETE\"\n}\ntest_forged_completeness: PASS",
+    "note": "The committed test_output.txt is byte-equal to what I obtained, so the recorded evidence is real and reproducible. The reproduction is deterministic across fresh processes."
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-G",
+      "is_vacuity_probe": true,
+      "rationale": "The commission's explicit instruction: replace the component with a trivial stub and see whether the test still passes. For an adversarial non-vacuity unit this is the decisive question, because the unit's whole purpose is to be the thing that proves other qualifiers are not rubber stamps.",
+      "construction": "Copied test_forged_completeness.py and the committed synthetic_forged_pack unchanged into a scratch directory, and replaced qualify_forged.py with a 5-line stub that performs no file reads, no hashing and no comparison - it simply prints a hardcoded JSON document containing qualification=FAIL, self_report_ignored=true, observed_bytes=15, declared_bytes=15 and two different literal strings for the two sha256 fields.",
+      "observed_output_verbatim": "producer test against a HARDCODED-FAIL stub: exit=0 (STILL PASSES -> VACUOUS)",
+      "component_survived": false,
+      "interpretation": "VACUOUS TEST CONFIRMED. The producer's committed test passes unchanged against a qualifier that never opens a file and never computes a hash. Every assertion in the test is satisfiable by constants. The test therefore cannot distinguish the real byte-comparing qualifier from a qualifier that returns FAIL unconditionally - and a qualifier that returns FAIL unconditionally trivially satisfies the hypothesis' first clause while flatly contradicting its second clause about not merely reading self-reported status. This is the exact condition the commission instructs me to treat as failing."
+    },
+    {
+      "hidden_case_id": "HC-A",
+      "rationale": "The missing negative control. If forged packs FAIL but honest packs also FAIL, the detector has no discrimination and the unit proves nothing.",
+      "construction": "Built an honest pack: payload.txt = b'honest payload\\n', declaration carrying that file's true SHA-256 and true byte count, self_reported_status COMPLETE.",
+      "observed_output_verbatim": "HC-A honest pack, self_reported_status=COMPLETE (positive control)\nexit=0 qualification=PASS self_report_ignored=True",
+      "component_survived": true,
+      "interpretation": "The COMPONENT discriminates correctly - honest bytes yield PASS. This is the control the unit should have shipped and did not. Note carefully what this establishes and what it does not: it rescues the component, not the committed test. Under HC-G's stub this same input would still have returned FAIL."
+    },
+    {
+      "hidden_case_id": "HC-A2",
+      "rationale": "The hypothesis' load-bearing clause is 'not merely reading self-reported status'. Proving that requires the self-report to be varied in BOTH directions. The producer only tested COMPLETE-but-forged. The other diagonal - honest bytes with a hostile self-report - is the half that actually proves independence.",
+      "construction": "Same honest pack as HC-A, but the manifest self-denounces: self_reported_status INCOMPLETE with self_reported_problems ['payload.txt is corrupt', 'pack is unusable'].",
+      "observed_output_verbatim": "HC-A2 honest pack, HOSTILE self_reported_status=INCOMPLETE\nexit=0 qualification=PASS declared_status=INCOMPLETE",
+      "component_survived": true,
+      "interpretation": "PASS despite the manifest declaring itself broken. Combined with the committed forged case this completes the 2x2 and is the ONLY evidence in existence that the verdict is driven by bytes rather than by the status string. I had to construct it; the producer did not. Reading the source confirms the mechanism: the self_report_ignored field is a hardcoded literal True, not a derived measurement, so the claim is only as good as the behavioural 2x2 - and half of that 2x2 existed nowhere until I ran this case."
+    },
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "Forgery by byte count rather than by hash. Tests whether both declared dimensions are load-bearing or only one is.",
+      "construction": "Honest payload and honest sha256, but declared bytes inflated to 99999.",
+      "observed_output_verbatim": "HC-B forged by BYTE COUNT only (hash blank, byte count lies)\nexit=0 qualification=FAIL",
+      "component_survived": true,
+      "interpretation": "Both dimensions are checked. A forger cannot get through by lying about size alone."
+    },
+    {
+      "hidden_case_id": "HC-C",
+      "rationale": "Forgery by absence - the most obvious real-world forgery, and the one unit 018 exists to catch. A declared file that is simply not there.",
+      "construction": "Manifest declares payload.txt with correct hash and byte count; the file is not written at all. self_reported_status COMPLETE.",
+      "observed_output_verbatim": "HC-C forged by ABSENCE (declared file not present at all)\nexit=0 qualification=FAIL present=False",
+      "component_survived": true,
+      "interpretation": "Correct FAIL with present=false in the evidence row. Fails closed on absence rather than crashing on the None body."
+    },
+    {
+      "hidden_case_id": "HC-D",
+      "rationale": "The degenerate forgery: declare nothing whatsoever and claim COMPLETE. An engine using all() over an empty table would vacuously PASS.",
+      "construction": "Manifest with self_reported_status COMPLETE and files = {}, alongside a real payload.txt that is simply never declared.",
+      "observed_output_verbatim": "HC-D forged by EMPTY files map (declares nothing, claims COMPLETE)\nexit=0 qualification=FAIL rows=0",
+      "component_survived": true,
+      "interpretation": "Correct FAIL. The bool(rows) guard defeats the empty-table vacuous-truth attack. Good defensive detail."
+    },
+    {
+      "hidden_case_id": "HC-E",
+      "rationale": "Schema-shift forgery. Unit 017's qualify_pack.py explicitly branches on whether manifest['files'] is a dict or a LIST, so list form is a legitimate manifest schema in this very wave. What happens when a forged pack uses it?",
+      "construction": "Forged pack whose files field is a list of one dict - [{'path': 'payload.txt', 'bytes': 99999, 'sha256': '000...0'}] - with self_reported_status COMPLETE.",
+      "observed_output_verbatim": "HC-E LIST-form files schema (the schema unit 017 explicitly supports)\nexit=1\nstderr tail: AttributeError: 'list' object has no attribute 'items'",
+      "component_survived": false,
+      "interpretation": "Uncaught AttributeError from manifest['files'].items(). The qualifier crashes rather than returning a FAIL verdict, and emits no JSON at all. It happens to exit nonzero, so a caller checking only exit status would still fail closed by accident - but a caller parsing the report gets nothing to parse, and no evidence table is produced. Since a sibling unit in the same cohort treats list form as valid, this is a reachable forgery shape, not a hypothetical."
+    },
+    {
+      "hidden_case_id": "HC-F",
+      "rationale": "The hypothesis says 'THE ENGINE is not merely reading self-reported status'. But this unit built its own bespoke qualifier rather than aiming a forged pack at the wave's actual qualification engine from unit 017. So the hypothesis as written is untested by the unit. I tested it.",
+      "construction": "Initialised a throwaway git repository in scratch, committed packs/forged-pack/ containing an honest payload.txt plus a MANIFEST.json declaring it with 64 zeros for sha256 and self_reported_status COMPLETE, then ran unit 017's qualify_pack.py against that commit SHA.",
+      "observed_output_verbatim": "HC-F does the REAL wave engine (unit 017 qualify_pack.py) also ignore self-report?\nexit=1 (unit 017 returns 1 on a FAIL verdict)\nunit-017 engine verdict on forged pack: FAIL\ndeclaration_count: 1 matched_count: 0\ndoes unit-017 engine read self_reported_status at all? False",
+      "component_survived": true,
+      "interpretation": "TRUTHFUL FINDING IN THE PRODUCER'S FAVOUR, obtained by me rather than by the producer. The real unit-017 engine does FAIL the forged pack, and grepping its full report shows it never reads or echoes self_reported_status - the field name appears nowhere in its output because it appears nowhere in its logic. So the wave's substantive hypothesis is TRUE. It is simply true for reasons this unit never demonstrated: unit 024 proved a property of a qualifier it wrote itself, using a test that a constant would have satisfied."
+    }
+  ],
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET - qualify_forged.py runs clean under python3 -I.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "PARTIALLY MET. The test executes and test_output.txt is byte-equal to my own run, so nothing is fabricated. But under HC-G the test passes against a no-op stub, so what is recorded verbatim is the output of a test that does not exercise the mechanism it claims to.",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET - I recomputed all 5 artifacts: 5/5 hash and byte-count matches, and nothing on disk is unlisted. Verbatim: ALL_VERIFY: True / on disk not listed: [].",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - acceptance_contract_sha256 equals my pre-disclosure hash 746ad51d...",
+    "result is committed and read back by a different process from an immutable object id": "MET - artifact_commit 7f99fd450d6669ccd5f8d23090357ccb5ed2ec93.",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - PASS is explicit.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "NOT_APPLICABLE by the producer's lights. My assessment is that the hypothesis is neither confirmed nor refuted by this unit's evidence - it is left undetermined, and reported as confirmed.",
+    "no value, hash, metric or provider capability is invented": "MET. Every hash I recomputed matches. The 15-byte payload and its real SHA-256 b939c035... are genuine. self_report_ignored: true is a hardcoded literal rather than a measurement, which is an honesty-of-framing issue rather than an invented value.",
+    "required_deliverable - adversarial forged-pack fixture plus the assertion that qualification refuses it": "LITERALLY MET, SUBSTANTIVELY UNDER-MET. The fixture exists and genuinely contradicts its own bytes, and an assertion of refusal exists. What is missing is any evidence that the refusal is caused by the contradiction - which is the entire point of an adversarial non-vacuity unit."
+  },
+
+  "scope_honesty_assessment": {
+    "producer_declared_limitations": [
+      "The adversarial fixture is synthetic and tests forged hash completeness, not every semantic form of producer deception."
+    ],
+    "assessment": "The declared limitation is true and correctly identifies the synthetic-fixture boundary, but it names the wrong risk. The problem is not that the fixture covers only one form of deception; it is that the test cannot tell a working qualifier from a constant, and that the unit never aimed a forged pack at the wave's actual qualification engine even though that engine sits in the same cohort and would have accepted one. Neither the absence of a negative control nor the bespoke-qualifier substitution is disclosed anywhere in the manifest or result."
+  },
+
+  "nonportable_artifacts_in_subtree": [],
+  "reproducibility_check": "Reproducible. Byte-identical output across fresh python3 -I processes, and the committed test_output.txt matches my independent run exactly.",
+
+  "vacuous_test_finding": true,
+  "reviewer_independent_verdict": "NOT_YET",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "DIVERGE",
+  "divergence_reason": "The producer's PASS rests on a test that I demonstrated passes unchanged against a stub qualifier which reads no files and computes no hashes (HC-G, exit 0). The unit therefore does not establish its own hypothesis. The hypothesis has two clauses - a forged pack must fail, and this must prove the engine is not merely reading self-reported status - and the committed evidence establishes neither, because a qualifier that returned FAIL unconditionally would produce identical test output while making the second clause false. The unit also ships no negative control of any kind, which the commission specifically requires of adversarial units, and it substitutes a bespoke qualifier for the wave's real qualification engine so that the word 'engine' in the hypothesis is never actually put at risk. I record NOT_YET rather than FAIL because the hypothesis is not refuted - I verified independently that it holds, both of this component (HC-A, HC-A2) and of the real unit-017 engine (HC-F). The claim is true; the unit's evidence does not carry it.",
+  "disposition_recommendation": "REJECTED",
+  "disposition_reason": "This is the one clear vacuous-test finding in my twenty units, and it lands on a unit whose sole function is to be the wave's non-vacuity proof. The commission's instruction is direct: if the test still passes when the component is replaced by a trivial stub, that is a failing condition regardless of the producer's verdict. It does, measurably, at exit 0. Everything the unit needed was one honest pack that must PASS - four lines of fixture - and its absence means the committed evidence is compatible with a rubber stamp pointed the other way. The compounding problem is the substitution of scope: the hypothesis speaks of 'the engine', and unit 017's engine was sitting in the same cohort with a documented command-line interface, but the unit qualified a fixture with a qualifier it wrote for the occasion. I want the record to be equally clear that nothing here is fabricated and the underlying claim is true. All five artifacts verify to the byte, the committed test output is byte-equal to my own run, the payload hash is real, and the component itself discriminates correctly in every direction I attacked it from - honest packs PASS, forged hashes FAIL, forged byte counts FAIL, absent files FAIL, and an empty declaration table FAILs rather than vacuously passing. The rejection is for insufficient and non-discriminating evidence of a true proposition, not for dishonesty. Re-running this unit with a negative control and the real unit-017 engine as its target would very likely earn a clean PASS.",
+  "followups_for_coordinator": [
+    "BLOCKING for re-run: the unit must ship a negative control - at minimum one honest pack whose declarations match its bytes and which must qualify PASS. Reviewer-observed: with the committed test alone, substituting a stub that prints a hardcoded FAIL and reads nothing still yields exit 0.",
+    "BLOCKING for re-run: aim the forged fixture at unit 017's qualify_pack.py, the wave's actual qualification engine, rather than at a qualifier written for this unit. I did this myself in HC-F and the engine correctly returned FAIL with matched_count 0 and never consulted self_reported_status, so the re-run should succeed - but that evidence currently exists only in this review, not in the producer's unit.",
+    "The strongest single piece of evidence for the hypothesis is the diagonal the producer never tested: an honest pack that self-reports INCOMPLETE and still qualifies PASS. Recommend making that assertion mandatory for any self-report-independence claim across the wave, since forged-COMPLETE-fails alone is satisfiable by an engine that always fails.",
+    "self_report_ignored is emitted as a hardcoded literal True rather than derived from behaviour. Same pattern as unit 022's hardcoded overall_verdict and worth a wave-level rule: a field asserting a property must be computed from the check that establishes it, or it is decoration.",
+    "Hardening: qualify_forged.py raises an uncaught AttributeError on manifests whose files field is a list, a schema unit 017 explicitly supports. A forged pack using list form crashes the qualifier instead of being refused with an evidence table."
+  ]
+}

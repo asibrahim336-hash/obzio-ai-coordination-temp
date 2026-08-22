@@ -1,0 +1,111 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-sol-xhigh",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-023-isolated-repair-candidate",
+  "cohort": "c3",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c3",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "88add6f8c4a2088ee6ca4ad369834c33641d9806a1c1b3f56a350b66ffd45462",
+  "frozen_hypothesis": "A PO-01 defect can be converted into a frozen test and an isolated PO-03 repair candidate without ever touching a PO-01 namespace.",
+  "frozen_required_deliverable": "A generator that emits a frozen failing test plus an integration-ready patch candidate held entirely inside the PO-03 namespace, with an assertion that no PO-01 path is written.",
+
+  "po01_contact_check": "READ-ONLY CONFIRMED for everything this unit executes. Pack material is read via 'git cat-file' only, and the test materialises the pack tree into a tempfile.TemporaryDirectory created INSIDE the owned subtree - notably not under /tmp, which the commission forbids treating as durable. I attempted three separate escapes from the generator's output guard and all three were refused. See the caveat under HC-B about the emitted candidate, which is a shipped-artifact risk rather than an act this unit performed.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -I (CPython 3.12.3)",
+    "producer_test_command": "python3 -I test_isolated_candidate.py",
+    "producer_test_exit_code": 0
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-A",
+      "rationale": "The frozen deliverable's central safety property is that nothing escapes the PO-03 namespace. The producer asserts this but never attacks its own guard. I did, three ways.",
+      "construction": "Ran generate_candidate.py with --output-dir pointing at (1) an arbitrary scratch directory, (2) a directory whose name contains 'po01', and (3) a traversal into a SIBLING unit's subtree inside the same repository.",
+      "observed_output_verbatim": "HC-A arbitrary scratch dir              exit=1 refused=True msg=refusing output outside isolated candidate path: /home/ubuntu/po03-review-scratch-a/_hidden/023\nHC-A path containing 'po01'             exit=1 refused=True msg=refusing output outside isolated candidate path: /home/ubuntu/po03-review-scratch-a/_hidden/023\nHC-A traversal back to a sibling unit   exit=1 refused=True msg=refusing output outside isolated candidate path: /home/ubuntu/po03-review-scratch-a/_c3repo/wor",
+      "component_survived": true,
+      "interpretation": "All three refused with exit 1 before any write. The guard is an equality test against a single resolved allowed path, which is the strongest form available and correctly also blocks writes into another unit's subtree - a prohibition the commission imposes independently."
+    },
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "The generator guards itself, but the ARTIFACT it emits is a writer. The frozen deliverable calls it 'integration-ready', so whether the emitted candidate carries its own namespace guard is a real question nobody asked.",
+      "construction": "Materialised the pinned pack tree into a scratch directory deliberately NAMED '.../po01/packs' and ran the emitted repair_candidate.py against it. I never pointed it at any real packs/** path.",
+      "observed_output_verbatim": "HC-B repair_candidate aimed at a path named .../po01/packs -> exit 0 | refused: False | written: ['06-browser-execution/_spine.py', '07-capability-manufacture/_spine.py', '08-knowledge-currentness/_spine.py', '09-infrastructure-operation/_spine.py', '10-economics-measurement/_spine.py']",
+      "component_survived": false,
+      "interpretation": "The emitted repair candidate carries NO namespace guard at all. It writes into whatever --pack-root it is handed, including a path containing 'po01', with no refusal. The generator's careful guard protects only the generation step; the shipped artifact is an unguarded writer. This unit never applies it to PO-01 and its test applies it only to a temporary copy, so no prohibition was breached - but an 'integration-ready' patch candidate that will write anywhere is a live hazard for whoever picks it up next."
+    },
+    {
+      "hidden_case_id": "HC-C",
+      "rationale": "Does the repair fail closed if a pack's declaration disagrees with the shared spine bytes? A repair that writes on mismatched declarations would corrupt rather than fix.",
+      "construction": "Copy of the pack tree with all _spine.py removed and 06-browser-execution's declared sha256 replaced by 64 zeros.",
+      "observed_output_verbatim": "HC-C tampered declaration -> exit 1 | any _spine.py written: 0",
+      "component_survived": true,
+      "interpretation": "Fails closed correctly: exit 1 and ZERO files written. The repair validates both the shared spine's own hash against a pinned constant and each pack's declaration against the observed bytes before writing anything."
+    },
+    {
+      "hidden_case_id": "HC-D",
+      "rationale": "Idempotence probe. A repair that overwrites on re-run could silently clobber a differing file.",
+      "construction": "Ran the repair a second time on the already-repaired tree.",
+      "observed_output_verbatim": "HC-D second repair run -> exit 0 | written: [] (empty = no overwrite)",
+      "component_survived": true,
+      "interpretation": "Idempotent and non-destructive. The 'if not target.exists()' guard means it fills gaps and never overwrites existing bytes."
+    },
+    {
+      "hidden_case_id": "HC-E",
+      "rationale": "Non-vacuity of the frozen test itself: it must actually fail before the repair, or the whole before/after demonstration is theatre.",
+      "construction": "Ran the emitted frozen_test_missing_spine.py against an unrepaired copy of the pack tree.",
+      "observed_output_verbatim": "HC-E frozen test on unrepaired copy -> exit 1 | names 5 missing: 7",
+      "component_survived": true,
+      "interpretation": "Genuinely fails with exit 1 and names the missing spine files in its assertion message. The frozen test is a real regression, not a placeholder."
+    },
+    {
+      "hidden_case_id": "HC-F",
+      "rationale": "The repair hardcodes EXPECTED_SPINE_SHA256. If that constant were invented, the entire repair would be wrong while appearing to validate itself.",
+      "construction": "Independently hashed packs/_shared/_spine.py at the pinned commit and read the _spine.py declaration out of one of the five pack manifests.",
+      "observed_output_verbatim": "  packs/_shared/_spine.py PRESENT\n431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182  -\n  claimed EXPECTED_SPINE_SHA256 = 431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182\n  06-browser-execution declares _spine.py sha256= 431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182 bytes= 43928",
+      "component_survived": true,
+      "interpretation": "Three-way agreement confirmed by my own computation: the shared spine's actual bytes, the constant hardcoded in the repair candidate, and the declaration inside the pack manifest all give SHA-256 431773539ced... at 43928 bytes. The repair restores the correct bytes and the constant is a real measurement."
+    }
+  ],
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "MET - I reproduced the full generate/fail/repair/pass cycle.",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET - 7 artifacts including all three generated candidate files, all verified, no unlisted files on disk.",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - acceptance_contract_sha256 equals my pre-disclosure hash 88add6f8...",
+    "result is committed and read back by a different process from an immutable object id": "MET - artifact_commit 49ca375a0dce4d9721adb2d7b31333dc7011aa56.",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - PASS.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "NOT_APPLICABLE - the unit's own hypothesis is confirmed. Note the unit is itself a disciplined recording of someone else's refuted claim: the five absent _spine.py files that units 020 and 022 refuted are here converted into a frozen regression rather than narrated.",
+    "no value, hash, metric or provider capability is invented": "MET, verified three ways under HC-F."
+  },
+
+  "scope_honesty_assessment": {
+    "producer_declared_limitations": [
+      "The repair is an unpromoted candidate held under PO-03; it was never applied to a published pack, PO-01 namespace, branch, path, PR, artifact or workspace."
+    ],
+    "assessment": "Exactly the right limitation, enumerated rather than gestured at, and I could not falsify any part of it. The defect.json artifact independently records po01_path_writes as an empty list and candidate_scope as 'held entirely under this PO-03 unit; never applied to PO-01'. What is undeclared is that the emitted candidate has no guard of its own (HC-B), which matters precisely because the deliverable advertises it as integration-ready."
+  },
+
+  "verification_commands": {
+    "artifact_verification_verbatim": "artifact_count: 7 ALL_VERIFY: True\non disk not listed: []",
+    "defect_record_verbatim": "missing_paths: [\n \"packs/06-browser-execution/_spine.py\",\n \"packs/07-capability-manufacture/_spine.py\",\n \"packs/08-knowledge-currentness/_spine.py\",\n \"packs/09-infrastructure-operation/_spine.py\",\n \"packs/10-economics-measurement/_spine.py\"\n]\npo01_path_writes: []\nshared_spine: {\"bytes\": 43928, \"path\": \"packs/_shared/_spine.py\", \"sha256\": \"431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182\"}"
+  },
+
+  "nonportable_artifacts_in_subtree": [],
+  "reproducibility_check": "Commit-pinned. The generate/fail/repair/pass cycle reproduced identically in fresh python3 -I processes, and the repair proved idempotent on a second application.",
+
+  "reviewer_independent_verdict": "PASS",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "AGREE",
+  "divergence_reason": null,
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "The PASS is justified and this is the best-engineered unit in cohort c3. Every element of the frozen deliverable is present and I verified each independently: the frozen test genuinely fails on an unrepaired tree, the repair candidate genuinely fixes it on an isolated copy, the whole thing is held inside the PO-03 namespace, and the no-PO-01-write assertion survived three separate escape attempts including a traversal into a sibling unit's subtree. The repair is also safer than it needed to be - it validates the shared spine against a pinned hash and each pack's declaration before writing, fails closed with zero writes on a tampered declaration, and is idempotent rather than overwriting. I confirmed the hardcoded spine hash three ways against the real bytes and the real manifest declaration, so nothing is invented. The unit converts the five-absent-_spine.py defect that units 020 and 022 refuted into an executable regression instead of a narrative, which is what the commission asks for. One hazard is logged rather than held against it: the emitted candidate itself has no namespace guard.",
+  "followups_for_coordinator": [
+    "The emitted repair_candidate.py has no namespace guard of its own. Reviewer-observed: aimed at a scratch tree named '.../po01/packs' it wrote all five _spine.py files with no refusal and exit 0. Since the frozen deliverable advertises this artifact as integration-ready, the generator should emit it with the same path assertion it applies to itself, so the guard travels with the candidate rather than staying behind in the generator.",
+    "Positive note worth propagating to other units: this unit's test creates its temporary pack copy with tempfile.TemporaryDirectory(dir=HERE) rather than under /tmp, which respects the commission's prohibition on treating /tmp as durable evidence. Several other units in the wave use /tmp-backed TMPDIR indirection instead."
+  ]
+}
