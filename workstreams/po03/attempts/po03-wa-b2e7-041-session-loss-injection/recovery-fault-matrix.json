@@ -1,0 +1,485 @@
+{
+  "cohort": "c6",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "compiled_by": "po03-wa-b2e7-041-session-loss-injection producer",
+  "compiled_from": "injection reports produced by executing each unit's component",
+  "decision_changed": [],
+  "defects": [
+    {
+      "adopted_by_live_mechanism": false,
+      "cohort_bar_clause_breached": "100 percent recovery of committed results",
+      "defect_id": "DEF-PO03-C6-042-LOST-CALLBACK-NOT-REPLAYED",
+      "repair_candidate": "workstreams/po03/attempts/po03-wa-b2e7-042-lost-callback-replay/repair_candidate_replay_scan.py",
+      "severity": "COHORT_BAR_BREACH",
+      "source_unit": "po03-wa-b2e7-042-lost-callback-replay",
+      "verdict": "FAIL"
+    },
+    {
+      "adopted_by_live_mechanism": false,
+      "cohort_bar_clause_breached": "100 percent recovery of committed results",
+      "defect_id": "DEF-PO03-C6-044-PUSH-BOUNDARY-NOT-DISTINGUISHED-OR-RECOVERED",
+      "repair_candidate": "workstreams/po03/attempts/po03-wa-b2e7-044-push-failure-injection/repair_candidate_remote_recovery.py",
+      "severity": "COHORT_BAR_BREACH",
+      "source_unit": "po03-wa-b2e7-044-push-failure-injection",
+      "verdict": "FAIL"
+    },
+    {
+      "adopted_by_live_mechanism": false,
+      "cohort_bar_clause_breached": null,
+      "defect_id": "DEF-PO03-C6-045-FENCING-INCOMPLETE",
+      "repair_candidate": "workstreams/po03/attempts/po03-wa-b2e7-045-stale-lease-fencing/repair_candidate_fencing.py",
+      "severity": "AUTHORISED_CUSTODY_GAP_NOT_A_FALSE_COMPLETION",
+      "source_unit": "po03-wa-b2e7-045-stale-lease-fencing",
+      "verdict": "FAIL"
+    },
+    {
+      "adopted_by_live_mechanism": false,
+      "cohort_bar_clause_breached": "zero duplicate external effects",
+      "defect_id": "DEF-PO03-C6-046-SUPPRESSION-KEYED-ON-BYTES-NOT-TRANSACTION",
+      "repair_candidate": "workstreams/po03/attempts/po03-wa-b2e7-046-duplicate-callback-idempotence/repair_candidate_idempotence.py",
+      "severity": "COHORT_BAR_BREACH",
+      "source_unit": "po03-wa-b2e7-046-duplicate-callback-idempotence",
+      "verdict": "FAIL"
+    }
+  ],
+  "false_completions_observed": 0,
+  "fault_class_rows": 45,
+  "function": "transactional-recovery-and-fault-injection",
+  "matrix_version": "PO03-C6-RECOVERY-FAULT-MATRIX-v1",
+  "obzio_state_claim": "READY_TO_COMMIT",
+  "producer_may_not_accept_own_work": true,
+  "rows": [
+    {
+      "fault_class": "SESSION_LOST_AFTER_CREATED",
+      "injected_at_state_transition": "CREATED -> (session gone)",
+      "observed_behaviour": "only the CREATED event existed; the scanner classified the unit DISPATCH; no completion, no ingestion, chain clean, capsule intact; a fresh worker resumed from the capsule to PARENT_INGESTED with a matching read-back",
+      "source_unit": "po03-wa-b2e7-041-session-loss-injection",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "SESSION_LOST_AFTER_LEASED",
+      "injected_at_state_transition": "LEASED -> (session gone)",
+      "observed_behaviour": "CREATED and LEASED events survived; classified RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT; the resumption took a new lease with an advanced fence and reached PARENT_INGESTED with zero errors",
+      "source_unit": "po03-wa-b2e7-041-session-loss-injection",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "SESSION_LOST_AFTER_RUNNING",
+      "injected_at_state_transition": "RUNNING -> (session gone)",
+      "observed_behaviour": "the chain ended at RUNNING and verified cleanly; classified RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT; resumption reached PARENT_INGESTED",
+      "source_unit": "po03-wa-b2e7-041-session-loss-injection",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "SESSION_LOST_AFTER_CHECKPOINTED",
+      "injected_at_state_transition": "CHECKPOINTED -> (session gone)",
+      "observed_behaviour": "the checkpoint event survived the loss with its hash intact; classified RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT; resumption reached PARENT_INGESTED",
+      "source_unit": "po03-wa-b2e7-041-session-loss-injection",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "SESSION_LOST_AFTER_RESULT_STAGING",
+      "injected_at_state_transition": "RESULT_STAGING -> (session gone)",
+      "observed_behaviour": "bytes existed only in the worktree with no commit; classified RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT; resumption committed fresh bytes and reached PARENT_INGESTED",
+      "source_unit": "po03-wa-b2e7-041-session-loss-injection",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "SESSION_LOST_AFTER_RESULT_STAGED",
+      "injected_at_state_transition": "RESULT_STAGED -> (session gone)",
+      "observed_behaviour": "the staged byte count was recorded in the chain but nothing was durable in Git; classified RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT; resumption reached PARENT_INGESTED",
+      "source_unit": "po03-wa-b2e7-041-session-loss-injection",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "SESSION_LOST_AFTER_RESULT_VERIFIED",
+      "injected_at_state_transition": "RESULT_VERIFIED -> (session gone)",
+      "observed_behaviour": "the verified hash and byte count survived in the chain while the bytes themselves were still uncommitted; classified RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT; resumption reached PARENT_INGESTED",
+      "source_unit": "po03-wa-b2e7-041-session-loss-injection",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "SESSION_LOST_AFTER_RESULT_COMMITTED",
+      "injected_at_state_transition": "RESULT_COMMITTED -> (session gone)",
+      "observed_behaviour": "the commit was durable and the chain recorded it, yet the scanner still classified RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT with no ingestion record; the resumption produced a second commit and reached PARENT_INGESTED, so no false completion appeared but the first committed result was superseded rather than replayed",
+      "source_unit": "po03-wa-b2e7-041-session-loss-injection",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "SESSION_LOST_AFTER_PARENT_INGESTED",
+      "injected_at_state_transition": "PARENT_INGESTED -> (session gone)",
+      "observed_behaviour": "the ingested result survived the loss of the session that produced it; the scanner classified the unit AWAIT_COORDINATOR_COMPLETION and no COMPLETED state was ever set by a producer",
+      "source_unit": "po03-wa-b2e7-041-session-loss-injection",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "LOST_RETURN_MESSAGE_AFTER_DURABLE_RESULT_COMMIT",
+      "injected_at_state_transition": "RESULT_COMMITTED",
+      "observed_behaviour": "scan_recovery classified the unit RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT; scan_recovery reported ingested=false and produced zero ingestion records; the committed result commit is referenced nowhere in the recovery state document; the committed result document remained byte-exact and readable by immutable object id (1804 bytes); false_completion_count remained 0 and no transaction-completed.json was written; the hash-chained event file chain verified with zero errors",
+      "source_unit": "po03-wa-b2e7-042-lost-callback-replay",
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "PARTIAL_WRITE_KILLED_BEFORE_ATOMIC_LINK",
+      "injected_at_state_transition": "RUNNING -> CHECKPOINTED",
+      "observed_behaviour": "the 2 MiB payload was fsynced into a hidden temporary file and the process died before os.link; no CHECKPOINTED event file ever became visible, the chain still verified, the scanner prescribed RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT",
+      "source_unit": "po03-wa-b2e7-043-partial-and-commit-failure",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "LINKED_BUT_UNFSYNCED_DIRECTORY_ENTRY",
+      "injected_at_state_transition": "RUNNING -> CHECKPOINTED",
+      "observed_behaviour": "the process died after os.link but before the directory fsync; the event file was present, its recomputed event_sha256 matched its claim, and verify_chain returned no errors",
+      "source_unit": "po03-wa-b2e7-043-partial-and-commit-failure",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "CRASH_MID_REPLACEMENT_OF_DERIVED_STATE",
+      "injected_at_state_transition": "controller recovery-state regeneration",
+      "observed_behaviour": "the process died before os.replace; generation 1 of recovery-state.json survived byte-intact and parsed as valid JSON, so no torn derived state was observable",
+      "source_unit": "po03-wa-b2e7-043-partial-and-commit-failure",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "CRASH_BETWEEN_HASH_CHAINED_EVENTS",
+      "injected_at_state_transition": "CHECKPOINTED -> RESULT_STAGING",
+      "observed_behaviour": "four contiguous events survived, sequence numbering stayed dense, and verify_chain reported no previous-hash or sequence errors",
+      "source_unit": "po03-wa-b2e7-043-partial-and-commit-failure",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "PRE_COMMIT_FAILURE_WITH_UNCOMMITTED_BYTES",
+      "injected_at_state_transition": "RESULT_STAGING -> (no commit)",
+      "observed_behaviour": "bytes existed only in the worktree; git ls-tree at HEAD listed nothing under the slot; ingesting a result that pointed at HEAD produced RECOVERY_REQUIRED with a read-back failure error and no false completion",
+      "source_unit": "po03-wa-b2e7-043-partial-and-commit-failure",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "POST_COMMIT_FAILURE_BEFORE_CALLBACK",
+      "injected_at_state_transition": "RESULT_COMMITTED -> (no callback)",
+      "observed_behaviour": "1796 bytes of committed result stayed readable by immutable object id and the immutable capsule survived, so the state is recoverable and no false completion appeared; the live scanner nevertheless reported ingested=false and prescribed a rerun rather than replaying the commit",
+      "source_unit": "po03-wa-b2e7-043-partial-and-commit-failure",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "IMMUTABLE_FILE_REWRITE_ATTEMPT",
+      "injected_at_state_transition": "CREATED (immutable capsule)",
+      "observed_behaviour": "write_once raised FileExistsError for differing bytes, treated an identical payload as a no-op, and left the capsule bytes unchanged",
+      "source_unit": "po03-wa-b2e7-043-partial-and-commit-failure",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "PRE_PUSH_FAILURE_COMMIT_LOCAL_ONLY",
+      "injected_at_state_transition": "RESULT_COMMITTED -> (push never executed)",
+      "observed_behaviour": "the commit was absent from the remote; ingestion returned RECOVERY_REQUIRED with a read-back failure; the 53 committed bytes remained byte-identical in the producer clone; false_completion_count 0",
+      "source_unit": "po03-wa-b2e7-044-push-failure-injection",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "POST_PUSH_REPORT_LOST_CONTROLLER_ALREADY_FETCHED",
+      "injected_at_state_transition": "RESULT_COMMITTED -> pushed -> (report lost)",
+      "observed_behaviour": "push succeeded, the controller had fetched, and ingestion of the recovered document returned PARENT_INGESTED with zero errors, a matching artifact read-back and AWAIT_COORDINATOR_COMPLETION from the scanner",
+      "source_unit": "po03-wa-b2e7-044-push-failure-injection",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "POST_PUSH_REPORT_LOST_CONTROLLER_NOT_FETCHED",
+      "injected_at_state_transition": "RESULT_COMMITTED -> pushed -> (report lost, no fetch)",
+      "observed_behaviour": "the commit was verified present on the remote, yet ingestion returned RECOVERY_REQUIRED; the mechanism made no fetch attempt and the scanner prescribed a rerun",
+      "source_unit": "po03-wa-b2e7-044-push-failure-injection",
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "PUSH_REJECTED_NON_FAST_FORWARD",
+      "injected_at_state_transition": "RESULT_COMMITTED -> push refused",
+      "observed_behaviour": "git rejected the push (exit 1, stderr contained a rejection), the remote tip still pointed at the competing worker's commit, the producer's own bytes stayed byte-identical locally, ingestion returned RECOVERY_REQUIRED and no false completion appeared",
+      "source_unit": "po03-wa-b2e7-044-push-failure-injection",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "SUPERSEDED_WORKER_COMMITS_AFTER_OWNERSHIP_TRANSFER",
+      "injected_at_state_transition": "LEASED (transferred) -> RESULT_COMMITTED",
+      "observed_behaviour": "the transfer advanced the fence from 1 to 2; the old holder's result was refused with 'fence 1 is stale; active fence is 2' and classified RECOVERY_REQUIRED; the transferred holder's identical result reached PARENT_INGESTED with zero errors; false_completion_count 0",
+      "source_unit": "po03-wa-b2e7-045-stale-lease-fencing",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "EXPIRED_LEASE_WITHOUT_OWNERSHIP_TRANSFER",
+      "injected_at_state_transition": "LEASED (expired) -> RESULT_COMMITTED",
+      "observed_behaviour": "a lease granted with lease_seconds 0 was already expired, yet the holder's result reached PARENT_INGESTED with zero errors; source inspection of assert_fence_current and ingest_result found no reference to lease_seconds or granted_at, so the recorded lifetime is never read",
+      "source_unit": "po03-wa-b2e7-045-stale-lease-fencing",
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "NEVER_ALLOCATED_HIGHER_FENCE_TOKEN",
+      "injected_at_state_transition": "LEASED -> RESULT_COMMITTED",
+      "observed_behaviour": "with the active fence at 1, a worker presenting fence 1001 was not refused by assert_fence_current and its result reached PARENT_INGESTED; the guard rejects only tokens lower than the active fence, so a token that was never allocated passes",
+      "source_unit": "po03-wa-b2e7-045-stale-lease-fencing",
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "INTERLEAVED_FENCE_ALLOCATION",
+      "injected_at_state_transition": "CREATED -> LEASED (fence allocation)",
+      "observed_behaviour": "suspending one allocation inside its read-modify-write window while a second allocation completed returned token 1 to both allocators; the exclusive-creation candidate returned 1 and 2 under the identical interleaving",
+      "source_unit": "po03-wa-b2e7-045-stale-lease-fencing",
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "CONCURRENT_FENCE_ALLOCATION_ACROSS_REAL_PROCESSES",
+      "injected_at_state_transition": "CREATED -> LEASED (fence allocation)",
+      "observed_behaviour": "eight real processes taking six tokens each received 48 tokens with only 14 distinct values (34 duplicates) from the live allocator, and 48 tokens with 48 distinct values (0 duplicates) from the candidate",
+      "source_unit": "po03-wa-b2e7-045-stale-lease-fencing",
+      "verdict": "OBSERVATION_ONLY"
+    },
+    {
+      "fault_class": "IDENTICAL_CALLBACK_REPLAYED_FIVE_TIMES",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (replayed)",
+      "observed_behaviour": "the first callback was ingested and the next four were suppressed; exactly one ingestion file, one result file, one registry INGESTION row and one PARENT_INGESTED event; verify_chain clean",
+      "source_unit": "po03-wa-b2e7-046-duplicate-callback-idempotence",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "RETRIED_CALLBACK_WITH_REGENERATED_TIMESTAMPS",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (re-emitted)",
+      "observed_behaviour": "the transaction identity (task, idempotency key, lease, fence, attempt, result commit, artifact hashes) was unchanged while the document bytes differed; the second callback was not suppressed and produced two ingestion files, two result files, two registry INGESTION rows and two PARENT_INGESTED events for one transaction",
+      "source_unit": "po03-wa-b2e7-046-duplicate-callback-idempotence",
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "CONCURRENT_DUPLICATE_CALLBACK_SAME_CLOCK",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (interleaved)",
+      "observed_behaviour": "one ingestion suspended between its duplicate check and its first durable write while a second ingestion of the same document completed; the destination file stayed single, but the registry received two INGESTION rows and the event chain received two PARENT_INGESTED events for one logical ingestion",
+      "source_unit": "po03-wa-b2e7-046-duplicate-callback-idempotence",
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "CONCURRENT_DUPLICATE_CALLBACK_SKEWED_CLOCK",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (interleaved)",
+      "observed_behaviour": "with the two ingestions one second apart, the second writer raised FileExistsError: immutable file differs: .../ingestion-69d43205265055ac.json, so the coordinator crashed out of ingestion rather than recognising a duplicate",
+      "source_unit": "po03-wa-b2e7-046-duplicate-callback-idempotence",
+      "verdict": "FAIL"
+    },
+    {
+      "fault_class": "REPAIR_CANDIDATE_UNDER_IDENTICAL_AND_REGENERATED_DUPLICATES",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (candidate)",
+      "observed_behaviour": "three identical replays plus one regenerated retry produced INGESTED then three DUPLICATE_SUPPRESSED_BY_IDENTITY outcomes, leaving one ingestion file, one registry row and one PARENT_INGESTED event",
+      "source_unit": "po03-wa-b2e7-046-duplicate-callback-idempotence",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "CLAIMED_HASH_DOES_NOT_MATCH_COMMITTED_BYTES",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (ingestion check)",
+      "observed_behaviour": "refused with a read-back mismatch error, classified RECOVERY_REQUIRED, capsule intact, rerun from the capsule reached PARENT_INGESTED",
+      "source_unit": "po03-wa-b2e7-047-corrupt-artifact-recovery",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "CLAIMED_BYTE_COUNT_DOES_NOT_MATCH_COMMITTED_BYTES",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (ingestion check)",
+      "observed_behaviour": "a byte count one higher than the committed bytes was enough on its own to produce a read-back mismatch and RECOVERY_REQUIRED; rerun reached PARENT_INGESTED",
+      "source_unit": "po03-wa-b2e7-047-corrupt-artifact-recovery",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "COMMITTED_BYTES_TRUNCATED_AFTER_HASHING",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (ingestion check)",
+      "observed_behaviour": "the artifact was truncated by five bytes and re-committed while the result kept the original hash; refused with a read-back mismatch and RECOVERY_REQUIRED; rerun reached PARENT_INGESTED",
+      "source_unit": "po03-wa-b2e7-047-corrupt-artifact-recovery",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "ARTIFACT_PATH_ABSENT_FROM_THE_COMMIT",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (ingestion check)",
+      "observed_behaviour": "refused with a read-back failure, RECOVERY_REQUIRED, event chain still verifiable, rerun reached PARENT_INGESTED",
+      "source_unit": "po03-wa-b2e7-047-corrupt-artifact-recovery",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "RESULT_COMMIT_DOES_NOT_EXIST",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (ingestion check)",
+      "observed_behaviour": "a forty-zero commit id was refused with a read-back failure and RECOVERY_REQUIRED; rerun reached PARENT_INGESTED",
+      "source_unit": "po03-wa-b2e7-047-corrupt-artifact-recovery",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "LOCATOR_POINTS_AT_A_TREE_NOT_A_BLOB",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (ingestion check)",
+      "observed_behaviour": "git cat-file blob refused the tree locator, so ingestion refused with a read-back failure and RECOVERY_REQUIRED; rerun reached PARENT_INGESTED",
+      "source_unit": "po03-wa-b2e7-047-corrupt-artifact-recovery",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "LOCATOR_IS_NOT_A_DURABLE_GIT_OBJECT",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (ingestion check)",
+      "observed_behaviour": "a file:// locator was refused as non-durable; read_object_bytes also raised ValueError for http:// and for a bare relative path",
+      "source_unit": "po03-wa-b2e7-047-corrupt-artifact-recovery",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "WORKTREE_TAMPERED_AFTER_THE_COMMIT",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (ingestion check)",
+      "observed_behaviour": "overwriting the worktree file with different bytes after the commit changed nothing: ingestion read the committed object, matched the recorded hash and byte count, and reached PARENT_INGESTED with zero errors",
+      "source_unit": "po03-wa-b2e7-047-corrupt-artifact-recovery",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "EMPTY_OR_MISSING_ARTIFACT_SET",
+      "injected_at_state_transition": "RESULT_COMMITTED -> PARENT_INGESTED (contract check)",
+      "observed_behaviour": "a zero-byte artifact was refused by the seeded contract with '$.artifacts[0].bytes: must be an integer >= 1' and an artifact-free committed result with '$.artifacts: committed result requires at least one artifact'; both classified RECOVERY_REQUIRED",
+      "source_unit": "po03-wa-b2e7-047-corrupt-artifact-recovery",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "TOTAL_PROVIDER_RUNTIME_LOSS_AFTER_PROVIDER_REPORTED_COMPLETION_BEFORE_ANY_COMMIT",
+      "injected_at_state_transition": "RUNNING -> PROVIDER_COMPLETED_UNCOMMITTED -> (runtime gone)",
+      "observed_behaviour": "completion_file_present=False; durable_result_committed=[]; event_chain_errors=[]; event_states=[\"CREATED\", \"LEASED\", \"RUNNING\", \"PROVIDER_COMPLETED_UNCOMMITTED\"]; false_completion_count=0; immutable_input_available_for_rerun=True; ingestion_records=0; obzio_completed_event_present=False; provider_reported_completion=True; recovery_action=RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT",
+      "source_unit": "po03-wa-b2e7-048-provider-runtime-loss-and-code2-fixture",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "TOTAL_PROVIDER_RUNTIME_LOSS_AFTER_STAGING_BEFORE_PROVIDER_REPORT",
+      "injected_at_state_transition": "RUNNING -> (runtime gone before any report)",
+      "observed_behaviour": "completion_file_present=False; durable_result_committed=[]; event_chain_errors=[]; event_states=[\"CREATED\", \"LEASED\", \"RUNNING\"]; false_completion_count=0; immutable_input_available_for_rerun=True; ingestion_records=0; obzio_completed_event_present=False; provider_reported_completion=False; recovery_action=RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT",
+      "source_unit": "po03-wa-b2e7-048-provider-runtime-loss-and-code2-fixture",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "PROVIDER_COMPLETION_WITH_NO_DURABLE_RESULT_CLAIMS_COMPLETED",
+      "injected_at_state_transition": "PROVIDER_COMPLETED_UNCOMMITTED -> COMPLETED (attempted)",
+      "observed_behaviour": "complete_unit_refusal=po03-c6-048-contract-unit: cannot complete before PARENT_INGESTED; completed_claim_refused=True; ingestion_errors=[\"result carries no artifacts; nothing durable to ingest\"]; ingestion_state=RECOVERY_REQUIRED; provider_completed_uncommitted_is_the_only_legal_state=True; self_acceptance_refused=True",
+      "source_unit": "po03-wa-b2e7-048-provider-runtime-loss-and-code2-fixture",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "FROZEN_CODE2_FAULT_FIXTURE",
+      "injected_at_state_transition": "n/a (frozen historical fault)",
+      "observed_behaviour": "durable_artifacts=[]; durable_result_commit_id=None; evidence_acceptance_state=NOT_TESTED; evidence_hash_matches=True; evidence_obzio_state=PROVIDER_COMPLETED_UNCOMMITTED; evidence_provider_state=COMPLETION_REPORTED_OR_LIVE_CONFLICT; evidence_result_state=UNRECOVERED_AFTER_FOUR_FOUNDER_REPORTED_ROUTES; evidence_sha256_observed=646bc5f36f4e18af543364dbfd432ccd7cc4bd7e1d35e229e462ea64ec56b148; evidence_sha256_recorded=646bc5f36f4e18af543364dbfd432ccd7cc4bd7e1d35e229e462ea64ec56b148; founder_relay_required_for_recovery=False; frozen_states_match_commission=True; is_a_completed_deliverable=False; ",
+      "source_unit": "po03-wa-b2e7-048-provider-runtime-loss-and-code2-fixture",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "RECOVERY_WITHOUT_FOUNDER_RELAY",
+      "injected_at_state_transition": "n/a (static and behavioural check)",
+      "observed_behaviour": "founder_supplied_inputs=[]; recovery_inputs=[\"control/tasks/<task>/input.json (immutable capsule)\", \"control/events/<task>/*.json (hash-chained events)\", \"control/tasks/<task>/ingestion-*.json (ingestion records)\", \"control/leases/<task>.json (fence token)\", \"git objects reached by immutable object id\"]; scan_recovery_parameters=[\"run_id\", \"head_sha\"]; scan_recovery_reads_only_repository_state=True",
+      "source_unit": "po03-wa-b2e7-048-provider-runtime-loss-and-code2-fixture",
+      "verdict": "PASS"
+    }
+  ],
+  "sources": [
+    {
+      "bytes": 16956,
+      "git_blob_id": null,
+      "path": "workstreams/po03/attempts/po03-wa-b2e7-041-session-loss-injection/injection-report.json",
+      "sha256": "e0ed34367e495e68f68f0578fbbc68a0259c1d25c87162ec80ae94e51aba1dfe"
+    },
+    {
+      "bytes": 7730,
+      "git_blob_id": null,
+      "path": "workstreams/po03/attempts/po03-wa-b2e7-041-session-loss-injection/observation-record.json",
+      "sha256": "878e9fa0855230f06913f809b95ae6571994255423f18206e7dd5da534a17574"
+    },
+    {
+      "bytes": 1334,
+      "git_blob_id": "5fc9c4b6a61a70adae276555f6d31caec5906587",
+      "path": "workstreams/po03/attempts/po03-wa-b2e7-042-lost-callback-replay/injection-report.json",
+      "sha256": "aa5331c3527693e548a5dfe1e8724b28057fb5956e609b6306f1227f9dbc5c40"
+    },
+    {
+      "bytes": 4149,
+      "git_blob_id": "3341426add0a7e6dcf3ac60e8cb8696e5e12ba20",
+      "path": "workstreams/po03/attempts/po03-wa-b2e7-042-lost-callback-replay/defect-record.json",
+      "sha256": "2756ded766a41f99687027f15a19803c0a7f184f7cac22e2e68721201a95104d"
+    },
+    {
+      "bytes": 5800,
+      "git_blob_id": "ed6fa2ba3d376877717e8df60e4a6dd6553c58a3",
+      "path": "workstreams/po03/attempts/po03-wa-b2e7-043-partial-and-commit-failure/injection-report.json",
+      "sha256": "8ae9402590b6d5235ad9d296637270e2027b21283ff018861f7748e41d4ca8e9"
+    },
+    {
+      "bytes": 5424,
+      "git_blob_id": "a0af7a29edb89d460188bed5b340386ef6ae1a9d",
+      "path": "workstreams/po03/attempts/po03-wa-b2e7-043-partial-and-commit-failure/observation-record.json",
+      "sha256": "cfb714a99554e877dba6f2da274e5792c0e571875756425a001e2c3d85a1e706"
+    },
+    {
+      "bytes": 4043,
+      "git_blob_id": "4958b5e5749b46c16f20df670abdf35d71e5eea2",
+      "path": "workstreams/po03/attempts/po03-wa-b2e7-044-push-failure-injection/injection-report.json",
+      "sha256": "2c44a14708e43032c982639d44fc9f4a833efbabc86dbaef59691461f2cec0c2"
+    },
+    {
+      "bytes": 6192,
+      "git_blob_id": "fc35ec1b4b4021fcaf36e11008a391569572a3e4",
+      "path": "workstreams/po03/attempts/po03-wa-b2e7-044-push-failure-injection/defect-record.json",
+      "sha256": "3727dfdec657a9a02d708e8ef3efe4cde18f79ef79b4c6cbdd5fcee6a8656f0f"
+    },
+    {
+      "bytes": 3978,
+      "git_blob_id": "f0338c081684dc5f089c6dfff02fef231c9b9148",
+      "path": "workstreams/po03/attempts/po03-wa-b2e7-045-stale-lease-fencing/injection-report.json",
+      "sha256": "a5d5ea80d7a55a822858970ad5a8a4dc38e9909412a0d55ac4b13db7b0eb8aa0"
+    },
+    {
+      "bytes": 7328,
+      "git_blob_id": "90993fed7eb32694151833c8f88f8b18859bbd55",
+      "path": "workstreams/po03/attempts/po03-wa-b2e7-045-stale-lease-fencing/defect-record.json",
+      "sha256": "5e0bc851796f18ee91ebf303165c9042165116f73e4f8b73a0a2f0b6152a2be8"
+    },
+    {
+      "bytes": 4603,
+      "git_blob_id": "710de8e510090b5a0a6f689c0f4b23aa67b3ad94",
+      "path": "workstreams/po03/attempts/po03-wa-b2e7-046-duplicate-callback-idempotence/injection-report.json",
+      "sha256": "284b524e0450408e80301172b69a8315e5cdb6cfb6be22fc3bd56ab77a81c09d"
+    },
+    {
+      "bytes": 7348,
+      "git_blob_id": "e9a8827f76a00d44882eed10dd59879082fa6509",
+      "path": "workstreams/po03/attempts/po03-wa-b2e7-046-duplicate-callback-idempotence/defect-record.json",
+      "sha256": "a84129cd636b920920037a25b17dfbe1bff15f38207c27ccba329753f056cd6c"
+    },
+    {
+      "bytes": 7988,
+      "git_blob_id": "c72679e9e503971b7e97d30e8d0d0d8206e93f74",
+      "path": "workstreams/po03/attempts/po03-wa-b2e7-047-corrupt-artifact-recovery/injection-report.json",
+      "sha256": "f93a5b0480fdfbed6437959632bed8fd3a774e75609237353b02ed821d64869f"
+    },
+    {
+      "bytes": 5910,
+      "git_blob_id": "9cea5089bba7bebe5e1edd78345204d8c473e159",
+      "path": "workstreams/po03/attempts/po03-wa-b2e7-047-corrupt-artifact-recovery/observation-record.json",
+      "sha256": "57590bcc9dd9229dfaa45b94b3c1f6cc3b33f3147059dc5c3983d5ad134e5197"
+    },
+    {
+      "bytes": 6833,
+      "git_blob_id": "7a020718e3845540719ef2e44e310c11281e35ac",
+      "path": "workstreams/po03/attempts/po03-wa-b2e7-048-provider-runtime-loss-and-code2-fixture/injection-report.json",
+      "sha256": "52320912dade38089d19ae141d343156af4d6872b470164a09594442155a66c3"
+    }
+  ],
+  "unit_verdicts": {
+    "po03-wa-b2e7-041-session-loss-injection": "PASS",
+    "po03-wa-b2e7-042-lost-callback-replay": "FAIL",
+    "po03-wa-b2e7-043-partial-and-commit-failure": "PASS",
+    "po03-wa-b2e7-044-push-failure-injection": "FAIL",
+    "po03-wa-b2e7-045-stale-lease-fencing": "FAIL",
+    "po03-wa-b2e7-046-duplicate-callback-idempotence": "FAIL",
+    "po03-wa-b2e7-047-corrupt-artifact-recovery": "PASS",
+    "po03-wa-b2e7-048-provider-runtime-loss-and-code2-fixture": "PASS"
+  },
+  "units": [
+    "po03-wa-b2e7-041-session-loss-injection",
+    "po03-wa-b2e7-042-lost-callback-replay",
+    "po03-wa-b2e7-043-partial-and-commit-failure",
+    "po03-wa-b2e7-044-push-failure-injection",
+    "po03-wa-b2e7-045-stale-lease-fencing",
+    "po03-wa-b2e7-046-duplicate-callback-idempotence",
+    "po03-wa-b2e7-047-corrupt-artifact-recovery",
+    "po03-wa-b2e7-048-provider-runtime-loss-and-code2-fixture"
+  ],
+  "verdict_counts": {
+    "FAIL": 8,
+    "OBSERVATION_ONLY": 1,
+    "PASS": 36
+  }
+}

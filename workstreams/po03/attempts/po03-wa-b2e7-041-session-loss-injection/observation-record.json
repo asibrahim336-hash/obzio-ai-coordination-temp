@@ -1,0 +1,126 @@
+{
+  "observation_id": "OBS-PO03-C6-041-SESSION-LOSS-AT-EVERY-STATE",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "cohort": "c6",
+  "task_id": "po03-wa-b2e7-041-session-loss-injection",
+  "function": "transactional-recovery-and-fault-injection",
+  "falsifiable_hypothesis": "A worker process or session lost mid-flight leaves no false completion and the unit is resumable from immutable input.",
+  "verdict": "PASS",
+  "mechanism_under_test": "workstreams/po03/tools/transactional_factory.py",
+  "injection_method": "for each of the nine states in the live order a real child worker reaches that state, performs the durable work belonging to it, and is killed with SIGKILL (returncode -9 confirmed in every case); the parent then executes a genuine resumption with a fresh lease, fresh bytes, a fresh commit and a fresh ingestion",
+  "fault_classes": [
+    {
+      "fault_class": "SESSION_LOST_AFTER_CREATED",
+      "injected_at_state_transition": "CREATED -> (session gone)",
+      "observed_behaviour": "only the CREATED event existed; the scanner classified the unit DISPATCH; no completion, no ingestion, chain clean, capsule intact; a fresh worker resumed from the capsule to PARENT_INGESTED with a matching read-back",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "SESSION_LOST_AFTER_LEASED",
+      "injected_at_state_transition": "LEASED -> (session gone)",
+      "observed_behaviour": "CREATED and LEASED events survived; classified RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT; the resumption took a new lease with an advanced fence and reached PARENT_INGESTED with zero errors",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "SESSION_LOST_AFTER_RUNNING",
+      "injected_at_state_transition": "RUNNING -> (session gone)",
+      "observed_behaviour": "the chain ended at RUNNING and verified cleanly; classified RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT; resumption reached PARENT_INGESTED",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "SESSION_LOST_AFTER_CHECKPOINTED",
+      "injected_at_state_transition": "CHECKPOINTED -> (session gone)",
+      "observed_behaviour": "the checkpoint event survived the loss with its hash intact; classified RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT; resumption reached PARENT_INGESTED",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "SESSION_LOST_AFTER_RESULT_STAGING",
+      "injected_at_state_transition": "RESULT_STAGING -> (session gone)",
+      "observed_behaviour": "bytes existed only in the worktree with no commit; classified RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT; resumption committed fresh bytes and reached PARENT_INGESTED",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "SESSION_LOST_AFTER_RESULT_STAGED",
+      "injected_at_state_transition": "RESULT_STAGED -> (session gone)",
+      "observed_behaviour": "the staged byte count was recorded in the chain but nothing was durable in Git; classified RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT; resumption reached PARENT_INGESTED",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "SESSION_LOST_AFTER_RESULT_VERIFIED",
+      "injected_at_state_transition": "RESULT_VERIFIED -> (session gone)",
+      "observed_behaviour": "the verified hash and byte count survived in the chain while the bytes themselves were still uncommitted; classified RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT; resumption reached PARENT_INGESTED",
+      "verdict": "PASS"
+    },
+    {
+      "fault_class": "SESSION_LOST_AFTER_RESULT_COMMITTED",
+      "injected_at_state_transition": "RESULT_COMMITTED -> (session gone)",
+      "observed_behaviour": "the commit was durable and the chain recorded it, yet the scanner still classified RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT with no ingestion record; the resumption produced a second commit and reached PARENT_INGESTED, so no false completion appeared but the first committed result was superseded rather than replayed",
+      "verdict": "PASS",
+      "cross_reference": "DEF-PO03-C6-042-LOST-CALLBACK-NOT-REPLAYED covers the unreplayed committed result"
+    },
+    {
+      "fault_class": "SESSION_LOST_AFTER_PARENT_INGESTED",
+      "injected_at_state_transition": "PARENT_INGESTED -> (session gone)",
+      "observed_behaviour": "the ingested result survived the loss of the session that produced it; the scanner classified the unit AWAIT_COORDINATOR_COMPLETION and no COMPLETED state was ever set by a producer",
+      "verdict": "PASS"
+    }
+  ],
+  "false_completions_observed": 0,
+  "units_resumable_from_immutable_input": 9,
+  "state_transitions_covered": [
+    "CREATED",
+    "LEASED",
+    "RUNNING",
+    "CHECKPOINTED",
+    "RESULT_STAGING",
+    "RESULT_STAGED",
+    "RESULT_VERIFIED",
+    "RESULT_COMMITTED",
+    "PARENT_INGESTED"
+  ],
+  "residual_findings": [
+    {
+      "finding": "RESUMPTION_AFTER_A_DURABLE_COMMIT_DUPLICATES_THE_WORK",
+      "detail": "at the RESULT_COMMITTED kill point the prescribed resumption recomputed and recommitted the result, so the same logical work was performed twice and two commits exist for one unit.",
+      "impact": "no false completion and no lost custody, but it is a duplicated internal effect and the first committed result is never ingested.",
+      "severity": "TRACKED_AS_DEF_PO03_C6_042"
+    },
+    {
+      "finding": "SESSION_LOSS_LEAVES_NO_EXPLICIT_ABANDONED_MARKER",
+      "detail": "a lost session leaves the chain ending at whatever state it reached; nothing distinguishes 'still running' from 'session gone' without a lease lifetime, and lease lifetime is not enforced.",
+      "impact": "the recovery action is still correct because it does not depend on liveness, but a coordinator cannot tell how long to wait before transferring.",
+      "severity": "TRACKED_AS_DEF_PO03_C6_045"
+    }
+  ],
+  "consolidated_fault_matrix": {
+    "path": "workstreams/po03/attempts/po03-wa-b2e7-041-session-loss-injection/recovery-fault-matrix.json",
+    "human_readable": "workstreams/po03/attempts/po03-wa-b2e7-041-session-loss-injection/recovery-fault-matrix.md",
+    "generator": "workstreams/po03/attempts/po03-wa-b2e7-041-session-loss-injection/fault_matrix.py",
+    "compiled_from": "the injection reports produced by executing every c6 unit component",
+    "generator_command": "python3 -I workstreams/po03/attempts/po03-wa-b2e7-041-session-loss-injection/fault_matrix.py --write",
+    "fault_class_rows": 45,
+    "verdict_counts": {
+      "PASS": 36,
+      "FAIL": 8,
+      "OBSERVATION_ONLY": 1
+    },
+    "defects_with_staged_repair_candidates": 4,
+    "false_completions_observed": 0,
+    "source_files_hashed": 15,
+    "source_files_with_a_durable_git_blob_id_at_compile_time": 13,
+    "sources_without_a_blob_id": "this unit's own injection-report.json and observation-record.json, which are compiled before the commit that makes them durable"
+  },
+  "reproduction": {
+    "component": "workstreams/po03/attempts/po03-wa-b2e7-041-session-loss-injection/session_loss_injector.py",
+    "child_worker": "workstreams/po03/attempts/po03-wa-b2e7-041-session-loss-injection/session_loss_child.py",
+    "command": "python3 -I workstreams/po03/attempts/po03-wa-b2e7-041-session-loss-injection/session_loss_injector.py",
+    "exit_code_observed": 0,
+    "report": "workstreams/po03/attempts/po03-wa-b2e7-041-session-loss-injection/injection-report.json",
+    "test_command": "python3 -I -m unittest discover -s workstreams/po03/attempts/po03-wa-b2e7-041-session-loss-injection -p 'test_*.py' -v",
+    "test_outcome": "Ran 17 tests, OK, exit code 0",
+    "test_output": "workstreams/po03/attempts/po03-wa-b2e7-041-session-loss-injection/test-output.txt"
+  },
+  "obzio_state_claim": "READY_TO_COMMIT",
+  "producer_may_not_accept_own_work": true,
+  "decision_changed": []
+}
