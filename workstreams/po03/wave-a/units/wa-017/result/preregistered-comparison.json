@@ -1,0 +1,113 @@
+{
+  "candidate_contracts": [
+    {
+      "candidate_id": "central-gate",
+      "completion_authority": "one synchronous verifier after a serialized custody queue",
+      "concurrency_control": "global write-key exclusion before dispatch",
+      "mechanism_signature": "shared-fifo|global-write-lock|synchronous-verification-gate",
+      "predicted_direction": {
+        "safety": "lowest collision and unverified-exposure counts",
+        "throughput": "lowest accepted tasks per tick"
+      },
+      "recovery_source": "mutable central task record and retry queue",
+      "scheduler": "one shared FIFO with a bounded central worker pool"
+    },
+    {
+      "candidate_id": "lease-shards",
+      "completion_authority": "one verifier per shard after fence validation",
+      "concurrency_control": "monotonic attempt fences and write-key exclusion local to each shard",
+      "mechanism_signature": "partitioned-fifo|local-write-lock|fenced-per-shard-verification",
+      "predicted_direction": {
+        "safety": "cross-shard collisions are possible but must be detected before acceptance",
+        "throughput": "higher than the central gate"
+      },
+      "recovery_source": "per-shard lease state plus deterministic staggered retry",
+      "scheduler": "three independent shard FIFOs with local worker pools"
+    },
+    {
+      "candidate_id": "event-log",
+      "completion_authority": "an asynchronous reducer materializing append-only result events",
+      "concurrency_control": "optimistic execution followed by reducer conflict detection",
+      "mechanism_signature": "append-only-log|optimistic-workers|asynchronous-materializer",
+      "predicted_direction": {
+        "safety": "unverified result exposure and optimistic collisions are visible metrics, while false completion remains forbidden",
+        "throughput": "highest when the asynchronous materializer keeps pace"
+      },
+      "recovery_source": "replay of append-only events and idempotency keys",
+      "scheduler": "arrival-ordered optimistic worker pool independent of write keys"
+    }
+  ],
+  "comparison_id": "PO03-WA-017-PREREG-001",
+  "decision_rule": {
+    "critical_safety_gate": {
+      "applies_to_each_candidate": true,
+      "required_equal_zero": [
+        "false_completions",
+        "duplicate_external_effects",
+        "lost_committed_results"
+      ]
+    },
+    "independence_gate": {
+      "distinct_mechanism_signatures": 3,
+      "required_distinct_dimensions": [
+        "scheduler",
+        "concurrency_control",
+        "completion_authority",
+        "recovery_source"
+      ]
+    },
+    "material_pairwise_difference": {
+      "applies_to_every_candidate_pair": true,
+      "satisfied_when_either": {
+        "safety_distance_minimum": 1,
+        "safety_distance_metrics": [
+          "collision_events",
+          "unverified_exposure_ticks"
+        ],
+        "throughput_relative_difference_minimum": 0.1
+      }
+    },
+    "outcome": {
+      "INCONCLUSIVE": "The simulator or fixture does not execute completely enough to evaluate every gate.",
+      "REFUTED": "Execution is complete and at least one independence, completion, safety, spread, or pairwise-difference gate fails.",
+      "SUPPORTED": "Execution is complete and every independence, completion, safety, spread, and pairwise-difference gate passes."
+    },
+    "throughput_spread_gate": {
+      "formula": "max(accepted_throughput) / min(accepted_throughput)",
+      "minimum_ratio": 1.25
+    },
+    "workload_completion_gate": {
+      "accepted_task_count": 24,
+      "applies_to_each_candidate": true
+    }
+  },
+  "frozen_before_execution": true,
+  "hypothesis_id": "H-PO03-WA-017",
+  "metrics": {
+    "accepted_task_count": "Number of distinct tasks accepted after candidate-specific verification.",
+    "accepted_throughput": "accepted_task_count divided by elapsed_ticks, rounded to six decimal places.",
+    "collision_events": "Distinct concurrent attempt pairs writing one write_key before verification.",
+    "duplicate_external_effects": "Distinct accepted effects after the first effect for a task.",
+    "elapsed_ticks": "Last logical tick required to accept all tasks, counting from tick zero.",
+    "false_completions": "Accepted results that are corrupt, stale, collided, or unverified.",
+    "latency_p95_ticks": "Nearest-rank 95th percentile of acceptance tick minus release tick plus one.",
+    "lost_committed_results": "Results accepted by the candidate but absent from its final durable projection.",
+    "recovery_events": "Fault, collision, or stale-attempt outcomes that trigger retry/replay.",
+    "rework_attempts": "Worker attempts above one per accepted task.",
+    "unverified_exposure_ticks": "Task-ticks in which a reported result is externally visible to the candidate before acceptance verification.",
+    "verification_backlog_peak": "Largest number of produced results waiting for candidate-specific verification."
+  },
+  "protocol_version": "OBZIO-PO03-PREREGISTERED-COMPARISON-v1",
+  "scope": {
+    "architecture_selection": "NOT_AUTHORIZED_BY_THIS_COMPARISON",
+    "claim": "Trade-off exposure under this one frozen simulation only; not general production performance.",
+    "external_effects": false
+  },
+  "source_base_commit": "ef81e041befe9654ced9390ffd6cc046d8cdd033",
+  "task_id": "PO03-WA-017",
+  "workload": {
+    "bytes": 5987,
+    "path": "fixtures/frozen-simulation.json",
+    "sha256": "659b28a0beafb41e19ebfb7a6c009cba89dfeff0e720a30155802a72fff16aab"
+  }
+}
