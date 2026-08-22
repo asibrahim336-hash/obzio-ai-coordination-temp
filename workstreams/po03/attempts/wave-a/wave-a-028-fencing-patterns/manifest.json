@@ -1,5 +1,5 @@
 {
-  "artifact_count": 18,
+  "artifact_count": 19,
   "artifacts": [
     {
       "bytes": 1079,
@@ -16,11 +16,11 @@
       "sha256": "66851f14ea26e6f6af4855f97c5186cd65e108104e92b91b624ffea66749bf5e"
     },
     {
-      "bytes": 13666,
-      "git_blob_sha": "1d07383081fc3532e7644628cc8fc434c0bf5720",
+      "bytes": 14456,
+      "git_blob_sha": "f2ca476c026199d091383564e7d17a3b8b66de47",
       "media_type": "application/json",
       "path": "evidence/custody.json",
-      "sha256": "c5f8bc7749b5302f6c5b0e24ea7a6577afdf34508878a57121c0d8e16de66652"
+      "sha256": "4da964b3701ba87a6552d130c41fa943490840ba735f535781d57b80d42f5ec2"
     },
     {
       "bytes": 201,
@@ -49,6 +49,13 @@
       "media_type": "application/octet-stream",
       "path": "evidence/json-validation.log",
       "sha256": "969e644b66d58e996319afb1596aefb922fe0c20df8ea9e120da9d25657e8a56"
+    },
+    {
+      "bytes": 480,
+      "git_blob_sha": "5ba6b63fd07cbeaa40cec8efb6a5810bb9feed3f",
+      "media_type": "application/json",
+      "path": "evidence/manifest-verification.json",
+      "sha256": "74514fb61f0c218dd1004809240830797072167f8a2e8fb2c191f463f7cf096e"
     },
     {
       "bytes": 205,
@@ -136,6 +143,7 @@
     "dispatch_base": "e63fbae079774b151fd24a4132e4a5e571f75298",
     "dispatch_base_parent": "0221316d957f23ed1b22b04dabd719bcb5077b90",
     "implementation_commit_before_tests": "fd52e641b4815ad915ffe19baf508d595cc22200",
+    "manifested_result_commit": "4fe1890afa81b7979513d4e1055f713daddcc5c6",
     "post_historical_head_commit_count_at_admission": 50,
     "result_branch": "po03/wave-a-028-fencing-patterns",
     "result_head_at_manifest_generation": "672b93f4da6230d2d19a05c2fa8a36ac47e8aeab",
@@ -256,6 +264,16 @@
       "command": "PYTHONDONTWRITEBYTECODE=1 python3 \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/generate_manifest.py\"",
       "exit_code": 0,
       "purpose": "Declare every durable result-slot artifact except manifest.json itself."
+    },
+    {
+      "command": "git add -- \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns\" && git commit -m \"po03 wave-a-028: manifest fencing artifacts\" && git push -u origin \"po03/wave-a-028-fencing-patterns\"",
+      "exit_code": 0,
+      "purpose": "Commit and push the first complete manifest, producing 4fe1890afa81b7979513d4e1055f713daddcc5c6."
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/verify_manifest.py\" > \"/tmp/wave-a-028-manifest-verification.json\"",
+      "exit_code": 0,
+      "purpose": "Verify the manifested commit's complete declared artifact set before adding the verification receipt."
     }
   ],
   "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
@@ -381,6 +399,6 @@
     "sole_local_branch": "po03/wave-a-028-fencing-patterns",
     "worktree": "/home/ubuntu/po03-wave-a-028-fencing-patterns-isolated"
   },
-  "total_artifact_bytes_excluding_manifest": 62975,
+  "total_artifact_bytes_excluding_manifest": 64245,
   "unit_root": "workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns"
 }
