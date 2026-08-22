@@ -338,7 +338,7 @@ class CleanCloneTests(unittest.TestCase):
     def test_a_failing_step_is_reported_as_failing(self):
         # Guards against an execute() that swallows non-zero exits.
         failing = [validator.Step("deliberate failure", None, "exit 3\n")]
-        outcomes = validator.execute(failing, self.head, self.holder / "fail-probe")
+        outcomes, _ = validator.execute(failing, self.head, self.holder / "fail-probe")
 
         self.assertEqual(len(outcomes), 1)
         self.assertFalse(outcomes[0]["passed"])
@@ -351,11 +351,46 @@ class CleanCloneTests(unittest.TestCase):
         self.addCleanup(lambda: probe.unlink(missing_ok=True))
         probe.write_text("local state\n", encoding="utf-8")
         step = [validator.Step("read local state", None, f"cat {probe.name}\n")]
-        outcomes = validator.execute(step, self.head, self.holder / "state-probe")
+        outcomes, _ = validator.execute(step, self.head, self.holder / "state-probe")
         self.assertFalse(
             outcomes[0]["passed"],
             "a step reading an untracked worktree file passed inside the clean clone",
         )
+
+
+class PythonShimTests(unittest.TestCase):
+    """The one emulated piece of the runner must be real and disclosed."""
+
+    def setUp(self):
+        self.holder = Path(tempfile.mkdtemp(prefix="po03-031-shim-"))
+        self.addCleanup(lambda: subprocess.run(("rm", "-rf", str(self.holder)), check=False))
+
+    def test_the_shim_supplies_a_working_bare_python(self):
+        shim, interpreter = validator.python_shim(self.holder)
+        self.assertTrue((shim / "python").exists())
+        self.assertTrue(os.access(shim / "python", os.X_OK))
+        completed = subprocess.run(
+            ("bash", "-euo", "pipefail", "-c", "python -I -c 'import sys; print(sys.version_info[:2])'"),
+            env=validator.scrubbed_environment(self.holder, shim),
+            capture_output=True, text=True,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        self.assertEqual(completed.stdout.strip(), "(3, 12)", "shim did not reach a 3.12 interpreter")
+        self.assertTrue(Path(interpreter).exists())
+
+    def test_the_shim_is_only_present_when_requested(self):
+        # The shim must be an explicit, reported substitution, not a default that
+        # quietly papers over a missing interpreter.
+        plain = validator.scrubbed_environment(self.holder)
+        shim, _ = validator.python_shim(self.holder)
+        self.assertNotIn(str(shim), plain["PATH"])
+        self.assertIn(str(shim), validator.scrubbed_environment(self.holder, shim)["PATH"])
+
+    def test_the_workflow_relies_on_setup_python_for_the_bare_name(self):
+        # If the workflow ever stopped pinning setup-python, the bare `python`
+        # calls would be unbacked on a real runner.
+        self.assertIn("actions/setup-python@v5", WORKFLOW_TEXT)
+        self.assertIn('python-version: "3.12"', WORKFLOW_TEXT)
 
 
 class CommandLineTests(unittest.TestCase):

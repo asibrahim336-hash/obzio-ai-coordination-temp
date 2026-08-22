@@ -16,7 +16,16 @@ available for "no repository-local state": the clone holds committed bytes only,
 so an untracked file, a stray `__pycache__` or a worktree-local git setting
 cannot contribute to a pass.
 
-What this cannot do is observe GitHub Actions.  A clean Ubuntu runner, the
+One substitution is made and it is reported rather than hidden.  The workflow
+calls `python`, which exists on a runner only because `actions/setup-python`
+puts it there; this host ships `python3` alone, so every step failed with exit
+127 before the substitution was added (kept verbatim in
+clean_clone_execution_no_python_shim.txt).  A shim directory holding a `python`
+that execs the local 3.12 interpreter is therefore prepended to PATH, which is
+the one thing that action does that these steps depend on.  The shim's target is
+recorded in the report so a reader can see which interpreter actually ran.
+
+What this cannot do is observe GitHub Actions.  A clean Ubuntu runner, the real
 `actions/checkout` and `actions/setup-python` implementations and GitHub's shell
 defaults are not reproduced here, so the hypothesis about a clean GitHub Actions
 environment stays NOT_YET until a controller installs the file and a real run is
@@ -235,10 +244,13 @@ def clean_clone(commit: str, destination: Path) -> Path:
     return checkout
 
 
-def scrubbed_environment(home: Path) -> dict[str, str]:
+def scrubbed_environment(home: Path, shim: Path | None = None) -> dict[str, str]:
     """Only what a shell needs, so no ambient configuration can contribute."""
+    path = os.environ.get("PATH", "/usr/local/bin:/usr/bin:/bin")
+    if shim is not None:
+        path = f"{shim}{os.pathsep}{path}"
     return {
-        "PATH": os.environ.get("PATH", "/usr/local/bin:/usr/bin:/bin"),
+        "PATH": path,
         "HOME": str(home),
         "LANG": "C.UTF-8",
         "LC_ALL": "C.UTF-8",
@@ -246,11 +258,30 @@ def scrubbed_environment(home: Path) -> dict[str, str]:
     }
 
 
-def execute(steps: list[Step], commit: str, holder: Path) -> list[dict]:
+def python_shim(holder: Path) -> tuple[Path, str]:
+    """Provide the `python` name the workflow calls, as setup-python would.
+
+    Returns the shim directory and the interpreter it forwards to, so the report
+    can name the interpreter that actually executed rather than implying that a
+    bare `python` was already present.
+    """
+    interpreter = shutil.which("python") or shutil.which("python3.12") or shutil.which("python3")
+    if interpreter is None:
+        raise WorkflowError("no python3 interpreter on PATH to back the `python` shim")
+    directory = holder / "shim-bin"
+    directory.mkdir(parents=True, exist_ok=True)
+    launcher = directory / "python"
+    launcher.write_text(f'#!/bin/sh\nexec "{interpreter}" "$@"\n', encoding="utf-8")
+    launcher.chmod(0o755)
+    return directory, interpreter
+
+
+def execute(steps: list[Step], commit: str, holder: Path) -> tuple[list[dict], str]:
     checkout = clean_clone(commit, holder)
     home = holder / "home"
-    home.mkdir()
-    environment = scrubbed_environment(home)
+    home.mkdir(parents=True, exist_ok=True)
+    shim, interpreter = python_shim(holder)
+    environment = scrubbed_environment(home, shim)
     outcomes: list[dict] = []
     for step in steps:
         if step.run is None:
@@ -266,7 +297,7 @@ def execute(steps: list[Step], commit: str, holder: Path) -> list[dict]:
             "passed": completed.returncode == 0,
             "output_tail": tail[-3:],
         })
-    return outcomes
+    return outcomes, interpreter
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -290,11 +321,12 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     outcomes: list[dict] = []
+    interpreter: str | None = None
     if args.execute:
         holder = Path(tempfile.mkdtemp(prefix="po03-clean-clone-"))
         try:
-            outcomes = execute(steps, commit, holder)
-        except (OSError, subprocess.CalledProcessError) as exc:
+            outcomes, interpreter = execute(steps, commit, holder)
+        except (WorkflowError, OSError, subprocess.CalledProcessError) as exc:
             print(f"PO03_WORKFLOW_ERROR: {exc}", file=sys.stderr)
             return 2
         finally:
@@ -315,6 +347,7 @@ def main(argv: list[str] | None = None) -> int:
         ],
         "executed": outcomes,
         "findings": findings,
+        "python_shim_target": interpreter,
     }
     stream = sys.stderr if args.json else sys.stdout
     if args.json:
@@ -323,6 +356,8 @@ def main(argv: list[str] | None = None) -> int:
         print(f"# workflow={args.workflow}")
         print(f"# install as={INSTALL_PATH}")
         print(f"# commit={commit}")
+        if interpreter:
+            print(f"# `python` shim forwards to={interpreter} (stands in for actions/setup-python)")
         for step in steps:
             kind = f"uses {step.uses}" if step.uses else "run block"
             print(f"STEP {step.name or '(action)'} :: {kind}")
