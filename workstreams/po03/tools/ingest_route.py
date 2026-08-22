@@ -292,8 +292,16 @@ def ingest(
                 }
             )
 
+    ingestion_path = repo / f"workstreams/po03/control/results/{route_id}-ingestion.json"
+    preserved_fields: dict[str, Any] = {}
+    if ingestion_path.exists():
+        previous_ingestion = read_json(ingestion_path)
+        if "producer_reporting_corrections" in previous_ingestion:
+            preserved_fields["producer_reporting_corrections"] = previous_ingestion[
+                "producer_reporting_corrections"
+            ]
     atomic_json(
-        repo / f"workstreams/po03/control/results/{route_id}-ingestion.json",
+        ingestion_path,
         {
             "ingestion_version": "PO03-ROUTE-INGESTION-v1",
             "route_id": route_id,
@@ -301,6 +309,7 @@ def ingest(
             "producer_tip": producer_tip,
             "producer_base": producer_base,
             "producer_changed_path_count": len(changed_paths),
+            **preserved_fields,
             "route_manifest_sha256": expected_route_sha,
             "execution_receipt_sha256": digest(execution_receipt_path.read_bytes()),
             "parent_readback_at": ingested_at,
