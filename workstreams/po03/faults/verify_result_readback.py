@@ -43,7 +43,7 @@ def verify(path: Path) -> tuple[str, int]:
             check=True,
             capture_output=True,
         )
-        payload = git_bytes("cat-file", "blob", f"{remote_ref}:{relative}")
+        payload = git_bytes("cat-file", "blob", f"{artifact_commit}:{relative}")
         digest = hashlib.sha256(payload).hexdigest()
         if digest != artifact["sha256"]:
             raise RuntimeError(

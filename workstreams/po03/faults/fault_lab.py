@@ -704,7 +704,13 @@ def _concurrent_trial(transition: str, trial: int) -> dict[str, Any]:
             thread.join(timeout=10)
         elapsed = time.perf_counter_ns() - t0
         rows = original_rows()
-        parent_rows = [row for row in rows if row.get("event") == "PARENT_INGESTED"]
+        parent_rows = [
+            row
+            for row in rows
+            if row.get("event") == "PARENT_INGESTED"
+            and (row.get("payload") or {}).get("result_commit_id")
+            == result["result_transaction"]["result_commit_id"]
+        ]
         chain_errors = sb.cp.verify_chain(rows)
         return {
             "transition": transition,
