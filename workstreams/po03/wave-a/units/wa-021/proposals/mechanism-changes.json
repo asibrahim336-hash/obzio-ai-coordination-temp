@@ -1,0 +1,50 @@
+{
+  "protocol_version": "PO03-WA-021-MECHANISM-CHANGES-v1",
+  "task_id": "PO03-WA-021",
+  "state": "MECHANISM_CHANGE_PROPOSALS",
+  "state_note": "Proposals only. No target was modified because every target is read-only to this unit. Source claims, hypotheses, reproduction results, and strategy recommendations are not recorded in this register.",
+  "applied_by_this_unit": false,
+  "proposals": [
+    {
+      "change_id": "MC-WA021-01-AGGREGATE-UNIT-RECURRENCE-SUITES",
+      "candidate_id": "OP-WA021-01-UNIT-SUITES-OUTSIDE-CI",
+      "status": "PROPOSED_NOT_APPLIED",
+      "target": ".github/workflows/po03-contracts.yml",
+      "mechanism": "Add a dependency-free aggregate that discovers each committed workstreams/po03/wave-a/units/wa-*/tests/test_*.py suite under python3 -B -I, then invoke it from the PO-03 contract workflow.",
+      "acceptance_test": "Plant one failing unit-level recurrence test outside workstreams/po03/tests; the aggregate and workflow-equivalent command must fail. Restore it; all central and unit suites must pass without creating bytecode.",
+      "blast_radius": "Changes the required PO-03 CI workload and may expose previously latent failures in material-unit tests.",
+      "decision_owner": "coordinator"
+    },
+    {
+      "change_id": "MC-WA021-02-REQUESTED-VERSUS-ATTESTED-RUNTIME",
+      "candidate_id": "OP-WA021-02-RUNTIME-ATTESTATION-CONTRACT",
+      "status": "PROPOSED_NOT_APPLIED",
+      "targets": [
+        "workstreams/po03/contracts/transactional-result.schema.json",
+        "workstreams/po03/tools/validate_contracts.py",
+        "workstreams/po03/tests/test_validate_contracts.py"
+      ],
+      "mechanism": "Contract separate requested_model, requested_reasoning, auto_model_selection, provider_reported_model, provider_reported_reasoning, and attestation_status fields. Permit NOT_SUPPORTED only with a limitation reference; forbid copying a requested value into an observed field without attestation.",
+      "acceptance_test": "Reject a result that claims an observed reasoning level using only the requested field; accept an exact provider readback and accept explicit NOT_SUPPORTED with a limitation reference.",
+      "blast_radius": "Changes the transactional wire contract and requires migration or versioning for existing result documents.",
+      "decision_owner": "coordinator"
+    }
+  ],
+  "rejected": [
+    {
+      "candidate_id": "OP-WA021-03-PROVENANCE-OBJECT-GUARD",
+      "reason": "ALREADY_NAMED_WORK",
+      "existing_mechanism_change": "MC-02-VERIFY-FROZEN-OBJECT-IDS",
+      "source": "workstreams/po03/wave-a/units/wa-024/proposals/mechanism-changes.json"
+    },
+    {
+      "candidate_id": "OP-WA021-90-CIRCULAR-SCANNER-CONFIRMATION",
+      "reason": "CIRCULAR_EVIDENCE"
+    },
+    {
+      "candidate_id": "OP-WA021-91-UNSUPPORTED-PRODUCTION-FAILURES",
+      "reason": "NOT_SUPPORTED"
+    }
+  ],
+  "decision_changed": []
+}
