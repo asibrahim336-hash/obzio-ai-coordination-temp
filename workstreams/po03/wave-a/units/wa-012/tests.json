@@ -1,8 +1,9 @@
 {
   "aggregate": {
-    "automated_test_count": 40,
+    "automated_test_count": 43,
     "automated_tests_failed": 0,
-    "automated_tests_passed": 40,
+    "automated_tests_passed": 43,
+    "counting_basis": "latest focused suite plus latest seeded regression suite",
     "first_pass_outcome": "PASS",
     "reproduction_cases": 5,
     "reproduction_cases_matched": 5
@@ -21,6 +22,7 @@
   "test_runs": [
     {
       "command": "python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-012 -p 'test_*.py' -v",
+      "counted_in_aggregate": false,
       "exit_code": 0,
       "failed": 0,
       "name": "focused-state-machine-suite-initial",
@@ -29,7 +31,17 @@
       "status": "PASS"
     },
     {
-      "command": "python3 workstreams/po03/wave-a/units/wa-012/state_machine.py reproduce workstreams/po03/wave-a/units/wa-012/fixtures/sanitized-obzio-reproduction.json",
+      "command": "python3 -B -I -m unittest discover -s workstreams/po03/wave-a/units/wa-012 -p 'test_*.py' -v",
+      "counted_in_aggregate": true,
+      "exit_code": 0,
+      "failed": 0,
+      "name": "focused-state-machine-suite-final",
+      "output_summary": "Ran 20 tests in 0.114s; OK",
+      "passed": 20,
+      "status": "PASS"
+    },
+    {
+      "command": "python3 -B workstreams/po03/wave-a/units/wa-012/state_machine.py reproduce workstreams/po03/wave-a/units/wa-012/fixtures/sanitized-obzio-reproduction.json",
       "exit_code": 0,
       "failed": 0,
       "name": "sanitized-obzio-reproduction",
@@ -38,7 +50,8 @@
       "status": "PASS"
     },
     {
-      "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+      "command": "python3 -B -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+      "counted_in_aggregate": true,
       "exit_code": 0,
       "failed": 0,
       "name": "seeded-contract-regression-suite",
