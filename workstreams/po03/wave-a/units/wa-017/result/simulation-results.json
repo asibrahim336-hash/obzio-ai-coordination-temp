@@ -1,0 +1,2175 @@
+{
+  "assessment": {
+    "critical_safety_observations": {
+      "central-gate": {
+        "duplicate_external_effects": 0,
+        "false_completions": 0,
+        "lost_committed_results": 0
+      },
+      "event-log": {
+        "duplicate_external_effects": 0,
+        "false_completions": 0,
+        "lost_committed_results": 0
+      },
+      "lease-shards": {
+        "duplicate_external_effects": 0,
+        "false_completions": 0,
+        "lost_committed_results": 0
+      }
+    },
+    "dimension_distinct_value_counts": {
+      "completion_authority": 3,
+      "concurrency_control": 3,
+      "recovery_source": 3,
+      "scheduler": 3
+    },
+    "gates": {
+      "critical_safety": true,
+      "independent_mechanisms": true,
+      "material_pairwise_difference": true,
+      "throughput_spread": true,
+      "workload_completion": true
+    },
+    "hypothesis_outcome": "SUPPORTED",
+    "pairwise": [
+      {
+        "candidates": [
+          "central-gate",
+          "event-log"
+        ],
+        "passes": true,
+        "safety_components": {
+          "collision_events": 3,
+          "unverified_exposure_ticks": 105
+        },
+        "safety_distance": 108,
+        "throughput_relative_difference": 1.700003
+      },
+      {
+        "candidates": [
+          "central-gate",
+          "lease-shards"
+        ],
+        "passes": true,
+        "safety_components": {
+          "collision_events": 3,
+          "unverified_exposure_ticks": 0
+        },
+        "safety_distance": 3,
+        "throughput_relative_difference": 2.000002
+      },
+      {
+        "candidates": [
+          "event-log",
+          "lease-shards"
+        ],
+        "passes": true,
+        "safety_components": {
+          "collision_events": 0,
+          "unverified_exposure_ticks": 105
+        },
+        "safety_distance": 105,
+        "throughput_relative_difference": 0.111111
+      }
+    ],
+    "throughput_spread_ratio": 3.000002,
+    "workload_completion": {
+      "central-gate": true,
+      "event-log": true,
+      "lease-shards": true
+    }
+  },
+  "candidates": [
+    {
+      "accepted_tasks": [
+        "PO03-SIM-001",
+        "PO03-SIM-002",
+        "PO03-SIM-003",
+        "PO03-SIM-004",
+        "PO03-SIM-005",
+        "PO03-SIM-006",
+        "PO03-SIM-007",
+        "PO03-SIM-008",
+        "PO03-SIM-009",
+        "PO03-SIM-010",
+        "PO03-SIM-011",
+        "PO03-SIM-012",
+        "PO03-SIM-013",
+        "PO03-SIM-014",
+        "PO03-SIM-015",
+        "PO03-SIM-016",
+        "PO03-SIM-017",
+        "PO03-SIM-018",
+        "PO03-SIM-019",
+        "PO03-SIM-020",
+        "PO03-SIM-021",
+        "PO03-SIM-022",
+        "PO03-SIM-023",
+        "PO03-SIM-024"
+      ],
+      "candidate_id": "central-gate",
+      "completed_workload": true,
+      "mechanism_evidence": {
+        "completion_authority": "single global synchronous verifier",
+        "concurrency_guard": "global active write-key lock",
+        "durable_projection": "central accepted task set",
+        "recovery": "central delayed retry queue",
+        "scheduler": "shared release-ordered FIFO"
+      },
+      "mechanism_signature": "shared-fifo|global-write-lock|synchronous-verification-gate",
+      "metrics": {
+        "accepted_task_count": 24,
+        "accepted_throughput": 0.444444,
+        "collision_events": 0,
+        "duplicate_external_effects": 0,
+        "elapsed_ticks": 54,
+        "false_completions": 0,
+        "latency_p95_ticks": 47,
+        "lost_committed_results": 0,
+        "recovery_events": 3,
+        "rework_attempts": 3,
+        "unverified_exposure_ticks": 0,
+        "verification_backlog_peak": 17
+      },
+      "trace": [
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-001",
+          "tick": 0,
+          "token": 1
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-002",
+          "tick": 0,
+          "token": 1
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-003",
+          "tick": 0,
+          "token": 1
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-002",
+          "tick": 1
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-005",
+          "tick": 1,
+          "token": 1
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-001",
+          "tick": 2
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-006",
+          "tick": 2,
+          "token": 1
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-003",
+          "tick": 3
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-005",
+          "tick": 3
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-006",
+          "tick": 3
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-002",
+          "tick": 3
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-004",
+          "tick": 3,
+          "token": 1
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-007",
+          "tick": 3,
+          "token": 1
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-008",
+          "tick": 3,
+          "token": 1
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-004",
+          "tick": 5
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-008",
+          "tick": 5
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-001",
+          "tick": 5
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-009",
+          "tick": 5,
+          "token": 1
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-010",
+          "tick": 5,
+          "token": 1
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-007",
+          "tick": 6
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-009",
+          "tick": 6
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-011",
+          "tick": 6,
+          "token": 1
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-013",
+          "tick": 6,
+          "token": 1
+        },
+        {
+          "event": "RETRY_SCHEDULED",
+          "reason": "PROVIDER_LOSS",
+          "task_id": "PO03-SIM-010",
+          "tick": 9
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-003",
+          "tick": 7
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-014",
+          "tick": 7,
+          "token": 1
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-011",
+          "tick": 8
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-014",
+          "tick": 8
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-012",
+          "tick": 8,
+          "token": 1
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-015",
+          "tick": 8,
+          "token": 1
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-013",
+          "tick": 9
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-005",
+          "tick": 9
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-010",
+          "tick": 9,
+          "token": 2
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-012",
+          "tick": 10
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-015",
+          "tick": 10
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-016",
+          "tick": 10,
+          "token": 1
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-017",
+          "tick": 10,
+          "token": 1
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-010",
+          "tick": 11
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-016",
+          "tick": 11
+        },
+        {
+          "event": "RETRY_SCHEDULED",
+          "reason": "ARTIFACT_HASH_MISMATCH",
+          "task_id": "PO03-SIM-006",
+          "tick": 12
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-018",
+          "tick": 11,
+          "token": 1
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-019",
+          "tick": 11,
+          "token": 1
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-017",
+          "tick": 13
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-018",
+          "tick": 13
+        },
+        {
+          "event": "DUPLICATE_CALLBACK_IGNORED",
+          "task_id": "PO03-SIM-018",
+          "tick": 13
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-019",
+          "tick": 13
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-004",
+          "tick": 13
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-006",
+          "tick": 13,
+          "token": 2
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-020",
+          "tick": 13,
+          "token": 1
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-021",
+          "tick": 13,
+          "token": 1
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-006",
+          "tick": 14
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-021",
+          "tick": 14
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-022",
+          "tick": 14,
+          "token": 1
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-023",
+          "tick": 14,
+          "token": 1
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-020",
+          "tick": 15
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-008",
+          "tick": 15
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-024",
+          "tick": 15,
+          "token": 1
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-023",
+          "tick": 16
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-024",
+          "tick": 16
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-022",
+          "tick": 17
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-007",
+          "tick": 17
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-009",
+          "tick": 19
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-011",
+          "tick": 21
+        },
+        {
+          "event": "RETRY_SCHEDULED",
+          "reason": "STALE_TOKEN",
+          "task_id": "PO03-SIM-014",
+          "tick": 24
+        },
+        {
+          "event": "GLOBAL_DISPATCH",
+          "task_id": "PO03-SIM-014",
+          "tick": 24,
+          "token": 2
+        },
+        {
+          "event": "RESULT_QUEUED_FOR_GLOBAL_VERIFICATION",
+          "task_id": "PO03-SIM-014",
+          "tick": 25
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-013",
+          "tick": 25
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-012",
+          "tick": 27
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-015",
+          "tick": 29
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-010",
+          "tick": 31
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-016",
+          "tick": 33
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-017",
+          "tick": 35
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-018",
+          "tick": 37
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-019",
+          "tick": 39
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-006",
+          "tick": 41
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-021",
+          "tick": 43
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-020",
+          "tick": 45
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-023",
+          "tick": 47
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-024",
+          "tick": 49
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-022",
+          "tick": 51
+        },
+        {
+          "event": "ACCEPTED_BY_GLOBAL_GATE",
+          "task_id": "PO03-SIM-014",
+          "tick": 53
+        }
+      ]
+    },
+    {
+      "accepted_tasks": [
+        "PO03-SIM-001",
+        "PO03-SIM-002",
+        "PO03-SIM-003",
+        "PO03-SIM-004",
+        "PO03-SIM-005",
+        "PO03-SIM-006",
+        "PO03-SIM-007",
+        "PO03-SIM-008",
+        "PO03-SIM-009",
+        "PO03-SIM-010",
+        "PO03-SIM-011",
+        "PO03-SIM-012",
+        "PO03-SIM-013",
+        "PO03-SIM-014",
+        "PO03-SIM-015",
+        "PO03-SIM-016",
+        "PO03-SIM-017",
+        "PO03-SIM-018",
+        "PO03-SIM-019",
+        "PO03-SIM-020",
+        "PO03-SIM-021",
+        "PO03-SIM-022",
+        "PO03-SIM-023",
+        "PO03-SIM-024"
+      ],
+      "candidate_id": "event-log",
+      "completed_workload": true,
+      "mechanism_evidence": {
+        "completion_authority": "asynchronous reducer over RESULT_REPORTED events",
+        "concurrency_guard": "optimistic first execution; reducer adds dependency serialization after a conflict",
+        "durable_projection": "set replayed from MATERIALIZED_ACCEPTED events",
+        "event_count": 136,
+        "recovery": "append retry and replay from event sequence",
+        "scheduler": "single optimistic arrival queue"
+      },
+      "mechanism_signature": "append-only-log|optimistic-workers|asynchronous-materializer",
+      "metrics": {
+        "accepted_task_count": 24,
+        "accepted_throughput": 1.2,
+        "collision_events": 3,
+        "duplicate_external_effects": 0,
+        "elapsed_ticks": 20,
+        "false_completions": 0,
+        "latency_p95_ticks": 16,
+        "lost_committed_results": 0,
+        "recovery_events": 9,
+        "rework_attempts": 9,
+        "unverified_exposure_ticks": 105,
+        "verification_backlog_peak": 12
+      },
+      "trace": [
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 1,
+          "task_id": "PO03-SIM-001",
+          "tick": 0
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 2,
+          "task_id": "PO03-SIM-002",
+          "tick": 0
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 3,
+          "task_id": "PO03-SIM-003",
+          "tick": 0
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 4,
+          "task_id": "PO03-SIM-004",
+          "tick": 0
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 5,
+          "generation": 1,
+          "task_id": "PO03-SIM-001",
+          "tick": 0
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 6,
+          "generation": 1,
+          "task_id": "PO03-SIM-002",
+          "tick": 0
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 7,
+          "generation": 1,
+          "task_id": "PO03-SIM-003",
+          "tick": 0
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 8,
+          "generation": 1,
+          "task_id": "PO03-SIM-004",
+          "tick": 0
+        },
+        {
+          "event": "OPTIMISTIC_COLLISION_OBSERVED",
+          "event_seq": 9,
+          "tasks": [
+            "PO03-SIM-003",
+            "PO03-SIM-004"
+          ],
+          "tick": 0
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 10,
+          "task_id": "PO03-SIM-005",
+          "tick": 1
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 11,
+          "task_id": "PO03-SIM-006",
+          "tick": 1
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 12,
+          "task_id": "PO03-SIM-007",
+          "tick": 1
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 13,
+          "task_id": "PO03-SIM-008",
+          "tick": 1
+        },
+        {
+          "callback_id": "event:PO03-SIM-002:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 14,
+          "generation": 1,
+          "task_id": "PO03-SIM-002",
+          "tick": 1
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 15,
+          "generation": 1,
+          "task_id": "PO03-SIM-005",
+          "tick": 1
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 16,
+          "generation": 1,
+          "task_id": "PO03-SIM-006",
+          "tick": 1
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 17,
+          "generation": 1,
+          "task_id": "PO03-SIM-007",
+          "tick": 1
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 18,
+          "task_id": "PO03-SIM-009",
+          "tick": 2
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 19,
+          "task_id": "PO03-SIM-010",
+          "tick": 2
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 20,
+          "task_id": "PO03-SIM-011",
+          "tick": 2
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 21,
+          "task_id": "PO03-SIM-012",
+          "tick": 2
+        },
+        {
+          "callback_id": "event:PO03-SIM-001:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 22,
+          "generation": 1,
+          "task_id": "PO03-SIM-001",
+          "tick": 2
+        },
+        {
+          "callback_id": "event:PO03-SIM-004:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 23,
+          "generation": 1,
+          "task_id": "PO03-SIM-004",
+          "tick": 2
+        },
+        {
+          "callback_id": "event:PO03-SIM-006:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 24,
+          "generation": 1,
+          "task_id": "PO03-SIM-006",
+          "tick": 2
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 25,
+          "generation": 1,
+          "task_id": "PO03-SIM-002",
+          "tick": 2
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 26,
+          "generation": 1,
+          "task_id": "PO03-SIM-008",
+          "tick": 2
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 27,
+          "generation": 1,
+          "task_id": "PO03-SIM-009",
+          "tick": 2
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 28,
+          "generation": 1,
+          "task_id": "PO03-SIM-010",
+          "tick": 2
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 29,
+          "task_id": "PO03-SIM-013",
+          "tick": 3
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 30,
+          "task_id": "PO03-SIM-014",
+          "tick": 3
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 31,
+          "task_id": "PO03-SIM-015",
+          "tick": 3
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 32,
+          "task_id": "PO03-SIM-016",
+          "tick": 3
+        },
+        {
+          "callback_id": "event:PO03-SIM-003:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 33,
+          "generation": 1,
+          "task_id": "PO03-SIM-003",
+          "tick": 3
+        },
+        {
+          "callback_id": "event:PO03-SIM-005:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 34,
+          "generation": 1,
+          "task_id": "PO03-SIM-005",
+          "tick": 3
+        },
+        {
+          "callback_id": "event:PO03-SIM-009:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 35,
+          "generation": 1,
+          "task_id": "PO03-SIM-009",
+          "tick": 3
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 36,
+          "generation": 1,
+          "task_id": "PO03-SIM-001",
+          "tick": 3
+        },
+        {
+          "event": "RESULT_REJECTED_BY_REDUCER",
+          "event_seq": 37,
+          "reason": "OPTIMISTIC_WRITE_CONFLICT",
+          "task_id": "PO03-SIM-004",
+          "tick": 3
+        },
+        {
+          "available_tick": 4,
+          "event": "RETRY_APPENDED",
+          "event_seq": 38,
+          "reason": "OPTIMISTIC_WRITE_CONFLICT",
+          "task_id": "PO03-SIM-004",
+          "tick": 3
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 39,
+          "generation": 1,
+          "task_id": "PO03-SIM-011",
+          "tick": 3
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 40,
+          "generation": 1,
+          "task_id": "PO03-SIM-012",
+          "tick": 3
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 41,
+          "generation": 1,
+          "task_id": "PO03-SIM-013",
+          "tick": 3
+        },
+        {
+          "event": "OPTIMISTIC_COLLISION_OBSERVED",
+          "event_seq": 42,
+          "tasks": [
+            "PO03-SIM-011",
+            "PO03-SIM-012"
+          ],
+          "tick": 3
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 43,
+          "task_id": "PO03-SIM-017",
+          "tick": 4
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 44,
+          "task_id": "PO03-SIM-018",
+          "tick": 4
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 45,
+          "task_id": "PO03-SIM-019",
+          "tick": 4
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 46,
+          "task_id": "PO03-SIM-020",
+          "tick": 4
+        },
+        {
+          "callback_id": "event:PO03-SIM-007:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 47,
+          "generation": 1,
+          "task_id": "PO03-SIM-007",
+          "tick": 4
+        },
+        {
+          "callback_id": "event:PO03-SIM-008:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 48,
+          "generation": 1,
+          "task_id": "PO03-SIM-008",
+          "tick": 4
+        },
+        {
+          "event": "WORKER_LOST",
+          "event_seq": 49,
+          "generation": 1,
+          "task_id": "PO03-SIM-010",
+          "tick": 4
+        },
+        {
+          "available_tick": 5,
+          "event": "RETRY_APPENDED",
+          "event_seq": 50,
+          "reason": "MISSING_RESULT_EVENT",
+          "task_id": "PO03-SIM-010",
+          "tick": 4
+        },
+        {
+          "event": "RESULT_REJECTED_BY_REDUCER",
+          "event_seq": 51,
+          "reason": "OPTIMISTIC_WRITE_CONFLICT",
+          "task_id": "PO03-SIM-003",
+          "tick": 4
+        },
+        {
+          "available_tick": 6,
+          "event": "RETRY_APPENDED",
+          "event_seq": 52,
+          "reason": "OPTIMISTIC_WRITE_CONFLICT",
+          "task_id": "PO03-SIM-003",
+          "tick": 4
+        },
+        {
+          "event": "RESULT_REJECTED_BY_REDUCER",
+          "event_seq": 53,
+          "reason": "ARTIFACT_HASH_MISMATCH",
+          "task_id": "PO03-SIM-006",
+          "tick": 4
+        },
+        {
+          "available_tick": 5,
+          "event": "RETRY_APPENDED",
+          "event_seq": 54,
+          "reason": "ARTIFACT_HASH_MISMATCH",
+          "task_id": "PO03-SIM-006",
+          "tick": 4
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 55,
+          "generation": 2,
+          "task_id": "PO03-SIM-004",
+          "tick": 4
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 56,
+          "generation": 1,
+          "task_id": "PO03-SIM-014",
+          "tick": 4
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 57,
+          "generation": 1,
+          "task_id": "PO03-SIM-015",
+          "tick": 4
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 58,
+          "task_id": "PO03-SIM-021",
+          "tick": 5
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 59,
+          "task_id": "PO03-SIM-022",
+          "tick": 5
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 60,
+          "task_id": "PO03-SIM-023",
+          "tick": 5
+        },
+        {
+          "event": "TASK_RELEASED",
+          "event_seq": 61,
+          "task_id": "PO03-SIM-024",
+          "tick": 5
+        },
+        {
+          "callback_id": "event:PO03-SIM-011:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 62,
+          "generation": 1,
+          "task_id": "PO03-SIM-011",
+          "tick": 5
+        },
+        {
+          "callback_id": "event:PO03-SIM-012:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 63,
+          "generation": 1,
+          "task_id": "PO03-SIM-012",
+          "tick": 5
+        },
+        {
+          "callback_id": "event:PO03-SIM-014:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 64,
+          "generation": 0,
+          "task_id": "PO03-SIM-014",
+          "tick": 5
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 65,
+          "generation": 1,
+          "task_id": "PO03-SIM-005",
+          "tick": 5
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 66,
+          "generation": 1,
+          "task_id": "PO03-SIM-009",
+          "tick": 5
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 67,
+          "generation": 2,
+          "task_id": "PO03-SIM-006",
+          "tick": 5
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 68,
+          "generation": 2,
+          "task_id": "PO03-SIM-010",
+          "tick": 5
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 69,
+          "generation": 1,
+          "task_id": "PO03-SIM-016",
+          "tick": 5
+        },
+        {
+          "callback_id": "event:PO03-SIM-004:2",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 70,
+          "generation": 2,
+          "task_id": "PO03-SIM-004",
+          "tick": 6
+        },
+        {
+          "callback_id": "event:PO03-SIM-006:2",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 71,
+          "generation": 2,
+          "task_id": "PO03-SIM-006",
+          "tick": 6
+        },
+        {
+          "callback_id": "event:PO03-SIM-013:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 72,
+          "generation": 1,
+          "task_id": "PO03-SIM-013",
+          "tick": 6
+        },
+        {
+          "callback_id": "event:PO03-SIM-015:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 73,
+          "generation": 1,
+          "task_id": "PO03-SIM-015",
+          "tick": 6
+        },
+        {
+          "callback_id": "event:PO03-SIM-016:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 74,
+          "generation": 1,
+          "task_id": "PO03-SIM-016",
+          "tick": 6
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 75,
+          "generation": 1,
+          "task_id": "PO03-SIM-007",
+          "tick": 6
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 76,
+          "generation": 1,
+          "task_id": "PO03-SIM-008",
+          "tick": 6
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 77,
+          "generation": 2,
+          "task_id": "PO03-SIM-003",
+          "tick": 6
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 78,
+          "generation": 1,
+          "task_id": "PO03-SIM-017",
+          "tick": 6
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 79,
+          "generation": 1,
+          "task_id": "PO03-SIM-018",
+          "tick": 6
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 80,
+          "generation": 1,
+          "task_id": "PO03-SIM-019",
+          "tick": 6
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 81,
+          "generation": 1,
+          "task_id": "PO03-SIM-020",
+          "tick": 6
+        },
+        {
+          "event": "OPTIMISTIC_COLLISION_OBSERVED",
+          "event_seq": 82,
+          "tasks": [
+            "PO03-SIM-019",
+            "PO03-SIM-020"
+          ],
+          "tick": 6
+        },
+        {
+          "callback_id": "event:PO03-SIM-010:2",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 83,
+          "generation": 2,
+          "task_id": "PO03-SIM-010",
+          "tick": 7
+        },
+        {
+          "event": "RESULT_REJECTED_BY_REDUCER",
+          "event_seq": 84,
+          "reason": "OPTIMISTIC_WRITE_CONFLICT",
+          "task_id": "PO03-SIM-011",
+          "tick": 7
+        },
+        {
+          "available_tick": 9,
+          "event": "RETRY_APPENDED",
+          "event_seq": 85,
+          "reason": "OPTIMISTIC_WRITE_CONFLICT",
+          "task_id": "PO03-SIM-011",
+          "tick": 7
+        },
+        {
+          "event": "RESULT_REJECTED_BY_REDUCER",
+          "event_seq": 86,
+          "reason": "OPTIMISTIC_WRITE_CONFLICT",
+          "task_id": "PO03-SIM-012",
+          "tick": 7
+        },
+        {
+          "available_tick": 8,
+          "event": "RETRY_APPENDED",
+          "event_seq": 87,
+          "reason": "OPTIMISTIC_WRITE_CONFLICT",
+          "task_id": "PO03-SIM-012",
+          "tick": 7
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 88,
+          "generation": 1,
+          "task_id": "PO03-SIM-021",
+          "tick": 7
+        },
+        {
+          "callback_id": "event:PO03-SIM-018:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 89,
+          "generation": 1,
+          "task_id": "PO03-SIM-018",
+          "tick": 8
+        },
+        {
+          "callback_id": "event:PO03-SIM-018:1",
+          "copy_index": 1,
+          "event": "RESULT_REPORTED",
+          "event_seq": 90,
+          "generation": 1,
+          "task_id": "PO03-SIM-018",
+          "tick": 8
+        },
+        {
+          "callback_id": "event:PO03-SIM-019:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 91,
+          "generation": 1,
+          "task_id": "PO03-SIM-019",
+          "tick": 8
+        },
+        {
+          "callback_id": "event:PO03-SIM-020:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 92,
+          "generation": 1,
+          "task_id": "PO03-SIM-020",
+          "tick": 8
+        },
+        {
+          "callback_id": "event:PO03-SIM-021:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 93,
+          "generation": 1,
+          "task_id": "PO03-SIM-021",
+          "tick": 8
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 94,
+          "generation": 2,
+          "task_id": "PO03-SIM-004",
+          "tick": 8
+        },
+        {
+          "event": "RESULT_REJECTED_BY_REDUCER",
+          "event_seq": 95,
+          "reason": "STALE_GENERATION",
+          "task_id": "PO03-SIM-014",
+          "tick": 8
+        },
+        {
+          "available_tick": 9,
+          "event": "RETRY_APPENDED",
+          "event_seq": 96,
+          "reason": "STALE_GENERATION",
+          "task_id": "PO03-SIM-014",
+          "tick": 8
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 97,
+          "generation": 2,
+          "task_id": "PO03-SIM-012",
+          "tick": 8
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 98,
+          "generation": 1,
+          "task_id": "PO03-SIM-022",
+          "tick": 8
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 99,
+          "generation": 1,
+          "task_id": "PO03-SIM-023",
+          "tick": 8
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 100,
+          "generation": 1,
+          "task_id": "PO03-SIM-024",
+          "tick": 8
+        },
+        {
+          "callback_id": "event:PO03-SIM-003:2",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 101,
+          "generation": 2,
+          "task_id": "PO03-SIM-003",
+          "tick": 9
+        },
+        {
+          "callback_id": "event:PO03-SIM-017:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 102,
+          "generation": 1,
+          "task_id": "PO03-SIM-017",
+          "tick": 9
+        },
+        {
+          "callback_id": "event:PO03-SIM-024:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 103,
+          "generation": 1,
+          "task_id": "PO03-SIM-024",
+          "tick": 9
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 104,
+          "generation": 2,
+          "task_id": "PO03-SIM-006",
+          "tick": 9
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 105,
+          "generation": 1,
+          "task_id": "PO03-SIM-013",
+          "tick": 9
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 106,
+          "generation": 2,
+          "task_id": "PO03-SIM-014",
+          "tick": 9
+        },
+        {
+          "callback_id": "event:PO03-SIM-012:2",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 107,
+          "generation": 2,
+          "task_id": "PO03-SIM-012",
+          "tick": 10
+        },
+        {
+          "callback_id": "event:PO03-SIM-014:2",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 108,
+          "generation": 2,
+          "task_id": "PO03-SIM-014",
+          "tick": 10
+        },
+        {
+          "callback_id": "event:PO03-SIM-023:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 109,
+          "generation": 1,
+          "task_id": "PO03-SIM-023",
+          "tick": 10
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 110,
+          "generation": 1,
+          "task_id": "PO03-SIM-015",
+          "tick": 10
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 111,
+          "generation": 1,
+          "task_id": "PO03-SIM-016",
+          "tick": 10
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 112,
+          "generation": 2,
+          "task_id": "PO03-SIM-011",
+          "tick": 10
+        },
+        {
+          "callback_id": "event:PO03-SIM-022:1",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 113,
+          "generation": 1,
+          "task_id": "PO03-SIM-022",
+          "tick": 11
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 114,
+          "generation": 2,
+          "task_id": "PO03-SIM-010",
+          "tick": 11
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 115,
+          "generation": 1,
+          "task_id": "PO03-SIM-018",
+          "tick": 11
+        },
+        {
+          "callback_id": "event:PO03-SIM-011:2",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 116,
+          "generation": 2,
+          "task_id": "PO03-SIM-011",
+          "tick": 12
+        },
+        {
+          "callback_id": "event:PO03-SIM-018:1",
+          "event": "DUPLICATE_EVENT_REDUCED",
+          "event_seq": 117,
+          "task_id": "PO03-SIM-018",
+          "tick": 12
+        },
+        {
+          "event": "RESULT_REJECTED_BY_REDUCER",
+          "event_seq": 118,
+          "reason": "OPTIMISTIC_WRITE_CONFLICT",
+          "task_id": "PO03-SIM-019",
+          "tick": 12
+        },
+        {
+          "available_tick": 14,
+          "event": "RETRY_APPENDED",
+          "event_seq": 119,
+          "reason": "OPTIMISTIC_WRITE_CONFLICT",
+          "task_id": "PO03-SIM-019",
+          "tick": 12
+        },
+        {
+          "event": "RESULT_REJECTED_BY_REDUCER",
+          "event_seq": 120,
+          "reason": "OPTIMISTIC_WRITE_CONFLICT",
+          "task_id": "PO03-SIM-020",
+          "tick": 13
+        },
+        {
+          "available_tick": 14,
+          "event": "RETRY_APPENDED",
+          "event_seq": 121,
+          "reason": "OPTIMISTIC_WRITE_CONFLICT",
+          "task_id": "PO03-SIM-020",
+          "tick": 13
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 122,
+          "generation": 1,
+          "task_id": "PO03-SIM-021",
+          "tick": 13
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 123,
+          "generation": 2,
+          "task_id": "PO03-SIM-003",
+          "tick": 14
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 124,
+          "generation": 1,
+          "task_id": "PO03-SIM-017",
+          "tick": 14
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 125,
+          "generation": 2,
+          "task_id": "PO03-SIM-019",
+          "tick": 14
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 126,
+          "generation": 2,
+          "task_id": "PO03-SIM-012",
+          "tick": 15
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 127,
+          "generation": 1,
+          "task_id": "PO03-SIM-024",
+          "tick": 15
+        },
+        {
+          "callback_id": "event:PO03-SIM-019:2",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 128,
+          "generation": 2,
+          "task_id": "PO03-SIM-019",
+          "tick": 16
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 129,
+          "generation": 2,
+          "task_id": "PO03-SIM-014",
+          "tick": 16
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 130,
+          "generation": 1,
+          "task_id": "PO03-SIM-023",
+          "tick": 16
+        },
+        {
+          "event": "OPTIMISTIC_DISPATCH",
+          "event_seq": 131,
+          "generation": 2,
+          "task_id": "PO03-SIM-020",
+          "tick": 16
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 132,
+          "generation": 2,
+          "task_id": "PO03-SIM-011",
+          "tick": 17
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 133,
+          "generation": 1,
+          "task_id": "PO03-SIM-022",
+          "tick": 17
+        },
+        {
+          "callback_id": "event:PO03-SIM-020:2",
+          "copy_index": 0,
+          "event": "RESULT_REPORTED",
+          "event_seq": 134,
+          "generation": 2,
+          "task_id": "PO03-SIM-020",
+          "tick": 18
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 135,
+          "generation": 2,
+          "task_id": "PO03-SIM-019",
+          "tick": 18
+        },
+        {
+          "event": "MATERIALIZED_ACCEPTED",
+          "event_seq": 136,
+          "generation": 2,
+          "task_id": "PO03-SIM-020",
+          "tick": 19
+        }
+      ]
+    },
+    {
+      "accepted_tasks": [
+        "PO03-SIM-001",
+        "PO03-SIM-002",
+        "PO03-SIM-003",
+        "PO03-SIM-004",
+        "PO03-SIM-005",
+        "PO03-SIM-006",
+        "PO03-SIM-007",
+        "PO03-SIM-008",
+        "PO03-SIM-009",
+        "PO03-SIM-010",
+        "PO03-SIM-011",
+        "PO03-SIM-012",
+        "PO03-SIM-013",
+        "PO03-SIM-014",
+        "PO03-SIM-015",
+        "PO03-SIM-016",
+        "PO03-SIM-017",
+        "PO03-SIM-018",
+        "PO03-SIM-019",
+        "PO03-SIM-020",
+        "PO03-SIM-021",
+        "PO03-SIM-022",
+        "PO03-SIM-023",
+        "PO03-SIM-024"
+      ],
+      "candidate_id": "lease-shards",
+      "completed_workload": true,
+      "mechanism_evidence": {
+        "completion_authority": "independent per-shard verifiers",
+        "concurrency_guard": "local write locks and monotonic fences; contested keys gain a recovery-only global exclusion",
+        "durable_projection": "union of three shard projections",
+        "recovery": "fenced retry with shard-offset staggering",
+        "scheduler": "three partitioned release-ordered FIFOs"
+      },
+      "mechanism_signature": "partitioned-fifo|local-write-lock|fenced-per-shard-verification",
+      "metrics": {
+        "accepted_task_count": 24,
+        "accepted_throughput": 1.333333,
+        "collision_events": 3,
+        "duplicate_external_effects": 0,
+        "elapsed_ticks": 18,
+        "false_completions": 0,
+        "latency_p95_ticks": 12,
+        "lost_committed_results": 0,
+        "recovery_events": 9,
+        "rework_attempts": 9,
+        "unverified_exposure_ticks": 0,
+        "verification_backlog_peak": 6
+      },
+      "trace": [
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 0,
+          "task_id": "PO03-SIM-001",
+          "tick": 0
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 0,
+          "task_id": "PO03-SIM-003",
+          "tick": 0
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 1,
+          "task_id": "PO03-SIM-002",
+          "tick": 0
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 1,
+          "task_id": "PO03-SIM-004",
+          "tick": 0
+        },
+        {
+          "event": "CROSS_SHARD_COLLISION_OBSERVED",
+          "tasks": [
+            "PO03-SIM-003",
+            "PO03-SIM-004"
+          ],
+          "tick": 0
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 1,
+          "task_id": "PO03-SIM-007",
+          "tick": 1
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 2,
+          "task_id": "PO03-SIM-005",
+          "tick": 1
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 2,
+          "task_id": "PO03-SIM-008",
+          "tick": 1
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 1,
+          "task_id": "PO03-SIM-002",
+          "tick": 2
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 0,
+          "task_id": "PO03-SIM-006",
+          "tick": 2
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 1,
+          "task_id": "PO03-SIM-011",
+          "tick": 2
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 0,
+          "task_id": "PO03-SIM-001",
+          "tick": 3
+        },
+        {
+          "event": "SHARD_RETRY_SCHEDULED",
+          "reason": "CROSS_SHARD_COLLISION",
+          "shard": 1,
+          "task_id": "PO03-SIM-004",
+          "tick": 5
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 0,
+          "task_id": "PO03-SIM-009",
+          "tick": 3
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 0,
+          "task_id": "PO03-SIM-013",
+          "tick": 3
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 2,
+          "task_id": "PO03-SIM-010",
+          "tick": 3
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 2,
+          "task_id": "PO03-SIM-012",
+          "tick": 3
+        },
+        {
+          "event": "CROSS_SHARD_COLLISION_OBSERVED",
+          "tasks": [
+            "PO03-SIM-011",
+            "PO03-SIM-012"
+          ],
+          "tick": 3
+        },
+        {
+          "event": "SHARD_RETRY_SCHEDULED",
+          "reason": "CROSS_SHARD_COLLISION",
+          "shard": 0,
+          "task_id": "PO03-SIM-003",
+          "tick": 5
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 2,
+          "task_id": "PO03-SIM-005",
+          "tick": 4
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 0,
+          "task_id": "PO03-SIM-016",
+          "tick": 4
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 1,
+          "task_id": "PO03-SIM-014",
+          "tick": 4
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 1,
+          "task_id": "PO03-SIM-017",
+          "tick": 4
+        },
+        {
+          "event": "SHARD_RETRY_SCHEDULED",
+          "reason": "LEASED_WORKER_LOST",
+          "shard": 2,
+          "task_id": "PO03-SIM-010",
+          "tick": 8
+        },
+        {
+          "event": "SHARD_RETRY_SCHEDULED",
+          "reason": "ARTIFACT_HASH_MISMATCH",
+          "shard": 0,
+          "task_id": "PO03-SIM-006",
+          "tick": 6
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 1,
+          "task_id": "PO03-SIM-007",
+          "tick": 5
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 2,
+          "task_id": "PO03-SIM-008",
+          "tick": 5
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 2,
+          "shard": 0,
+          "task_id": "PO03-SIM-003",
+          "tick": 5
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 1,
+          "task_id": "PO03-SIM-022",
+          "tick": 5
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 2,
+          "task_id": "PO03-SIM-015",
+          "tick": 5
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 2,
+          "task_id": "PO03-SIM-018",
+          "tick": 5
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 0,
+          "task_id": "PO03-SIM-009",
+          "tick": 6
+        },
+        {
+          "event": "SHARD_RETRY_SCHEDULED",
+          "reason": "CROSS_SHARD_COLLISION",
+          "shard": 1,
+          "task_id": "PO03-SIM-011",
+          "tick": 8
+        },
+        {
+          "event": "SHARD_RETRY_SCHEDULED",
+          "reason": "CROSS_SHARD_COLLISION",
+          "shard": 2,
+          "task_id": "PO03-SIM-012",
+          "tick": 9
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 2,
+          "shard": 0,
+          "task_id": "PO03-SIM-006",
+          "tick": 6
+        },
+        {
+          "event": "SHARD_DUPLICATE_IGNORED",
+          "shard": 2,
+          "task_id": "PO03-SIM-018",
+          "tick": 7
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 0,
+          "task_id": "PO03-SIM-016",
+          "tick": 7
+        },
+        {
+          "event": "SHARD_RETRY_SCHEDULED",
+          "reason": "STALE_FENCE",
+          "shard": 1,
+          "task_id": "PO03-SIM-014",
+          "tick": 9
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 0,
+          "task_id": "PO03-SIM-019",
+          "tick": 7
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 1,
+          "task_id": "PO03-SIM-024",
+          "tick": 7
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 2,
+          "task_id": "PO03-SIM-020",
+          "tick": 7
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 2,
+          "task_id": "PO03-SIM-023",
+          "tick": 7
+        },
+        {
+          "event": "CROSS_SHARD_COLLISION_OBSERVED",
+          "tasks": [
+            "PO03-SIM-019",
+            "PO03-SIM-020"
+          ],
+          "tick": 7
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 0,
+          "task_id": "PO03-SIM-013",
+          "tick": 8
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 1,
+          "task_id": "PO03-SIM-017",
+          "tick": 8
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 2,
+          "task_id": "PO03-SIM-015",
+          "tick": 8
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 1,
+          "shard": 0,
+          "task_id": "PO03-SIM-021",
+          "tick": 8
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 2,
+          "shard": 1,
+          "task_id": "PO03-SIM-004",
+          "tick": 8
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 2,
+          "shard": 1,
+          "task_id": "PO03-SIM-011",
+          "tick": 8
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 0,
+          "task_id": "PO03-SIM-006",
+          "tick": 9
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 1,
+          "task_id": "PO03-SIM-022",
+          "tick": 9
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 2,
+          "task_id": "PO03-SIM-018",
+          "tick": 9
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 2,
+          "shard": 2,
+          "task_id": "PO03-SIM-010",
+          "tick": 9
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 0,
+          "task_id": "PO03-SIM-003",
+          "tick": 10
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 1,
+          "task_id": "PO03-SIM-024",
+          "tick": 10
+        },
+        {
+          "event": "SHARD_RETRY_SCHEDULED",
+          "reason": "CROSS_SHARD_COLLISION",
+          "shard": 2,
+          "task_id": "PO03-SIM-020",
+          "tick": 13
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 2,
+          "shard": 1,
+          "task_id": "PO03-SIM-014",
+          "tick": 10
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 2,
+          "shard": 2,
+          "task_id": "PO03-SIM-012",
+          "tick": 10
+        },
+        {
+          "event": "SHARD_RETRY_SCHEDULED",
+          "reason": "CROSS_SHARD_COLLISION",
+          "shard": 0,
+          "task_id": "PO03-SIM-019",
+          "tick": 12
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 1,
+          "task_id": "PO03-SIM-004",
+          "tick": 11
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 2,
+          "task_id": "PO03-SIM-023",
+          "tick": 11
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 0,
+          "task_id": "PO03-SIM-021",
+          "tick": 12
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 1,
+          "task_id": "PO03-SIM-011",
+          "tick": 12
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 2,
+          "task_id": "PO03-SIM-010",
+          "tick": 12
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 2,
+          "shard": 0,
+          "task_id": "PO03-SIM-019",
+          "tick": 12
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 1,
+          "task_id": "PO03-SIM-014",
+          "tick": 13
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 2,
+          "task_id": "PO03-SIM-012",
+          "tick": 13
+        },
+        {
+          "event": "SHARD_DISPATCH",
+          "fence": 2,
+          "shard": 2,
+          "task_id": "PO03-SIM-020",
+          "tick": 14
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 0,
+          "task_id": "PO03-SIM-019",
+          "tick": 15
+        },
+        {
+          "event": "SHARD_ACCEPTED",
+          "shard": 2,
+          "task_id": "PO03-SIM-020",
+          "tick": 17
+        }
+      ]
+    }
+  ],
+  "comparison": {
+    "bytes": 5485,
+    "path": "result/preregistered-comparison.json",
+    "sha256": "86c883570d6feb9f2d0e779f6749bdb9d01256c5014abc076ae2c8c9221ec5d0"
+  },
+  "hypothesis": "At least three independently reasoned repository-factory architectures expose materially different safety/throughput trade-offs under one frozen simulation.",
+  "hypothesis_id": "H-PO03-WA-017",
+  "hypothesis_outcome": "SUPPORTED",
+  "protocol_version": "OBZIO-PO03-ARCHITECTURE-COMPARISON-RESULT-v1",
+  "simulation_id": "PO03-WA-017-FROZEN-SIM-001",
+  "task_count": 24,
+  "workload": {
+    "bytes": 5987,
+    "path": "fixtures/frozen-simulation.json",
+    "sha256": "659b28a0beafb41e19ebfb7a6c009cba89dfeff0e720a30155802a72fff16aab"
+  }
+}

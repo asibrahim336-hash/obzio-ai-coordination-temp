@@ -1,0 +1,91 @@
+{
+  "assessment": {
+    "critical_safety_gate": {
+      "duplicate_external_effects": 0,
+      "false_completions": 0,
+      "lost_committed_results": 0,
+      "passes_for_all_candidates": true
+    },
+    "independence_gate": {
+      "completion_authorities": 3,
+      "concurrency_controls": 3,
+      "mechanism_signatures": 3,
+      "passes": true,
+      "recovery_sources": 3,
+      "schedulers": 3
+    },
+    "material_difference_gate": {
+      "all_three_pairs_pass": true,
+      "pair_count": 3,
+      "safety_distances": [
+        108,
+        3,
+        105
+      ],
+      "throughput_relative_differences": [
+        1.700003,
+        2.000002,
+        0.111111
+      ]
+    },
+    "throughput_spread_gate": {
+      "minimum_preregistered_ratio": 1.25,
+      "observed_ratio": 3.000002,
+      "passes": true
+    },
+    "workload_completion_gate": {
+      "accepted_by_each_candidate": 24,
+      "passes": true
+    }
+  },
+  "candidate_observations": [
+    {
+      "accepted_throughput": 0.444444,
+      "candidate_id": "central-gate",
+      "collision_events": 0,
+      "elapsed_ticks": 54,
+      "latency_p95_ticks": 47,
+      "reading": "Global exclusion and a synchronous verifier avoided both compared safety exposures, but serialized verification produced the lowest throughput and largest verification backlog.",
+      "unverified_exposure_ticks": 0,
+      "verification_backlog_peak": 17
+    },
+    {
+      "accepted_throughput": 1.333333,
+      "candidate_id": "lease-shards",
+      "collision_events": 3,
+      "elapsed_ticks": 18,
+      "latency_p95_ticks": 12,
+      "reading": "Independent shard verifiers produced the highest accepted throughput; local-only first-pass exclusion admitted three cross-shard collisions that fencing and recovery coordination rejected before acceptance.",
+      "unverified_exposure_ticks": 0,
+      "verification_backlog_peak": 6
+    },
+    {
+      "accepted_throughput": 1.2,
+      "candidate_id": "event-log",
+      "collision_events": 3,
+      "elapsed_ticks": 20,
+      "latency_p95_ticks": 16,
+      "reading": "Optimistic workers and replay preserved accepted results, but the asynchronous reducer accumulated 105 task-ticks of unverified exposure and did not exceed shard throughput.",
+      "unverified_exposure_ticks": 105,
+      "verification_backlog_peak": 12
+    }
+  ],
+  "evidence": {
+    "preregistered_comparison": "result/preregistered-comparison.json",
+    "simulation_result": "result/simulation-results.json",
+    "simulation_result_sha256": "94cf8326bc723a150e50b5d16aecaa173fcac01294db3d724d5e44f1bda84fda",
+    "workload": "fixtures/frozen-simulation.json",
+    "workload_sha256": "659b28a0beafb41e19ebfb7a6c009cba89dfeff0e720a30155802a72fff16aab"
+  },
+  "falsifiable_hypothesis": "At least three independently reasoned repository-factory architectures expose materially different safety/throughput trade-offs under one frozen simulation.",
+  "hypothesis_id": "H-PO03-WA-017",
+  "hypothesis_outcome": "SUPPORTED",
+  "post_result_directional_correction": {
+    "observed": "lease-shards was fastest at 1.333333 accepted tasks/tick; event-log was second at 1.2",
+    "preregistered_prediction": "event-log predicted highest throughput when its materializer kept pace",
+    "treatment": "DIRECTIONAL_PREDICTION_REFUTED_WITHOUT_CHANGING_FROZEN_DECISION_RULES"
+  },
+  "protocol_version": "OBZIO-PO03-FALSIFIABLE-HYPOTHESIS-v1",
+  "scope": "SUPPORTED only for trade-off exposure under PO03-WA-017-FROZEN-SIM-001; no production architecture selection or general benchmark claim.",
+  "task_id": "PO03-WA-017"
+}

@@ -1,0 +1,72 @@
+{
+  "commands": [
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -I workstreams/po03/wave-a/units/wa-017/simulator.py --output workstreams/po03/wave-a/units/wa-017/result/simulation-results.json",
+      "expected_output_sha256": "94cf8326bc723a150e50b5d16aecaa173fcac01294db3d724d5e44f1bda84fda",
+      "purpose": "Execute all three candidates against the preregistered frozen workload."
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-017/tests -p 'test_*.py' -v",
+      "expected_summary": "Ran 24 tests",
+      "purpose": "Exercise independence, fail-closed tamper cases, deterministic replay, all comparison gates, and output confinement."
+    },
+    {
+      "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+      "expected_summary": "Ran 23 tests",
+      "purpose": "Run the unmodified seeded PO-03 contract suite."
+    }
+  ],
+  "determinism": {
+    "clock": "integer logical ticks only",
+    "randomness": "none",
+    "repeated_in_process_result": "BYTE_IDENTICAL",
+    "threading": "none",
+    "traversal": "all queues and emitted JSON are explicitly ordered"
+  },
+  "faults_exercised": [
+    "artifact_corrupt_first",
+    "provider_loss_first",
+    "stale_completion_first",
+    "duplicate_callback",
+    "cross-write-key collision under non-global first-pass concurrency"
+  ],
+  "frozen_inputs": {
+    "comparison": {
+      "path": "result/preregistered-comparison.json",
+      "sha256": "86c883570d6feb9f2d0e779f6749bdb9d01256c5014abc076ae2c8c9221ec5d0"
+    },
+    "workload": {
+      "bytes": 5987,
+      "path": "fixtures/frozen-simulation.json",
+      "sha256": "659b28a0beafb41e19ebfb7a6c009cba89dfeff0e720a30155802a72fff16aab"
+    }
+  },
+  "protocol_version": "OBZIO-PO03-SANITIZED-REPRODUCTION-v1",
+  "reproduction_id": "PO03-WA-017-REPRO-001",
+  "result": {
+    "accepted_tasks_per_candidate": 24,
+    "candidate_count": 3,
+    "critical_safety_gate": "PASS",
+    "hypothesis_outcome": "SUPPORTED",
+    "material_pairwise_difference_gate": "PASS",
+    "simulation_output": "result/simulation-results.json",
+    "simulation_output_bytes": 55780,
+    "simulation_output_sha256": "94cf8326bc723a150e50b5d16aecaa173fcac01294db3d724d5e44f1bda84fda",
+    "throughput_spread_ratio": 3.000002
+  },
+  "runtime_requirements": {
+    "network": "none",
+    "python": "3.11 or later; standard library only",
+    "repository_state": "clean clone containing the immutable result commit",
+    "warm_cache": "not required"
+  },
+  "sanitized_workload": {
+    "contains_credentials": false,
+    "contains_owner_identity_data": false,
+    "contains_third_party_content": false,
+    "external_effects": false,
+    "source": "Repository-native synthetic projection of PO-03 custody and path-collision conditions."
+  },
+  "source_base_commit": "ef81e041befe9654ced9390ffd6cc046d8cdd033",
+  "task_id": "PO03-WA-017"
+}
