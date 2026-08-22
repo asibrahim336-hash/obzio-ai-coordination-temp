@@ -1,0 +1,51 @@
+{
+  "automated_test_count": 36,
+  "commands": [
+    {
+      "command": "python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-002/tests -p 'test_*.py' -v",
+      "duration_seconds": 1.983,
+      "exit_code": 0,
+      "first_pass": true,
+      "outcome": "PASS",
+      "test_count": 13
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -B -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+      "duration_seconds": 0.001,
+      "exit_code": 0,
+      "first_pass": true,
+      "outcome": "PASS",
+      "test_count": 23
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -B -I scripts/check_operator_taxonomy.py",
+      "exit_code": 0,
+      "outcome": "PASS",
+      "summary": "OPERATOR TAXONOMY CHECK: PASS"
+    },
+    {
+      "command": "python3 -I workstreams/po03/wave-a/units/wa-002/current_source_compiler.py workstreams/po03/wave-a/units/wa-002/fixtures/superseded/pointer.json --repository workstreams/po03/wave-a/units/wa-002/fixtures/superseded --output workstreams/po03/wave-a/units/wa-002/evidence/sanitized-obzio-compilation.json",
+      "exit_code": 0,
+      "outcome": "PASS",
+      "summary": "Selected source-current-v2 and retained source-legacy-v1 only as superseded evidence."
+    },
+    {
+      "command": "python3 -I workstreams/po03/wave-a/units/wa-002/current_source_compiler.py workstreams/po03/wave-a/units/wa-002/fixtures/ambiguous/pointer.json --repository workstreams/po03/wave-a/units/wa-002/fixtures/ambiguous",
+      "expected_exit_code": 2,
+      "observed_exit_code": 2,
+      "outcome": "PASS",
+      "summary": "Fail-closed AMBIGUOUS_CURRENT_SOURCE rejection; no output created."
+    }
+  ],
+  "critical_correctness": "100_PERCENT",
+  "defects": [
+    {
+      "disposition": "RECOVERED_BEFORE_RESULT_TESTING",
+      "id": "WA002-DEFECT-001",
+      "summary": "The initial shared checkout changed to another local branch between commands. The implementation commit was transplanted into a dedicated WA-002 worktree and pushed to the owned remote branch before focused tests."
+    }
+  ],
+  "first_pass_outcome": "PASS",
+  "protocol_version": "OBZIO-WA002-TEST-RESULT-v1",
+  "task_id": "PO03-WA-002"
+}

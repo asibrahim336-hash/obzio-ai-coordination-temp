@@ -1,0 +1,86 @@
+{
+  "artifacts": [
+    {
+      "kind": "executable_component",
+      "path": "current_source_compiler.py"
+    },
+    {
+      "kind": "focused_black_box_tests",
+      "path": "tests/test_current_source_compiler.py"
+    },
+    {
+      "kind": "current_fixture",
+      "path": "fixtures/current"
+    },
+    {
+      "kind": "superseded_fixture",
+      "path": "fixtures/superseded"
+    },
+    {
+      "kind": "ambiguous_fixture",
+      "path": "fixtures/ambiguous"
+    },
+    {
+      "kind": "sanitized_reproduction",
+      "path": "evidence/sanitized-obzio-compilation.json"
+    },
+    {
+      "kind": "state_separated_method_evidence",
+      "path": "evidence/method-evidence.json"
+    },
+    {
+      "kind": "hashed_source_capsule",
+      "path": "evidence/source-capsule.json"
+    }
+  ],
+  "finished_at": "2026-08-22T07:25:52Z",
+  "hypothesis_id": "H-PO03-WA-002",
+  "hypothesis_outcome": "SUPPORTED",
+  "limitations": {
+    "independent_acceptance": "NOT_YET",
+    "path": "result/limitations.json"
+  },
+  "method": {
+    "falsifiable_hypothesis": "A repository-native compiler can resolve current versus superseded sources from explicit pointers and fail closed on ambiguity.",
+    "mechanism": "Strict UTF-8 JSON pointer and source contracts; normalized repository-relative paths; SHA-256 byte binding; pointer/source declaration cross-checks; exactly-one-current cardinality; explicit supersession edges; deterministic compilation; atomic output after complete validation.",
+    "negative_case": "The ambiguous fixture declares two hash-valid CURRENT candidates for one logical source. Success was preregistered as exit code 2 with no output mutation.",
+    "positive_case": "The sanitized supersession fixture declares one CURRENT and one SUPERSEDED source. Success was preregistered as selecting only CURRENT while preserving SUPERSEDED as evidence."
+  },
+  "metrics": {
+    "artifact_bytes": 49003,
+    "artifact_count": 18,
+    "collision": 1,
+    "defects": 1,
+    "first_pass_outcome": "PASS",
+    "mechanism_change_count": 1,
+    "provider_block": 0,
+    "recovery_events": 1,
+    "reproduction_count": 2,
+    "rework": 1,
+    "source_claim_count": 2,
+    "test_count": 36,
+    "wall_time": "NOT_SUPPORTED"
+  },
+  "model_observed": "gpt-5.6-sol-max-fast",
+  "protocol_version": "OBZIO-WA002-RESULT-v1",
+  "reasoning_observed": "NOT_SUPPORTED",
+  "reasoning_requested": "xhigh",
+  "source_claims": [
+    {
+      "claim_id": "WA002-SC-001",
+      "state": "SOURCE_CLAIM"
+    },
+    {
+      "claim_id": "WA002-SC-002",
+      "state": "SOURCE_CLAIM"
+    }
+  ],
+  "started_at": "2026-08-22T07:16:00Z",
+  "task_id": "PO03-WA-002",
+  "tests": {
+    "automated_test_count": 36,
+    "critical_correctness": "100_PERCENT",
+    "first_pass_outcome": "PASS",
+    "path": "result/tests.json"
+  }
+}
