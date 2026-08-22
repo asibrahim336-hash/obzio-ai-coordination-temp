@@ -144,6 +144,13 @@ def main() -> int:
             "read_only_use": "artifacts are read via git cat-file from the object store, not from the working tree",
         },
         "verified_commit": commit,
+        "verification_regress_note": (
+            "This file records the verification of the commit named in verified_commit. "
+            "Committing it necessarily produces a later commit, which this file cannot "
+            "describe. That final commit is verified by re-running this tool against a "
+            "second fresh clone, and the outcome is reported in the producer return rather "
+            "than committed, which is where the regress is cut."
+        ),
         "remote_branch": BRANCH,
         "remote_tip_sha": remote_sha,
         "remote_tip_equals_verified_commit": remote_sha == commit,
