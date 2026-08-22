@@ -1,0 +1,37 @@
+{
+  "unit_id": "a12-u04",
+  "fence_token": 2,
+  "outcome": "READY_TO_COMMIT",
+  "pre_fix": {
+    "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a12_lineage_reconciler.py'",
+    "exit_code": 1,
+    "output": "Ran 1 test in 0.000s; FAILED (errors=1): FileNotFoundError for workstreams/po03/capsule/lineage_reconciler.py"
+  },
+  "post_fix": {
+    "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a12_lineage_reconciler.py'",
+    "exit_code": 0,
+    "output": "Ran 5 tests in 0.467s; OK"
+  },
+  "recomputation": {
+    "command": "python3 -I workstreams/po03/capsule/lineage_reconciler.py recompute --repo . --frozen-ref 04827c3cca829ece4ccca87e3d4196cc1b64a7a7 --current-ref b7b1888ad17eb232b9f284c753df79da3c0633ba --source-spec workstreams/po03/control/wave-a-spec.json --output workstreams/po03/capsule/lineage-computed.json",
+    "exit_code": 0,
+    "output": "WROTE workstreams/po03/capsule/lineage-computed.json drift=4 missing=0 method=git-history-only",
+    "evidence_consumed": false
+  },
+  "comparison": {
+    "command": "python3 -I workstreams/po03/capsule/lineage_reconciler.py compare --computed workstreams/po03/capsule/lineage-computed.json --evidence workstreams/po03/evidence/source-capsule-drift.json --output workstreams/po03/capsule/lineage-reconciliation.json",
+    "exit_code": 5,
+    "output": "WROTE workstreams/po03/capsule/lineage-reconciliation.json agrees=false discrepancies=8",
+    "byte_hashes_agree": true,
+    "ordered_commit_shas_agree": true,
+    "git_commit_subjects_agree": false,
+    "discrepancy_count": 8,
+    "discrepancy_class": "Every evidence causal-commit subject differs from the exact git commit subject. Three omit the repository's 'po03: ' prefix while preserving the remainder; five use path-specific change descriptions rather than the commit subject. Neither input was edited."
+  },
+  "artifacts": [
+    "workstreams/po03/capsule/lineage_reconciler.py",
+    "workstreams/po03/capsule/lineage-computed.json",
+    "workstreams/po03/capsule/lineage-reconciliation.json",
+    "workstreams/po03/tests/test_a12_lineage_reconciler.py"
+  ]
+}
