@@ -142,6 +142,8 @@ def _trusted_source_base(
             "immutable_controller_base",
             ready["source_base"].get("producer_start_commit"),
         )
+    if source_base is None and isinstance(ready.get("changed_files"), dict):
+        source_base = ready["changed_files"].get("compared_against")
     if not isinstance(source_base, str) or not FULL_COMMIT_RE.fullmatch(source_base):
         raise ValueError("producer return lacks an exact source_base_commit")
     try:

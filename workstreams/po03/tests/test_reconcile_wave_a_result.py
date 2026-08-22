@@ -168,6 +168,19 @@ class TrustedSourceBaseTests(unittest.TestCase):
             )
         self.assertEqual(observed, self.source_base)
 
+    def test_changed_files_comparison_base_is_trusted(self):
+        with mock.patch.object(TOOL, "_git", side_effect=self.git_result):
+            observed = TOOL._trusted_source_base(
+                {
+                    "changed_files": {
+                        "compared_against": self.source_base,
+                    }
+                },
+                self.return_commit,
+                self.ingestion_commit,
+            )
+        self.assertEqual(observed, self.source_base)
+
     def test_non_divergence_claim_is_refused(self):
         def divergent_git(*args):
             if args == ("merge-base", self.return_commit, self.ingestion_commit):
