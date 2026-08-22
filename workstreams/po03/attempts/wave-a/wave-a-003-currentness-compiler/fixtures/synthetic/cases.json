@@ -1,0 +1,418 @@
+{
+  "cases_version": "PO03-CURRENTNESS-CASES-v1",
+  "base_spec": {
+    "spec_version": "PO03-CURRENTNESS-SPEC-v1",
+    "spec_id": "wave-a-003-synthetic-spec",
+    "entrypoint": "README.md",
+    "entrypoint_section": "Read in this order",
+    "single_valued_roles": [
+      "selected_pointer",
+      "selected_payload",
+      "selected_manifest",
+      "canonical_command"
+    ],
+    "evidence_roles": [
+      "immutable_execution_evidence"
+    ],
+    "superseded_key_pattern": "^superseded",
+    "lineage_key_pattern": "^(supersedes|prior|previous|predecessor|replaces)",
+    "absence_evidence_key_pattern": "^(expected|missing|absent|unrecovered|lost|not_found)",
+    "superseded_standing_prefix": "SUPERSEDED",
+    "routing_roles": [
+      "entrypoint_order",
+      "resolve_in_order"
+    ],
+    "disposition_documents": [],
+    "explicit_superseded": [],
+    "max_depth": 8,
+    "decision_changed": []
+  },
+  "cases": [
+    {
+      "case_id": "superseded-pointer-exclusion",
+      "purpose": "A superseded pointer reachable from the current chain is retained as evidence and excluded from the current source set.",
+      "files": {
+        "README.md": {
+          "text": "# Synthetic estate\n\n## Read in this order\n\n1. `pointer.json`\n"
+        },
+        "pointer.json": {
+          "json": {
+            "selected_pointer": {
+              "path": "current.json",
+              "standing": "CURRENT_ACTIVE"
+            },
+            "superseded_pointer": {
+              "path": "old.json",
+              "standing": "SUPERSEDED_V009_UNSENT_RETAINED"
+            }
+          }
+        },
+        "current.json": {
+          "json": {
+            "note": "active launch surface"
+          }
+        },
+        "old.json": {
+          "json": {
+            "note": "retired pointer retained as evidence"
+          }
+        }
+      },
+      "expect": {
+        "gate": "PASS",
+        "current_includes": [
+          "README.md",
+          "pointer.json",
+          "current.json"
+        ],
+        "current_excludes": [
+          "old.json"
+        ],
+        "superseded_includes": [
+          "old.json"
+        ],
+        "violations": [],
+        "counts": {
+          "retained_superseded_evidence": 1,
+          "missing_references": 0
+        }
+      }
+    },
+    {
+      "case_id": "superseded-reached-by-active-role",
+      "purpose": "A superseded object that a live launch role also names must fail the gate closed.",
+      "files": {
+        "README.md": {
+          "text": "# Synthetic estate\n\n## Read in this order\n\n1. `pointer.json`\n"
+        },
+        "pointer.json": {
+          "json": {
+            "selected_pointer": {
+              "path": "current.json",
+              "standing": "CURRENT_ACTIVE"
+            },
+            "superseded_pointer": {
+              "path": "old.json",
+              "standing": "SUPERSEDED_V009_UNSENT_RETAINED"
+            },
+            "canonical_command": {
+              "path": "old.json",
+              "standing": "CURRENT_ACTIVE"
+            }
+          }
+        },
+        "current.json": {
+          "json": {
+            "note": "active"
+          }
+        },
+        "old.json": {
+          "json": {
+            "note": "retired"
+          }
+        }
+      },
+      "expect": {
+        "gate": "FAIL",
+        "violations": [
+          "SUPERSEDED_OBJECT_REACHED_BY_ACTIVE_ROLE"
+        ],
+        "superseded_includes": [
+          "old.json"
+        ],
+        "current_excludes": [
+          "old.json"
+        ]
+      }
+    },
+    {
+      "case_id": "standing-substring-is-not-supersession",
+      "purpose": "A current standing that merely mentions a superseded predecessor stays current and is reported as a near miss.",
+      "files": {
+        "README.md": {
+          "text": "# Synthetic estate\n\n## Read in this order\n\n1. `pointer.json`\n"
+        },
+        "pointer.json": {
+          "json": {
+            "selected_payload": {
+              "path": "payload.md",
+              "standing": "CURRENT_CLEAN_V010_NOT_ORIGINAL_V008_V009_SUPERSEDED_TRANSMITTED"
+            }
+          }
+        },
+        "payload.md": {
+          "text": "# current payload\n"
+        }
+      },
+      "expect": {
+        "gate": "PASS",
+        "current_includes": [
+          "payload.md"
+        ],
+        "superseded_excludes": [
+          "payload.md"
+        ],
+        "violations": [],
+        "counts": {
+          "substring_near_misses": 1,
+          "retained_superseded_evidence": 0
+        }
+      }
+    },
+    {
+      "case_id": "lineage-role-names-superseded-target",
+      "purpose": "A backward lineage role may name a superseded object without failing the gate or promoting it.",
+      "files": {
+        "README.md": {
+          "text": "# Synthetic estate\n\n## Read in this order\n\n1. `pointer.json`\n"
+        },
+        "pointer.json": {
+          "json": {
+            "selected_pointer": {
+              "path": "p02.json",
+              "standing": "CURRENT_ACTIVE"
+            }
+          }
+        },
+        "p02.json": {
+          "json": {
+            "supersedes_pointer": {
+              "path": "p01.json",
+              "standing": "SUPERSEDED_V009_UNSENT_RETAINED"
+            }
+          }
+        },
+        "p01.json": {
+          "json": {
+            "note": "prior pointer"
+          }
+        }
+      },
+      "expect": {
+        "gate": "PASS",
+        "current_includes": [
+          "p02.json"
+        ],
+        "current_excludes": [
+          "p01.json"
+        ],
+        "superseded_includes": [
+          "p01.json"
+        ],
+        "violations": [],
+        "counts": {
+          "lineage_references": 1
+        }
+      }
+    },
+    {
+      "case_id": "declared-absence-is-preserved-evidence",
+      "purpose": "A role that declares an absent object records an evidential defect instead of a broken reference.",
+      "files": {
+        "README.md": {
+          "text": "# Synthetic estate\n\n## Read in this order\n\n1. `pointer.json`\n"
+        },
+        "pointer.json": {
+          "json": {
+            "historical_defects": [
+              {
+                "expected_path": "dispatch/ORIGINAL_v008.md",
+                "state": "MISSING_NOT_RECONSTRUCTED"
+              }
+            ]
+          }
+        }
+      },
+      "expect": {
+        "gate": "PASS",
+        "violations": [],
+        "counts": {
+          "declared_absent_objects": 1,
+          "missing_references": 0
+        }
+      }
+    },
+    {
+      "case_id": "active-role-naming-absent-object",
+      "purpose": "An active launch role that names an absent object is a broken reference and fails the gate.",
+      "files": {
+        "README.md": {
+          "text": "# Synthetic estate\n\n## Read in this order\n\n1. `pointer.json`\n"
+        },
+        "pointer.json": {
+          "json": {
+            "canonical_command": {
+              "path": "dispatch/ABSENT_COMMAND.md",
+              "standing": "CURRENT_ACTIVE"
+            }
+          }
+        }
+      },
+      "expect": {
+        "gate": "FAIL",
+        "violations": [
+          "MISSING_REFERENCED_OBJECT"
+        ],
+        "counts": {
+          "missing_references": 1,
+          "declared_absent_objects": 0
+        }
+      }
+    },
+    {
+      "case_id": "routing-pointer-cycle",
+      "purpose": "A routing cycle between resolve-order pointers fails the gate.",
+      "files": {
+        "README.md": {
+          "text": "# Synthetic estate\n\n## Read in this order\n\n1. `a.json`\n"
+        },
+        "a.json": {
+          "json": {
+            "resolve_in_order": [
+              "b.json"
+            ]
+          }
+        },
+        "b.json": {
+          "json": {
+            "resolve_in_order": [
+              "a.json"
+            ]
+          }
+        }
+      },
+      "expect": {
+        "gate": "FAIL",
+        "violations": [
+          "ROUTING_POINTER_CYCLE"
+        ]
+      }
+    },
+    {
+      "case_id": "self-describing-manifest",
+      "purpose": "A manifest that names its own path is provenance, not a cycle.",
+      "files": {
+        "README.md": {
+          "text": "# Synthetic estate\n\n## Read in this order\n\n1. `m.json`\n"
+        },
+        "m.json": {
+          "json": {
+            "self_identity": {
+              "path": "m.json",
+              "standing": "CURRENT_ACTIVE"
+            }
+          }
+        }
+      },
+      "expect": {
+        "gate": "PASS",
+        "violations": [],
+        "counts": {
+          "self_describing_references": 1
+        }
+      }
+    },
+    {
+      "case_id": "ambiguous-single-valued-role",
+      "purpose": "Two live pointers claiming one single-valued role fail the gate.",
+      "files": {
+        "README.md": {
+          "text": "# Synthetic estate\n\n## Read in this order\n\n1. `p1.json`\n2. `p2.json`\n"
+        },
+        "p1.json": {
+          "json": {
+            "selected_pointer": {
+              "path": "x.json",
+              "standing": "CURRENT_ACTIVE"
+            }
+          }
+        },
+        "p2.json": {
+          "json": {
+            "selected_pointer": {
+              "path": "y.json",
+              "standing": "CURRENT_ACTIVE"
+            }
+          }
+        },
+        "x.json": {
+          "json": {
+            "note": "x"
+          }
+        },
+        "y.json": {
+          "json": {
+            "note": "y"
+          }
+        }
+      },
+      "expect": {
+        "gate": "FAIL",
+        "violations": [
+          "AMBIGUOUS_SINGLE_VALUED_ROLE"
+        ]
+      }
+    },
+    {
+      "case_id": "filename-resemblance-does-not-promote",
+      "purpose": "An unreferenced file whose name resembles a current pointer never enters the current source set.",
+      "files": {
+        "README.md": {
+          "text": "# Synthetic estate\n\n## Read in this order\n\n1. `pointer.json`\n"
+        },
+        "pointer.json": {
+          "json": {
+            "selected_pointer": {
+              "path": "current.json",
+              "standing": "CURRENT_ACTIVE"
+            }
+          }
+        },
+        "current.json": {
+          "json": {
+            "note": "active"
+          }
+        },
+        "state/ACTIVE_LOOKS_CURRENT.json": {
+          "json": {
+            "note": "orphan that resembles a live pointer"
+          }
+        }
+      },
+      "expect": {
+        "gate": "PASS",
+        "violations": [],
+        "current_excludes": [
+          "state/ACTIVE_LOOKS_CURRENT.json"
+        ],
+        "superseded_excludes": [
+          "state/ACTIVE_LOOKS_CURRENT.json"
+        ]
+      }
+    },
+    {
+      "case_id": "entrypoint-names-absent-object",
+      "purpose": "An entrypoint reading order that names an absent object fails the gate.",
+      "files": {
+        "README.md": {
+          "text": "# Synthetic estate\n\n## Read in this order\n\n1. `pointer.json`\n2. `absent.json`\n"
+        },
+        "pointer.json": {
+          "json": {
+            "note": "present"
+          }
+        }
+      },
+      "expect": {
+        "gate": "FAIL",
+        "violations": [
+          "MISSING_REFERENCED_OBJECT"
+        ],
+        "counts": {
+          "missing_references": 1
+        }
+      }
+    }
+  ],
+  "decision_changed": []
+}
