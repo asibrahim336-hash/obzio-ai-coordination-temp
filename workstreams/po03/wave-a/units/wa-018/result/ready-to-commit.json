@@ -193,6 +193,8 @@
     "wall_time": 2280,
     "wall_time_unit": "seconds"
   },
+  "producer_finished_at": "2026-08-22T09:52:00Z",
+  "producer_finished_at_note": "result.json records finished_at 2026-08-22T09:45:00Z, which is when the substantive analysis and every payload artifact were complete. This later timestamp covers the custody operations that followed: manifest build, push, immutable readback and envelope correction. Both are recorded rather than reconciled into one number.",
   "producer_source_base_commit": "48ac81e2580c6efefae8de39dc6b484b57e5c881",
   "producer_source_base_commit_note": "The exact controller source base this attempt was instructed to work from, and the commit the isolated worktree was created at. Every changed path is measured against it. producer_source_base_commit and source_base_commit are the same value; both names are present so the field is unambiguous to a reader and resolvable by the controller reconciler.",
   "protocol_version": "OBZIO-PRODUCER-RETURN-v1",
@@ -403,9 +405,26 @@
   "reasoning_requested": "high",
   "remote_branch": "cursor/po03-wa-018-b195-a02-1a9f",
   "result_commit_id": "f2a4ead49409913c7f4bb9cf474a3f57a126a288",
+  "result_commit_id_readback_state": "VERIFIED_AT_f2a4ead49409913c7f4bb9cf474a3f57a126a288",
   "result_slot": "workstreams/po03/wave-a/units/wa-018/result/",
   "return_commit_id": null,
   "return_commit_id_note": "Assigned when this document is committed, because a file cannot contain the id of the commit that contains it. The immutable return commit is reported in the producer terminal response and can be read from the pushed branch.",
+  "return_envelope_revisions": [
+    {
+      "bytes": 38406,
+      "independent_readback": "VERIFIED",
+      "readback_method": "Separate fresh clone with --no-hardlinks, detached at the return commit, all 21 payload artifacts plus the manifest matched by SHA-256 and byte count, 0 out-of-scope changed paths, all 75 tests rerun under env -i with PATH restricted, and the sanitized reproduction rerun with all three derived artifacts byte-identical.",
+      "return_commit_id": "2ea9d38a668fe6bb8ef07eca14f8f8c878ff98b5",
+      "revision": 1,
+      "sha256": "474db287c936c90c4a55555cf11c389651928a6364cdc51b581cddd3cc7883da"
+    },
+    {
+      "content": "this document, adding the verified return-commit lineage and the producer finish time",
+      "note": "Revision 2 corrects only this envelope. The result commit and the manifest are unchanged, because ready-to-commit.json is deliberately not a manifest payload entry, so no payload digest moves when the envelope is corrected.",
+      "return_commit_id": null,
+      "revision": 2
+    }
+  ],
   "runner_id": "best-of-n-runner-bc-b1956656-wa-018-a02",
   "runtime_binding": {
     "execution_environment": "dedicated git worktree of the controller checkout, created at the immutable producer base",
