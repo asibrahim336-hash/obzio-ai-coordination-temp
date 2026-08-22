@@ -1,0 +1,131 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-sol-xhigh",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-050-reproduction-context-admission",
+  "cohort": "c7",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c7",
+  "overlap_unit": true,
+  "overlap_note": "Also reviewed independently by Reviewer B so inter-reviewer disagreement can be measured. I did not coordinate with anyone about this unit and have not seen Reviewer B's findings.",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "c307be4326f24bc1e962fc2d743bb37afb4ea5af2d05578df52ba61a2d0cb0f2",
+  "frozen_hypothesis": "Bounded hashed context capsules outperform indiscriminate context dumping on a sanitized Obzio workload.",
+  "frozen_required_deliverable": "A measured reproduction comparing bounded-capsule admission against full-dump admission on a sanitized workload, reporting the metric, the effect and an explicit accept or reject.",
+
+  "po01_contact_check": "READ-ONLY CONFIRMED, and stronger than that: the experiment reads only its own preregister.json and writes only its own measurement.json. It touches no repository content at all. My hidden cases wrote only under /home/ubuntu/po03-review-scratch-a/_hidden/050.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -I and python3 -IB (CPython 3.12.3)",
+    "producer_experiment_command": "python3 -I experiment.py --output <scratch>/repro_measurement.json",
+    "producer_test_command": "python3 -IB test_context_admission.py",
+    "producer_test_exit_code": 0,
+    "byte_exact_reproduction": "mine   13053 bytes 887dde81553083dc0722000e701d23e4a6b9125ae0987dbe990f89051ffd90bd\ntheirs 13053 bytes 887dde81553083dc0722000e701d23e4a6b9125ae0987dbe990f89051ffd90bd\nBYTE-IDENTICAL: True",
+    "note": "The committed 13053-byte measurement.json regenerates byte for byte, including all 100 raw trial records. The seeding is genuine and every number in the manifest and execution record is real. My objections are entirely about what the experiment measures, not about whether it was run."
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "Before attacking anything I wanted to know what the two arms actually are. The arm named indiscriminate_full_dump has to be inspected, not trusted, because 'full dump' and 'admission budget' are contradictory ideas.",
+      "construction": "Read full_dump() and measured the workload shape, then compared the arm's measured recovery rate against the plain combinatorial expectation of drawing the budget at random from the field pool.",
+      "observed_output_verbatim": "   fields per trial: 70  (6 required + 64 noise)\n   admission_budget_fields: 12\n   full_dump() body: return dict(fields[:budget])  -> a TRUNCATION of a shuffled list\n   combinatorial expectation for the dump arm: 6 * 12/70 = 1.0286 required fields recovered per trial, i.e. rate 0.1714\n   measured dump rate: 0.155\n   measured bounded rate: 1.0\n   delta: 0.845  verdict: PASS",
+      "component_survived": false,
+      "interpretation": "The arm called 'indiscriminate full dump' does not dump. It takes the first 12 entries of a shuffled 70-entry list, which is a uniform random sample of 12 from 70, and its measured recovery of 0.155 sits right on the combinatorial expectation of 0.1714. The other arm selects the 6 fields it already knows are required, so it scores 1.000 by definition. The reported delta of 0.845 is therefore not a measurement of an admission strategy; it is the arithmetic difference between 'pick the answers' and 'pick 12 of 70 at random'. No mechanism is under test."
+    },
+    {
+      "hidden_case_id": "HC-C",
+      "rationale": "The frozen hypothesis says 'indiscriminate context dumping'. Indiscriminate dumping means admitting everything. I substituted that literal reading into the producer's own harness and changed nothing else.",
+      "construction": "Replaced full_dump with a one-line function that admits every field - dict(fields) - and re-ran the producer's run() on the producer's own preregister.",
+      "observed_output_verbatim": "   bounded rate: 1.0\n   dump rate   : 1.0\n   delta       : 0.0\n   verdict     : FAIL   refutation_triggered: True\n",
+      "component_survived": false,
+      "interpretation": "Under the literal reading of the hypothesis the effect is exactly zero and the producer's own harness returns FAIL with refutation_triggered true. This is the decisive result. Taken together with HC-B it means the metric cannot discriminate the hypothesis in either direction: constrain the dump arm to the same budget and the capsule wins tautologically, let the dump arm dump and it ties tautologically, because 'exact recovery of known-required fields' is maximised by admitting everything. Whatever is true about capsules versus dumping in a real context window, this metric cannot see it."
+    },
+    {
+      "hidden_case_id": "HC-D",
+      "rationale": "If the effect is an artifact of the budget, it should move smoothly with the budget. A preregistered threshold that is satisfied only inside a chosen parameter range is a parameter choice dressed as a finding.",
+      "construction": "Swept admission_budget_fields from 6 to 70 through the producer's run(), leaving seed and sample size at their preregistered values.",
+      "observed_output_verbatim": "   budget | bounded | dump   | delta  | verdict\n        6 | 1.000   | 0.083  | 0.917  | PASS\n       12 | 1.000   | 0.155  | 0.845  | PASS\n       20 | 1.000   | 0.280  | 0.720  | PASS\n       30 | 1.000   | 0.438  | 0.562  | PASS\n       40 | 1.000   | 0.565  | 0.435  | PASS\n       50 | 1.000   | 0.703  | 0.297  | PASS\n       60 | 1.000   | 0.852  | 0.148  | FAIL\n       64 | 1.000   | 0.920  | 0.080  | FAIL\n       68 | 1.000   | 0.980  | 0.020  | FAIL\n       70 | 1.000   | 1.000  | 0.000  | FAIL\n   -> the preregistered PASS threshold of 0.20 stops being met at budget >= 60",
+      "component_survived": false,
+      "interpretation": "The bounded arm is pinned at 1.000 for every budget because it always selects exactly the required fields. The entire reported effect is the complement of budget/70 in the other arm, and the verdict flips from PASS to FAIL between budget 50 and 60. So the frozen accept threshold of 0.20 is met because 12 was chosen rather than 60, and nothing about capsule design is being measured. To be fair to the producer, 12 is a plausible number and was fixed in the preregister before the run, which is the right discipline - the problem is that the quantity it fixes turns out to be the answer rather than a condition."
+    },
+    {
+      "hidden_case_id": "HC-E",
+      "rationale": "The preregistered accept rule is a conjunction: delta >= 0.20 AND bounded_hash_mismatches == 0. A conjunct that cannot be false contributes nothing, so I checked whether the second one can ever fire.",
+      "construction": "Traced the two hash computations in the source, then swept 40 independent seeds looking for any nonzero mismatch count.",
+      "observed_output_verbatim": "      40:     return admitted, hashlib.sha256(canonical(admitted)).hexdigest()\n      50:         bounded, digest = bounded_capsule(fields, budget)\n      51:         if hashlib.sha256(canonical(bounded)).hexdigest() != digest:\n      52:             mismatches += 1\n      68:     accepted = delta >= 0.20 and mismatches == 0\n   seeds with a nonzero mismatch count: 0/40\n   delta range across seeds: 0.8000 .. 0.8700",
+      "component_survived": false,
+      "interpretation": "Line 40 hashes the object it is about to return; line 51 hashes that same object again and compares. The two hashes are of identical bytes with no intervening mutation, so bounded_hash_mismatches is structurally incapable of being nonzero - the seed sweep confirming 0/40 is a formality, not the proof. Half of the preregistered acceptance rule is therefore a tautology, and 'zero hash mismatches' appears in the manifest evidence line as if it were an observation. The delta range 0.800 to 0.870 across 40 seeds also shows the effect is seed-insensitive, which is what one expects of arithmetic rather than of a measured phenomenon."
+    },
+    {
+      "hidden_case_id": "HC-F",
+      "rationale": "The frozen deliverable requires the reproduction to run 'on a sanitized workload', and the frozen hypothesis says 'a sanitized Obzio workload'. Sanitization presupposes something real that was sanitized.",
+      "construction": "Printed the actual generated fields for trial 0.",
+      "observed_output_verbatim": "     'return_route': 'return_route-value-0'\n     'irrelevant_006': 'noise-0-6'\n     'task_id': 'task_id-value-0'\n     'irrelevant_025': 'noise-0-25'\n     'irrelevant_007': 'noise-0-7'\n     'irrelevant_045': 'noise-0-45'\n   distinct field VALUES that are not machine-generated templates: 0",
+      "component_survived": false,
+      "interpretation": "Every value is a template string of the form '<key>-value-<n>' or 'noise-<n>-<m>'. There is no Obzio content here, sanitized or otherwise, and nothing was derived from a real capsule. The six required field NAMES are genuinely Obzio-shaped - task_id, commission_id, fence_token, acceptance_hash, owned_path, return_route are the real fields this commission uses - so the schema is faithful. But 'sanitized Obzio workload' describes real material with secrets removed, and this is generated placeholder text. The unit's own subtree contains real capsules it could have sanitized: its input.json carries exactly these fields with real values."
+    },
+    {
+      "hidden_case_id": "HC-G",
+      "is_vacuity_probe": true,
+      "rationale": "The commission's stub-substitution test, applied to the test that asserts the primary claim.",
+      "construction": "Replaced experiment.py with a stub whose run() returns a hardcoded {'verdict': 'PASS', 'bounded_minus_dump_recovery': 0.845, 'bounded_hash_mismatches': 0} while keeping a real bounded_capsule and canonical so the second test still does genuine hashing. Producer's test file and preregister.json unchanged.",
+      "observed_output_verbatim": "   stub whose run() returns hardcoded PASS/0.845/0: exit=0 (STILL PASSES -> primary claim is unverified by the test)",
+      "component_survived": false,
+      "interpretation": "Partially vacuous. The first test - the one that carries the whole reproduction claim - asserts only that run() returned PASS, a delta at or above 0.20, and zero mismatches, all of which a constant satisfies. It never generates a workload, never checks an arm, never checks the sample size. The second test is genuine and I want that on the record: it builds a real capsule, mutates a field, and asserts the hash changes, which is a real property really tested. So the hashing half of 'bounded hashed capsules' is verified; the comparative half is not verified by any test."
+    },
+    {
+      "hidden_case_id": "HC-A",
+      "rationale": "Reproducibility, which the commission asks me to check directly, and the base question of whether the reported numbers were actually produced by the committed code.",
+      "construction": "Ran experiment.py in a fresh isolated interpreter writing to a scratch path and hashed the output against the committed measurement.json.",
+      "observed_output_verbatim": "   exit=0\n   mine   13053 bytes 887dde81553083dc0722000e701d23e4a6b9125ae0987dbe990f89051ffd90bd\n   theirs 13053 bytes 887dde81553083dc0722000e701d23e4a6b9125ae0987dbe990f89051ffd90bd\n   BYTE-IDENTICAL: True",
+      "component_survived": true,
+      "interpretation": "Fully reproducible and nothing is invented. All 100 raw trial records regenerate identically, the seeding is real, and the numbers quoted in the manifest and execution record are the numbers the code produces. The canonical JSON encoder with sorted keys and fixed separators is the right choice for a measurement artifact. This is honest work aimed at the wrong target."
+    }
+  ],
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "MET as recording, weak as verification. The reproduction executes and measurement.json regenerates byte for byte; the test asserting the primary claim passes against a constant.",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET - I recomputed all 6 artifacts, 6/6 hash and byte-count matches, nothing on disk unlisted. One of the 6 declared artifacts is CPython bytecode.",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - acceptance_contract_sha256 equals my pre-disclosure hash c307be43...",
+    "result is committed and read back by a different process from an immutable object id": "MET - result_commit_id 23234ca167100a234e2f8ff6ab078e1b77a94dc7.",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - PASS is explicit, and the harness has a real FAIL path which I triggered in HC-C, so the verdict field is not decorative.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "NOT MET in substance. Under the literal reading of 'indiscriminate dumping' the producer's own harness returns FAIL with refutation_triggered true, and that outcome is not reported anywhere. The refutation was reachable with a one-line change to the arm definition.",
+    "no value, hash, metric or provider capability is invented": "MET, emphatically. Byte-exact reproduction of a 13053-byte measurement artifact, and every declared hash recomputes.",
+    "required_deliverable - measured reproduction comparing bounded-capsule against full-dump admission on a sanitized workload, reporting metric, effect and an explicit accept or reject": "SPLIT. 'Reporting the metric, the effect and an explicit accept or reject' MET and cleanly structured, with a preregister written before the run and a real accept rule. 'Comparing bounded-capsule admission against full-dump admission' NOT MET - the comparison arm is a random 12-of-70 truncation, not a dump, and the effect is a construction artifact of that choice. 'On a sanitized workload' NOT MET - the workload is generated placeholder strings, with no real material sanitized."
+  },
+
+  "scope_honesty_assessment": {
+    "producer_declared_limitations": [
+      "Deterministic synthetic field recovery does not measure semantic answer quality from a live language model.",
+      "execution.json adds: This deterministic synthetic admission workload measures field recovery under a fixed field budget; it does not measure semantic answer quality from a live language model."
+    ],
+    "assessment": "Better than average disclosure that still misses the thing that matters. The producer states the workload is synthetic, states that no language model was involved, and - to its credit - the manifest evidence line says 'versus 0.155 for EQUAL-BUDGET full dumping', which names the load-bearing assumption in the one place a reader is most likely to look. What is nowhere disclosed is that the equal-budget assumption is not a caveat on the result but the entire cause of it: relax the budget and the effect goes to zero and the harness reports FAIL. Nor is it disclosed that the second half of the preregistered accept rule, zero hash mismatches, cannot fail. 'Zero hash mismatches' is quoted in the evidence line as an observed outcome when it is a property of hashing the same bytes twice."
+  },
+
+  "nonportable_artifacts_in_subtree": [
+    "__pycache__/experiment.cpython-312.pyc - 6497 bytes, declared as manifest artifact-001 and still present at the c7 cohort head, unlike units 033 and 037 which removed theirs. Interpreter-version-locked and embeds the absolute producer path /home/ubuntu/po03-worktrees/c7/workstreams/po03/attempts/po03-wa-b2e7-050-reproduction-context-admission/experiment.py. This is the third instance of the same pattern I have found in this wave and the only one still live."
+  ],
+  "reproducibility_check": "Excellent. The 13053-byte measurement.json regenerates byte for byte with identical SHA-256 in a fresh isolated interpreter, and the effect is stable across 40 independent seeds (delta 0.800 to 0.870) - though that stability is a symptom of the effect being arithmetic rather than evidence of a robust finding.",
+
+  "vacuous_test_finding": true,
+  "vacuous_test_qualifier": "Partial. The test carrying the primary comparative claim passes against a hardcoded constant. The second test, which verifies that mutating a capsule changes its hash, is genuine and does exercise real hashing.",
+  "reviewer_independent_verdict": "NOT_YET",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "DIVERGE",
+  "divergence_reason": "The reproduction does not bear on its hypothesis in either direction, which I established with the producer's own harness. The arm named 'indiscriminate_full_dump' is dict(fields[:12]) over a shuffled 70-field list - a uniform random sample of 12 from 70, whose measured recovery of 0.155 sits on the combinatorial expectation of 0.1714 - while the capsule arm selects exactly the six fields it already knows are required and therefore scores 1.000 for every seed and every budget. The reported delta of 0.845 is the arithmetic gap between picking the answers and picking twelve items at random. Substituting the literal meaning of 'indiscriminate dumping', namely admit everything, gives a delta of exactly 0.0 and the producer's own harness returns FAIL with refutation_triggered true. So the chosen metric, exact recovery of known-required fields, is maximised by dumping everything and cannot discriminate the hypothesis: constrain the dump and the capsule wins tautologically, let it dump and it ties tautologically. Two further findings support this. The reported effect is a monotone function of the preregistered budget and the verdict flips from PASS to FAIL between budget 50 and 60, so the accept threshold was met by parameter choice. And the second conjunct of the accept rule, bounded_hash_mismatches == 0, hashes the same bytes twice and compares, so it can never be false while being quoted in the evidence line as an observed outcome. I record NOT_YET rather than FAIL because the real-world claim about bounded capsules may well be true - this experiment simply provides no evidence either way, and the artifact is honest, preregistered and byte-exactly reproducible.",
+  "disposition_recommendation": "REJECTED",
+  "disposition_reason": "Rejected because the measured effect is a construction artifact rather than a finding, while noting that the engineering around it is genuinely good. The good part first, because it is substantial and should survive into a re-run: there is a real preregister written before the run with an explicit accept rule and a refute rule, the harness has a working FAIL path which I triggered, the 13053-byte measurement artifact including all 100 raw trials regenerates byte for byte with an identical SHA-256, the canonical sorted-key encoder is the right choice, the six required field names are the real fields this commission uses, and one of the two tests genuinely verifies that mutating a capsule changes its hash. Nothing is invented anywhere. What cannot stand is the comparison itself. The dump arm does not dump, it samples twelve of seventy at random, so the capsule arm's perfect score is a definition rather than a result; the effect tracks the budget parameter and the verdict flips at budget 60; half the accept rule is a tautology quoted as an observation; the workload is generated placeholder text rather than the sanitized Obzio material the deliverable asks for, even though the unit's own input capsule contains exactly those fields with real values; and the refutation that the harness produces under the hypothesis' literal reading is not reported. A re-run has a clear shape: define the dump arm as admitting everything and pay for it with a metric that can actually be degraded by dilution - retrieval precision at a fixed read budget, or position-dependent recovery - sanitize a real capsule instead of generating one, and drop or repair the hash-mismatch conjunct. Also delete the bytecode: this is the only unit in my twenty that still ships a __pycache__ blob at its cohort head, and it embeds the producer's absolute worktree path.",
+  "followups_for_coordinator": [
+    "BLOCKING for re-run: the arm named indiscriminate_full_dump is dict(fields[:12]) over a 70-field shuffle, which is a random sample rather than a dump. Reviewer-observed: substituting dict(fields) - admit everything - into the producer's own run() gives delta 0.0, verdict FAIL, refutation_triggered true. The hypothesis' literal reading is refuted by the unit's own harness and that outcome is unreported.",
+    "BLOCKING for re-run: choose a metric that a genuine dump can lose on. Exact recovery of known-required fields is maximised by admitting everything, so it cannot discriminate capsules from dumping. Retrieval precision at a fixed read budget, or recovery as a function of position within the admitted context, would put the mechanism at risk.",
+    "BLOCKING for re-run: bounded_hash_mismatches == 0 is one of the two preregistered accept conditions and cannot ever be false. Line 40 hashes the object it returns and line 51 hashes the same object again. Reviewer-observed 0/40 seeds nonzero, but the seed sweep is a formality - the conjunct is structurally tautological, and 'zero hash mismatches' is quoted in the manifest evidence line as an observation.",
+    "The reported effect is a monotone function of admission_budget_fields. Reviewer-observed sweep: delta 0.917 at budget 6, 0.845 at 12, 0.297 at 50, 0.148 at 60, 0.000 at 70, with the preregistered 0.20 threshold failing from budget 60 upward. Preregistering the parameter before the run was the right discipline; the problem is that this particular parameter determines the answer.",
+    "The deliverable says 'sanitized workload' and the workload is generated placeholder strings - every value matches '<key>-value-<n>' or 'noise-<n>-<m>'. The six required field names are genuinely the ones this commission uses, so the fix is small: sanitize a real capsule. The unit's own input.json contains exactly those fields with real values.",
+    "Non-portable artifact noted per commission instruction, and this one is not cleaned up: __pycache__/experiment.cpython-312.pyc, 6497 bytes, declared as artifact-001, still present at the c7 cohort head, embedding /home/ubuntu/po03-worktrees/c7/... Units 033 and 037 in cohort c5 committed the same class of blob and later removed it. Three instances across two cohorts makes this a wave-level hygiene rule rather than a unit defect.",
+    "Tests: the test carrying the comparative claim asserts only verdict, delta threshold and mismatch count, all of which a hardcoded constant satisfies. It should assert the workload shape and the per-arm rates it claims to have measured. The companion hash-mutation test is genuine and needs no change."
+  ]
+}

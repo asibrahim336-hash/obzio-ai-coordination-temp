@@ -1,0 +1,249 @@
+{
+  "summary_version": "PO03-INDEPENDENT-REVIEW-SUMMARY-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "reviewer_role": "independent adversarial cross-family evaluator",
+  "producers_reviewed": {
+    "gpt-5.6-sol-xhigh": ["c1 (8 units)", "c3 (8 units)", "c7 (2 overlap units)"],
+    "gpt-5.6-luna-high": ["c5 (2 overlap units)"]
+  },
+  "cross_family_note": "Every unit was produced by an OpenAI-family model and reviewed by an Anthropic-family model. No producer reviewed its own work and I produced none of it.",
+
+  "protocol_compliance": {
+    "blind_order_followed_for_every_unit": true,
+    "frozen_acceptance_sha256_recorded_before_any_result_was_opened": true,
+    "producer_subtree_extracted_by_git_archive_before_reading_conclusions": true,
+    "every_component_and_test_executed_by_the_reviewer": true,
+    "step_3_skipped_for_any_unit": false,
+    "at_least_one_reviewer_authored_hidden_case_per_unit": true,
+    "hidden_cases_written_and_executed_total": 84,
+    "interpreter": "python3 -I / python3 -IB, CPython 3.12.3",
+    "scratch_execution_root": "/home/ubuntu/po03-review-scratch-a (outside the repository)",
+    "writes_confined_to": "workstreams/po03/evaluation/review-a/",
+    "producer_work_modified": false,
+    "po01_contact": "none; all PO-01 material was read via git only and never written",
+    "obzio_state_set": "none; disposition is recommended, never recorded"
+  },
+
+  "units_reviewed": 20,
+
+  "verdict_distribution": {
+    "PASS": 12,
+    "FAIL": 0,
+    "NOT_YET": 8,
+    "NOT_SUPPORTED": 0,
+    "OWNER_BLOCKED": 0
+  },
+  "disposition_distribution": {
+    "ACCEPTED": 12,
+    "REJECTED": 8
+  },
+  "producer_claimed_verdict_distribution": {
+    "PASS": 20
+  },
+
+  "divergence_count": 8,
+  "divergence_rate": "8 of 20",
+  "divergences": [
+    {
+      "task_id": "po03-wa-b2e7-003-nonportable-path-detector",
+      "cohort": "c1",
+      "reviewer_verdict": "NOT_YET",
+      "producer_verdict": "PASS",
+      "reason": "The absolute-path regex is a closed enumeration of roots, so $HOME/, %USERPROFILE%, /data/, /scratch/, /Volumes/ and os.path.expanduser('~') are all invisible, and a real-repository scan produced 296 findings dominated by documentation-text false positives. Neither class is disclosed. Confirmed later on real data by my unit 033 review, where this detector scanned 289 of 290 blobs at a commit and skipped as binary the one blob that actually contained an absolute producer path."
+    },
+    {
+      "task_id": "po03-wa-b2e7-018-missing-file-detection",
+      "cohort": "c3",
+      "reviewer_verdict": "NOT_YET",
+      "producer_verdict": "PASS",
+      "reason": "False negative: git cat-file -e accepts a tree, so a declared file that is actually a directory reports as present. Scope hole: requires.files declarations are not covered at all, which compounds with the spine_dir bypass I found in unit 017."
+    },
+    {
+      "task_id": "po03-wa-b2e7-021-process-boundary-failure",
+      "cohort": "c3",
+      "reviewer_verdict": "NOT_YET",
+      "producer_verdict": "PASS",
+      "reason": "The harness is coupled to a bespoke synthetic fixture interface. Pointed at unit 017's real qualifier it crashed with AttributeError on a missing prime_producer_memory attribute, so its claim about pack qualifiers is unproven against any real qualifier."
+    },
+    {
+      "task_id": "po03-wa-b2e7-024-forged-completeness-adversarial",
+      "cohort": "c3",
+      "reviewer_verdict": "NOT_YET",
+      "producer_verdict": "PASS",
+      "reason": "Vacuous test. The committed test passes at exit 0 against a stub qualifier that opens no file and computes no hash. No negative control exists, and the unit qualified a fixture with a qualifier written for the occasion rather than the wave's real unit-017 engine. I verified the hypothesis myself instead: the component discriminates correctly in every direction, and the real engine also fails a forged pack while never reading self_reported_status."
+    },
+    {
+      "task_id": "po03-wa-b2e7-033-disposition-compiler",
+      "cohort": "c5",
+      "reviewer_verdict": "NOT_YET",
+      "producer_verdict": "PASS",
+      "reason": "'Enforces lineage continuity' is a named clause of the frozen deliverable and is not enforced: two-route and three-route cycles compile clean, and a route may be DELETEd while another still names it as predecessor. Reproduced on real repository paths as well as synthetic ones."
+    },
+    {
+      "task_id": "po03-wa-b2e7-037-legacy-alias-census",
+      "cohort": "c5",
+      "reviewer_verdict": "NOT_YET",
+      "producer_verdict": "PASS",
+      "reason": "The deliverable says 'every' occurrence. The producer's own tool over the whole tree finds 270 occurrence sites against 125 recorded, omitting 145 across 48 files including 84 in dispatch/. A further 21 real occurrences in 14 files are undetectable anywhere because hyphenated spellings are unmatched, some of them inside roots that were censused. The no-replacement assertion is an unconditional constant which I falsified by aiming the output at an input."
+    },
+    {
+      "task_id": "po03-wa-b2e7-050-reproduction-context-admission",
+      "cohort": "c7",
+      "reviewer_verdict": "NOT_YET",
+      "producer_verdict": "PASS",
+      "reason": "The arm named indiscriminate_full_dump is a random 12-of-70 truncation, not a dump, and its 0.155 recovery sits on the combinatorial expectation of 0.1714. Substituting the literal meaning of dumping gives delta 0.0 and the producer's own harness returns FAIL. The effect tracks the budget parameter and the verdict flips between budget 50 and 60. The second conjunct of the accept rule hashes the same bytes twice and can never fail while being quoted as an observation."
+    },
+    {
+      "task_id": "po03-wa-b2e7-055-reproduction-scale-versus-acceptance",
+      "cohort": "c7",
+      "reviewer_verdict": "NOT_YET",
+      "producer_verdict": "PASS",
+      "reason": "The preregistered accept rule is a sign test with no magnitude floor and returns PASS after I remove the mechanism entirely - both pressure formulas held constant gives a throughput delta of -0.035 and an escape delta of 0.0013. 98.7 per cent of the reported -2.710 effect comes from a hardcoded defect formula. Both tests pass against a stub with no simulation. Narrowest call of the twenty; the hypothesis itself survives assumption-stripping on a per-attempt metric."
+    }
+  ],
+  "agreements": [
+    "po03-wa-b2e7-001-clean-clone-runner",
+    "po03-wa-b2e7-002-hidden-state-detector",
+    "po03-wa-b2e7-004-process-boundary-isolation",
+    "po03-wa-b2e7-005-deterministic-rerun-equivalence",
+    "po03-wa-b2e7-006-interpreter-flag-portability",
+    "po03-wa-b2e7-007-network-independence",
+    "po03-wa-b2e7-008-warm-checkout-adversarial",
+    "po03-wa-b2e7-017-pack-qualification-engine",
+    "po03-wa-b2e7-019-manifest-gap-detection",
+    "po03-wa-b2e7-020-pack-nonportable-paths",
+    "po03-wa-b2e7-022-po01-claim-reproduction",
+    "po03-wa-b2e7-023-isolated-repair-candidate"
+  ],
+
+  "vacuous_test_findings": {
+    "count": 4,
+    "units": [
+      {
+        "task_id": "po03-wa-b2e7-024-forged-completeness-adversarial",
+        "severity": "total",
+        "evidence": "A stub qualifier printing hardcoded JSON, opening no file and computing no hash, passes the committed test at exit 0. Most acute here because this unit exists to be the wave's non-vacuity proof and ships no negative control."
+      },
+      {
+        "task_id": "po03-wa-b2e7-037-legacy-alias-census",
+        "severity": "partial",
+        "evidence": "A stub that opens no input file passes both tests. A stateless constant stub does fail, because the two tests expect different enclosing_field values, so the suite has some discrimination."
+      },
+      {
+        "task_id": "po03-wa-b2e7-050-reproduction-context-admission",
+        "severity": "partial",
+        "evidence": "The test carrying the comparative claim passes against a run() returning hardcoded PASS/0.845/0. The companion test genuinely verifies that mutating a capsule changes its hash."
+      },
+      {
+        "task_id": "po03-wa-b2e7-055-reproduction-scale-versus-acceptance",
+        "severity": "total",
+        "evidence": "A stub with no queue simulation at all passes both tests. One test asserts the injected formulas are monotone, which tests the assumption rather than the model; the other asserts the sign of two values from run()."
+      }
+    ],
+    "stub_substitution_probes_that_the_suite_correctly_rejected": [
+      "po03-wa-b2e7-008-warm-checkout-adversarial - rejected a vacuous green runner, a nonzero-but-wrong-file runner and a crashing runner",
+      "po03-wa-b2e7-033-disposition-compiler - rejected both a constant-refuse stub and a no-validation stub, the cleanest two-directional suite in my set"
+    ]
+  },
+
+  "overlap_units_called_out_separately": {
+    "purpose": "Also reviewed independently by Reviewer B so inter-reviewer disagreement can be measured. I did not coordinate with anyone and have not seen Reviewer B's findings.",
+    "units": [
+      {
+        "task_id": "po03-wa-b2e7-033-disposition-compiler",
+        "cohort": "c5",
+        "producer": "gpt-5.6-luna-high",
+        "reviewer_independent_verdict": "NOT_YET",
+        "producer_claimed_verdict": "PASS",
+        "agreement": "DIVERGE",
+        "disposition_recommendation": "REJECTED",
+        "hidden_case_headline": "Two-route and three-route lineage cycles compile clean, and a route may be DELETEd while another still names it as predecessor - reproduced on 316 real changed repository paths. Test suite itself is non-vacuous in both directions.",
+        "reviewer_confidence": "high"
+      },
+      {
+        "task_id": "po03-wa-b2e7-037-legacy-alias-census",
+        "cohort": "c5",
+        "producer": "gpt-5.6-luna-high",
+        "reviewer_independent_verdict": "NOT_YET",
+        "producer_claimed_verdict": "PASS",
+        "agreement": "DIVERGE",
+        "disposition_recommendation": "REJECTED",
+        "hidden_case_headline": "145 occurrences omitted by scope including 84 in dispatch/, plus 21 real occurrences unmatchable anywhere due to hyphenated spellings; the read-only assertion falsified by aiming -o at an input. Offset by byte-exact reproduction of the committed 61015-byte census.",
+        "reviewer_confidence": "high"
+      },
+      {
+        "task_id": "po03-wa-b2e7-050-reproduction-context-admission",
+        "cohort": "c7",
+        "producer": "gpt-5.6-sol-xhigh",
+        "reviewer_independent_verdict": "NOT_YET",
+        "producer_claimed_verdict": "PASS",
+        "agreement": "DIVERGE",
+        "disposition_recommendation": "REJECTED",
+        "hidden_case_headline": "The 'full dump' arm is a random 12-of-70 truncation; making it actually dump gives delta 0.0 and the producer's own harness returns FAIL with refutation_triggered true. Half the accept rule hashes the same bytes twice and cannot fail.",
+        "reviewer_confidence": "high"
+      },
+      {
+        "task_id": "po03-wa-b2e7-055-reproduction-scale-versus-acceptance",
+        "cohort": "c7",
+        "producer": "gpt-5.6-sol-xhigh",
+        "reviewer_independent_verdict": "NOT_YET",
+        "producer_claimed_verdict": "PASS",
+        "agreement": "DIVERGE",
+        "disposition_recommendation": "REJECTED",
+        "hidden_case_headline": "The accept rule returns PASS after the mechanism is removed entirely (throughput delta -0.035, escape delta 0.0013); 98.7 per cent of the reported effect comes from a hardcoded formula. The frozen deliverable is nonetheless fully met and the hypothesis survives assumption-stripping on a per-attempt metric.",
+        "reviewer_confidence": "moderate - narrowest call in the set; a divergent second opinion here would be reasonable"
+      }
+    ],
+    "overlap_pattern": "All four overlap units diverge from the producer's PASS. Both c5 units missed a named clause of their own frozen deliverable; both c7 units shipped an acceptance rule that cannot distinguish their finding from its own construction. The divergence is not cohort-specific or model-specific: it appears in both producer models."
+  },
+
+  "cross_unit_findings": [
+    {
+      "finding": "Closed-enumeration path detection",
+      "units": ["po03-wa-b2e7-003-nonportable-path-detector", "po03-wa-b2e7-020-pack-nonportable-paths"],
+      "detail": "Both scanners enumerate absolute-path roots as a fixed regex alternation, so anything outside the list is invisible. Confirmed on real data in my unit 033 review: unit 003's detector scanned 289 of 290 blobs at commit 402c2776, skipped 1 as binary, reported 281 findings, and the single skipped blob is the only artifact in that commit that actually contains an absolute producer path."
+    },
+    {
+      "finding": "Committed CPython bytecode declared as a first-class artifact",
+      "units": ["po03-wa-b2e7-033-disposition-compiler", "po03-wa-b2e7-037-legacy-alias-census", "po03-wa-b2e7-050-reproduction-context-admission"],
+      "detail": "Three instances across two cohorts and both producer models. Every one is interpreter-version-locked and embeds the producer's absolute worktree path under /home/ubuntu/po03-worktrees/. Units 033 and 037 removed theirs in a later commit and added a .gitignore; unit 050's is still live at the c7 head. All three declarations are truthful - I verified each blob's hash and byte count at its declared commit. The one-line fix already exists in this wave: unit 055's test sets sys.dont_write_bytecode = True before loading its module, which is exactly why its subtree is clean."
+    },
+    {
+      "finding": "Hardcoded assertion fields presented as measurements",
+      "units": ["po03-wa-b2e7-022-po01-claim-reproduction", "po03-wa-b2e7-024-forged-completeness-adversarial", "po03-wa-b2e7-037-legacy-alias-census", "po03-wa-b2e7-050-reproduction-context-admission"],
+      "detail": "overall_verdict, self_report_ignored, replacement_performed and bounded_hash_mismatches are all literal constants in their emitted reports, and each is quoted downstream as though observed. Recommend a wave rule: a field asserting a property must be computed from the check that establishes it."
+    },
+    {
+      "finding": "requires.files handling gap in the pack qualification family",
+      "units": ["po03-wa-b2e7-017-pack-qualification-engine", "po03-wa-b2e7-018-missing-file-detection"],
+      "detail": "Unit 017 silently drops requires.files when spine_dir is absent from a manifest, so an incomplete pack qualifies PASS; unit 018 does not cover requires.files at all. The two gaps compound into a bypass with no unit watching it."
+    },
+    {
+      "finding": "Adversarial units judged on their own terms",
+      "units": ["po03-wa-b2e7-008-warm-checkout-adversarial", "po03-wa-b2e7-024-forged-completeness-adversarial"],
+      "detail": "The commission flags these as the units that must have real detection power. Unit 008 passes: it ships a fixture-side negative control and its own vacuous green runner, and I confirmed it fires correctly and does not fire on the control. Unit 024 fails: it ships no negative control at all and its test passes against a no-op stub. The instructive difference is that 008 attacked itself and 024 did not."
+    }
+  ],
+
+  "positive_findings_worth_propagating": [
+    "po03-wa-b2e7-023-isolated-repair-candidate is the best-engineered unit I reviewed: it refused three separate escapes from its output guard including a traversal into a sibling unit's subtree, validates a pinned hash and each pack declaration before writing, fails closed with zero writes on a tampered declaration, is idempotent, and creates its temporary directory inside its own subtree rather than under /tmp.",
+    "Byte-exact reproduction of a primary evidence artifact was achieved by three units and I verified each independently: unit 037's 61015-byte census.json, unit 050's 13053-byte measurement.json, and unit 055's 161496-byte measurement.json. All three regenerated with identical SHA-256 from fresh isolated interpreters.",
+    "po03-wa-b2e7-006-interpreter-flag-portability has a load-bearing second row: I installed a third-party package and confirmed it passes under -I, fails under -I -S, and is correctly reported as an escaping import.",
+    "po03-wa-b2e7-007-network-independence uses a real sandbox: I independently confirmed unshare -Urn genuinely denies egress by connecting a socket inside and outside the namespace.",
+    "po03-wa-b2e7-055 preregisters its assumptions verbatim as formulas, which is what allowed me to remove them in two lines - transparency that made its own weakness findable.",
+    "Not one invented value across twenty units. Every hash, byte count and metric I recomputed matched, including every declared bytecode blob."
+  ],
+
+  "reviewer_caveats": [
+    "I evaluated against the frozen acceptance criteria and the frozen required deliverable only. Where a unit met the deliverable literally but not substantively I said so in both directions rather than collapsing the distinction.",
+    "My eight NOT_YET verdicts are all 'not established by this unit's evidence', never 'refuted'. I recorded no FAIL because in every case where the producer's evidence was insufficient I was able to establish either that the claim was actually true or that the instrument could not decide it.",
+    "Unit 055 is the narrowest call and I flagged it as moderate confidence. Units 003, 018, 021, 024, 033, 037 and 050 I hold with high confidence.",
+    "Cross-unit findings were reached by pointing one unit's component at another unit's committed artifacts. That is reviewer-constructed evidence and is labelled as such in each review rather than attributed to any producer."
+  ],
+
+  "obzio_state_claim": "READY_TO_COMMIT",
+  "completion_actor": null,
+  "note_on_authority": "These are recommendations. Only the coordinator records a disposition. I have set no Obzio state and written no COMPLETED anywhere."
+}

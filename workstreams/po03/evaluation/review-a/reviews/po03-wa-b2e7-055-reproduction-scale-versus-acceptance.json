@@ -1,0 +1,153 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-sol-xhigh",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-055-reproduction-scale-versus-acceptance",
+  "cohort": "c7",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c7",
+  "overlap_unit": true,
+  "overlap_note": "Also reviewed independently by Reviewer B so inter-reviewer disagreement can be measured. I did not coordinate with anyone about this unit and have not seen Reviewer B's findings. This is the narrowest call in my twenty units and I would not be surprised by a divergent second opinion.",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "dc17c2d41b9d743b79c278536946d4f3078195421878c8bd40c6e71eeec55f81",
+  "frozen_hypothesis": "Raising attempt concurrency without proportional recovery and acceptance capacity degrades independently accepted throughput.",
+  "frozen_required_deliverable": "A reproduction sweeping concurrency against fixed acceptance capacity and reporting accepted throughput and escaped-defect rate per level.",
+
+  "po01_contact_check": "READ-ONLY CONFIRMED. The experiment reads only its own preregister.json and writes only its own measurement.json. No repository content is touched. My hidden cases wrote only under /home/ubuntu/po03-review-scratch-a/_hidden/055.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -I and python3 -IB (CPython 3.12.3)",
+    "producer_experiment_command": "python3 -I experiment.py --output <scratch>/repro.json",
+    "producer_test_command": "python3 -IB test_scale_acceptance.py",
+    "producer_test_exit_code": 0,
+    "byte_exact_reproduction": "mine   161496 bytes d946ebee254732e7e5f4f404c8a7c467ce7b1dffb3e9716d1a736e41e1fd2191\ntheirs 161496 bytes d946ebee254732e7e5f4f404c8a7c467ce7b1dffb3e9716d1a736e41e1fd2191\nBYTE-IDENTICAL: True",
+    "note": "A 161496-byte measurement artifact containing all 1000 per-slot records across five levels regenerates byte for byte. Every figure in the manifest evidence line is real."
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "The deliverable asks for a sweep across levels but the accept rule uses only two of them. I wanted the whole curve before judging the two-point comparison.",
+      "construction": "Ran the producer's run() on its own preregister and printed every level with its injected probabilities, throughput, escape fraction, production, review count and terminal backlog.",
+      "observed_output_verbatim": "   conc | defect_p | detect_p | good/slot | escaped_frac | produced | reviewed | final_q\n      2 |    0.040 |    0.980 |     2.000 |       0.0000 |      400 |      416 |       0\n      4 |    0.040 |    0.980 |     3.860 |       0.0000 |      800 |      800 |      28\n      8 |    0.140 |    0.900 |     3.465 |       0.0184 |     1600 |      800 |     894\n     16 |    0.340 |    0.740 |     2.705 |       0.0983 |     3200 |      800 |    2600\n     32 |    0.740 |    0.420 |     1.150 |       0.5826 |     6400 |      800 |    5848\n   verdict=PASS delta_throughput=-2.7100 delta_escape=0.5826",
+      "component_survived": true,
+      "interpretation": "The sweep is real and the five levels are all genuinely computed, which satisfies the deliverable literally. Two structural facts emerge. The reviewed column is pinned at 800 for every level from 4 upward, because acceptance capacity is 4 per slot over 200 slots - so the primary metric, accepted good per slot, is bounded above by 4 by construction and has almost no room to move once concurrency exceeds capacity. And the curve is not monotone: throughput rises from 2.000 at concurrency 2 to 3.860 at concurrency 4, because at concurrency 2 the system is capacity-starved rather than contended. The accept rule therefore compares the peak of the curve against its worst point."
+    },
+    {
+      "hidden_case_id": "HC-C",
+      "rationale": "The decisive question for any simulation: is the conclusion measured or assumed? defect_probability rises with concurrency-above-capacity by a hardcoded formula. If that formula is doing the work, the reproduction is a restatement of its own parameterisation. So I removed the formula and left everything else - the queues, the recovery loop, the seeding - untouched.",
+      "construction": "Replaced defect_probability with a constant 0.04 and re-ran the producer's run() on its own preregister.",
+      "observed_output_verbatim": "   conc | good/slot | escaped_frac\n      2 |     2.000 |       0.0000\n      4 |     3.860 |       0.0000\n      8 |     3.840 |       0.0052\n     16 |     3.820 |       0.0167\n     32 |     3.825 |       0.0267\n   verdict=PASS  refutation_triggered=False\n   delta_throughput=-0.0350",
+      "component_survived": false,
+      "interpretation": "The headline throughput effect collapses from -2.710 to -0.035, so 98.7 per cent of the reported effect is produced by the hardcoded defect formula rather than by unbalanced capacity. The residual -0.035 is a 0.9 per cent difference between 3.860 and 3.825 and is indistinguishable from sampling noise. And yet the verdict is still PASS, because the accept rule is a pure sign test with no magnitude floor. That is the finding: the preregistered acceptance rule returns PASS after I removed the mechanism it exists to detect."
+    },
+    {
+      "hidden_case_id": "HC-D",
+      "rationale": "Follow the previous case to its end by removing the second injected formula as well, leaving pure queueing with no contention pressure of any kind.",
+      "construction": "defect_probability constant at 0.04 and detection_probability constant at 0.98, then re-ran run().",
+      "observed_output_verbatim": "   conc | good/slot | escaped_frac\n      2 |     2.000 |       0.0000\n      4 |     3.860 |       0.0000\n      8 |     3.840 |       0.0000\n     16 |     3.820 |       0.0013\n     32 |     3.825 |       0.0013\n   verdict=PASS  refutation_triggered=False",
+      "component_survived": false,
+      "interpretation": "With no contention pressure modelled at all the accept rule still returns PASS, on a throughput delta of -0.035 and an escape delta of 0.0013. An acceptance criterion that fires at 0.0013 is not distinguishing anything. Contrast the sibling unit 050 in this same cohort, which preregistered a magnitude threshold of 0.20 - the right instinct, missing here."
+    },
+    {
+      "hidden_case_id": "HC-E",
+      "rationale": "Rather than only attacking, I looked for whether the non-assumed result the hypothesis actually needs is available inside the producer's own model. It is, and it is stronger than what was reported.",
+      "construction": "With both pressure formulas held constant, so that nothing about defects depends on concurrency, computed accepted good results per ATTEMPT rather than per slot, alongside the terminal acceptance backlog.",
+      "observed_output_verbatim": "   conc | produced | accepted_good | good per ATTEMPT | final acceptance backlog\n      2 |      400 |           400 |           1.0000 |        0\n      4 |      800 |           772 |           0.9650 |       28\n      8 |     1600 |           768 |           0.4800 |      832\n     16 |     3200 |           764 |           0.2387 |     2435\n     32 |     6400 |           765 |           0.1195 |     5634",
+      "component_survived": true,
+      "interpretation": "This is the real result and the producer already had it. With zero injected pressure, independently accepted good output per attempt falls monotonically from 1.000 to 0.120 while the acceptance backlog grows to 5634 unreviewed attempts - driven purely by the fixed acceptance capacity, exactly the mechanism the frozen hypothesis names. The unit's chosen per-slot metric could not show this because it is capped at the acceptance capacity, which is why the injected defect formula had to carry the effect. The fix is a metric change, not a redesign, and I am recording the numbers so the re-run has a target."
+    },
+    {
+      "hidden_case_id": "HC-F",
+      "rationale": "The verdict does by_level['4'] and by_level['32'] on a dictionary keyed from whatever levels the preregister lists. That couples the analysis to two specific magic values.",
+      "construction": "Ran run() with concurrency_levels of [2, 8, 16, 64], then [4, 32], then [1, 2, 3].",
+      "observed_output_verbatim": "   levels=[2, 8, 16, 64] -> KeyError: '4'\n   levels=[4, 32] -> verdict=PASS\n   levels=[1, 2, 3] -> KeyError: '4'",
+      "component_survived": false,
+      "interpretation": "Any preregister that does not contain both 4 and 32 crashes with a bare KeyError. The sweep is therefore partly nominal: five levels are simulated and honestly reported per level, which is what the deliverable asks, but only two participate in the conclusion and those two are hardcoded rather than read from the preregister."
+    },
+    {
+      "hidden_case_id": "HC-G",
+      "rationale": "Seed robustness, to separate a stable finding from a lucky seed.",
+      "construction": "Twenty independent seeds at 50 slots per level, recording both headline deltas and the verdict.",
+      "observed_output_verbatim": "   20 seeds: throughput delta -2.840 .. -2.440\n   20 seeds: escape delta     0.531 .. 0.658\n   verdicts: ['PASS'] (PASS count 20/20)",
+      "component_survived": true,
+      "interpretation": "Entirely stable - 20 of 20 PASS with tight ranges. Taken with HC-C this stability is a property of the injected formulas rather than evidence of a robust empirical finding, but it does establish that the reported numbers are not a seed artifact and that the simulation is well behaved."
+    },
+    {
+      "hidden_case_id": "HC-H",
+      "rationale": "The recovery loop mutates a defective item to non-defective and pushes it back into the acceptance queue, which is exactly the shape of code that double-counts. Internal accounting has to be checked before any of the headline numbers can be trusted.",
+      "construction": "For every level, checked that accepted_good + escaped_defects + detected_defects equals reviewed, and cross-checked recovered against detected and the terminal recovery backlog.",
+      "observed_output_verbatim": "   conc   2: accepted_good+escaped+detected=416 reviewed=416 match=True | recovered=16 detected=16 recovery_backlog=0\n   conc   4: accepted_good+escaped+detected=800 reviewed=800 match=True | recovered=28 detected=28 recovery_backlog=0\n   conc   8: accepted_good+escaped+detected=800 reviewed=800 match=True | recovered=94 detected=94 recovery_backlog=0\n   conc  16: accepted_good+escaped+detected=800 reviewed=800 match=True | recovered=200 detected=200 recovery_backlog=0\n   conc  32: accepted_good+escaped+detected=800 reviewed=800 match=True | recovered=248 detected=249 recovery_backlog=1",
+      "component_survived": true,
+      "interpretation": "The accounting is exact at every level. Every reviewed item lands in exactly one of accepted, escaped or detected, and recovered plus the terminal recovery backlog reconciles against detected at every level including the off-by-one at concurrency 32, which is a single item still in the recovery queue when the run ends rather than a leak. This is careful work and I could not find a counting error."
+    },
+    {
+      "hidden_case_id": "HC-I",
+      "is_vacuity_probe": true,
+      "rationale": "The commission's stub-substitution test. Note what the first committed test asserts: that the two pressure formulas are monotonic. That is a test of the assumption, not of the simulation.",
+      "construction": "Replaced experiment.py with a stub containing no queue simulation at all - two trivially monotone formula functions and a run() returning the three hardcoded values the second test checks. Producer's test file and preregister unchanged.",
+      "observed_output_verbatim": "   stub with no queue simulation at all: exit=0 (STILL PASSES -> no test exercises the simulation)",
+      "component_survived": false,
+      "interpretation": "VACUOUS. Neither test touches the simulation. The first asserts that defect_probability is non-decreasing and detection_probability non-increasing across the levels, which any monotone expression satisfies and which tests the parameterisation rather than the model. The second asserts the sign of two deltas returned by run(), which a constant satisfies. No test checks a queue depth, a level count, a production total or an accounting identity - all of which I had to check myself in HC-H, where they turned out to be correct."
+    },
+    {
+      "hidden_case_id": "HC-J",
+      "rationale": "The commission asks me to note committed bytecode. Its sibling unit 050 in this same cohort by the same producer model ships a __pycache__ blob, so I checked whether this unit does too.",
+      "construction": "Inspected the committed subtree and the test file's preamble.",
+      "observed_output_verbatim": "   test_scale_acceptance.py line 11 sets sys.dont_write_bytecode = True: True\n   __pycache__ present in the committed subtree: False",
+      "component_survived": true,
+      "interpretation": "Clean, and deliberately so. The test sets sys.dont_write_bytecode before loading experiment.py by spec, which is precisely the reason no __pycache__ exists here to be accidentally committed. Unit 050's otherwise near-identical test omits that one line and consequently ships a 6497-byte bytecode blob embedding an absolute producer path. Worth propagating as the wave-level fix."
+    },
+    {
+      "hidden_case_id": "HC-A",
+      "rationale": "Reproducibility, and whether the reported numbers came from the committed code.",
+      "construction": "Ran experiment.py in a fresh isolated interpreter writing to scratch and hashed against the committed measurement.json.",
+      "observed_output_verbatim": "   exit=0\n   mine   161496 bytes d946ebee254732e7e5f4f404c8a7c467ce7b1dffb3e9716d1a736e41e1fd2191\n   theirs 161496 bytes d946ebee254732e7e5f4f404c8a7c467ce7b1dffb3e9716d1a736e41e1fd2191\n   BYTE-IDENTICAL: True",
+      "component_survived": true,
+      "interpretation": "Fully reproducible. All 1000 per-slot records across the five levels regenerate identically, and every figure quoted in the manifest evidence line - 3.860, 1.150, 0.582577 - is exactly what the code produces. Nothing is invented."
+    }
+  ],
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "MET as reproduction, failed as testing. The reproduction executes and its 161496-byte artifact regenerates byte for byte. Both tests pass against a stub containing no simulation.",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET - I recomputed all 5 artifacts, 5/5 matches, nothing on disk unlisted, and no bytecode among them.",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - acceptance_contract_sha256 equals my pre-disclosure hash dc17c2d4...",
+    "result is committed and read back by a different process from an immutable object id": "MET - result_commit_id 514288c0c277fd95c169c6ab3a7d8039edb7881e.",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - PASS is explicit and the harness has a real FAIL path, though I could not reach it by removing the mechanism, which is itself the problem.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "NOT_APPLICABLE. The hypothesis is true inside this model and, unlike unit 050, remains true after I strip the injected assumptions - weakly on the reported metric and strongly on a per-attempt metric. Nothing is being reported as success that the harness found to be a failure.",
+    "no value, hash, metric or provider capability is invented": "MET, emphatically. Byte-exact reproduction of a 161496-byte artifact and exact internal accounting at every level.",
+    "required_deliverable - a reproduction sweeping concurrency against fixed acceptance capacity and reporting accepted throughput and escaped-defect rate per level": "MET, and this is the unit's clearest strength. Five concurrency levels swept against fixed acceptance capacity 4 and recovery capacity 2, with both required metrics reported for every level plus 200 per-slot records each. The deliverable as written is fully satisfied."
+  },
+
+  "scope_honesty_assessment": {
+    "producer_declared_limitations": [
+      "Synthetic queue contention and review-sensitivity formulas do not estimate production provider latency or cost.",
+      "execution.json adds: The queue simulation freezes synthetic contention and review-sensitivity formulas; it does not estimate production provider latency or cost."
+    ],
+    "assessment": "The disclosure is genuinely good on the point that matters most. Saying the contention and review-sensitivity formulas are 'frozen synthetic' tells a reader that these are assumptions rather than observations, and the preregister goes further by publishing both formulas verbatim as defect_probability_formula and review_detection_formula. That is more transparency than most units in this wave offer, and it is what made HC-C possible for me to construct in two lines. What is not disclosed is the magnitude of the dependence - that the formula accounts for 98.7 per cent of the reported effect, and that the preregistered accept rule still returns PASS when the formula is removed entirely. Also undisclosed: that the primary metric is bounded above by the acceptance capacity, and that only two of the five swept levels enter the verdict."
+  },
+
+  "nonportable_artifacts_in_subtree": [],
+  "reproducibility_check": "Excellent. The 161496-byte measurement.json regenerates byte for byte with identical SHA-256 in a fresh isolated interpreter, and the headline deltas are stable across 20 independent seeds at -2.840 to -2.440 and 0.531 to 0.658.",
+
+  "vacuous_test_finding": true,
+  "vacuous_test_qualifier": "Total for both tests. Neither exercises the queue simulation: one asserts the injected formulas are monotone, the other asserts the sign of two values returned by run(). A stub with no simulation at all passes both.",
+  "reviewer_independent_verdict": "NOT_YET",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "DIVERGE",
+  "divergence_reason": "The preregistered acceptance rule does not discriminate the finding it exists to detect, and I demonstrated that with the producer's own harness. Holding defect_probability constant while leaving the queues, the recovery loop and the seeding untouched collapses the headline throughput effect from -2.710 to -0.035, so 98.7 per cent of the reported effect is produced by a hardcoded formula rather than by unbalanced capacity. Holding both pressure formulas constant - no modelled contention whatsoever - still returns PASS, on a throughput delta of -0.035 and an escape delta of 0.0013, because the accept rule is a pure sign test with no magnitude floor. An acceptance criterion that fires at 0.0013 cannot separate the reported result from noise. Both committed tests are vacuous in the same direction: one asserts that the injected formulas are monotone, which tests the assumption, and the other asserts the sign of two values from run(), which a constant satisfies, so a stub with no simulation passes the suite. I record NOT_YET rather than FAIL for a specific reason: unlike its sibling unit 050, the hypothesis here survives assumption-stripping. HC-E shows that with zero injected pressure, accepted good output per attempt falls monotonically from 1.000 to 0.120 while the acceptance backlog grows to 5634, driven purely by the fixed acceptance capacity - which is exactly the mechanism the frozen hypothesis names. The finding is real and the producer's own model already contains it; the unit measured it with a metric capped at the acceptance capacity, which is why the injected formula had to do the work.",
+  "disposition_recommendation": "REJECTED",
+  "disposition_reason": "This is the narrowest call in my twenty units and I want the reasoning visible rather than buried. The case for acceptance is strong: the frozen deliverable is fully met, which I cannot say of most units here - five concurrency levels genuinely swept against fixed acceptance capacity with both required metrics reported per level and 1000 per-slot records behind them. The 161496-byte measurement artifact regenerates byte for byte. The internal accounting is exact at every level, including a recovery loop that mutates and re-queues items without double-counting anything, which I checked specifically because that is where such simulations usually break. The assumptions are published verbatim in the preregister and the limitation explicitly calls the contention formulas frozen and synthetic. Bytecode hygiene is deliberate and correct, and the one line responsible - sys.dont_write_bytecode - is exactly what its sibling unit 050 omitted. Nothing is invented. What tips it to rejection is that the preregistered accept rule returns PASS after I remove the mechanism it exists to detect, on an escape delta of 0.0013, because it is a sign test with no effect-size floor; and that both tests pass against a stub with no simulation in it. Those two together mean the unit's own instruments cannot tell its finding from noise, whatever the finding's merits. The remedy is narrow and I have already measured it for them: report accepted good per attempt rather than per slot, add a magnitude floor to the accept rule, read the compared levels from the preregister instead of hardcoding 4 and 32, and have one test assert an accounting identity. On the per-attempt metric the effect is 1.000 down to 0.120 with no injected pressure at all - a stronger and genuinely non-assumed result than the one reported.",
+  "followups_for_coordinator": [
+    "BLOCKING for re-run: the preregistered accept rule 'throughput_delta < 0 and escape_delta > 0' has no magnitude floor. Reviewer-observed: with both pressure formulas held constant - no modelled contention at all - the rule still returns PASS on a throughput delta of -0.035 and an escape delta of 0.0013. Add an effect-size threshold, as the sibling unit 050 did with its 0.20.",
+    "BLOCKING for re-run: change the primary metric to accepted good results per ATTEMPT. The current per-slot metric is bounded above by acceptance_capacity_per_slot, so it is saturated from concurrency 4 upward and the injected defect formula must supply the effect. Reviewer-observed with zero injected pressure: per-attempt good output 1.000, 0.965, 0.480, 0.239, 0.120 across concurrency 2 to 32, with the acceptance backlog growing to 5634. That is the non-assumed result the hypothesis asks for and it is already latent in the producer's model.",
+    "Quantify the dependence on the frozen formulas in the result rather than only declaring them synthetic. Reviewer-observed: holding defect_probability constant collapses the reported -2.710 to -0.035, so 98.7 per cent of the headline effect comes from the formula. The preregister publishing both formulas verbatim is good practice and should be kept.",
+    "The verdict hardcodes by_level['4'] and by_level['32']. Reviewer-observed: concurrency_levels of [2, 8, 16, 64] raises a bare KeyError. Read the compared levels from the preregister so the sweep and the analysis cannot drift apart.",
+    "Tests: both are vacuous. Reviewer-observed: a stub with two trivially monotone formula functions and a run() returning three hardcoded values passes the suite. One test asserts the injected formulas are monotone, which tests the assumption rather than the model. Have the suite assert an accounting identity instead - accepted_good + escaped + detected == reviewed held exactly at all five levels when I checked it, so this is free to add and would defeat any stub.",
+    "Report the full curve's shape, not just the two-point delta. Throughput rises from 2.000 at concurrency 2 to 3.860 at concurrency 4 before falling, because at concurrency 2 the system is capacity-starved rather than contended. The comparison as framed takes the peak against the worst point, which a reader of the delta alone would not know.",
+    "Positive note to propagate: test_scale_acceptance.py sets sys.dont_write_bytecode = True before loading the experiment module by spec, which is why this subtree carries no __pycache__. Unit 050's otherwise near-identical test omits that line and consequently ships a 6497-byte bytecode blob embedding an absolute producer path. One line fixes it wave-wide."
+  ]
+}
