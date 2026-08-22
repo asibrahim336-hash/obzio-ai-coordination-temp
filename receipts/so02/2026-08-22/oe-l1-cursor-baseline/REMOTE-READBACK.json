@@ -1,0 +1,56 @@
+{
+  "readback_id": "OE-L1-CURSOR-BASELINE-REMOTE-READBACK",
+  "lane_id": "OE-L1-CURSOR-BASELINE",
+  "commission_id": "COM-CUR-ENV-01-20260822-v001",
+  "performed_at_utc": "2026-08-22T20:52:00Z",
+
+  "subject": {
+    "branch": "cursor/oe-l1-cursor-baseline-696d",
+    "verified_commit_sha": "340daf832d8a1869aff37d149a3d4d18eb9b110c",
+    "immutable_base_sha": "fe0a595206e5986de7eaac6cabc619215a1eb81b",
+    "manifest": "receipts/so02/2026-08-22/oe-l1-cursor-baseline/MANIFEST.json",
+    "claimed_bundle_sha256": "3a4c47eb4d07805fe7844a8443a709f60e72e19d49d77eb125d19cbeff8724b6",
+    "claimed_entry_count": 56
+  },
+
+  "why_this_file_is_not_in_the_manifest": "A manifest cannot contain the hash of a file written after it. This receipt verifies commit 340daf83, which is the commit the manifest describes, and is therefore committed at a later SHA and deliberately excluded from the entries it verifies. Anyone checking this lane should verify the manifest at 340daf83 and read this receipt as the record of that check, not as part of the bundle.",
+
+  "transport_a_git_fetch_by_sha": {
+    "method": "git init into an empty directory outside the working tree, add the remote, git fetch --depth 1 origin 340daf83, git checkout FETCH_HEAD. Nothing was copied from the producing worktree; every byte compared came back over the network.",
+    "clone_head": "340daf832d8a1869aff37d149a3d4d18eb9b110c",
+    "manifest_source": "read from the fresh clone, not from the producing working tree",
+    "entries_compared": 56,
+    "bytes_compared": 348855,
+    "missing": 0,
+    "mismatches": 0,
+    "bundle_sha256_recomputed": "3a4c47eb4d07805fe7844a8443a709f60e72e19d49d77eb125d19cbeff8724b6",
+    "bundle_sha256_matches_claim": true,
+    "scope_check": {
+      "method": "git diff --name-only fe0a5952..340daf83 in the fresh clone, every path tested against the two namespaces this lane is permitted to write",
+      "paths_changed_versus_base": 57,
+      "note": "57 = the 56 manifest entries plus MANIFEST.json itself",
+      "paths_outside_the_two_permitted_namespaces": 0
+    },
+    "result": "PASS"
+  },
+
+  "transport_b_github_rest_tree_api": {
+    "method": "GET /repos/asibrahim336-hash/obzio-ai-coordination-temp/git/trees/340daf83?recursive=1 over HTTPS, which is a different transport from the git pack protocol used above. Each returned blob id was compared with the git object id computed locally as sha1('blob <len>\\0' + bytes).",
+    "tree_truncated_by_github": false,
+    "blobs_in_tree": 327,
+    "paths_checked": 57,
+    "absent_from_remote_tree": 0,
+    "blob_ids_differing": 0,
+    "result": "PASS"
+  },
+
+  "what_this_establishes": "Custody. These exact bytes exist at commit 340daf832d8a1869aff37d149a3d4d18eb9b110c on the remote and can be retrieved by anyone holding that SHA, over two independent transports, with no dependence on this VM continuing to exist.",
+
+  "what_this_does_not_establish": [
+    "That the work is correct, sufficient, or answers the commission. A hash proves bytes, never judgement.",
+    "That the work has been accepted. Independent acceptance is a separate act by a party that is not this run, and this lane cannot issue it.",
+    "That any staged configuration in proposed-cursor-config/ has been applied or has taken effect. It is inert by construction."
+  ],
+
+  "terminal_state": "READY_TO_COMMIT"
+}

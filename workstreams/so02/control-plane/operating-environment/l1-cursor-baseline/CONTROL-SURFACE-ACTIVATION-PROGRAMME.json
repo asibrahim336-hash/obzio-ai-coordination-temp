@@ -1,0 +1,241 @@
+{
+  "programme_id": "OE-L1-CONTROL-SURFACE-ACTIVATION-20260822-v001",
+  "lane_id": "OE-L1-CURSOR-BASELINE",
+  "decision_changed": [],
+  "scope": {
+    "owned_by_this_lane": ["Cursor Agent API / SDK / CLI", "MCP and OAuth", "the GitHub route"],
+    "owned_by_another_lane": "The OpenAI Responses/Conversations programme belongs to OE-L5-CHATGPT-SCALE. It is referenced here only as a dependency and is deliberately not specified.",
+    "binds_nothing": "Nothing here is a decision. Each action is a fully specified option the founder may take, decline or defer. No tool, model or architecture is bound by this document.",
+    "never": "No action below asks the founder to paste, echo or transmit a secret value in chat, to this agent, or into any repository file. Every credential is entered directly into the provider's own settings surface, and every verification reads only NAMES."
+  },
+  "staging_principle": "Activate in the order that removes the most founder-relay steps per unit of new authority granted, and never activate a credential before the thing it unlocks has a bounded first test that would detect a mistake cheaply.",
+
+  "prerequisite_reproduced_facts": [
+    "CURSOR_API_KEY is absent. CLOUD_AGENT_ALL_SECRET_NAMES lists exactly four unrelated AUREA_E2E_* credentials, and the injected list is identical to it.",
+    "GET https://api.cursor.com/v1/agents, /v1/models, /v1/repositories, /v1/me and /v1/agents/{id}/runs all return HTTP 401 'Invalid User API Key'. GET /v1/nonexistent-route returns a routing 404. The routes exist and are credential-blocked, not absent.",
+    "environment-info reports egress.restricted=false, and every external host contacted during this lane resolved and responded. Nothing below is blocked by network policy.",
+    "The gh CLI token is a GitHub App installation token scoped to one repository. It is denied on issues, secrets, variables, administration, webhooks, deployments, code scanning and Dependabot. A separate x-access-token credential in ~/.gitconfig carries contents write, proven by a successful `git push --dry-run`.",
+    "Both MCP servers report serverStatus 'ready'. Neither is in needsAuth. There is no OAuth prompt outstanding in this runtime."
+  ],
+
+  "actions": [
+    {
+      "action_id": "FA-CUR-API-01",
+      "title": "Issue a Cursor API key and store it as a repository-scoped Cloud Agent secret",
+      "sequence": 1,
+      "activate": "NOW",
+
+      "1_exact_capability_unlocked": "Programmatic control of Cloud Agents over the v1 REST API: POST /v1/agents to create an agent and enqueue its initial run, POST /v1/agents/{id}/runs to add a run, GET /v1/agents and /v1/agents/{id} to enumerate and inspect, run streaming with typed tool-call events, run cancellation, artifact listing and download, agent archive/unarchive/delete, GET /v1/models to enumerate the models this account may actually select, and GET /v1/repositories. Run creation accepts an explicit model.id plus model.params such as reasoning effort and context window.",
+
+      "2_why_it_benefits_the_whole_operation": "It closes the exact half of orchestration that is currently missing. CUR-ORCH-QUAL-01 already qualified R2 — observation, environment inspection and artifact retrieval over MCP — and recorded that the same surface cannot create a run or post a follow-up. That missing half is why a five-lane group exists only because a human pressed a button five times, and why a distinct-family independent acceptor exists only if a human selects that model by hand. With this key, lane dispatch and acceptor selection become properties of the programme instead of properties of the founder's attention. GET /v1/models additionally answers a question this lane could not: which exact model configurations this account may select, including whether Kimi is unhidden.",
+
+      "3_exact_account_and_settings_location": {
+        "issue_the_key": "https://cursor.com/dashboard/api — signed in as sadekahmed@meta.com (user id 406024541, team 4296794). Create a new API key. Give it a name that identifies the programme, for example `obzio-cur-env-01`. Copy the value from the creation dialog; it is shown once.",
+        "store_the_key": "https://cursor.com/dashboard — Cloud Agents > Secrets. Add a secret named exactly CURSOR_API_KEY. Scope it to the repository asibrahim336-hash/obzio-ai-coordination-temp. Do not add it at team-wide scope.",
+        "alternative_identity": "A service-account API key may be used instead of a user key, which decouples the credential from one person's account. See https://cursor.com/docs/account/enterprise/service-accounts.md. Prefer this if the team plan supports it, because a user key ties programme continuity to one individual."
+      },
+
+      "4_minimum_appropriate_scope": "Repository-scoped, not team-scoped. One key for this programme, not a shared key reused elsewhere. If a service account is available, prefer it, and give that account access to this repository only. Cursor API keys are not permission-scoped per endpoint, so scope is controlled by which secret store the key lives in and which runs can read it — which is precisely why repository scoping matters here.",
+
+      "5_secret_storage_location": "Cursor Dashboard > Cloud Agents > Secrets, repository-scoped to asibrahim336-hash/obzio-ai-coordination-temp. Never in .cursor/environment.json, never in a Dockerfile, never in a committed script, never in chat.",
+
+      "6_exact_test_command": {
+        "step_a_verify_presence_without_reading_the_value": "echo \"$CLOUD_AGENT_ALL_SECRET_NAMES\" | tr ',' '\\n' | grep -x CURSOR_API_KEY",
+        "step_b_verify_the_credential_authenticates": "curl -s -o /dev/null -w '%{http_code}\\n' -H \"Authorization: Bearer $CURSOR_API_KEY\" https://api.cursor.com/v1/me",
+        "step_c_first_useful_read": "curl -s -H \"Authorization: Bearer $CURSOR_API_KEY\" https://api.cursor.com/v1/models | head -c 2000",
+        "note": "Run these in a NEW cloud agent run. Secrets are injected at pod start, so the currently running agent will not see a newly added secret."
+      },
+
+      "7_expected_result": {
+        "step_a": "prints CURSOR_API_KEY. Before activation it prints nothing and exits 1.",
+        "step_b": "prints 200. Before activation the same request without the header returns 401 with body {\"code\":\"error\",\"message\":\"Invalid User API Key\"}, which is the reproduced pre-activation baseline.",
+        "step_c": "a JSON list of model identifiers. This is the first thing the operation gains that it could not previously obtain by any means.",
+        "failure_signatures": "401 after activation means the key is wrong, revoked, or the secret name is misspelled. 403 means the key authenticated but lacks entitlement. A 404 on /v1/me means the route moved and the documentation should be re-read before assuming the key is bad."
+      },
+
+      "8_verification_and_revocation": {
+        "verification": "Record the three commands and their observed outputs into a receipt under receipts/so02/<date>/<unit>/. Then perform ONE bounded end-to-end test before granting the key to the general programme: create a single agent with a trivial prompt, confirm it appears in GET /v1/agents, retrieve its artifacts, then archive it. Do not use run creation for real work until that round trip is observed.",
+        "revocation": "Delete the key at https://cursor.com/dashboard/api. Revocation is immediate and unilateral — no agent can prevent it. Also remove the secret from Cloud Agents > Secrets so no future pod receives a dead value. Verify by re-running step_b in a new run and observing 401.",
+        "rotation": "Rotate by creating a new key, updating the secret, confirming step_b returns 200 in a new run, then deleting the old key. Do not delete first: a gap leaves running agents unable to authenticate.",
+        "detecting_misuse": "GET /v1/agents lists agents created with the key. Any agent in that list that the programme did not intend is the signal to revoke."
+      },
+
+      "9_cost_privacy_and_retention": {
+        "cost": "The key itself is free. Runs created with it consume the account's normal Cloud Agent usage at the model's rate, and a key that can create runs can therefore spend money. This is the single largest financial consideration in this programme and the reason for the bounded first test.",
+        "privacy": "Prompts, repository content and tool output sent through created runs are processed by Cursor and the selected model provider under the account's existing data settings. This introduces no new data flow that Cloud Agents do not already carry — the same content already flows through every agent run today.",
+        "retention": "Run streams have a documented retention window; artifacts and run records persist until the agent is archived or deleted. This does not change the estate's custody position, because provider-held state is already treated as non-canonical: git remains canonical.",
+        "worth_stating": "A Cursor API key is the highest-consequence credential in this programme. It can create runs that write branches and cause pull requests to be created. It deserves more caution than the OpenAI key another lane is specifying."
+      },
+
+      "10_activate_now_or_later": "NOW, with the bounded first test as a hard gate before general use. It is the only action in this programme that removes a founder relay step from the critical path of every future multi-lane dispatch, and its pre-activation state is fully characterised, so a post-activation failure is unambiguous.",
+
+      "delegable_portion_cursor_can_do_first": "Cursor can and should write the verification script, the bounded round-trip test and the receipt template before the key exists, so that activation is followed by an immediate reproducible check rather than by exploratory probing."
+    },
+
+    {
+      "action_id": "FA-GH-ROUTE-01",
+      "title": "Decide the GitHub route deliberately: keep the read-only installation or widen it",
+      "sequence": 2,
+      "activate": "NOW — as a decision. The widening itself is probably NOT needed.",
+
+      "1_exact_capability_unlocked": "Depending on the decision: reading and writing GitHub Issues; reading Actions secrets and variables; reading branch protection; managing webhooks. Today all four are denied.",
+
+      "2_why_it_benefits_the_whole_operation": "The value here is mostly in NOT widening, and in writing that down. Three reproduced facts change how the estate should be designed, and none of them is currently recorded anywhere. First, issues:403 means GitHub Issues cannot be a coordination substrate — so any design that assumed they could is wrong. Second, administration:403 means no agent can read or set branch protection, so the 'never write these branches' rule cannot be enforced server-side by anything an agent can configure, which is exactly why the client-side hook guard in G1 is load-bearing rather than belt-and-braces. Third, secrets:403 means no agent can verify a repository Actions secret, so any activation that depends on one must be verified through a CI job's behaviour instead of by inspection. Widening the installation would relax all three, and each relaxation buys convenience at the cost of a boundary that currently holds by construction.",
+
+      "3_exact_account_and_settings_location": {
+        "inspect_current_grants": "https://github.com/settings/installations (personal) or https://github.com/organizations/<org>/settings/installations — find the Cursor app installation for asibrahim336-hash/obzio-ai-coordination-temp and read its Permissions and Repository access.",
+        "if_widening_is_chosen": "Same page > Configure. Add only the specific permission needed, at the minimum level (read before write). GitHub will require the installation owner to approve the change.",
+        "branch_protection_instead": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/settings/branches — add a protection rule on main and on so02/*, po03/*, soo/* and packs/*. This is the server-side complement to the client-side guard and does not require widening any token."
+      },
+
+      "4_minimum_appropriate_scope": "Grant nothing new unless a specific reproduced need appears. If branch protection is the goal, set the protection rules directly rather than granting the agent administration permission — the agent does not need to read protection for protection to work. The recommended change is the protection rules, not the token.",
+
+      "5_secret_storage_location": "Not applicable. GitHub App installation permissions are not secrets and are not stored in the Cloud Agent secret store. Never create a personal access token as a workaround: a PAT carries a human's full account authority and would be a strict downgrade in blast radius from the current single-repository installation.",
+
+      "6_exact_test_command": {
+        "current_boundary_reproduction": "R=asibrahim336-hash/obzio-ai-coordination-temp; for ep in /repos/$R /repos/$R/pulls /repos/$R/issues /repos/$R/actions/secrets /repos/$R/branches/main/protection /repos/$R/hooks; do printf '%-52s ' \"$ep\"; gh api -i \"$ep\" 2>/dev/null | head -1 | awk '{print $2}'; done",
+        "after_setting_branch_protection": "git push --dry-run origin main   # from a lane branch, expect a rejection",
+        "write_boundary_check": "git push --dry-run -u origin <your-lane-branch>   # expect '* [new branch]' and exit 0"
+      },
+
+      "7_expected_result": {
+        "current_reproduced_baseline": "200, 200, 403, 403, 403, 403 in that order. This is the observed state as of 2026-08-22T20:14Z and is the comparison point for any later change.",
+        "after_branch_protection": "the dry-run push to main is rejected by the server, giving a second, independent enforcement layer beneath the client-side hook.",
+        "unchanged": "the lane-branch dry-run continues to print '* [new branch]' and exit 0."
+      },
+
+      "8_verification_and_revocation": {
+        "verification": "Re-run the boundary reproduction and diff it against the baseline above. Any endpoint that changed from 403 to 200 is a widening that must be intentional and recorded.",
+        "revocation": "Remove the added permission at the same installation settings page, or delete the branch protection rule. Both are immediate and unilateral.",
+        "audit": "GitHub records installation permission changes in the organisation audit log. The agent cannot read it (audit_log is not in the granted set), so this must be checked from the dashboard."
+      },
+
+      "9_cost_privacy_and_retention": {
+        "cost": "None. Branch protection is free on private repositories for the relevant rules.",
+        "privacy": "Widening `issues` or `secrets` read would expose more repository content to every agent run using this installation. Since agent conversations can include tool output, that content can reach model providers. That is the real cost of widening and it is why the recommendation is not to.",
+        "retention": "Unchanged."
+      },
+
+      "10_activate_now_or_later": "The DECISION now; the widening probably never. Set branch protection now — it is free, immediate, reversible, and it is the only server-side enforcement of the estate's most important boundary. Leave the installation permissions exactly as they are until a specific reproduced need appears.",
+
+      "delegable_portion_cursor_can_do_first": "Cursor can maintain the boundary reproduction as a committed check that runs in CI, so any silent widening of the installation is detected on the next run rather than discovered later."
+    },
+
+    {
+      "action_id": "FA-MCP-OAUTH-01",
+      "title": "Decide the MCP policy explicitly, and connect an event-return integration only if a human is genuinely in the loop",
+      "sequence": 3,
+      "activate": "LATER — and only after the pointer chain is unambiguously canonical over any chat surface.",
+
+      "1_exact_capability_unlocked": "Two separable things. (a) A repository-side statement of MCP policy via disableAllMcpServers and mcpServerAllowlist in .cursor/environment.json, replacing silent inheritance of upstream team and user policy. (b) If a Slack or Linear integration is connected at the account level, the cursor-subscriptions tools subscribe_slack_thread, subscribe_slack_channel, subscribe_slack_new_channels, subscribe_linear_issue and subscribe_linear_comment become available, letting an agent be woken by a human reply or an issue state change without polling and without the founder carrying the message.",
+
+      "2_why_it_benefits_the_whole_operation": "(a) is a currentness benefit: an unstated default is indistinguishable from an unconsidered one, and this repository currently makes no statement at all about which MCP servers it intends to permit. (b) addresses the founder-as-relay failure from the other direction — where a human genuinely must be in the loop, their reply should reach the programme automatically. But (b) also carries the estate's signature risk: it creates a second place where 'what is current' can be asserted. That is the failure this whole commission exists to stop, which is why this action is sequenced last and marked LATER rather than NOW.",
+
+      "3_exact_account_and_settings_location": {
+        "personal_mcp_servers": "https://cursor.com/agents — the MCP dropdown.",
+        "team_mcp_servers": "Cursor Dashboard > Integrations & MCP. Team admins configure shared servers here.",
+        "team_mcp_admin_controls": "https://cursor.com/dashboard/settings > MCP Configuration. This is also where Cursor Cloud MCP itself can be disabled for the team — do not disable it, it is the surface the qualified R2 route depends on.",
+        "slack_or_linear": "Connect the integration from the same Integrations page. OAuth for MCP servers is per-user, including for servers shared at team level, so each operator consents individually.",
+        "repository_side_policy": "Edit .cursor/environment.json to add mcpServerAllowlist and/or disableAllMcpServers. Both are accepted by the live schema, verified during this lane."
+      },
+
+      "4_minimum_appropriate_scope": "For (a): an allowlist naming exactly the intended servers, with a toolAllowlist per server where only some tools are needed. Prefer HTTP transport over stdio — with HTTP the server configuration never enters the agent VM and calls are proxied through the backend, whereas a stdio server runs inside the VM where the agent can read its environment and credentials. For (b): a single channel or a single project, never a workspace-wide grant. Read scope before write scope.",
+
+      "5_secret_storage_location": "MCP configurations are stored by Cursor and encrypted at rest. The env, headers and CLIENT_SECRET fields are redacted and cannot be read back by any user after saving. Nothing goes into the repository. Nothing goes into a Cloud Agent secret unless a stdio server needs it, which is itself a reason to prefer HTTP.",
+
+      "6_exact_test_command": {
+        "before": "GetMcpTools with no arguments — record the exact server and tool census.",
+        "after": "GetMcpTools with no arguments again, and diff. Then, for a connected integration, GetMcpTools with server 'cursor-subscriptions' and confirm the new tool names and their input schemas.",
+        "policy_check": "After editing environment.json, validate against the live schema before committing: curl -sL https://cursor.com/schemas/environment.schema.json and validate with jsonschema. The schema sets unevaluatedProperties:false, so one stray field invalidates the file.",
+        "auth_state_check": "GetMcpTools reports serverStatus per server. A server in 'needsAuth' is not usable and requires desktop-IDE authentication, which a cloud agent cannot perform."
+      },
+
+      "7_expected_result": {
+        "before_reproduced_baseline": "Exactly two servers, both 'ready': cursor-cloud with 14 tools and cursor-subscriptions with 5 tools (list_subscriptions, subscribe_github_ci, subscribe_github_pr, subscribe_timer, unsubscribe). No Slack, Linear, Sentry, PagerDuty, web-search, web-fetch, browser or computer-control tool is present.",
+        "after_slack_connected": "cursor-subscriptions gains subscribe_slack_thread and subscribe_slack_channel with channel-ID-shaped inputs.",
+        "caution_reproduced_from_the_bundled_skill": "Subscribing to a Slack channel or thread may post a visible 'Cursor is now listening' notice in that channel. That is a disclosure event. Subscribe deliberately, never exploratorily."
+      },
+
+      "8_verification_and_revocation": {
+        "verification": "The GetMcpTools census diff is the verification. Then exercise one subscription end to end and confirm the delivery arrives as a follow-up, and that its raw payload lands under /cursor/stores/self/inbox/<kind>/<subscriptionId>/.",
+        "revocation": "Disconnect the integration at Integrations & MCP, or set disableAllMcpServers:true in the environment to block every user and team server at once. Cursor built-in servers are never restricted by that flag, so the qualified R2 route survives it. Close individual subscriptions with cursor-subscriptions unsubscribe.",
+        "expiry_is_not_revocation": "Subscriptions expire on a server-assigned schedule. list_subscriptions returned zero during this lane, meaning the CI subscription from CUR-ORCH-QUAL-01 had already lapsed. Do not treat a subscription as a durable channel — addressable retrieval by immutable SHA must remain the primary path."
+      },
+
+      "9_cost_privacy_and_retention": {
+        "cost": "No direct cost for the MCP policy. A connected integration may have its own licensing.",
+        "privacy": "This is the substantive concern. Connecting Slack or Linear lets agent activity read third-party content and, in the Slack case, post a visible listening notice. Event text is untrusted third-party data and must never be treated as instructions — the bundled subscribe skill states this explicitly and it is worth restating in a repository rule before any such integration is connected.",
+        "retention": "Delivered payloads land in the per-run agent store, which is keyed to the run's bcId and not addressable from any other run. They are not durable and are not custody."
+      },
+
+      "10_activate_now_or_later": "The MCP policy statement: NOW, as a written decision, even if the decision is 'inherit deliberately'. The Slack or Linear connection: LATER. It is the lowest-value and highest-risk item in this programme, and connecting it before the git pointer chain is unambiguously canonical would add a second source of truth to an estate whose defining failure is having two.",
+
+      "delegable_portion_cursor_can_do_first": "Cursor can write the GetMcpTools census as a committed baseline so any change to the tool surface is detected by diff rather than noticed by accident."
+    },
+
+    {
+      "action_id": "FA-CUR-CLI-01",
+      "title": "Cursor CLI in CI — deferred, and dependent on FA-CUR-API-01",
+      "sequence": 4,
+      "activate": "LATER — after FA-CUR-API-01 has passed its bounded round trip.",
+
+      "1_exact_capability_unlocked": "A non-interactive Cursor agent invocable from a shell or a CI job: `agent -p '<prompt>' --model <id> --output-format <fmt>`, with session resumption via `agent ls`, `agent resume` and `--resume=<chat-id>`, mode selection (agent, plan, ask), sandbox controls, and Cloud Agent handoff by prefixing a message with '&'.",
+
+      "2_why_it_benefits_the_whole_operation": "It is the only route by which a model can be invoked from inside a deterministic, independently-executed context — a GitHub Actions runner — rather than from inside an agent's own session. That matters specifically for independent acceptance: an acceptance judgement produced by a runner the producing agent does not control is a materially stronger claim than one produced in the producer's own shell. It is a strengthening of an existing capability rather than a new one, which is why it is sequenced after the API key.",
+
+      "3_exact_account_and_settings_location": {
+        "install": "curl https://cursor.com/install -fsS | bash — installs a binary named `agent`, not `cursor-agent`.",
+        "authentication": "https://cursor.com/docs/cli/reference/authentication.md. In non-interactive contexts the CLI authenticates from an API key, which is why this depends on FA-CUR-API-01.",
+        "ci_usage": "https://cursor.com/docs/cli/github-actions.md and https://cursor.com/docs/cli/headless.md.",
+        "where_it_would_run": "Either in .cursor/install.sh so every cloud agent has it, or in a GitHub Actions workflow. The second is the one with independence value."
+      },
+
+      "4_minimum_appropriate_scope": "Reuse the FA-CUR-API-01 key rather than issuing a second credential, unless CI needs a separately revocable identity — in which case issue a second key named for CI so it can be revoked without disturbing agent orchestration. Start in `--mode=ask` (read-only exploration) and only move to agent mode once the CI job's blast radius is understood.",
+
+      "5_secret_storage_location": "For cloud agents: Cursor Dashboard > Cloud Agents > Secrets, repository-scoped. For GitHub Actions: repository Actions secrets. Note the reproduced consequence — the agent's GitHub token is denied on /actions/secrets, so no agent can verify an Actions secret by inspection. Verification must be behavioural: the CI job either authenticates or it does not.",
+
+      "6_exact_test_command": {
+        "presence": "command -v agent && agent --version",
+        "read_only_first": "agent -p 'List the files under workstreams/so02/control-plane/state and say nothing else.' --mode=ask --output-format text",
+        "in_ci": "the same command as a step in a workflow, with the key supplied from an Actions secret."
+      },
+
+      "7_expected_result": {
+        "before_reproduced_baseline": "command -v returns nothing for `cursor-agent`, `cursor` and `cursor-cli`; no Cursor CLI is installed in this runtime.",
+        "after": "`agent --version` prints a version; the ask-mode prompt returns a file listing and makes no change to the working tree.",
+        "failure_signature": "An authentication error means the key is not reaching the CLI. A silent hang in CI usually means an interactive prompt — always pass -p."
+      },
+
+      "8_verification_and_revocation": {
+        "verification": "Confirm ask mode changed nothing: `git status --porcelain` must be empty after the read-only test. Then, and only then, consider agent mode.",
+        "revocation": "Revoke the API key at https://cursor.com/dashboard/api, and remove the CI step. Uninstalling the binary is not revocation — the credential is.",
+        "containment": "The CLI supports `--sandbox enabled` with network control. Use it for any CI invocation that does not need network."
+      },
+
+      "9_cost_privacy_and_retention": {
+        "cost": "CLI invocations consume model usage at the selected model's rate. A CI job that invokes an agent on every push can spend continuously and silently. Bound it by trigger and by a concurrency limit before enabling it.",
+        "privacy": "Repository content in the prompt reaches the model provider, the same as any agent run.",
+        "retention": "CLI sessions are resumable, which means they persist server-side. Treat any session as provider-held and non-canonical."
+      },
+
+      "10_activate_now_or_later": "LATER. It depends on FA-CUR-API-01 and it introduces recurring spend. There is no route currently blocked on it — the independence benefit is real but incremental, and the container runtime already available in this VM offers much of the same independence value at zero cost and zero new authority.",
+
+      "delegable_portion_cursor_can_do_first": "Cursor can write and commit the workflow file with the invocation step disabled, so enabling it later is a one-line change that is reviewable in advance rather than authored under time pressure."
+    }
+  ],
+
+  "dependency_on_another_lane": {
+    "action": "OPENAI_API_KEY activation for the Responses and Conversations route",
+    "owner": "OE-L5-CHATGPT-SCALE",
+    "reproduced_state_only": "OPENAI_API_KEY is absent by name census, and unauthenticated GET https://api.openai.com/v1/models returns HTTP 401 'Missing bearer authentication in header'. Egress is unrestricted, so it is credential-blocked, not unsupported.",
+    "this_lane_specifies_nothing_further": "Deliberately not duplicated. The only cross-lane note worth making is that OPENAI_API_KEY and CURSOR_API_KEY are independent: neither blocks the other, and they can be activated in either order or separately."
+  },
+
+  "what_this_programme_deliberately_does_not_ask_for": [
+    "No browser or computer-control activation is requested. A working Chrome, a live X display and a noVNC bridge already exist in this VM, so the question is a tool-binding question rather than a procurement question, and it belongs to the capability-research lane.",
+    "No widening of the GitHub App installation is recommended. The recommendation is branch protection instead, which achieves the actual goal without granting the agent anything.",
+    "No SW action, no PO-01 action, no PO-03 action and no MANUS action. None is in scope and none is touched.",
+    "No refill of the exhausted Claude extension route.",
+    "No spend commitment. Every item that could cost money says so explicitly and is gated behind a bounded first test."
+  ]
+}

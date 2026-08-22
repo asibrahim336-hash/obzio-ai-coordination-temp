@@ -1,0 +1,66 @@
+=== model IDs from models-and-pricing ===
+`claude-opus-4-8-fast\`
+`claude-opus-5-fast\`
+
+=== mcp.json project/global locations + example ===
+### Using `mcp.json`
+
+Configure custom MCP servers with a JSON file:
+
+```json title="CLI Server - Node.js"
+{
+  "mcpServers": {
+    "server-name": {
+      "command": "npx",
+      "args": ["-y", "mcp-server"],
+      "env": {
+        "API_KEY": "value"
+      }
+    }
+  }
+}
+```
+
+```json title="CLI Server - Python"
+{
+  "mcpServers": {
+    "server-name": {
+      "command": "python",
+      "args": ["mcp-server.py"],
+      "env": {
+        "API_KEY": "value"
+      }
+    }
+  }
+}
+```
+
+```json title="Remote Server"
+// MCP server using HTTP or SSE - runs on a server
+{
+  "mcpServers": {
+    "server-name": {
+      "url": "http://localhost:3000/mcp",
+      "headers": {
+        "API_KEY": "value"
+      }
+    }
+  }
+}
+```
+
+### Static OAuth for remote servers
+--- config locations ---
+### Configuration locations
+
+### Project Configuration
+
+Create `.cursor/mcp.json` in your project for project-specific tools.
+
+### Global Configuration
+
+Create `~/.cursor/mcp.json` in your home directory for tools available everywhere.
+
+### Config interpolation
+
+Use variables in `mcp.json` values. Cursor resolves variables in these fields: `command`, `args`, `env`, `url`, and `headers`.

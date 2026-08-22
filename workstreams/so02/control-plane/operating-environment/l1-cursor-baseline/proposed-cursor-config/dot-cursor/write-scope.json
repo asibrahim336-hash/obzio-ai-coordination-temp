@@ -1,0 +1,52 @@
+{
+  "_comment": "Declarative configuration for .cursor/hooks/guard_write_scope.py. Editing this file changes what the guard refuses. Keep it the single place where protected surfaces are named, so a boundary is never restated in prose in two places that can drift apart.",
+  "protected_branch_globs": [
+    "main",
+    "so02/*",
+    "po03/*",
+    "soo/*",
+    "packs/*",
+    "cursor/po03-*",
+    "cursor/setup-dev-environment-*",
+    "cursor/so02-cur-orch-qual-01",
+    "cursor/operating-environment-return-*"
+  ],
+  "protected_path_globs": [
+    "workstreams/po03/**",
+    "state/**",
+    ".github/workflows/**",
+    ".cursor/**"
+  ],
+  "refused_commands": [
+    {
+      "id": "PR-WRITE",
+      "pattern": "^gh\\s+pr\\s+(create|merge|close|reopen|edit|review|comment|ready)\\b",
+      "reason": "Pull-request writes are not a lane capability. In this estate a PR is a projection, never an acceptance, and lanes return branches rather than opening or moving pull requests."
+    },
+    {
+      "id": "ISSUE-WRITE",
+      "pattern": "^gh\\s+(issue|release|secret|variable|workflow)\\b|^gh\\s+api\\b[^|;&]*(?:-X|--method)[= ]\\s*(?i:POST|PATCH|PUT|DELETE)\\b",
+      "reason": "This route's GitHub credential is read-only for everything except git contents. A write attempt here fails at GitHub anyway; refusing locally makes the boundary explicit instead of producing a confusing 403. Both -X and --method are matched, in either case, because a boundary that only catches one spelling is not a boundary."
+    },
+    {
+      "id": "FORCE-PUSH",
+      "pattern": "git\\s+push\\b.*(--force(?!-with-lease)|(^|\\s)-f(\\s|$))",
+      "reason": "Force push destroys the immutable-SHA custody the whole evidence ladder depends on. Use --force-with-lease only after an explicit instruction."
+    },
+    {
+      "id": "HISTORY-REWRITE",
+      "pattern": "git\\s+(rebase|filter-branch|reset\\s+--hard|commit\\s+--amend)\\b",
+      "reason": "History rewriting breaks byte-for-byte read-back by immutable SHA, which is the property that makes produced evidence independently checkable."
+    }
+  ],
+  "require_currentness_check_before_commit": true,
+  "currentness_command": ["python3", "scripts/check_operator_taxonomy.py"],
+
+  "_comment_detached_head": "Refuse `git commit` while HEAD is detached. A commit on a detached HEAD advances no branch, which is how a lane's branch ref silently stays at the base while the lane believes it has committed.",
+  "refuse_detached_head": true,
+
+  "_comment_stale_ref_push": "Refuse `git push <branch>` when that branch sits on HEAD's own lineage and behind it. That is the exact signature of the silent no-op: git prints 'Everything up-to-date' and exits 0, so the exit code stops meaning the work was published. A divergent or unrelated branch is not refused, because pushing a different branch on purpose is legitimate.",
+  "refuse_stale_ref_push": true,
+
+  "audit_log": ".cursor/.run/write-scope-audit.jsonl"
+}

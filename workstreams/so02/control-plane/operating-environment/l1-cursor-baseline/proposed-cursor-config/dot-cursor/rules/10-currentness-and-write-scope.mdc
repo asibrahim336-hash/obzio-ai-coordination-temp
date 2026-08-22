@@ -1,0 +1,47 @@
+---
+alwaysApply: true
+---
+
+# Currentness and write scope
+
+## One lineage
+
+Before acting from any file, resolve the current pointer chain starting at
+`operations/README.md`. Never choose a file by its name, its date or its
+apparent recency. A superseded file is evidence, not a launch surface.
+
+If two files each claim to be current for the same scope, that is a
+currentness break. Stop and repair the break. Do not pick one, do not write a
+third file that reconciles them in prose, and do not proceed on the assumption
+that the newer one wins.
+
+Run `python3 scripts/check_operator_taxonomy.py` before every commit. This is
+enforced by `.cursor/hooks/guard_write_scope.py`, so a failing check refuses
+the commit rather than producing a CI failure after the commit already exists.
+
+## One writer per surface
+
+A shared projection surface has exactly one declared writer. Everything else
+works on an isolated branch and returns it.
+
+`.cursor/write-scope.json` is the single place protected branches and paths
+are named. The guard reads that file. Do not restate a boundary in prose
+somewhere else — two statements of one boundary is how they drift apart.
+
+Never push to, commit on, or rewrite the history of a protected branch. If you
+believe a boundary is wrong for your task, say so and stop. Changing
+`.cursor/write-scope.json` is an explicit decision, never a step inside a task.
+
+## Scope of a commission
+
+A commission owns a bounded problem, not the whole operation. Before starting,
+state which existing commission your work sits inside or which one it
+supersedes, and record the supersession. Two commissions that both claim the
+whole operation is the same failure as two files that both claim to be current.
+
+## Changing the mechanism
+
+A lesson recorded in a document changes nothing. When you find a recurring
+failure, the deliverable is the mechanism that makes it not recur — a hook, a
+validator, a schema, a test — plus the evidence it fires. If you can only
+describe the lesson, say that you could not mechanise it and why.

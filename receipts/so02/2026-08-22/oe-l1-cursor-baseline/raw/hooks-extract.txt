@@ -1,0 +1,139 @@
+############ hooks.md :: cloud agent support ############
+## Cloud agent support
+
+Cloud agents run command-based hooks from your repository. If you have hooks defined in `.cursor/hooks.json` at the root of your project, cloud agents pick them up and run them during their work.
+
+On Enterprise plans, cloud agents also run team hooks and enterprise-managed hooks configured through the [web dashboard](https://cursor.com/dashboard/team-content?section=hooks).
+
+Cloud agents sometimes begin in a read-only environment for early exploratory turns. Hooks do not run during those turns. They start once the agent has a writable environment.
+
+### Supported hooks
+
+The following hooks run in cloud agents:
+
+| Hook                   | Supported |
+| ---------------------- | --------- |
+| `beforeShellExecution` | Yes       |
+| `afterShellExecution`  | Yes       |
+| `beforeReadFile`       | Yes       |
+| `afterFileEdit`        | Yes       |
+| `preToolUse`           | Yes       |
+| `postToolUse`          | Yes       |
+| `postToolUseFailure`   | Yes       |
+| `subagentStart`        | Yes       |
+| `subagentStop`         | Yes       |
+| `beforeSubmitPrompt`   | Yes       |
+| `preCompact`           | Yes       |
+| `afterAgentResponse`   | Yes       |
+| `afterAgentThought`    | Yes       |
+| `stop`                 | Yes       |
+
+### Hooks not available in cloud agents
+
+Some hooks don't apply to cloud agents due to differences in the execution environment:
+
+| Hook                                       | Reason                                                                                                                                                                                                   |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sessionStart`                             | Deferred while cloud agents can still start in a read-only environment. Hooks don't load there, so a cloud `sessionStart` would fire too late (after the first write) rather than at true session start. |
+| `sessionEnd`                               | Cloud agents have no editor-lifetime session boundary. `sessionEnd` is tied to the IDE session, not a cloud agent chat.                                                                                  |
+| `beforeMCPExecution` / `afterMCPExecution` | Deferred while cloud agents can still start in a read-only environment, where hooks don't load and MCP hook timing is unclear.                                                                           |
+| `beforeTabFileRead` / `afterTabFileEdit`   | Tab completions are an IDE feature and don't run in cloud agents.                                                                                                                                        |
+| `workspaceOpen`                            | This is an IDE lifecycle hook and doesn't apply to cloud agents.                                                                                                                                         |
+
+### Configuration sources
+
+Cloud agents load hooks from these sources:
+
+- **Project hooks** (`.cursor/hooks.json` in your repo): Loaded and run during cloud agent work.
+- **Team hooks** (Enterprise): Distributed from the dashboard and run in cloud agents.
+- **Enterprise hooks** (Enterprise): System-wide managed hooks run in cloud agents.
+
+User-level hooks (`~/.cursor/hooks.json`) are not available in cloud agents. Cloud agent VMs don't have access to your local home directory configuration.
+
+### Execution type limits
+
+Cloud agents run **command-based hooks** only. Prompt-based hooks require authentication wiring between the hook and the agent loop, which isn't available in the cloud execution environment.
+
+
+############ hooks.md :: configuration file ############
+## Configuration
+
+Define hooks in a `hooks.json` file. Configuration can exist at multiple levels. All matching hooks from every source run; when responses conflict, higher-priority sources take precedence during merge:
+
+```sh
+~/.cursor/
+├── hooks.json
+└── hooks/
+    ├── audit.sh
+    └── block-git.sh
+```
+
+- **Enterprise** (MDM-managed, system-wide):
+  - macOS: `/Library/Application Support/Cursor/hooks.json`
+  - Linux/WSL: `/etc/cursor/hooks.json`
+  - Windows: `C:\\ProgramData\\Cursor\\hooks.json`
+- **Team** (Cloud-distributed, enterprise only):
+  - Configured in the [web dashboard](https://cursor.com/dashboard/team-content?section=hooks) and synced to all team members automatically
+- **Project** (Project-specific):
+  - `<project-root>/.cursor/hooks.json`
+  - Project hooks run in any trusted workspace and are checked into version control with your project
+- **User** (User-specific):
+  - `~/.cursor/hooks.json`
+
+Priority order (highest to lowest): Enterprise → Team → Project → User
+
+The `hooks` object maps hook names to arrays of hook definitions. Each definition currently supports a `command` property that can be a shell string, an absolute path, or a relative path. The working directory depends on the hook source:
+
+- **Project hooks** (`.cursor/hooks.json` in a repository): Run from the **project root**
+- **User hooks** (`~/.cursor/hooks.json`): Run from `~/.cursor/`
+- **Enterprise hooks** (system-wide config): Run from the enterprise config directory
+- **Team hooks** (cloud-distributed): Run from the managed hooks directory
+
+For project hooks, use paths like `.cursor/hooks/script.sh` (relative to project root), not `./hooks/script.sh` (which would look for `<project>/hooks/script.sh`).
+
+### Configuration file
+
+This example shows a user-level hooks file (`~/.cursor/hooks.json`). For project-level hooks, change paths like `./hooks/script.sh` to `.cursor/hooks/script.sh`:
+
+```json
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [{ "command": "./session-init.sh" }],
+    "sessionEnd": [{ "command": "./audit.sh" }],
+    "preToolUse": [
+      {
+        "command": "./hooks/validate-tool.sh",
+        "matcher": "Shell|Read|Write"
+      }
+    ],
+    "postToolUse": [{ "command": "./hooks/audit-tool.sh" }],
+    "subagentStart": [{ "command": "./hooks/validate-subagent.sh" }],
+    "subagentStop": [{ "command": "./hooks/audit-subagent.sh" }],
+    "beforeShellExecution": [{ "command": "./script.sh" }],
+    "afterShellExecution": [{ "command": "./script.sh" }],
+    "afterMCPExecution": [{ "command": "./script.sh" }],
+    "afterFileEdit": [{ "command": "./format.sh" }],
+    "preCompact": [{ "command": "./audit.sh" }],
+    "stop": [{ "command": "./audit.sh", "loop_limit": 10 }],
+    "beforeTabFileRead": [{ "command": "./redact-secrets-tab.sh" }],
+    "afterTabFileEdit": [{ "command": "./format-tab.sh" }],
+    "workspaceOpen": [{ "command": "./register-workspace-plugins.sh" }]
+  }
+}
+```
+
+The Agent hooks (`sessionStart`, `sessionEnd`, `preToolUse`, `postToolUse`, `postToolUseFailure`, `subagentStart`, `subagentStop`, `beforeShellExecution`, `afterShellExecution`, `beforeMCPExecution`, `afterMCPExecution`, `beforeReadFile`, `afterFileEdit`, `beforeSubmitPrompt`, `preCompact`, `stop`, `afterAgentResponse`, `afterAgentThought`) apply to Cmd+K and Agent Chat operations. The Tab hooks (`beforeTabFileRead`, `afterTabFileEdit`) apply specifically to inline Tab completions. The app lifecycle hook (`workspaceOpen`) fires when a workspace opens and on workspace folder changes, independent of any agent session.
+
+### Global Configuration Options
+
+| Option    | Type   | Default | Description           |
+| --------- | ------ | ------- | --------------------- |
+| `version` | number | `1`     | Config schema version |
+
+### Per-Script Configuration Options
+
+| Option       | Type                      | Default          | Description                                                                                                                                    |
+| ------------ | ------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `command`    | string                    | required         | Script path or command                                                                                                                         |
+| `type`       | `"command"` \| `"prompt"` | `"command"`      | Hook execution type                                                                                                                            |
