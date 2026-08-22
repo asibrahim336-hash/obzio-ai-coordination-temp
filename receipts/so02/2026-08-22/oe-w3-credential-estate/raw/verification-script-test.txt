@@ -1,0 +1,39 @@
+# verify-cursor-api-key.sh — behaviour on every reachable branch
+# captured: 2026-08-22T22:49:07Z
+
+The key used below is synthetic. It is not a credential, has never been
+a credential, and authenticates nothing. It exists to prove that the
+script's own output carries nothing credential-shaped.
+
+--- branch 1: no key present in the runtime (today's actual state) ---
+verify-cursor-api-key: begin
+  endpoint            : https://api.cursor.com/v1/me
+  key_variable_name   : CURSOR_API_KEY
+  name_census         : ABSENT
+  baseline_no_header  : HTTP 401
+  key_in_environment  : ABSENT
+  verdict             : NOT_PRESENT
+  note                : Secrets are injected at pod start. A secret added
+                        after this run began is not visible to this run.
+                        Re-run in a NEW cloud agent run.
+verify-cursor-api-key: end
+  exit=2
+
+--- branch 2: a key is present but invalid ---
+verify-cursor-api-key: begin
+  endpoint            : https://api.cursor.com/v1/me
+  key_variable_name   : CURSOR_API_KEY
+  name_census         : ABSENT
+  baseline_no_header  : HTTP 401
+  key_in_environment  : PRESENT
+  key_length          : 69
+  key_sha256          : f6b74cfb45f7c5e1c50e05e628be8f784ad1f4f55624ad6d299fb0f6d9aeeb65
+  authenticated_call  : HTTP 401 (curl rc=0)
+  verdict             : REJECTED_INVALID_KEY
+  meaning             : key present but not accepted (expired, revoked, or wrong value)
+verify-cursor-api-key: end
+  exit=1
+
+Note both runs: no response body is printed anywhere. api.cursor.com's
+401 body echoes a masked fragment of the presented key, so printing it
+would leak key material into the receipt.

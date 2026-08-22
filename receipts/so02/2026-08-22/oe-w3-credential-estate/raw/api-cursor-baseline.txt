@@ -1,0 +1,13 @@
+# api.cursor.com — unauthenticated baseline
+# captured: 2026-08-22T22:47:03Z
+
+Discriminator: an endpoint that EXISTS but needs auth returns 401 with
+{code,message}; an endpoint that does not exist returns 404 with
+{error,message,statusCode}. Bodies are classified, never printed:
+the 401 body echoes a masked fragment of any presented key.
+
+  GET /v1/me                           -> HTTP 401  body_keys=code,message
+  GET /v1/models                       -> HTTP 401  body_keys=code,message
+  GET /v1/agents                       -> HTTP 401  body_keys=code,message
+  GET /v1/repositories                 -> HTTP 401  body_keys=code,message
+  GET /v1/nonexistent-route-oew3       -> HTTP 404  body_keys=error,message,statusCode
