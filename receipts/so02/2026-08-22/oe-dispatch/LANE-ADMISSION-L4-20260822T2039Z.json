@@ -1,0 +1,78 @@
+{
+  "record_id": "OE-LANE-ADMISSION-L4-20260822T2039Z",
+  "decision_changed": [],
+  "recorded_at": "2026-08-22T20:39:10Z",
+  "recorded_by": "root controller bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+  "lane": {
+    "parent_id": "OE-L4-CURRENTNESS-RECOVERY",
+    "provider_id": "70fdf034-7176-4f32-8a90-ef336bbaaffe",
+    "branch": "cursor/oe-l4-currentness-recovery-696d",
+    "immutable_head": "a58646ed4d0cd2f9342ad1b07a3ea2b6f9dfe530",
+    "declared_base": "fe0a595206e5986de7eaac6cabc619215a1eb81b",
+    "lane_reported_state": "READY_TO_COMMIT"
+  },
+
+  "custody_verification": {
+    "method": "root-controller recomputation from the bytes the remote serves; the lane's own verification statement was not relied upon",
+    "claimed_bundle_sha256": "71027b1d1586e961a0e6f93edb3d61e95c1e9bd97770b7ec4b77436e480977e5",
+    "recomputed_bundle_sha256": "71027b1d1586e961a0e6f93edb3d61e95c1e9bd97770b7ec4b77436e480977e5",
+    "bundle_hash_matches": true,
+    "entries": 13,
+    "digest_mismatches": 0,
+    "manifested_but_absent": 0,
+    "changed_files": 14,
+    "files_uncovered_by_manifest": 0,
+    "files_outside_owned_namespace": 0,
+    "lineage_descends_from_declared_base": true,
+    "path_collisions_with_other_lanes": 0
+  },
+
+  "apparent_discrepancy_investigated_and_cleared": {
+    "observation": "The projection_sha256 the lane reported, a647ca6b..., did not match the raw-bytes digest of the committed projection file, 7cf50d80....",
+    "initial_read": "possible integrity defect",
+    "investigation": "Recomputed three candidate forms of the projection digest: raw bytes, canonical JSON, and canonical JSON with the projection_sha256 field removed.",
+    "resolution": "The third form reproduces a647ca6b exactly. projection_sha256 is a self-excluding canonical hash — the document hashed with its own hash field omitted — which is the same construction scctl.py uses for event_sha256. The manifest correctly records the raw-bytes digest and the projection correctly records its self-excluding canonical digest. These are different quantities and both are right.",
+    "verdict": "NOT_A_DEFECT — comparison error on the root controller's part, corrected before any finding was recorded",
+    "why_recorded_anyway": "A cleared false positive is worth keeping. It documents that the check ran, what it looked like before it was understood, and that the conclusion was reached by recomputation rather than by accepting an explanation."
+  },
+
+  "cross_lane_convergence": {
+    "finding": "Two lanes reached the same conclusion about WS-CUR-ORCH-QUAL-01 by entirely different methods.",
+    "lane_l3": "An independent acceptor on a different model family, applying criteria committed before it read the result, REFUSED the two-independent-routes claim.",
+    "lane_l4": "A repository-evidence compiler, which never read the acceptance verdict, admits the same workstream at PROPOSED and flags the PR #11 title's INDEPENDENTLY_VALIDATED claim as resting on an open PR and an agent existing, neither of which is admissible evidence.",
+    "significance": "The two lanes had no shared context and used different instruments — adversarial verification against artifacts versus mechanical admission compilation over the ref graph. Convergence of that kind is stronger evidence than either verdict alone, and it independently corroborates the withdrawal of the two-route claim already recorded.",
+    "caution": "Convergence is not proof. Both lanes read the same underlying repository, so a defect in the artifacts themselves would mislead both."
+  },
+
+  "defect_found_in_root_controller_artifact_and_fixed": {
+    "finding_code": "COMMISSION_ID_COLLISION",
+    "reported_by": "OE-L4-CURRENTNESS-RECOVERY",
+    "defect": "GROUP-MANIFEST-OE-20260822-v001.json carried a bare commission_id field asserting COM-CUR-ENV-01-20260822-v001, the same identifier the commission document itself declares. A scanner cannot distinguish a document that defines an identifier from one that merely references it, so the identifier did not resolve to a single scope.",
+    "accepted": true,
+    "argued_against": false,
+    "note": "The temptation was to call this a false positive, since the manifest plainly intends to reference rather than define. That would have left the ambiguity in place for the next reader and the next scanner. The schema was the defect.",
+    "fix": "Replaced commission_id with executes_under_commission_id, added declares_commission=false and commission_definition_path naming the single defining document, plus an explicit disambiguation note.",
+    "fixed_at": "2026-08-22T20:38:00Z"
+  },
+
+  "findings_escalated_not_resolved": {
+    "competing_currentness_claims": "Four logical pointers disagree across live branches, and PR #6 and PR #7 both rewrite the same pointer files against main with different bytes, so whichever merges first silently sets currentness for the other. The lane deliberately refused to choose. That refusal is correct: selecting a winner is a founder-bound or independently-evaluated act, not a compilation result. Recorded as requiring founder judgment.",
+    "undifferentiated_commission_overlaps": "Seven overlaps among four commissions asserting whole-operation authority with no supersession edge, including one pair involving the commission this very group runs under. This is the structural mechanism behind one agent holding two whole-operation mandates.",
+    "phantom_version": "v008 is referenced by nine committed artifacts but no commit on any ref ever added a matching path. Only its absence is recoverable.",
+    "unverifiable_without_provider_access": "The eleven-project ChatGPT figure comes from the founder review, not the repository. The lane can prove the repository never held the enumeration; it cannot establish the real number, and correctly did not acquire access to try."
+  },
+
+  "state_transition": {
+    "from": "READY_TO_COMMIT",
+    "to": "VERIFIED_ADMISSIBLE",
+    "not": "ACCEPTED",
+    "rule": "Custody and containment hold. The diagnosis itself has not been independently challenged, and a lane that grades the estate should not be exempt from the standard it applies. Its own admission classification is therefore a proposal pending independent review, not a settled verdict."
+  },
+
+  "integration_status": {
+    "integrated_into_return_branch": false,
+    "reason": "Batched until the remaining lanes report, so the shared projection is written once by the single shared-state writer.",
+    "sole_shared_state_writer": "bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+    "founder_is_comparison_retrieval_or_merge_layer": false
+  }
+}
