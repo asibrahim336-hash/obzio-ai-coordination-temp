@@ -50,6 +50,32 @@ class ProducerDocumentTests(unittest.TestCase):
         )
 
 
+class ArtifactPathTests(unittest.TestCase):
+    def test_logical_name_only_artifact_is_supported(self):
+        self.assertEqual(
+            TOOL._artifact_declared_path(
+                {"logical_name": "evidence/fault-matrix-summary.json"}
+            ),
+            "evidence/fault-matrix-summary.json",
+        )
+
+    def test_first_nonempty_declared_path_wins(self):
+        self.assertEqual(
+            TOOL._artifact_declared_path(
+                {
+                    "path": "",
+                    "content_uri": "workstreams/po03/result.json",
+                    "logical_name": "result.json",
+                }
+            ),
+            "workstreams/po03/result.json",
+        )
+
+    def test_missing_artifact_path_is_refused(self):
+        with self.assertRaisesRegex(ValueError, "manifest artifact lacks path"):
+            TOOL._artifact_declared_path({"bytes": 1})
+
+
 class AttemptProjectionTests(unittest.TestCase):
     def test_a01_uses_canonical_input_and_outbox(self):
         attempt = {"attempt_id": "PO03-WA-009-A01"}

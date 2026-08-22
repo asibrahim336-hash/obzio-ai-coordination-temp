@@ -86,6 +86,14 @@ def _write_jsonl(relative: str, rows: list[dict[str, Any]]) -> None:
     )
 
 
+def _artifact_declared_path(artifact: dict[str, Any]) -> str:
+    for field in ("path", "content_uri", "logical_name"):
+        value = artifact.get(field)
+        if isinstance(value, str) and value:
+            return value
+    raise ValueError(f"manifest artifact lacks path: {artifact}")
+
+
 def _commit_time(commit: str) -> str:
     return _git("show", "-s", "--format=%cI", commit).decode().strip()
 
@@ -269,9 +277,7 @@ def main() -> int:
     artifacts: list[dict[str, Any]] = []
     payload_bytes = 0
     for index, artifact in enumerate(manifest["artifacts"]):
-        declared_path = artifact.get("path", artifact.get("content_uri"))
-        if not isinstance(declared_path, str) or not declared_path:
-            raise ValueError(f"manifest artifact lacks path: {artifact}")
+        declared_path = _artifact_declared_path(artifact)
         content_path = (
             declared_path
             if declared_path.startswith("workstreams/")
