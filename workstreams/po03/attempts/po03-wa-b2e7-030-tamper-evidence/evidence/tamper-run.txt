@@ -1,0 +1,40 @@
+# tamper harness against live manifests and the live verify_chain
+# repo HEAD: be6af91ef95f03d62fdfc09c844bd01e0405e4d3
+
+$ python3 -I tamper_harness.py
+# commit=be6af91ef95f03d62fdfc09c844bd01e0405e4d3
+# slot=workstreams/po03/attempts/po03-wa-b2e7-025-manifest-generator-verifier
+OK       committed-artifact-matches-its-manifest-entry mechanism=manifest expected=clean observed=clean
+         path=workstreams/po03/attempts/po03-wa-b2e7-025-manifest-generator-verifier/FINDINGS.md sha256=a15363b7419e29375bd27a3498ac6ef53bf9dca409b588813c0016b5cdaa916b bytes=2600
+OK       materialised-artifact-single-byte-flipped mechanism=manifest expected=detected observed=detected
+         path=workstreams/po03/attempts/po03-wa-b2e7-025-manifest-generator-verifier/FINDINGS.md manifest=a15363b7419e2937 measured=6f1070206cecb595 bytes=2600
+OK       materialised-artifact-truncated mechanism=manifest expected=detected observed=detected
+         path=workstreams/po03/attempts/po03-wa-b2e7-025-manifest-generator-verifier/FINDINGS.md manifest_bytes=2600 measured_bytes=1300
+OK       committed-bytes-unchanged-by-working-copy-tampering mechanism=git object store expected=clean observed=clean
+         path=workstreams/po03/attempts/po03-wa-b2e7-025-manifest-generator-verifier/FINDINGS.md sha256_after_tamper=a15363b7419e29375bd27a3498ac6ef53bf9dca409b588813c0016b5cdaa916b identical=True
+OK       result-cites-the-committed-manifest-bytes mechanism=result document expected=clean observed=clean
+         claimed=4a6a53368f1a7587 measured=4a6a53368f1a7587
+OK       manifest-entry-rewritten-breaks-the-result-hash mechanism=result document expected=detected observed=detected
+         result_claims=4a6a53368f1a7587 tampered_manifest=9f4c08ed0f4f289c
+OK       pristine-chain-verifies mechanism=verify_chain expected=clean observed=clean
+         errors=[]
+OK       event-body-mutated mechanism=verify_chain expected=detected observed=detected
+         errors=['workstreams/po03/control/events/tamper-scratch-chain/000002-leased.json: event hash mismatch', 'workstreams/po03/control/events/tamper-scratch-chain/000003-running.json: previous hash mismatch']
+OK       single-byte-flip-preserving-length mechanism=verify_chain expected=detected observed=detected
+         errors=['workstreams/po03/control/events/tamper-scratch-chain/000002-leased.json: event hash mismatch', 'workstreams/po03/control/events/tamper-scratch-chain/000003-running.json: previous hash mismatch'] original_bytes=388 tampered_bytes=388
+OK       middle-event-deleted mechanism=verify_chain expected=detected observed=detected
+         errors=['workstreams/po03/control/events/tamper-scratch-chain/000003-running.json: non-monotonic sequence', 'workstreams/po03/control/events/tamper-scratch-chain/000003-running.json: previous hash mismatch', 'workstreams/po03/control/events/tamper-scratch-chain/000004-checkpointed.json: non-monotonic sequence']
+OK       tail-event-deleted mechanism=verify_chain expected=UNDETECTED observed=UNDETECTED
+         errors=[]; a truncated chain is internally consistent because nothing records the expected head
+OK       forged-event-appended-with-correct-links mechanism=verify_chain expected=UNDETECTED observed=UNDETECTED
+         errors=[]; a hash chain constrains order, not authorship, so anyone able to write to control/events can extend it
+OK       self-hash-overwritten mechanism=verify_chain expected=detected observed=detected
+         errors=['workstreams/po03/control/events/tamper-scratch-chain/000003-running.json: event hash mismatch', 'workstreams/po03/control/events/tamper-scratch-chain/000004-checkpointed.json: previous hash mismatch']
+OK       previous-link-rewritten-and-self-hash-recomputed mechanism=verify_chain expected=detected observed=detected
+         errors=['workstreams/po03/control/events/tamper-scratch-chain/000003-running.json: previous hash mismatch', 'workstreams/po03/control/events/tamper-scratch-chain/000004-checkpointed.json: previous hash mismatch']; recomputing the event's own hash cannot repair the link to its predecessor's file hash (former self hash a89096966eaf)
+OK       live-chain-copy-tampered:po03-canary-001 mechanism=verify_chain expected=detected observed=detected
+         pristine_errors=[] events=2 tampered_errors=['workstreams/po03/control/events/po03-canary-001/000001-created.json: event hash mismatch', 'workstreams/po03/control/events/po03-canary-001/000002-leased.json: previous hash mismatch']
+PO03_TAMPER_PASS cases=15 detected=9 clean=4 known_undetected=2
+KNOWN_GAP: tail-event-deleted: errors=[]; a truncated chain is internally consistent because nothing records the expected head
+KNOWN_GAP: forged-event-appended-with-correct-links: errors=[]; a hash chain constrains order, not authorship, so anyone able to write to control/events can extend it
+exit=0
