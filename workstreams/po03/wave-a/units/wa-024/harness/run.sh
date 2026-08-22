@@ -51,6 +51,10 @@ if [ -z "$OUT" ]; then
   OUT="$WORK/report"
 fi
 mkdir -p "$OUT"
+# Every stage below runs with the clean clone as its working directory, so a
+# relative output path would resolve inside the clone: the reports would be
+# discarded with it, and the writes would dirty the very tree the probes measure.
+OUT="$(cd -- "$OUT" && pwd)"
 
 cleanup() {
   if [ "$KEEP_CLONE" = "no" ]; then
