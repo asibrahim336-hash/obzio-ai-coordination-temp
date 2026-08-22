@@ -1,0 +1,206 @@
+{
+  "dispatched_hypothesis": {
+    "conjuncts": [
+      {
+        "conjunct": "criteria frozen before anonymized candidate ingestion reduce producer-identity bias",
+        "conjunct_id": "A",
+        "load_bearing_factor": "anonymization",
+        "marginal_effect_of_anonymization": 49,
+        "marginal_effect_of_the_freeze": 0,
+        "measurement": {
+          "mechanism_cells": 4,
+          "mechanism_max_identity_swing": 0,
+          "mechanism_rank_inversions": 0,
+          "removing_anonymization_max_swing": 49,
+          "removing_anonymization_rank_inversions": 1,
+          "removing_freeze_max_swing": 0,
+          "removing_freeze_rank_inversions": 0,
+          "unblinded_biased_reviewer_max_swing": 49,
+          "unblinded_neutral_reviewer_max_swing": 0
+        },
+        "outcome": "SUPPORTED",
+        "reading": "Under the named mechanism, permuting which producer identity is attached to which submission moves no score at all: worst-case identity swing 0 weighted points across 4 cells, 0 rank inversions. Removing anonymization and changing nothing else takes the worst case to 49 points and 1 rank inversions, so the reduction is real and is not an artefact of a reviewer that had no bias to express. Removing the freeze instead, and keeping anonymization, leaves the worst case at 0: the ordering gate contributes nothing to this conjunct. The effect the hypothesis claims for its compound mechanism is carried entirely by the anonymization half of it.",
+        "why_the_effect_is_attributable": "The reviewer's bias function is byte-identical across the blinding factor, so a null result under anonymization cannot be explained by a reviewer that was never biased. The unblinded neutral reviewer swings 0 and the unblinded biased reviewer swings 49, which locates the effect in the interaction of visibility and bias, exactly where the mechanism is supposed to act."
+      },
+      {
+        "conjunct": "criteria frozen before anonymized candidate ingestion catch one seeded attractive false claim",
+        "conjunct_id": "B",
+        "load_bearing_factor": "executing the repository control (the probing adjudicator)",
+        "marginal_effect_of_anonymization": 1,
+        "marginal_effect_of_executing_the_control": 4,
+        "marginal_effect_of_the_freeze": 0,
+        "measurement": {
+          "mechanism_with_a_credulous_adjudicator": "0/4 to 0/4",
+          "mechanism_with_a_probing_adjudicator": "4/4 to 4/4",
+          "permutations_per_cell": 4,
+          "removing_anonymization_biased_probing": "3/4",
+          "removing_freeze_probing": "4/4"
+        },
+        "outcome": "REFUTED",
+        "reading": "With both mechanism factors switched on and only the adjudicator varied, the seeded false claim is caught 4/4 of permutations when the control is executed and 0/4 when it is not. The mechanism the hypothesis names is fully present in both, so the catch is not attributable to it. Freezing a criterion that demands verification does not perform the verification, and withholding the producer's identity does not make an unexecuted claim testable: the claim is caught because a control is run and its exit status contradicts the claim. Removing the freeze while still executing the control changes the catch rate by 0.",
+        "what_the_mechanism_does_contribute": "Executing the control is necessary but not sufficient. A biased reviewer that can see a high-standing producer discounts a refutation it has already obtained, so the unblinded standing-sensitive probing cell catches 3/4 while its blind counterpart catches 4/4. Anonymization protects a refutation that has already been found; it does not find one. That is a real contribution of one permutation in sixteen and it is worth keeping, but it is not the effect the hypothesis asserts."
+      }
+    ],
+    "decision_rule_fixed_before_the_run": "The hypothesis is a conjunction and is recorded SUPPORTED only if every conjunct holds when attributed to the mechanism the hypothesis names. A conjunct that holds only because of a factor the hypothesis does not name is recorded as refuting the hypothesis as stated, because the hypothesis is a causal claim about the mechanism and not a description of the cell it was measured in.",
+    "failed_conjunct_ids": [
+      "B"
+    ],
+    "hypothesis_id": "H-PO03-WA-020",
+    "mechanism_as_named": "the ordering gate (gated) together with anonymization (blind)",
+    "outcome": "REFUTED",
+    "statement": "Criteria frozen before anonymized candidate ingestion reduce producer-identity bias and catch one seeded attractive false claim.",
+    "summary": "Half of the hypothesis holds and half of it does not, and the design says which half. Anonymization does reduce producer-identity bias, completely and measurably: worst-case identity swing falls from 49 weighted points to 0 with the same reviewer and the same bias function. The ordering gate contributes nothing to that reduction. The second conjunct fails: the mechanism does not catch the seeded false claim, because the claim is caught by running a repository control and refuted by its exit status, and the mechanism contains nothing that runs anything. Held fully on with a credulous adjudicator, the mechanism catches the claim in 0/4 to 0/4 permutations. Anonymization earns a narrower credit than the hypothesis claims: it stops a biased reviewer discounting a refutation the probe already produced, worth one permutation of four in the one cell where standing is visible and the control is run.",
+    "what_would_have_changed_the_verdict": "Conjunct B would have been recorded SUPPORTED had any cell with both mechanism factors on and a credulous adjudicator caught the claim in even one permutation. None did. Conjunct A would have been recorded REFUTED had removing anonymization left the worst-case identity swing at 0, which would have meant the null result under blinding came from an unbiased reviewer rather than from the blind."
+  },
+  "hypotheses": [
+    {
+      "evaluator": "identity_swing_under_blinding",
+      "evidence": "8 blind cells, maximum identity swing 0, rank inversions 0",
+      "hypothesis_id": "CM-H1",
+      "outcome": "SUPPORTED",
+      "prediction": "Every blind cell reports a maximum identity swing of 0 and 0 rank inversions.",
+      "reproduction_ids": [
+        "R5-LEAK-SCANNER-CATCHES-A-FIELD-LEVEL-REDACTOR",
+        "R6-DETERMINISTIC-REPLAY"
+      ],
+      "source_claim_ids": [
+        "S1",
+        "S4",
+        "S5",
+        "P3"
+      ],
+      "state": "REPRODUCED",
+      "statement": "If the scorer receives only a rendered payload redacted against a pool-wide identity vocabulary, then permuting which producer identity is attached to which submission leaves every score unchanged, including for a reviewer carrying an explicit standing bias."
+    },
+    {
+      "evaluator": "identity_swing_when_unblinded",
+      "evidence": "maximum identity swing across unblinded cells is 49 weighted points, with 2 rank inversions; the neutral unblinded cells swing 0, so the effect is the interaction of visibility and bias rather than visibility alone",
+      "hypothesis_id": "CM-H2",
+      "outcome": "SUPPORTED",
+      "prediction": "At least one unblinded cell reports a maximum identity swing above 0.",
+      "reproduction_ids": [],
+      "source_claim_ids": [
+        "S5",
+        "S6"
+      ],
+      "state": "REPRODUCED",
+      "statement": "The same reviewer with the same bias function moves at least one submission's score when identity is visible and nothing but the attached identity changes, so the null result under blinding is attributable to the blind rather than to an unbiased reviewer."
+    },
+    {
+      "evaluator": "seeded_claim_catch_by_probe",
+      "evidence": "4 blind probing cells catch the claim in every permutation; 8 credulous cells catch it in none",
+      "hypothesis_id": "CM-H3",
+      "outcome": "SUPPORTED",
+      "prediction": "Every cell whose adjudicator runs the probe catches the seeded false claim in every permutation under blinding; no cell with a credulous adjudicator catches it at all.",
+      "reproduction_ids": [
+        "R1-SEEDED-CONTROL-ADMITS-UNDECLARED-TRANSACTION-STATE"
+      ],
+      "source_claim_ids": [
+        "S8",
+        "P4",
+        "P5"
+      ],
+      "state": "REPRODUCED",
+      "statement": "A claim that is attractive on every surface a reader uses to judge quickly, and false only in what the executable control actually does, is caught when the control is executed and missed when the claim is read."
+    },
+    {
+      "evaluator": "seeded_claim_survival_under_standing",
+      "evidence": "unblinded standing-sensitive probing cell catch rate 3/4; the missed permutation is the one attributing the claim to the highest standing tier",
+      "hypothesis_id": "CM-H4",
+      "outcome": "SUPPORTED",
+      "prediction": "The unblinded standing-sensitive probing cell catches the claim in three of four permutations, missing exactly the permutation that attributes it to the highest tier.",
+      "reproduction_ids": [],
+      "source_claim_ids": [
+        "S6",
+        "P3"
+      ],
+      "state": "REPRODUCED",
+      "statement": "Running the probe is not sufficient on its own: a reviewer who can see a high-standing producer discounts the refutation it has already obtained, so the false claim survives a review that did execute the control."
+    },
+    {
+      "evaluator": "criteria_freeze_gate",
+      "evidence": "gated session refused a post-ingestion seal (True); with the gate removed the favoured submission gains 40 weighted points under the novelty-forward weighting",
+      "hypothesis_id": "CM-H5",
+      "outcome": "SUPPORTED",
+      "prediction": "The gated session refuses a post-ingestion seal, and removing the gate yields a strictly positive weighted gain for the favoured submission.",
+      "reproduction_ids": [],
+      "source_claim_ids": [
+        "S2",
+        "S3",
+        "S7",
+        "P3"
+      ],
+      "state": "REPRODUCED",
+      "statement": "Sealing the criteria before ingestion prevents outcome-directed selection of weights from a declared menu; with the gate removed, the same reviewer obtains a measurable gain for the submission it favours."
+    },
+    {
+      "evaluator": "per_identity_vocabulary_channel",
+      "evidence": "{'Blinder': 1, 'PerIdentityVocabularyBlinder': 2}",
+      "hypothesis_id": "CM-H6",
+      "outcome": "SUPPORTED",
+      "prediction": "The per-identity blinder renders one submission's content into more than one distinct byte string across identity permutations; the pool-vocabulary blinder renders exactly one.",
+      "reproduction_ids": [
+        "R3-PER-IDENTITY-VOCABULARY-IS-AN-IDENTITY-CHANNEL"
+      ],
+      "source_claim_ids": [
+        "S1",
+        "P8",
+        "P9"
+      ],
+      "state": "REPRODUCED",
+      "statement": "Redacting each submission against its own identity vocabulary leaves an identity channel even when it removes every identity string, because a submission that legitimately cites a committed prior attempt loses the citation under one identity and keeps it under the others."
+    },
+    {
+      "evaluator": "arrival_order_label_channel",
+      "evidence": "arrival-order correlation 1.0, content-derived correlation -0.1111111111111111",
+      "hypothesis_id": "CM-H7",
+      "outcome": "SUPPORTED",
+      "prediction": "Arrival-order labels correlate perfectly with the withheld standing tier for a pool arranged in descending standing; content-derived labels do not.",
+      "reproduction_ids": [
+        "R4-ARRIVAL-ORDER-LABELS-RANK-THE-PRODUCERS"
+      ],
+      "source_claim_ids": [
+        "S1",
+        "S4"
+      ],
+      "state": "REPRODUCED",
+      "statement": "Assigning pseudonyms in arrival order leaves an identity channel after complete redaction, because the label ranks the producers whenever arrival order carries standing."
+    },
+    {
+      "evaluator": "freeze_not_subsumed_by_blinding",
+      "evidence": "under blinding, removing the gate changed a ranking: False. Secondary and not preregistered: the post-ingestion weighting produced a gain spread of 36 weighted points across candidates, so it favoured some over others rather than shifting the scale. The preregistered metric is the ranking, and it is reported as measured.",
+      "hypothesis_id": "CM-H8",
+      "outcome": "REFUTED",
+      "prediction": "Under blinding, removing the ordering gate still changes at least one ranking, so blinding does not make the freeze redundant.",
+      "reproduction_ids": [],
+      "source_claim_ids": [
+        "S2",
+        "S3",
+        "S7"
+      ],
+      "state": "REPRODUCED",
+      "statement": "Blinding and the ordering gate close different channels. Blinding removes who wrote a submission; the gate removes the reviewer's freedom to choose the weights after reading it. Neither substitutes for the other."
+    },
+    {
+      "evaluator": "human_or_model_reviewer_transfer",
+      "evidence": "No human reviewer and no language-model reviewer was measured anywhere in this unit. The unblinded arm is a declared model of a standing-sensitive reviewer written by this unit, so it fixes the magnitude by construction and cannot estimate the magnitude for any real reviewer. The blind-arm result is a property of real code and stands on its own; the transfer claim does not follow from it.",
+      "hypothesis_id": "CM-H9",
+      "outcome": "NOT_SUPPORTED",
+      "prediction": "This hypothesis is expected to be unresolvable within this unit: no human or language-model reviewer is measured anywhere in it.",
+      "reproduction_ids": [],
+      "source_claim_ids": [
+        "S5",
+        "S6"
+      ],
+      "state": "UNRESOLVED",
+      "statement": "The identity-bias reduction measured here transfers to a human or language-model reviewer at a comparable magnitude."
+    }
+  ],
+  "hypothesis_count": 9,
+  "note": "The dispatched hypothesis is the one this unit was sent to test. The CM-H series are this unit's own preregistered current-method hypotheses, recorded separately because they are its claims and not its assignment.",
+  "outcome_histogram": {
+    "NOT_SUPPORTED": 1,
+    "REFUTED": 1,
+    "SUPPORTED": 7
+  }
+}

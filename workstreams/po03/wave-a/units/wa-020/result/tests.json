@@ -1,0 +1,104 @@
+{
+  "control_checks": {
+    "log": "evidence/control-checks.txt",
+    "log_sha256": "0e841cda3687dea9cb7384f187d65a68bd65312d4953aec333689315dec09ac2",
+    "seeded_po03_contract_tests": {
+      "command": "python3 -B -m unittest discover -s workstreams/po03/tests -t workstreams/po03/tests",
+      "modules": [
+        "test_reconcile_wave_a_result.py",
+        "test_supersede_wave_a_inputs.py",
+        "test_validate_contracts.py"
+      ],
+      "note": "The seeded suite is read-only to this unit and was not modified. It is run to show this unit breaks nothing it does not own.",
+      "outcome": "PASS",
+      "returncode": 0,
+      "summary_line": "Ran 68 tests in 1.035s",
+      "total": 68
+    },
+    "taxonomy_check": {
+      "command": "python3 -B scripts/check_operator_taxonomy.py",
+      "outcome": "PASS",
+      "output": [
+        "OPERATOR TAXONOMY CHECK: PASS",
+        "active function: obzio.function.strategic-operations-orchestration",
+        "active appointment: obzio.appointment.strategic-operations-orchestration.20260819.001",
+        "classified aliases: 9"
+      ],
+      "provenance": "required by AGENTS.md before commit",
+      "returncode": 0
+    }
+  },
+  "determinism": {
+    "byte_identical_documents": [
+      "bias-experiment.json",
+      "candidate-pool.json",
+      "criteria-freeze.json",
+      "hypotheses.json",
+      "mechanism-changes.json",
+      "reproduction-ledger.json",
+      "seeded-case.json"
+    ],
+    "method": "run.py was executed three times in the same checkout and the nine evidence documents were digested after each run.",
+    "note": "runtime.json records this run's wall time and source-claims.json records digests of live external pages, so both vary between runs by design. Recorded as L9.",
+    "review_path_replays_byte_for_byte": true,
+    "varying_documents": [
+      "runtime.json",
+      "source-claims.json"
+    ]
+  },
+  "focused_suite": {
+    "command": "python3 -I -B -m unittest discover -s tests -t tests -p 'test_*.py' -v",
+    "failed": 0,
+    "framework": "python3 -I -B -m unittest",
+    "outcome": "PASS",
+    "output_log": "evidence/test-run.txt",
+    "output_sha256": "263faf7cfb14b8bd73be71a04e104d8362061fe353c8a570aab8cb2d2d3e2766",
+    "output_tail": [
+      "----------------------------------------------------------------------",
+      "Ran 167 tests in 34.739s",
+      "",
+      "OK"
+    ],
+    "passed": 167,
+    "per_module": {
+      "test_bias_experiment": 32,
+      "test_blinding": 25,
+      "test_claims": 23,
+      "test_criteria": 16,
+      "test_dispatched_hypothesis": 23,
+      "test_probes": 22,
+      "test_review": 26
+    },
+    "per_module_total": 167,
+    "returncode": 0,
+    "skipped": 0,
+    "summary_line": "Ran 167 tests in 34.739s",
+    "total": 167
+  },
+  "harness_run": {
+    "command": "python3 -I -B run.py",
+    "outcome": "PASS",
+    "returncode": 0,
+    "wall_time_seconds": 5.216
+  },
+  "python_version": "3.12.3",
+  "result_envelope_verification": {
+    "checks": 48,
+    "command": "python3 -I -B -m unittest discover -s tests -t tests -p 'verify_*.py' -v",
+    "module": "tests/verify_result_envelope.py",
+    "note": "Named verify_ rather than test_ because of a real ordering property: these checks assert on ready-to-commit.json, which names the result commit and carries the read-back, so it cannot exist until the result commit has been made and pushed. They are excluded from the focused suite captured at the result commit for that reason and not because they are optional, and they are run against the finished return.",
+    "outcome_recorded_in": "the producer return, because the log cannot be an artifact of the commit it verifies without changing that commit's digests",
+    "verifies": [
+      "every owned file is digested in exactly one link of the accounting chain",
+      "every manifest digest and byte count matches the file on disk",
+      "the six-field attempt envelope matches the frozen input rather than a constant",
+      "the immutable input and acceptance digests are recomputed from the files themselves",
+      "every read-back row reconciles against the manifest values, not against itself",
+      "every changed path in the result commit is inside the owned subtree, checked against git",
+      "the assembled result passes the repository's own read-only transactional validator"
+    ]
+  },
+  "task_id": "PO03-WA-020",
+  "third_party_packages": "none; the standard library only",
+  "what_the_tests_are_for": "The suite is written to be able to fail. The dispatched-hypothesis evaluator is driven to both verdicts on synthetic cell tables before being pinned against the real design, so a constant would not pass; the blinding tests include three adversarial mutants that must leak; and the catch definition is tested against a reviewer that records a refutation and scores the candidate as though nothing were wrong."
+}

@@ -1,0 +1,892 @@
+{
+  "acceptance_contract": {
+    "observed_sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a",
+    "path": "workstreams/po03/control/acceptance/wave-a-material-v1.json"
+  },
+  "acceptance_self_assessment": [
+    {
+      "assertion_index": 1,
+      "disposition": "PRODUCER_ASSERTS_MET",
+      "producer_evidence": "The hypothesis is quoted verbatim in harness/dispatched_hypothesis.py and evaluated over 16 executed cells and 64 reviews. It is treated as the conjunction it is, and each conjunct is attributed to the factor the design shows carries it, giving REFUTED on conjunct B rather than a narrative.",
+      "producer_reading": "The attempt tests the exact hypothesis and substitutes nothing"
+    },
+    {
+      "assertion_index": 2,
+      "disposition": "PRODUCER_ASSERTS_MET",
+      "producer_evidence": "17 harness modules, 7 test modules, 167 tests, 6 reproductions, three adversarial blinder mutants, two adversarial adjudicators and two evidence-backed rejections.",
+      "producer_reading": "At least one executable component, reproduction, test and evidence-backed rejection is left in the subtree"
+    },
+    {
+      "assertion_index": 3,
+      "disposition": "PRODUCER_ASSERTS_MET",
+      "producer_evidence": "harness/research.py holds source claims, hypotheses, reproductions and mechanism changes as separate records with disjoint identifier spaces (S/P, CM-H, R, M), checked by evidence/source-claims.json:state_separation.disjoint and not asserted.",
+      "producer_reading": "Source claims are recorded separately from hypotheses, reproductions and mechanisms"
+    },
+    {
+      "assertion_index": 4,
+      "disposition": "PRODUCER_ASSERTS_MET",
+      "producer_evidence": "167 tests, PASS. The command and full verbose output are in evidence/test-run.txt with digest 263faf7cfb14b8bd73be71a04e104d8362061fe353c8a570aab8cb2d2d3e2766.",
+      "producer_reading": "Focused automated tests and command output are included"
+    },
+    {
+      "assertion_index": 5,
+      "disposition": "PRODUCER_ASSERTS_MET",
+      "producer_evidence": "Every probe executes the real committed control at workstreams/po03/tools/validate_contracts.py, pinned by digest, on documents written to a temporary directory outside the repository. R1 and R2 reproduce two gaps in it. The candidate pool is built from identity shapes read out of committed result documents in this repository.",
+      "producer_reading": "A reproduction runs on a sanitized repository-native workload with clean-clone detail"
+    },
+    {
+      "assertion_index": 6,
+      "disposition": "PRODUCER_ASSERTS_MET",
+      "producer_evidence": "9 external claims with URL, HTTP status, byte count and body digest; 1 is NOT_SUPPORTED and supports nothing. 9 repository claims by content digest at a named commit.",
+      "producer_reading": "Exact URLs or immutable SHAs actually read are recorded, with NOT_SUPPORTED for the rest"
+    },
+    {
+      "assertion_index": 7,
+      "disposition": "PRODUCER_ASSERTS_MET",
+      "producer_evidence": "Every changed path is under workstreams/po03/wave-a/units/wa-020/. The probes write to temporary directories outside the repository and run the control with -B so no bytecode cache appears beside a read-only tool, checked by tests/test_probes.py::ReadOnlyConductTests.",
+      "producer_reading": "Only the declared subtree is written, in an isolated worktree, with no external effect"
+    },
+    {
+      "assertion_index": 8,
+      "disposition": "PRODUCER_ASSERTS_MET",
+      "producer_evidence": "result.json, tests.json, limitations.json, artifact-manifest.json and ready-to-commit.json. The artifact count and byte total are held in result/artifact-manifest.json:artifact_count and :total_bytes and are deliberately not restated here: embedding the total in this document would change this document's own size and so change the total, which is a figure no document can carry about itself. The two files the manifest cannot cover are declared in it with reasons and digested further along the accounting chain.",
+      "producer_reading": "The result contains all five documents with complete SHA-256 and byte accounting"
+    },
+    {
+      "assertion_index": 9,
+      "disposition": "PRODUCER_ASSERTS_MET",
+      "producer_evidence": "Every manifest artifact is read with git show <result_commit_id>:<path> from the fetched remote ref and reconciled on digest and byte count; ready-to-commit.json is read back from the return commit. Both read-backs are recorded in ready-to-commit.json.",
+      "producer_reading": "Changed paths are validated, the branch is pushed and every artifact is read back from an immutable commit"
+    },
+    {
+      "assertion_index": 10,
+      "disposition": "PRODUCER_ASSERTS_MET",
+      "producer_evidence": "terminal_report is READY_TO_COMMIT, obzio_state is PROVIDER_COMPLETED_UNCOMMITTED until the coordinator ingests, and completion_claim records completed false and accepted false.",
+      "producer_reading": "Only READY_TO_COMMIT is reported"
+    },
+    {
+      "assertion_index": 11,
+      "disposition": "PRODUCER_ASSERTS_MET",
+      "producer_evidence": "independent_acceptance.state is NOT_TESTED with a null reviewer_id. The producer records no acceptance and no completion.",
+      "producer_reading": "The producer does not accept its own result"
+    },
+    {
+      "assertion_index": 12,
+      "disposition": "PRODUCER_ASSERTS_MET",
+      "producer_evidence": "No path outside the owned subtree appears in the diff against the source base 4e4641e96cc0ad6e48f58e06140d33b0410e6072. state/, dispatch/, receipts/po01/, workstreams/po01/ and .cursor/environment.json are unmodified, and no pull request was created or updated.",
+      "producer_reading": "PO-01, PR #8, protected state and shared pointers remain untouched"
+    }
+  ],
+  "artifact_accounting": {
+    "chain": [
+      {
+        "covers": "every owned file except the two below",
+        "recorded_in": "result/artifact-manifest.json"
+      },
+      {
+        "covers": "result/artifact-manifest.json",
+        "recorded_in": "result/ready-to-commit.json:manifest_sha256"
+      },
+      {
+        "covers": "result/ready-to-commit.json",
+        "recorded_in": "the git tree of the return commit"
+      }
+    ],
+    "note": "No document can contain its own digest, so the accounting is a chain rather than a single list. Every owned file appears in exactly one link."
+  },
+  "attempt": {
+    "attempt_id": "PO03-WA-020-A02",
+    "checkpoint_seq": 0,
+    "fence_token": 2,
+    "idempotency_key": "po03:100bc2079ced:wa-020:a02",
+    "lease_expires_at": "2026-08-22T14:11:10Z",
+    "lease_id": "lease-po03-wa-020-a02"
+  },
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "criteria_freeze": {
+    "criterion_count": 6,
+    "detail": "evidence/criteria-freeze.json",
+    "seal_intact_at_end_of_run": true,
+    "seal_sha256": "a550c0f62c9090b0ca3af45c633f0a149ca569e930e398ac6c2310d7511315be",
+    "sealed_at_logical_tick": 1,
+    "sealed_before_pool_construction": true,
+    "what_the_seal_covers": "criterion id, question, evaluator, scale, weight and identity sensitivity for every criterion. The digest is recomputed from the specification at the end of the run and compared with the value taken at seal time, so an edit anywhere in between is detectable from the evidence alone."
+  },
+  "current_method_hypotheses": [
+    {
+      "evaluator": "identity_swing_under_blinding",
+      "evidence": "8 blind cells, maximum identity swing 0, rank inversions 0",
+      "hypothesis_id": "CM-H1",
+      "outcome": "SUPPORTED",
+      "prediction": "Every blind cell reports a maximum identity swing of 0 and 0 rank inversions.",
+      "reproduction_ids": [
+        "R5-LEAK-SCANNER-CATCHES-A-FIELD-LEVEL-REDACTOR",
+        "R6-DETERMINISTIC-REPLAY"
+      ],
+      "source_claim_ids": [
+        "S1",
+        "S4",
+        "S5",
+        "P3"
+      ],
+      "state": "REPRODUCED",
+      "statement": "If the scorer receives only a rendered payload redacted against a pool-wide identity vocabulary, then permuting which producer identity is attached to which submission leaves every score unchanged, including for a reviewer carrying an explicit standing bias."
+    },
+    {
+      "evaluator": "identity_swing_when_unblinded",
+      "evidence": "maximum identity swing across unblinded cells is 49 weighted points, with 2 rank inversions; the neutral unblinded cells swing 0, so the effect is the interaction of visibility and bias rather than visibility alone",
+      "hypothesis_id": "CM-H2",
+      "outcome": "SUPPORTED",
+      "prediction": "At least one unblinded cell reports a maximum identity swing above 0.",
+      "reproduction_ids": [],
+      "source_claim_ids": [
+        "S5",
+        "S6"
+      ],
+      "state": "REPRODUCED",
+      "statement": "The same reviewer with the same bias function moves at least one submission's score when identity is visible and nothing but the attached identity changes, so the null result under blinding is attributable to the blind rather than to an unbiased reviewer."
+    },
+    {
+      "evaluator": "seeded_claim_catch_by_probe",
+      "evidence": "4 blind probing cells catch the claim in every permutation; 8 credulous cells catch it in none",
+      "hypothesis_id": "CM-H3",
+      "outcome": "SUPPORTED",
+      "prediction": "Every cell whose adjudicator runs the probe catches the seeded false claim in every permutation under blinding; no cell with a credulous adjudicator catches it at all.",
+      "reproduction_ids": [
+        "R1-SEEDED-CONTROL-ADMITS-UNDECLARED-TRANSACTION-STATE"
+      ],
+      "source_claim_ids": [
+        "S8",
+        "P4",
+        "P5"
+      ],
+      "state": "REPRODUCED",
+      "statement": "A claim that is attractive on every surface a reader uses to judge quickly, and false only in what the executable control actually does, is caught when the control is executed and missed when the claim is read."
+    },
+    {
+      "evaluator": "seeded_claim_survival_under_standing",
+      "evidence": "unblinded standing-sensitive probing cell catch rate 3/4; the missed permutation is the one attributing the claim to the highest standing tier",
+      "hypothesis_id": "CM-H4",
+      "outcome": "SUPPORTED",
+      "prediction": "The unblinded standing-sensitive probing cell catches the claim in three of four permutations, missing exactly the permutation that attributes it to the highest tier.",
+      "reproduction_ids": [],
+      "source_claim_ids": [
+        "S6",
+        "P3"
+      ],
+      "state": "REPRODUCED",
+      "statement": "Running the probe is not sufficient on its own: a reviewer who can see a high-standing producer discounts the refutation it has already obtained, so the false claim survives a review that did execute the control."
+    },
+    {
+      "evaluator": "criteria_freeze_gate",
+      "evidence": "gated session refused a post-ingestion seal (True); with the gate removed the favoured submission gains 40 weighted points under the novelty-forward weighting",
+      "hypothesis_id": "CM-H5",
+      "outcome": "SUPPORTED",
+      "prediction": "The gated session refuses a post-ingestion seal, and removing the gate yields a strictly positive weighted gain for the favoured submission.",
+      "reproduction_ids": [],
+      "source_claim_ids": [
+        "S2",
+        "S3",
+        "S7",
+        "P3"
+      ],
+      "state": "REPRODUCED",
+      "statement": "Sealing the criteria before ingestion prevents outcome-directed selection of weights from a declared menu; with the gate removed, the same reviewer obtains a measurable gain for the submission it favours."
+    },
+    {
+      "evaluator": "per_identity_vocabulary_channel",
+      "evidence": "{'Blinder': 1, 'PerIdentityVocabularyBlinder': 2}",
+      "hypothesis_id": "CM-H6",
+      "outcome": "SUPPORTED",
+      "prediction": "The per-identity blinder renders one submission's content into more than one distinct byte string across identity permutations; the pool-vocabulary blinder renders exactly one.",
+      "reproduction_ids": [
+        "R3-PER-IDENTITY-VOCABULARY-IS-AN-IDENTITY-CHANNEL"
+      ],
+      "source_claim_ids": [
+        "S1",
+        "P8",
+        "P9"
+      ],
+      "state": "REPRODUCED",
+      "statement": "Redacting each submission against its own identity vocabulary leaves an identity channel even when it removes every identity string, because a submission that legitimately cites a committed prior attempt loses the citation under one identity and keeps it under the others."
+    },
+    {
+      "evaluator": "arrival_order_label_channel",
+      "evidence": "arrival-order correlation 1.0, content-derived correlation -0.1111111111111111",
+      "hypothesis_id": "CM-H7",
+      "outcome": "SUPPORTED",
+      "prediction": "Arrival-order labels correlate perfectly with the withheld standing tier for a pool arranged in descending standing; content-derived labels do not.",
+      "reproduction_ids": [
+        "R4-ARRIVAL-ORDER-LABELS-RANK-THE-PRODUCERS"
+      ],
+      "source_claim_ids": [
+        "S1",
+        "S4"
+      ],
+      "state": "REPRODUCED",
+      "statement": "Assigning pseudonyms in arrival order leaves an identity channel after complete redaction, because the label ranks the producers whenever arrival order carries standing."
+    },
+    {
+      "evaluator": "freeze_not_subsumed_by_blinding",
+      "evidence": "under blinding, removing the gate changed a ranking: False. Secondary and not preregistered: the post-ingestion weighting produced a gain spread of 36 weighted points across candidates, so it favoured some over others rather than shifting the scale. The preregistered metric is the ranking, and it is reported as measured.",
+      "hypothesis_id": "CM-H8",
+      "outcome": "REFUTED",
+      "prediction": "Under blinding, removing the ordering gate still changes at least one ranking, so blinding does not make the freeze redundant.",
+      "reproduction_ids": [],
+      "source_claim_ids": [
+        "S2",
+        "S3",
+        "S7"
+      ],
+      "state": "REPRODUCED",
+      "statement": "Blinding and the ordering gate close different channels. Blinding removes who wrote a submission; the gate removes the reviewer's freedom to choose the weights after reading it. Neither substitutes for the other."
+    },
+    {
+      "evaluator": "human_or_model_reviewer_transfer",
+      "evidence": "No human reviewer and no language-model reviewer was measured anywhere in this unit. The unblinded arm is a declared model of a standing-sensitive reviewer written by this unit, so it fixes the magnitude by construction and cannot estimate the magnitude for any real reviewer. The blind-arm result is a property of real code and stands on its own; the transfer claim does not follow from it.",
+      "hypothesis_id": "CM-H9",
+      "outcome": "NOT_SUPPORTED",
+      "prediction": "This hypothesis is expected to be unresolvable within this unit: no human or language-model reviewer is measured anywhere in it.",
+      "reproduction_ids": [],
+      "source_claim_ids": [
+        "S5",
+        "S6"
+      ],
+      "state": "UNRESOLVED",
+      "statement": "The identity-bias reduction measured here transfers to a human or language-model reviewer at a comparable magnitude."
+    }
+  ],
+  "dispatched_hypothesis": {
+    "conjuncts": [
+      {
+        "conjunct": "criteria frozen before anonymized candidate ingestion reduce producer-identity bias",
+        "conjunct_id": "A",
+        "load_bearing_factor": "anonymization",
+        "marginal_effect_of_anonymization": 49,
+        "marginal_effect_of_the_freeze": 0,
+        "measurement": {
+          "mechanism_cells": 4,
+          "mechanism_max_identity_swing": 0,
+          "mechanism_rank_inversions": 0,
+          "removing_anonymization_max_swing": 49,
+          "removing_anonymization_rank_inversions": 1,
+          "removing_freeze_max_swing": 0,
+          "removing_freeze_rank_inversions": 0,
+          "unblinded_biased_reviewer_max_swing": 49,
+          "unblinded_neutral_reviewer_max_swing": 0
+        },
+        "outcome": "SUPPORTED",
+        "reading": "Under the named mechanism, permuting which producer identity is attached to which submission moves no score at all: worst-case identity swing 0 weighted points across 4 cells, 0 rank inversions. Removing anonymization and changing nothing else takes the worst case to 49 points and 1 rank inversions, so the reduction is real and is not an artefact of a reviewer that had no bias to express. Removing the freeze instead, and keeping anonymization, leaves the worst case at 0: the ordering gate contributes nothing to this conjunct. The effect the hypothesis claims for its compound mechanism is carried entirely by the anonymization half of it.",
+        "why_the_effect_is_attributable": "The reviewer's bias function is byte-identical across the blinding factor, so a null result under anonymization cannot be explained by a reviewer that was never biased. The unblinded neutral reviewer swings 0 and the unblinded biased reviewer swings 49, which locates the effect in the interaction of visibility and bias, exactly where the mechanism is supposed to act."
+      },
+      {
+        "conjunct": "criteria frozen before anonymized candidate ingestion catch one seeded attractive false claim",
+        "conjunct_id": "B",
+        "load_bearing_factor": "executing the repository control (the probing adjudicator)",
+        "marginal_effect_of_anonymization": 1,
+        "marginal_effect_of_executing_the_control": 4,
+        "marginal_effect_of_the_freeze": 0,
+        "measurement": {
+          "mechanism_with_a_credulous_adjudicator": "0/4 to 0/4",
+          "mechanism_with_a_probing_adjudicator": "4/4 to 4/4",
+          "permutations_per_cell": 4,
+          "removing_anonymization_biased_probing": "3/4",
+          "removing_freeze_probing": "4/4"
+        },
+        "outcome": "REFUTED",
+        "reading": "With both mechanism factors switched on and only the adjudicator varied, the seeded false claim is caught 4/4 of permutations when the control is executed and 0/4 when it is not. The mechanism the hypothesis names is fully present in both, so the catch is not attributable to it. Freezing a criterion that demands verification does not perform the verification, and withholding the producer's identity does not make an unexecuted claim testable: the claim is caught because a control is run and its exit status contradicts the claim. Removing the freeze while still executing the control changes the catch rate by 0.",
+        "what_the_mechanism_does_contribute": "Executing the control is necessary but not sufficient. A biased reviewer that can see a high-standing producer discounts a refutation it has already obtained, so the unblinded standing-sensitive probing cell catches 3/4 while its blind counterpart catches 4/4. Anonymization protects a refutation that has already been found; it does not find one. That is a real contribution of one permutation in sixteen and it is worth keeping, but it is not the effect the hypothesis asserts."
+      }
+    ],
+    "decision_rule_fixed_before_the_run": "The hypothesis is a conjunction and is recorded SUPPORTED only if every conjunct holds when attributed to the mechanism the hypothesis names. A conjunct that holds only because of a factor the hypothesis does not name is recorded as refuting the hypothesis as stated, because the hypothesis is a causal claim about the mechanism and not a description of the cell it was measured in.",
+    "failed_conjunct_ids": [
+      "B"
+    ],
+    "hypothesis_id": "H-PO03-WA-020",
+    "mechanism_as_named": "the ordering gate (gated) together with anonymization (blind)",
+    "outcome": "REFUTED",
+    "statement": "Criteria frozen before anonymized candidate ingestion reduce producer-identity bias and catch one seeded attractive false claim.",
+    "summary": "Half of the hypothesis holds and half of it does not, and the design says which half. Anonymization does reduce producer-identity bias, completely and measurably: worst-case identity swing falls from 49 weighted points to 0 with the same reviewer and the same bias function. The ordering gate contributes nothing to that reduction. The second conjunct fails: the mechanism does not catch the seeded false claim, because the claim is caught by running a repository control and refuted by its exit status, and the mechanism contains nothing that runs anything. Held fully on with a credulous adjudicator, the mechanism catches the claim in 0/4 to 0/4 permutations. Anonymization earns a narrower credit than the hypothesis claims: it stops a biased reviewer discounting a refutation the probe already produced, worth one permutation of four in the one cell where standing is visible and the control is run.",
+    "what_would_have_changed_the_verdict": "Conjunct B would have been recorded SUPPORTED had any cell with both mechanism factors on and a credulous adjudicator caught the claim in even one permutation. None did. Conjunct A would have been recorded REFUTED had removing anonymization left the worst-case identity swing at 0, which would have meant the null result under blinding came from an unbiased reviewer rather than from the blind."
+  },
+  "executable_components": {
+    "adversarial_adjudicator": "harness/adjudicator.py:CredulousAdjudicator",
+    "adversarial_blinders": "harness/blinding.py:LeakyBlinder, PerIdentityVocabularyBlinder, ArrivalOrderBlinder",
+    "blinding_layer": "harness/blinding.py",
+    "candidate_corpus": "harness/candidates.py",
+    "claim_adjudicator": "harness/adjudicator.py:ProbingAdjudicator",
+    "criteria_seal": "harness/criteria.py",
+    "dispatched_hypothesis_evaluator": "harness/dispatched_hypothesis.py",
+    "entry_point": "run.py",
+    "experiment_driver": "harness/bias_experiment.py",
+    "ordering_gate": "harness/review.py:ReviewSession",
+    "repository_probes": "harness/probes.py",
+    "result_emitter": "harness/emit_result.py",
+    "review_session": "harness/review.py",
+    "seeded_case": "harness/seeded_case.py",
+    "ungated_control": "harness/review.py:UngatedReviewSession"
+  },
+  "finished_at": "2026-08-22T10:20:36Z",
+  "hypothesis_id": "H-PO03-WA-020",
+  "hypothesis_outcome": "REFUTED",
+  "immutable_input": {
+    "observed_sha256": "52e6a6036bc6a2c76d9b459d595595591741257d5357bd39c293c339add84278",
+    "path": "workstreams/po03/control/inputs/wave-a/wa-020-a02.json"
+  },
+  "independent_acceptance": {
+    "note": "A producer cannot accept its own result. Only the coordinator may record COMPLETED; this record claims READY_TO_COMMIT and nothing further.",
+    "receipt_uri": null,
+    "reviewer_id": null,
+    "state": "NOT_TESTED"
+  },
+  "limitations": "limitations.json",
+  "mechanism_changes": [
+    {
+      "change": "Redaction runs against the union of every identity token in the submission pool rather than against each submission's own identity, so the collateral damage to prose is identical whoever wrote the submission.",
+      "disposition": "RETAIN",
+      "found_by": "this unit's metamorphic comparison of one submission rendered under four identities",
+      "hypothesis_ids": [
+        "CM-H1",
+        "CM-H6"
+      ],
+      "mechanism_id": "M1",
+      "rationale": "The naive version removes every identity string and still leaks. A submission that cites a committed prior attempt loses the citation under one reviewer and keeps it under the others, so the surviving bytes differ by identity. The defect is invisible to a leak scan of any single payload and only appears when the same content is rendered twice.",
+      "recurrence_test": "tests/test_blinding.py::PoolVocabularyTests::test_pool_vocabulary_renders_identically_under_every_identity",
+      "scope": "LIVE_IN_THIS_UNIT",
+      "target": "harness/blinding.py:pool_vocabulary, harness/blinding.py:Blinder.vocabulary_for",
+      "verdict_evidence": {
+        "Blinder": 1,
+        "PerIdentityVocabularyBlinder": 2
+      }
+    },
+    {
+      "change": "Hedging is measured on the author's own prose, with quoted spans removed, so a claim is not penalised for accurately reproducing a control's error message.",
+      "disposition": "RETAIN",
+      "found_by": "this unit's own attractiveness table, which scored the paired true claim one feature low",
+      "hypothesis_ids": [
+        "CM-H3"
+      ],
+      "mechanism_id": "M2",
+      "rationale": "The seeded false claim outscored its paired true claim by one feature solely because the true claim quoted the string 'only coordinator may set COMPLETED', and the hedge detector read the modal verb inside the quotation as the author's own hedging. Left uncorrected, the adversarial-representation check would have reported the seeded claim as strictly most attractive on the strength of a measurement artefact.",
+      "recurrence_test": "tests/test_claims.py::AttractivenessTests::test_quoted_control_output_is_not_read_as_hedging",
+      "scope": "LIVE_IN_THIS_UNIT",
+      "target": "harness/claims.py:author_prose"
+    },
+    {
+      "change": "Pseudonyms are derived from the digest of the blinded content instead of from arrival order.",
+      "disposition": "RETAIN",
+      "found_by": "designed as a control, then measured",
+      "hypothesis_ids": [
+        "CM-H7"
+      ],
+      "mechanism_id": "M3",
+      "rationale": "Arrival order is an identity channel whenever submissions arrive in standing order, and it survives complete redaction of every payload.",
+      "recurrence_test": "tests/test_blinding.py::LabelChannelTests::test_arrival_order_labels_rank_the_withheld_standing",
+      "scope": "LIVE_IN_THIS_UNIT",
+      "target": "harness/blinding.py:Blinder.label"
+    },
+    {
+      "change": "A catch requires both a refutation and the frozen gate criterion scoring zero for the candidate that carried the claim, rather than a refutation alone.",
+      "disposition": "RETAIN",
+      "found_by": "specifying the metric before running the design",
+      "hypothesis_ids": [
+        "CM-H3",
+        "CM-H4"
+      ],
+      "mechanism_id": "M4",
+      "rationale": "A review that records a refutation and still scores the candidate as though nothing were wrong has not caught anything. Under the weaker definition the unblinded standing-sensitive cell would have reported a catch in the permutation where the reviewer discounted the refutation, which is precisely the failure the experiment exists to see.",
+      "recurrence_test": "tests/test_review.py::CatchDefinitionTests::test_a_refutation_the_reviewer_discounts_is_not_a_catch",
+      "scope": "LIVE_IN_THIS_UNIT",
+      "target": "harness/review.py:ReviewRecord.caught"
+    },
+    {
+      "change": "The seeded executable control should compare result_transaction.state against the enumeration its own schema declares.",
+      "disposition": "PROPOSED_TO_COORDINATOR",
+      "found_by": "R1, by executing the control on a document the control itself accepts",
+      "hypothesis_ids": [
+        "CM-H3"
+      ],
+      "mechanism_id": "M5",
+      "rationale": "The control is read-only to this unit, so the gap is reproduced and proposed rather than edited. Independently reached here by execution; WA-016 recorded the same gap as GAP-1 from a different direction, which is corroboration rather than this unit's evidence.",
+      "recurrence_test": "tests/test_probes.py::GroundTruthTests::test_the_control_admits_an_undeclared_transaction_state",
+      "scope": "PROPOSAL_TO_COORDINATOR",
+      "target": "workstreams/po03/tools/validate_contracts.py (not modified by this unit)"
+    },
+    {
+      "change": "The seeded control should enforce uniqueness of artifact logical_name and content_uri, not only of artifact_id.",
+      "disposition": "PROPOSED_TO_COORDINATOR",
+      "found_by": "R2, by executing the control",
+      "hypothesis_ids": [
+        "CM-H3"
+      ],
+      "mechanism_id": "M6",
+      "rationale": "Two entries describing one path under two identifiers inflate both artifact_count and total_bytes while every per-field check passes.",
+      "recurrence_test": "tests/test_probes.py::GroundTruthTests::test_the_control_admits_a_duplicate_logical_name",
+      "scope": "PROPOSAL_TO_COORDINATOR",
+      "target": "workstreams/po03/tools/validate_contracts.py (not modified by this unit)"
+    },
+    {
+      "change": "This unit's own preregistered claim CM-H8, that removing the ordering gate changes a review ranking once identity is withheld, is rejected on the evidence. The gate is retained on the separate grounds established by CM-H5, and its marginal value under blinding is recorded as not demonstrated on this pool rather than assumed.",
+      "disposition": "EVIDENCE_BACKED_REJECTION",
+      "found_by": "the blind gated versus blind ungated comparison, which failed the metric this unit set for it",
+      "hypothesis_ids": [
+        "CM-H8"
+      ],
+      "mechanism_id": "M7",
+      "prediction_as_written": "Under blinding, removing the ordering gate still changes at least one ranking, so blinding does not make the freeze redundant.",
+      "rationale": "The observation is that the weighting chosen after ingestion moved the margins a long way and reordered nobody. The extra gain landed on the candidate resting on a refuted claim and on the candidate whose only strength is its own confidence, which is the direction the freeze exists to prevent, but a margin is not the metric this unit preregistered. Restating the metric after seeing the result would be the exact failure the criteria seal is built to prevent, so the claim is recorded as refuted and the margin observation is reported separately as an unpreregistered secondary reading. The gate is retained because CM-H5 establishes its effect directly and without reference to blinding: it refuses a post-ingestion seal, and with it removed the favoured submission gains 40 weighted points in the unblinded arm.",
+      "recurrence_test": "tests/test_bias_experiment.py::FreezeEffectTests::test_the_preregistered_ranking_metric_is_reported_as_measured",
+      "rejected_claim": "CM-H8, as this unit preregistered it",
+      "scope": "REJECTION",
+      "secondary_reading_not_preregistered": "Under blinding the post-ingestion weighting produced a gain spread across candidates rather than a uniform shift, favouring the candidate with a refuted claim. Recorded as an observation, not as support for the rejected claim.",
+      "target": "the design of the review session; no code change follows from the rejection"
+    },
+    {
+      "change": "A blind review gate must carry an execution step. Freezing a criterion that demands verification does not produce verification, so a review procedure built from an ordering gate and anonymization alone should not be credited with catching false claims.",
+      "disposition": "EVIDENCE_BACKED_REJECTION",
+      "found_by": "holding both factors of the dispatched mechanism on and varying only the adjudicator, which is the comparison the factorial design was built to make",
+      "hypothesis_ids": [
+        "H-PO03-WA-020",
+        "CM-H3",
+        "CM-H4"
+      ],
+      "mechanism_id": "M8",
+      "prediction_as_written": "Criteria frozen before anonymized candidate ingestion catch one seeded attractive false claim.",
+      "rationale": "With the ordering gate enforced and every identity withheld, a credulous adjudicator catches the seeded claim in 0/4 to 0/4 permutations, while the same mechanism with a probing adjudicator catches it in 4/4 to 4/4. The mechanism is fully present in both arms, so it is not what separates them. The claim was built to be true of the contract and false only of the code that enforces it, which is precisely the kind of falsity that reading cannot reach and execution can. Anonymization keeps the narrower credit the evidence supports: it prevents a biased reviewer discounting a refutation the probe already obtained, worth one permutation in the single cell where standing is visible and the control is run.",
+      "recurrence_test": "tests/test_dispatched_hypothesis.py::ConjunctBTests::test_the_mechanism_alone_catches_nothing_without_execution",
+      "rejected_claim": "the second conjunct of the dispatched hypothesis H-PO03-WA-020, as dispatched",
+      "scope": "REJECTION",
+      "target": "the dispatched hypothesis itself; this unit's harness already executes controls, so the rejection is a correction to the claimed causal mechanism rather than a code change",
+      "verdict_evidence": {
+        "marginal_effect_of_executing_the_control": 4,
+        "marginal_effect_of_the_freeze": 0,
+        "mechanism_with_a_credulous_adjudicator": "0/4 to 0/4"
+      }
+    }
+  ],
+  "mechanism_summary": {
+    "M1": {
+      "disposition": "RETAIN",
+      "scope": "LIVE_IN_THIS_UNIT"
+    },
+    "M2": {
+      "disposition": "RETAIN",
+      "scope": "LIVE_IN_THIS_UNIT"
+    },
+    "M3": {
+      "disposition": "RETAIN",
+      "scope": "LIVE_IN_THIS_UNIT"
+    },
+    "M4": {
+      "disposition": "RETAIN",
+      "scope": "LIVE_IN_THIS_UNIT"
+    },
+    "M5": {
+      "disposition": "PROPOSED_TO_COORDINATOR",
+      "scope": "PROPOSAL_TO_COORDINATOR"
+    },
+    "M6": {
+      "disposition": "PROPOSED_TO_COORDINATOR",
+      "scope": "PROPOSAL_TO_COORDINATOR"
+    },
+    "M7": {
+      "disposition": "EVIDENCE_BACKED_REJECTION",
+      "scope": "REJECTION"
+    },
+    "M8": {
+      "disposition": "EVIDENCE_BACKED_REJECTION",
+      "scope": "REJECTION"
+    }
+  },
+  "method": {
+    "blinding": "Every submission is redacted against the union of every identity token in the pool, not against its own identity, so the collateral damage to prose is identical whoever wrote it. Pseudonyms are derived from the digest of the blinded content, not from arrival order. The rendered bytes are scanned for surviving identity tokens and a leak aborts the session rather than being reported afterwards.",
+    "criteria_freeze": "Criteria are sealed at the first tick of a logical clock, before the candidate pool is constructed and before any probe runs. The session refuses to admit a candidate before sealing, refuses to seal after an admission, and refuses to score before sealing. UngatedReviewSession permits exactly the ordering the gate refuses, which is what makes the gate's effect measurable rather than assumed.",
+    "design": "A complete crossing of four binary factors -- blinding, ordering gate, reviewer bias and adjudicator -- giving 16 cells, each run over four identity permutations, for 64 reviews. The reviewer's bias function is byte-identical across the blinding factor, so a null identity effect under blinding cannot be explained by a reviewer that was never biased.",
+    "determinism": "The review path uses a logical clock and no wall-clock time. Seven of the nine evidence documents are byte-identical across three consecutive runs.",
+    "identity_permutation": "Standing tiers are rotated across submissions so that content is held constant and only the attached identity changes. Identity swing is the score range for one submission across the four permutations.",
+    "probing": "Every load-bearing candidate claim is adjudicated by executing a real repository control on a document written to a temporary directory outside the repository, and comparing the observed exit status and reported errors with the claim's prediction. No claim is believed because it is asserted."
+  },
+  "model_observed": "claude-opus-5-thinking-high",
+  "preregistered_metrics": {
+    "artifact_bytes": {
+      "recorded_in": "result/artifact-manifest.json:total_bytes"
+    },
+    "artifact_count": {
+      "recorded_in": "result/artifact-manifest.json:artifact_count"
+    },
+    "collision": {
+      "note": "No path outside the owned subtree was written. PO-01, PR #8, protected state and shared pointers were not touched.",
+      "value": 0
+    },
+    "defects": {
+      "in_a_read_only_control": [
+        "M5 (transaction-state enum)",
+        "M6 (duplicate logical name)"
+      ],
+      "in_the_dispatched_claim": [
+        "M8 (conjunct B of H-PO03-WA-020)"
+      ],
+      "in_the_measuring_instrument": [
+        "M2 (hedge detector read quoted output as hedging)"
+      ],
+      "in_this_units_own_design": [
+        "M1 (per-identity redaction vocabulary)",
+        "M3 (arrival-order labels)"
+      ],
+      "in_this_units_own_hypothesis": [
+        "M7 (CM-H8 refuted on its preregistered metric)"
+      ],
+      "value": 7
+    },
+    "first_pass_outcome": {
+      "note": "The focused suite reached PASS after two corrections found by the tests themselves: an absolute temporary path in a recorded probe command, and a bytecode-cache assertion that was sensitive to state left by earlier manual runs.",
+      "value": "PASS_AFTER_TWO_SELF_FOUND_CORRECTIONS"
+    },
+    "mechanism_change_count": {
+      "value": 8
+    },
+    "provider_block": {
+      "value": 0
+    },
+    "recovery_events": {
+      "value": 0
+    },
+    "reproduction_count": {
+      "value": 6
+    },
+    "rework": {
+      "note": "M1 and M2 are rework on this unit's own instrument, both found by its own tests before any result was recorded.",
+      "value": 2
+    },
+    "source_claim_count": {
+      "external": 9,
+      "not_supported": 1,
+      "repository": 9,
+      "value": 18
+    },
+    "test_count": {
+      "focused": 167,
+      "seeded_control": 68,
+      "value": 235
+    },
+    "wall_time": {
+      "harness_seconds": 5.216,
+      "note": "Harness compute only; the focused suite is timed separately in tests.json."
+    }
+  },
+  "protocol_version": "OBZIO-WAVE-A-UNIT-RESULT-v1",
+  "provider_run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+  "reasoning_observed": "high",
+  "reproductions": [
+    {
+      "detail": {
+        "baseline_disposition": "ADMITTED",
+        "mutation": "result_transaction.state set to a value absent from the schema enumeration",
+        "observed_disposition": "ADMITTED",
+        "reported_errors": [],
+        "returncode": 0
+      },
+      "reproduction_id": "R1-SEEDED-CONTROL-ADMITS-UNDECLARED-TRANSACTION-STATE",
+      "statement": "The seeded executable control admits a transactional result whose result_transaction.state is absent from the enumeration its own schema declares. The baseline document without that mutation is admitted too, so the observation isolates the field.",
+      "verdict": "DEFECT_REPRODUCED"
+    },
+    {
+      "detail": {
+        "mutation": "a second artifact repeats the first artifact's logical_name and content_uri",
+        "observed_disposition": "ADMITTED",
+        "returncode": 0
+      },
+      "reproduction_id": "R2-SEEDED-CONTROL-ADMITS-DUPLICATE-LOGICAL-NAME",
+      "statement": "The seeded control admits a result in which two artifacts share one logical_name and one content_uri under different artifact identifiers, so one file can be counted twice toward a manifest.",
+      "verdict": "DEFECT_REPRODUCED"
+    },
+    {
+      "detail": {
+        "cited_prior_attempt": "Prior art: attempt PO03-WA-016-A01 recorded that damage landing between verification and publication is published under the earlier manifest, and that the spent",
+        "distinct_renderings": {
+          "Blinder": 1,
+          "PerIdentityVocabularyBlinder": 2
+        },
+        "rendering_digests": {
+          "Blinder": {
+            "PERM-0": "844b287a098f0fbf3c124dc3f55f13b8391cb0445c9963a91d93a88e635a268f",
+            "PERM-1": "844b287a098f0fbf3c124dc3f55f13b8391cb0445c9963a91d93a88e635a268f",
+            "PERM-2": "844b287a098f0fbf3c124dc3f55f13b8391cb0445c9963a91d93a88e635a268f",
+            "PERM-3": "844b287a098f0fbf3c124dc3f55f13b8391cb0445c9963a91d93a88e635a268f"
+          },
+          "PerIdentityVocabularyBlinder": {
+            "PERM-0": "b82c3c28514c71e54bd2a5c125cea39367ab5c6fab8292b47b8d9712c47a235f",
+            "PERM-1": "ea8489a790a7f07eae7c0f3f130e2d32b85d522b3daaa01f6c6523ef1a0b6284",
+            "PERM-2": "ea8489a790a7f07eae7c0f3f130e2d32b85d522b3daaa01f6c6523ef1a0b6284",
+            "PERM-3": "ea8489a790a7f07eae7c0f3f130e2d32b85d522b3daaa01f6c6523ef1a0b6284"
+          }
+        }
+      },
+      "reproduction_id": "R3-PER-IDENTITY-VOCABULARY-IS-AN-IDENTITY-CHANNEL",
+      "statement": "One submission's content, rendered under four identity permutations, produces more than one distinct byte string when redaction uses each submission's own identity vocabulary, and exactly one when redaction uses the pool-wide vocabulary. The channel is the collateral damage to a legitimate prior-art citation.",
+      "verdict": "DEFECT_REPRODUCED"
+    },
+    {
+      "detail": {
+        "arrival_order_correlation": 1.0,
+        "content_derived_correlation": -0.1111111111111111,
+        "standing_tiers_in_arrival_order": [
+          4,
+          3,
+          2,
+          1,
+          1
+        ]
+      },
+      "reproduction_id": "R4-ARRIVAL-ORDER-LABELS-RANK-THE-PRODUCERS",
+      "statement": "For a pool arranged in descending standing, arrival-order pseudonyms reproduce the standing ranking exactly while content-derived pseudonyms do not, with every identity string removed from every payload in both cases.",
+      "verdict": "DEFECT_REPRODUCED"
+    },
+    {
+      "detail": {
+        "correct_blinder_leaks": 0,
+        "leaky_blinder_leaks": 45,
+        "sample_leaked_tokens": [
+          "020",
+          "1a9f",
+          "2899f4d",
+          "2899f4d4",
+          "2899f4d47",
+          "2899f4d478"
+        ]
+      },
+      "reproduction_id": "R5-LEAK-SCANNER-CATCHES-A-FIELD-LEVEL-REDACTOR",
+      "statement": "A blinder that drops the identity envelope and leaves the prose alone still leaks, because the producer's own writing names its branch, its attempt and its model. The scanner reads the rendered bytes and finds them.",
+      "verdict": "REPRODUCED"
+    },
+    {
+      "detail": {
+        "first_run_summary_sha256": "a939b164e71b568e14867118b6e66aa9333bd0ae7136a30488213cd2a6612097",
+        "note": "The review path uses a logical clock and no wall-clock time, so the sixteen-cell summary is byte-identical between runs in the same checkout.",
+        "second_run_summary_sha256": "a939b164e71b568e14867118b6e66aa9333bd0ae7136a30488213cd2a6612097"
+      },
+      "reproduction_id": "R6-DETERMINISTIC-REPLAY",
+      "statement": "Running the whole sixteen-cell design twice produces an identical summary digest.",
+      "verdict": "REPRODUCED"
+    }
+  ],
+  "runner_id": "best-of-n-runner-bc-b1956656-wa-020-a02",
+  "runtime_binding": {
+    "execution_environment": "isolated-git-worktree",
+    "git_head_at_run": "b8aa325a5168bc2f846f4e129b65ad1ed0a425f6",
+    "platform": "Linux-6.12.94+-x86_64-with-glibc2.39",
+    "python_version": "3.12.3",
+    "source_base_commit": "4e4641e96cc0ad6e48f58e06140d33b0410e6072",
+    "third_party_packages": "none; the standard library only",
+    "worktree": "isolated best-of-N worktree outside the coordinator checkout"
+  },
+  "seeded_case": {
+    "adversarially_represented": true,
+    "attractiveness_of_the_seeded_claim": {
+      "EC-FALSE-01": 6
+    },
+    "detail": "evidence/seeded-case.json",
+    "highest_non_seeded_attractiveness": 6,
+    "how_the_falsity_is_established": "PROBE-VALIDATOR-TRANSACTION-STATE-ENUM builds a transactional result the seeded control accepts, changes result_transaction.state to a value absent from the schema enumeration, changes nothing else, and runs the control. The control exits 0 and reports no error, so the claim's prediction of REJECTED is contradicted by observation rather than by argument.",
+    "seeded_claim_id": "EC-FALSE-01",
+    "why_it_is_false": "The enumeration is declared in the JSON Schema and is not checked by the executable control. validate_result requires result_transaction.state to be present and never compares it to the enumeration, so the claim is true of the contract and false of the code that enforces it.",
+    "why_it_is_not_a_strawman": "EC-03 is a true claim written with all six of the same persuasion features, so the seeded false claim does not lead the attractiveness table on presentation alone. The measurement is derived from each claim's own text by rule and is recorded in evidence/seeded-case.json."
+  },
+  "source_claims": {
+    "external": [
+      {
+        "bytes": 384307,
+        "claim": "Blinding withholds information about the experiment from participants so that the information cannot influence them, and is used to reduce bias in the assessment of outcomes.",
+        "claim_id": "S1",
+        "http_status": 200,
+        "keyword_required": "blind",
+        "readable_in_runtime": true,
+        "sha256": "091a1557a1a3035c2be8c327001db9967c815c2b3b557439d0046502687a4ead",
+        "supporting_excerpt": "Blinded experiment - Wikipedia Jump to content Main menu Main menu move to sidebar hide Navigation Main page Contents Current events Random article About Wikipedia Contact us Contribute Help Learn to edit Community portal Recent changes Upload file Special pages Search Search Appearance Donate Creat",
+        "url": "https://en.wikipedia.org/wiki/Blinded_experiment"
+      },
+      {
+        "bytes": 106704,
+        "claim": "Preregistration means specifying the research plan in advance of observing the outcomes, which separates prediction from postdiction and constrains analytic choices made after seeing the data.",
+        "claim_id": "S2",
+        "http_status": 200,
+        "keyword_required": "preregistration",
+        "readable_in_runtime": true,
+        "sha256": "1c44df7c10c8d58617db1ca42d713c4bd51a501b28b6dbfb3883db70c57e0afb",
+        "supporting_excerpt": "Preregistration Our sites: OSF TOP Guidelines &nbsp; Bluesky &nbsp; Mastodon &nbsp; Linkedin &nbsp; YouTube &nbsp; Facebook &nbsp;&nbsp;Shop &nbsp;&nbsp;Donate About Team Board Partners Strategic Plan Supporters News Impact History Finances Compliance and Standards Inclusion, Diversity, Equity, and ",
+        "url": "https://www.cos.io/initiatives/prereg"
+      },
+      {
+        "bytes": 153490,
+        "claim": "Hypothesising after the results are known presents a hypothesis formed after inspecting the outcomes as though it had been stated in advance.",
+        "claim_id": "S3",
+        "http_status": 200,
+        "keyword_required": "HARKing",
+        "readable_in_runtime": true,
+        "sha256": "d0dd0513a8558b12cafc7717749ef5f8ae522e4f1e888fc69a2e9d982469b3b9",
+        "supporting_excerpt": "HARKing - Wikipedia Jump to content Main menu Main menu move to sidebar hide Navigation Main page Contents Current events Random article About Wikipedia Contact us Contribute Help Learn to edit Community portal Recent changes Upload file Special pages Search Search Appearance Donate Create account L",
+        "url": "https://en.wikipedia.org/wiki/HARKing"
+      },
+      {
+        "bytes": 16879,
+        "claim": "An anonymity policy withholds author identity from reviewers for a defined period so that review is conducted without knowledge of who produced the submission.",
+        "claim_id": "S4",
+        "http_status": 200,
+        "keyword_required": "anonym",
+        "readable_in_runtime": true,
+        "sha256": "2a0c81ed394d0ecb68e5c1d862c6fb46a2d82ac9cedc0feb5fbff6e011722dfe",
+        "supporting_excerpt": "Update to Anonymity Policy – ACL Rolling Review – A peer review platform for the Association for Computational Linguistics Home CFP & Submissions How ARR works Call for papers Dates & Venues Information for Organizers Guidelines Authors guidelines Common submission problems Guide for ARR track selec",
+        "url": "https://aclrollingreview.org/anonymity"
+      },
+      {
+        "bytes": 415085,
+        "claim": "Double-blind review conceals the identities of authors from reviewers, in contrast with single-blind review in which reviewers know who the authors are.",
+        "claim_id": "S5",
+        "http_status": 200,
+        "keyword_required": "double-blind",
+        "readable_in_runtime": true,
+        "sha256": "e0394af8551d0e22bd79258adced618785c1aa8a4d9fb55817b27ac0eefcd6ab",
+        "supporting_excerpt": "The review process was double-blind to provide anonymity for both authors and reviewers, but was otherwise handled in a fashion similar to that used by scientific journals ↑ Liu, Jianguo ; Thorndike Pysarchik, Dawn; Taylor, William W.",
+        "url": "https://en.wikipedia.org/wiki/Peer_review"
+      },
+      {
+        "bytes": 890317,
+        "claim": "Confirmation bias is the tendency to search for, favour and recall information in a way that supports one's prior beliefs, and to give disproportionate weight to evidence that supports them.",
+        "claim_id": "S6",
+        "http_status": 200,
+        "keyword_required": "confirmation bias",
+        "readable_in_runtime": true,
+        "sha256": "58e0ef68fb3ead7fbb64197082ddc95f61c8991a141454dfb04228a20a9b7368",
+        "supporting_excerpt": "Confirmation bias - Wikipedia Jump to content Main menu Main menu move to sidebar hide Navigation Main page Contents Current events Random article About Wikipedia Contact us Contribute Help Learn to edit Community portal Recent changes Upload file Special pages Search Search Appearance Donate Create",
+        "url": "https://en.wikipedia.org/wiki/Confirmation_bias"
+      },
+      {
+        "bytes": 527396,
+        "claim": "Preregistration of a study's hypotheses and analysis plan is intended to reduce the flexibility that allows a result to be selected after the data are seen.",
+        "claim_id": "S7",
+        "http_status": 200,
+        "keyword_required": "preregistration",
+        "readable_in_runtime": true,
+        "sha256": "96ce225a8c09db5f10ea6c44fcc4fbca3008570e716dc36d4e55c0bb73caf3bf",
+        "supporting_excerpt": "Preregistration (science) - Wikipedia Jump to content Main menu Main menu move to sidebar hide Navigation Main page Contents Current events Random article About Wikipedia Contact us Contribute Help Learn to edit Community portal Recent changes Upload file Special pages Search Search Appearance Donat",
+        "url": "https://en.wikipedia.org/wiki/Preregistration_(science)"
+      },
+      {
+        "bytes": 8281,
+        "claim": "Define steady state as a measurable output indicating normal behaviour, hypothesise it continues, introduce variables reflecting real-world events, and then try to disprove the hypothesis rather than confirm it.",
+        "claim_id": "S8",
+        "http_status": 200,
+        "keyword_required": "hypothes",
+        "readable_in_runtime": true,
+        "sha256": "06bb2df5d5da7442473850d74d911458dba77e0a289b4ebac73c55c4ded1229b",
+        "supporting_excerpt": "Hypothesize that this steady state will continue in both the control group and the experimental group.",
+        "url": "https://principlesofchaos.org/"
+      },
+      {
+        "bytes": 5463,
+        "claim": "NOT_SUPPORTED",
+        "claim_id": "S9",
+        "http_status": 403,
+        "keyword_required": "single-blind",
+        "limitation": "the locator returned HTTP 403 rather than a readable body, so no claim is asserted from it and nothing in this unit rests on it",
+        "readable_in_runtime": false,
+        "sha256": "11da87d10e2a9ee359a565745555028c56eb4174d785a129ac5f3555a2c7f7da",
+        "url": "https://www.pnas.org/doi/10.1073/pnas.1707323114"
+      }
+    ],
+    "not_supported_ids": [
+      "S9"
+    ],
+    "repository": [
+      {
+        "bytes": 4501,
+        "claim": "The frozen task input for this unit: its falsifiable hypothesis, attempt envelope, owned globs and required executable output.",
+        "claim_id": "P1",
+        "path": "workstreams/po03/control/inputs/wave-a/wa-020-a02.json",
+        "read_at_commit": "b8aa325a5168bc2f846f4e129b65ad1ed0a425f6",
+        "sha256": "52e6a6036bc6a2c76d9b459d595595591741257d5357bd39c293c339add84278"
+      },
+      {
+        "bytes": 3091,
+        "claim": "The frozen producer-neutral acceptance contract: twelve required assertions, the required artifact list and the allowed outcomes.",
+        "claim_id": "P2",
+        "path": "workstreams/po03/control/acceptance/wave-a-material-v1.json",
+        "read_at_commit": "b8aa325a5168bc2f846f4e129b65ad1ed0a425f6",
+        "sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a"
+      },
+      {
+        "bytes": 16030,
+        "claim": "The commission's requirement that consequential decisions receive blind adversarial review with criteria frozen before producer conclusions are received, and its strongest-model policy, which assigns each configuration a standing role.",
+        "claim_id": "P3",
+        "path": "workstreams/po03/COMMISSION.md",
+        "read_at_commit": "b8aa325a5168bc2f846f4e129b65ad1ed0a425f6",
+        "sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d"
+      },
+      {
+        "bytes": 4618,
+        "claim": "The declared wire format for a transactional result, including the six-value result_transaction.state enumeration.",
+        "claim_id": "P4",
+        "path": "workstreams/po03/contracts/transactional-result.schema.json",
+        "read_at_commit": "b8aa325a5168bc2f846f4e129b65ad1ed0a425f6",
+        "sha256": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1"
+      },
+      {
+        "bytes": 10698,
+        "claim": "The dependency-free executable control that gates result custody; read-only to this unit and executed unmodified by every probe.",
+        "claim_id": "P5",
+        "path": "workstreams/po03/tools/validate_contracts.py",
+        "read_at_commit": "b8aa325a5168bc2f846f4e129b65ad1ed0a425f6",
+        "sha256": "ead7d6c78c1f60aaf5440db7fc00fc2ae57d773647ed3b24c279d1a59b43da03"
+      },
+      {
+        "bytes": 8118,
+        "claim": "The seeded control tests, run unmodified as a probe.",
+        "claim_id": "P6",
+        "path": "workstreams/po03/tests/test_validate_contracts.py",
+        "read_at_commit": "b8aa325a5168bc2f846f4e129b65ad1ed0a425f6",
+        "sha256": "401a684c0a2d3817d08a76044a331f0f241b16d687d2dd12d9ea0f31612dc112"
+      },
+      {
+        "bytes": 712,
+        "claim": "The seeded workflow, whose test discovery root is confined to workstreams/po03/tests.",
+        "claim_id": "P7",
+        "path": ".github/workflows/po03-contracts.yml",
+        "read_at_commit": "b8aa325a5168bc2f846f4e129b65ad1ed0a425f6",
+        "sha256": "427949c07d93fe69bea6485a91ca58c4297be21759e6b0b00a0e5cc9f450c7cb"
+      },
+      {
+        "bytes": 69682,
+        "claim": "A committed producer identity, complete: runner id, observed model slug and reasoning. Used as the one identity envelope in the pool that is a real identity rather than a real shape.",
+        "claim_id": "P8",
+        "path": "workstreams/po03/wave-a/units/wa-016/result/result.json",
+        "read_at_commit": "b8aa325a5168bc2f846f4e129b65ad1ed0a425f6",
+        "sha256": "4fd8805ba3bd689e604de12fc937e70f84af216ea56e77809bf3948614617091"
+      },
+      {
+        "bytes": 26511,
+        "claim": "The committed branch and result commit of that producer, and the prior finding this unit's fixture cites as prior art.",
+        "claim_id": "P9",
+        "path": "workstreams/po03/wave-a/units/wa-016/result/ready-to-commit.json",
+        "read_at_commit": "b8aa325a5168bc2f846f4e129b65ad1ed0a425f6",
+        "sha256": "56d83829adcd09c32c91fc5b5dadf6e6dd607def2066e9584c5ba3bfe3d575c3"
+      }
+    ],
+    "retrieval_method": "curl -sS -L --max-time 30 from the runner VM; SHA-256 taken over the exact response body bytes. A claim is asserted only when the transport returned 200 and the body contains the keyword declared for that claim before retrieval.",
+    "state_separation": {
+      "collisions": [],
+      "disjoint": true,
+      "note": "A candidate claim under review is the object of study and is never promoted into a source claim. A hypothesis is never permitted to rest on a source recorded as NOT_SUPPORTED.",
+      "sizes": {
+        "candidate_claims": 11,
+        "hypotheses": 9,
+        "mechanisms": 8,
+        "reproductions": 6,
+        "source_claims": 18
+      }
+    }
+  },
+  "started_at": "2026-08-22T08:14:00Z",
+  "task_id": "PO03-WA-020",
+  "tests": "tests.json",
+  "wave_id": "PO03-WAVE-A"
+}

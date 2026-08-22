@@ -1,0 +1,96 @@
+{
+  "reproduction_count": 6,
+  "reproductions": [
+    {
+      "detail": {
+        "baseline_disposition": "ADMITTED",
+        "mutation": "result_transaction.state set to a value absent from the schema enumeration",
+        "observed_disposition": "ADMITTED",
+        "reported_errors": [],
+        "returncode": 0
+      },
+      "reproduction_id": "R1-SEEDED-CONTROL-ADMITS-UNDECLARED-TRANSACTION-STATE",
+      "statement": "The seeded executable control admits a transactional result whose result_transaction.state is absent from the enumeration its own schema declares. The baseline document without that mutation is admitted too, so the observation isolates the field.",
+      "verdict": "DEFECT_REPRODUCED"
+    },
+    {
+      "detail": {
+        "mutation": "a second artifact repeats the first artifact's logical_name and content_uri",
+        "observed_disposition": "ADMITTED",
+        "returncode": 0
+      },
+      "reproduction_id": "R2-SEEDED-CONTROL-ADMITS-DUPLICATE-LOGICAL-NAME",
+      "statement": "The seeded control admits a result in which two artifacts share one logical_name and one content_uri under different artifact identifiers, so one file can be counted twice toward a manifest.",
+      "verdict": "DEFECT_REPRODUCED"
+    },
+    {
+      "detail": {
+        "cited_prior_attempt": "Prior art: attempt PO03-WA-016-A01 recorded that damage landing between verification and publication is published under the earlier manifest, and that the spent",
+        "distinct_renderings": {
+          "Blinder": 1,
+          "PerIdentityVocabularyBlinder": 2
+        },
+        "rendering_digests": {
+          "Blinder": {
+            "PERM-0": "844b287a098f0fbf3c124dc3f55f13b8391cb0445c9963a91d93a88e635a268f",
+            "PERM-1": "844b287a098f0fbf3c124dc3f55f13b8391cb0445c9963a91d93a88e635a268f",
+            "PERM-2": "844b287a098f0fbf3c124dc3f55f13b8391cb0445c9963a91d93a88e635a268f",
+            "PERM-3": "844b287a098f0fbf3c124dc3f55f13b8391cb0445c9963a91d93a88e635a268f"
+          },
+          "PerIdentityVocabularyBlinder": {
+            "PERM-0": "b82c3c28514c71e54bd2a5c125cea39367ab5c6fab8292b47b8d9712c47a235f",
+            "PERM-1": "ea8489a790a7f07eae7c0f3f130e2d32b85d522b3daaa01f6c6523ef1a0b6284",
+            "PERM-2": "ea8489a790a7f07eae7c0f3f130e2d32b85d522b3daaa01f6c6523ef1a0b6284",
+            "PERM-3": "ea8489a790a7f07eae7c0f3f130e2d32b85d522b3daaa01f6c6523ef1a0b6284"
+          }
+        }
+      },
+      "reproduction_id": "R3-PER-IDENTITY-VOCABULARY-IS-AN-IDENTITY-CHANNEL",
+      "statement": "One submission's content, rendered under four identity permutations, produces more than one distinct byte string when redaction uses each submission's own identity vocabulary, and exactly one when redaction uses the pool-wide vocabulary. The channel is the collateral damage to a legitimate prior-art citation.",
+      "verdict": "DEFECT_REPRODUCED"
+    },
+    {
+      "detail": {
+        "arrival_order_correlation": 1.0,
+        "content_derived_correlation": -0.1111111111111111,
+        "standing_tiers_in_arrival_order": [
+          4,
+          3,
+          2,
+          1,
+          1
+        ]
+      },
+      "reproduction_id": "R4-ARRIVAL-ORDER-LABELS-RANK-THE-PRODUCERS",
+      "statement": "For a pool arranged in descending standing, arrival-order pseudonyms reproduce the standing ranking exactly while content-derived pseudonyms do not, with every identity string removed from every payload in both cases.",
+      "verdict": "DEFECT_REPRODUCED"
+    },
+    {
+      "detail": {
+        "correct_blinder_leaks": 0,
+        "leaky_blinder_leaks": 45,
+        "sample_leaked_tokens": [
+          "020",
+          "1a9f",
+          "2899f4d",
+          "2899f4d4",
+          "2899f4d47",
+          "2899f4d478"
+        ]
+      },
+      "reproduction_id": "R5-LEAK-SCANNER-CATCHES-A-FIELD-LEVEL-REDACTOR",
+      "statement": "A blinder that drops the identity envelope and leaves the prose alone still leaks, because the producer's own writing names its branch, its attempt and its model. The scanner reads the rendered bytes and finds them.",
+      "verdict": "REPRODUCED"
+    },
+    {
+      "detail": {
+        "first_run_summary_sha256": "a939b164e71b568e14867118b6e66aa9333bd0ae7136a30488213cd2a6612097",
+        "note": "The review path uses a logical clock and no wall-clock time, so the sixteen-cell summary is byte-identical between runs in the same checkout.",
+        "second_run_summary_sha256": "a939b164e71b568e14867118b6e66aa9333bd0ae7136a30488213cd2a6612097"
+      },
+      "reproduction_id": "R6-DETERMINISTIC-REPLAY",
+      "statement": "Running the whole sixteen-cell design twice produces an identical summary digest.",
+      "verdict": "REPRODUCED"
+    }
+  ]
+}

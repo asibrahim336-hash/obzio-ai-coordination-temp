@@ -1,0 +1,132 @@
+{
+  "disposition_histogram": {
+    "EVIDENCE_BACKED_REJECTION": 2,
+    "PROPOSED_TO_COORDINATOR": 2,
+    "RETAIN": 4
+  },
+  "mechanism_changes": [
+    {
+      "change": "Redaction runs against the union of every identity token in the submission pool rather than against each submission's own identity, so the collateral damage to prose is identical whoever wrote the submission.",
+      "disposition": "RETAIN",
+      "found_by": "this unit's metamorphic comparison of one submission rendered under four identities",
+      "hypothesis_ids": [
+        "CM-H1",
+        "CM-H6"
+      ],
+      "mechanism_id": "M1",
+      "rationale": "The naive version removes every identity string and still leaks. A submission that cites a committed prior attempt loses the citation under one reviewer and keeps it under the others, so the surviving bytes differ by identity. The defect is invisible to a leak scan of any single payload and only appears when the same content is rendered twice.",
+      "recurrence_test": "tests/test_blinding.py::PoolVocabularyTests::test_pool_vocabulary_renders_identically_under_every_identity",
+      "scope": "LIVE_IN_THIS_UNIT",
+      "target": "harness/blinding.py:pool_vocabulary, harness/blinding.py:Blinder.vocabulary_for",
+      "verdict_evidence": {
+        "Blinder": 1,
+        "PerIdentityVocabularyBlinder": 2
+      }
+    },
+    {
+      "change": "Hedging is measured on the author's own prose, with quoted spans removed, so a claim is not penalised for accurately reproducing a control's error message.",
+      "disposition": "RETAIN",
+      "found_by": "this unit's own attractiveness table, which scored the paired true claim one feature low",
+      "hypothesis_ids": [
+        "CM-H3"
+      ],
+      "mechanism_id": "M2",
+      "rationale": "The seeded false claim outscored its paired true claim by one feature solely because the true claim quoted the string 'only coordinator may set COMPLETED', and the hedge detector read the modal verb inside the quotation as the author's own hedging. Left uncorrected, the adversarial-representation check would have reported the seeded claim as strictly most attractive on the strength of a measurement artefact.",
+      "recurrence_test": "tests/test_claims.py::AttractivenessTests::test_quoted_control_output_is_not_read_as_hedging",
+      "scope": "LIVE_IN_THIS_UNIT",
+      "target": "harness/claims.py:author_prose"
+    },
+    {
+      "change": "Pseudonyms are derived from the digest of the blinded content instead of from arrival order.",
+      "disposition": "RETAIN",
+      "found_by": "designed as a control, then measured",
+      "hypothesis_ids": [
+        "CM-H7"
+      ],
+      "mechanism_id": "M3",
+      "rationale": "Arrival order is an identity channel whenever submissions arrive in standing order, and it survives complete redaction of every payload.",
+      "recurrence_test": "tests/test_blinding.py::LabelChannelTests::test_arrival_order_labels_rank_the_withheld_standing",
+      "scope": "LIVE_IN_THIS_UNIT",
+      "target": "harness/blinding.py:Blinder.label"
+    },
+    {
+      "change": "A catch requires both a refutation and the frozen gate criterion scoring zero for the candidate that carried the claim, rather than a refutation alone.",
+      "disposition": "RETAIN",
+      "found_by": "specifying the metric before running the design",
+      "hypothesis_ids": [
+        "CM-H3",
+        "CM-H4"
+      ],
+      "mechanism_id": "M4",
+      "rationale": "A review that records a refutation and still scores the candidate as though nothing were wrong has not caught anything. Under the weaker definition the unblinded standing-sensitive cell would have reported a catch in the permutation where the reviewer discounted the refutation, which is precisely the failure the experiment exists to see.",
+      "recurrence_test": "tests/test_review.py::CatchDefinitionTests::test_a_refutation_the_reviewer_discounts_is_not_a_catch",
+      "scope": "LIVE_IN_THIS_UNIT",
+      "target": "harness/review.py:ReviewRecord.caught"
+    },
+    {
+      "change": "The seeded executable control should compare result_transaction.state against the enumeration its own schema declares.",
+      "disposition": "PROPOSED_TO_COORDINATOR",
+      "found_by": "R1, by executing the control on a document the control itself accepts",
+      "hypothesis_ids": [
+        "CM-H3"
+      ],
+      "mechanism_id": "M5",
+      "rationale": "The control is read-only to this unit, so the gap is reproduced and proposed rather than edited. Independently reached here by execution; WA-016 recorded the same gap as GAP-1 from a different direction, which is corroboration rather than this unit's evidence.",
+      "recurrence_test": "tests/test_probes.py::GroundTruthTests::test_the_control_admits_an_undeclared_transaction_state",
+      "scope": "PROPOSAL_TO_COORDINATOR",
+      "target": "workstreams/po03/tools/validate_contracts.py (not modified by this unit)"
+    },
+    {
+      "change": "The seeded control should enforce uniqueness of artifact logical_name and content_uri, not only of artifact_id.",
+      "disposition": "PROPOSED_TO_COORDINATOR",
+      "found_by": "R2, by executing the control",
+      "hypothesis_ids": [
+        "CM-H3"
+      ],
+      "mechanism_id": "M6",
+      "rationale": "Two entries describing one path under two identifiers inflate both artifact_count and total_bytes while every per-field check passes.",
+      "recurrence_test": "tests/test_probes.py::GroundTruthTests::test_the_control_admits_a_duplicate_logical_name",
+      "scope": "PROPOSAL_TO_COORDINATOR",
+      "target": "workstreams/po03/tools/validate_contracts.py (not modified by this unit)"
+    },
+    {
+      "change": "This unit's own preregistered claim CM-H8, that removing the ordering gate changes a review ranking once identity is withheld, is rejected on the evidence. The gate is retained on the separate grounds established by CM-H5, and its marginal value under blinding is recorded as not demonstrated on this pool rather than assumed.",
+      "disposition": "EVIDENCE_BACKED_REJECTION",
+      "found_by": "the blind gated versus blind ungated comparison, which failed the metric this unit set for it",
+      "hypothesis_ids": [
+        "CM-H8"
+      ],
+      "mechanism_id": "M7",
+      "prediction_as_written": "Under blinding, removing the ordering gate still changes at least one ranking, so blinding does not make the freeze redundant.",
+      "rationale": "The observation is that the weighting chosen after ingestion moved the margins a long way and reordered nobody. The extra gain landed on the candidate resting on a refuted claim and on the candidate whose only strength is its own confidence, which is the direction the freeze exists to prevent, but a margin is not the metric this unit preregistered. Restating the metric after seeing the result would be the exact failure the criteria seal is built to prevent, so the claim is recorded as refuted and the margin observation is reported separately as an unpreregistered secondary reading. The gate is retained because CM-H5 establishes its effect directly and without reference to blinding: it refuses a post-ingestion seal, and with it removed the favoured submission gains 40 weighted points in the unblinded arm.",
+      "recurrence_test": "tests/test_bias_experiment.py::FreezeEffectTests::test_the_preregistered_ranking_metric_is_reported_as_measured",
+      "rejected_claim": "CM-H8, as this unit preregistered it",
+      "scope": "REJECTION",
+      "secondary_reading_not_preregistered": "Under blinding the post-ingestion weighting produced a gain spread across candidates rather than a uniform shift, favouring the candidate with a refuted claim. Recorded as an observation, not as support for the rejected claim.",
+      "target": "the design of the review session; no code change follows from the rejection"
+    },
+    {
+      "change": "A blind review gate must carry an execution step. Freezing a criterion that demands verification does not produce verification, so a review procedure built from an ordering gate and anonymization alone should not be credited with catching false claims.",
+      "disposition": "EVIDENCE_BACKED_REJECTION",
+      "found_by": "holding both factors of the dispatched mechanism on and varying only the adjudicator, which is the comparison the factorial design was built to make",
+      "hypothesis_ids": [
+        "H-PO03-WA-020",
+        "CM-H3",
+        "CM-H4"
+      ],
+      "mechanism_id": "M8",
+      "prediction_as_written": "Criteria frozen before anonymized candidate ingestion catch one seeded attractive false claim.",
+      "rationale": "With the ordering gate enforced and every identity withheld, a credulous adjudicator catches the seeded claim in 0/4 to 0/4 permutations, while the same mechanism with a probing adjudicator catches it in 4/4 to 4/4. The mechanism is fully present in both arms, so it is not what separates them. The claim was built to be true of the contract and false only of the code that enforces it, which is precisely the kind of falsity that reading cannot reach and execution can. Anonymization keeps the narrower credit the evidence supports: it prevents a biased reviewer discounting a refutation the probe already obtained, worth one permutation in the single cell where standing is visible and the control is run.",
+      "recurrence_test": "tests/test_dispatched_hypothesis.py::ConjunctBTests::test_the_mechanism_alone_catches_nothing_without_execution",
+      "rejected_claim": "the second conjunct of the dispatched hypothesis H-PO03-WA-020, as dispatched",
+      "scope": "REJECTION",
+      "target": "the dispatched hypothesis itself; this unit's harness already executes controls, so the rejection is a correction to the claimed causal mechanism rather than a code change",
+      "verdict_evidence": {
+        "marginal_effect_of_executing_the_control": 4,
+        "marginal_effect_of_the_freeze": 0,
+        "mechanism_with_a_credulous_adjudicator": "0/4 to 0/4"
+      }
+    }
+  ],
+  "mechanism_count": 8
+}

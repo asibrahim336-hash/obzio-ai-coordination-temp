@@ -1,0 +1,117 @@
+{
+  "count": 10,
+  "disposition_histogram": {
+    "NOT_SUPPORTED": 2,
+    "PROPOSAL_NOT_APPLIED": 1,
+    "REFUTED_OWN_CLAIM": 1,
+    "SCOPE": 6
+  },
+  "limitations": [
+    {
+      "constrains": [
+        "H-PO03-WA-020 conjunct A",
+        "CM-H1",
+        "CM-H2",
+        "CM-H9"
+      ],
+      "detail": "The unblinded arm is a standing-sensitive reviewer written by this unit. Its bias is a declared function of a declared standing tier, so the 49-weighted-point identity swing is fixed by construction and is not an estimate of any real reviewer's bias. What the measurement does establish is directional and conditional: given a reviewer that responds to standing at all, withholding identity removes the response completely, because the same bias function is present in both arms and expresses nothing in the blind one.",
+      "disposition": "NOT_SUPPORTED",
+      "limitation_id": "L1",
+      "not_supported_claim": "that the magnitude of identity-bias reduction measured here transfers to a human or language-model reviewer",
+      "statement": "No human reviewer and no language-model reviewer was measured anywhere in this unit."
+    },
+    {
+      "constrains": [
+        "H-PO03-WA-020 conjunct A",
+        "CM-H1",
+        "CM-H6",
+        "CM-H7"
+      ],
+      "detail": "Blinding is verified by scanning rendered bytes for the identity tokens the unit declares, and by checking that one submission renders to a single byte string under every identity permutation. A channel that is not expressible as a token in that vocabulary is outside what was tested. Writing style is the obvious one: two submissions in this pool differ in prose, and a reviewer able to recognise an author by style would defeat this blind without any token surviving. No stylometric attack was attempted and none is claimed to fail.",
+      "disposition": "SCOPE",
+      "limitation_id": "L2",
+      "statement": "Identity blinding is verified against a declared token vocabulary, not against every possible identity channel."
+    },
+    {
+      "constrains": [
+        "H-PO03-WA-020 conjunct B",
+        "CM-H3"
+      ],
+      "detail": "Attractiveness is scored by a six-feature rule applied to each claim's own text, with the digest and enumeration features cross-checked against probe readings so an invented digest cannot score. The rule is this unit's operationalisation of what makes a claim persuasive to a reader in a hurry; no reader was asked. The check it supports is comparative and that is how it is used: the seeded false claim scores 6 of 6 and so does EC-03, a true claim, so the seeded claim does not lead the table on presentation and is not a strawman.",
+      "disposition": "SCOPE",
+      "limitation_id": "L3",
+      "statement": "The attractiveness of the seeded false claim is measured by a declared textual rule, not by any observed reader response."
+    },
+    {
+      "constrains": [
+        "H-PO03-WA-020 conjunct B",
+        "CM-H3",
+        "CM-H4"
+      ],
+      "detail": "One claim was seeded, and it was built to be false in one specific way: true of the JSON Schema and false of the executable control that is supposed to enforce it. Catch rates are therefore rates over four identity permutations of a single claim, not over a population of false claims. A claim false in some other way, for instance one contradicted by no executable control at all, is not represented and the probing adjudicator would have no way to reach it.",
+      "disposition": "SCOPE",
+      "limitation_id": "L4",
+      "statement": "The seeded case contains exactly one false claim of exactly one kind."
+    },
+    {
+      "constrains": [
+        "CM-H5",
+        "CM-H8"
+      ],
+      "detail": "Criteria shopping is modelled as choosing the most favourable weighting from a four-item menu declared before the run. A real reviewer editing criteria after reading candidates is not restricted to a menu, so the 40-weighted-point gain is a lower bound on what an unrestricted editor could obtain, under this unit's scoring and on this pool. It is not an estimate of how much any real reviewer would gain.",
+      "disposition": "SCOPE",
+      "limitation_id": "L5",
+      "statement": "The value of the ordering gate rests on a modelled menu of alternative weightings."
+    },
+    {
+      "constrains": [
+        "CM-H8"
+      ],
+      "detail": "The prediction was that removing the ordering gate under blinding would change at least one ranking. It changed none. The post-ingestion weighting did move the margins and moved them unevenly, favouring the candidate resting on a refuted claim, which is the direction the freeze exists to prevent; but a margin is not the metric this unit preregistered, and restating the metric after seeing the result is the exact failure the criteria seal is built to prevent. The claim is recorded as refuted and the margin observation is reported separately as an unpreregistered secondary reading. The gate is retained on the independent grounds CM-H5 establishes.",
+      "disposition": "REFUTED_OWN_CLAIM",
+      "limitation_id": "L6",
+      "statement": "This unit's own hypothesis CM-H8, that the ordering gate has marginal value under blinding, is refuted on the metric it preregistered."
+    },
+    {
+      "constrains": [
+        "M5",
+        "M6"
+      ],
+      "detail": "Both gaps in the seeded validator are reproduced by executing it, not argued. The control is read-only to this unit, so each gap is recorded with the document that reaches it and a recurrence test, and proposed to the coordinator rather than edited. The transaction-state gap was reached here independently by execution; WA-016 recorded the same gap as GAP-1 from a different direction, which is corroboration and not this unit's evidence.",
+      "disposition": "PROPOSAL_NOT_APPLIED",
+      "limitation_id": "L7",
+      "statement": "M5 and M6 are proposals against a read-only control, not applied changes."
+    },
+    {
+      "constrains": [
+        "source claims"
+      ],
+      "detail": "Eight of nine external locators returned a readable body containing the keyword declared for that claim before retrieval. The ninth is recorded NOT_SUPPORTED with its observed HTTP status and supports nothing; no hypothesis in this unit rests on it, which is checked rather than asserted by tests/test_bias_experiment.py and recorded in evidence/source-claims.json under hypotheses_resting_only_on_unsupported_sources.",
+      "disposition": "NOT_SUPPORTED",
+      "limitation_id": "L8",
+      "not_supported_claim": "anything that would have rested on the unreadable external locator",
+      "statement": "One declared external source was not readable from this runtime."
+    },
+    {
+      "constrains": [
+        "reproducibility"
+      ],
+      "detail": "The review path uses a logical clock and no wall-clock time, and seven of the nine evidence documents are byte-identical across three consecutive runs in the same checkout. The two that vary do so by design: runtime.json records this run's wall time, and source-claims.json records digests of live external pages that change between fetches. The digests of those pages are evidence of what was retrieved at that moment and are not expected to be stable.",
+      "disposition": "SCOPE",
+      "limitation_id": "L9",
+      "statement": "Byte-identical replay covers the review path, not the two evidence documents that record wall time and live external retrieval."
+    },
+    {
+      "constrains": [
+        "H-PO03-WA-020"
+      ],
+      "detail": "Rank inversions are counted over five candidates and four identity permutations, and the candidate pool is built from identity shapes read out of committed result documents in this repository plus one real prior producer's identity. Five candidates is enough to make an inversion visible and not enough to characterise how often one occurs. The design is a complete crossing of four binary factors, which is 16 cells and 64 reviews, not a sample.",
+      "disposition": "SCOPE",
+      "limitation_id": "L10",
+      "statement": "The candidate pool is five submissions and the design is a complete crossing, not a sample."
+    }
+  ],
+  "not_supported_count": 2,
+  "note": "NOT_SUPPORTED is used where the evidence does not establish a claim, rather than a weaker form of the claim being asserted. Each limitation names the hypotheses or mechanisms it constrains.",
+  "task_id": "PO03-WA-020"
+}
