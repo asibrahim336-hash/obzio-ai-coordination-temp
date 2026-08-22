@@ -1,0 +1,131 @@
+{
+  "limitations_version": "PO03-WAVE-A-041-LIMITATIONS-v1",
+  "task_id": "wave-a-041-schema-adversarial-review",
+  "decision_changed": [],
+  "scope_of_the_finding": [
+    {
+      "id": "L1",
+      "statement": "This review tests documents against a validator. It cannot establish that any real artifact, commit, manifest or read-back exists.",
+      "consequence": "Every exploit shows that the contract accepts an unbacked assertion. None of them shows that a specific PO-03 unit made such an assertion. No claim is made about any other Wave A unit's honesty.",
+      "status": "INHERENT"
+    },
+    {
+      "id": "L2",
+      "statement": "A single-document validator cannot enforce custody ordering, fence monotonicity or checkpoint monotonicity, because each is a relation between successive ledger entries.",
+      "consequence": "C01 and C12 cannot be closed by any strengthening of the snapshot gate. The candidate adds a ledger-level entry point instead, which requires the controller to hold an append-only ledger per task and to validate it as a sequence.",
+      "status": "STRUCTURAL_FINDING"
+    },
+    {
+      "id": "L3",
+      "statement": "Two candidate rules need controller-supplied context that a document cannot honestly assert about itself.",
+      "detail": "H10 requires the producer's owned path prefix to detect an acceptance receipt written inside producer custody, and the optional reviewer roster requires an entitlement list. Without that context, C14 remains open.",
+      "consequence": "Adoption of H10 is only effective if the controller passes producer_path_prefix when validating.",
+      "status": "REQUIRES_CONTROLLER_CONTEXT"
+    },
+    {
+      "id": "L4",
+      "statement": "H5 constrains result_commit_id to a git object-id shape, which assumes git as the durable sink.",
+      "consequence": "If a non-git sink is ever admitted, the rule needs a locator grammar rather than a hex pattern. The rule is therefore correct for the current mechanism and not future-proof.",
+      "status": "ASSUMPTION_RECORDED"
+    },
+    {
+      "id": "L5",
+      "statement": "H7 binds the manifest by requiring an artifact named manifest.json whose sha256 equals manifest_sha256. It does not and cannot verify that the manifest's contents actually cover the artifact set.",
+      "consequence": "Manifest completeness still needs a content-level check outside the contract. H7 only guarantees the manifest is itself inside the read-back set.",
+      "status": "PARTIAL_CLOSURE"
+    },
+    {
+      "id": "L6",
+      "statement": "Identity normalisation reduces aliasing but cannot detect two genuinely different identifiers controlled by the same principal.",
+      "detail": "H2 closes whitespace, case, zero-width and Unicode-normalisation aliases. A producer that registers as both producer-1 and reviewer-9 is indistinguishable to the contract.",
+      "consequence": "Separation of duties ultimately needs an identity registry, which is why the candidate exposes the optional reviewer roster.",
+      "status": "PARTIAL_CLOSURE"
+    },
+    {
+      "id": "L7",
+      "statement": "Case generation was adversarial and systematic across six frozen families, but it is not exhaustive.",
+      "consequence": "Absence of a further exploit in these 21 cases is not proof that none remains. No completeness claim is made.",
+      "status": "INHERENT"
+    },
+    {
+      "id": "L8",
+      "statement": "The candidate patch is unapplied and untested against the wider repository.",
+      "detail": "Only this unit's own suites were executed. The shared suite workstreams/po03/tests/test_validate_contracts.py was read but not run against the candidate, because the candidate deliberately breaks one of its fixtures (see migration_impact).",
+      "consequence": "An integration controller must run the full shared suite against the candidate and apply the recorded migrations before considering adoption.",
+      "status": "NOT_YET"
+    },
+    {
+      "id": "L9",
+      "statement": "One reviewer-authored rule was defective on first execution and was corrected before commit.",
+      "detail": "The initial H13 duplicate-callback rule compared whole documents under one idempotency key, which would have rejected a legitimate ledger where a single attempt advances through several states. It was narrowed to forbid divergent transaction and commit identity under one key, and a regression test now asserts that a replayed terminal entry is harmless.",
+      "consequence": "Recorded as a defect found by this unit's own executable tests rather than by review of the text.",
+      "status": "REPAIRED_AND_TESTED"
+    },
+    {
+      "id": "L10",
+      "statement": "A pre-existing error-suppression pattern in the shared gate was found while building the candidate and is reported rather than exploited.",
+      "detail": "The shared validate_result returns on any accumulated error at the attempt and result_transaction required-field guards, so one early defect suppresses every later finding in the same document. It cannot produce a false accept on its own, but it truncates diagnostics and it masked the intended rejections in this unit's first candidate run.",
+      "consequence": "Corrected in the candidate as H14. Reported as a diagnostic-quality defect, not counted as an exploit.",
+      "status": "REPORTED"
+    }
+  ],
+  "reproducibility": [
+    {
+      "id": "R1",
+      "statement": "observed-results.json is deterministic: two consecutive runs produced sha256 0247ed52f6f8e9bbc44a212e77ad22280cc195f5c69a1fcd3aaf277ec6cbcea0 both times.",
+      "caveat": "Two fields, runtime.python_version and runtime.platform, are properties of the executing machine and will differ on a different host. The findings and per-case results do not depend on them.",
+      "status": "PASS"
+    },
+    {
+      "id": "R2",
+      "statement": "Both suites pass under python -I, so no third-party package is required, matching the clean-runtime requirement and the CI invocation.",
+      "detail": "With python -I the optional jsonschema cross-check is skipped by design and reported as skipped rather than silently passing. With jsonschema 4.26.0 importable, it ran and agreed with the in-subtree subset checker on all 22 documents.",
+      "status": "PASS"
+    },
+    {
+      "id": "R3",
+      "statement": "The harness refuses to report findings if the reviewed sources change, and a test proves that refusal fires.",
+      "status": "PASS"
+    }
+  ],
+  "execution_environment_events": [
+    {
+      "id": "E1",
+      "severity": "HIGH",
+      "event": "PATH_AND_BRANCH_COLLISION_WITH_CONCURRENT_UNIT",
+      "statement": "This reviewer was started in a workspace at /workspace that other concurrently running Wave A units also operate in, sharing one git working tree and one HEAD.",
+      "observed": [
+        "After the criteria-freeze commit 7bb2de9f898765edb77201f18089a08d99e06062 was made and pushed on po03/wave-a-041-schema-adversarial-review, a concurrent process ran git checkout in the same working tree, moving HEAD to po03/wave-a-001-source-lock-reproduction and resetting the local 041 branch to the base commit f5b758f.",
+        "This reviewer's second commit therefore landed on the sibling unit's branch as 4cd20d7249145c780f69b33d95e67380c1737a99, and that sibling agent pushed it, so three files owned by wave-a-041 now also exist on refs/heads/po03/wave-a-001-source-lock-reproduction.",
+        "An untracked directory belonging to wave-a-022-agent-recovery-postmortems appeared in the shared working tree during this run."
+      ],
+      "detection": "Detected by verifying the remote ref after push instead of trusting the push exit status. The push reported 'Everything up-to-date' while the remote 041 branch was still at the base commit.",
+      "remediation": "This reviewer created a dedicated git worktree at /home/ubuntu/wt-041, fast-forwarded its own branch to the freeze commit, restored its artifacts from the object store, and performed every subsequent commit, push and read-back there. Remote ref equality was verified after every push.",
+      "not_remediated": "The three wave-a-041 files carried onto the sibling branch were left in place. Rewriting another unit's branch, or moving its ref while its agent holds HEAD there, is a destructive act on work this reviewer does not own and was not authorised to perform.",
+      "consequence_for_the_programme": "Wave A acceptance requires zero path collision. This is an observed collision event caused by shared-worktree dispatch rather than by the path allowlist, which held: every write by this unit stayed inside its owned subtree.",
+      "recommendation": "Dispatch each work unit into its own worktree or VM, and require post-push remote-ref verification, since a push can report success or no-op while the intended branch has not advanced."
+    }
+  ],
+  "authority_boundaries_observed": [
+    "No shared PO-03 control, contract, tool, test, workflow or receipt was modified. The reviewed sources hash identically before and after execution.",
+    "No PO-01 path, branch, artifact or process was read for narrative, contacted or mutated.",
+    "PR #8 and every other existing pull request were left untouched; no pull request was created, updated or merged.",
+    "Nothing was merged or promoted, and no Obzio state was advanced.",
+    "This reviewer does not and cannot set Obzio COMPLETED or ACCEPTED, and makes no acceptance decision about any unit including its own.",
+    "jsonschema 4.26.0 was installed into this VM's local Python environment only as an optional cross-check. It is not a repository dependency, is not required by either suite, and no dependency file was changed."
+  ],
+  "not_supported": [
+    {
+      "field": "runtime.reasoning_control",
+      "requested": "high",
+      "observed": "NOT_SUPPORTED",
+      "reason": "The executing runtime exposes no interface through which a subagent can read back its own thinking or reasoning-effort setting, so the requested high reasoning control can be recorded as requested but cannot be independently verified from inside the run."
+    },
+    {
+      "field": "input.json.transaction.provider_run_id",
+      "value": "PENDING_PROVIDER_ASSIGNMENT",
+      "observed": "NOT_RESOLVED_BY_CONTROLLER",
+      "reason": "The immutable input still carries the placeholder, so this reviewer reports its own observed cloud agent id rather than editing the shared control to fill it in."
+    }
+  ]
+}
