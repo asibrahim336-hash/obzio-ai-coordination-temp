@@ -1,0 +1,133 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-luna-high",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-037-legacy-alias-census",
+  "cohort": "c5",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c5",
+  "overlap_unit": true,
+  "overlap_note": "Also reviewed independently by Reviewer B so inter-reviewer disagreement can be measured. I did not coordinate with anyone about this unit and have not seen Reviewer B's findings.",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "9134ba17f51c557aca4559e7dfe43ee042ea115bb66ef3304fdd42b0e9e702c4",
+  "frozen_hypothesis": "Prohibited routing aliases can be censused as evidence without any global replacement.",
+  "frozen_required_deliverable": "A census that records every legacy alias occurrence with file, line and surrounding field, and explicitly asserts that no replacement was performed.",
+
+  "po01_contact_check": "READ-ONLY CONFIRMED, and by accident rather than by design. The producer's evidence line claims the census read '_transport, packs and modules' among its roots. Those three directories do not exist at the c5 cohort commit - I checked - so the census silently scanned nothing there, because _files() only collects paths that are already a file or a directory. No PO-01 write occurred and none was possible. For my own part I extracted the c5 tree into scratch outside the repository and read it; every file I wrote is under /home/ubuntu/po03-review-scratch-a/_hidden/037.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -IB (CPython 3.12.3)",
+    "producer_test_command": "python3 -IB test_legacy_alias_census.py",
+    "producer_test_exit_code": 0,
+    "producer_test_output_verbatim": "test_records_alias_file_line_and_enclosing_field_without_replacement (__main__.LegacyAliasCensusTests.test_records_alias_file_line_and_enclosing_field_without_replacement) ... ok\ntest_records_close_variant_under_heading (__main__.LegacyAliasCensusTests.test_records_close_variant_under_heading) ... ok\n\n----------------------------------------------------------------------\nRan 2 tests in 0.001s\n\nOK",
+    "byte_exact_reproduction_of_the_committed_census": {
+      "command": "python3 -I legacy_alias_census.py AGENTS.md operations state instructions templates -o repro.json, run against the c5 tree extracted to scratch",
+      "observed_output_verbatim": "my repro bytes: 61015 a322f94237b4baf76e9973bdd67afe298ce7f6e4b8d60b6125791ea69c4f57e5\ncommitted     : 61015 a322f94237b4baf76e9973bdd67afe298ce7f6e4b8d60b6125791ea69c4f57e5\nBYTE-IDENTICAL: True\nmy count: 129 committed count: 129\nmine-not-committed: 0 committed-not-mine: 0\ndistinct files: mine 50 committed 50",
+      "interpretation": "The committed census.json reproduces byte for byte from a fresh process on a clean extraction of the commit. All 129 occurrence records and all 50 files agree exactly, with zero records on either side that the other lacks. Nothing in this census is invented, and this is the strongest reproducibility result I obtained anywhere in my twenty units."
+    }
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-A",
+      "rationale": "The deliverable's second obligation is an explicit assertion that no replacement was performed. The tool has a -o flag that writes a file. Nobody asked what happens when the output path is one of the input paths.",
+      "construction": "Wrote a 43-byte victim.md containing '# Routing / Routed via Operator D on 18 Aug.', then ran the census with that same file as both the input path and the -o target.",
+      "observed_output_verbatim": "   exit=0\n   input file preserved: False\n   the input file now contains the census report itself: occurrence_count=1\n   ...while that same report asserts: 'No alias replacement was performed; inputs were read-only.'\n   ...and replacement_performed=False\n   original 43 bytes -> now 397 bytes; alias text still present: True",
+      "component_survived": false,
+      "interpretation": "The input file is destroyed and replaced by the census report, and the report that overwrote it asserts in its own body that inputs were read-only. Both replacement_performed and replacement_assertion are literal constants in the returned dict, computed from nothing, so the assertion cannot fail no matter what the process actually did to the filesystem. The deliverable asks the census to assert that no replacement was performed; what it ships is a sentence that says so unconditionally. Two caveats in the producer's favour: the alias text survives inside the report's 'text' field so this is not an alias rewrite, and the producer's own run demonstrably did not do this - I reproduced its census byte for byte with no input modified. The defect is that the guarantee is decoration rather than a check."
+    },
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "The deliverable says 'every' occurrence. The patterns join words with \\s+, so any hyphenated spelling of an alias is unmatched. The question is whether hyphenated spellings actually occur in this repository or only in my imagination.",
+      "construction": "First a synthetic variant sweep through census() directly, then a full pass over the c5 tree counting real occurrences of Operator-D, Claude-extension and Claude browser-operator forms that the producer's own ALIAS_PATTERNS cannot match, excluding the unit's own census.json output.",
+      "observed_output_verbatim": "   MISS Operator-D was routed\n   MISS OperatorD was routed\n   HIT  operator  d handled it\n   HIT  Operator\\tD handled it\n   MISS the Claude-extension route\n   MISS Claude Browser-Operator lane\n   HIT  principal AI Operator lane\n   MISS principal-AI-operator lane\n   HIT  Claude browser  operator lane\n   HIT  Claude Chrome Extension route\n   HIT  Operator D\n\nREAL hyphenated alias occurrences the producer's patterns do NOT match:\n   Claude-extension           12\n   Operator-D                  9\n   total: 21 across 14 files",
+      "component_survived": false,
+      "interpretation": "Real, not hypothetical. Twenty-one genuine alias occurrences across fourteen files are invisible to this census, and critically some of them sit in files under state/ and dispatch/ that the census either did scan or was meant to - state/ACTIVE_CONTROL_DELTA_20260818_02.json and state/DESK_OPERATOR_D_RECOVERY_AND_CONTINUATION_20260818.md among them. So this is not a scoping choice, it is a detection failure inside the declared scope. The patterns handle whitespace variation well - multiple spaces and tabs both match, and the optional 'Chrome' infix is a thoughtful touch - but hyphenation was not considered, and AGENTS.md rule 4 explicitly extends the prohibition to 'similar phrases'."
+    },
+    {
+      "hidden_case_id": "HC-C",
+      "rationale": "The deliverable quantifies over 'every legacy alias occurrence' in the repository. The unit censused a chosen set of roots. I ran the producer's own tool over the whole tree to measure what the chosen scope left out, so the comparison uses the producer's detector rather than mine.",
+      "construction": "Extracted the full c5 tree to scratch, ran legacy_alias_census.py over '.', and diffed the (file, line, alias) triples against the committed census.json, excluding hits inside the unit's own census.json output file so its self-reference does not inflate the number.",
+      "observed_output_verbatim": "full-tree occurrences EXCLUDING the census output file: 270\nproducer recorded: 125\nGENUINE OCCURRENCES OMITTED: 145\nby top-level dir: {'receipts': 21, 'scripts': 4, 'dispatch': 84, 'commissions': 24, 'handoff': 4, 'workstreams': 6, 'handover': 2}\nby alias: {'Claude extension': 74, 'principal AI operator': 4, 'Operator D': 64, 'Claude browser operator': 3}\ndistinct files omitted: 48\n--- producer census covered these top-level roots: ['AGENTS.md', 'operations', 'state', 'templates']\n--- full tree has aliases under these roots: ['AGENTS.md', 'commissions', 'dispatch', 'handoff', 'handover', 'operations', 'receipts', 'scripts', 'state', 'templates', 'workstreams']",
+      "component_survived": false,
+      "interpretation": "The census records 125 distinct occurrence sites; the same tool over the same commit finds 270. One hundred and forty-five genuine occurrences across 48 files are absent, and the largest single omission is dispatch/ with 84 - which is precisely the routing-surface directory the alias prohibition exists to govern, and which contains files named CLAUDE_EXTENSION_REFERENCE_DISPATCH and OPERATOR_D_REFERENCE_UPDATE. A census of prohibited routing aliases that omits the dispatch tree is missing its own subject matter. The counts 129 and 125 differ because four lines contain the same alias twice; the census correctly emits one record per occurrence rather than per line, so I used the conservative triple-key count for the omission figure."
+    },
+    {
+      "hidden_case_id": "HC-D",
+      "rationale": "The deliverable requires the 'surrounding field' for each occurrence. That is easy on flat JSON and easy to get wrong elsewhere.",
+      "construction": "Fed the census five shapes: nested JSONL, YAML-style indentation, CSV, unstructured text, and markdown with a heading two levels up.",
+      "observed_output_verbatim": "   jsonl_nested.jsonl -> ['actor']\n   yaml_like.yaml     -> ['active_operator']\n   csv.csv            -> ['unstructured-line']\n   bare.txt           -> ['unstructured-line']\n   deep_md.md         -> ['Sub']",
+      "component_survived": true,
+      "interpretation": "This part is done well. Nested JSON resolves to the innermost key rather than the outermost, YAML-style keys resolve correctly despite no YAML parser being involved, markdown falls back to the nearest preceding heading rather than the document title, and genuinely unstructured lines are labelled honestly as 'unstructured-line' instead of guessing. CSV degrades to unstructured, which is the truthful answer for a format with no field on the line."
+    },
+    {
+      "hidden_case_id": "HC-E",
+      "rationale": "The census swallows UnicodeDecodeError and OSError with a bare continue. A silent skip is invisible in the output, and the report has no counter for it.",
+      "construction": "Wrote a file containing the bytes \\x00\\x01Operator D\\xff\\xfe and censused it.",
+      "observed_output_verbatim": "   undecodable file: occurrence_count=0 (skipped silently)",
+      "component_survived": true,
+      "interpretation": "It fails safe rather than crashing, and the producer does disclose this in its limitations, so I do not count it against the unit. But the report exposes no skipped-file count, so a reader of census.json cannot tell whether zero files or fifty were passed over. Unit 003 in cohort c1 does emit a skipped_binary_artifacts counter, which is the pattern to copy - and as it happens the very next unit in my review set, 033, committed a bytecode blob that only such a counter would surface."
+    },
+    {
+      "hidden_case_id": "HC-F",
+      "rationale": "Determinism across fresh processes, independent of filesystem walk order.",
+      "construction": "Two files written in reverse alphabetical order into a directory, censused twice into separate outputs by separate processes.",
+      "observed_output_verbatim": "   byte-identical across fresh processes: True\n   ordering: ['a.md', 'b.md']",
+      "component_survived": true,
+      "interpretation": "Deterministic. Output is sorted by (file, line, alias) rather than by directory iteration order, which is why the full census.json reproduces byte for byte."
+    },
+    {
+      "hidden_case_id": "HC-G",
+      "is_vacuity_probe": true,
+      "rationale": "The commission's stub-substitution test. Both of the producer's tests assert fixed expected values against fixtures they wrote themselves, so the question is whether an implementation that never reads its input can satisfy them.",
+      "construction": "Two stubs in place of legacy_alias_census.py with the test file unchanged: (1) a stateless constant stub returning one canned occurrence; (2) a stub that reads no file at all and returns canned values chosen by call ordinal, since unittest runs these two tests in a fixed alphabetical order.",
+      "observed_output_verbatim": "   stateless constant stub: Ran 2 tests ... FAILED (failures=1)\n   input-ignoring stub: exit=0 (STILL PASSES -> VACUOUS)",
+      "component_survived": false,
+      "interpretation": "Partially vacuous, and I want the distinction on the record because it is not the flat vacuity I found in unit 024. A single constant stub does fail, because the two tests expect different enclosing_field values, so the suite has some discrimination. But an implementation that opens no file whatsoever passes both, because every expected value is hardcoded in the test and nothing ties the output back to the fixture's content. The tests never assert, for example, that the recorded 'text' field equals the fixture line, which would have been one line and would have defeated my stub. Note what does the real work here: the read-only check in the first test is genuine - it compares the fixture's bytes before and after - and my HC-A shows that check is the only reason the read-only claim has any teeth at all."
+    }
+  ],
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "MET, and the reproduction evidence is the strong part. census.json regenerated byte for byte from a fresh process at 61015 bytes and SHA-256 a322f942..., 129 occurrences, 50 files, zero record-level divergence. The two unit tests execute and pass but are weak - an implementation that never reads its input satisfies them.",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET AND TRUTHFUL. Four of five artifacts verified directly in the extracted subtree. The fifth, __pycache__/legacy_alias_census.cpython-312.pyc, is absent from the cohort head because the producer removed it later, so I verified it against the declared commit: blob 5aa23a397 is 5363 bytes with SHA-256 bba4140ae005781c80f3b4df835203c48fc89683fb478515a26a764cea511eb2, exactly as declared. Also present in the head directory but undeclared: .gitignore.",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - acceptance_contract_sha256 equals my pre-disclosure hash 9134ba17...",
+    "result is committed and read back by a different process from an immutable object id": "MET - result_commit_id eb6fffeca41a66ee644017788dc739c1e575e234, and I read all five declared blobs back from it myself.",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - PASS is explicit.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "NOT_APPLICABLE. The hypothesis as worded - that aliases can be censused without global replacement - is genuinely true and genuinely demonstrated. My objections are to the deliverable's 'every', not to the hypothesis.",
+    "no value, hash, metric or provider capability is invented": "MET, and demonstrably so. The 129-occurrence census reproduces byte for byte and every declared hash and byte count recomputes correctly. One inaccuracy short of invention: the evidence line claims the census read '_transport, packs and modules', and those three directories do not exist at that commit.",
+    "required_deliverable - records every legacy alias occurrence with file, line and surrounding field, and explicitly asserts no replacement was performed": "SPLIT. 'file, line and surrounding field' MET and done well, verified across five input shapes. 'every occurrence' NOT MET - 145 genuine occurrences omitted by scope across 48 files and 7 uncensused roots, plus 21 real occurrences missed inside the declared scope through hyphenated spellings. 'explicitly asserts that no replacement was performed' LITERALLY MET but the assertion is an unconditional constant that I falsified in a reachable configuration."
+  },
+
+  "scope_honesty_assessment": {
+    "producer_declared_limitations": [
+      "Unreadable non-UTF-8 files are skipped; no alias replacement is attempted or performed."
+    ],
+    "assessment": "Genuinely mixed, and better than most in one respect. The manifest evidence line names the roots it scanned rather than implying whole-repository coverage - 'read AGENTS.md, operations, state, instructions, templates, _transport, packs and modules and recorded 129 occurrences across 50 files' - and both the 129 and the 50 are exactly right, which I confirmed independently. That is real disclosure and it is what let me measure the omission precisely. Against that: three of the eight named roots do not exist at that commit, so the enumeration overstates coverage; the choice to scan those eight roots while omitting dispatch, commissions and receipts is stated as a fact but never justified against a deliverable that says 'every'; and the pattern set's inability to match hyphenated aliases is undisclosed and, unlike the scope choice, is not visible to a reader of the evidence line at all."
+  },
+
+  "nonportable_artifacts_in_subtree": [
+    "__pycache__/legacy_alias_census.cpython-312.pyc - 5363 bytes, committed at eb6fffeca41a66ee644017788dc739c1e575e234 and declared as a manifest artifact. Interpreter-version-locked and embeds the absolute producer path /home/ubuntu/po03-worktrees/c5/workstreams/po03/attempts/po03-wa-b2e7-037-legacy-alias-census/legacy_alias_census.py. Removed by the producer in a later commit with a .gitignore added, so the cohort head tree is clean. Same pattern as unit 033 in this cohort."
+  ],
+  "reproducibility_check": "The best in my set. The committed 61015-byte census.json regenerates byte for byte with identical SHA-256 from a fresh process on a clean extraction of the commit, and a separate two-file determinism probe was also byte-identical across processes.",
+
+  "vacuous_test_finding": true,
+  "vacuous_test_qualifier": "Partial, not total. A stateless constant stub fails the suite; a stub that never opens its input file passes it. Recorded as a finding but materially weaker than unit 024's, and offset by the byte-exact real-repository reproduction which no stub could fake.",
+  "reviewer_independent_verdict": "NOT_YET",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "DIVERGE",
+  "divergence_reason": "The frozen deliverable requires a census of EVERY legacy alias occurrence, and two independent measurements show the census is not that. By scope, running the producer's own tool over the whole c5 tree finds 270 occurrence sites against the 125 recorded - 145 omitted across 48 files, including 84 in dispatch/, the routing-surface directory the alias prohibition is chiefly about. By detection, 21 real occurrences in 14 files are unmatchable by the producer's patterns because hyphenated spellings like Operator-D and Claude-extension are joined with \\s+, and several of those sit inside state/ which the census did scan - so this is a miss within the declared scope, not merely a narrower scope. Separately, the deliverable's assertion that no replacement was performed is a hardcoded literal: aiming -o at an input path destroys that file and rewrites it with a report stating that inputs were read-only. I record NOT_YET rather than FAIL because the hypothesis as worded is true and was honestly demonstrated - aliases were censused as evidence and no replacement was performed in the producer's actual run, which I confirmed by regenerating census.json byte for byte. The unit is an incomplete instance of a correct idea, not a false claim.",
+  "disposition_recommendation": "REJECTED",
+  "disposition_reason": "Rejected on completeness against a deliverable whose operative word is 'every', with the clear statement that the census which does exist is real, honest and immediately reusable. The strengths are substantial and worth recording plainly: this is the only unit in my twenty whose primary evidence artifact regenerated byte for byte - 61015 bytes, SHA-256 a322f942..., 129 occurrences across 50 real repository files, zero record-level divergence from my independent run - so nothing here is invented and the evidence is real-repository rather than synthetic. The enclosing-field extraction is better than it needed to be, resolving nested JSON to the innermost key and markdown to the nearest preceding heading, and the manifest's evidence line discloses which roots were scanned instead of implying full coverage. What blocks acceptance is that a census of prohibited routing aliases omits the dispatch tree entirely, where 84 occurrences sit in files literally named CLAUDE_EXTENSION_REFERENCE_DISPATCH and OPERATOR_D_REFERENCE_UPDATE, and that 21 further occurrences are undetectable anywhere because hyphenated spellings were never considered. The read-only guarantee is a constant string rather than a check, and I falsified it by pointing the output at an input. None of these is a redesign: widen the roots to the whole tree, allow [-_ ] between alias words, compare a hash of every input before and after so the assertion is earned, and add a skipped-file counter. The existing 129 records stay valid and the re-run should reproduce them as a subset.",
+  "followups_for_coordinator": [
+    "BLOCKING for re-run: census the whole tree, or state the excluded roots as an explicit exclusion list with a reason. Reviewer-observed: the producer's own tool over the full c5 tree finds 270 occurrence sites versus 125 recorded, with 145 omitted across 48 files - dispatch 84, commissions 24, receipts 21, workstreams 6, handoff 4, scripts 4, handover 2.",
+    "BLOCKING for re-run: allow [-_ ] rather than only \\s+ between alias words. Reviewer-observed: 21 real occurrences in 14 files are unmatchable, 12 of Claude-extension and 9 of Operator-D, and some are inside state/ which the census did scan.",
+    "Make the no-replacement assertion earned rather than declared: hash every input before and after and derive replacement_performed from the comparison. Reviewer-observed: running the census with -o aimed at one of its input paths replaced a 43-byte input file with a 397-byte report whose own body reads 'No alias replacement was performed; inputs were read-only.' At minimum refuse an output path that is also an input path.",
+    "Add a skipped-file counter to the report, as unit 003 does with skipped_binary_artifacts. Non-UTF-8 files are currently skipped invisibly, so a reader cannot tell whether the census passed over nothing or a great deal.",
+    "Correct the evidence line: it claims the census read '_transport, packs and modules', and none of those three directories exists at commit eb6fffec. No PO-01 contact occurred and none was possible, but the enumeration overstates what was covered.",
+    "Tests: assert that a recorded occurrence's 'text' field equals the fixture line that produced it. Reviewer-observed: a stub that opens no file at all passes both current tests, because every expectation is hardcoded and nothing ties output back to input content. A stateless constant stub does fail, so this is a partial rather than total vacuity.",
+    "Non-portable artifact noted per commission instruction: __pycache__/legacy_alias_census.cpython-312.pyc, 5363 bytes, declared as a manifest artifact and embedding /home/ubuntu/po03-worktrees/c5/... Removed in a later commit with a .gitignore added. Identical pattern to unit 033, so this is a cohort-c5 habit rather than a one-off."
+  ]
+}

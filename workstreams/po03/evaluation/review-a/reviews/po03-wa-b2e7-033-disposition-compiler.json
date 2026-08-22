@@ -1,0 +1,143 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-luna-high",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-033-disposition-compiler",
+  "cohort": "c5",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c5",
+  "overlap_unit": true,
+  "overlap_note": "Also reviewed independently by Reviewer B so inter-reviewer disagreement can be measured. I did not coordinate with anyone about this unit and have not seen Reviewer B's findings.",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "c13283ae5308d7b160faeb68d9905f5f883a6441c46407b40981f4d2d39c2098",
+  "frozen_hypothesis": "Every changed PO-03 route can carry exactly one of RETAIN, DELETE, SUPERSEDE, RETEST or REJECT with preserved lineage.",
+  "frozen_required_deliverable": "A disposition compiler that assigns and validates one decision per route, enforces lineage continuity and refuses a decision that orphans its predecessor.",
+
+  "po01_contact_check": "READ-ONLY CONFIRMED. The compiler takes a JSON array on stdin-equivalent input and touches no repository path at all. My own hidden cases wrote only into /home/ubuntu/po03-review-scratch-a/_hidden/033 and read the repository through git only.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -IB (CPython 3.12.3)",
+    "producer_test_command": "python3 -IB test_disposition_compiler.py",
+    "producer_test_exit_code": 0,
+    "producer_test_output_verbatim": "test_compiles_all_decisions_and_preserves_lineage (__main__.DispositionCompilerTests.test_compiles_all_decisions_and_preserves_lineage) ... ok\ntest_rejects_missing_predecessor_for_supersession (__main__.DispositionCompilerTests.test_rejects_missing_predecessor_for_supersession) ... ok\ntest_rejects_orphaned_predecessor (__main__.DispositionCompilerTests.test_rejects_orphaned_predecessor) ... ok\ntest_rejects_unknown_decision (__main__.DispositionCompilerTests.test_rejects_unknown_decision) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK",
+    "note": "Byte-equal to the committed test_output.txt. Four tests, all real, all passing."
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-A",
+      "rationale": "The most direct way to orphan lineage in a five-decision vocabulary that includes DELETE: delete the predecessor while a successor still names it. The frozen deliverable requires the compiler to enforce lineage continuity, so this is not an exotic input - it is the first thing the vocabulary makes possible.",
+      "construction": "Two routes: {route_id: old, decision: DELETE} and {route_id: new, decision: SUPERSEDE, predecessor_route_id: old}.",
+      "observed_output_verbatim": "HC-A: ACCEPTED\n   detail: [{\"route_id\": \"new\", \"decision\": \"SUPERSEDE\", \"predecessor_route_id\": \"old\"}, {\"route_id\": \"old\", \"decision\": \"DELETE\"}]",
+      "component_survived": false,
+      "interpretation": "Accepted with no complaint. The compiler's only lineage test is whether the predecessor id appears as a key in the input set - it never consults that predecessor's own disposition. So a compiled plan can simultaneously delete a route and record another route as superseding it, which is exactly the lineage break the deliverable says must be refused. The negative control HC-A2, identical but with the predecessor RETAINed, is also ACCEPTED, so the compiler cannot distinguish the safe case from the unsafe one at all."
+    },
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "Lineage continuity implies an origin. The producer explicitly blocks self-precedence, which shows awareness of the cycle class, so the question is whether the check has any depth.",
+      "construction": "Two routes forming a cycle: a SUPERSEDEs b, b SUPERSEDEs a. Then a three-route cycle a<-c, b<-a, c<-b.",
+      "observed_output_verbatim": "HC-B  two-route lineage CYCLE (a<-b, b<-a)\nHC-B: ACCEPTED\n   accepted lineage: [('a', 'b'), ('b', 'a')]\nHC-B2 three-route lineage CYCLE (a<-b<-c<-a)\nHC-B2: ACCEPTED",
+      "component_survived": false,
+      "interpretation": "Both cycles compile clean. The 'route cannot precede itself' guard is a cycle check of depth exactly one; there is no reachability or topological pass behind it. A compiled cycle has no origin record, which means the output can assert a lineage that cannot be walked - the precise failure mode 'enforces lineage continuity' names. The producer got close enough to this to write the depth-1 case and then stopped."
+    },
+    {
+      "hidden_case_id": "HC-C",
+      "rationale": "Coverage. The hypothesis enumerates five decisions; the producer's tests exercise two valid ones plus one invalid one. RETEST, REJECT and DELETE appear in the frozen hypothesis and in the DECISIONS set but in no test.",
+      "construction": "Three routes carrying RETEST, REJECT and DELETE respectively.",
+      "observed_output_verbatim": "HC-C: ACCEPTED\n   compiled: [('r1', 'RETEST'), ('r2', 'REJECT'), ('r3', 'DELETE')]",
+      "component_survived": true,
+      "interpretation": "All three work. The gap is only in test coverage, and since the check is a single frozenset membership test the untested decisions cannot behave differently. Low severity, recorded for completeness: the test named test_compiles_all_decisions_and_preserves_lineage in fact compiles two of the five."
+    },
+    {
+      "hidden_case_id": "HC-D",
+      "rationale": "The word 'exactly' in the hypothesis. Two ways to carry more than one decision: declare the route twice, or put a list in the decision field.",
+      "construction": "(1) route_id 'dup' declared twice with RETAIN and DELETE. (2) a single route whose decision is the list ['RETAIN', 'DELETE'].",
+      "observed_output_verbatim": "HC-D: REFUSED(DispositionError) | duplicate route_id: dup\nHC-D2: CRASH(TypeError) | unhashable type: 'list'",
+      "component_survived": true,
+      "interpretation": "Exactly-one is genuinely enforced against the realistic attack. The duplicate route_id refusal is clean and its message names the offending id. The list-valued decision raises TypeError from the frozenset membership test rather than DispositionError, so it fails closed but ungracefully - a hardening note, not a hole, since TypeError still aborts the compile."
+    },
+    {
+      "hidden_case_id": "HC-E",
+      "rationale": "Malformed input sweep, to see whether refusals are typed and deliberate or incidental.",
+      "construction": "Route entries as plain strings; decision None; route_id an int; predecessor an int; empty route set.",
+      "observed_output_verbatim": "   route entries are plain strings      -> CRASH(ValueError)\n   decision is None                     -> REFUSED(DispositionError)\n   route_id is an int                   -> REFUSED(DispositionError)\n   predecessor is an int                -> REFUSED(DispositionError)\n   empty route set                      -> ACCEPTED",
+      "component_survived": true,
+      "interpretation": "Type validation is real and typed for the field-level cases - the compiler checks isinstance on route_id and on predecessor rather than only truthiness. The string-entry case raises bare ValueError from dict(), but DispositionError subclasses ValueError so a caller catching ValueError is unaffected. The empty route set compiles to an empty plan, which is defensible for a validator."
+    },
+    {
+      "hidden_case_id": "HC-F",
+      "rationale": "The producer's tests import compile_dispositions directly and never invoke the command-line entry point, so main(), the output-file path and the process-level exit codes are entirely untested. Reproducibility across fresh processes also has to be shown rather than assumed.",
+      "construction": "Ran disposition_compiler.py as a subprocess with a routes file and -o, twice into different output files, then once against a file containing an invalid decision.",
+      "observed_output_verbatim": "   exit=0 output_written=True\n   deterministic ordering: ['a-first', 'z-last']\n   second fresh-process run byte-identical: True\n   CLI refusal path exit code on bad input:\n   exit=1 traceback=True",
+      "component_survived": true,
+      "interpretation": "The CLI works, sorts deterministically by route_id irrespective of input order, and two independent fresh-process runs produced byte-identical files. Refusal exits 1. The refusal surfaces as an uncaught traceback rather than a clean diagnostic, which is cosmetic for a validator but means an operator sees a stack trace instead of the lineage problem."
+    },
+    {
+      "hidden_case_id": "HC-G",
+      "is_vacuity_probe": true,
+      "rationale": "The commission's stub-substitution test, run in both directions because a validator can be faked either by always refusing or by never checking.",
+      "construction": "Two stubs, each dropped in place of disposition_compiler.py with the producer's test file unchanged: (1) compile_dispositions always raises DispositionError with a message containing all three regex fragments the tests match on; (2) compile_dispositions performs no validation at all and just returns the routes sorted.",
+      "observed_output_verbatim": "   always-raise stub: exit=1 (rejects stub)\n   always-accept stub: exit=1 (rejects stub)",
+      "component_survived": true,
+      "interpretation": "NOT VACUOUS, and this is the unit's real strength. The test suite pins both directions - one test requires successful compilation and three require typed refusals - so neither a constant-refuse nor a constant-accept implementation survives it. This is the discipline unit 024 lacked, achieved with four short tests."
+    },
+    {
+      "hidden_case_id": "HC-H",
+      "rationale": "The hypothesis is about 'every changed PO-03 route', but every fixture in the unit is an abstract two-element toy with ids like 'new' and 'old'. Whether the compiler can carry the real route population is asserted, never shown. So I built the real route set myself.",
+      "construction": "Took the actual changed path list between the frozen controller head 5cfebfdbc5549650ac8642e1c481f9ec702ab2d7 and the c5 cohort branch - 316 real paths - assigned one decision per path, and compiled. Then formed a real supersession pair and a real DELETE-orphan pair from two of those actual paths.",
+      "observed_output_verbatim": "HC-H  real changed PO-03 routes on the c5 cohort branch: 316\n      compiled 316 real routes, one decision each -> ACCEPTED\n      first: workstreams/po03/attempts/po03-wa-b2e7-033-disposition-compiler/.gitignore\n      last : workstreams/po03/tools/wave_a_spec.py\n      every route carries exactly one decision: True\n      real supersession pair with lineage -> ACCEPTED\n      real route DELETEd while still named as a predecessor -> ACCEPTED (lineage broken)",
+      "component_survived": true,
+      "interpretation": "Mixed and worth reading carefully. The exactly-one-decision half of the hypothesis is TRUE at real scale and I verified it - 316 genuine changed routes, one decision each, no collisions, deterministic ordering. That evidence did not exist before this review. The preserved-lineage half fails on real data for the same reason it failed on synthetic data in HC-A: a real path DELETEd while another real path still names it as predecessor compiles without complaint."
+    },
+    {
+      "hidden_case_id": "HC-I",
+      "rationale": "Cross-unit probe. The manifest declares a CPython bytecode file as artifact-001. Bytecode embeds co_filename, so I checked whether this wave shipped a producer machine path inside a declared deliverable - and then whether the wave's own path detector would have caught it.",
+      "construction": "Extracted blob bc895274552c81c7c211aa61967dc71630ef3f79 from the declared commit, hashed it, ran strings over it, then pointed unit 003's nonportable_path_detector.py at the same commit 402c277618bcf4ba659588381f11b8fadf4e7424.",
+      "observed_output_verbatim": "1ca03ede2a01fea13cf3ec486611e411ca53c1251370d738e406fe447948ca68  committed.pyc\n3839\n--- embedded absolute paths inside the committed bytecode:\nv/home/ubuntu/po03-worktrees/c5/workstreams/po03/attempts/po03-wa-b2e7-033-disposition-compiler/disposition_compiler.pyr\n--- unit 003 detector on the same commit:\nscanned_text_artifacts: 289\nskipped_binary_artifacts: 1\nfinding_count: 281",
+      "component_survived": false,
+      "interpretation": "Two findings, one about this unit and one about the wave. First: artifact-001 is CPython-3.12-specific bytecode that embeds the producer's absolute worktree path /home/ubuntu/po03-worktrees/c5/... - a machine-bound, interpreter-version-locked binary declared as a first-class deliverable inside a commission about portable runtime. Second, and more useful: the tree at that commit holds 290 blobs under workstreams/po03, of which unit 003's detector scanned 289 as text and skipped exactly 1 as binary. That one skipped blob is the only pyc in the tree, and it is the only artifact in the entire commit that actually contains an absolute producer path. So the wave's own non-portable-path detector reported 281 findings while stepping over the single true positive. This is real-repository confirmation of the coverage gap I recorded against unit 003 on synthetic grounds."
+    }
+  ],
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "MET - 4 tests, exit 0, committed test_output.txt byte-equal to my run, and the suite is non-vacuous in both directions under HC-G.",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET AND TRUTHFUL, with a caveat about what is listed. I could not verify against the extracted subtree because artifact-001 is absent from the cohort head, so I verified against the declared commit directly: blob bc8952745 is 3839 bytes with SHA-256 1ca03ede2a01fea13cf3ec486611e411ca53c1251370d738e406fe447948ca68, exactly as declared. The producer later removed the pyc and added a .gitignore for __pycache__, so manifest.json at the cohort head declares an artifact no longer in its own directory. Because content_uri is commit-pinned this still resolves and nothing is misstated - but a reader of the head tree alone will find a manifest listing four artifacts and a directory containing three of them plus two files the manifest does not list.",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - acceptance_contract_sha256 equals my pre-disclosure hash c13283ae...",
+    "result is committed and read back by a different process from an immutable object id": "MET - result_commit_id 402c277618bcf4ba659588381f11b8fadf4e7424, and I read all four declared blobs back from it myself.",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - PASS is explicit.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "PARTIALLY MET. The lineage half of the hypothesis does not hold as implemented, and this is reported as success rather than as a bounded negative.",
+    "no value, hash, metric or provider capability is invented": "MET. Every hash and byte count I recomputed matches, including the bytecode blob.",
+    "required_deliverable - assigns and validates one decision per route, enforces lineage continuity, refuses a decision that orphans its predecessor": "SPLIT. 'validates one decision per route' MET and verified at real scale on 316 routes. 'refuses a decision that orphans its predecessor' MET in the dangling-reference sense - an unresolvable predecessor id is refused with a clear message. 'assigns' NOT MET, and the producer says so in its own limitation: the component validates supplied decisions and infers nothing. 'enforces lineage continuity' NOT MET - cycles of length two and three compile clean, and a predecessor may be DELETEd while a successor still names it."
+  },
+
+  "scope_honesty_assessment": {
+    "producer_declared_limitations": [
+      "The compiler validates supplied route records; it does not infer dispositions for routes absent from the input."
+    ],
+    "assessment": "The one declared limitation is true and non-trivial - it concedes that 'assigns' in the deliverable is really 'validates', which is honest. But it is the only limitation declared, and the three things a reviewer most needs to know are absent from it: that lineage continuity is enforced only against dangling references and not against cycles or deleted predecessors, that three of the five decisions in the hypothesis are never exercised by a test, and that no fixture anywhere in the unit is a real PO-03 route. The manifest evidence line is accurate about what the tests covered - 'valid compilation, orphaned and missing predecessors, and unknown decisions' - which is a fair description of four tests but a thin basis for a hypothesis quantified over every changed route."
+  },
+
+  "nonportable_artifacts_in_subtree": [
+    "__pycache__/disposition_compiler.cpython-312.pyc - 3839 bytes, committed at 402c277618bcf4ba659588381f11b8fadf4e7424 and declared as manifest artifact-001. Interpreter-version-locked and embeds the absolute producer path /home/ubuntu/po03-worktrees/c5/workstreams/po03/attempts/po03-wa-b2e7-033-disposition-compiler/disposition_compiler.py. Mitigating: the producer removed it in a later commit on the same branch and added a .gitignore covering __pycache__/ and *.py[cod], so the cohort head tree is clean and the head .gitignore is itself an undeclared file in the subtree."
+  ],
+  "reproducibility_check": "Reproducible and deterministic. Two independent fresh-process CLI runs on the same input produced byte-identical output, and output ordering is sorted by route_id rather than input order.",
+
+  "vacuous_test_finding": false,
+  "reviewer_independent_verdict": "NOT_YET",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "DIVERGE",
+  "divergence_reason": "The frozen deliverable names three obligations and one of them is not met. 'Enforces lineage continuity' fails against two inputs I built in a few lines each: a two-route cycle and a three-route cycle both compile clean (HC-B), and a route may be DELETEd while another route still names it as predecessor (HC-A), which I reproduced on real repository paths as well as synthetic ones (HC-H). The compiler's entire lineage check is whether the predecessor id is a key in the input map; it never asks what disposition that predecessor itself carries, and its cycle guard has depth exactly one. The hypothesis' 'with preserved lineage' clause therefore does not hold as implemented. I record NOT_YET rather than FAIL because everything else here is sound and the gap is additive rather than structural - the exactly-one-decision half of the hypothesis is true and I confirmed it at real scale on 316 genuine changed routes, which is evidence the unit itself never produced. A reachability pass over the predecessor graph plus a check that a referenced predecessor is not DELETEd would close the gap without redesign.",
+  "disposition_recommendation": "REJECTED",
+  "disposition_reason": "Rejected for one specific unmet clause of the frozen deliverable, not for quality. This is competent work: the validation is typed rather than truthy, checking isinstance on both route_id and predecessor; the duplicate-route_id refusal genuinely enforces the 'exactly one' in the hypothesis; the empty-input and self-precedence edge cases are handled; output is deterministically sorted and byte-identical across fresh processes; and unusually for this wave the four-test suite is non-vacuous in both directions - I substituted a constant-refuse stub and a no-validation stub and the suite rejected both. Set against that, 'enforces lineage continuity' is a named requirement in the frozen deliverable and it is not enforced: cycles pass and deleted predecessors pass, both demonstrated on real repository paths, and neither is disclosed in the unit's limitations. Two secondary items weigh in. The unit declares a CPython-3.12 bytecode blob as artifact-001 which embeds the producer's absolute worktree path, inside a commission whose subject is portable runtime; the producer did clean it up in a later commit and add a .gitignore, so I treat it as a lapse corrected rather than a live defect. And no fixture in the unit is a real PO-03 route, so a hypothesis quantified over every changed route rests on two-element toys - I supplied the real 316-route run myself and it succeeded, which is why the re-run should be short. Add a predecessor-graph reachability check, refuse a SUPERSEDE whose predecessor is DELETEd, exercise RETEST and REJECT, and run the compiler once over the real changed-route list, and this earns a clean PASS.",
+  "followups_for_coordinator": [
+    "BLOCKING for re-run: refuse a plan in which a route named as predecessor_route_id carries the DELETE decision. Reviewer-observed: [{old, DELETE}, {new, SUPERSEDE, predecessor old}] compiles clean, and so does the same shape with real repository paths.",
+    "BLOCKING for re-run: add a reachability or topological pass over predecessor_route_id. Reviewer-observed: a<-b, b<-a and a three-route cycle all compile clean. The existing 'route cannot precede itself' guard is a depth-1 special case of exactly this check.",
+    "Run the compiler once over the real changed-route list rather than only two-element fixtures. I did this and it worked - 316 real changed paths between controller head 5cfebfdb and the c5 branch, one decision each, ACCEPTED - so this is cheap to satisfy and converts the hypothesis from asserted to demonstrated.",
+    "WAVE-LEVEL, cross-referenced with my unit 003 review: unit 003's non-portable-path detector scanned 289 of the 290 blobs under workstreams/po03 at commit 402c2776, skipped 1 as binary, and reported 281 findings - and the single skipped blob is the only artifact in that commit containing an absolute producer path. The detector stepped over the one true positive in the tree. This is real-repository confirmation of the coverage gap I recorded against unit 003 and it strengthens the case for re-running that unit with binary blobs in scope.",
+    "Non-portable artifact noted per commission instruction: __pycache__/disposition_compiler.cpython-312.pyc, 3839 bytes, declared as artifact-001, embedding /home/ubuntu/po03-worktrees/c5/... Removed by the producer in a later commit with a .gitignore added, so the head tree is clean. Recommend the wave-level rule be stated explicitly: bytecode is never a deliverable artifact.",
+    "Minor: manifest.json at the c5 head declares four artifacts of which only three exist in that directory, while two files present there (.gitignore, and the manifest's own pair) are undeclared. The commit-pinned content_uri makes this resolvable and nothing is misstated, but a head-only reader sees a manifest that does not describe its own directory."
+  ]
+}
