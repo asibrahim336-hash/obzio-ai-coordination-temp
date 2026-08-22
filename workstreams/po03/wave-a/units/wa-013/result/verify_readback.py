@@ -30,6 +30,17 @@ MANIFEST_PATH = "workstreams/po03/wave-a/units/wa-013/result/artifact-manifest.j
 OWNED_PREFIX = "workstreams/po03/wave-a/units/wa-013/"
 
 
+def redact_remote(remote: str) -> str:
+    """Strip any userinfo from a remote URL so tokens never reach durable evidence."""
+    scheme, separator, rest = remote.partition("://")
+    if not separator:
+        return remote
+    userinfo, at, hostpath = rest.rpartition("@")
+    if not at:
+        return remote
+    return f"{scheme}://<redacted-credential>@{hostpath}"
+
+
 def git(args: list[str], cwd: Path, *, binary: bool = False) -> Any:
     result = subprocess.run(
         ["git", *args], cwd=str(cwd), capture_output=True, check=False
@@ -108,7 +119,7 @@ def main(argv: list[str] | None = None) -> int:
             "method": "git clone --no-hardlinks --no-local --single-branch, then git show --no-textconv <commit>:<path> for every manifest artifact",
             "clone_shares_object_store_with_producer": shares_object_store,
             "clone_is_independent_copy": not shares_object_store,
-            "remote": args.remote,
+            "remote": redact_remote(args.remote),
             "branch": args.branch,
             "result_commit": args.commit,
             "result_commit_object_type": commit_present,
