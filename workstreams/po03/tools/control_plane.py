@@ -163,6 +163,9 @@ RECOVERY_EVENTS = frozenset({"RECOVERY_REQUIRED", "LEASE_EXPIRED", "RETRY_SCHEDU
 # Events that record an observation without advancing custody state.
 OBSERVABILITY_EVENTS = frozenset({"DUPLICATE_IGNORED", "FENCE_REJECTED", "FAULT_INJECTED"})
 
+#: A result manifest is a derivation a reader reproduces, not a path to guess.
+MANIFEST_SCHEME = "obzio-manifest-sha256"
+
 LOCK_TIMEOUT_SECONDS = 30.0
 LOCK_POLL_SECONDS = 0.005
 
@@ -1259,6 +1262,36 @@ def ingest_result(
             }
         )
 
+    # ``manifest_uri`` used to name a git path that never existed, so it could
+    # not be checked at all.  The derivable scheme is verified; the legacy
+    # scheme is tolerated and flagged, because eight cohorts have already
+    # emitted results with it and their artifact bytes are still sound.
+    manifest_uri = str(txn.get("manifest_uri") or "")
+    if manifest_uri.startswith(MANIFEST_SCHEME + ":"):
+        manifest_scheme = MANIFEST_SCHEME
+        expected = canonical(
+            {
+                "unit_id": unit_id,
+                "commit": commit_id,
+                "artifacts": [
+                    {"logical_name": item["logical_name"], "sha256": item["sha256"], "bytes": item["bytes"]}
+                    for item in sorted(result_doc["artifacts"], key=lambda item: item["artifact_id"])
+                ],
+            }
+        )
+        derived = sha256_text(expected)
+        if derived != txn.get("manifest_sha256") or manifest_uri != f"{MANIFEST_SCHEME}:{derived}":
+            _reject(
+                unit_id,
+                f"declared manifest does not derive from the declared artifacts: "
+                f"manifest_uri {manifest_uri!r}, manifest_sha256 {txn.get('manifest_sha256')!r}, "
+                f"derived {derived}",
+            )
+    elif manifest_uri:
+        manifest_scheme = "legacy-unresolvable-manifest-uri"
+    else:
+        manifest_scheme = "absent"
+
     if claims_durability:
         ingest_event = "PARENT_INGESTED"
     elif incoming_state in {"PROVIDER_COMPLETED_UNCOMMITTED", "FAILED_TERMINAL", "CANCELLED"}:
@@ -1281,6 +1314,7 @@ def ingest_result(
             "reported_obzio_state": incoming_state,
             "result_commit_id": txn["result_commit_id"],
             "result_locator": txn["manifest_uri"],
+            "manifest_uri_scheme": manifest_scheme,
             "artifact_count": len(verified),
             "total_bytes": sum(item["bytes"] for item in verified),
             "verified_artifacts": verified,
