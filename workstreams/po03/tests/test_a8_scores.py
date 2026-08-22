@@ -265,6 +265,50 @@ class GuardFalsificationTests(unittest.TestCase):
         self.assertEqual(declared, evaluated)
 
 
+class ReceiptTests(unittest.TestCase):
+    RECEIPT = REPO_ROOT / "receipts" / "po03" / "2026-08-22" / "successor-generation.json"
+
+    def _receipt(self) -> dict:
+        return json.loads(self.RECEIPT.read_text(encoding="utf-8"))
+
+    def test_receipt_matches_the_tree_it_describes(self):
+        result = subprocess.run(
+            [sys.executable, "-I", "workstreams/po03/successor/write_receipt.py", "--check"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_every_recorded_artifact_hash_matches_the_file(self):
+        import hashlib
+
+        for entry in self._receipt()["artifacts"]:
+            path = REPO_ROOT / entry["path"]
+            self.assertTrue(path.is_file(), entry["path"])
+            self.assertEqual(hashlib.sha256(path.read_bytes()).hexdigest(), entry["sha256"], entry["path"])
+
+    def test_the_receipt_claims_no_state_this_cohort_may_not_emit(self):
+        receipt = self._receipt()
+        self.assertEqual(receipt["state"], "RESULT_COMMITTED")
+        self.assertEqual(receipt["acceptance"], "NOT_TESTED")
+        self.assertFalse(receipt["merge_authority"])
+        for unit in receipt["units"]:
+            self.assertIn(unit["state"], {"RESULT_COMMITTED", "READY_TO_COMMIT"}, unit["unit_id"])
+
+    def test_the_receipt_records_its_boundaries_rather_than_only_its_results(self):
+        boundaries = self._receipt()["boundaries"]
+        self.assertGreaterEqual(len(boundaries), 3)
+        for entry in boundaries:
+            self.assertIn(entry["status"], {"NOT_YET", "NOT_SUPPORTED"})
+            self.assertTrue(entry["detail"].strip())
+
+    def test_the_receipt_does_not_write_into_another_cohorts_path(self):
+        consumers = self._receipt()["consumers"]
+        self.assertIn("workstreams/po03/metrics/generation-comparison.json", consumers)
+        self.assertFalse((REPO_ROOT / "workstreams" / "po03" / "metrics").exists())
+
+
 class TranscriptTests(unittest.TestCase):
     def test_recorded_transcripts_reproduce(self):
         result = subprocess.run(
