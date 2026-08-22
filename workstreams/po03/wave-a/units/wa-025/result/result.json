@@ -1,0 +1,111 @@
+{
+  "protocol_version": "OBZIO-WAVE-A-UNIT-RESULT-v1",
+  "task_id": "PO03-WA-025",
+  "hypothesis_id": "H-PO03-WA-025",
+  "hypothesis": "Fetch plus git-show at an immutable commit detects branch-tip movement and preserves exact artifact bytes.",
+  "hypothesis_outcome": "SUPPORTED",
+  "method": {
+    "source_claim_capsule": "workstreams/po03/wave-a/units/wa-025/result/source-claims.json",
+    "hypothesis_freeze": "workstreams/po03/wave-a/units/wa-025/result/hypotheses.json",
+    "reproduction": "R-PO03-WA-025-001",
+    "reproduction_design": "A sanitized binary artifact was committed at A, fetched by a consumer, then its branch was force-moved to unrelated B carrying intentionally different bytes. A forced fetch updated a dedicated tracking ref from A to B, while git show --no-textconv A:<path> was checked against frozen SHA-256 and byte count.",
+    "exact_falsifier": "Either the move from A to B is not detected after successful fetch, or any byte/digest returned for A differs from the frozen artifact.",
+    "observed": {
+      "initial_commit": "bb0b6355d67ead53507cd84a63cb0b34a302887c",
+      "moved_commit": "f36f78514b149253b4d19c342492daa23b7e95e5",
+      "movement_detected": true,
+      "histories_unrelated": true,
+      "pinned_artifact_sha256": "10638da32820b78f39340728c2e3b353d6f435a6e9c98e0eee4e2955b39de8e2",
+      "pinned_artifact_bytes": 75,
+      "all_pinned_bytes_match": true,
+      "moved_tip_content_differs": true
+    }
+  },
+  "artifacts": {
+    "executable_readback_verifier": "workstreams/po03/wave-a/units/wa-025/result/immutable_readback.py",
+    "executable_reproduction": "workstreams/po03/wave-a/units/wa-025/result/reproduce_branch_movement.py",
+    "focused_tests": "workstreams/po03/wave-a/units/wa-025/result/test_immutable_readback.py",
+    "reproduction_result": "workstreams/po03/wave-a/units/wa-025/result/reproduction-result.json",
+    "mechanism_change": "workstreams/po03/wave-a/units/wa-025/result/mechanism-change.json",
+    "strategy_proposals": "workstreams/po03/wave-a/units/wa-025/result/strategy-proposals.json",
+    "manifest": "workstreams/po03/wave-a/units/wa-025/result/artifact-manifest.json",
+    "producer_return": "workstreams/po03/wave-a/units/wa-025/result/ready-to-commit.json"
+  },
+  "tests": {
+    "path": "workstreams/po03/wave-a/units/wa-025/result/tests.json",
+    "focused": {
+      "count": 6,
+      "outcome": "PASS"
+    },
+    "seeded_contracts": {
+      "count": 23,
+      "outcome": "PASS"
+    },
+    "sanitized_reproduction": {
+      "count": 1,
+      "outcome": "PASS"
+    },
+    "first_pass_outcome": "FAIL",
+    "final_outcome": "PASS"
+  },
+  "source_claims": {
+    "path": "workstreams/po03/wave-a/units/wa-025/result/source-claims.json",
+    "count": 4,
+    "supported_claim_ids": [
+      "SC-PO03-WA-025-01",
+      "SC-PO03-WA-025-02",
+      "SC-PO03-WA-025-03",
+      "SC-PO03-WA-025-04"
+    ]
+  },
+  "hypotheses": {
+    "path": "workstreams/po03/wave-a/units/wa-025/result/hypotheses.json",
+    "current_method_hypothesis_count": 2,
+    "all_frozen_before_reproduction": true
+  },
+  "reproductions": {
+    "path": "workstreams/po03/wave-a/units/wa-025/result/reproduction-result.json",
+    "sanitized_obzio_reproduction_count": 1
+  },
+  "mechanism_changes": {
+    "path": "workstreams/po03/wave-a/units/wa-025/result/mechanism-change.json",
+    "count": 1,
+    "disposition": "RETAIN"
+  },
+  "strategy_proposals": {
+    "path": "workstreams/po03/wave-a/units/wa-025/result/strategy-proposals.json",
+    "count": 1,
+    "status": "UNBOUND_PROPOSAL"
+  },
+  "limitations": {
+    "path": "workstreams/po03/wave-a/units/wa-025/result/limitations.json",
+    "count": 7
+  },
+  "model_observed": "gpt-5.6-sol-max-fast",
+  "model_requested": "gpt-5.6-sol-xhigh",
+  "reasoning_observed": "NOT_SUPPORTED",
+  "reasoning_requested": "xhigh",
+  "started_at": "2026-08-22T07:16:00Z",
+  "finished_at": "2026-08-22T07:26:36Z",
+  "preregistered_metrics": {
+    "wall_time_seconds": 636,
+    "wall_time_start_precision": "MINUTE_FROM_INVOCATION_TIMESTAMP",
+    "test_count": 29,
+    "first_pass_outcome": "FAIL",
+    "artifact_count": "RECORDED_IN_ARTIFACT_MANIFEST",
+    "artifact_bytes": "RECORDED_IN_ARTIFACT_MANIFEST",
+    "source_claim_count": 4,
+    "reproduction_count": 1,
+    "mechanism_change_count": 1,
+    "defects": 2,
+    "rework": 2,
+    "provider_block": false,
+    "collision": false,
+    "recovery_events": 0
+  },
+  "producer_state": "READY_TO_COMMIT",
+  "obzio_state_claimed": "RESULT_COMMITTED_AFTER_REMOTE_READBACK_ONLY",
+  "completion_claimed": false,
+  "independent_acceptance": "NOT_TESTED",
+  "decision_changed": []
+}
