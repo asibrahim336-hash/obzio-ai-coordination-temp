@@ -175,6 +175,37 @@ def run_tests() -> dict[str, Any]:
     }
 
 
+def rerun_focused_suite() -> dict[str, Any]:
+    """Re-run the focused suite without disturbing the recorded evidence.
+
+    Used when a return is corrected after its result commit: the recorded log is a
+    manifest artifact of that commit, so re-running must not overwrite it, but the
+    receipt should still say whether the code it is committed alongside passes.
+    """
+    command = [sys.executable, "-I", "-m", "unittest", "discover", "-s", "tests", "-t", "tests", "-v"]
+    started = time.time()
+    completed = subprocess.run(command, cwd=UNIT_ROOT, capture_output=True, text=True, timeout=3600)
+    output = completed.stdout + completed.stderr
+    parsed = parse_unittest_output(output)
+    return {
+        "command": "python3 -I -m unittest discover -s tests -t tests -v",
+        "outcome": "PASS" if completed.returncode == 0 else "FAIL",
+        "returncode": completed.returncode,
+        "summary_line": parsed["summary_line"],
+        "total": parsed["total"],
+        "passed": parsed["passed"],
+        "failed": parsed["failed"],
+        "skipped": parsed["skipped"],
+        "wall_time_seconds": round(time.time() - started, 3),
+        "output_sha256": sha256_bytes(output.encode("utf-8")),
+        "log_written": False,
+        "note": (
+            "Not written to evidence/test-run.txt: that file is a manifest artifact of the result commit and "
+            "overwriting it would invalidate a digest the read-back depends on."
+        ),
+    }
+
+
 def run_seeded_tests() -> dict[str, Any]:
     """Run the seeded PO-03 suite exactly as the workflow does."""
     repo = repository_root()
@@ -832,6 +863,46 @@ def build_manifest() -> dict[str, Any]:
 
 
 # ----------------------------------------------------------------- ready stage
+# The controller's reconciler matches a return to the lease it was dispatched
+# under, so the receipt has to carry the attempt envelope, not only the result
+# document.  These four are the values the dispatch pinned; they are asserted
+# rather than assumed, because a receipt naming the wrong lease or a stale fence
+# would be reconciled against the wrong attempt.
+MANDATED_ATTEMPT = {
+    "attempt_id": "PO03-WA-016-A01",
+    "idempotency_key": "po03:100bc20:wa-016:a01",
+    "lease_id": "lease-po03-wa-016-a01",
+    "fence_token": 1,
+}
+ATTEMPT_FIELDS = (
+    "attempt_id",
+    "checkpoint_seq",
+    "fence_token",
+    "idempotency_key",
+    "lease_expires_at",
+    "lease_id",
+)
+
+
+def validate_attempt(attempt: dict[str, Any]) -> dict[str, Any]:
+    """Return the frozen attempt envelope, complete and exactly as dispatched."""
+    missing = [field for field in ATTEMPT_FIELDS if field not in attempt]
+    if missing:
+        raise SystemExit(f"the frozen attempt envelope is incomplete: {missing}")
+    wrong = {
+        field: {"expected": expected, "observed": attempt[field]}
+        for field, expected in MANDATED_ATTEMPT.items()
+        if attempt[field] != expected
+    }
+    if wrong:
+        raise SystemExit(f"the frozen attempt envelope disagrees with the dispatch: {wrong}")
+    return {field: attempt[field] for field in ATTEMPT_FIELDS}
+
+
+def attempt_envelope(repo: Path | None = None) -> dict[str, Any]:
+    return validate_attempt(task_input(repo or repository_root())["attempt"])
+
+
 def git_output(*args: str) -> str:
     return subprocess.run(
         ["git", "-C", str(repository_root()), *args],
@@ -954,6 +1025,9 @@ def build_ready(result_commit: str) -> dict[str, Any]:
     result = json.loads((RESULT_DIR / "result.json").read_text(encoding="utf-8"))
     limitations = json.loads((RESULT_DIR / "limitations.json").read_text(encoding="utf-8"))
     tests = result["tests"]
+    rerun = rerun_focused_suite()
+    if rerun["outcome"] != "PASS":
+        raise SystemExit(f"the focused suite does not pass at this tree; refusing to emit a return: {rerun}")
     readback = read_back_from_remote(result_commit)
     subtree = manifest["owned_subtree"]
 
@@ -968,10 +1042,21 @@ def build_ready(result_commit: str) -> dict[str, Any]:
     )
     outside = [path for path in changed if not path.startswith(f"{subtree}/")]
 
+    # What the return commit adds on top of the result commit.  The manifest is
+    # scoped to the result commit, so anything here is deliberately outside it and
+    # is named rather than left for a verifier to discover as a digest mismatch.
+    beyond = sorted(
+        set(git_output("diff", "--name-only", result_commit).split())
+        | set(git_output("ls-files", "--others", "--exclude-standard").split())
+    )
+    outside_beyond = [path for path in beyond if not path.startswith(f"{subtree}/")]
+
     return {
         "protocol_version": "OBZIO-PRODUCER-RETURN-v1",
         "terminal_report": "READY_TO_COMMIT",
         "task_id": TASK_ID,
+        "attempt": attempt_envelope(repo),
+        "decision_changed": [],
         "hypothesis_id": result["hypothesis_id"],
         "hypothesis_outcome": result["hypothesis_outcome"],
         "runner_id": RUNNER_ID,
@@ -993,6 +1078,15 @@ def build_ready(result_commit: str) -> dict[str, Any]:
             "paths_outside_owned_subtree": outside,
             "paths": changed,
             "in_the_result_commit_alone": in_result_commit,
+            "beyond_the_result_commit": {
+                "paths": beyond,
+                "outside_owned_subtree": outside_beyond,
+                "note": (
+                    "Carried by the return commit rather than the result commit, so covered by neither the "
+                    "manifest nor its read-back. The manifest and its 43 artifacts describe the result commit, "
+                    "which is unchanged and independently verifiable at that commit."
+                ),
+            },
             "commits": [
                 {"commit": line.split(" ", 1)[0], "subject": line.split(" ", 1)[1]}
                 for line in git_output(
@@ -1003,7 +1097,7 @@ def build_ready(result_commit: str) -> dict[str, Any]:
         },
         "ownership_validation": {
             "allowed_write_globs": task_input(repo)["ownership"]["allowed_write_globs"],
-            "every_changed_path_inside_the_allowed_glob": not outside,
+            "every_changed_path_inside_the_allowed_glob": not outside and not outside_beyond,
             "prohibited_paths_touched": [],
             "po01_or_pr8_touched": False,
             "pull_request_created_or_modified": False,
@@ -1018,6 +1112,8 @@ def build_ready(result_commit: str) -> dict[str, Any]:
             "output_sha256": tests["output_sha256"],
             "seeded_control_suite": result["seeded_control_tests"]["outcome"],
             "taxonomy_check": result["taxonomy_check"]["outcome"],
+            "recorded_at": "the result commit; these counts describe the tree at " + result_commit,
+            "rerun_for_this_return": rerun,
         },
         "limitations": {
             "document": f"{subtree}/result/limitations.json",

@@ -1,6 +1,23 @@
 {
   "artifact_count": 43,
+  "attempt": {
+    "attempt_id": "PO03-WA-016-A01",
+    "checkpoint_seq": 0,
+    "fence_token": 1,
+    "idempotency_key": "po03:100bc20:wa-016:a01",
+    "lease_expires_at": "2026-08-22T13:13:11Z",
+    "lease_id": "lease-po03-wa-016-a01"
+  },
   "changed_files": {
+    "beyond_the_result_commit": {
+      "note": "Carried by the return commit rather than the result commit, so covered by neither the manifest nor its read-back. The manifest and its 43 artifacts describe the result commit, which is unchanged and independently verifiable at that commit.",
+      "outside_owned_subtree": [],
+      "paths": [
+        "workstreams/po03/wave-a/units/wa-016/harness/emit_result.py",
+        "workstreams/po03/wave-a/units/wa-016/result/ready-to-commit.json",
+        "workstreams/po03/wave-a/units/wa-016/tests/test_emit_result.py"
+      ]
+    },
     "commits": [
       {
         "commit": "98009cca0bc23a3962ec94a240ecf68d363f7346",
@@ -111,7 +128,8 @@
     "note": "This producer does not claim COMPLETED or ACCEPTED. Only the coordinator may record completion, and a producer cannot accept its own result.",
     "obzio_state": "READY_TO_COMMIT"
   },
-  "emitted_at": "2026-08-22T08:57:37Z",
+  "decision_changed": [],
+  "emitted_at": "2026-08-22T09:11:03Z",
   "hypothesis_id": "H-PO03-WA-016",
   "hypothesis_outcome": "SUPPORTED",
   "limitations": {
@@ -517,6 +535,21 @@
     "outcome": "PASS",
     "output_log": "evidence/test-run.txt",
     "output_sha256": "5bb1170ad3b134ad5d8d65312e3b87367481b7d96e6401d90970ab7f126995d1",
+    "recorded_at": "the result commit; these counts describe the tree at 98009cca0bc23a3962ec94a240ecf68d363f7346",
+    "rerun_for_this_return": {
+      "command": "python3 -I -m unittest discover -s tests -t tests -v",
+      "failed": 0,
+      "log_written": false,
+      "note": "Not written to evidence/test-run.txt: that file is a manifest artifact of the result commit and overwriting it would invalidate a digest the read-back depends on.",
+      "outcome": "PASS",
+      "output_sha256": "9a77f99783cf6167d2df337ce72edbbb212b346f66ed3a6a865e9db0a7280fb4",
+      "passed": 258,
+      "returncode": 0,
+      "skipped": 0,
+      "summary_line": "Ran 259 tests in 22.602s",
+      "total": 259,
+      "wall_time_seconds": 22.856
+    },
     "seeded_control_suite": "PASS",
     "summary_line": "Ran 251 tests in 22.626s",
     "taxonomy_check": "PASS",
