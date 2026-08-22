@@ -1,5 +1,6 @@
 import copy
 import importlib.util
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -13,6 +14,23 @@ SPEC.loader.exec_module(MODULE)
 
 
 H = "a" * 64
+HARDENING_ROOT = (
+    Path(__file__).parents[1]
+    / "attempts"
+    / "wave-a"
+    / "wave-a-041-schema-adversarial-review"
+)
+HARDENING_CASES = {
+    case["case_id"]: case
+    for case in json.loads(
+        (HARDENING_ROOT / "adversarial-cases.json").read_text(encoding="utf-8")
+    )["cases"]
+}
+HARDENING_FIXTURES = json.loads(
+    (HARDENING_ROOT / "candidate" / "hardened-fixtures.json").read_text(
+        encoding="utf-8"
+    )
+)
 
 
 def committed_result():
@@ -25,8 +43,8 @@ def committed_result():
         "provider_state": "COMPLETED",
         "obzio_state": "COMPLETED",
         "attempt": {
-            "attempt_id": "attempt-1",
-            "idempotency_key": "po03-test-1:1",
+            "attempt_id": "po03-test-1-attempt-1",
+            "idempotency_key": "COM-PO03:po03-test-1:attempt-1",
             "lease_id": "lease-1",
             "fence_token": 1,
             "provider_run_id": "provider-run-1",
@@ -39,18 +57,27 @@ def committed_result():
             "state": "INGESTED",
             "manifest_uri": "git:po03/run/po03-test-1@abc:manifest.json",
             "manifest_sha256": H,
-            "artifact_count": 1,
-            "total_bytes": 7,
+            "artifact_count": 2,
+            "total_bytes": 14,
             "committed_at": "2026-08-22T06:01:00Z",
             "verified_at": "2026-08-22T06:02:00Z",
             "parent_ingested_at": "2026-08-22T06:03:00Z",
-            "result_commit_id": "abc123",
+            "result_commit_id": "b" * 40,
         },
         "artifacts": [
             {
                 "artifact_id": "artifact-1",
                 "logical_name": "result.json",
                 "content_uri": "git:po03/run/po03-test-1@abc:result.json",
+                "sha256": H,
+                "bytes": 7,
+                "media_type": "application/json",
+                "readback_verified_at": "2026-08-22T06:02:00Z",
+            },
+            {
+                "artifact_id": "artifact-manifest",
+                "logical_name": "manifest.json",
+                "content_uri": "git:po03/run/po03-test-1@abc:manifest.json",
                 "sha256": H,
                 "bytes": 7,
                 "media_type": "application/json",
@@ -83,6 +110,35 @@ def wave_receipt():
     }
 
 
+def honest_result_ledger():
+    spec = HARDENING_FIXTURES["honest_ledger"]
+    documents = []
+    for step in spec["steps"]:
+        document = copy.deepcopy(spec["base"])
+        document["obzio_state"] = step["obzio_state"]
+        document["provider_state"] = step["provider_state"]
+        document["attempt"]["checkpoint_seq"] = step["checkpoint_seq"]
+        document["result_transaction"]["state"] = step["transaction_state"]
+        if step.get("artifacts") == "staged":
+            document["artifacts"] = copy.deepcopy(spec["staged_artifacts"])
+            document["result_transaction"].update(spec["staged_manifest"])
+        elif step.get("artifacts") == "committed":
+            document["artifacts"] = copy.deepcopy(spec["committed_artifacts"])
+        document["result_transaction"]["artifact_count"] = len(document["artifacts"])
+        document["result_transaction"]["total_bytes"] = sum(
+            artifact["bytes"] for artifact in document["artifacts"]
+        )
+        if step.get("committed"):
+            evidence = dict(spec["commit_evidence"])
+            if not step.get("ingested"):
+                evidence.pop("parent_ingested_at")
+            document["result_transaction"].update(evidence)
+        if step.get("completion_actor"):
+            document["completion_actor"] = step["completion_actor"]
+        documents.append(document)
+    return documents
+
+
 class TransactionalResultTests(unittest.TestCase):
     def assert_invalid(self, mutate, contains):
         doc = committed_result()
@@ -96,7 +152,7 @@ class TransactionalResultTests(unittest.TestCase):
     def test_zero_byte_artifact_is_valid_and_reconciled(self):
         doc = committed_result()
         doc["artifacts"][0]["bytes"] = 0
-        doc["result_transaction"]["total_bytes"] = 0
+        doc["result_transaction"]["total_bytes"] = 7
         self.assertEqual([], MODULE.validate_result(doc))
 
     def test_negative_artifact_size_is_rejected(self):
@@ -183,7 +239,7 @@ class TransactionalResultTests(unittest.TestCase):
         self.assert_invalid(lambda d: d["artifacts"][0].update(sha256="bad"), "artifacts[0].sha256")
 
     def test_artifact_count_is_reconciled(self):
-        self.assert_invalid(lambda d: d["result_transaction"].update(artifact_count=2), "artifact_count")
+        self.assert_invalid(lambda d: d["result_transaction"].update(artifact_count=3), "artifact_count")
 
     def test_byte_count_is_reconciled(self):
         self.assert_invalid(lambda d: d["result_transaction"].update(total_bytes=8), "total_bytes")
@@ -191,8 +247,8 @@ class TransactionalResultTests(unittest.TestCase):
     def test_duplicate_artifact_id_rejected(self):
         doc = committed_result()
         doc["artifacts"].append(copy.deepcopy(doc["artifacts"][0]))
-        doc["result_transaction"]["artifact_count"] = 2
-        doc["result_transaction"]["total_bytes"] = 14
+        doc["result_transaction"]["artifact_count"] = 3
+        doc["result_transaction"]["total_bytes"] = 21
         errors = MODULE.validate_result(doc)
         self.assertTrue(any("duplicate" in error for error in errors), errors)
 
@@ -228,6 +284,92 @@ class TransactionalResultTests(unittest.TestCase):
             lambda d: d.update(provider_state="RUNNING"),
             "custody after provider completion",
         )
+
+
+class AdversarialHardeningTests(unittest.TestCase):
+    def test_each_snapshot_exploit_is_closed_for_its_own_reason(self):
+        expectations = HARDENING_FIXTURES["expected_hardened_rejection"]
+        for case_id, expectation in sorted(expectations.items()):
+            if expectation["level"] == "ledger":
+                continue
+            with self.subTest(case=case_id, closed_by=expectation["closed_by"]):
+                errors = []
+                for document in HARDENING_CASES[case_id]["documents"]:
+                    errors.extend(
+                        MODULE.validate_result(
+                            copy.deepcopy(document),
+                            expectation.get("context"),
+                        )
+                    )
+                self.assertTrue(errors, f"{case_id}: exploit was accepted")
+                self.assertTrue(
+                    any(
+                        expectation["error_substring"] in error
+                        for error in errors
+                    ),
+                    (
+                        f"{case_id}: not rejected for "
+                        f"{expectation['error_substring']!r}: {errors}"
+                    ),
+                )
+
+    def test_ledger_exploits_require_and_fail_sequence_validation(self):
+        probes = {
+            case_id: probe
+            for case_id, probe in HARDENING_FIXTURES["ledger_probes"].items()
+            if isinstance(probe, dict)
+        }
+        self.assertEqual(2, len(probes))
+        for case_id, probe in sorted(probes.items()):
+            with self.subTest(case=case_id):
+                documents = copy.deepcopy(probe["documents"])
+                for document in documents:
+                    self.assertEqual([], MODULE.validate_result(document))
+                errors = MODULE.validate_result_sequence(documents)
+                self.assertTrue(
+                    any(probe["error_substring"] in error for error in errors),
+                    errors,
+                )
+
+    def test_truthful_states_and_full_ledger_remain_representable(self):
+        self.assertEqual(
+            [],
+            MODULE.validate_result(
+                copy.deepcopy(HARDENING_FIXTURES["honest_control_v2"])
+            ),
+        )
+        self.assertEqual(
+            [],
+            MODULE.validate_result(
+                copy.deepcopy(
+                    HARDENING_FIXTURES["truthful_staged_provider_loss"]
+                )
+            ),
+        )
+        self.assertEqual(
+            [],
+            MODULE.validate_result(
+                copy.deepcopy(HARDENING_FIXTURES["truthful_zero_byte_artifact"])
+            ),
+        )
+        self.assertEqual([], MODULE.validate_result_sequence(honest_result_ledger()))
+
+    def test_duplicate_terminal_callback_is_idempotent_but_fork_is_rejected(self):
+        ledger = honest_result_ledger()
+        replayed = ledger + [copy.deepcopy(ledger[-1]), copy.deepcopy(ledger[-1])]
+        self.assertEqual([], MODULE.validate_result_sequence(replayed))
+        forked = copy.deepcopy(ledger[-1])
+        forked["result_transaction"]["result_commit_id"] = "0" * 40
+        errors = MODULE.validate_result_sequence(ledger + [forked])
+        self.assertTrue(any("cannot also produce" in error for error in errors), errors)
+
+    def test_identity_normalisation_closes_human_equivalent_aliases(self):
+        normalise = MODULE.normalise_identity
+        self.assertEqual(normalise("producer-1"), normalise("producer-1 "))
+        self.assertEqual(normalise("producer-1"), normalise("Producer-1"))
+        self.assertEqual(normalise("producer-1"), normalise("producer-1\u200b"))
+        self.assertEqual(normalise("produc\u00e9r-1"), normalise("produce\u0301r-1"))
+        self.assertNotEqual(normalise("producer-1"), normalise("reviewer-1"))
 
 
 class WaveCompoundingTests(unittest.TestCase):

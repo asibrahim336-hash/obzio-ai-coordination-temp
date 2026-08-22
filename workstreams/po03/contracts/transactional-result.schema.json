@@ -65,7 +65,12 @@
         "fence_token": { "type": "integer", "minimum": 1 },
         "provider_run_id": { "$ref": "#/$defs/nonempty" },
         "worker_id": { "$ref": "#/$defs/nonempty" },
-        "heartbeat_at": { "type": ["string", "null"] },
+        "heartbeat_at": {
+          "anyOf": [
+            { "type": "string", "format": "date-time" },
+            { "type": "null" }
+          ]
+        },
         "checkpoint_seq": { "type": "integer", "minimum": 0 }
       }
     },
@@ -93,10 +98,33 @@
         "manifest_sha256": { "anyOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }] },
         "artifact_count": { "type": "integer", "minimum": 0 },
         "total_bytes": { "type": "integer", "minimum": 0 },
-        "committed_at": { "type": ["string", "null"] },
-        "verified_at": { "type": ["string", "null"] },
-        "parent_ingested_at": { "type": ["string", "null"] },
-        "result_commit_id": { "type": ["string", "null"] }
+        "committed_at": {
+          "anyOf": [
+            { "type": "string", "format": "date-time" },
+            { "type": "null" }
+          ]
+        },
+        "verified_at": {
+          "anyOf": [
+            { "type": "string", "format": "date-time" },
+            { "type": "null" }
+          ]
+        },
+        "parent_ingested_at": {
+          "anyOf": [
+            { "type": "string", "format": "date-time" },
+            { "type": "null" }
+          ]
+        },
+        "result_commit_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^(?:[0-9a-f]{40}|[0-9a-f]{64})$"
+            },
+            { "type": "null" }
+          ]
+        }
       }
     },
     "artifacts": {
@@ -120,11 +148,21 @@
           "sha256": { "$ref": "#/$defs/sha256" },
         "bytes": { "type": "integer", "minimum": 0 },
           "media_type": { "$ref": "#/$defs/nonempty" },
-          "readback_verified_at": { "type": ["string", "null"] }
+          "readback_verified_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ]
+          }
         }
       }
     },
-    "completion_actor": { "type": ["string", "null"] },
+    "completion_actor": {
+      "anyOf": [
+        { "const": "coordinator" },
+        { "type": "null" }
+      ]
+    },
     "independent_acceptance": {
       "type": "object",
       "additionalProperties": false,
