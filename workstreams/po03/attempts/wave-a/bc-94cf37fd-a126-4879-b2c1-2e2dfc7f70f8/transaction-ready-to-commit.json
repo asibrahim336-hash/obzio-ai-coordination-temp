@@ -1,0 +1,70 @@
+{
+  "report_version": "PO03-PRODUCER-READY-TO-COMMIT-v1",
+  "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+  "task_id": "po03-wave-a-bc94cf-adversarial-cohort",
+  "attempt_ids": [
+    "po03-wa-adv-001",
+    "po03-wa-adv-002",
+    "po03-wa-adv-003",
+    "po03-wa-adv-004",
+    "po03-wa-adv-005",
+    "po03-wa-adv-006",
+    "po03-wa-adv-007",
+    "po03-wa-adv-008"
+  ],
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "immutable_input_manifest_sha256": "ec8924c2f08153eff9e57b43b376cd9b6b4547dba424d69db8745b3a2d3eed63",
+  "acceptance_contract_sha256": "fcb97d5577141ba2eeb58dc56969466b65c149593eddbf1bf0b694485f86393a",
+  "provider_state": "COMPLETED",
+  "producer_reported_state": "READY_TO_COMMIT",
+  "obzio_state": "RESULT_STAGING",
+  "attempt": {
+    "attempt_id": "po03-wave-a-bc94cf-adversarial-cohort-attempt-1",
+    "idempotency_key": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001:bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8:1",
+    "lease_id": "lease-po03-bc94cf-001",
+    "fence_token": 1,
+    "provider_run_id": "bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8",
+    "worker_id": "bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8",
+    "heartbeat_at": "2026-08-22T07:00:46Z",
+    "checkpoint_seq": 4
+  },
+  "result_transaction": {
+    "result_txn_id": "result-po03-wave-a-bc94cf-adversarial-cohort-1",
+    "state": "STAGING",
+    "artifact_commit_sha": "dbffcba1c9f2cd386f327bf0f7fb9051788fea41",
+    "manifest_uri": "workstreams/po03/attempts/wave-a/bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8/result-manifest.json",
+    "manifest_sha256": "88bfae837ad8a5699d5f0a4255b245776c9d4424962669602922cb22e2ecb161",
+    "artifact_count": 18,
+    "total_bytes": 55939,
+    "result_commit_id": null,
+    "readback_verified_at": null,
+    "parent_ingested_at": null
+  },
+  "test_summary": {
+    "seeded_and_controller_tests": "PASS_37_OF_37",
+    "adversarial_tests": "PASS_9_OF_9",
+    "attempts_with_executable_evidence": 8,
+    "defects_confirmed": 8,
+    "clean_clone": "PASS",
+    "path_scope": "PASS",
+    "operator_taxonomy": "PASS"
+  },
+  "producer_claims": {
+    "completed": false,
+    "independently_accepted": false,
+    "wave_a_complete": false
+  },
+  "required_parent_actions": [
+    "Read result-manifest.json and every listed artifact back from the immutable result commit.",
+    "Verify hashes, byte counts, event chain, fence token, and changed-path ownership.",
+    "Record parent ingestion before setting COMPLETED.",
+    "Route all eight attempts to a non-producer reviewer for ACCEPTED or REJECTED dispositions.",
+    "Run recurrence tests against any controller revision that incorporates these findings."
+  ],
+  "limitations": [
+    "This producer cannot set COMPLETED or independently accept its own result.",
+    "The manifest commit and immutable read-back receipt are intentionally left to the next custody transition.",
+    "The branch has been pushed, but draft pull-request creation remains provider-gated for user approval."
+  ],
+  "decision_changed": []
+}
