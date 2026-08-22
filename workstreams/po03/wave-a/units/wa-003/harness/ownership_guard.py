@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any, Sequence
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from clean_clone_harness import glob_match  # noqa: E402  (sibling module, no package install)
+from clean_clone_harness import glob_match, local_git_env  # noqa: E402  (sibling module)
 
 SCHEMA_VERSION = "OBZIO-PO03-OWNERSHIP-GUARD-v1"
 
@@ -33,6 +33,7 @@ def changed_paths(repo: Path, base: str, head: str) -> list[dict[str, str]]:
         ["git", "-C", str(repo), "diff", "--name-status", "-M", "--find-renames", f"{base}..{head}"],
         capture_output=True,
         text=True,
+        env=local_git_env(),
     )
     if result.returncode != 0:
         raise GuardError(f"git diff {base}..{head} failed: {result.stderr.strip()}")

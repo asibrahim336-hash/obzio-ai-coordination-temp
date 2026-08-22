@@ -44,7 +44,11 @@ IMMUTABLE_INPUT = {
 
 def git(repo: Path, *args: str) -> str:
     return subprocess.run(
-        ["git", "-C", str(repo), *args], capture_output=True, text=True, check=True
+        ["git", "-C", str(repo), *args],
+        capture_output=True,
+        text=True,
+        check=True,
+        env=GUARD.local_git_env(),
     ).stdout
 
 
@@ -56,7 +60,12 @@ class OwnershipGuardTests(unittest.TestCase):
         self.addCleanup(self.tmp.cleanup)
         self.repo = self.root / "repo"
         self.repo.mkdir()
-        subprocess.run(["git", "init", "--quiet", "-b", "main", str(self.repo)], check=True, capture_output=True)
+        subprocess.run(
+            ["git", "init", "--quiet", "-b", "main", str(self.repo)],
+            check=True,
+            capture_output=True,
+            env=GUARD.local_git_env(),
+        )
         git(self.repo, "config", "user.email", "po03-fixture@obzio.invalid")
         git(self.repo, "config", "user.name", "PO03 Fixture")
         self.write("state/operator-system/pointer.json", "{}\n")
