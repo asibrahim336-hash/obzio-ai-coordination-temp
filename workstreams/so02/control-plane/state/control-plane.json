@@ -1,0 +1,136 @@
+{
+  "control_plane_id": "SCF-01",
+  "revision": "v001",
+  "strategy_snapshot_id": "CURRENT_ACTIVE_STRATEGY_SNAPSHOT_UNCHANGED",
+  "decision_changed": [],
+  "migration_state": "FOUNDER_ACTIVE_DURABLE_CONTROL_PLANE_SEEDED_GLOBAL_POINTER_RECONCILIATION_PENDING",
+  "active_primary": "SO-02",
+  "global_pointer_state": {
+    "state": "RECONCILIATION_PENDING",
+    "reason": "The repository default branch retains an older active-control lineage and PR #7 contains proposed-not-adopted pointer repairs. This branch must not silently overwrite global state pointers.",
+    "prohibited_paths": [
+      "state/**",
+      "operations/**",
+      "dispatch/**",
+      "modules/work_unit_contract/**"
+    ],
+    "closure": "Reconcile through a later independent pointer-integration branch based on the accepted currentness lineage."
+  },
+  "canonical_store": {
+    "kind": "git_repository",
+    "repository": "asibrahim336-hash/obzio-ai-coordination-temp",
+    "branch": "so02/strategic-control-plane-migration-20260822-v001",
+    "immutable_head": null,
+    "provider_memory_is_canonical": false
+  },
+  "runtime_bindings": [
+    {
+      "binding_id": "SCF-01/CUR-01",
+      "runtime": "Cursor Cloud",
+      "role": "coordination_kernel_principal",
+      "state": "COMMISSIONED_NOT_LAUNCHED",
+      "provider_locator": null,
+      "exact_model_configuration": null,
+      "launch_receipt": null,
+      "result_commit": null,
+      "remote_readback_sha256": null,
+      "parent_ingested": false
+    },
+    {
+      "binding_id": "SCF-01/SW-01",
+      "runtime": "SW",
+      "role": "strategy_discovery_capability_factory_principal",
+      "state": "COMMISSIONED_NOT_LAUNCHED",
+      "provider_locator": null,
+      "exact_model_configuration": null,
+      "launch_receipt": null,
+      "result_commit": null,
+      "remote_readback_sha256": null,
+      "parent_ingested": false
+    },
+    {
+      "binding_id": "SCF-01/CGPT-01",
+      "runtime": "ChatGPT Work Mode",
+      "role": "founder_interface_strategy_interlock_independent_synthesis_continuity",
+      "state": "ACTIVE_INTERIM",
+      "provider_locator": "current_project_conversation",
+      "exact_model_configuration": "gpt-5.6-sol",
+      "launch_receipt": "current-founder-appointment",
+      "result_commit": null,
+      "remote_readback_sha256": null,
+      "parent_ingested": true
+    },
+    {
+      "binding_id": "SCF-01/OSS-01",
+      "runtime": "Obzio-controlled open-source runtime",
+      "role": "future_primary_strategic_runtime",
+      "state": "CANDIDATE_NOT_QUALIFIED",
+      "provider_locator": null,
+      "exact_model_configuration": null,
+      "launch_receipt": null,
+      "result_commit": null,
+      "remote_readback_sha256": null,
+      "parent_ingested": false
+    }
+  ],
+  "protected_workstreams": [
+    {
+      "workstream_id": "PO-01",
+      "state": "ACTIVE_OUTPUT_NOT_ACCEPTED",
+      "contact_or_mutation_allowed": false
+    },
+    {
+      "workstream_id": "PO-02",
+      "state": "OUTPUT_OBSERVED_NOT_ACCEPTED_AS_COMPLETE",
+      "contact_or_mutation_allowed": false
+    },
+    {
+      "workstream_id": "PO-03",
+      "state": "COMMISSIONED_INSTRUCTION_SUBMISSION_PENDING_FOUNDER",
+      "contact_or_mutation_allowed": false
+    },
+    {
+      "workstream_id": "MANUS-ADMIN",
+      "state": "CLEAN_ACCOUNT_NOT_LAUNCHED",
+      "contact_or_mutation_allowed": false
+    }
+  ],
+  "cutover_gates": [
+    "cursor_runtime_identity_committed_and_read_back",
+    "sw_runtime_identity_committed_and_read_back",
+    "cross_runtime_event_round_trip_pass",
+    "provider_completion_without_commit_rejected",
+    "coordinator_restart_from_clean_clone_pass",
+    "founder_correction_propagation_test_pass",
+    "strategy_interlock_test_pass",
+    "two_complete_compounding_generations_pass",
+    "independent_acceptance_record_committed"
+  ],
+  "cutover_evidence": {},
+  "current_founder_actions": [
+    {
+      "action_id": "FA-CURSOR-PO03-LAUNCH",
+      "state": "READY",
+      "nondelegable_reason": "provider_ui_model_selection_and_instruction_submission",
+      "blocking_scope": "PO-03 execution only",
+      "instruction_path": "workstreams/po03/LAUNCH-NOW.md",
+      "delegated_parallel_work": "SCF-01 seed and SW launch preparation continue"
+    },
+    {
+      "action_id": "FA-SCF01-CURSOR-LAUNCH",
+      "state": "QUEUED_AFTER_PO03_SUBMISSION",
+      "nondelegable_reason": "provider_ui_agent_creation_model_selection_and_instruction_submission",
+      "blocking_scope": "SCF-01/CUR-01 execution only",
+      "instruction_path": "workstreams/so02/control-plane/launch/CURSOR-LAUNCH-NOW.md",
+      "delegated_parallel_work": "SW launch and ChatGPT continuity continue"
+    },
+    {
+      "action_id": "FA-SCF01-SW-LAUNCH",
+      "state": "READY_IN_PARALLEL_AFTER_PO03_SUBMISSION",
+      "nondelegable_reason": "SW surface requires founder-authenticated client with TLS certificate",
+      "blocking_scope": "SCF-01/SW-01 execution only",
+      "instruction_path": "workstreams/so02/control-plane/launch/SW-LAUNCH-NOW.md",
+      "delegated_parallel_work": "Cursor and ChatGPT strategic functions continue"
+    }
+  ]
+}
