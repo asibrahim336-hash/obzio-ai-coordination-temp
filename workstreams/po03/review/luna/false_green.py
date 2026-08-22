@@ -21,7 +21,9 @@ def run_mutations(root: Path, mutations_path: Path, command: str) -> dict:
         for field in ("id", "path", "old", "new"):
             if not isinstance(mutation.get(field), str) or not mutation[field]:
                 raise ValueError(f"mutation missing non-empty {field}")
-        with tempfile.TemporaryDirectory(prefix="po03-fg-") as scratch_name:
+        # Keep mutation state inside the evaluator worktree as required by the
+        # review boundary; the temporary directory is removed after each case.
+        with tempfile.TemporaryDirectory(prefix=".po03-fg-", dir=root) as scratch_name:
             scratch = Path(scratch_name) / "tree"
             shutil.copytree(root, scratch)
             target = scratch / mutation["path"]

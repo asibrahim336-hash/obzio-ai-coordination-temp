@@ -15,7 +15,7 @@ SPEC.loader.exec_module(FALSE_GREEN)
 
 class FalseGreenDetectorTests(unittest.TestCase):
     def test_mutates_fixture_and_reports_under_asserting_test(self):
-        with tempfile.TemporaryDirectory(prefix="po03-fg-test-") as directory:
+        with tempfile.TemporaryDirectory(prefix=".po03-fg-test-", dir=ROOT) as directory:
             root = Path(directory)
             (root / "tests").mkdir()
             (root / "impl.py").write_text(
