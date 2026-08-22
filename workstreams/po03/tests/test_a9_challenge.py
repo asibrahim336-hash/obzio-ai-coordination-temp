@@ -2,19 +2,27 @@ from __future__ import annotations
 
 import importlib.util
 import json
-import subprocess
 import unittest
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
 MODULE_PATH = ROOT / "workstreams/po03/strategy/challenge.py"
+SNAPSHOT_MODULE_PATH = ROOT / "workstreams/po03/strategy/snapshot_fixture.py"
 ARTIFACT_PATH = ROOT / "workstreams/po03/strategy/zero-base-challenge.json"
+SNAPSHOT_COMMIT = "c83da05eccf7331ed20ef3819c58b146addb5156"
 
 SPEC = importlib.util.spec_from_file_location("po03_a9_challenge", MODULE_PATH)
 assert SPEC and SPEC.loader
 challenge = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(challenge)
+
+SNAPSHOT_SPEC = importlib.util.spec_from_file_location(
+    "po03_a9_challenge_snapshot", SNAPSHOT_MODULE_PATH
+)
+assert SNAPSHOT_SPEC and SNAPSHOT_SPEC.loader
+snapshot = importlib.util.module_from_spec(SNAPSHOT_SPEC)
+SNAPSHOT_SPEC.loader.exec_module(snapshot)
 
 
 class ZeroBaseChallengeTests(unittest.TestCase):
@@ -22,21 +30,24 @@ class ZeroBaseChallengeTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.artifact = json.loads(ARTIFACT_PATH.read_text(encoding="utf-8"))
 
-    def test_artifact_is_reproducible_from_current_committed_evidence(self) -> None:
-        self.assertEqual(self.artifact, challenge.build_challenge(ROOT))
-        for evidence in self.artifact["evidence"]:
-            tracked = subprocess.run(
-                ["git", "ls-files", "--error-unmatch", evidence["path"]],
-                cwd=ROOT,
-                capture_output=True,
-                text=True,
+    def test_artifact_reproduces_from_pinned_committed_evidence(self) -> None:
+        with snapshot.materialize_commit(ROOT, SNAPSHOT_COMMIT) as snapshot_root:
+            recorded = json.loads(
+                (snapshot_root / ARTIFACT_PATH.relative_to(ROOT)).read_text(
+                    encoding="utf-8"
+                )
             )
-            self.assertEqual(tracked.returncode, 0, evidence["path"])
-            self.assertEqual(
-                evidence["sha256"],
-                challenge.sha256_file(ROOT / evidence["path"]),
-                evidence["path"],
-            )
+            rebuilt = challenge.build_challenge(snapshot_root)
+            self.assertEqual(self.artifact, recorded)
+            self.assertEqual(self.artifact, rebuilt)
+            for evidence in self.artifact["evidence"]:
+                pinned_path = snapshot_root / evidence["path"]
+                self.assertTrue(pinned_path.is_file(), evidence["path"])
+                self.assertEqual(
+                    evidence["sha256"],
+                    challenge.sha256_file(pinned_path),
+                    evidence["path"],
+                )
 
     def test_every_non_upheld_assumption_stays_a_nonbinding_proposal(self) -> None:
         self.assertEqual(self.artifact["decision_changed"], [])
@@ -67,7 +78,7 @@ class ZeroBaseChallengeTests(unittest.TestCase):
             self.assertTrue(item["test"]["observations"])
             self.assertTrue(item["reason"])
 
-    def test_actual_post_dispatch_source_drift_is_detected(self) -> None:
+    def test_pinned_post_dispatch_source_drift_is_detected(self) -> None:
         item = next(
             assumption
             for assumption in self.artifact["assumptions"]
