@@ -25,6 +25,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[3]
 RUNTIME_DIR = REPO_ROOT / "workstreams" / "po03" / "runtime"
 ROUTER_PATH = RUNTIME_DIR / "route_findings.py"
+ROUTED_PATH = RUNTIME_DIR / "routed-findings.json"
 TRIAGE_PATH = RUNTIME_DIR / "finding-triage.json"
 OWNERSHIP_PATH = REPO_ROOT / "workstreams" / "po03" / "control" / "path-ownership.json"
 
@@ -129,6 +130,43 @@ class TriageDocumentIsComplete(unittest.TestCase):
         self.assertGreaterEqual(len(verdict["reasoning"]), 3)
         self.assertTrue(verdict["how_this_could_be_wrong"].strip())
         self.assertTrue(verdict["what_is_not_dismissed"].strip())
+
+
+class TheRoutedListIsReadableWithoutRunningTheTool(unittest.TestCase):
+    """The coordinator asked for a list, and a tool is not a list.
+
+    A routed work list that only exists when someone runs a script cannot be read
+    in review, cannot be quoted in a dispatch, and puts the burden of reproducing
+    my analysis on the person I am reporting to. So the list is committed.
+
+    What is asserted here is the shape a reader needs and nothing about the
+    contents. Asserting that a fresh run still produces this file would be exactly
+    the recomputation-against-a-committed-record the anti-coupling rule forbids,
+    and it would also be wrong on the merits: these findings are routed so that
+    they get fixed, so the file is expected to go stale.
+    """
+
+    def setUp(self) -> None:
+        self.document = json.loads(ROUTED_PATH.read_text(encoding="utf-8"))
+
+    def test_the_document_says_it_is_an_observation_rather_than_an_invariant(self) -> None:
+        self.assertEqual(self.document["schema"], "po03-routed-findings-v1")
+        self.assertTrue(self.document["document_status"].startswith("OBSERVATION_AT_A_PIN"))
+
+    def test_it_names_the_tree_it_was_generated_from(self) -> None:
+        """Without this an owner cannot tell if a line number still means anything."""
+        self.assertRegex(self.document["generated_from_tree_at"], r"^([0-9a-f]{12}|NOT_OBSERVABLE)$")
+
+    def test_every_genuine_entry_carries_the_five_fields_a_router_needs(self) -> None:
+        genuine = [r for r in self.document["findings"] if r["triage"] == "GENUINE"]
+        self.assertTrue(genuine, "a routed list with nothing routed proves nothing")
+        for record in genuine:
+            for field in ("owner", "file", "line", "finding_class", "minimal_fix"):
+                self.assertTrue(str(record[field]).strip(), f"{field} empty in {record}")
+            self.assertNotEqual(record["minimal_fix"], "NOT_YET", record)
+
+    def test_it_routes_nothing_to_me(self) -> None:
+        self.assertEqual(self.document["mine_to_fix"], [])
 
 
 class RoutingUsesTheAuthoritativeRecord(unittest.TestCase):

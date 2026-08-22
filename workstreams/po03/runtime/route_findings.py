@@ -28,6 +28,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any
@@ -35,9 +36,18 @@ from typing import Any
 RUNTIME_DIR = Path(__file__).resolve().parent
 REPO_ROOT = RUNTIME_DIR.parents[2]
 TRIAGE_PATH = RUNTIME_DIR / "finding-triage.json"
+ROUTED_PATH = RUNTIME_DIR / "routed-findings.json"
 OWNERSHIP_PATH = REPO_ROOT / "workstreams" / "po03" / "control" / "path-ownership.json"
 
 ROUTED_SCHEMA = "po03-routed-findings-v1"
+
+EMITTED_DOCUMENT_STATUS = (
+    "OBSERVATION_AT_A_PIN. This file is a routed work list read by the coordinator, "
+    "not an invariant. It records what the gates found in one tree at one commit. "
+    "Nothing recomputes it and asserts equality with this copy: the routed findings "
+    "are expected to disappear as their owners fix them, and a test that failed when "
+    "that happened would be an argument for leaving them unfixed."
+)
 
 
 def load_module(name: str, path: Path):
@@ -160,6 +170,24 @@ def ci_surface_findings(repo_root: Path) -> list[dict[str, Any]]:
     ]
 
 
+def head_commit(repo_root: Path) -> str:
+    """The commit whose tree produced this list, so a reader can reproduce it.
+
+    A routed list with no stated tree is unactionable: an owner cannot tell whether
+    a line number still refers to the code they are being asked to change.
+    """
+    result = subprocess.run(
+        ["git", "rev-parse", "--short=12", "HEAD"],
+        cwd=repo_root,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return "NOT_OBSERVABLE"
+    return result.stdout.strip()
+
+
 def route(repo_root: Path) -> dict[str, Any]:
     triage = load_triage(TRIAGE_PATH)
     pairs = ownership_prefixes(OWNERSHIP_PATH)
@@ -210,7 +238,9 @@ def route(repo_root: Path) -> dict[str, Any]:
     return {
         "schema": ROUTED_SCHEMA,
         "produced_by": this_writer,
+        "document_status": EMITTED_DOCUMENT_STATUS,
         "routing_authority": "workstreams/po03/control/path-ownership.json, owned_prefixes",
+        "generated_from_tree_at": head_commit(repo_root),
         "observation_pin": triage.get("observation_pin", {}),
         "finding_count": len(routed),
         "triage_counts_by_gate": counts,
@@ -236,6 +266,11 @@ def main(argv: list[str] | None = None) -> int:
         choices=["GENUINE", "FALSE_POSITIVE", "UNTRIAGED"],
         help="restrict the printed list to one triage verdict",
     )
+    parser.add_argument(
+        "--emit",
+        action="store_true",
+        help=f"write the routed list to {ROUTED_PATH.name} for the coordinator to read",
+    )
     args = parser.parse_args(argv)
 
     try:
@@ -243,6 +278,13 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, ValueError, json.JSONDecodeError) as error:
         print(f"ROUTE_ERROR: {error}", file=sys.stderr)
         return 2
+
+    if args.emit:
+        ROUTED_PATH.write_text(
+            json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+        print(f"wrote {ROUTED_PATH.relative_to(REPO_ROOT)}")
+        return 0
 
     if args.json:
         print(json.dumps(report, indent=2, sort_keys=True))
