@@ -1,0 +1,71 @@
+{
+  "protocol_version": "OBZIO-TEST-RESULT-v1",
+  "task_id": "PO03-WA-025",
+  "verified_at": "2026-08-22T07:26:36Z",
+  "automated_test_count": 29,
+  "focused_test_count": 6,
+  "seed_contract_test_count": 23,
+  "reproduction_count": 1,
+  "suites": [
+    {
+      "suite_id": "TS-PO03-WA-025-FOCUSED",
+      "command": "python3 -I -B -m unittest discover -s workstreams/po03/wave-a/units/wa-025/result -p 'test_*.py' -v",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "outcome": "PASS",
+      "coverage": [
+        "unrelated forced branch move detection",
+        "byte-exact binary immutable readback",
+        "pre-movement negative control",
+        "digest substitution rejection",
+        "unavailable pinned commit fail-closed behavior",
+        "parent traversal rejection",
+        "isolated-mode black-box CLI recurrence"
+      ]
+    },
+    {
+      "suite_id": "TS-PO03-WA-025-SEEDED-CONTRACTS",
+      "command": "python3 -I -B -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+      "tests": 23,
+      "failures": 0,
+      "errors": 0,
+      "outcome": "PASS"
+    },
+    {
+      "suite_id": "TS-PO03-WA-025-REPRODUCTION",
+      "command": "python3 -I -B workstreams/po03/wave-a/units/wa-025/result/reproduce_branch_movement.py --output workstreams/po03/wave-a/units/wa-025/result/reproduction-result.json",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "outcome": "PASS",
+      "result": "SUPPORTED"
+    },
+    {
+      "suite_id": "TS-PO03-WA-025-TAXONOMY",
+      "command": "python3 scripts/check_operator_taxonomy.py",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "outcome": "PASS"
+    }
+  ],
+  "first_pass_outcome": "FAIL",
+  "first_pass_evidence": {
+    "failed_command": "python3 -I -B workstreams/po03/wave-a/units/wa-025/result/reproduce_branch_movement.py --output workstreams/po03/wave-a/units/wa-025/result/reproduction-result.json",
+    "exit_code": 1,
+    "failure": "ModuleNotFoundError: No module named 'immutable_readback'",
+    "cause": "Python isolated mode omitted the script directory while the initial black-box test had not enabled isolated mode.",
+    "repair_commit_abbrev": "6ed7ba2",
+    "recurrence_change": "The black-box test now invokes -I -B and the script explicitly admits only its own directory for the sibling module import."
+  },
+  "defects": 2,
+  "defect_details": [
+    "Direct isolated-mode import failure on the first reproduction attempt.",
+    "Successful reproduction initially retained an ephemeral temporary-root path in evidence output."
+  ],
+  "rework_events": 2,
+  "final_outcome": "PASS",
+  "test_output_path": "workstreams/po03/wave-a/units/wa-025/result/test-output.txt",
+  "decision_changed": []
+}

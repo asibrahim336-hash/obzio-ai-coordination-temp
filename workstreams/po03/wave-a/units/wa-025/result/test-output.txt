@@ -1,0 +1,45 @@
+PO03-WA-025 executable verification transcript
+finished_at=2026-08-22T07:26:36Z
+
+COMMAND
+python3 -I -B -m unittest discover -s workstreams/po03/wave-a/units/wa-025/result -p 'test_*.py' -v
+RESULT
+test_black_box_reproduction_writes_machine_readable_result ... ok
+test_digest_substitution_fails_closed ... ok
+test_exact_hypothesis_on_unrelated_forced_branch_move ... ok
+test_manifest_rejects_parent_traversal ... ok
+test_pre_movement_control_refuses_required_move ... ok
+test_unavailable_expected_commit_fails_closed ... ok
+Ran 6 tests in 0.525s
+OK
+exit_code=0
+
+COMMAND
+python3 -I -B -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v
+RESULT
+Ran 23 tests in 0.001s
+OK
+exit_code=0
+
+COMMAND
+python3 -I -B workstreams/po03/wave-a/units/wa-025/result/reproduce_branch_movement.py --output workstreams/po03/wave-a/units/wa-025/result/reproduction-result.json
+RESULT
+reproduction_id=R-PO03-WA-025-001
+branch_move=FORCED_NON_FAST_FORWARD_UNRELATED_HISTORY
+initial_commit=bb0b6355d67ead53507cd84a63cb0b34a302887c
+moved_commit=f36f78514b149253b4d19c342492daa23b7e95e5
+movement_detected=true
+pinned_sha256=10638da32820b78f39340728c2e3b353d6f435a6e9c98e0eee4e2955b39de8e2
+pinned_bytes=75
+all_pinned_bytes_match=true
+hypothesis_outcome=SUPPORTED
+exit_code=0
+
+FIRST-PASS AND REWORK EVIDENCE
+The first direct isolated-mode reproduction attempt exited 1 with
+ModuleNotFoundError: No module named 'immutable_readback'. The focused suite
+had passed because its test loader inserted the module path. Commit
+6ed7ba2 added an explicit script-directory import path and changed the
+black-box test to invoke Python with -I -B. A second hardening pass removed
+ephemeral temporary-root values from durable reproduction evidence; commit
+af19c50 added a recurrence assertion. All final commands above passed.
