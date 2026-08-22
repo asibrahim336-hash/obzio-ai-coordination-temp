@@ -1,0 +1,49 @@
+{
+  "protocol_version": "OBZIO-RESEARCH-TO-MECHANISM-v1",
+  "task_id": "PO03-WA-025",
+  "mechanism_change_id": "MC-PO03-WA-025-01",
+  "state": "EXECUTED_AND_TESTED",
+  "baseline_mechanism": {
+    "description": "Reading artifacts through a mutable branch name, or fetching without comparing the pinned commit to the observed post-fetch tip, can silently substitute bytes after branch movement.",
+    "evidence_status": "ADVERSARIAL_BASELINE_REPRODUCED",
+    "fixture": "R-PO03-WA-025-001 intentionally gives unrelated branch tip B different bytes from pinned commit A."
+  },
+  "change": {
+    "description": "Require a full expected commit, force-fetch the branch into a dedicated tracking ref, compare its before/after and expected/observed object IDs, then read each artifact with git show --no-textconv <expected-commit>:<path> and verify frozen SHA-256 plus byte count.",
+    "implementation": [
+      "workstreams/po03/wave-a/units/wa-025/result/immutable_readback.py",
+      "workstreams/po03/wave-a/units/wa-025/result/reproduce_branch_movement.py"
+    ],
+    "fail_closed_conditions": [
+      "expected immutable commit is unavailable",
+      "manifest path is absolute or traverses a parent",
+      "resolved object is not a blob",
+      "artifact SHA-256 differs",
+      "artifact byte count differs",
+      "required branch movement is not observed"
+    ]
+  },
+  "source_claim_ids": [
+    "SC-PO03-WA-025-01",
+    "SC-PO03-WA-025-02",
+    "SC-PO03-WA-025-03",
+    "SC-PO03-WA-025-04"
+  ],
+  "hypothesis_ids": [
+    "MH-PO03-WA-025-01",
+    "MH-PO03-WA-025-02"
+  ],
+  "reproduction_id": "R-PO03-WA-025-001",
+  "reproduction_result": "SUPPORTED",
+  "recurrence_tests": {
+    "kind": "BLACK_BOX_AND_FOCUSED_AUTOMATED",
+    "command": "python3 -I -B -m unittest discover -s workstreams/po03/wave-a/units/wa-025/result -p 'test_*.py' -v",
+    "test_count": 6,
+    "outcome": "PASS",
+    "independent_acceptance": "NOT_TESTED"
+  },
+  "disposition": "RETAIN",
+  "disposition_scope": "Retain as an independently testable PO03-WA-025 mechanism candidate; coordinator ingestion and independent acceptance remain separate.",
+  "strategy_binding": "NONE",
+  "decision_changed": []
+}
