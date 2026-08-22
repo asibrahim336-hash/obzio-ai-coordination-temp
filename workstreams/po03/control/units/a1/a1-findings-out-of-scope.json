@@ -49,10 +49,39 @@
       "integration_ready_change": "Derive attempt.fence_token, attempt.lease_id and attempt.checkpoint_seq from the ledger projection for the unit, using workstreams/po03/engine/lease.py::LeaseManager.resume_point and current_lease, and fail rather than default when the unit has no lease.",
       "not_applied_because": "workstreams/po03/tools/make_result.py is coordinator-owned.",
       "engine_disposition": "NOT_YET. The a1 results in this branch were emitted with the tool as it stands, so their attempt blocks carry the tool's derived values."
+    },
+    {
+      "finding_id": "FIND-A1-04",
+      "subject": "workstreams/po03/tools/make_result.py and validate_contracts.py — a pinned result can silently come to describe an ancestor",
+      "owner": "coordinator",
+      "severity": "MEDIUM",
+      "state": "REPORTED_NOT_REPAIRED",
+      "discovered_by_unit": "a1-u01",
+      "reproducing_test": "Reproduced by direct observation on this branch, not by a unit assertion: after commit 6fc8376 emitted a1-u01.json pinning engine/ledger.py at sha256 6e79c60c, commit 120dfed added set_fault_hook to that file. a1-u01.json remained VALID and its content_uri still resolved byte-identically, because the URI names the immutable commit 6fc8376 rather than the branch tip.",
+      "observation": "make_result pins each artifact as git:<branch>@<commit>:<path> and validate_contracts checks the document's internal consistency. Neither compares the pinned bytes against the branch tip. So a result stays VALID and reads back byte-identically forever while the code it makes a claim about has moved on. The staleness is invisible to every existing check.",
+      "consequence": "This is the false-green shape the commission cares about, arriving by a route no validator watches. An accepted a1-u01 would attest 100% tamper detection for bytes that are no longer the bytes the engine runs. Nothing is forged and no hash is wrong; the claim simply stops being about the shipped artefact. The same applies to any unit whose artefacts include a module a later unit extends, which on this branch is most of engine/.",
+      "integration_ready_change": "At ingestion, for every artifact in a result document, compare the pinned sha256 against the blob at the branch tip and refuse or re-request the unit when they differ. The check is three lines against git cat-file and needs no new state. A stricter variant belongs in validate_contracts as a repository-aware mode, kept separate from the schema check so offline validation still works.",
+      "not_applied_because": "Both tools are coordinator-owned.",
+      "engine_disposition": "APPLIED WITHIN OWNED PATHS. Every a1 result on this branch was audited against the branch tip and a1-u01 was re-emitted after re-running the tamper campaign on the current ledger.py, so all 8 documents now pin tip bytes. This was a manual audit; the durable fix is the coordinator-side check above."
+    },
+    {
+      "finding_id": "FIND-A1-05",
+      "subject": "workstreams/po03/tools/control_plane.py::cmd_complete — confirmation, not a defect",
+      "owner": "coordinator",
+      "severity": "NONE",
+      "state": "CONFIRMED_CORRECT",
+      "discovered_by_unit": "a1-u08",
+      "reproducing_test": "workstreams/po03/tests/test_a1_completion_authority.py::ControlPlaneCompletionTests",
+      "observation": "Driven over all fifteen states through a private module instance on scratch state, cmd_complete refused completion from all thirteen states other than PARENT_INGESTED, refused PARENT_INGESTED without a durable result commit, refused a PROVIDER_COMPLETED_UNCOMMITTED unit, admitted exactly one lawful completion with actor 'coordinator', and cmd_review refused a producer reviewing its own unit. scan_recovery reported no false completions in any case. validate_contracts.RESULT_STATES equals the engine's fifteen states exactly, and both equal the contract schema enum.",
+      "consequence": "The engine's state machine and the coordinator's live plane agree on where completion authority sits, so a1-u08's structural claim is not confined to engine-owned code. This finding is recorded so the agreement is evidenced rather than assumed.",
+      "integration_ready_change": "None required.",
+      "not_applied_because": "Nothing to apply.",
+      "engine_disposition": "RETAIN."
     }
   ],
   "limitations": [
     "These are observations about coordinator-owned code reached through private module instances pointed at scratch state. No coordinator-owned file was written, and no PO-01 branch, path or artefact was read or touched by any of them.",
-    "FIND-A1-03 is a reading of the tool rather than a reproduced failure, and is recorded as NOT_YET rather than as a demonstrated defect."
+    "FIND-A1-03 is a reading of the tool rather than a reproduced failure, and is recorded as NOT_YET rather than as a demonstrated defect.",
+    "FIND-A1-04 was found by auditing this branch's own result documents rather than by a test, and the repair inside owned paths was a manual re-emission. Cohort a1 cannot add the durable check because it lives in coordinator-owned tooling."
   ]
 }
