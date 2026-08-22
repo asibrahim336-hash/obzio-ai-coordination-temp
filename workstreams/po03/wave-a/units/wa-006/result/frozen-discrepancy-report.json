@@ -1,0 +1,197 @@
+{
+  "protocol_version": "OBZIO-WA-006-FROZEN-DISCREPANCY-REPORT-v1",
+  "task_id": "PO03-WA-006",
+  "hypothesis_id": "H-PO03-WA-006",
+  "attempt_id": "PO03-WA-006-A02",
+  "frozen_at": "2026-08-22T08:31:00Z",
+  "frozen_by_function": "obzio.function.repository-engineering-portable-runtime",
+  "reproducer": "workstreams/po03/wave-a/units/wa-006/result/pack_claim_reproducer.py",
+  "evidence_basis": {
+    "read_method": "git cat-file / ls-tree / rev-parse / for-each-ref against a caller-pinned commit id in a local object store",
+    "checkout_performed": false,
+    "branch_mutation_performed": false,
+    "producer_narrative_used_as_evidence": false,
+    "narrative_exclusion_note": "Only MANIFEST.json documents and the payload blobs they claim were read. Pack prose (README.md, BOUNDARIES.md, LAUNCH.md) was never parsed for claims, and MANIFEST_ALL.json prose fields such as evidence_status were not treated as evidence.",
+    "po01_writes": 0,
+    "po01_signals_or_contact": 0,
+    "external_effects": "none"
+  },
+  "targets": [
+    {
+      "target_id": "T-WA-006-01",
+      "commit": "1e6f53c323f8326d12af213557082a3665991f19",
+      "observed_ref_at_pin_time": "refs/remotes/origin/packs/operator-packs-v1-20260820",
+      "pack_root": "packs",
+      "expected_outcome": "DISCREPANCIES_FOUND",
+      "manifest_count": 11,
+      "pack_directory_count": 12,
+      "file_claims_checked": 72,
+      "file_claims_verified": 67,
+      "file_claims_falsified": 5,
+      "discrepancy_kind_counts": {
+        "AGGREGATE_COVERAGE_GAP": 1,
+        "MISSING_AT_CLAIMED_PATH_CONTENT_RELOCATED": 5,
+        "NON_PORTABLE_ABSOLUTE_PATH_CLAIM": 1
+      }
+    },
+    {
+      "target_id": "T-WA-006-02",
+      "commit": "96adfe7d79257389318af10ee9c9e3a0c2138590",
+      "observed_ref_at_pin_time": "refs/remotes/origin/packs/operator-fleet-v1-20260820",
+      "pack_root": "modules/operators",
+      "expected_outcome": "DISCREPANCIES_FOUND",
+      "manifest_count": 2,
+      "pack_directory_count": 6,
+      "file_claims_checked": 14,
+      "file_claims_verified": 12,
+      "file_claims_falsified": 2,
+      "discrepancy_kind_counts": {
+        "MISSING_AT_CLAIMED_PATH_CONTENT_ABSENT": 2
+      }
+    },
+    {
+      "target_id": "T-WA-006-03",
+      "commit": "37943ec2ff9f6702d72e127a3c8e56c81b0c3812",
+      "observed_ref_at_pin_time": "refs/remotes/origin/packs/operator-packs-v1-source",
+      "pack_root": "packs",
+      "expected_outcome": "REFUSED_NO_PACK_ROOT",
+      "refusal_reason": "The commit carries no path under the requested pack root, so there is no claim to check. The reproducer raises rather than reporting a vacuously clean corpus.",
+      "file_claims_checked": 0,
+      "file_claims_verified": 0,
+      "file_claims_falsified": 0,
+      "discrepancy_kind_counts": {}
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "F-WA-006-01",
+      "severity": "MATERIAL",
+      "kind": "MISSING_AT_CLAIMED_PATH_CONTENT_RELOCATED",
+      "commit": "1e6f53c323f8326d12af213557082a3665991f19",
+      "affected_manifests": [
+        "packs/06-browser-execution/MANIFEST.json",
+        "packs/07-capability-manufacture/MANIFEST.json",
+        "packs/08-knowledge-currentness/MANIFEST.json",
+        "packs/09-infrastructure-operation/MANIFEST.json",
+        "packs/10-economics-measurement/MANIFEST.json"
+      ],
+      "falsified_claim": "files[] includes _spine.py as a member of the pack directory",
+      "claimed_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+      "claimed_bytes": 43928,
+      "observed": "The claimed path is absent from all five pack directories at this commit. Bytes with the claimed digest are present exactly once, at packs/_shared/_spine.py.",
+      "process_boundary_effect": "Packs 06-10 import _spine as a sibling module. A consumer that materialises exactly what each per-pack manifest enumerates gets no sibling _spine.py, so the pack cannot be imported without an out-of-manifest copy step.",
+      "content_lost": false,
+      "detectable_without_narrative": true,
+      "narrative_status": "packs/MANIFEST_ALL.json prose describes the collapse and the required restore step, but the per-pack manifests were not updated to match; the reproducer detects the gap from bytes alone and does not rely on that prose."
+    },
+    {
+      "finding_id": "F-WA-006-02",
+      "severity": "MATERIAL",
+      "kind": "MISSING_AT_CLAIMED_PATH_CONTENT_ABSENT",
+      "commit": "96adfe7d79257389318af10ee9c9e3a0c2138590",
+      "affected_manifests": ["modules/operators/07-capability-manufacture/MANIFEST.json"],
+      "falsified_claim": "files[] includes state_machine.py and test_pack.py",
+      "missing": [
+        {
+          "relative_path": "state_machine.py",
+          "claimed_sha256": "5b0ccae203f1139cae7446647a90143c43a023e71ecfd5a41c4e3a162be03060",
+          "claimed_bytes": 24479,
+          "found_anywhere_in_commit": false
+        },
+        {
+          "relative_path": "test_pack.py",
+          "claimed_sha256": "cb8f72ed471546fe21b0f3f7a4a003f032eeef2034de697bb5c3afe9f13d8839",
+          "claimed_bytes": 17930,
+          "found_anywhere_in_commit": false
+        }
+      ],
+      "observed": "Both claimed files are absent from the pack directory, and a whole-commit content-addressed search for their claimed digests returns no match. This is content loss at this commit, not relocation.",
+      "process_boundary_effect": "Pack 07 cannot be qualified at this commit: its own test file is one of the missing members, so the pack carries a manifest asserting a test suite that is not published.",
+      "content_lost": true,
+      "detectable_without_narrative": true,
+      "digest_provenance": "Both claimed digests and byte counts were read from the immutable manifest blob at modules/operators/07-capability-manufacture/MANIFEST.json at this commit; the absence search hashed every blob in the commit and matched neither."
+    },
+    {
+      "finding_id": "F-WA-006-03",
+      "severity": "MATERIAL",
+      "kind": "NON_PORTABLE_ABSOLUTE_PATH_CLAIM",
+      "commit": "1e6f53c323f8326d12af213557082a3665991f19",
+      "affected_manifests": ["packs/MANIFEST.json"],
+      "falsified_claim": "$.root identifies the corpus the manifest describes",
+      "observed": "/tmp/packs",
+      "expected": "a repository-relative pack root such as packs",
+      "process_boundary_effect": "The published aggregate manifest records the build host's temporary directory as the corpus root. Any consumer that resolves paths from $.root fails outside that one build host, and the value also leaks build-host layout into a published artefact.",
+      "content_lost": false,
+      "detectable_without_narrative": true
+    },
+    {
+      "finding_id": "F-WA-006-04",
+      "severity": "MATERIAL",
+      "kind": "AGGREGATE_COVERAGE_GAP",
+      "commit": "1e6f53c323f8326d12af213557082a3665991f19",
+      "affected_manifests": ["packs/MANIFEST.json"],
+      "falsified_claim": "$.packs enumerates the packs present under the pack root",
+      "covered": [
+        "continuity-recovery",
+        "founder-intent-processing",
+        "independent-acceptance",
+        "repository-engineering",
+        "strategic-orchestration"
+      ],
+      "uncovered": [
+        "06-browser-execution",
+        "07-capability-manufacture",
+        "08-knowledge-currentness",
+        "09-infrastructure-operation",
+        "10-economics-measurement",
+        "_shared",
+        "obzio_spine"
+      ],
+      "observed": "The aggregate manifest covers five of twelve directories under packs/. Five are published packs 06-10 that it does not mention; _shared and obzio_spine are support directories rather than packs and are listed here only because the reproducer enumerates directories, not pack semantics.",
+      "process_boundary_effect": "A consumer that enumerates the corpus from packs/MANIFEST.json sees five packs and silently omits packs 06-10, whose claims live in a second manifest with a different dialect.",
+      "content_lost": false,
+      "detectable_without_narrative": true,
+      "false_positive_risk": "The _shared and obzio_spine entries are support directories; the gap that matters is packs 06-10. Recorded openly rather than filtered, because filtering by name would embed a guess about pack semantics into the checker."
+    }
+  ],
+  "positive_evidence": [
+    {
+      "claim": "67 of 72 per-pack file claims at commit 1e6f53c323f8326d12af213557082a3665991f19 verify exactly on digest and byte count.",
+      "significance": "The corpus is largely checkable from immutable objects alone; the discrepancies are localised, not systemic."
+    },
+    {
+      "claim": "12 of 14 per-pack file claims at commit 96adfe7d79257389318af10ee9c9e3a0c2138590 verify exactly, including the _spine.py claim that fails at the other commit.",
+      "significance": "The same claim is satisfiable at a different immutable commit, which is how F-WA-006-01 is shown to be a publication-path defect rather than content loss."
+    },
+    {
+      "claim": "Ref and HEAD digests are identical before and after every scan, and no checkout, fetch, ref write or index write occurs.",
+      "significance": "The check is performed without branch mutation, which is the second half of the hypothesis."
+    }
+  ],
+  "cross_commit_resolution": {
+    "finding_id": "F-WA-006-01",
+    "claimed_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+    "claimed_bytes": 43928,
+    "failing_commit": "1e6f53c323f8326d12af213557082a3665991f19",
+    "claimed_path_on_failing_commit": "packs/06-browser-execution/_spine.py",
+    "actual_path_on_failing_commit": "packs/_shared/_spine.py",
+    "satisfying_commit": "96adfe7d79257389318af10ee9c9e3a0c2138590",
+    "satisfied_paths_on_satisfying_commit": [
+      "modules/operators/06-browser-execution/_spine.py",
+      "modules/operators/07-capability-manufacture/_spine.py",
+      "modules/operators/08-knowledge-currentness/_spine.py",
+      "modules/operators/09-infrastructure-operation/_spine.py",
+      "modules/operators/10-economics-measurement/_spine.py"
+    ]
+  },
+  "out_of_scope_manifests": [
+    {
+      "path": "packs/MANIFEST_ALL.json",
+      "commit": "1e6f53c323f8326d12af213557082a3665991f19",
+      "reason": "It is an aggregate in a third dialect whose files map is keyed by repository-root-relative paths, including paths under a packs2/ prefix that does not exist at this commit. Checking it correctly needs dialect support this reproducer version does not have.",
+      "disposition": "NOT_SUPPORTED_IN_V1",
+      "guard": "The reproducer only reads files named exactly MANIFEST.json, so this document is skipped rather than mis-parsed into invented findings."
+    }
+  ],
+  "decision_changed": []
+}
