@@ -1,0 +1,79 @@
+{
+  "combined": {
+    "case_count": 26,
+    "failed": 0,
+    "false_green_count": 0,
+    "false_green_rate": 0.0,
+    "pass_rate": 1.0,
+    "passed": 26,
+    "reported_success_count": 0,
+    "unsupported": 0
+  },
+  "decision_changed": [],
+  "generation": {
+    "description": "successor compiled from the six measured G1 failures",
+    "name": "G2",
+    "source": "/home/ubuntu/po03-worktrees/c8/workstreams/po03/attempts/po03-wa-b2e7-063-g2-successor/g2/transactional_factory_g2.py",
+    "source_bytes": 47993,
+    "source_sha256": "3d963e28be419ceb16d6556efb73c5e1eac72d633fe6196d107a19171af4d021"
+  },
+  "holdout": {
+    "case_count": 10,
+    "failed": 0,
+    "false_green_count": 0,
+    "false_green_rate": 0.0,
+    "pass_rate": 1.0,
+    "passed": 10,
+    "reported_success_count": 0,
+    "unsupported": 0
+  },
+  "measured_at": "2026-08-22T08:19:19Z",
+  "public": {
+    "case_count": 16,
+    "failed": 0,
+    "false_green_count": 0,
+    "false_green_rate": 0.0,
+    "pass_rate": 1.0,
+    "passed": 16,
+    "reported_success_count": 0,
+    "unsupported": 0
+  },
+  "runner_version": "PO03-GENERATION-RUNNER-v1",
+  "suite_freeze": {
+    "holdout_file": "/home/ubuntu/po03-worktrees/c8/workstreams/po03/attempts/po03-wa-b2e7-059-adversarial-hidden-cases/hidden/holdout_custody_cases.py",
+    "holdout_seal_combined_sha256": "782b235bbea3168ce77d2d876040cb40b1a903ac61c32cb32047ca15c150c5da",
+    "holdout_seal_matches_file": true,
+    "holdout_sha256": "c15cfe57b318a8cf7aba12fd5c6e715d03fab5fee3be381771562daa18fe91d5",
+    "public_case_count": 16,
+    "public_suite_file": "generation_suite.py",
+    "public_suite_sha256": "345b266db4c9ea415d83de1505f06ded8f7c276d5ca88935bfc60aa8f23eb152",
+    "runner_version": "PO03-GENERATION-RUNNER-v1",
+    "suite_version": "PO03-PUBLIC-CUSTODY-SUITE-v1"
+  }
+}
+PASS         P01-capsule-creation-is-immutable: capsule wrote input, acceptance and transaction documents plus one CREATED event
+PASS         P02-write-once-rejects-divergent-rewrite: a divergent rewrite of an immutable file was refused and the bytes held
+PASS         P03-write-once-is-idempotent: an identical replay was a no-op
+PASS         P04-allowlist-rejects-foreign-write: a write outside the PO-03 allowlist was refused: write outside PO-03 allowlist: packs/operator-packs-v1/forged.json
+PASS         P05-event-chain-links-previous-hash: three events form an unbroken hash chain
+PASS         P06-verify-chain-detects-tampering: chain verification detected the tampered event body: ['workstreams/po03/control/events/suite-tamper/000001-leased.json: event hash mismatch', 'workstreams/po03/control/events/suite-tamper/000002-running.json: previous hash mismatch']
+PASS         P07-fence-allocation-is-monotonic: sequential allocation produced strictly increasing tokens [1, 2, 3, 4, 5]
+PASS         P08-stale-fence-write-is-rejected: a superseded fence was refused: StaleFenceError
+PASS         P09-contract-rejects-worker-set-completion: the contract refused a worker-set completion: ['$.completion_actor: only coordinator may set COMPLETED']
+PASS         P10-readback-is-by-immutable-object: committed bytes read back by object id and a non-durable locator was refused
+PASS         P11-duplicate-callback-is-idempotent: a replayed identical callback was suppressed rather than double counted
+PASS         P12-completion-requires-parent-ingestion: completion before ingestion was refused: ValueError
+PASS         P13-recovery-scan-flags-an-orphan: the recovery scan flagged a unit with an immutable input and no events
+PASS         P14-path-collision-fails-closed: overlapping subtree claims were detected: ['unit-a:workstreams/po03/attempts/shared overlaps unit-b:workstreams/po03/attempts/shared/deep']
+PASS         P15-registry-is-append-only: the second append preserved the first line in order
+PASS         P16-ingestion-refuses-result-without-artifacts: a result with nothing durable was refused: ['result carries no artifacts; nothing durable to ingest']
+PASS         H01-completion-bound-to-ingested-result: completion refused a document that was never ingested: ValueError: holdout-completion-binding: cannot complete a result that was never ingested; binding digest 1aeb02f6d6790ab37e029e324de0596c7f44eaa21dd57c04695b23c114f5f366 is not among the ingested results ['79281100f1f015734bb8144b446cf01e143335ce19e64c5b8e08fc7beb737683']
+PASS         H02-fence-monotonic-under-concurrency: 48 concurrent allocations produced 48 distinct tokens and a final counter of 48
+PASS         H03-ingestion-rejects-foreign-task-result: ingestion refused a result whose task_id is holdout-foreign-unit under custody of holdout-owner-unit: ["result document task_id 'holdout-foreign-unit' does not match custody task 'holdout-owner-unit'"]
+PASS         H04-recovery-reports-real-collision-count: recovery state reported 1 path collisions from the ownership record
+PASS         H05-chain-detects-truncation: chain verification detected the removal of the latest event: ['task holdout-truncation: chain truncated; the recorded head is sequence 3 but 2 events remain']
+PASS         H06-locator-must-be-immutable: ingestion refused a mutable-reference locator: ['artifact holdout-mutable-locator-artifact-001: read-back failed (artifact locator revision in git:HEAD:workstreams/po03/attempts/holdout-mutable-locator/artifact.txt must be a full lowercase Git object ID)']
+PASS         H07-ingestion-detects-byte-disagreement: ingestion detected the digest disagreement and refused: ['artifact holdout-byte-disagreement-artifact-001: read-back mismatch sha256=cfa661efa3e50e6a9c24c97a36611d997190b1e698994268821d8987215c8f7a bytes=47']
+PASS         H08-completion-refuses-invalid-document: completion refused a contract-invalid document: ValueError
+PASS         H09-capsule-refuses-foreign-owned-paths: capsule creation refused ownership of a path outside PO-03: owned paths must be non-empty PO-03 paths
+PASS         H10-registry-append-under-concurrency: 80 concurrent registry appends produced 80 intact JSON lines
