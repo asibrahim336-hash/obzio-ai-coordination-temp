@@ -48,13 +48,17 @@ jobs:
           python3 -I -c 'import sys; print("\n".join(sys.path))'
 
       # Checks that no workflow here declares a cache, an install, a secret or a
-      # self-hosted runner, that the seeded contracts gate is still present and
-      # unweakened, and that the checkout carries no bytecode beyond the two
-      # committed caches this commission inherited. The patterns live in
-      # ci-surface-rules.json rather than in this file, because a grep written
-      # into a workflow matches its own pattern line and fails always.
+      # self-hosted runner, and that the seeded contracts gate is still present
+      # and unweakened. The patterns live in ci-surface-rules.json rather than
+      # in this file, because a grep written into a workflow matches its own
+      # pattern line and fails always.
+      #
+      # --require-pristine asserts no bytecode of any kind, which is only a
+      # true statement here: this is the first step to run Python, so anything
+      # it finds arrived with the checkout rather than from our own imports.
+      # -B keeps this step from creating the very thing it forbids.
       - name: Prove the surface carries no cache, install or secret
-        run: python3 -I workstreams/po03/runtime/ci_surface.py
+        run: python3 -I -B workstreams/po03/runtime/ci_surface.py --require-pristine
 
       # The load-bearing step. -S removes site-packages from sys.path, so any
       # third-party import fails outright. Running before the canonical gate

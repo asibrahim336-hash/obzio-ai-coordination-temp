@@ -78,19 +78,28 @@ def parse_porcelain(output: str) -> list[dict[str, str]]:
 
 
 def check_tree(root: Path) -> dict[str, Any]:
-    # --untracked-files=all matters: the default collapses a wholly untracked
-    # directory to a single "pkg/" entry, which hides whether it holds a real
-    # artifact or only bytecode. A path-level gate must see paths.
+    """Any entry git reports fails the gate, bytecode included.
+
+    This once forgave bytecode as build output, because two ``.pyc`` files were
+    committed and every run therefore reported dirty. That defect was fixed
+    upstream and ``workstreams/po03/.gitignore`` now declares bytecode, so git
+    no longer reports it and the forgiveness became unreachable code that would
+    have silently swallowed a committed ``.pyc`` if one ever came back. The
+    strength now rests on the repository's own declaration rather than on a
+    tolerance in this file: if the ignore rule were removed, git would start
+    reporting bytecode and this gate would fail, which is correct.
+
+    --untracked-files=all matters: the default collapses a wholly untracked
+    directory to a single "pkg/" entry, and a path-level gate must see paths.
+    """
     entries = parse_porcelain(git(root, "status", "--porcelain", "--untracked-files=all"))
-    content = [entry for entry in entries if not is_bytecode(entry["path"])]
-    bytecode = [entry for entry in entries if is_bytecode(entry["path"])]
     return {
         "check": "tree",
-        "dirty_entries": content,
-        "bytecode_entries": bytecode,
-        "dirty_count": len(content),
-        "bytecode_count": len(bytecode),
-        "verdict": "FAIL" if content else "PASS",
+        "dirty_entries": entries,
+        "dirty_count": len(entries),
+        "bytecode_entries": [entry for entry in entries if is_bytecode(entry["path"])],
+        "bytecode_forgiven": False,
+        "verdict": "FAIL" if entries else "PASS",
     }
 
 
@@ -230,8 +239,6 @@ def emit(report: dict[str, Any], as_json: bool) -> int:
             if check["check"] == "tree":
                 for entry in check["dirty_entries"]:
                     print(f"UNCOMMITTED: {entry['status']} {entry['path']}")
-                if check["bytecode_count"]:
-                    print(f"  ({check['bytecode_count']} bytecode cache path(s) ignored as build output)")
             elif check["verdict"] == "SKIP":
                 print(f"SKIPPED {check['manifest']}: {check['skip_reason']}")
             else:

@@ -122,28 +122,75 @@ def tracked_bytecode(root: Path) -> list[str]:
     return sorted(listing.stdout.split())
 
 
-def check_bytecode(rules: dict, root: Path) -> list[Finding]:
-    """Bytecode beyond the committed exceptions is a warm cache."""
+def ignored_paths(root: Path, candidates: list[str]) -> set[str]:
+    """Ask git which of these paths the repository declares as build output.
+
+    The question is put to git rather than answered by matching ``__pycache__``,
+    because the claim being made is about what the repository declares, and
+    only git can say that.  If the ignore rule is ever removed the paths stop
+    coming back ignored and the gate tightens by itself.
+    """
+    if not candidates:
+        return set()
+    result = subprocess.run(
+        ["git", "check-ignore", "--stdin"],
+        cwd=root,
+        input="\n".join(candidates),
+        capture_output=True,
+        text=True,
+    )
+    # 0 means some paths are ignored, 1 means none are; anything else is a
+    # failure to answer, and a gate that cannot answer must not report PASS.
+    if result.returncode not in (0, 1):
+        raise RuntimeError(f"git check-ignore failed: {result.stderr.strip()}")
+    return {line.strip() for line in result.stdout.splitlines() if line.strip()}
+
+
+def check_bytecode(rules: dict, root: Path, require_pristine: bool = False) -> list[Finding]:
+    """Bytecode the repository has not declared as build output is a warm cache.
+
+    Present-but-gitignored bytecode is not a defect.  A working checkout that
+    has run the suite has ``__pycache__`` in it by design, and reporting it
+    made the finding count a function of how many modules had been imported --
+    a number that says nothing about the tree.  What the clean-runner claim
+    actually excludes is bytecode nobody declared, and bytecode that arrives
+    before anything has run: ``--require-pristine`` asserts the second, and it
+    is only meaningful at the point the workflow uses it, immediately after
+    checkout and before the first import.
+    """
     exceptions = set(rules["bytecode_policy"]["tracked_exceptions"])
     tracked = set(tracked_bytecode(root))
+    present = set(present_bytecode(root))
     findings: list[Finding] = []
 
     for unexpected in sorted(tracked - exceptions):
         findings.append(Finding("UNDECLARED_TRACKED_BYTECODE", unexpected, "committed but not registered"))
     for missing in sorted(exceptions - tracked):
         findings.append(Finding("STALE_BYTECODE_EXCEPTION", missing, "registered but no longer committed"))
-    for warm in sorted(set(present_bytecode(root)) - tracked):
-        findings.append(Finding("WARM_BYTECODE_CACHE", warm, "present in the checkout but not committed"))
+
+    uncommitted = present - tracked
+    declared = ignored_paths(root, sorted(uncommitted))
+    for warm in sorted(uncommitted - declared):
+        findings.append(
+            Finding("WARM_BYTECODE_CACHE", warm, "present in the checkout, neither committed nor ignored")
+        )
+    if require_pristine:
+        for leftover in sorted(present):
+            findings.append(
+                Finding("BYTECODE_BEFORE_FIRST_IMPORT", leftover, "present in a checkout that has run nothing")
+            )
     return findings
 
 
-def run(rules: dict, root: Path, skip_bytecode: bool = False) -> dict:
+def run(
+    rules: dict, root: Path, skip_bytecode: bool = False, require_pristine: bool = False
+) -> dict:
     findings: list[Finding] = []
     for relative in rules["owned_workflows"]:
         findings.extend(check_workflow(rules, root, relative))
     findings.extend(check_seeded_control(rules, root))
     if not skip_bytecode:
-        findings.extend(check_bytecode(rules, root))
+        findings.extend(check_bytecode(rules, root, require_pristine=require_pristine))
 
     return {
         "schema": "po03-ci-surface-report-v1",
@@ -151,6 +198,7 @@ def run(rules: dict, root: Path, skip_bytecode: bool = False) -> dict:
         "workflows_checked": list(rules["owned_workflows"]),
         "seeded_control": rules["seeded_control"]["path"],
         "bytecode_checked": not skip_bytecode,
+        "pristine_required": require_pristine,
         "findings": [finding.as_dict() for finding in findings],
         "verdict": "PASS" if not findings else "FAIL",
     }
@@ -161,6 +209,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--root", default=str(REPO_ROOT), help="repository root")
     parser.add_argument("--rules", default=str(RULES_PATH), help="rules document")
     parser.add_argument("--skip-bytecode", action="store_true", help="check workflows only")
+    parser.add_argument(
+        "--require-pristine",
+        action="store_true",
+        help="fail on any bytecode at all; only meaningful before the first import",
+    )
     parser.add_argument("--json", action="store_true", help="emit the report as JSON")
     args = parser.parse_args(argv)
 
@@ -170,7 +223,16 @@ def main(argv: list[str] | None = None) -> int:
         print(f"CI_SURFACE_ERROR: {error}", file=sys.stderr)
         return 2
 
-    report = run(rules, Path(args.root).resolve(), skip_bytecode=args.skip_bytecode)
+    try:
+        report = run(
+            rules,
+            Path(args.root).resolve(),
+            skip_bytecode=args.skip_bytecode,
+            require_pristine=args.require_pristine,
+        )
+    except (RuntimeError, subprocess.CalledProcessError) as error:
+        print(f"CI_SURFACE_ERROR: {error}", file=sys.stderr)
+        return 2
 
     if args.json:
         print(json.dumps(report, indent=2, sort_keys=True))

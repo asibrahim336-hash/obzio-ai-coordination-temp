@@ -137,85 +137,137 @@ class MutationFixtureIsRejected(unittest.TestCase):
             path
             for path in tracked
             if not path_scope.path_in_allowlist(path)
-            and not path_scope.compensates_dot_directory_defect(path)
             and path.startswith(("workstreams/po03/", "receipts/po03/", ".github/workflows/po03-"))
         ]
         self.assertEqual(offending, [])
 
 
-class UpstreamDefectIsFrozen(unittest.TestCase):
-    """The compensation is only legitimate while the upstream defect is real."""
+class NormalisationIsGuardedNotCompensated(unittest.TestCase):
+    """What replaced the compensation, and why it is stronger than what it replaced.
 
-    def test_defect_state_and_repair_candidate_agree(self) -> None:
+    This module once carried a narrow compensation for the upstream ``lstrip
+    ("./")`` normaliser, which stripped characters rather than a leading ``./``
+    segment and so judged every dot-directory path outside an allowlist that
+    named it.  That was fixed at ``6f5e386``.  A compensation whose defect has
+    been fixed is worse than none: it is unreachable code that would silently
+    admit a path if the defect returned.  The tests below therefore assert the
+    contract the normaliser must keep, so a regression fails the build instead
+    of being absorbed.
+
+    None of them asserts that a defect exists.  Each states an invariant.
+    """
+
+    def test_the_allowlist_admits_the_paths_the_commission_grants(self) -> None:
+        """The invariant the compensation used to stand in for.
+
+        The commission's written allowlist contains ``.github/workflows/po03-*
+        .yml``.  A normaliser that damages the leading dot cannot admit it, so
+        this single assertion is the whole of what the compensation was for.
+        """
+        self.assertTrue(path_scope.path_in_allowlist(path_scope.WORKFLOW_PROBE))
+        self.assertEqual(path_scope.normalisation_guard(), [])
+
+    def test_the_guard_fires_when_the_normaliser_breaks_its_contract(self) -> None:
+        """Proved against a stand-in, since the real normaliser is correct now.
+
+        A guard that has never fired is not evidence, and the only honest way to
+        fire this one is to substitute a normaliser that fails the way the
+        original did.  ``lstrip("./")`` is reproduced exactly, so what fires the
+        guard is the real defect's behaviour and not an invented one.
+        """
+        real = path_scope.path_in_allowlist
+        prefixes = path_scope.control_plane.ALLOWLIST_PREFIXES
+
+        def damaged(path: str) -> bool:
+            return path.lstrip("./").startswith(tuple(prefixes))
+
+        path_scope.path_in_allowlist = damaged
+        try:
+            failures = path_scope.normalisation_guard()
+        finally:
+            path_scope.path_in_allowlist = real
+
+        probes = {failure["probe"] for failure in failures}
+        self.assertIn("dot_directory_workflow_is_admitted", probes)
+        self.assertIn("absolute_path_is_refused", probes)
+        self.assertIn("traversal_is_refused", probes)
+        # Not the equivalence probe. lstrip("./") happens to damage "./x" and
+        # "x" into the same string, so it passes that check while failing three
+        # others -- which is why the guard needs more than one probe.
+        self.assertNotIn("leading_dot_segment_is_equivalent", probes)
+
+    def test_the_equivalence_probe_fires_on_its_own_failure_mode(self) -> None:
+        """A probe that has never fired is not evidence either.
+
+        The equivalence probe is untouched by the historical defect, so it needs
+        its own stand-in: a normaliser that does not normalise at all, and so
+        decides two spellings of one path differently.
+        """
+        real = path_scope.path_in_allowlist
+        prefixes = tuple(path_scope.control_plane.ALLOWLIST_PREFIXES)
+        path_scope.path_in_allowlist = lambda path: path.startswith(prefixes)
+        try:
+            failures = path_scope.normalisation_guard()
+        finally:
+            path_scope.path_in_allowlist = real
+
+        equivalence = [
+            failure
+            for failure in failures
+            if failure["probe"] == "leading_dot_segment_is_equivalent"
+        ]
+        self.assertEqual(len(equivalence), 1, failures)
+        self.assertEqual(equivalence[0]["equivalent_to"], path_scope.RELATIVE_PROBE)
+
+    def test_a_guard_failure_fails_the_whole_report(self) -> None:
+        """A normalisation regression must not pass merely because no path moved."""
+        real = path_scope.path_in_allowlist
+        path_scope.path_in_allowlist = lambda path: False
+        try:
+            report = path_scope.evaluate([], source="probe")
+        finally:
+            path_scope.path_in_allowlist = real
+        self.assertEqual(report["verdict"], "FAIL")
+        self.assertTrue(report["normalisation_guard_failures"])
+
+    def test_the_retirement_is_recorded_rather_than_silent(self) -> None:
         record = json.loads(REPAIR_RECORD.read_text(encoding="utf-8"))
-        self.assertEqual(record["defect_id"], path_scope.DEFECT_ID)
+        retired = path_scope.RETIRED_COMPENSATION
+        self.assertEqual(record["defect_id"], retired["defect_id"])
         self.assertFalse(record["applied_by_this_writer"])
-        if path_scope.upstream_defect_present():
-            # Defect still live: the proposed patch must still be applicable.
-            check = subprocess.run(
-                ["git", "apply", "--check", str(REPAIR_PATCH)],
-                cwd=REPO_ROOT,
-                capture_output=True,
-                text=True,
-            )
-            self.assertEqual(check.returncode, 0, check.stderr)
-            self.assertFalse(
-                path_scope.path_in_allowlist(".github/workflows/po03-path-scope.yml"),
-                "the defect record claims a live defect that no longer reproduces",
-            )
-        else:
-            # Repaired upstream: the compensation must have become a no-op.
-            report = path_scope.evaluate(
-                [".github/workflows/po03-path-scope.yml"], source="post-repair probe"
-            )
-            self.assertEqual(report["compensated_allowlist_paths"], [])
-            self.assertEqual(report["verdict"], "PASS")
+        self.assertEqual(retired["fixed_upstream_at"], "6f5e386")
+        # Three independent discoveries are why the fix is trusted rather than
+        # believed, so the record names all three.
+        self.assertIn("po03-worker-a3", retired["independently_rediscovered_by"])
+        self.assertGreaterEqual(len(retired["independently_rediscovered_by"]), 3)
+        report = path_scope.evaluate([], source="probe")
+        self.assertEqual(report["retired_compensation"]["defect_id"], retired["defect_id"])
+        self.assertNotIn("compensated_allowlist_paths", report)
+        self.assertNotIn("compensated_ownership_paths", report)
 
-    def test_absolute_paths_fail_closed_even_when_upstream_admits_them(self) -> None:
-        """The lstrip defect also runs the permissive way, so the guard tightens."""
+    def test_absolute_paths_fail_closed_whatever_upstream_returns(self) -> None:
+        """Kept independent of the authority, because this is the granting direction.
+
+        A normaliser that loses a leading slash *admits* an absolute path, and a
+        guard that deferred to it there would widen access rather than deny it.
+        The check therefore does not consult upstream at all.
+        """
         probe = path_scope.ABSOLUTE_PROBE
         self.assertTrue(probe.startswith("/"))
-        if path_scope.upstream_admits_absolute_paths():
-            self.assertTrue(path_scope.path_in_allowlist(probe))
-        report = path_scope.evaluate([probe], source="probe")
-        self.assertEqual(report["verdict"], "FAIL")
+        real = path_scope.path_in_allowlist
+        path_scope.path_in_allowlist = lambda path: True
+        try:
+            report = path_scope.evaluate([probe], source="probe")
+        finally:
+            path_scope.path_in_allowlist = real
         self.assertEqual(report["allowlist_violations"], [probe])
+        self.assertEqual(report["verdict"], "FAIL")
 
     def test_diff_sentinel_is_dropped_without_becoming_a_violation(self) -> None:
         diff = "diff --git a/workstreams/po03/x b/workstreams/po03/x\n--- /dev/null\n+++ b/workstreams/po03/x\n"
         paths = path_scope.parse_unified_diff(diff)
         self.assertEqual(paths, ["workstreams/po03/x"])
         self.assertEqual(path_scope.evaluate(paths, source="probe")["verdict"], "PASS")
-
-    def test_compensation_is_narrow(self) -> None:
-        admitted = [
-            ".github/workflows/po03-path-scope.yml",
-            ".github/workflows/po03-clean-clone.yml",
-        ]
-        refused = [
-            ".github/workflows/ci.yml",
-            ".github/workflows/po03-path-scope.yaml",
-            ".github/workflows/nested/po03-path-scope.yml",
-            ".github/workflows/po03-.yml.bak",
-            ".cursor/environment.json",
-            ".github/CODEOWNERS",
-            "packs/operator/pack-manifest.json",
-            ".github/workflows/../../packs/x.yml",
-        ]
-        for path in admitted:
-            self.assertTrue(path_scope.compensates_dot_directory_defect(path), path)
-        for path in refused:
-            self.assertFalse(path_scope.compensates_dot_directory_defect(path), path)
-
-    def test_compensated_paths_are_always_reported(self) -> None:
-        report = path_scope.evaluate(
-            [".github/workflows/po03-path-scope.yml"], source="probe", owner="po03-worker-a3"
-        )
-        if path_scope.upstream_defect_present():
-            self.assertEqual(
-                report["compensated_allowlist_paths"], [".github/workflows/po03-path-scope.yml"]
-            )
-        self.assertEqual(report["upstream_defect_id"], path_scope.DEFECT_ID)
 
 
 class CommandLineBehaviour(unittest.TestCase):

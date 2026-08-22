@@ -32,11 +32,24 @@
     "Remove the tracked_exceptions list from ci-surface-rules.json, at which point WARM_BYTECODE_CACHE covers every .pyc with no carve-out."
   ],
   "patch": "NOT_SUPPORTED: a patch is not supplied. Both the deletion and the .gitignore edit fall outside this writer's owned paths, and a patch that deletes committed files is not something this writer should stage even as a proposal.",
-  "disposition": "PROPOSED_TO_COORDINATOR",
+  "disposition": "SUPERSEDED_BY_UPSTREAM_FIX",
+  "disposition_detail": {
+    "fixed_upstream_at": "e19982d",
+    "fixed_by": "coordinator",
+    "fix_applied": "Both paths removed from the index and workstreams/po03/.gitignore added declaring __pycache__/, *.pyc and *.pyo.",
+    "origin_corrected": "The two files were introduced by the coordinator through a broad `git add -A`, not by any cohort. This record originally attributed them only to 'predates this commission', which was imprecise.",
+    "all_three_proposed_repairs_landed": true
+  },
   "registered_exception": {
     "file": "workstreams/po03/runtime/ci-surface-rules.json",
     "field": "bytecode_policy.tracked_exceptions",
-    "narrowness": "Exactly the two committed paths. Any third .pyc, tracked or untracked, is a finding.",
-    "retire_when": "git ls-files '*.pyc' is empty, at which point the exception list becomes stale and STALE_BYTECODE_EXCEPTION fires until it is removed."
+    "status": "RETIRED, now empty",
+    "retired_at_commit": "e19982d",
+    "how_the_retirement_was_forced": "STALE_BYTECODE_EXCEPTION. The registry reported both exceptions as registered-but-no-longer-committed, so the tolerance could not quietly outlive its defect. That is the argument for registering an exception in data rather than writing an if-statement: data can be checked against the world, and a branch cannot.",
+    "gates_restored": [
+      "ci_surface: tracked_exceptions is empty, so any committed .pyc is UNDECLARED_TRACKED_BYTECODE and fails.",
+      "committed_only: check_tree no longer forgives bytecode. Any entry git reports fails, and the strictness is affordable because the repository now declares bytecode as ignored, so git stops reporting it. Remove the declaration and the gate tightens by itself."
+    ],
+    "did_this_weaken_either_gate": "No, both strictly strengthened. ci_surface previously admitted two committed .pyc files and now admits none. committed_only previously passed a tree whose only dirt was bytecode and now fails it, which is proved by test_undeclared_bytecode_fails_like_any_other_dirt -- a test that passed under the old behaviour and asserts the opposite now. The one narrowing is WARM_BYTECODE_CACHE, which no longer fires on gitignored bytecode; that was not strength but noise, since the finding count tracked how many modules had been imported rather than anything about the tree. The strong claim it was standing in for is now asserted directly by --require-pristine at the only point it is true, immediately after checkout and before the first import."
   }
 }

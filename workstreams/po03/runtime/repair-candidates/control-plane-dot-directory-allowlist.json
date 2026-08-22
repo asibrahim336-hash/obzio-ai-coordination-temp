@@ -40,12 +40,25 @@
     "git apply --check succeeds against the current tree (read-only; nothing is written).",
     "Applied inside a throwaway copy of workstreams/po03 that also carries control/path-ownership.json, both the allowlist and ownership decisions become correct while every negative case stays rejected."
   ],
-  "disposition": "PROPOSED_TO_COORDINATOR",
+  "disposition": "SUPERSEDED_BY_UPSTREAM_FIX",
+  "disposition_detail": {
+    "fixed_upstream_at": "6f5e386",
+    "fixed_by": "coordinator",
+    "patch_status": "redundant. It is retained as evidence of the finding, not as a launch surface, and is no longer applicable to the current tree.",
+    "independent_discoverers": [
+      "coordinator test suite",
+      "po03-worker-a10",
+      "po03-worker-a3 (this record, third)"
+    ],
+    "why_three_discoveries_matter": "Independent rediscovery across model families is why the fix is trusted rather than merely believed. The record therefore stays even though the patch is dead."
+  },
   "guard_compensation": {
     "module": "workstreams/po03/runtime/path_scope.py",
-    "function": "compensates_dot_directory_defect",
-    "scope": "Admits only .github/workflows/po03-*.yml with no path separator in the leaf and no '..' segment. No other widening.",
-    "reported_as": "compensated_allowlist_paths and compensated_ownership_paths in the path-scope report, never as a silent pass.",
-    "retire_when": "path_in_allowlist('.github/workflows/po03-probe.yml') returns True upstream, at which point the compensation becomes a no-op and test_a3_path_scope asserts the patch is obsolete instead of applicable."
+    "status": "RETIRED",
+    "retired_function": "compensates_dot_directory_defect and compensates_ownership_defect, both removed",
+    "replaced_by": "path_scope.normalisation_guard, which asserts the fixed behaviour on four probes composed from the control plane's own allowlist constants",
+    "why_not_simply_deleted": "The compensation depended on a property of the normaliser. Deleting it would have left that property unasserted, so the same defect could return unremarked. Converting it into a guard means the property is now checked on every run and a regression fails the build instead of being routed around.",
+    "why_not_left_in_place": "With the defect fixed the compensation was unreachable code that would have admitted a path had the defect returned. A tolerance outliving its defect is a hole, and a silent one.",
+    "did_this_weaken_the_gate": "No. The compensation could only ever admit paths; the guard can only ever fail the report. Every path the compensation used to admit is now admitted by the authority itself, which is the correct source for that decision. The absolute-path check remains deliberately independent of the authority, because that is the direction in which a normalisation defect grants access rather than denying it."
   }
 }

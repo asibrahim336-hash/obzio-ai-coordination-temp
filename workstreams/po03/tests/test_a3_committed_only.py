@@ -101,14 +101,48 @@ class GateOnSyntheticRepositories(unittest.TestCase):
         self.assertEqual(check["verdict"], "FAIL")
         self.assertIn("never-pushed.json", [entry["path"] for entry in check["dirty_entries"]])
 
-    def test_bytecode_only_dirt_passes_but_is_counted(self) -> None:
+    def test_undeclared_bytecode_fails_like_any_other_dirt(self) -> None:
+        """The restored strength: nothing is forgiven for being bytecode.
+
+        This gate used to pass here. It forgave bytecode because two ``.pyc``
+        files were committed upstream and every run reported dirty; once that
+        was fixed the forgiveness became a hole through which a committed
+        ``.pyc`` could return unnoticed. A tolerance must not outlive the
+        defect that justified it.
+        """
         cache = self.root / "pkg" / "__pycache__"
         cache.mkdir(parents=True)
         (cache / "mod.cpython-312.pyc").write_bytes(b"\x00\x01")
         check = gate.check_tree(self.root)
+        self.assertEqual(check["verdict"], "FAIL", check)
+        self.assertEqual(check["dirty_count"], 1)
+        self.assertFalse(check["bytecode_forgiven"])
+        self.assertEqual(
+            [entry["path"] for entry in check["bytecode_entries"]],
+            ["pkg/__pycache__/mod.cpython-312.pyc"],
+        )
+
+    def test_strength_now_rests_on_the_repository_declaring_bytecode(self) -> None:
+        """Strictness is affordable because the repository declares build output.
+
+        With an ignore rule in place git does not report the file at all, so the
+        gate can refuse to forgive anything without becoming unusable. Remove
+        the declaration and the gate tightens by itself rather than staying
+        quiet, which is the property a hard-coded exemption could not give.
+        """
+        cache = self.root / "pkg" / "__pycache__"
+        cache.mkdir(parents=True)
+        (cache / "mod.cpython-312.pyc").write_bytes(b"\x00\x01")
+        (self.root / ".gitignore").write_text("__pycache__/\n*.pyc\n", encoding="utf-8")
+        subprocess.run(["git", "add", ".gitignore"], cwd=self.root, check=True)
+        subprocess.run(
+            ["git", "commit", "-q", "-m", "declare bytecode as build output"],
+            cwd=self.root,
+            check=True,
+        )
+        check = gate.check_tree(self.root)
         self.assertEqual(check["verdict"], "PASS", check)
         self.assertEqual(check["dirty_count"], 0)
-        self.assertEqual(check["bytecode_count"], 1)
 
     def test_rename_reports_the_destination_path(self) -> None:
         entries = gate.parse_porcelain("R  old/name.txt -> new/name.txt\n")

@@ -67,63 +67,93 @@ path_in_allowlist = control_plane.path_in_allowlist
 check_allowlist = control_plane.check_allowlist
 check_ownership = control_plane.check_ownership
 
-# The workflow pattern is read from the control plane too, so even the
-# compensation below holds no independent copy of the allowlist shape.
+# The workflow pattern is read from the control plane too, so the probes below
+# hold no independent copy of the allowlist shape.
 WORKFLOW_DIR = control_plane.ALLOWLIST_WORKFLOW_DIR
 WORKFLOW_PREFIX = control_plane.ALLOWLIST_WORKFLOW_PREFIX
 WORKFLOW_SUFFIX = control_plane.ALLOWLIST_WORKFLOW_SUFFIX
 
-DEFECT_ID = "PO03-CP-001-lstrip-dot-directory"
+# Retired at 6f5e386, where the coordinator fixed the lstrip("./") normaliser.
+# This module used to carry a narrow compensation that admitted dot-directory
+# workflow paths the upstream helper wrongly rejected. With the defect gone the
+# compensation was unreachable code, and unreachable code that would have
+# admitted a path is worse than no code at all: a future regression would have
+# been silently absorbed instead of reported. What replaces it is a guard that
+# asserts the fixed behaviour, so a regression fails the build.
+RETIRED_COMPENSATION = {
+    "defect_id": "PO03-CP-001-lstrip-dot-directory",
+    "fixed_upstream_at": "6f5e386",
+    "independently_rediscovered_by": ["coordinator test suite", "po03-worker-a10", "po03-worker-a3"],
+    "disposition": "converted to the normalisation guard below rather than deleted, so the "
+    "behaviour the compensation depended on is now asserted instead of assumed",
+}
 
 # Probe values are composed from the control plane's own allowlist constants
 # rather than written out, so this module holds no absolute path of its own and
 # stays clean under the a3-u02 hermeticity gate.
 WORKFLOW_PROBE = f"{control_plane.ALLOWLIST_WORKFLOW_DIR}{control_plane.ALLOWLIST_WORKFLOW_PREFIX}probe{control_plane.ALLOWLIST_WORKFLOW_SUFFIX}"
 ABSOLUTE_PROBE = "/" + control_plane.ALLOWLIST_PREFIXES[0] + "probe"
+TRAVERSAL_PROBE = control_plane.ALLOWLIST_PREFIXES[0] + "../../etc/passwd"
+RELATIVE_PROBE = control_plane.ALLOWLIST_PREFIXES[0] + "probe"
+DOT_SEGMENT_PROBE = "./" + RELATIVE_PROBE
+
+# Each probe pairs a path with the verdict a correct normaliser must reach.
+# Every expectation is drawn from the commission's written allowlist, so the
+# guard states an invariant rather than describing what the code does today.
+NORMALISATION_PROBES = (
+    ("dot_directory_workflow_is_admitted", WORKFLOW_PROBE, True),
+    ("absolute_path_is_refused", ABSOLUTE_PROBE, False),
+    ("traversal_is_refused", TRAVERSAL_PROBE, False),
+)
+
+# Spellings that denote the same path and must therefore be judged the same
+# way.  Whether "./x" is in the allowlist is the authority's policy and not
+# mine; that it agrees with "x" is a property of normalisation itself, and it
+# is the exact property lstrip("./") broke.
+EQUIVALENT_SPELLINGS = (
+    ("leading_dot_segment_is_equivalent", DOT_SEGMENT_PROBE, RELATIVE_PROBE),
+)
 
 
-def compensates_dot_directory_defect(path: str) -> bool:
-    """Admit workflow paths the upstream normaliser wrongly rejects.
+def normalisation_guard() -> list[dict[str, Any]]:
+    """Report every probe on which the upstream normaliser breaks its contract.
 
-    ``control_plane.path_in_allowlist`` normalises with ``lstrip("./")``, which
-    strips characters rather than a leading ``./`` segment.  Every path under a
-    dot directory therefore loses its leading dot, so ``.github/workflows/
-    po03-*.yml`` becomes ``github/workflows/po03-*.yml`` and is judged outside
-    an allowlist that explicitly contains it.  ``check_ownership`` normalises
-    the same way and rejects the identical paths.
-
-    This compensation is deliberately narrow: it admits only the workflow class
-    the commission's written allowlist already contains, applies no other
-    widening, and every path it admits is enumerated in the report as a
-    compensation rather than as a clean pass.  The repair itself belongs to the
-    coordinator, so it ships as a patch under ``runtime/repair-candidates/``
-    instead of being applied to a file this writer does not own.
+    A guard, not a compensation.  While the allowlist behaves this returns
+    nothing; when it stops behaving, the caller fails rather than routing around
+    the disagreement.  The distinction matters because a compensation keeps the
+    build green while the authority is wrong, which is how a normalisation
+    defect survives long enough to be discovered three times independently.
     """
-    candidate = path.strip()
-    if not candidate.startswith(WORKFLOW_DIR):
-        return False
-    if ".." in candidate.split("/"):
-        return False
-    leaf = candidate[len(WORKFLOW_DIR) :]
-    return (
-        "/" not in leaf
-        and leaf.startswith(WORKFLOW_PREFIX)
-        and leaf.endswith(WORKFLOW_SUFFIX)
-    )
+    failures: list[dict[str, Any]] = []
+    for name, candidate, expected in NORMALISATION_PROBES:
+        actual = bool(path_in_allowlist(candidate))
+        if actual is not expected:
+            failures.append(
+                {
+                    "probe": name,
+                    "path": candidate,
+                    "expected_in_allowlist": expected,
+                    "actual_in_allowlist": actual,
+                }
+            )
+    for name, spelling, equivalent in EQUIVALENT_SPELLINGS:
+        decided = bool(path_in_allowlist(spelling))
+        reference = bool(path_in_allowlist(equivalent))
+        if decided is not reference:
+            failures.append(
+                {
+                    "probe": name,
+                    "path": spelling,
+                    "expected_in_allowlist": reference,
+                    "actual_in_allowlist": decided,
+                    "equivalent_to": equivalent,
+                }
+            )
+    return failures
 
 
 def is_absolute_path(path: str) -> bool:
     return path.strip().startswith("/")
-
-
-def upstream_admits_absolute_paths() -> bool:
-    """True while an absolute in-allowlist-looking path is wrongly admitted."""
-    return path_in_allowlist(ABSOLUTE_PROBE)
-
-
-def upstream_defect_present() -> bool:
-    """True while the coordinator's normaliser still rejects a valid workflow path."""
-    return not path_in_allowlist(WORKFLOW_PROBE)
 
 
 def owned_prefixes(owner: str) -> tuple[str, ...]:
@@ -132,14 +162,6 @@ def owned_prefixes(owner: str) -> tuple[str, ...]:
     if entry is None:
         return ()
     return tuple(entry.get("owned_prefixes", []))
-
-
-def compensates_ownership_defect(owner: str, path: str) -> bool:
-    """The same normaliser defect makes owned workflow paths look unowned."""
-    candidate = path.strip()
-    if not candidate.startswith(WORKFLOW_DIR):
-        return False
-    return candidate.startswith(owned_prefixes(owner))
 
 
 def git(*args: str) -> str:
@@ -253,37 +275,30 @@ def attribute(path: str, base: str, head: str, limit: int = 5) -> list[dict[str,
 def evaluate(paths: Iterable[str], *, source: str, owner: str | None = None) -> dict[str, Any]:
     """Decide each path individually against the upstream authority.
 
-    The upstream helpers report violations in their own normalised form, which
-    for a dot directory is the damaged spelling.  Deciding one path at a time
-    keeps the original string in hand, so the report names the path the author
-    actually wrote and the compensation can be applied to it.
+    The upstream helpers report violations in their own normalised form, so
+    deciding one path at a time keeps the original string in hand and the report
+    names the path the author actually wrote.
     """
     ordered = list(paths)
     violations: list[str] = []
-    compensated: list[str] = []
     ownership_violations: list[str] = []
-    ownership_compensated: list[str] = []
 
     for path in ordered:
         if is_absolute_path(path):
-            # The same lstrip defect runs the other way too: "/workstreams/po03/x"
-            # loses its leading slash and is *admitted*. A guard must fail closed,
-            # so an absolute path is a violation whatever upstream returns.
+            # Belt and braces, kept deliberately independent of upstream. A
+            # guard must fail closed on an absolute path whatever the authority
+            # returns, because that is the direction in which a normalisation
+            # defect grants access rather than denying it.
             violations.append(path)
             continue
         if check_allowlist([path]):
-            if compensates_dot_directory_defect(path):
-                compensated.append(path)
-            else:
-                violations.append(path)
+            violations.append(path)
         if owner and check_ownership(owner, [path]):
-            if compensates_ownership_defect(owner, path):
-                ownership_compensated.append(path)
-            else:
-                ownership_violations.append(path)
+            ownership_violations.append(path)
 
     violations = sorted(set(violations))
     ownership_violations = sorted(set(ownership_violations))
+    guard_failures = normalisation_guard()
 
     return {
         "schema": REPORT_SCHEMA,
@@ -293,12 +308,9 @@ def evaluate(paths: Iterable[str], *, source: str, owner: str | None = None) -> 
         "changed_paths": ordered,
         "allowlist_violations": violations,
         "ownership_violations": ownership_violations,
-        "upstream_defect_id": DEFECT_ID,
-        "upstream_defect_present": upstream_defect_present(),
-        "upstream_admits_absolute_paths": upstream_admits_absolute_paths(),
-        "compensated_allowlist_paths": sorted(set(compensated)),
-        "compensated_ownership_paths": sorted(set(ownership_compensated)),
-        "verdict": "FAIL" if violations or ownership_violations else "PASS",
+        "normalisation_guard_failures": guard_failures,
+        "retired_compensation": RETIRED_COMPENSATION,
+        "verdict": "FAIL" if violations or ownership_violations or guard_failures else "PASS",
     }
 
 
@@ -310,10 +322,12 @@ def emit(report: dict[str, Any], as_json: bool) -> int:
             print(f"OUT_OF_ALLOWLIST: {path}")
         for path in report["ownership_violations"]:
             print(f"NOT_OWNED_BY_{report['owner']}: {path}")
-        for path in report["compensated_allowlist_paths"]:
-            print(f"COMPENSATED_{report['upstream_defect_id']}: {path}")
-        for path in report["compensated_ownership_paths"]:
-            print(f"COMPENSATED_OWNERSHIP_{report['upstream_defect_id']}: {path}")
+        for failure in report["normalisation_guard_failures"]:
+            print(
+                f"UPSTREAM_NORMALISATION_REGRESSED: {failure['probe']}: {failure['path']} "
+                f"expected in_allowlist={failure['expected_in_allowlist']}, "
+                f"got {failure['actual_in_allowlist']}"
+            )
         if report["verdict"] == "FAIL":
             print(
                 f"FAIL {len(report['allowlist_violations'])} out-of-allowlist and "

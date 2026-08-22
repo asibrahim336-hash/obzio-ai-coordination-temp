@@ -38,11 +38,22 @@
     "why": "po03-contracts.yml is an active seeded control, not scaffolding. This unit strengthens the surface around it and must not be able to weaken or remove it, so its presence and its canonical gate command are asserted from outside it."
   },
   "bytecode_policy": {
-    "tracked_exceptions": [
-      "workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
-      "workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+    "tracked_exceptions": [],
+    "why": "No committed bytecode is tolerated. The gate is at full strength: any tracked .pyc is UNDECLARED_TRACKED_BYTECODE and fails the build.",
+    "retired_exceptions": [
+      {
+        "path": "workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+        "retired_at_commit": "e19982d",
+        "retirement_reason": "The upstream defect PO03-REPO-002 was fixed: the file was removed from the index and workstreams/po03/.gitignore now declares bytecode as build output."
+      },
+      {
+        "path": "workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc",
+        "retired_at_commit": "e19982d",
+        "retirement_reason": "As above. The exception was a tolerance for someone else's defect, and a tolerance outliving its defect is a hole."
+      }
     ],
-    "why": "Two committed .pyc files predate this commission and sit outside this writer's owned paths, so they are recorded as a known exception rather than deleted. Any other bytecode in a checkout is a warm cache, which is what the clean-runner claim excludes.",
-    "repair_candidate": "workstreams/po03/runtime/repair-candidates/tracked-bytecode.json"
+    "retirement_note": "STALE_BYTECODE_EXCEPTION is what forced this. The registry reports an exception whose defect has gone, so the tolerance could not quietly outlive the reason for it -- which is the whole point of registering an exception instead of writing an if-statement.",
+    "repair_candidate": "workstreams/po03/runtime/repair-candidates/tracked-bytecode.json",
+    "warm_cache_scope": "WARM_BYTECODE_CACHE fires only on bytecode that is neither committed nor gitignored. Gitignored __pycache__ in a working checkout is declared build output, not a warm cache; counting it made the finding total a function of how many modules had been imported. The stronger claim -- no bytecode at all -- is asserted by --require-pristine, which the clean-runner workflow uses immediately after checkout and before the first import."
   }
 }
