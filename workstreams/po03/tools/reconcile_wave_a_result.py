@@ -28,6 +28,19 @@ def _show(commit: str, path: str) -> bytes:
     return _git("show", f"{commit}:{path}")
 
 
+def _load_producer_documents(
+    result_commit: str,
+    return_commit: str,
+    manifest_path: str,
+    ready_path: str,
+    result_path: str,
+) -> tuple[bytes, bytes, dict[str, Any]]:
+    manifest_bytes = _show(result_commit, manifest_path)
+    ready_bytes = _show(return_commit, ready_path)
+    producer_result = json.loads(_show(result_commit, result_path))
+    return manifest_bytes, ready_bytes, producer_result
+
+
 def _sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
@@ -223,11 +236,15 @@ def main() -> int:
     ready_path = prefix + args.ready_relative
     result_path = prefix + args.producer_result_relative
 
-    manifest_bytes = _show(args.return_commit, manifest_path)
+    manifest_bytes, ready_bytes, producer_result = _load_producer_documents(
+        args.result_commit,
+        args.return_commit,
+        manifest_path,
+        ready_path,
+        result_path,
+    )
     manifest = json.loads(manifest_bytes)
-    ready_bytes = _show(args.return_commit, ready_path)
     ready = json.loads(ready_bytes)
-    producer_result = json.loads(_show(args.return_commit, result_path))
     source_base = _trusted_source_base(
         ready, args.return_commit, args.ingestion_commit
     )
@@ -265,7 +282,7 @@ def main() -> int:
             if content_path.startswith(prefix)
             else content_path
         )
-        data = _show(args.return_commit, content_path)
+        data = _show(args.result_commit, content_path)
         if len(data) != artifact["bytes"] or _sha(data) != artifact["sha256"]:
             raise ValueError(f"immutable readback mismatch: {relative}")
         payload_bytes += len(data)
@@ -276,7 +293,7 @@ def main() -> int:
                 ),
                 "logical_name": relative,
                 "content_uri": (
-                    f"git:{args.branch}@{args.return_commit}:{content_path}"
+                    f"git:{args.branch}@{args.result_commit}:{content_path}"
                 ),
                 "sha256": artifact["sha256"],
                 "bytes": artifact["bytes"],
@@ -289,13 +306,25 @@ def main() -> int:
     if payload_bytes != manifest["total_bytes"]:
         raise ValueError("manifest byte total mismatch")
     envelope_specs = [
-        ("ARTIFACT-MANIFEST", args.manifest_relative, manifest_path, manifest_bytes),
-        ("READY-TO-COMMIT", args.ready_relative, ready_path, ready_bytes),
+        (
+            "ARTIFACT-MANIFEST",
+            args.manifest_relative,
+            manifest_path,
+            manifest_bytes,
+            args.result_commit,
+        ),
+        (
+            "READY-TO-COMMIT",
+            args.ready_relative,
+            ready_path,
+            ready_bytes,
+            args.return_commit,
+        ),
     ]
     existing_content_paths = {
         artifact["content_uri"].split(":", 2)[-1] for artifact in artifacts
     }
-    for suffix, logical_name, content_path, data in envelope_specs:
+    for suffix, logical_name, content_path, data, commit in envelope_specs:
         if content_path in existing_content_paths:
             continue
         artifacts.append(
@@ -303,7 +332,7 @@ def main() -> int:
                 "artifact_id": f"{task_id}-{suffix}",
                 "logical_name": logical_name,
                 "content_uri": (
-                    f"git:{args.branch}@{args.return_commit}:{content_path}"
+                    f"git:{args.branch}@{commit}:{content_path}"
                 ),
                 "sha256": _sha(data),
                 "bytes": len(data),
@@ -346,7 +375,7 @@ def main() -> int:
     control_result["result_transaction"].update(
         state="INGESTED",
         manifest_uri=(
-            f"git:{args.branch}@{args.return_commit}:{manifest_path}"
+            f"git:{args.branch}@{args.result_commit}:{manifest_path}"
         ),
         manifest_sha256=_sha(manifest_bytes),
         artifact_count=len(artifacts),

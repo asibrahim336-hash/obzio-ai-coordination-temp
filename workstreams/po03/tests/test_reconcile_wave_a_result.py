@@ -18,6 +18,38 @@ sys.modules[TOOL_SPEC.name] = TOOL
 TOOL_SPEC.loader.exec_module(TOOL)
 
 
+class ProducerDocumentTests(unittest.TestCase):
+    def test_result_payload_is_read_from_result_commit(self):
+        with mock.patch.object(
+            TOOL,
+            "_show",
+            side_effect=[
+                b'{"artifact_count": 0, "artifacts": [], "total_bytes": 0}',
+                b'{"terminal_report": "READY_TO_COMMIT"}',
+                b'{"task_id": "PO03-WA-016"}',
+            ],
+        ) as show:
+            manifest, ready, result = TOOL._load_producer_documents(
+                "a" * 40,
+                "b" * 40,
+                "manifest.json",
+                "ready.json",
+                "result.json",
+            )
+
+        self.assertIn(b'"artifact_count"', manifest)
+        self.assertIn(b'"terminal_report"', ready)
+        self.assertEqual(result["task_id"], "PO03-WA-016")
+        self.assertEqual(
+            show.call_args_list,
+            [
+                mock.call("a" * 40, "manifest.json"),
+                mock.call("b" * 40, "ready.json"),
+                mock.call("a" * 40, "result.json"),
+            ],
+        )
+
+
 class AttemptProjectionTests(unittest.TestCase):
     def test_a01_uses_canonical_input_and_outbox(self):
         attempt = {"attempt_id": "PO03-WA-009-A01"}
