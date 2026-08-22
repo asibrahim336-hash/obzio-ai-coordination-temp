@@ -99,6 +99,19 @@
     "target": "harness/emit_result.py:build_manifest, harness/emit_result.py:artifact_accounting"
   },
   {
+    "additional_recurrence_test": "tests/test_emit_result.py::RemoteSanitisationTests::test_no_result_document_carries_a_credential",
+    "change": "The read-back record strips any credential from the remote URL before writing it. The push URL embeds an access token, and the first implementation recorded it verbatim in a document that is committed and read by others. Caught before the receipt was committed, by reading the emitted bytes rather than trusting the field's description.",
+    "disposition": "RETAIN",
+    "hypothesis_ids": [
+      "CM-H7"
+    ],
+    "mechanism_id": "M10",
+    "rationale": "A custody document that proves where bytes came from must not also publish the key used to get them. The standing test scans every emitted result document, not only the field that leaked, because the next leak will be in a different field.",
+    "recurrence_test": "tests/test_emit_result.py::RemoteSanitisationTests::test_an_embedded_token_is_stripped_from_the_recorded_remote",
+    "scope": "LIVE_IN_THIS_UNIT",
+    "target": "harness/emit_result.py:sanitized_remote"
+  },
+  {
     "change": "Randomized multi-fault fuzzing is retained as a cheap regression sweep but rejected as a substitute for exhaustive single-fault enumeration at this model's size.",
     "disposition": "EVIDENCE_BACKED_REJECTION",
     "hypothesis_ids": [
