@@ -5,6 +5,17 @@
     "exit_code": 0,
     "output": "WROTE workstreams/po03/strategy/source-capsule-report.json units=4 state=DRIFTED drift=4 missing=0 decision_changed=[]"
   },
+  "snapshot_coupling_remediation": {
+    "asserted_properties": [
+      "the recorded report is byte-equivalent to the report at the pinned commit",
+      "the report exactly rebuilds from the immutable dispatches and source blobs at the pinned commit",
+      "two rebuilds from the same fixed capsule are equal",
+      "drift is detected and every source is classified as CURRENT, DRIFTED or MISSING"
+    ],
+    "option": "IMMUTABLE_COMMIT_PIN",
+    "snapshot_commit": "aa12a7e73fd90458244a892b08d2a9fac37fa36b",
+    "support": "workstreams/po03/strategy/snapshot_fixture.py"
+  },
   "status": "READY_TO_COMMIT",
   "strict_preflight": {
     "command": "python3 -I workstreams/po03/strategy/source_capsule.py --root . --output workstreams/po03/strategy/source-capsule-report.json --strict",
@@ -15,7 +26,7 @@
   "test": {
     "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a9_source_capsule.py' -v",
     "exit_code": 0,
-    "output": "test_current_post_dispatch_change_is_reported_for_every_unit (test_a9_source_capsule.SourceCapsuleTests.test_current_post_dispatch_change_is_reported_for_every_unit) ... ok\ntest_intact_dispatch_can_still_resolve_drifted_source_bytes (test_a9_source_capsule.SourceCapsuleTests.test_intact_dispatch_can_still_resolve_drifted_source_bytes) ... ok\ntest_mechanism_probe_exposes_the_missing_closure_gate (test_a9_source_capsule.SourceCapsuleTests.test_mechanism_probe_exposes_the_missing_closure_gate) ... ok\ntest_report_reproduces_from_immutable_dispatches (test_a9_source_capsule.SourceCapsuleTests.test_report_reproduces_from_immutable_dispatches) ... ok\ntest_strict_mode_blocks_nonclosed_capsule (test_a9_source_capsule.SourceCapsuleTests.test_strict_mode_blocks_nonclosed_capsule) ... ok\ntest_verifier_distinguishes_current_drifted_and_missing_without_writes (test_a9_source_capsule.SourceCapsuleTests.test_verifier_distinguishes_current_drifted_and_missing_without_writes) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 0.002s\n\nOK"
+    "output": "test_intact_dispatch_can_still_resolve_drifted_source_bytes (test_a9_source_capsule.SourceCapsuleTests.test_intact_dispatch_can_still_resolve_drifted_source_bytes) ... ok\ntest_mechanism_probe_exposes_the_missing_closure_gate (test_a9_source_capsule.SourceCapsuleTests.test_mechanism_probe_exposes_the_missing_closure_gate) ... ok\ntest_pinned_post_dispatch_change_is_reported_for_every_unit (test_a9_source_capsule.SourceCapsuleTests.test_pinned_post_dispatch_change_is_reported_for_every_unit) ... ok\ntest_report_reproduces_from_pinned_immutable_dispatches (test_a9_source_capsule.SourceCapsuleTests.test_report_reproduces_from_pinned_immutable_dispatches) ... ok\ntest_strict_mode_blocks_nonclosed_capsule (test_a9_source_capsule.SourceCapsuleTests.test_strict_mode_blocks_nonclosed_capsule) ... ok\ntest_verifier_distinguishes_current_drifted_and_missing_without_writes (test_a9_source_capsule.SourceCapsuleTests.test_verifier_distinguishes_current_drifted_and_missing_without_writes) ... ok\n\n----------------------------------------------------------------------\nRan 6 tests in 0.067s\n\nOK"
   },
   "unit_id": "a9-u03"
 }

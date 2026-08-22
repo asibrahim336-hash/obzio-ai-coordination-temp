@@ -3,17 +3,27 @@ from __future__ import annotations
 import importlib.util
 import json
 import unittest
+from unittest import mock
 from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[3]
 MODULE_PATH = ROOT / "workstreams/po03/strategy/semantic_check.py"
+SNAPSHOT_MODULE_PATH = ROOT / "workstreams/po03/strategy/snapshot_fixture.py"
 RESULT_PATH = ROOT / "workstreams/po03/strategy/semantic-check-results.json"
+SNAPSHOT_COMMIT = "7f1a208f207525b459fac1f0661ff2f1191fdde9"
 
 SPEC = importlib.util.spec_from_file_location("po03_a9_semantic_check", MODULE_PATH)
 assert SPEC and SPEC.loader
 semantic = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(semantic)
+
+SNAPSHOT_SPEC = importlib.util.spec_from_file_location(
+    "po03_a9_semantic_snapshot", SNAPSHOT_MODULE_PATH
+)
+assert SNAPSHOT_SPEC and SNAPSHOT_SPEC.loader
+snapshot = importlib.util.module_from_spec(SNAPSHOT_SPEC)
+SNAPSHOT_SPEC.loader.exec_module(snapshot)
 
 
 class SemanticCheckTests(unittest.TestCase):
@@ -21,8 +31,16 @@ class SemanticCheckTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.report = json.loads(RESULT_PATH.read_text(encoding="utf-8"))
 
-    def test_results_reproduce_from_current_pointer_chain(self) -> None:
-        self.assertEqual(self.report, semantic.build_report(ROOT))
+    def test_results_reproduce_from_pinned_pointer_chain(self) -> None:
+        with snapshot.materialize_commit(ROOT, SNAPSHOT_COMMIT) as snapshot_root:
+            recorded = json.loads(
+                (snapshot_root / RESULT_PATH.relative_to(ROOT)).read_text(
+                    encoding="utf-8"
+                )
+            )
+            rebuilt = semantic.build_report(snapshot_root)
+        self.assertEqual(self.report, recorded)
+        self.assertEqual(self.report, rebuilt)
         self.assertEqual(self.report["decision_changed"], [])
         self.assertFalse(self.report["strategy_restarted"])
 
@@ -84,16 +102,35 @@ class SemanticCheckTests(unittest.TestCase):
         self.assertEqual(semantic.strict_exit_code(self.report), 4)
 
     def test_check_requires_no_outside_allowlist_write(self) -> None:
-        scope = self.report["write_scope"]
+        writes: list[Path] = []
+        original_write_text = Path.write_text
+
+        def recording_write_text(path: Path, *args: object, **kwargs: object) -> int:
+            writes.append(path.resolve())
+            return original_write_text(path, *args, **kwargs)
+
+        with mock.patch.object(Path, "write_text", recording_write_text):
+            fresh_report = semantic.build_report(ROOT)
+
+        scope = fresh_report["write_scope"]
         self.assertFalse(scope["outside_allowlist_write_required"])
         self.assertTrue(scope["implementation"].startswith("workstreams/po03/strategy/"))
         self.assertTrue(scope["output"].startswith("workstreams/po03/strategy/"))
-        for evidence in self.report["evidence"]:
-            self.assertEqual(
-                evidence["sha256"],
-                semantic.sha256_file(ROOT / evidence["path"]),
-                evidence["path"],
+        expected_writes = {
+            (
+                ROOT
+                / f"workstreams/po03/strategy/.semantic-probe-{probe_id}.json"
+            ).resolve()
+            for probe_id in (
+                "top-level-extension",
+                "provider-state",
+                "transaction-state",
             )
+        }
+        self.assertEqual(set(writes), expected_writes)
+        strategy_root = (ROOT / "workstreams/po03/strategy").resolve()
+        self.assertTrue(all(path.is_relative_to(strategy_root) for path in writes))
+        self.assertTrue(all(not path.exists() for path in writes))
 
 
 if __name__ == "__main__":
