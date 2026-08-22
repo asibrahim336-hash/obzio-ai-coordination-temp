@@ -2,6 +2,7 @@ import importlib.util
 import sys
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -82,6 +83,54 @@ class ProducerAttemptTests(unittest.TestCase):
                 {},
                 {"attempt": dict(self.attempt)},
             )
+
+
+class TrustedSourceBaseTests(unittest.TestCase):
+    source_base = "a" * 40
+    return_commit = "b" * 40
+    ingestion_commit = "c" * 40
+
+    def git_result(self, *args):
+        if args[:2] == ("rev-parse", "--verify"):
+            return (self.source_base + "\n").encode()
+        if args[:2] == ("merge-base", "--is-ancestor"):
+            return b""
+        if args == ("merge-base", self.return_commit, self.ingestion_commit):
+            return (self.source_base + "\n").encode()
+        self.fail(f"unexpected git call: {args}")
+
+    def test_exact_controller_divergence_is_trusted(self):
+        with mock.patch.object(TOOL, "_git", side_effect=self.git_result):
+            observed = TOOL._trusted_source_base(
+                {"source_base_commit": self.source_base},
+                self.return_commit,
+                self.ingestion_commit,
+            )
+        self.assertEqual(observed, self.source_base)
+
+    def test_non_divergence_claim_is_refused(self):
+        def divergent_git(*args):
+            if args == ("merge-base", self.return_commit, self.ingestion_commit):
+                return ("d" * 40 + "\n").encode()
+            return self.git_result(*args)
+
+        with mock.patch.object(TOOL, "_git", side_effect=divergent_git):
+            with self.assertRaisesRegex(ValueError, "exact producer/controller divergence"):
+                TOOL._trusted_source_base(
+                    {"source_base_commit": self.source_base},
+                    self.return_commit,
+                    self.ingestion_commit,
+                )
+
+    def test_malformed_source_base_is_refused_before_git(self):
+        with mock.patch.object(TOOL, "_git") as git:
+            with self.assertRaisesRegex(ValueError, "exact source_base_commit"):
+                TOOL._trusted_source_base(
+                    {"source_base_commit": "not-a-commit"},
+                    self.return_commit,
+                    self.ingestion_commit,
+                )
+        git.assert_not_called()
 
 
 if __name__ == "__main__":

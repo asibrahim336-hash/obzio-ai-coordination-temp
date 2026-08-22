@@ -17,6 +17,7 @@ COMMISSION_ID = "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001"
 CONTROLLER_ID = "bc-b1956656-b897-4889-aeab-82c4556c1a9f"
 PROTOCOL_ANCESTOR = "e56eda6e8e4a4e958795f7157839926d93272b30"
 ATTEMPT_ID_RE = re.compile(r"^(PO03-WA-\d{3})-(A\d{2})$")
+FULL_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 
 
 def _git(*args: str) -> bytes:
@@ -115,6 +116,40 @@ def _validate_producer_attempt(
                 )
 
 
+def _require_ancestor(ancestor: str, descendant: str, label: str) -> None:
+    try:
+        _git("merge-base", "--is-ancestor", ancestor, descendant)
+    except subprocess.CalledProcessError as exc:
+        raise ValueError(f"{label}: {ancestor} is not an ancestor of {descendant}") from exc
+
+
+def _trusted_source_base(
+    ready: dict[str, Any], return_commit: str, ingestion_commit: str
+) -> str:
+    source_base = ready.get("source_base_commit")
+    if not isinstance(source_base, str) or not FULL_COMMIT_RE.fullmatch(source_base):
+        raise ValueError("producer return lacks an exact source_base_commit")
+    try:
+        resolved = _git(
+            "rev-parse", "--verify", f"{source_base}^{{commit}}"
+        ).decode().strip()
+    except subprocess.CalledProcessError as exc:
+        raise ValueError("producer source_base_commit is not resolvable") from exc
+    if resolved != source_base:
+        raise ValueError("producer source_base_commit did not resolve exactly")
+    _require_ancestor(PROTOCOL_ANCESTOR, source_base, "protocol chronology")
+    _require_ancestor(source_base, return_commit, "producer branch chronology")
+    _require_ancestor(source_base, ingestion_commit, "controller chronology")
+    common_base = _git(
+        "merge-base", return_commit, ingestion_commit
+    ).decode().strip()
+    if common_base != source_base:
+        raise ValueError(
+            "producer source base is not the exact producer/controller divergence"
+        )
+    return source_base
+
+
 def _args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--task-number", type=int, required=True)
@@ -152,24 +187,22 @@ def main() -> int:
     ready_path = prefix + args.ready_relative
     result_path = prefix + args.producer_result_relative
 
-    subprocess.run(
-        ["git", "merge-base", "--is-ancestor", PROTOCOL_ANCESTOR, args.return_commit],
-        cwd=ROOT.parents[1],
-        check=True,
+    manifest_bytes = _show(args.return_commit, manifest_path)
+    manifest = json.loads(manifest_bytes)
+    ready_bytes = _show(args.return_commit, ready_path)
+    ready = json.loads(ready_bytes)
+    producer_result = json.loads(_show(args.return_commit, result_path))
+    source_base = _trusted_source_base(
+        ready, args.return_commit, args.ingestion_commit
     )
     changed_paths = (
-        _git("diff", "--name-only", f"{PROTOCOL_ANCESTOR}..{args.return_commit}")
+        _git("diff", "--name-only", f"{source_base}..{args.return_commit}")
         .decode()
         .splitlines()
     )
     if not changed_paths or any(not path.startswith(prefix) for path in changed_paths):
         raise ValueError(f"owned-path violation: {changed_paths}")
 
-    manifest_bytes = _show(args.return_commit, manifest_path)
-    manifest = json.loads(manifest_bytes)
-    ready_bytes = _show(args.return_commit, ready_path)
-    ready = json.loads(ready_bytes)
-    producer_result = json.loads(_show(args.return_commit, result_path))
     terminal_report = ready.get("status", ready.get("terminal_report"))
     if terminal_report != "READY_TO_COMMIT" or ready.get("task_id") != task_id:
         raise ValueError("invalid producer return envelope")
