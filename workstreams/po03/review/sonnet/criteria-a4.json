@@ -1,0 +1,79 @@
+{
+  "criteria_id": "CRIT-A10-U02-A4-REEXECUTION-20260822-v001",
+  "frozen_by": "po03-worker-a10",
+  "frozen_before_reading": [
+    "cursor/po03-a4-pack-qualification-ed20 (any commit)",
+    "workstreams/po03/packverify/**",
+    "workstreams/po03/evidence/source-lock.json",
+    "workstreams/po03/evidence/criteria-freeze.json",
+    "workstreams/po03/evidence/reproduction-results.json",
+    "workstreams/po03/evidence/repository-disposition.json",
+    "any a4 result document under workstreams/po03/control/units/a4/"
+  ],
+  "scope": "Applies to a4-u01..a4-u08 (functions F1/F4/F5/F7, pack qualification and repository disposition from immutable PO-01 commits), quoted verbatim from workstreams/po03/control/dispatch/a4-u01.json..a4-u08.json.",
+  "definition_of_reexecution": "Re-execution means this reviewer independently runs a command (a4's own tool, or a from-scratch reviewer-written check when a4's tool cannot be run standalone, or a manual byte/hash comparison against the pinned SHA) and records the actual stdout/exit code obtained in this session. Reading a4's reported result JSON and restating it in different words is NOT re-execution and must not be scored as confirming or refuting anything.",
+  "po01_non_interference_bound": "Every re-execution touching PO-01 content uses only `git fetch` (read-only), `git show`, `git cat-file`, `git ls-tree`, or a detached worktree/clone into scratch space OUTSIDE this repository (e.g. /tmp or a dedicated scratch dir), created from a pinned, already-observed SHA. No `git push`, no branch creation that tracks a PO-01 remote, no write of any kind to a PO-01 ref, path, PR or workspace. If a4's own tooling would write inside a PO-01 checkout, this reviewer runs it only against a copy in scratch space, never the live PO-01 tree.",
+  "per_unit_bars": [
+    {
+      "unit_id": "a4-u01",
+      "claim": "Every PO-01 source needed for qualification is pinned to an immutable SHA without contacting or mutating PO-01.",
+      "reexecution_method": "For each ref recorded in source-lock.json, independently run `git ls-remote`/`git rev-parse` (read-only) or `git cat-file -e <sha>` against the same remote/local object store and confirm the SHA is real, reachable, and matches what source-lock.json claims -- reviewer performs this after reading a4's output, per protocol, since a10-u02 is explicitly a re-execution unit, not a blind-before-reading unit like a10-u01.",
+      "pass_bar": "100% of pinned SHAs independently resolve to the exact commit a4 recorded, by SHA, not by branch name; zero PO-01 write operations occur during verification.",
+      "fail_trigger": "any pinned entry is recorded by branch name only (no SHA), any SHA fails to independently resolve, or any command used to verify performs a write/push/branch-create against a PO-01 remote"
+    },
+    {
+      "unit_id": "a4-u02",
+      "claim": "Freezing criteria before reading producer narrative changes the outcome relative to narrative-first review, provable from git history.",
+      "reexecution_method": "Independently inspect a4's own git history (`git log --follow --diff-filter=A -- workstreams/po03/evidence/criteria-freeze.json` and the timestamps/order of any narrative evidence files) to confirm the ordering claim from the commit graph itself, not from a4's prose description of its own ordering.",
+      "pass_bar": "git history shows criteria-freeze.json (or equivalent) committed strictly before any commit that reads or restates PO-01 producer narrative content.",
+      "fail_trigger": "git history shows narrative-derived content committed before or in the same commit as the criteria freeze, or the freeze file was later amended after narrative reading (edited-after-read is itself disqualifying, matching the same rule this reviewer applies to itself)"
+    },
+    {
+      "unit_id": "a4-u03",
+      "claim": "An independent pack qualifier detects manifest entries with no corresponding blob at the pinned SHA.",
+      "reexecution_method": "Reviewer plants its own synthetic missing-file fixture (independent of any fixture a4 already used) against a scratch copy of the pinned tree, runs a4's qualify.py against it, and separately writes a 5-10 line independent Python check (`git cat-file -e <sha>:<path>`) to cross-validate the same fixture without depending on a4's implementation being correct.",
+      "pass_bar": "Both a4's tool and the reviewer's independent cross-check agree the planted missing file is reported; a4's tool run against the real pinned packs (not just the reviewer's synthetic fixture) is also executed and its exit code/output recorded verbatim.",
+      "fail_trigger": "a4's tool misses the reviewer's independently planted missing-file fixture, or the reviewer's independent cross-check and a4's tool disagree on the real pinned packs"
+    },
+    {
+      "unit_id": "a4-u04",
+      "claim": "Non-portable paths inside operator packs are detected mechanically from the pinned tree.",
+      "reexecution_method": "Reviewer plants an independent non-portable-path fixture (absolute path, machine-specific root, unresolvable relative reference) distinct from a4's own fixture, runs a4's portability.py against it, and records result.",
+      "pass_bar": "a4's detector flags 100% of the reviewer's independently planted non-portable fixtures in addition to its own.",
+      "fail_trigger": "any independently planted non-portable path fixture is missed"
+    },
+    {
+      "unit_id": "a4-u05",
+      "claim": "Manifest/provenance gaps (unlisted files, unhashed entries, hash mismatches) are a closed, detectable set.",
+      "reexecution_method": "Reviewer constructs one independent fixture per gap class and runs a4's manifest_gaps.py against each.",
+      "pass_bar": "All three independently constructed gap-class fixtures are reported by a4's tool.",
+      "fail_trigger": "any one gap class is not reported for the reviewer's independent fixture, even if a4's own fixture for that class passes (a self-serving fixture that only covers the easy case is not sufficient)"
+    },
+    {
+      "unit_id": "a4-u06",
+      "claim": "Pack claims that hold in-process fail across a real process boundary.",
+      "reexecution_method": "Reviewer independently invokes a4's boundary_run.py (or, if infeasible standalone, directly re-runs the underlying pack entry point as a fresh subprocess from a clean checkout the reviewer creates itself) against at least one pack a4 claims to have tested, and compares the reviewer's own observed pass/fail to a4's recorded row.",
+      "pass_bar": "The reviewer's independently observed subprocess outcome matches a4's recorded outcome for every pack sampled (at least 3, or all if fewer than 3 exist).",
+      "fail_trigger": "the reviewer's independent run diverges from a4's recorded outcome for any sampled pack, or a4's harness cannot be run standalone by the reviewer at all (recorded as NOT_SUPPORTED with the exact blocking error, not silently skipped)"
+    },
+    {
+      "unit_id": "a4-u07",
+      "claim": "Transport debris is mechanically distinguishable from live repository content with a stated, read-only rule.",
+      "reexecution_method": "Reviewer independently runs debris.py (or reimplements its stated rule in under 15 lines) against the actual repository tree read-only and compares counts/locations to a4's reported figures.",
+      "pass_bar": "Reviewer's independent count matches a4's reported count, and no path outside the allowlist was mutated during the check (verified via `git status` before/after showing no unexpected changes).",
+      "fail_trigger": "counts diverge, the rule is not stated precisely enough to reimplement independently, or `git status` shows any mutation outside the allowlist caused by running the tool"
+    },
+    {
+      "unit_id": "a4-u08",
+      "claim": "Current-source/supersession disposition is compiled mechanically and reproducibly from a clean clone.",
+      "reexecution_method": "Reviewer runs disposition.py twice: once in place, once from a fresh detached checkout of the same commit into scratch space, and diffs the two outputs byte-for-byte.",
+      "pass_bar": "The two runs produce byte-identical output (after any timestamp fields are excluded/normalised, which must be explicitly documented if present).",
+      "fail_trigger": "outputs differ between runs, the compiler requires any manual input, or it cannot be executed from a truly clean clone without reviewer-supplied fixes"
+    }
+  ],
+  "cohort_level_disposition_rule": {
+    "ACCEPTED": "Every unit's reexecution_method was actually carried out by this reviewer (not merely read), every pass_bar is met by the reviewer's own observed output, and zero fail_triggers are observed.",
+    "REJECTED": "Any fail_trigger is observed, any reexecution_method could not be carried out and is not honestly recorded as NOT_SUPPORTED/NOT_YET with the exact boundary, or any claim was scored by reading a4's narrative instead of independently re-running something.",
+    "self_check": "If this reviewer cannot obtain PO-01 network/object access to independently resolve a pinned SHA (e.g. a private remote it cannot reach), that is recorded as NOT_SUPPORTED with the exact error, not as silent pass or silent fail."
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "criteria_id": "CRIT-A10-U04-OVERALL-20260822-v001",
+  "frozen_by": "po03-worker-a10",
+  "frozen_before_reading": [
+    "cursor/po03-a2-fault-recovery-ed20",
+    "cursor/po03-a4-pack-qualification-ed20",
+    "cursor/po03-a9-strategy-discovery-ed20",
+    "cursor/po03-a6-independent-review-ed20",
+    "any content under workstreams/po03/review/luna/ (a6's own output)"
+  ],
+  "disposition_procedure": [
+    "1. For each cohort (a2, a4, a9), apply the frozen per-unit bars in criteria-a2.json / criteria-a4.json / criteria-a9.json verbatim; do not add or relax a bar after reading the cohort's branch.",
+    "2. A cohort disposition of ACCEPTED requires every one of its units to meet its pass_bar. A single failing unit is sufficient for cohort REJECTED, but each unit also receives its own unit-level disposition so partial credit is visible.",
+    "3. Record exactly which units were available (pushed, readable) at scoring time versus NOT_YET (not pushed by scoring time) versus produced-nothing; a cohort cannot be scored ACCEPTED on a unit that was NOT_YET available -- it is scored NOT_YET for that unit, not REJECTED and not silently ACCEPTED.",
+    "4. This reviewer never sets COMPLETED and never accepts/rejects its own a10 units; a10-u04's ACCEPTED/REJECTED calls apply only to a2/a4/a9 units, as scoped by the cross_family_review_matrix in path-ownership.json."
+  ],
+  "a6_comparison_methodology": {
+    "purpose": "a10-u04's acceptance requires 'a comparison of your defect profile against cohort a6's profile on overlapping artifacts.' a6 (gpt-5.6-luna-high) reviews Claude-produced cohorts (a1, a3, a5, a7, a8); a10 (claude-sonnet-5-thinking-xhigh) reviews GPT-produced cohorts (a2, a4, a9) plus the coordinator. There is no unit-for-unit overlap in WHO each reviews, so 'overlapping artifacts' means shared underlying infrastructure both reviewers necessarily touch: the same contracts/transactional-result.schema.json, the same tools/control_plane.py and tools/validate_contracts.py, and the same commission-level custody invariants (fault injection classes, path-scope allowlist, self-acceptance prohibition) that both reviews must exercise regardless of which cohort each is nominally assigned.",
+    "comparison_axes": [
+      "defect_count_by_severity: how many BROKEN vs HELD invariants each reviewer records against the shared control-plane surface",
+      "methodology_overlap: whether a6 also used a scratch-copy/subprocess execution methodology or relied on reading the coordinator's own claims",
+      "unique_finds: defects one reviewer found that the other's frozen criteria did not think to test, recorded without either reviewer editing the other's output",
+      "false_negative_check: whether a6's HELD/ACCEPTED calls survive being re-attacked by this reviewer's own a10-u03 cases against the same code paths (e.g. if a6 accepted a claim about fencing or path-scope that this reviewer's INV-2/INV-6 attacks break)"
+    ],
+    "constraint": "This reviewer reads a6's branch strictly read-only (git fetch/show/cat-file) and never writes to workstreams/po03/review/luna/ or workstreams/po03/control/units/a6/; any disagreement is recorded as data in this reviewer's own owned paths, not resolved by editing a6's files."
+  }
+}

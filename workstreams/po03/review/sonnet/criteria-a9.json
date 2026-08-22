@@ -1,0 +1,40 @@
+{
+  "criteria_id": "CRIT-A10-U04-A9-DISPOSITION-20260822-v001",
+  "frozen_by": "po03-worker-a10",
+  "frozen_before_reading": [
+    "cursor/po03-a9-strategy-discovery-ed20 (any commit)",
+    "workstreams/po03/strategy/**",
+    "any a9 result document under workstreams/po03/control/units/a9/"
+  ],
+  "scope": "Applies to a9-u01..a9-u04 (functions F2/F10, zero-base strategy challenge and open discovery), quoted verbatim from workstreams/po03/control/dispatch/a9-u01.json..a9-u04.json. a9 is disposed (not re-executed unit-by-unit like a4) as part of a10-u04.",
+  "per_unit_bars": [
+    {
+      "unit_id": "a9-u01",
+      "claim": "A zero-base challenge identifies at least one load-bearing assumption the current plan's evidence does not support.",
+      "pass_bar": "zero-base-challenge.json states at least one concrete assumption, cites the specific committed evidence it was tested against (a real path/artifact, not a general appeal), and reaches an explicit upheld/flagged verdict per assumption.",
+      "reject_triggers": ["a challenge is stated with no evidence citation", "any 'flagged' proposal is treated in later work as though it already changed a decision (would violate decision_changed: [] and the acceptance's falsified_if)"]
+    },
+    {
+      "unit_id": "a9-u02",
+      "claim": "At least three materially different coordination topologies exist and are compared on measured properties.",
+      "pass_bar": "Three or more topologies are specified with enough concreteness that this reviewer could implement a toy simulation from the description alone, and the comparison uses either real Wave A data (this reviewer will spot-check at least one cited number against the actual ledger/registry) or a runnable simulation this reviewer can execute.",
+      "reject_triggers": ["topologies are named but not specified concretely", "comparison numbers do not match the underlying data when spot-checked", "the 'simulation' cannot actually be run"]
+    },
+    {
+      "unit_id": "a9-u03",
+      "claim": "There is useful in-scope work neither the founder nor the commission named, and it is implemented and tested, not merely proposed.",
+      "pass_bar": "A component exists under the PO-03 allowlist with an executable test this reviewer can run under python3 -I -m unittest, and it is genuinely something not already explicitly named as a mandatory output/mission item in COMMISSION.md.",
+      "reject_triggers": ["the 'discovery' restates a component already mandated elsewhere in COMMISSION.md's mandatory outputs list", "no test exists or the test does not pass when this reviewer runs it"]
+    },
+    {
+      "unit_id": "a9-u04",
+      "claim": "An executable semantic check catches operator-taxonomy/state-contract ambiguities and does not weaken scripts/check_operator_taxonomy.py.",
+      "pass_bar": "The check runs standalone under the PO-03 allowlist, this reviewer independently runs scripts/check_operator_taxonomy.py before and after a9's change (read-only comparison, since scripts/** is read-only to this reviewer) and confirms it still passes with unchanged semantics.",
+      "reject_triggers": ["scripts/check_operator_taxonomy.py behavior changes as a side effect", "the check requires editing anything outside the allowlist"]
+    }
+  ],
+  "cohort_level_disposition_rule": {
+    "ACCEPTED": "Every unit meets its pass_bar with artifacts this reviewer can independently inspect/run, and no reject_trigger is observed.",
+    "REJECTED": "Any reject_trigger is observed, or a claim is prose-only where the acceptance contract requires an executable artifact."
+  }
+}

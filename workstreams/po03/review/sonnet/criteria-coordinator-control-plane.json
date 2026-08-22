@@ -1,0 +1,60 @@
+{
+  "criteria_id": "CRIT-A10-U03-CONTROL-PLANE-AUDIT-20260822-v001",
+  "frozen_by": "po03-worker-a10",
+  "audited_artifact": "workstreams/po03/tools/control_plane.py (coordinator-owned, read here only to attack it, never edited)",
+  "note": "control_plane.py is the object of this audit, not a 'producer conclusion' about a2/a4/a9's own tasks; reading it to design attacks is required by the unit's own hypothesis and is distinct from reading a2/a4/a9 producer output, which this reviewer has not yet done as of freezing this document.",
+  "methodology": [
+    "All attacks run against an unmodified byte-for-byte copy of the real control_plane.py and validate_contracts.py, placed in a scratch directory tree under this reviewer's own worktree (workstreams/po03/review/sonnet/attacks/scratch-runs/**, generated at test time, not committed as durable state) so that CONTROL_ROOT/REPO_ROOT resolve inside the scratch tree and the shared, real ledger at workstreams/po03/control/events/ledger.jsonl is never touched.",
+    "Each attack is invoked exactly as a real actor would invoke it: as a subprocess `python3 -I <scratch>/workstreams/po03/tools/control_plane.py <subcommand> ...`, not by importing and calling internal functions in a way that skips the CLI surface.",
+    "Every attack is committed as an executable python3 -I -m unittest test case under workstreams/po03/tests/test_a10_control_plane_attacks.py so a reader can re-run it.",
+    "An invariant is scored BROKEN only if a concrete, re-runnable case demonstrates the real code (not a hypothetical) violating it. An invariant is scored HELD if an attack was actually attempted against the real code and the real code raised ControlPlaneError / rejected the input / otherwise stopped the attack at a specific, cited line; the exact stopping point is recorded. An invariant must not be scored HELD from reading the code alone without an executed attempt."
+  ],
+  "invariants_to_attack": [
+    {
+      "id": "INV-1",
+      "statement": "A producer must not reach COMPLETED without coordinator ingestion.",
+      "planned_attack": "Attempt cmd_complete on a unit that has never had a PARENT_INGESTED event (state CREATED/LEASED/RUNNING only) and on a unit that reached RESULT_STAGED but never RESULT_COMMITTED/PARENT_INGESTED."
+    },
+    {
+      "id": "INV-2",
+      "statement": "A stale fence token must not commit after ownership transfer.",
+      "planned_attack": "(a) Submit an ingest with a fence token strictly lower than the current recorded fence after a re-lease (expected: rejected). (b) Submit an ingest with a fence token that was never actually granted by any `lease` call but is numerically >= the current recorded fence (expected under the code as read: accepted, which would mean fencing checks monotonicity only, not lease-holder identity -- to be confirmed or refuted by execution, not asserted from reading alone)."
+    },
+    {
+      "id": "INV-3",
+      "statement": "A duplicate callback must not produce two effects.",
+      "planned_attack": "(a) Submit the byte-identical result document twice (expected: second is DUPLICATE_IGNORED). (b) Submit a result for a unit already COMPLETED, with a modified artifact (different bytes/hash) but the same task_id/manifest/acceptance hashes, and check whether this produces a second PARENT_INGESTED/COMPLETED pair for the same unit_id (a hash-based dedup only catches byte-identical resubmission; a semantically-different resubmission after COMPLETED is the sharper case)."
+    },
+    {
+      "id": "INV-4",
+      "statement": "An artifact must not pass read-back without matching bytes.",
+      "planned_attack": "Submit a result whose declared sha256/bytes do not match the real file at the resolved target path (expected: rejected). Then check whether the 'resolved target path' can itself be manipulated (see INV-6) so that a matching-bytes file is verified at an unintended location."
+    },
+    {
+      "id": "INV-5",
+      "statement": "A result must not be accepted if it references a dispatch manifest it was not issued under.",
+      "planned_attack": "Submit a result for unit X whose immutable_input_manifest_sha256/acceptance_contract_sha256 are copied from a different unit Y's dispatch record (expected: rejected)."
+    },
+    {
+      "id": "INV-6",
+      "statement": "A write outside the allowlist or outside the owner's subtree must not pass ingestion.",
+      "planned_attack": "(a) Submit content_uri values with '..' path segments not fully consumed by the leading-character strip (expected: rejected by the existing '..' check). (b) Submit a content_uri using a leading run of only '.' and '/' characters (so that `str.lstrip('./')` removes the entire prefix, including a leading '/', leaving a string that starts with an allowed prefix) and check whether the *validation* (path_in_allowlist / check_ownership, which operate on the lstripped string) and the *actual filesystem target* (artifact_root / relative, which pathlib resolves using the raw, non-stripped string and treats a leading '/' as absolute, discarding artifact_root) can be made to diverge."
+    },
+    {
+      "id": "INV-7",
+      "statement": "A producer must not accept its own work.",
+      "planned_attack": "(a) Call cmd_review with --reviewer equal to the literal owner string from the dispatch record (expected: rejected). (b) Call cmd_review with a --reviewer string that is not byte-identical to the owner string but is otherwise controlled by the same actor (e.g. a second worker_id alias, trailing whitespace, or case variation), to test whether self-acceptance protection is identity-based or merely string-equality-based."
+    },
+    {
+      "id": "INV-8",
+      "statement": "A tampered ledger row must not pass chain verification.",
+      "planned_attack": "(a) Edit one row's payload in place without recomputing any hash (expected: rejected by row_sha256 mismatch). (b) Edit one row's payload and recompute that row's own row_sha256 but not the following row's prev_sha256 (expected: rejected by chain break). (c) Edit one row's payload and cascade-recompute row_sha256/prev_sha256 for every subsequent row so the file is fully self-consistent end-to-end, and check whether verify_chain (which only checks internal self-consistency, with no external anchor to a previously-recorded head hash) still reports valid."
+    },
+    {
+      "id": "INV-9",
+      "statement": "A PROVIDER_COMPLETED_UNCOMMITTED unit must never be reported as COMPLETED.",
+      "planned_attack": "Submit a result document claiming provider_state=COMPLETED, obzio_state=COMPLETED-eligible states, and a syntactically valid but fabricated result_commit_id (a hex string not corresponding to any real git commit), backed by an artifact file that exists only as an untracked/uncommitted file in the working tree rather than a real git commit; check whether `ingest_result` verifies result_commit_id against real git history at all, or only checks the working-tree file's current bytes."
+    }
+  ],
+  "scoring_rule": "This unit's own acceptance contract ('each either breaks an invariant or documents the exact boundary reached') is satisfied only if every one of the 9 invariants above has an executed, committed, re-runnable case with recorded output -- regardless of whether the outcome is BROKEN or HELD. A unit that reports all 9 as HELD without having executed all 9 attacks is ceremonial acceptance and must be scored as a defect against this reviewer's own work, per the commission's standard that ceremonial acceptance is itself a defect."
+}
