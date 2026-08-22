@@ -1,0 +1,155 @@
+{
+  "criteria_version": "PO03-WAVE-A-041-FROZEN-CRITERIA-v1",
+  "task_id": "wave-a-041-schema-adversarial-review",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "function": "independent-evaluation",
+  "frozen_at": "2026-08-22T07:05:00Z",
+  "frozen_before_producer_conclusions": true,
+  "blindness_attestation": {
+    "statement": "These criteria were written and committed from the immutable control capsule and the contract/validator source alone, before reading any producer narrative, prior attempt conclusion, or existing contract test suite.",
+    "inputs_read_before_freeze": [
+      "workstreams/po03/control/tasks/wave-a-041-schema-adversarial-review/input.json",
+      "workstreams/po03/control/tasks/wave-a-041-schema-adversarial-review/acceptance.json",
+      "workstreams/po03/control/tasks/wave-a-041-schema-adversarial-review/transaction-created.json",
+      "workstreams/po03/contracts/transactional-result.schema.json",
+      "workstreams/po03/tools/validate_contracts.py",
+      "workstreams/po03/COMMISSION.md"
+    ],
+    "producer_conclusions_available_at_freeze": [],
+    "producer_conclusion_search": {
+      "path": "workstreams/po03/attempts/wave-a",
+      "observed": "ABSENT_AT_BASE_COMMIT",
+      "note": "No Wave A producer attempt artifacts exist at base commit f5b758f373e8d0cb14660c167f4b0b3673251862, so reviewer blindness is structural rather than merely procedural.",
+      "existence_checked_without_reading_contents": true
+    },
+    "deferred_until_after_freeze": [
+      "workstreams/po03/tests/test_validate_contracts.py",
+      "workstreams/po03/tests/test_transactional_factory.py",
+      "workstreams/po03/tools/transactional_factory.py"
+    ]
+  },
+  "verified_source_hashes": {
+    "algorithm": "sha256",
+    "base_commit": "f5b758f373e8d0cb14660c167f4b0b3673251862",
+    "base_branch": "po03/repository-engineering-portable-runtime-20260822-v001",
+    "files": [
+      {
+        "path": "workstreams/po03/control/tasks/wave-a-041-schema-adversarial-review/input.json",
+        "sha256": "a7e38fbecb72bcbdf463739179ac6eda5f6bde3b33a1bf5cb7db3b1d6397e1b3",
+        "bytes": 1831,
+        "declared_by_control": "immutable_input_manifest_sha256 in transaction-created.json",
+        "match": "PASS"
+      },
+      {
+        "path": "workstreams/po03/control/tasks/wave-a-041-schema-adversarial-review/acceptance.json",
+        "sha256": "94068ea1a40afc15be626ec89a06906c463d7af687f02da1c28c8cd00b383f15",
+        "bytes": 628,
+        "declared_by_control": "input.json.source_hashes.acceptance_contract_sha256",
+        "match": "PASS"
+      },
+      {
+        "path": "workstreams/po03/control/tasks/wave-a-041-schema-adversarial-review/transaction-created.json",
+        "sha256": "f673959bad0e409fd8fa987c7cb27486161377d1fa56537a4cbb75b3b9b51507",
+        "bytes": 1233,
+        "declared_by_control": "not self-declared; hashed by reviewer",
+        "match": "RECORDED"
+      },
+      {
+        "path": "workstreams/po03/contracts/transactional-result.schema.json",
+        "sha256": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1",
+        "bytes": 4618,
+        "declared_by_control": "input.json.source_hashes.transaction_schema_sha256",
+        "match": "PASS"
+      },
+      {
+        "path": "workstreams/po03/tools/validate_contracts.py",
+        "sha256": "3c2ebd7f06b0230c35355ae0b569283e8dbf90ed87127dedddb7d389b1c62bc7",
+        "bytes": 12390,
+        "declared_by_control": "not self-declared; hashed by reviewer",
+        "match": "RECORDED"
+      },
+      {
+        "path": "workstreams/po03/COMMISSION.md",
+        "sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+        "bytes": 16030,
+        "declared_by_control": "input.json.source_hashes.commission_sha256",
+        "match": "PASS"
+      }
+    ],
+    "controller_reference": {
+      "field": "input.json.controller_head_sha",
+      "value": "1bb843b2a81fd8d73617caf2f1db81909266bb6e",
+      "observed": "RESOLVES_TO_COMMIT",
+      "subject": "po03: add Wave A immutable registration",
+      "committed_at": "2026-08-22T06:58:39+00:00",
+      "ancestor_of_base_commit": true
+    }
+  },
+  "hypothesis_under_test": {
+    "id": "H-041",
+    "statement": "The result contract has no path from provider completion to Obzio completion without durable evidence.",
+    "source": "input.json.falsifiable_hypothesis",
+    "direction": "The reviewer attempts refutation. The hypothesis is retained only if no counterexample is produced under the frozen refutation rule.",
+    "enforced_gate_premise": "In the clean runtime the commission mandates, the executable gate is validate_contracts.py (docstring: 'enforces the invariants that must hold even in clean runtimes without third-party packages'). The JSON Schema is declared documentation of the wire format. A counterexample is therefore strongest when it satisfies BOTH artifacts, and is still material when it satisfies only the executable gate."
+  },
+  "attack_families_frozen": [
+    {
+      "id": "F1",
+      "name": "skipped custody",
+      "definition": "A document that asserts a custody position later in the mandated chain CREATED -> LEASED -> RUNNING -> CHECKPOINTED* -> RESULT_STAGING -> RESULT_STAGED -> RESULT_VERIFIED -> RESULT_COMMITTED -> PARENT_INGESTED -> COMPLETED than the evidence it carries can support, including omitted intermediate states, non-monotonic checkpoints, and transaction states reachable without their predecessor."
+    },
+    {
+      "id": "F2",
+      "name": "false commit and read-back",
+      "definition": "A document that satisfies the post-commit evidence requirements with values that cannot denote a real commit, manifest, timestamp, or independent read-back, including non-commit-shaped result_commit_id, unparseable or causally impossible timestamps, and read-back attestations whose content is a negation."
+    },
+    {
+      "id": "F3",
+      "name": "manifest omission",
+      "definition": "A document that claims committed custody while the artifact manifest is absent from, or inconsistent with, the artifact set it is supposed to cover, including a manifest digest bound to nothing, artifacts that are not manifested, and logical-name collisions that make the manifested evidence ambiguous."
+    },
+    {
+      "id": "F4",
+      "name": "identity aliasing",
+      "definition": "A document in which two distinct required actors (producer worker, reviewer, completion actor) are the same real principal presented under non-identical strings, or in which a producer occupies a reserved institutional actor name."
+    },
+    {
+      "id": "F5",
+      "name": "fence staleness",
+      "definition": "A document authored under a superseded lease or fence token that is nevertheless accepted, so a stale worker can commit after ownership transfer, or a document whose attempt identity is inconsistent with its own idempotency key, lease, and attempt number."
+    },
+    {
+      "id": "F6",
+      "name": "self-acceptance",
+      "definition": "A document that reaches independent_acceptance.state ACCEPTED where the accepting principal is, in substance, the producing principal, or where terminal acceptance is reachable without an independent second producer."
+    }
+  ],
+  "refutation_rule": {
+    "counterexample_definition": "A JSON document D is a counterexample to H-041 if all of: (1) D is accepted by the enforced executable gate, i.e. validate_result(D) returns an empty error list; (2) D asserts a custody or completion position at or beyond RESULT_COMMITTED, or asserts independent acceptance, or asserts a transaction state at or beyond COMMITTED; and (3) at least one durable-evidence obligation named in COMMISSION.md lines 123-133 is demonstrably unmet by D's own content, such that a downstream consumer relying only on the contract would treat unbacked assertion as verified durable evidence.",
+    "classification": {
+      "EXPLOIT_BOTH": "Counterexample accepted by the executable gate AND valid under the JSON Schema.",
+      "EXPLOIT_GATE_ONLY": "Counterexample accepted by the executable gate but rejected by the JSON Schema; material because the clean runtime enforces the gate, recorded as an enforcement divergence rather than a schema hole.",
+      "BLOCKED": "Attempt rejected by the executable gate; recorded as evidence supporting H-041 for that family.",
+      "UNREPRESENTABLE": "A truthful real-world custody state for which no accepted document exists; recorded as an expressiveness defect that pressures producers toward misreporting, not as a counterexample."
+    },
+    "minimum_yield": "At least one EXPLOIT_BOTH or EXPLOIT_GATE_ONLY, or an evidence-backed rejection of H-041's refutability across all six frozen families with the executed negative results shown.",
+    "decision_values_permitted": ["PASS", "FAIL", "NOT_YET", "NOT_SUPPORTED", "OWNER_BLOCKED"]
+  },
+  "evidence_requirements": {
+    "executable": "Every declared case must be executed by a committed test that imports the shared validator from its read-only repository path without copying, mutating, or shadowing it, and must assert the observed accept/reject outcome.",
+    "determinism": "Cases must be fixture data committed in-tree, not generated at run time from clocks or randomness.",
+    "no_shared_mutation": "The shared validator and schema are read-only. Any proposed repair is implemented only as an in-subtree candidate module plus an unapplied diff.",
+    "recording": "Observed results must record the actual gate outcome per case, including cases that fail to exploit.",
+    "manifest": "Every produced artifact must appear in manifest.json with sha256 and byte count, and must be read back from the pushed commit and remote ref.",
+    "reporting_ceiling": "The reviewer may report READY_TO_COMMIT only. Obzio COMPLETED and ACCEPTED are outside reviewer authority. On durability failure the reviewer returns PROVIDER_COMPLETED_UNCOMMITTED or RECOVERY_REQUIRED."
+  },
+  "out_of_scope": [
+    "any write outside workstreams/po03/attempts/wave-a/wave-a-041-schema-adversarial-review/**",
+    "PO-01 contact or mutation",
+    "PR #8 or any existing pull request",
+    "shared PO-03 controls, contracts, tools, tests, workflows, receipts",
+    "merge, promotion, or acceptance of any unit",
+    "external outreach, spend, secrets, permissions, protected surfaces, strategy binding"
+  ],
+  "decision_changed": []
+}
