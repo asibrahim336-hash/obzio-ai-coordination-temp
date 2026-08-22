@@ -1,0 +1,735 @@
+{
+  "blocked_case_ids": [
+    "B01-completed-without-commit-id",
+    "B02-exact-string-self-accept",
+    "B03-running-with-committed-artifacts"
+  ],
+  "by_family": {
+    "F1": [
+      {
+        "case_id": "C01-custody-skip-snapshot",
+        "classification": "EXPLOIT_BOTH"
+      },
+      {
+        "case_id": "C02-recovery-required-ingested-wildcard",
+        "classification": "EXPLOIT_BOTH"
+      },
+      {
+        "case_id": "C03-failed-terminal-committed-wildcard",
+        "classification": "EXPLOIT_BOTH"
+      },
+      {
+        "case_id": "U01-staged-provider-loss-unrepresentable",
+        "classification": "UNREPRESENTABLE"
+      },
+      {
+        "case_id": "B03-running-with-committed-artifacts",
+        "classification": "BLOCKED"
+      }
+    ],
+    "F2": [
+      {
+        "case_id": "C04-negated-readback-and-nonexistent-commit",
+        "classification": "EXPLOIT_BOTH"
+      },
+      {
+        "case_id": "C05-causally-impossible-custody-order",
+        "classification": "EXPLOIT_BOTH"
+      },
+      {
+        "case_id": "C15-unknown-property-injection",
+        "classification": "EXPLOIT_GATE_ONLY"
+      },
+      {
+        "case_id": "B01-completed-without-commit-id",
+        "classification": "BLOCKED"
+      }
+    ],
+    "F3": [
+      {
+        "case_id": "C06-manifest-covers-nothing",
+        "classification": "EXPLOIT_BOTH"
+      },
+      {
+        "case_id": "C07-logical-name-collision",
+        "classification": "EXPLOIT_BOTH"
+      },
+      {
+        "case_id": "U02-zero-byte-artifact-unrepresentable",
+        "classification": "UNREPRESENTABLE"
+      }
+    ],
+    "F4": [
+      {
+        "case_id": "C08-self-accept-trailing-whitespace-alias",
+        "classification": "EXPLOIT_BOTH"
+      },
+      {
+        "case_id": "C09-self-accept-zero-width-alias",
+        "classification": "EXPLOIT_BOTH"
+      },
+      {
+        "case_id": "C10-self-accept-unicode-normalisation-alias",
+        "classification": "EXPLOIT_BOTH"
+      },
+      {
+        "case_id": "C11-producer-occupies-coordinator-identity",
+        "classification": "EXPLOIT_BOTH"
+      }
+    ],
+    "F5": [
+      {
+        "case_id": "C12-stale-fence-commits-after-transfer",
+        "classification": "EXPLOIT_BOTH"
+      },
+      {
+        "case_id": "C13-cross-task-idempotency-key",
+        "classification": "EXPLOIT_BOTH"
+      }
+    ],
+    "F6": [
+      {
+        "case_id": "C14-acceptance-receipt-inside-producer-custody",
+        "classification": "EXPLOIT_BOTH"
+      },
+      {
+        "case_id": "B02-exact-string-self-accept",
+        "classification": "BLOCKED"
+      }
+    ],
+    "control": [
+      {
+        "case_id": "C00-honest-control",
+        "classification": "CONTROL_ACCEPT"
+      }
+    ]
+  },
+  "commands": [
+    "python3 -I -m unittest discover -s tests -p 'test_*.py' -v",
+    "python3 -I -m unittest discover -s candidate -p 'test_*.py' -v",
+    "python3 tests/harness.py",
+    "python3 tests/record_observations.py"
+  ],
+  "enforcement_observation": {
+    "claim": "The JSON Schema is documentation, not a gate.",
+    "evidence": [
+      "No executable in the repository loads contracts/transactional-result.schema.json; it is only hashed by tools/transactional_factory.py and tools/seed_wave_a.py.",
+      "No module in the repository imports jsonschema.",
+      ".github/workflows/po03-contracts.yml runs 'python -I -m unittest discover -s workstreams/po03/tests', and python -I suppresses user site-packages, so no third-party validator can participate.",
+      "Every schema-only constraint, including additionalProperties false, is therefore unenforced at runtime."
+    ]
+  },
+  "exploit_case_ids": [
+    "C01-custody-skip-snapshot",
+    "C02-recovery-required-ingested-wildcard",
+    "C03-failed-terminal-committed-wildcard",
+    "C04-negated-readback-and-nonexistent-commit",
+    "C05-causally-impossible-custody-order",
+    "C06-manifest-covers-nothing",
+    "C07-logical-name-collision",
+    "C08-self-accept-trailing-whitespace-alias",
+    "C09-self-accept-zero-width-alias",
+    "C10-self-accept-unicode-normalisation-alias",
+    "C11-producer-occupies-coordinator-identity",
+    "C12-stale-fence-commits-after-transfer",
+    "C13-cross-task-idempotency-key",
+    "C14-acceptance-receipt-inside-producer-custody",
+    "C15-unknown-property-injection"
+  ],
+  "frozen_criteria_sha256": "22aefd3eed804bf635a39f1eaae07e638a986462400ab1c43cd293fb2792ad39",
+  "hypothesis": {
+    "decision": "FAIL",
+    "decision_meaning": "FAIL is a finding about the reviewed contract, not about the producer of this review and not an acceptance decision of any kind.",
+    "id": "H-041",
+    "statement": "The result contract has no path from provider completion to Obzio completion without durable evidence.",
+    "verdict": "REFUTED",
+    "verdict_basis": "14 counterexamples are accepted by the enforced executable gate and are simultaneously valid under the JSON Schema; 1 further counterexample is accepted by the enforced gate while the unexecuted schema would refuse it."
+  },
+  "mispredicted_case_ids": [],
+  "observations_version": "PO03-WAVE-A-041-OBSERVED-RESULTS-v1",
+  "per_case": [
+    {
+      "case_id": "C00-honest-control",
+      "documents": [
+        {
+          "gate_errors": [],
+          "gate_outcome": "ACCEPT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        }
+      ],
+      "family": "control",
+      "observed_classification": "CONTROL_ACCEPT",
+      "observed_gate": "ACCEPT",
+      "observed_schema": "VALID",
+      "predicted_classification": "CONTROL_ACCEPT",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "prediction_held": true,
+      "title": "Honest fully-evidenced completion"
+    },
+    {
+      "case_id": "C01-custody-skip-snapshot",
+      "documents": [
+        {
+          "gate_errors": [],
+          "gate_outcome": "ACCEPT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        }
+      ],
+      "family": "F1",
+      "observed_classification": "EXPLOIT_BOTH",
+      "observed_gate": "ACCEPT",
+      "observed_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "prediction_held": true,
+      "title": "CREATED to COMPLETED in a single snapshot with no custody history"
+    },
+    {
+      "case_id": "C02-recovery-required-ingested-wildcard",
+      "documents": [
+        {
+          "gate_errors": [],
+          "gate_outcome": "ACCEPT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        }
+      ],
+      "family": "F1",
+      "observed_classification": "EXPLOIT_BOTH",
+      "observed_gate": "ACCEPT",
+      "observed_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "prediction_held": true,
+      "title": "Transaction claims INGESTED with zero commit evidence via the RECOVERY_REQUIRED wildcard"
+    },
+    {
+      "case_id": "C03-failed-terminal-committed-wildcard",
+      "documents": [
+        {
+          "gate_errors": [],
+          "gate_outcome": "ACCEPT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        }
+      ],
+      "family": "F1",
+      "observed_classification": "EXPLOIT_BOTH",
+      "observed_gate": "ACCEPT",
+      "observed_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "prediction_held": true,
+      "title": "FAILED_TERMINAL carries a COMMITTED transaction with no commit identity"
+    },
+    {
+      "case_id": "C04-negated-readback-and-nonexistent-commit",
+      "documents": [
+        {
+          "gate_errors": [],
+          "gate_outcome": "ACCEPT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        }
+      ],
+      "family": "F2",
+      "observed_classification": "EXPLOIT_BOTH",
+      "observed_gate": "ACCEPT",
+      "observed_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "prediction_held": true,
+      "title": "COMPLETED where every durable-evidence field is free text that denies itself"
+    },
+    {
+      "case_id": "C05-causally-impossible-custody-order",
+      "documents": [
+        {
+          "gate_errors": [],
+          "gate_outcome": "ACCEPT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        }
+      ],
+      "family": "F2",
+      "observed_classification": "EXPLOIT_BOTH",
+      "observed_gate": "ACCEPT",
+      "observed_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "prediction_held": true,
+      "title": "Read-back and verification precede the commit they attest to"
+    },
+    {
+      "case_id": "C06-manifest-covers-nothing",
+      "documents": [
+        {
+          "gate_errors": [],
+          "gate_outcome": "ACCEPT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        }
+      ],
+      "family": "F3",
+      "observed_classification": "EXPLOIT_BOTH",
+      "observed_gate": "ACCEPT",
+      "observed_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "prediction_held": true,
+      "title": "Manifest digest is bound to no artifact and no artifact is the manifest"
+    },
+    {
+      "case_id": "C07-logical-name-collision",
+      "documents": [
+        {
+          "gate_errors": [],
+          "gate_outcome": "ACCEPT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        }
+      ],
+      "family": "F3",
+      "observed_classification": "EXPLOIT_BOTH",
+      "observed_gate": "ACCEPT",
+      "observed_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "prediction_held": true,
+      "title": "Two different artifacts published under one logical name"
+    },
+    {
+      "case_id": "C08-self-accept-trailing-whitespace-alias",
+      "documents": [
+        {
+          "gate_errors": [],
+          "gate_outcome": "ACCEPT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        }
+      ],
+      "family": "F4",
+      "observed_classification": "EXPLOIT_BOTH",
+      "observed_gate": "ACCEPT",
+      "observed_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "prediction_held": true,
+      "title": "Producer self-accepts as itself plus a trailing space"
+    },
+    {
+      "case_id": "C09-self-accept-zero-width-alias",
+      "documents": [
+        {
+          "gate_errors": [],
+          "gate_outcome": "ACCEPT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        }
+      ],
+      "family": "F4",
+      "observed_classification": "EXPLOIT_BOTH",
+      "observed_gate": "ACCEPT",
+      "observed_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "prediction_held": true,
+      "title": "Producer self-accepts using an invisible zero-width space"
+    },
+    {
+      "case_id": "C10-self-accept-unicode-normalisation-alias",
+      "documents": [
+        {
+          "gate_errors": [],
+          "gate_outcome": "ACCEPT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        }
+      ],
+      "family": "F4",
+      "observed_classification": "EXPLOIT_BOTH",
+      "observed_gate": "ACCEPT",
+      "observed_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "prediction_held": true,
+      "title": "Producer self-accepts via canonically equivalent Unicode"
+    },
+    {
+      "case_id": "C11-producer-occupies-coordinator-identity",
+      "documents": [
+        {
+          "gate_errors": [],
+          "gate_outcome": "ACCEPT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        }
+      ],
+      "family": "F4",
+      "observed_classification": "EXPLOIT_BOTH",
+      "observed_gate": "ACCEPT",
+      "observed_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "prediction_held": true,
+      "title": "The producing worker is itself named coordinator"
+    },
+    {
+      "case_id": "C12-stale-fence-commits-after-transfer",
+      "documents": [
+        {
+          "gate_errors": [],
+          "gate_outcome": "ACCEPT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        },
+        {
+          "gate_errors": [],
+          "gate_outcome": "ACCEPT",
+          "index": 1,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        }
+      ],
+      "family": "F5",
+      "observed_classification": "EXPLOIT_BOTH",
+      "observed_gate": "ACCEPT",
+      "observed_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "prediction_held": true,
+      "title": "A superseded lease commits a different result after ownership transfer"
+    },
+    {
+      "case_id": "C13-cross-task-idempotency-key",
+      "documents": [
+        {
+          "gate_errors": [],
+          "gate_outcome": "ACCEPT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        }
+      ],
+      "family": "F5",
+      "observed_classification": "EXPLOIT_BOTH",
+      "observed_gate": "ACCEPT",
+      "observed_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "prediction_held": true,
+      "title": "Attempt identity contradicts the document it is attached to"
+    },
+    {
+      "case_id": "C14-acceptance-receipt-inside-producer-custody",
+      "documents": [
+        {
+          "gate_errors": [],
+          "gate_outcome": "ACCEPT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        }
+      ],
+      "family": "F6",
+      "observed_classification": "EXPLOIT_BOTH",
+      "observed_gate": "ACCEPT",
+      "observed_schema": "VALID",
+      "predicted_classification": "EXPLOIT_BOTH",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "VALID",
+      "prediction_held": true,
+      "title": "Acceptance receipt lives in the producer's own owned subtree"
+    },
+    {
+      "case_id": "C15-unknown-property-injection",
+      "documents": [
+        {
+          "gate_errors": [],
+          "gate_outcome": "ACCEPT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [
+            "$.obzio_state_override: additional property not permitted",
+            "$.accepted: additional property not permitted"
+          ],
+          "schema_outcome": "INVALID"
+        }
+      ],
+      "family": "F2",
+      "observed_classification": "EXPLOIT_GATE_ONLY",
+      "observed_gate": "ACCEPT",
+      "observed_schema": "INVALID",
+      "predicted_classification": "EXPLOIT_GATE_ONLY",
+      "predicted_gate": "ACCEPT",
+      "predicted_schema": "INVALID",
+      "prediction_held": true,
+      "title": "Undeclared top-level keys survive the enforced gate"
+    },
+    {
+      "case_id": "U01-staged-provider-loss-unrepresentable",
+      "documents": [
+        {
+          "gate_errors": [
+            "$.result_transaction.state: incompatible with $.obzio_state"
+          ],
+          "gate_outcome": "REJECT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        }
+      ],
+      "family": "F1",
+      "observed_classification": "UNREPRESENTABLE",
+      "observed_gate": "REJECT",
+      "observed_schema": "VALID",
+      "predicted_classification": "UNREPRESENTABLE",
+      "predicted_gate": "REJECT",
+      "predicted_schema": "VALID",
+      "prediction_held": true,
+      "title": "Truthful provider loss after staging cannot be expressed"
+    },
+    {
+      "case_id": "U02-zero-byte-artifact-unrepresentable",
+      "documents": [
+        {
+          "gate_errors": [
+            "$.artifacts[0].bytes: must be an integer >= 1"
+          ],
+          "gate_outcome": "REJECT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [
+            "$.artifacts[0].bytes: below minimum 1"
+          ],
+          "schema_outcome": "INVALID"
+        }
+      ],
+      "family": "F3",
+      "observed_classification": "UNREPRESENTABLE",
+      "observed_gate": "REJECT",
+      "observed_schema": "INVALID",
+      "predicted_classification": "UNREPRESENTABLE",
+      "predicted_gate": "REJECT",
+      "predicted_schema": "INVALID",
+      "prediction_held": true,
+      "title": "A legitimately empty durable artifact cannot be manifested"
+    },
+    {
+      "case_id": "B01-completed-without-commit-id",
+      "documents": [
+        {
+          "gate_errors": [
+            "$.result_transaction.result_commit_id: required after result commit",
+            "$.obzio_state: provider completion without result commit must be PROVIDER_COMPLETED_UNCOMMITTED"
+          ],
+          "gate_outcome": "REJECT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        }
+      ],
+      "family": "F2",
+      "observed_classification": "BLOCKED",
+      "observed_gate": "REJECT",
+      "observed_schema": "VALID",
+      "predicted_classification": "BLOCKED",
+      "predicted_gate": "REJECT",
+      "predicted_schema": "VALID",
+      "prediction_held": true,
+      "title": "Control: completion with a null commit id is blocked"
+    },
+    {
+      "case_id": "B02-exact-string-self-accept",
+      "documents": [
+        {
+          "gate_errors": [
+            "$.independent_acceptance.reviewer_id: producer cannot self-accept"
+          ],
+          "gate_outcome": "REJECT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        }
+      ],
+      "family": "F6",
+      "observed_classification": "BLOCKED",
+      "observed_gate": "REJECT",
+      "observed_schema": "VALID",
+      "predicted_classification": "BLOCKED",
+      "predicted_gate": "REJECT",
+      "predicted_schema": "VALID",
+      "prediction_held": true,
+      "title": "Control: byte-identical self-acceptance is blocked"
+    },
+    {
+      "case_id": "B03-running-with-committed-artifacts",
+      "documents": [
+        {
+          "gate_errors": [
+            "$.artifacts: uncommitted state cannot expose committed artifacts"
+          ],
+          "gate_outcome": "REJECT",
+          "index": 0,
+          "reference_agrees_with_minischema": null,
+          "reference_schema_errors": null,
+          "reference_schema_outcome": null,
+          "schema_errors": [],
+          "schema_outcome": "VALID"
+        }
+      ],
+      "family": "F1",
+      "observed_classification": "BLOCKED",
+      "observed_gate": "REJECT",
+      "observed_schema": "VALID",
+      "predicted_classification": "BLOCKED",
+      "predicted_gate": "REJECT",
+      "predicted_schema": "VALID",
+      "prediction_held": true,
+      "title": "Control: an uncommitted custody state cannot expose artifacts"
+    }
+  ],
+  "reviewed_sources": {
+    "adversarial-cases.json": "33fff6a15c0b08890c4e4170022c1c4b648c61ec16d7650c708a90b514b5eb3c",
+    "transactional-result.schema.json": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1",
+    "validate_contracts.py": "3c2ebd7f06b0230c35355ae0b569283e8dbf90ed87127dedddb7d389b1c62bc7"
+  },
+  "runtime": {
+    "note": "The candidate and the harness both run under python -I with no third-party package, as the commission requires. The jsonschema cross-check is optional and is skipped when absent.",
+    "platform": "Linux-6.12.94+-x86_64-with-glibc2.39",
+    "python_version": "3.12.3",
+    "schema_reference_validator": {
+      "available": false,
+      "note": "jsonschema absent; minischema subset checker used alone"
+    }
+  },
+  "shared_code_mutation": {
+    "matches_reviewed_source": true,
+    "method": "The shared validator is imported from its read-only path by file location under a private module name; it is never copied, edited or shadowed.",
+    "shared_gate_sha256_after_run": "3c2ebd7f06b0230c35355ae0b569283e8dbf90ed87127dedddb7d389b1c62bc7",
+    "shared_schema_sha256_after_run": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1"
+  },
+  "task_id": "wave-a-041-schema-adversarial-review",
+  "test_suites": [
+    {
+      "errors": [],
+      "failures": [],
+      "outcome": "PASS",
+      "skipped": [
+        "test_both_schema_implementations_agree (test_shared_gate_characterization.SharedGateBehaviour.test_both_schema_implementations_agree): jsonschema is not importable in this runtime"
+      ],
+      "start_dir": "tests",
+      "tests_run": 10
+    },
+    {
+      "errors": [],
+      "failures": [],
+      "outcome": "PASS",
+      "skipped": [],
+      "start_dir": "candidate",
+      "tests_run": 13
+    }
+  ],
+  "totals": {
+    "blocked": 3,
+    "cases": 21,
+    "exploit_both": 14,
+    "exploit_gate_only": 1,
+    "mispredicted": 0,
+    "unrepresentable": 2
+  },
+  "unrepresentable_case_ids": [
+    "U01-staged-provider-loss-unrepresentable",
+    "U02-zero-byte-artifact-unrepresentable"
+  ]
+}
