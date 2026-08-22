@@ -56,15 +56,23 @@
     "exit_code": 1,
     "failure": "ModuleNotFoundError: No module named 'immutable_readback'",
     "cause": "Python isolated mode omitted the script directory while the initial black-box test had not enabled isolated mode.",
-    "repair_commit_abbrev": "6ed7ba2",
+    "repair_commit_abbrev": "8d92136",
     "recurrence_change": "The black-box test now invokes -I -B and the script explicitly admits only its own directory for the sibling module import."
   },
-  "defects": 2,
+  "defects": 3,
   "defect_details": [
     "Direct isolated-mode import failure on the first reproduction attempt.",
-    "Successful reproduction initially retained an ephemeral temporary-root path in evidence output."
+    "Successful reproduction initially retained an ephemeral temporary-root path in evidence output.",
+    "The first runner branch inherited WA-002 commits because its local base ref moved between resolution and branch creation; exact-base ownership validation detected the contamination."
   ],
-  "rework_events": 2,
+  "rework_events": 3,
+  "custody_recovery": {
+    "outcome": "PASS",
+    "method": "Created a separate worktree directly at immutable base e56eda6e8e4a4e958795f7157839926d93272b30, replayed only WA-025 commits, pushed a new unique branch, and asserted every base-to-result changed path is under the owned subtree.",
+    "clean_remote_branch": "cursor/po03-wa-025-b195-a01-1a9f",
+    "ownership_changed_path_count": 13,
+    "out_of_scope_changed_path_count": 0
+  },
   "final_outcome": "PASS",
   "test_output_path": "workstreams/po03/wave-a/units/wa-025/result/test-output.txt",
   "decision_changed": []
