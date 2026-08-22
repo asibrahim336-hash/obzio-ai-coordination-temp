@@ -1,0 +1,150 @@
+{
+  "acceptance_contract": {
+    "path": "workstreams/po03/control/acceptance/wave-a-material-v1.json",
+    "sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a"
+  },
+  "artifacts": [
+    "README.md",
+    "architectures/central_gate.py",
+    "architectures/lease_shards.py",
+    "architectures/event_log.py",
+    "architectures/model.py",
+    "fixtures/frozen-simulation.json",
+    "simulator.py",
+    "compile_manifest.py",
+    "verify_remote_readback.py",
+    "tests/test_simulator.py",
+    "tests/test_artifact_custody.py",
+    "result/preregistered-comparison.json",
+    "result/simulation-results.json",
+    "result/hypothesis.json",
+    "result/reproduction.json",
+    "result/mechanism-changes.json",
+    "result/source-claims.json",
+    "result/tests.json",
+    "result/test-output.txt",
+    "result/limitations.json"
+  ],
+  "attempt": {
+    "attempt_id": "PO03-WA-017-A02",
+    "fence_token": 2,
+    "idempotency_key": "po03:100bc2079ced:wa-017:a02",
+    "lease_id": "lease-po03-wa-017-a02"
+  },
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "completion_actor": null,
+  "decision_changed": [],
+  "finished_at": "2026-08-22T09:16:54Z",
+  "governing_route": {
+    "appointment_id": "obzio.appointment.strategic-operations-orchestration.20260819.001",
+    "authority_envelope_id": "obzio.authority-envelope.strategic-operations-orchestration.20260819.001",
+    "commission_id": "obzio.commission.full-scale-chatgpt-phase-one.20260819.001",
+    "function_id": "obzio.function.strategic-operations-orchestration",
+    "instruction_stack": "state/operator-system/ACTIVE_INSTRUCTION_STACK.json",
+    "runtime_binding_id": "obzio.runtime-binding.strategic-operations-orchestration.20260819.001"
+  },
+  "hypothesis_id": "H-PO03-WA-017",
+  "hypothesis_outcome": "SUPPORTED",
+  "immutable_input": {
+    "path": "workstreams/po03/control/inputs/wave-a/wa-017-a02.json",
+    "sha256": "3d1529efb460525d2a4a23750fdd189fbf3136e79decabe267e5b8b353e96da5"
+  },
+  "independent_acceptance": {
+    "receipt_uri": null,
+    "reviewer_id": null,
+    "state": "NOT_TESTED"
+  },
+  "limitations": {
+    "count": 12,
+    "not_supported_count": 5,
+    "path": "result/limitations.json"
+  },
+  "method": {
+    "comparison": "Criteria and directional predictions were hash-frozen and committed before simulator execution.",
+    "critical_safety": "All candidates require hash/fence/conflict verification before acceptance; false completion, duplicate external effect, and lost committed result must each remain zero.",
+    "independence": "Three classes implement separate scheduling, concurrency, completion, and recovery algorithms in separate modules without a shared scheduler superclass.",
+    "simulation": "Deterministic logical ticks execute 24 sanitized repository work units with corruption, provider loss, stale completion, duplicate callback, and cross-write-key collision conditions.",
+    "tradeoff_rule": "Every pair must differ by at least 10 percent relative accepted throughput or one unit of preregistered safety distance, and total throughput spread must be at least 1.25.",
+    "verification": "Focused tests, unmodified seeded contract tests, deterministic simulator reexecution, taxonomy currentness, owned-path checks, and immutable fresh-clone readback."
+  },
+  "model_observed": "gpt-5.6-sol-max-fast",
+  "preregistered_metrics": {
+    "artifact_bytes": "RECORDED_IN_ARTIFACT_MANIFEST",
+    "artifact_count": "RECORDED_IN_ARTIFACT_MANIFEST",
+    "collision": {
+      "owned_path_collisions": 0,
+      "simulated_distinct_pair_events_across_candidates": 6
+    },
+    "defects": {
+      "count": 1,
+      "detail": "The initial focused test incorrectly required one shared fault word from independent candidate traces."
+    },
+    "first_pass_outcome": "FAIL",
+    "mechanism_change_count": 6,
+    "provider_block": 0,
+    "recovery_events": {
+      "central-gate": 3,
+      "event-log": 9,
+      "lease-shards": 9,
+      "total": 21
+    },
+    "reproduction_count": 1,
+    "rework": {
+      "count": 1,
+      "detail": "Corrected, committed, and pushed the architecture-specific test expectation; simulation mechanisms and preregistration were unchanged."
+    },
+    "source_claim_count": 14,
+    "test_count": {
+      "final_focused": 29,
+      "final_seeded": 60,
+      "final_total": 89
+    },
+    "wall_time": {
+      "complete_task": "NOT_SUPPORTED",
+      "final_focused_tests_seconds": 0.318,
+      "final_seeded_tests_seconds": 1.246,
+      "measured_final_tests_seconds": 1.564
+    }
+  },
+  "protocol_version": "OBZIO-WAVE-A-MATERIAL-RESULT-v1",
+  "provider_run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+  "reasoning_observed": "NOT_SUPPORTED",
+  "reproduction": {
+    "path": "result/reproduction.json",
+    "sanitized": true,
+    "simulation_result": "result/simulation-results.json",
+    "simulation_result_sha256": "94cf8326bc723a150e50b5d16aecaa173fcac01294db3d724d5e44f1bda84fda"
+  },
+  "requested_configuration": {
+    "auto_model_selection": false,
+    "model_slug": "gpt-5.6-sol-xhigh",
+    "reasoning": "xhigh"
+  },
+  "runner_id": "best-of-n-runner-bc-b1956656-wa-017-a02",
+  "runtime_observation": {
+    "model_observation_field": "cursor-cloud run-info originalModelName",
+    "model_observation_url": "https://cursor.com/agents/bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+    "reasoning_observation": "No separate reasoning field was exposed; NOT_SUPPORTED is recorded without inference.",
+    "runtime_details_are_authority": false
+  },
+  "source_base_commit": "ef81e041befe9654ced9390ffd6cc046d8cdd033",
+  "source_claims": {
+    "count": 14,
+    "external_sources": "NOT_APPLICABLE_REPOSITORY_NATIVE_ONLY",
+    "path": "result/source-claims.json"
+  },
+  "started_at": "2026-08-22T09:08:37Z",
+  "task_id": "PO03-WA-017",
+  "tests": {
+    "deterministic_simulator_reexecution": "PASS",
+    "final_focused": "PASS",
+    "final_seeded_contracts": "PASS",
+    "first_pass_outcome": "FAIL",
+    "path": "result/tests.json",
+    "taxonomy": "PASS"
+  },
+  "workstream_commission": {
+    "appointment": "PO-03",
+    "institutional_function": "obzio.function.repository-engineering-portable-runtime"
+  }
+}
