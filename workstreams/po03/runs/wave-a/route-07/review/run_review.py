@@ -141,7 +141,16 @@ def main() -> int:
     ap.add_argument("--base-commit", required=True)
     ap.add_argument("--rubric-freeze", required=True)
     ap.add_argument("--out-dir", required=True)
+    ap.add_argument("--rubric", choices=("v1", "v1.1"), default="v1")
+    ap.add_argument("--summary-name", default="stage1-summary.json")
     args = ap.parse_args()
+
+    if args.rubric == "v1.1":
+        import rubric_v1_1
+
+        scorer = rubric_v1_1.review_slot_v1_1
+    else:
+        scorer = rb.review_slot
 
     repo_root = Path(args.repo_root).resolve()
     out_dir = Path(args.out_dir)
@@ -162,6 +171,7 @@ def main() -> int:
         "reviewer_model_family": REVIEWER_FAMILY,
         "base_commit": args.base_commit,
         "rubric_freeze": freeze,
+        "rubric_version": args.rubric,
         "criteria_freeze_sha256": frozen["criteria_freeze_sha256"],
         "source_lock_sha256": frozen["source_lock_sha256"],
         "recommendations": {},
@@ -172,7 +182,7 @@ def main() -> int:
         meta = task_meta[tid]
         comp = completions[tid]
         slot = repo_root / meta["result_slot"]
-        review = rb.review_slot(
+        review = scorer(
             repo_root=repo_root,
             slot_rel=meta["result_slot"],
             task_id=tid,
@@ -197,7 +207,7 @@ def main() -> int:
             "reviewer_id": REVIEWER_ID,
             "reviewer_function": REVIEWER_FUNCTION,
             "reviewer_model_family": REVIEWER_FAMILY,
-            "review_order": "BLIND_STAGE_1_CRITERIA_ONLY",
+            "review_order": "BLIND_CRITERIA_ONLY_NO_PRODUCER_CONCLUSION_READ",
             "frozen_criteria": {
                 "criteria_freeze_uri": "workstreams/po03/evidence/criteria-freeze.json",
                 "criteria_freeze_sha256": frozen["criteria_freeze_sha256"],
@@ -208,6 +218,7 @@ def main() -> int:
                 "immutable_input_manifest_sha256": meta["immutable_input_manifest_sha256"],
             },
             "rubric_freeze": freeze,
+            "rubric_version": args.rubric,
             "target": {
                 "result_slot": meta["result_slot"],
                 "result_uri": comp["result_uri"],
@@ -251,7 +262,9 @@ def main() -> int:
             "readback_all_match": all(r["immutable_readback_match"] for r in readback) if readback else False,
         }
 
-    (out_dir.parent / "evidence" / "stage1-summary.json").write_text(
+    summary_path = out_dir.parent / "evidence" / args.summary_name
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    summary_path.write_text(
         json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
     print(json.dumps(summary["recommendations"], indent=2, sort_keys=True))
