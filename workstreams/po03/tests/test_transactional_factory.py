@@ -201,6 +201,44 @@ class TransactionalFactoryTests(unittest.TestCase):
             ),
         )
 
+    def test_route_collision_is_recorded_once_and_suspends_dispatch(self):
+        MODULE.CONTROL_ROOT.mkdir(parents=True)
+        MODULE.replace_atomic(
+            MODULE.CONTROL_ROOT / "recovery-state.json",
+            MODULE.canonical_json(
+                {
+                    "recovery_version": "PO03-RECOVERY-STATE-v1",
+                    "scan_state": "ACTIVE",
+                    "units": {},
+                    "false_completion_count": 0,
+                    "orphan_count": 0,
+                    "duplicate_callback_count": 0,
+                    "collision_count": 0,
+                    "decision_changed": [],
+                }
+            ),
+        )
+        receipt_relative = "receipts/po03/2026-08-22/collision.json"
+        MODULE.write_once(
+            MODULE.REPO_ROOT / receipt_relative,
+            MODULE.canonical_json(
+                {
+                    "receipt_id": "collision-1",
+                    "collision_policy": "FAIL_CLOSED",
+                    "route_state": "DISPATCH_SUSPENDED",
+                    "decision_changed": [],
+                }
+            ),
+        )
+        first = MODULE.record_route_collision(receipt_relative)
+        replay = MODULE.record_route_collision(receipt_relative)
+        projection = json.loads((MODULE.CONTROL_ROOT / "recovery-state.json").read_text())
+        self.assertEqual("RECORDED", first["status"])
+        self.assertEqual("ALREADY_RECORDED", replay["status"])
+        self.assertEqual(1, projection["collision_count"])
+        self.assertEqual("DISPATCH_SUSPENDED", projection["dispatch_route_state"])
+        self.assertEqual(1, len(projection["collision_receipts"]))
+
     def test_write_once_is_idempotent_but_immutable(self):
         destination = MODULE.PO03_ROOT / "control" / "immutable.json"
         MODULE.write_once(destination, b"{}\n")

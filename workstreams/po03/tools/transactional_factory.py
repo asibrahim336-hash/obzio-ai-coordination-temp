@@ -764,6 +764,76 @@ def verify_recovery_state() -> list[str]:
     return errors
 
 
+def record_route_collision(receipt_relative: str) -> dict[str, Any]:
+    """Project one immutable collision receipt exactly once and suspend dispatch."""
+    if "\\" in receipt_relative or "\x00" in receipt_relative:
+        raise FactoryError("collision receipt path must be canonical POSIX")
+    relative = PurePosixPath(receipt_relative)
+    if (
+        relative.is_absolute()
+        or ".." in relative.parts
+        or relative.as_posix() != receipt_relative
+        or relative.parts[:2] != ("receipts", "po03")
+    ):
+        raise FactoryError("collision receipt must be a canonical receipts/po03 path")
+    receipt_path = REPO_ROOT.joinpath(*relative.parts)
+    if not receipt_path.is_file():
+        raise FactoryError(f"missing collision receipt: {receipt_relative}")
+    receipt = read_json(receipt_path)
+    if not _nonempty(receipt.get("receipt_id")):
+        raise FactoryError("collision receipt requires a receipt_id")
+    if receipt.get("collision_policy") != "FAIL_CLOSED":
+        raise FactoryError("collision receipt must apply FAIL_CLOSED")
+    if receipt.get("route_state") != "DISPATCH_SUSPENDED":
+        raise FactoryError("collision receipt must suspend dispatch")
+    if receipt.get("decision_changed") != []:
+        raise FactoryError("collision receipt decision_changed must remain empty")
+
+    path = CONTROL_ROOT / "recovery-state.json"
+    projection = read_json(path) if path.exists() else {
+        "recovery_version": "PO03-RECOVERY-STATE-v1",
+        "scan_state": "ACTIVE",
+        "units": {},
+        "false_completion_count": 0,
+        "orphan_count": 0,
+        "duplicate_callback_count": 0,
+        "collision_count": 0,
+        "decision_changed": [],
+    }
+    receipt_sha256 = sha256_file(receipt_path)
+    entries = projection.setdefault("collision_receipts", [])
+    if not isinstance(entries, list):
+        raise FactoryError("recovery collision_receipts must be an array")
+    existing = next(
+        (
+            entry
+            for entry in entries
+            if isinstance(entry, dict) and entry.get("receipt_uri") == receipt_relative
+        ),
+        None,
+    )
+    if existing is not None:
+        if existing.get("sha256") != receipt_sha256:
+            raise FactoryError("recorded collision receipt hash diverges from immutable bytes")
+        return {
+            "status": "ALREADY_RECORDED",
+            "collision_count": projection.get("collision_count"),
+            "receipt_uri": receipt_relative,
+        }
+    count = projection.get("collision_count", 0)
+    if not isinstance(count, int) or isinstance(count, bool) or count < 0:
+        raise FactoryError("recovery collision_count must be a non-negative integer")
+    entries.append({"receipt_uri": receipt_relative, "sha256": receipt_sha256})
+    projection["collision_count"] = count + 1
+    projection["dispatch_route_state"] = "DISPATCH_SUSPENDED"
+    replace_atomic(path, canonical_json(projection))
+    return {
+        "status": "RECORDED",
+        "collision_count": count + 1,
+        "receipt_uri": receipt_relative,
+    }
+
+
 def _update_recovery_projection(
     task_id: str,
     *,
@@ -1936,6 +2006,11 @@ def verify_recovery(args: argparse.Namespace) -> int:
     return 0
 
 
+def record_collision(args: argparse.Namespace) -> int:
+    print(json.dumps(record_route_collision(args.receipt), sort_keys=True))
+    return 0
+
+
 def ingest_result(args: argparse.Namespace) -> int:
     result = ingest_committed_result(
         args.task_id,
@@ -2008,6 +2083,9 @@ def build_parser() -> argparse.ArgumentParser:
     rebuild_parser.set_defaults(handler=rebuild_recovery)
     verify_recovery_parser = subparsers.add_parser("verify-recovery")
     verify_recovery_parser.set_defaults(handler=verify_recovery)
+    collision_parser = subparsers.add_parser("record-collision")
+    collision_parser.add_argument("--receipt", required=True)
+    collision_parser.set_defaults(handler=record_collision)
     return parser
 
 
