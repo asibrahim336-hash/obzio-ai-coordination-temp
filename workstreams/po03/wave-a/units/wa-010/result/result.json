@@ -25,7 +25,8 @@
       "Validated the glob dialect differentially against git's own pathspec engine, and cross-checked the overlap decision procedure against brute-force enumeration.",
       "Reproduced prevention on a sanitized workload by installing the engine as a git pre-commit hook, with a negative control that bypasses the hook.",
       "Ran the focused suite, the seeded PO-03 contract tests read-only, the operator taxonomy check, and the engine against its own changed paths from the immutable base.",
-      "Committed and pushed only the unique retry branch, then read every artifact back by immutable remote SHA."
+      "Committed and pushed only the unique retry branch, then read every artifact back by immutable remote SHA.",
+      "Re-read the pushed return from a fresh bare clone and compared it against its own structured fields, which surfaced a mislabelled read-back path and three figures restated from a superseded payload; both were fixed, pinned by recurrence tests and reissued rather than amended."
     ],
     "falsification_design": "The hypothesis would have been refuted if an overlapping write had reached a commit, if a deny glob had been overridden by an ownership grant, if a rename or delete had escaped the grant, if a stale fence had been admitted, or if a collision between two grants had gone undetected until a file existed. Each of these is an executed test rather than a review comment.",
     "execution_environment": "dedicated isolated no-hardlink clone at /tmp/po03-wa-010-a02-r02, created from the immutable controller base f2bdb4908026f66e8450802bb15921be1f3c338d",
@@ -51,6 +52,16 @@
       "path": "workstreams/po03/wave-a/units/wa-010/result/build_evidence.py",
       "role": "Regenerates every evidence artifact from the engine and the fixtures.",
       "notable": "No hash, count or decision in the evidence is transcribed by hand."
+    },
+    {
+      "path": "workstreams/po03/wave-a/units/wa-010/result/immutable_readback.py",
+      "role": "Reads every manifested artifact back from an immutable remote commit in a fresh bare clone and compares SHA-256 and byte counts.",
+      "notable": "Verifies from the remote rather than from the producer's worktree, which is what makes the check meaningful."
+    },
+    {
+      "path": "workstreams/po03/wave-a/units/wa-010/result/check_return_consistency.py",
+      "role": "Checks a producer return against its own structured fields, including the figures it restates in prose.",
+      "notable": "Reports 3 findings against the superseded return on this branch and 0 against the corrected one, so the check is demonstrated rather than asserted."
     }
   ],
   "findings": [
@@ -93,6 +104,11 @@
       "id": "F8",
       "finding": "An audit dominated by unavoidable findings is a correctness problem, not a cosmetic one.",
       "evidence": "Auditing the real registry first produced 144 deny-shadow advisories and a 75753-byte artifact, all from the implicit '**/.git/**' deny intersecting every recursive grant. Mechanism change MC-PO03-WA-010-02 reduced it to 0 advisories and 1013 bytes with no admission decision changed."
+    },
+    {
+      "id": "F9",
+      "finding": "Digest verification does not detect a return that contradicts itself, so a producer's own report needs a gate of the same kind it builds for others.",
+      "evidence": "The return pushed at bf32b0229c473aa1585da322e24e36047b376fe9 read back with all 29 paths matching by SHA-256 and byte count, yet named a manifest path no commit carries and restated three figures from a superseded payload. result/check_return_consistency.py reports RC-X04, RC-N01 and RC-N03 against that document and none against the corrected one. Recorded as DEF-PO03-WA-010-05 and DEF-PO03-WA-010-06 with mechanism changes MC-PO03-WA-010-04 and MC-PO03-WA-010-05."
     }
   ],
   "artifacts": {
@@ -113,6 +129,7 @@
       "result/build_evidence.py",
       "result/build_manifest.py",
       "result/changed-path-validation.json",
+      "result/check_return_consistency.py",
       "result/denial-matrix.json",
       "result/immutable_readback.py",
       "result/limitations.json",
@@ -127,13 +144,14 @@
       "tests/test_adversarial.py",
       "tests/test_gitglob.py",
       "tests/test_ownership_engine.py",
-      "tests/test_prevention_reproduction.py"
+      "tests/test_prevention_reproduction.py",
+      "tests/test_return_consistency.py"
     ]
   },
   "tests": {
     "outcome": "PASS",
     "first_pass_outcome": "FAIL",
-    "focused_tests": 118,
+    "focused_tests": 133,
     "seeded_contract_tests": 37,
     "taxonomy_check": "PASS",
     "sanitized_reproductions": 1,
@@ -151,18 +169,20 @@
   },
   "mechanism_changes": {
     "details_path": "workstreams/po03/wave-a/units/wa-010/result/mechanism-change.json",
-    "count": 3,
+    "count": 5,
     "all_verified_by_recurrence_tests": true,
     "dispositions": [
       "RETAIN",
       "RETAIN",
+      "RETAIN",
+      "RETAIN",
       "RETAIN"
     ],
-    "producer_defects_recorded": 4
+    "producer_defects_recorded": 6
   },
   "limitations": {
     "details_path": "workstreams/po03/wave-a/units/wa-010/result/limitations.json",
-    "count": 12,
+    "count": 13,
     "material": 3,
     "most_important": "L1: client-side hook enforcement is advisory and can be bypassed; server-side enforcement is OWNER_BLOCKED and was not attempted.",
     "content_enforcement": "NOT_SUPPORTED",
@@ -171,16 +191,16 @@
     "independent_acceptance": "NOT_TESTED"
   },
   "preregistered_metrics": {
-    "wall_time_seconds": 2654,
-    "test_count": 155,
+    "wall_time_seconds": 5074,
+    "test_count": 170,
     "first_pass_outcome": "FAIL",
-    "artifact_count": 28,
+    "artifact_count": 30,
     "artifact_bytes": "recorded in artifact-manifest.json",
     "source_claim_count": 15,
     "reproduction_count": 1,
-    "mechanism_change_count": 3,
-    "defects": 4,
-    "rework": 3,
+    "mechanism_change_count": 5,
+    "defects": 6,
+    "rework": 5,
     "provider_block": 1,
     "provider_block_detail": "Route 4a79e13d-a5f5-4a49-a5b1-02a5b6caf94e failed with 'Workflow execution already started' before producing a durable branch. This attempt is the fenced replay of the same idempotency key po03:100bc2079ced:wa-010:a02 at fence token 2.",
     "collision": 0,
@@ -242,7 +262,7 @@
   },
   "boundary_compliance": {
     "owned_subtree": "workstreams/po03/wave-a/units/wa-010/**",
-    "changed_paths_from_immutable_base": 23,
+    "changed_paths_from_immutable_base": "recorded in result/changed-path-validation.json and in ready-to-commit.json, not here: this file is one of the paths being counted and is hashed into the manifest before the payload commit exists, so any integer written here would describe an earlier payload",
     "out_of_scope_changed_paths": 0,
     "validated_by": "the engine under test, recorded in result/changed-path-validation.json",
     "state_and_dispatch_untouched": true,

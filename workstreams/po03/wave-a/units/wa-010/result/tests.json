@@ -17,10 +17,12 @@
       "purpose": "focused suite for this unit",
       "command": "python3 -I -B -m unittest discover -s workstreams/po03/wave-a/units/wa-010/tests -p 'test_*.py'",
       "cwd": "repository root",
-      "tests_run": 118,
+      "tests_run": 133,
+      "skipped": 1,
       "result": "OK",
       "exit_code": 0,
-      "captured_output": "workstreams/po03/wave-a/units/wa-010/result/test-output.txt"
+      "captured_output": "workstreams/po03/wave-a/units/wa-010/result/test-output.txt",
+      "note": "The captured run is the payload-commit run, where result/ready-to-commit.json does not yet exist, so tests/test_return_consistency.py::CommittedReturnTest skips rather than reading a return from a superseded payload. The same suite runs with 0 skips and 133 passes against the return commit, recorded under post_return_run below. That case failed against the superseded return at bf32b0229c473aa1585da322e24e36047b376fe9, which is how DEF-PO03-WA-010-05 and DEF-PO03-WA-010-06 were found."
     },
     {
       "purpose": "seeded PO-03 contract tests, read-only, to prove the seeded controls were strengthened rather than bypassed",
@@ -52,6 +54,13 @@
       "command": "python3 -I -B workstreams/po03/wave-a/units/wa-010/result/build_evidence.py",
       "result": "all artifacts written, focused suite passed",
       "exit_code": 0
+    },
+    {
+      "purpose": "check the producer return against its own structured fields, so a figure restated in prose cannot describe a superseded payload",
+      "command": "python3 -I -B workstreams/po03/wave-a/units/wa-010/result/check_return_consistency.py",
+      "result": "CONSISTENT",
+      "exit_code": 0,
+      "note": "Run against the superseded return at bf32b0229c473aa1585da322e24e36047b376fe9 it reported 3 findings: RC-X04, RC-N01 and RC-N03. Those are DEF-PO03-WA-010-05 and DEF-PO03-WA-010-06."
     }
   ],
   "focused_test_modules": [
@@ -78,10 +87,16 @@
       "tests_run": 11,
       "result": "OK",
       "covers": "each step of the sanitized pre-commit reproduction, including that HEAD does not move and the owner's committed bytes survive a refused overwrite, and that the negative control commits when the gate is bypassed"
+    },
+    {
+      "module": "tests/test_return_consistency.py",
+      "tests_run": 15,
+      "result": "OK",
+      "covers": "the read-back manifest path label, the twelve cross-field agreement checks and the seven narrative-figure checks, each stale-figure and mislabel case that occurred on this branch, and the committed return document itself"
     }
   ],
   "test_counts": {
-    "focused_tests": 118,
+    "focused_tests": 133,
     "seeded_contract_tests": 37,
     "taxonomy_checks": 1,
     "sanitized_reproductions": 1,
@@ -89,7 +104,8 @@
     "property_cross_checked_pattern_pairs": 100000,
     "adversarial_cases": 28,
     "deliberately_prohibited_write_fixtures": 16,
-    "preregistered_reason_code_assertions": 41
+    "preregistered_reason_code_assertions": 41,
+    "return_document_consistency_checks": 19
   },
   "fixture_coverage": [
     {
@@ -144,6 +160,15 @@
     "negative_control_confirms_attribution": true,
     "static_overlap_detected_before_any_write": true,
     "external_effects": "none: temporary local repository, no network, no secrets"
+  },
+  "post_return_run": {
+    "why": "result/ready-to-commit.json is written after the manifest is hashed, so the artifact captured in test-output.txt cannot include the run that reads it. That run is reported here and re-executed from a clean clone of the return commit.",
+    "command": "python3 -I -B -m unittest discover -s workstreams/po03/wave-a/units/wa-010/tests -p 'test_*.py'",
+    "tests_run": 133,
+    "skipped": 0,
+    "result": "OK",
+    "exit_code": 0,
+    "recorded_in": "the producer terminal response, alongside the clean-clone reproduction of the return commit"
   },
   "clean_runtime_reproducibility": {
     "third_party_dependencies": "none",

@@ -58,6 +58,21 @@ def load_manifest(path: Path) -> dict[str, Any]:
     return document
 
 
+def repo_relative_manifest_path(manifest_path: Path) -> str:
+    """Return the repository-relative path of the manifest being verified.
+
+    The label has to name the same path ``check`` reads back, otherwise the record
+    reports a path that does not exist in the commit.  For the unit's own manifest
+    that path is a constant; anything else is reported verbatim rather than guessed
+    at, because this verifier cannot know where an arbitrary manifest sits relative
+    to a repository root.
+    """
+    canonical = f"{UNIT_PREFIX}/result/{MANIFEST_NAME}"
+    if Path(manifest_path).resolve() == (RESULT_DIR / MANIFEST_NAME).resolve():
+        return canonical
+    return str(manifest_path)
+
+
 def verify_readback(
     remote: str, branch: str, commit: str, manifest_path: Path
 ) -> dict[str, Any]:
@@ -148,7 +163,7 @@ def verify_readback(
             "commit_object_type": commit_type,
             "remote_branch_tip_at_readback": tip,
             "commit_is_branch_tip": tip == commit,
-            "manifest_path": str(manifest_path).split("workstreams/")[-1],
+            "manifest_path": repo_relative_manifest_path(manifest_path),
             "manifest_sha256": manifest_digest,
             "manifest_bytes": len(manifest_bytes),
             "artifact_count": manifest["artifact_count"],

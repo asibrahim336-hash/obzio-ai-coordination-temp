@@ -15,7 +15,7 @@ Immutable input `workstreams/po03/control/inputs/wave-a/wa-010-a02.json`
 | `engine/ownership.py` | Ownership registry loading, static overlap audit, per-change write admission, `git --name-status -z` parsing, CLI. |
 | `engine/reproduce_overlap_prevention.py` | Sanitized reproduction that installs the engine as a real `pre-commit` hook and lets git enforce the decision. |
 | `fixtures/` | Disjoint and deliberately overlapping registries; admitted, prohibited, rename/delete and adversarial change sets, each with preregistered reason codes. |
-| `tests/` | 118 dependency-free `unittest` cases, including a differential test against git's own pathspec engine and a brute-force property cross-check. |
+| `tests/` | 133 dependency-free `unittest` cases, including a differential test against git's own pathspec engine and a brute-force property cross-check. |
 | `result/` | Executable evidence, the transactional result and the producer return. |
 
 ## The two questions the engine answers
@@ -50,6 +50,9 @@ python3 -I -B -m unittest discover -s tests -p 'test_*.py'
 
 # Regenerate every evidence artifact
 python3 -I -B result/build_evidence.py
+
+# Does the producer return agree with its own structured fields?
+python3 -I -B result/check_return_consistency.py
 ```
 
 Both subcommands exit non-zero when they refuse, which is what makes them usable

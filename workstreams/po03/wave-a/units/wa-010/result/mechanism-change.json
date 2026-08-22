@@ -55,6 +55,46 @@
       "verified_by_recurrence": true,
       "current_registry_effect": "none: every declared deny glob in path-ownership.json contains a separator, so the seeded registry raises no advisory",
       "disposition": "RETAIN"
+    },
+    {
+      "mechanism_change_id": "MC-PO03-WA-010-04",
+      "title": "The read-back record names the manifest path it actually read, not a truncated tail of it",
+      "found_by": "Re-reading the pushed return document from a fresh bare clone of the branch tip bf32b0229c473aa1585da322e24e36047b376fe9",
+      "observed_defect": "immutable_readback.py built its manifest_path label as str(manifest_path).split('workstreams/')[-1], which dropped the 'workstreams/' prefix along with everything before it. The committed record therefore reported 'po03/wave-a/units/wa-010/result/artifact-manifest.json', a path no commit in this repository carries, while the checks list two lines below reported the same file under its real path.",
+      "why_it_matters": "A read-back record exists so a third party can re-run the verification. Every digest in it was correct, so no hash comparison could catch this: an independent verifier following the label would get 'fatal: path does not exist' and could not distinguish a mislabelled record from a missing artifact.",
+      "change": "Extracted repo_relative_manifest_path, which returns the canonical repository-relative path when the manifest being verified is the unit's own and otherwise reports the given path verbatim rather than guessing at a repository root. The label is now the same constant the read-back check itself uses, so the two cannot diverge.",
+      "recurrence_tests": [
+        "tests/test_return_consistency.py::ManifestPathLabelTest::test_the_label_keeps_the_workstreams_prefix",
+        "tests/test_return_consistency.py::ManifestPathLabelTest::test_the_units_own_manifest_gets_a_repository_relative_label",
+        "tests/test_return_consistency.py::ManifestPathLabelTest::test_a_foreign_manifest_is_reported_verbatim_rather_than_guessed",
+        "tests/test_return_consistency.py::ReturnConsistencyTest::test_a_truncated_manifest_label_is_caught"
+      ],
+      "verified_by_recurrence": true,
+      "false_completion_risk_if_unfixed": "a return that claims immutable read-back of a path that does not exist, which reads as verified and is not independently checkable",
+      "disposition": "RETAIN"
+    },
+    {
+      "mechanism_change_id": "MC-PO03-WA-010-05",
+      "title": "Figures restated in prose are checked against the structured fields they restate",
+      "found_by": "Comparing the committed return document's acceptance_self_check text against its own structured fields after the DEF-PO03-WA-010-04 correction moved the payload",
+      "observed_defect": "Three figures in the self-check prose still described the superseded payload: '29 changed paths from the immutable base' when the count was 30, and '28 artifacts totalling 317637 bytes' when the manifest totalled 319755. The structured fields were all correct. Nothing compared the two, so a regeneration that moved a number left the sentence describing it behind, and a proof-read missed it twice.",
+      "why_it_matters": "The self-check is where a producer states why it believes it satisfied the contract. A coordinator reading stale figures there cannot tell a bookkeeping lag from a boundary breach, and the discrepancy discredits the figures that are right.",
+      "change": "Added result/check_return_consistency.py. Twelve cross-field checks compare fields that must agree, including the read-back manifest label against the declared manifest path, and seven narrative checks require each restated figure to appear literally in the sentence restating it. The return generator now interpolates these figures from the manifest and the changed-path record instead of carrying literals.",
+      "measured_effect": {
+        "findings_against_the_superseded_return": 3,
+        "finding_ids": ["RC-X04", "RC-N01", "RC-N03"],
+        "findings_against_the_corrected_return": 0,
+        "admission_decisions_changed": 0
+      },
+      "recurrence_tests": [
+        "tests/test_return_consistency.py::ReturnConsistencyTest::test_a_stale_changed_path_figure_is_caught",
+        "tests/test_return_consistency.py::ReturnConsistencyTest::test_a_stale_byte_total_is_caught",
+        "tests/test_return_consistency.py::ReturnConsistencyTest::test_a_stale_readback_count_is_caught",
+        "tests/test_return_consistency.py::CommittedReturnTest::test_the_committed_return_is_internally_consistent"
+      ],
+      "verified_by_recurrence": true,
+      "limitation": "The narrative checks are keyed to the assertions this unit writes. A reworded assertion is reported as MISSING_ASSERTION rather than silently skipped, but a figure restated in prose the rules do not name is not covered.",
+      "disposition": "RETAIN"
     }
   ],
   "defects_and_rework": [
@@ -86,6 +126,22 @@
       "found_by": "Executing the determinism claim instead of asserting it: clone the pushed branch, re-run build_evidence.py, then 'git status --porcelain'.",
       "resolution": "L12 rewritten to name both drifting artifacts, to state that four of six regenerated artifacts were byte-identical, and to carry the measurement method. This correction is the reason for the second payload and return commit on this branch.",
       "mechanism_changed": false
+    },
+    {
+      "defect_id": "DEF-PO03-WA-010-05",
+      "kind": "PRODUCER_ARTIFACT_MISLABEL",
+      "detail": "The read-back record embedded in the first two returns reported manifest_path as 'po03/wave-a/units/wa-010/result/artifact-manifest.json'. Splitting the absolute path on 'workstreams/' consumed the prefix, so the label named a path that exists in no commit. Every digest and byte count in the same record was correct.",
+      "found_by": "Verifying the pushed return from a fresh bare clone rather than from the producer's worktree, then checking the record's own path label against the paths it says it read",
+      "resolution": "Fixed in MC-PO03-WA-010-04 and pinned by four recurrence tests. RC-X04 in the new consistency checker fails on the superseded document and passes on the corrected one.",
+      "mechanism_changed": true
+    },
+    {
+      "defect_id": "DEF-PO03-WA-010-06",
+      "kind": "PRODUCER_RETURN_FIGURE_STALE",
+      "detail": "After the DEF-PO03-WA-010-04 correction moved the payload commit, three figures restated in acceptance_self_check prose still described the superseded payload: 29 changed paths where the count was 30, and 28 artifacts totalling 317637 bytes where the manifest totalled 319755. The corresponding structured fields were correct throughout, so no digest or read-back check could detect the disagreement.",
+      "found_by": "Reading the pushed return back and comparing its prose against its own structured fields, which is now the RC-N rule family",
+      "resolution": "Fixed in MC-PO03-WA-010-05: the generator interpolates the figures from the manifest and the changed-path record, and the checker refuses a return whose prose and fields disagree. This correction is the reason for the third payload and return commit on this branch.",
+      "mechanism_changed": true
     }
   ],
   "design_decisions": [

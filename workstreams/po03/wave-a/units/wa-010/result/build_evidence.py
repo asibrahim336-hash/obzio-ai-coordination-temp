@@ -6,8 +6,10 @@ registry, the audit on the deliberately overlapping fixture, the decision matrix
 over every fixture change, and the sanitized pre-commit reproduction.  Nothing is
 transcribed by hand, so a reviewer can re-run it from a clean clone and compare.
 
-The only non-deterministic output is ``test-output.txt``, which carries unittest's
-own wall-clock line; every JSON artifact is byte-stable.
+Two outputs are not byte-stable across runs and ``result/limitations.json`` entry
+L12 records the measurement: ``test-output.txt`` carries unittest's own wall-clock
+line, and ``source-claims.json`` carries the producer HEAD present when it was
+generated.  The other four JSON artifacts are byte-identical on regeneration.
 """
 
 from __future__ import annotations
@@ -406,12 +408,22 @@ def build_test_output() -> tuple[str, dict[str, Any]]:
         cwd=str(REPO_ROOT),
     )
     text = completed.stdout + completed.stderr
-    passed = text.rstrip().endswith("OK")
     ran = 0
+    skipped = 0
     for line in text.splitlines():
         if line.startswith("Ran ") and " test" in line:
             ran = int(line.split()[1])
-    return text, {"exit_code": completed.returncode, "tests_run": ran, "passed": passed}
+        if line.startswith("OK (skipped="):
+            skipped = int(line[len("OK (skipped=") :].rstrip(")"))
+    # A skipped case still reports OK, but unittest appends the skip count to the
+    # line, so a bare endswith("OK") reads a clean run as a failure.
+    passed = completed.returncode == 0
+    return text, {
+        "exit_code": completed.returncode,
+        "tests_run": ran,
+        "skipped": skipped,
+        "passed": passed,
+    }
 
 
 def main() -> int:
