@@ -1,0 +1,39 @@
+$ python3 idempotent_callback.py --demo
+{
+  "allocations": 1,
+  "conflicting_body_under_same_key": {
+    "message": "idempotency key 'k1' was first seen with digest 20c4ee07198aa2b45d8a9346c7978e128d8cf2a0bef0611c5ea977276f478ca4 but is now presented with b1a73a317f36916e4c42b7f11b0193546f02a118b668070c75d7873f853c9cdb",
+    "raised": "IdempotencyConflict"
+  },
+  "created": 1,
+  "deliveries": 32,
+  "distinct_result_txn_ids": [
+    "rtxn-1d1237b44e4fe2b1"
+  ],
+  "duplicates_ignored": 31,
+  "ledger_created_events": 1,
+  "transactions_in_store": 1
+}
+exit=0
+
+$ python3 -m unittest -v test_idempotent_callback
+test_concurrent_duplicate_storm_creates_exactly_one_transaction (test_idempotent_callback.ConcurrentDuplicateTests.test_concurrent_duplicate_storm_creates_exactly_one_transaction) ... ok
+test_ledger_records_every_delivery_but_only_one_creation (test_idempotent_callback.ConcurrentDuplicateTests.test_ledger_records_every_delivery_but_only_one_creation) ... ok
+test_conflict_does_not_overwrite_the_stored_result (test_idempotent_callback.ConflictTests.test_conflict_does_not_overwrite_the_stored_result) ... ok
+test_empty_key_is_refused (test_idempotent_callback.ConflictTests.test_empty_key_is_refused) ... ok
+test_same_key_different_body_is_a_conflict_not_a_duplicate (test_idempotent_callback.ConflictTests.test_same_key_different_body_is_a_conflict_not_a_duplicate) ... ok
+test_dedupe_survives_receiver_restart (test_idempotent_callback.DurabilityTests.test_dedupe_survives_receiver_restart) ... ok
+test_guarded_receiver_survives_the_identical_race (test_idempotent_callback.NegativeControlTests.test_guarded_receiver_survives_the_identical_race) ... ok
+test_naive_receiver_creates_two_transactions_under_the_same_race (test_idempotent_callback.NegativeControlTests.test_naive_receiver_creates_two_transactions_under_the_same_race) ... ok
+test_delivery_count_is_observable (test_idempotent_callback.SequentialDuplicateTests.test_delivery_count_is_observable) ... ok
+test_distinct_keys_create_distinct_transactions (test_idempotent_callback.SequentialDuplicateTests.test_distinct_keys_create_distinct_transactions) ... ok
+test_duplicate_does_not_mutate_the_stored_result (test_idempotent_callback.SequentialDuplicateTests.test_duplicate_does_not_mutate_the_stored_result) ... ok
+test_first_delivery_creates_exactly_one_transaction (test_idempotent_callback.SequentialDuplicateTests.test_first_delivery_creates_exactly_one_transaction) ... ok
+test_key_ordering_and_whitespace_do_not_defeat_dedupe (test_idempotent_callback.SequentialDuplicateTests.test_key_ordering_and_whitespace_do_not_defeat_dedupe) ... ok
+test_repeat_deliveries_return_the_same_transaction_id (test_idempotent_callback.SequentialDuplicateTests.test_repeat_deliveries_return_the_same_transaction_id) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 0.114s
+
+OK
+exit=0
