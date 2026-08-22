@@ -15,6 +15,7 @@ result.json.
 from __future__ import annotations
 
 import json
+import subprocess
 import unittest
 from pathlib import Path
 
@@ -29,12 +30,17 @@ from harness.emit_result import (
     RESULT_EXCLUDED,
     UNIT_ROOT,
     artifact_accounting,
+    branch_base,
     build_manifest,
     describe,
+    git_output,
     owned_file_total,
     owned_files,
     parse_unittest_output,
 )
+from harness.seeded import repository_root
+
+OWNED_SUBTREE = "workstreams/po03/wave-a/units/wa-016/"
 
 
 class InventoryTests(unittest.TestCase):
@@ -226,6 +232,44 @@ class TestOutputParsingTests(unittest.TestCase):
         self.assertEqual(parsed["total"], parsed["per_module_total"])
         self.assertEqual(parsed["per_module_total"], sum(parsed["outcome_histogram"].values()))
         self.assertEqual(sorted(parsed["per_module"]), [p.stem for p in sorted((UNIT_ROOT / "tests").glob("test_*.py"))])
+
+
+class BranchBaseTests(unittest.TestCase):
+    """Ownership must be judged against the dispatch branch, not the ancestor.
+
+    The preregistration commit carries all 64 frozen Wave A inputs.  Diffing past
+    it reports 150-odd paths the coordinator wrote as though this unit had touched
+    them, which is a false ownership violation rather than a real one.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        try:
+            cls.base = branch_base()
+        except (subprocess.CalledProcessError, OSError, SystemExit) as exc:
+            raise unittest.SkipTest(f"base branch unresolvable: {exc}") from exc
+
+    def test_the_base_is_an_ancestor_of_the_current_head(self):
+        subprocess.run(
+            ["git", "-C", str(repository_root()), "merge-base", "--is-ancestor", self.base, "HEAD"],
+            check=True,
+            timeout=120,
+        )
+
+    def test_the_diff_from_the_base_names_only_this_units_subtree(self):
+        changed = git_output("diff", "--name-only", f"{self.base}..HEAD").split()
+        self.assertTrue(changed)
+        outside = [path for path in changed if not path.startswith(OWNED_SUBTREE)]
+        self.assertEqual([], outside)
+
+    def test_the_base_itself_carries_the_frozen_inputs_this_unit_must_not_own(self):
+        listing = git_output("ls-tree", "-r", "--name-only", self.base, "workstreams/po03/control/").split()
+        self.assertIn("workstreams/po03/control/inputs/wave-a/wa-016.json", listing)
+        # Already present in the base, so it cannot appear in this unit's diff.
+        self.assertNotIn(
+            "workstreams/po03/control/inputs/wave-a/wa-016.json",
+            git_output("diff", "--name-only", f"{self.base}..HEAD").split(),
+        )
 
 
 class EmitterDisciplineTests(unittest.TestCase):

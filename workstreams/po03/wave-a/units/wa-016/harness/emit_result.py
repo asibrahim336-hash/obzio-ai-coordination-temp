@@ -51,6 +51,7 @@ RESULT_EXCLUDED = ("result/result.json", *MANIFEST_EXCLUDED)
 TASK_ID = "PO03-WA-016"
 RUNNER_ID = "best-of-n-runner-bc-b1956656-wa-016-a01"
 REMOTE_BRANCH = "cursor/po03-wa-016-b195-a01-1a9f"
+BASE_BRANCH = "cursor/po03-wave-a-b195-1a9f"
 
 # Observed runtime bindings, not claims about authority.
 MODEL_OBSERVED = "claude-opus-5-thinking-high"
@@ -837,6 +838,21 @@ def git_output(*args: str) -> str:
     ).stdout
 
 
+def branch_base() -> str:
+    """The commit this runner branched from.
+
+    Ownership is judged against the dispatch branch, not against the protocol
+    ancestor: the preregistration commit already carries all 64 frozen inputs, and
+    diffing past it would attribute the coordinator's writes to this unit.
+    """
+    for ref in (f"origin/{BASE_BRANCH}", BASE_BRANCH):
+        try:
+            return git_output("merge-base", "HEAD", ref).strip()
+        except subprocess.CalledProcessError:
+            continue
+    raise SystemExit(f"cannot resolve the base branch {BASE_BRANCH}")
+
+
 def read_back_from_remote(result_commit: str) -> dict[str, Any]:
     """Read every artifact back from the immutable remote commit.
 
@@ -925,11 +941,15 @@ def build_ready(result_commit: str) -> dict[str, Any]:
     readback = read_back_from_remote(result_commit)
     subtree = manifest["owned_subtree"]
 
-    changed = [
+    # Every path this unit changed, across all of its commits, not just the last
+    # one: ownership is a property of the branch, not of one commit.
+    base = branch_base()
+    changed = sorted(set(git_output("diff", "--name-only", f"{base}..{result_commit}").split()))
+    in_result_commit = sorted(
         line.split("\t", 1)[1]
         for line in git_output("show", "--name-status", "--pretty=format:", result_commit).splitlines()
         if "\t" in line
-    ]
+    )
     outside = [path for path in changed if not path.startswith(f"{subtree}/")]
 
     return {
@@ -949,11 +969,21 @@ def build_ready(result_commit: str) -> dict[str, Any]:
         "artifact_count": manifest["artifact_count"],
         "total_bytes": manifest["total_bytes"],
         "changed_files": {
+            "compared_against": base,
+            "compared_against_description": "the Wave A preregistration commit this runner branched from",
             "count": len(changed),
             "inside_owned_subtree": len(changed) - len(outside),
             "outside_owned_subtree": len(outside),
             "paths_outside_owned_subtree": outside,
-            "paths": sorted(changed),
+            "paths": changed,
+            "in_the_result_commit_alone": in_result_commit,
+            "commits": [
+                {"commit": line.split(" ", 1)[0], "subject": line.split(" ", 1)[1]}
+                for line in git_output(
+                    "log", "--pretty=format:%H %s", f"{base}..{result_commit}"
+                ).splitlines()
+                if " " in line
+            ],
         },
         "ownership_validation": {
             "allowed_write_globs": task_input(repo)["ownership"]["allowed_write_globs"],
