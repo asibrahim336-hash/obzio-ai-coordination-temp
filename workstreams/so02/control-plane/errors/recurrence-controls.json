@@ -48,7 +48,9 @@
       "live_mechanism": "Write-before-complete, hashes, remote read-back, parent ingestion, leases, fences and replay",
       "executable_check": "completed_requires_committed_readback_ingested_result",
       "owner": "SCF-01/CUR-01",
-      "mechanism_maturity": "UNIT_TESTED_NOT_LIVE"
+      "mechanism_maturity": "LIVE_CANARY",
+      "latest_evidence_receipt": "receipts/so02/2026-08-22/po03-reconciliation-20260822T074356Z.json",
+      "latest_live_observation": "THREE_SUBSTANTIVE_RESULTS_COMMITTED_READ_BACK_AND_PARENT_INGESTED_WITH_COMPLETION_AND_ACCEPTANCE_WITHHELD"
     },
     {
       "error_id": "ERR-FOUNDER-RELAY",
@@ -112,7 +114,16 @@
       "live_mechanism": "Every parent uses an isolated immutable branch and namespace; an independently selected integration controller alone writes shared projections after candidate read-back",
       "executable_check": "multi_parent_run_requires_unique_parent_ids_isolated_paths_and_single_integration_writer",
       "owner": "SCF-01/CUR-01",
-      "mechanism_maturity": "UNIT_TESTED_NOT_LIVE"
+      "mechanism_maturity": "LIVE_CANARY",
+      "latest_evidence_receipt": "receipts/so02/2026-08-22/po03-reconciliation-20260822T074356Z.json",
+      "latest_live_defect": {
+        "state": "PO03_CONCURRENT_SHARED_WORKTREE_INDEX_BRANCH_COLLISION_OBSERVED",
+        "observed_head": "02ab960bd234404d0d0ea232093ab6cd3f26d4fc",
+        "source_receipt": "receipts/po03/2026-08-22/wave-a-shared-worktree-collision-001.json",
+        "controller_response": "DISPATCH_SUSPENDED_SAFE_NEW_DISPATCH_CEILING_ZERO",
+        "live_canary": "TWO_PROVIDER_ADMITTED_UNITS_RUNNING_IN_DISTINCT_CLONES_WITH_DISTINCT_RESULT_SLOTS",
+        "control_not_promoted_reason": "The isolated-route mechanism is now a live canary, but neither canary has produced a committed, read-back, parent-ingested result and the concurrent zero-collision criterion has not yet passed."
+      }
     }
   ]
 }

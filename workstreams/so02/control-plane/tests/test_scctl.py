@@ -30,7 +30,7 @@ class ControlPlaneTests(unittest.TestCase):
 
     def test_project_rebuilds_from_event_head(self) -> None:
         projection = scctl.project(self.root)
-        self.assertEqual(7, projection["event_count"])
+        self.assertEqual(10, projection["event_count"])
         self.assertEqual("ACTIVE_INTERIM", projection["subjects"]["SCF-01/CGPT-01"]["state"])
 
     def test_event_chain_is_valid(self) -> None:
@@ -171,6 +171,24 @@ class ControlPlaneTests(unittest.TestCase):
         errors: list[str] = []
         scctl.validate_controls(controls, errors)
         self.assertTrue(any("missing executable_check" in item for item in errors))
+
+    def test_lost_result_control_reached_live_canary_after_worker_ingestion(self) -> None:
+        controls = scctl.read_json(self.root / "errors/recurrence-controls.json")
+        lost_result = next(item for item in controls["controls"] if item["error_id"] == "ERR-LOST-RESULT")
+        self.assertEqual("LIVE_CANARY", lost_result["mechanism_maturity"])
+
+    def test_po03_collision_remains_durable_while_isolation_live_canary_runs(self) -> None:
+        po03 = next(item for item in self.control["protected_workstreams"] if item["workstream_id"] == "PO-03")
+        self.assertIn("SHARED_WORKTREE_COLLISION", po03["state"])
+        self.assertIn("SHARED_ROUTE_DISPATCH_SUSPENDED", po03["state"])
+        self.assertIn("LIVE_VALIDATION_INCOMPLETE", po03["state"])
+        controls = scctl.read_json(self.root / "errors/recurrence-controls.json")
+        shared_writer = next(item for item in controls["controls"] if item["error_id"] == "ERR-MULTI-PARENT-SHARED-WRITER")
+        self.assertEqual("LIVE_CANARY", shared_writer["mechanism_maturity"])
+        self.assertEqual(
+            "PO03_CONCURRENT_SHARED_WORKTREE_INDEX_BRANCH_COLLISION_OBSERVED",
+            shared_writer["latest_live_defect"]["state"],
+        )
 
     def test_strategy_decision_event_requires_founder_binding(self) -> None:
         events = scctl.read_jsonl(self.root / "state/events.jsonl")
