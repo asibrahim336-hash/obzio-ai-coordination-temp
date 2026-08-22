@@ -1054,11 +1054,57 @@ def _load_validator():
     return module
 
 
+def _reject(
+    unit_id: str,
+    detail: str,
+    *,
+    fence_token: int | None = None,
+    extra: dict[str, Any] | None = None,
+    rejection_event: str | None = None,
+) -> None:
+    """Record a rejection durably, then refuse the result.
+
+    Raising without recording was the defect: the unit stayed in whatever state
+    it was already in and the rejection was invisible to recovery, so an
+    operator reading the ledger could not tell that a result had been refused.
+    Every rejection now leaves a RECOVERY_REQUIRED row carrying its reason.
+    """
+    payload = dict(extra or {})
+    payload.setdefault("reason", detail)
+    payload["detail"] = detail
+    try:
+        if rejection_event:
+            append_event(
+                unit_id,
+                rejection_event,
+                actor=COORDINATOR,
+                fence_token=fence_token,
+                payload=payload,
+            )
+        append_event(
+            unit_id,
+            "RECOVERY_REQUIRED",
+            actor=COORDINATOR,
+            fence_token=fence_token,
+            payload={
+                "reason": payload.get("reason"),
+                "detail": detail,
+                "rejected_by": "ingest_result",
+                "rejection_event": rejection_event,
+            },
+        )
+    except ControlPlaneError as exc:
+        # The rejection itself must never be swallowed by a bookkeeping failure.
+        raise ControlPlaneError(f"{detail} (and the rejection could not be recorded: {exc})") from exc
+    raise ControlPlaneError(detail)
+
+
 def ingest_result(
     result_doc: dict[str, Any],
     *,
     artifact_root: Path,
     reviewer_required: bool = True,
+    repo: Path | None = None,
 ) -> dict[str, Any]:
     """Verify a subordinate result and admit it into shared custody.
 
@@ -1076,17 +1122,39 @@ def ingest_result(
     if unit is None:
         raise ControlPlaneError(f"unknown unit: {unit_id}")
 
+    # A fence token is a capability the coordinator issued, not an integer the
+    # worker chose.  Comparing only ``incoming < current`` made a larger number
+    # strictly safer than the truth, so a worker could escalate its own
+    # ownership by naming any higher value.
     incoming_fence = int(result_doc["attempt"]["fence_token"])
-    if incoming_fence < unit["fence_token"]:
-        append_event(
+    issued = list(unit.get("issued_fence_tokens") or [])
+    current = max(issued) if issued else None
+    if incoming_fence != current:
+        if current is None:
+            reason = "no lease was ever issued for this unit, so no fence token was ever issued"
+            detail = f"fence token {incoming_fence} was never issued: {reason}"
+        elif incoming_fence not in issued:
+            reason = "fence token was never issued in a coordinator LEASED event for this unit"
+            detail = (
+                f"fence token {incoming_fence} was never issued; "
+                f"the coordinator issued {issued} and the current lease is {current}"
+            )
+        else:
+            reason = "stale worker after ownership transfer"
+            detail = (
+                f"stale fence token {incoming_fence} < {current}; refusing commit from evicted worker"
+            )
+        _reject(
             unit_id,
-            "FENCE_REJECTED",
-            actor="coordinator",
-            fence_token=unit["fence_token"],
-            payload={"rejected_fence_token": incoming_fence, "reason": "stale worker after ownership transfer"},
-        )
-        raise ControlPlaneError(
-            f"stale fence token {incoming_fence} < {unit['fence_token']}; refusing commit from evicted worker"
+            detail,
+            fence_token=current,
+            extra={
+                "rejected_fence_token": incoming_fence,
+                "reason": reason,
+                "issued_fence_tokens": issued,
+                "current_fence_token": current,
+            },
+            rejection_event="FENCE_REJECTED",
         )
 
     dispatch_path = DISPATCH_DIR / f"{unit_id}.json"
