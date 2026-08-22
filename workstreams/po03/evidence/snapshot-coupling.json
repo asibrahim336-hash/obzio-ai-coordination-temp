@@ -72,5 +72,39 @@
     "result": "All four merged with zero conflicts.",
     "interpretation": "This is direct evidence for the ownership design and it corroborates cohort a9's upheld assumption that disjoint ownership prefixes structurally prevent worker-path collisions. A conflict would itself have been the signal of an ownership violation, so the clean merge is the positive result rather than merely an absence of trouble.",
     "path_collisions": 0
+  },
+  "escalation": {
+    "escalated_at": "2026-08-22T07:50:00Z",
+    "from": "two cohorts' test bugs",
+    "to": "SYSTEMIC_DEFECT_CLASS — the most replicated finding of Wave A",
+    "instance_count": 8,
+    "instances_by_cohort_and_family": {
+      "po03-worker-a6 (gpt-5.6-luna-high)": [
+        "test_missing_result_is_not_invented (fixed)",
+        "test_a7_artifacts_match_but_declared_result_commit_lacks_record (open)"
+      ],
+      "po03-worker-a9 (gpt-5.6-sol-xhigh)": [
+        "four tests, all fixed by pinning to immutable commits"
+      ],
+      "po03-worker-a7 (claude-sonnet-5-thinking-high)": [
+        "test_recomputation_matches_committed_report_except_generation_metadata (open)",
+        "test_recomputation_matches_committed_report (open)"
+      ],
+      "coordinator (claude-opus-5-thinking-max)": [
+        "source-capsule-drift.json recorded a current hash that was stale in the commit that introduced it"
+      ]
+    },
+    "distinct_model_families_affected": 4,
+    "why_this_is_not_carelessness": "Cohort a7 explicitly reported having already fixed this staleness twice in its own artifacts during its session, and still shipped two tests with the same coupling. Cohort a9 discovered the defect class in the coordinator's dispatch capsule and then reproduced it in four of its own tests. The coordinator reproduced it inside the very document written to describe it. Four independent frontier configurations, each warned or self-aware, all produced it. That is a property of the primitive, not a property of the writers: asserting equality between a recorded snapshot and a live recomputation is simply unsound whenever the measured state can change, and it fails in the direction that looks like a regression.",
+    "generalised_root_cause": "Identical to the source-capsule defect. A hash or value taken from mutable shared state is not a pin. Only (path, blob SHA, commit SHA) or a ledger head hash is a pin.",
+    "binding_operating_rule": {
+      "rule": "Any PO-03 test or report that derives a value from shared mutating state — the ledger, the unit population, the pointer chain, another cohort's branch — must either assert an invariant, or assert reproduction at an explicitly recorded immutable pin: a commit SHA for files, or the ledger head row_sha256 for ledger-derived values.",
+      "never": "Assert that a recomputation against live state equals a previously committed record.",
+      "also_never": "Assert that a defect currently exists, because the test then fails when the defect is fixed. Assert instead that the detector flags a synthetic instance.",
+      "applies_to": "every cohort including the coordinator",
+      "enforcement": "a6's mutation-based false-green detector plus review; a candidate for a mechanical check in a successor generation"
+    },
+    "why_the_fix_is_cheap_here": "Cohort a7 already records the exact ledger head it measured against, row_sha256 1db35dd1b4daa67da32f3bb0fffb4998890d435db05cbd6a930480f0c5804fa0 at 319 rows. Its two failing tests can assert reproduction at that recorded head rather than against the live ledger, which is a small change that makes the assertion permanently true and still falsifiable.",
+    "successor_relevance": "This is the strongest candidate for a lesson that changes a live mechanism in the G2 successor, because it is independently replicated across four model families and has a concrete mechanical remedy."
   }
 }
