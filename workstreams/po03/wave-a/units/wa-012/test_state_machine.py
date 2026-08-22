@@ -1,6 +1,7 @@
 import copy
 import importlib.util
 import json
+import shutil
 import sys
 import tempfile
 import unittest
@@ -14,6 +15,24 @@ MODULE = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
 sys.modules[SPEC.name] = MODULE
 SPEC.loader.exec_module(MODULE)
+
+SOURCE_SPEC = importlib.util.spec_from_file_location(
+    "wa012_compile_source_capsule",
+    UNIT_DIR / "compile_source_capsule.py",
+)
+SOURCE_MODULE = importlib.util.module_from_spec(SOURCE_SPEC)
+assert SOURCE_SPEC.loader is not None
+sys.modules[SOURCE_SPEC.name] = SOURCE_MODULE
+SOURCE_SPEC.loader.exec_module(SOURCE_MODULE)
+
+VERIFY_SPEC = importlib.util.spec_from_file_location(
+    "wa012_verify_artifacts",
+    UNIT_DIR / "verify_artifacts.py",
+)
+VERIFY_MODULE = importlib.util.module_from_spec(VERIFY_SPEC)
+assert VERIFY_SPEC.loader is not None
+sys.modules[VERIFY_SPEC.name] = VERIFY_MODULE
+VERIFY_SPEC.loader.exec_module(VERIFY_MODULE)
 
 H = "a" * 64
 C = "b" * 40
@@ -264,6 +283,38 @@ class ArtifactAndReproductionTests(unittest.TestCase):
             observed = json.loads(output.read_text(encoding="utf-8"))
         self.assertEqual(0, exit_code)
         self.assertTrue(observed["summary"]["all_expectations_matched"])
+
+    def test_source_capsule_recompiles_from_pinned_commit(self):
+        repo = UNIT_DIR.parents[4]
+        expected = json.loads(
+            (UNIT_DIR / "source-capsule.json").read_text(encoding="utf-8")
+        )
+        observed = SOURCE_MODULE.compile_capsule(repo)
+        self.assertEqual(expected, observed)
+        self.assertTrue(observed["all_declared_pins_match"])
+        self.assertEqual(25, observed["source_count"])
+
+    def test_complete_artifact_manifest_verifies(self):
+        manifest = json.loads(
+            (UNIT_DIR / "artifact-manifest.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual([], VERIFY_MODULE.verify(UNIT_DIR, manifest))
+
+    def test_artifact_manifest_detects_one_tamper(self):
+        manifest = json.loads(
+            (UNIT_DIR / "artifact-manifest.json").read_text(encoding="utf-8")
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            copy = Path(directory) / "wa-012"
+            shutil.copytree(
+                UNIT_DIR,
+                copy,
+                ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
+            )
+            target = copy / "transition-matrix.json"
+            target.write_bytes(target.read_bytes() + b"\n")
+            errors = VERIFY_MODULE.verify(copy, manifest)
+        self.assertTrue(any("transition-matrix.json" in error for error in errors))
 
 
 if __name__ == "__main__":

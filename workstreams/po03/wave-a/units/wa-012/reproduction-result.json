@@ -1,0 +1,195 @@
+{
+  "case_results": [
+    {
+      "case_id": "valid-producer-return",
+      "expected": {
+        "final_state": "RESULT_COMMITTED",
+        "status": "VALID"
+      },
+      "hypothesis_ids": [
+        "CMH-PO03-WA-012-001",
+        "CMH-PO03-WA-012-002"
+      ],
+      "matched": true,
+      "observed": {
+        "event_count": 6,
+        "snapshot": {
+          "checkpoint_seq": 1,
+          "current_fence": 2,
+          "evidence": {
+            "artifact_count": 3,
+            "immutable_readback_verified": false,
+            "ingestion_receipt": null,
+            "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "manifest_verified": true,
+            "remote_branch": "cursor/sanitized-return",
+            "result_commit_id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "total_bytes": 42
+          },
+          "producer_id": "runner-sanitized",
+          "state": "RESULT_COMMITTED"
+        },
+        "status": "VALID"
+      }
+    },
+    {
+      "case_id": "reject-skipped-transition",
+      "expected": {
+        "error_code": "ILLEGAL_TRANSITION",
+        "failing_event_index": 0,
+        "status": "REJECTED"
+      },
+      "hypothesis_ids": [
+        "CMH-PO03-WA-012-001"
+      ],
+      "matched": true,
+      "observed": {
+        "error": {
+          "code": "ILLEGAL_TRANSITION",
+          "message": "RUNNING -> RESULT_STAGED is not an allowed edge"
+        },
+        "failing_event_index": 0,
+        "snapshot": {
+          "checkpoint_seq": 0,
+          "current_fence": 2,
+          "evidence": {
+            "artifact_count": 0,
+            "immutable_readback_verified": false,
+            "ingestion_receipt": null,
+            "manifest_sha256": null,
+            "manifest_verified": false,
+            "remote_branch": null,
+            "result_commit_id": null,
+            "total_bytes": 0
+          },
+          "producer_id": "runner-sanitized",
+          "state": "RUNNING"
+        },
+        "status": "REJECTED"
+      }
+    },
+    {
+      "case_id": "reject-regressive-transition",
+      "expected": {
+        "error_code": "ILLEGAL_TRANSITION",
+        "failing_event_index": 0,
+        "status": "REJECTED"
+      },
+      "hypothesis_ids": [
+        "CMH-PO03-WA-012-001"
+      ],
+      "matched": true,
+      "observed": {
+        "error": {
+          "code": "ILLEGAL_TRANSITION",
+          "message": "RESULT_VERIFIED -> RESULT_STAGED is not an allowed edge"
+        },
+        "failing_event_index": 0,
+        "snapshot": {
+          "checkpoint_seq": 1,
+          "current_fence": 2,
+          "evidence": {
+            "artifact_count": 3,
+            "immutable_readback_verified": false,
+            "ingestion_receipt": null,
+            "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "manifest_verified": true,
+            "remote_branch": null,
+            "result_commit_id": null,
+            "total_bytes": 42
+          },
+          "producer_id": "runner-sanitized",
+          "state": "RESULT_VERIFIED"
+        },
+        "status": "REJECTED"
+      }
+    },
+    {
+      "case_id": "reject-worker-completed",
+      "expected": {
+        "error_code": "ACTOR_NOT_AUTHORIZED",
+        "failing_event_index": 0,
+        "status": "REJECTED"
+      },
+      "hypothesis_ids": [
+        "CMH-PO03-WA-012-001"
+      ],
+      "matched": true,
+      "observed": {
+        "error": {
+          "code": "ACTOR_NOT_AUTHORIZED",
+          "message": "role 'worker' cannot perform PARENT_INGESTED -> COMPLETED"
+        },
+        "failing_event_index": 0,
+        "snapshot": {
+          "checkpoint_seq": 1,
+          "current_fence": 2,
+          "evidence": {
+            "artifact_count": 3,
+            "immutable_readback_verified": true,
+            "ingestion_receipt": "receipt:sanitized",
+            "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "manifest_verified": true,
+            "remote_branch": "cursor/sanitized-return",
+            "result_commit_id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "total_bytes": 42
+          },
+          "producer_id": "runner-sanitized",
+          "state": "PARENT_INGESTED"
+        },
+        "status": "REJECTED"
+      }
+    },
+    {
+      "case_id": "reject-stale-fence-after-transfer",
+      "expected": {
+        "error_code": "STALE_FENCE",
+        "failing_event_index": 0,
+        "status": "REJECTED"
+      },
+      "hypothesis_ids": [
+        "CMH-PO03-WA-012-002"
+      ],
+      "matched": true,
+      "observed": {
+        "error": {
+          "code": "STALE_FENCE",
+          "message": "event fence 1 is older than current fence 2"
+        },
+        "failing_event_index": 0,
+        "snapshot": {
+          "checkpoint_seq": 0,
+          "current_fence": 2,
+          "evidence": {
+            "artifact_count": 0,
+            "immutable_readback_verified": false,
+            "ingestion_receipt": null,
+            "manifest_sha256": null,
+            "manifest_verified": false,
+            "remote_branch": null,
+            "result_commit_id": null,
+            "total_bytes": 0
+          },
+          "producer_id": "runner-sanitized",
+          "state": "LEASED"
+        },
+        "status": "REJECTED"
+      }
+    }
+  ],
+  "fixture_id": "OBZIO-SANITIZED-PO03-WA-012-001",
+  "hypothesis_outcome": "SUPPORTED",
+  "mechanism_version": "PO03-WA-012-STATE-MACHINE-v1",
+  "protocol_version": "OBZIO-SANITIZED-REPRODUCTION-v1",
+  "sanitization": {
+    "contains_credentials": false,
+    "contains_personal_data": false,
+    "contains_production_identifiers": false,
+    "description": "Synthetic Obzio custody lifecycle with non-production actors, branch, commit, receipt, and digest values."
+  },
+  "summary": {
+    "all_expectations_matched": true,
+    "case_count": 5,
+    "matched_count": 5
+  }
+}
