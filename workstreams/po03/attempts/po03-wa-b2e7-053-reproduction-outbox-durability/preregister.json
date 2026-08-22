@@ -1,0 +1,17 @@
+{
+  "protocol": "PO03-REPRODUCTION-v1",
+  "hypothesis_id": "H-004",
+  "hypothesis": "A committed outbox plus hash-verified read-back recovers every result after injected return-channel loss.",
+  "registered_at": "2026-08-22T07:12:00Z",
+  "seed": 53053,
+  "sample_size": 200,
+  "injected_return_loss_probability": 0.35,
+  "matched_arms": [
+    "report_only",
+    "transactional_outbox_with_readback"
+  ],
+  "primary_metric": "recovered_result_fraction",
+  "accept_when": "outbox recovered_result_fraction == 1.0 and report_only recovered_result_fraction < 1.0 and outbox hash_mismatches == 0",
+  "refute_when": "outbox recovered_result_fraction < 1.0 or report_only recovered_result_fraction == 1.0 or outbox hash_mismatches > 0",
+  "decision_changed": []
+}
