@@ -1,0 +1,111 @@
+{
+  "comparison": {
+    "fastest_zero_collision_throughput": 3.363636,
+    "fastest_zero_collision_topology": "T4-CONTENT-FANIN",
+    "finding": "A singleton final promotion authority is a safety property, not by itself the throughput unit. Sharding or batching verification changes throughput while preserving one final authority.",
+    "limitation": "These are deterministic operation-count measurements on the committed Wave A shape, not production latency or acceptance evidence.",
+    "simulated_safe_throughput_ratio": 3.545454,
+    "slowest_zero_collision_throughput": 0.948718,
+    "slowest_zero_collision_topology": "T1-CENTRAL-SERIAL"
+  },
+  "decision_changed": [],
+  "failure_fixture": {
+    "downtime_ticks": 3,
+    "durable_inputs_survive": true,
+    "failure": "one pre-commit integration crash after the first quarter of items",
+    "failure_after_items": 18
+  },
+  "metric_definitions": {
+    "collision_attempts": "losing simultaneous attempts to mutate the same coordination head",
+    "makespan_ticks": "abstract service ticks through recovery and all 74 integrations",
+    "replayed_integration_items": "references or integration operations retried after the injected crash",
+    "result_loss_count": "durable worker results absent after recovery",
+    "throughput_units_per_tick": "completed_units / makespan_ticks"
+  },
+  "model": "deterministic discrete-event operation-count simulation",
+  "proposal": {
+    "applied_to_active_wave": false,
+    "binding_state": "PROPOSAL_ONLY",
+    "decision_changed": [],
+    "founder_interlock": "REQUIRED_BEFORE_ANY_STRATEGY_DECISION",
+    "proposal": "Evaluate T4 content-addressed batched fan-in and T2 cohort sharding in a successor recurrence test while retaining T1 for active Wave A.",
+    "proposal_id": "P-TOPOLOGY-SUCCESSOR-01"
+  },
+  "results": [
+    {
+      "artifact_reexecution_count": 0,
+      "collision_attempts": 0,
+      "completed_units": 74,
+      "makespan_ticks": 78,
+      "recovery_to_success_ticks": 4,
+      "replayed_integration_items": 1,
+      "result_loss_count": 0,
+      "shared_mutable_write_count": 74,
+      "throughput_units_per_tick": 0.948718,
+      "topology_id": "T1-CENTRAL-SERIAL"
+    },
+    {
+      "artifact_reexecution_count": 0,
+      "collision_attempts": 0,
+      "completed_units": 74,
+      "failed_shard": "a2",
+      "makespan_ticks": 26,
+      "promotion_phase_ticks": 10,
+      "recovery_to_success_ticks": 4,
+      "replayed_integration_items": 1,
+      "result_loss_count": 0,
+      "shared_mutable_write_count": 10,
+      "throughput_units_per_tick": 2.846154,
+      "topology_id": "T2-COHORT-SHARDS",
+      "verification_phase_ticks": 16
+    },
+    {
+      "artifact_reexecution_count": 0,
+      "collision_attempts": 630,
+      "completed_units": 74,
+      "makespan_ticks": 78,
+      "recovery_to_success_ticks": 4,
+      "replayed_integration_items": 10,
+      "result_loss_count": 0,
+      "shared_mutable_write_count": 74,
+      "throughput_units_per_tick": 0.948718,
+      "topology_id": "T3-OPTIMISTIC-PEERS"
+    },
+    {
+      "artifact_reexecution_count": 0,
+      "collision_attempts": 0,
+      "completed_units": 74,
+      "immutable_staging_ticks": 8,
+      "makespan_ticks": 22,
+      "recovery_to_success_ticks": 4,
+      "reference_batch_size": 8,
+      "reference_batches": 10,
+      "replayed_integration_items": 8,
+      "result_loss_count": 0,
+      "shared_mutable_write_count": 10,
+      "throughput_units_per_tick": 3.363636,
+      "topology_id": "T4-CONTENT-FANIN"
+    }
+  ],
+  "simulation_id": "PO03-A9-TOPOLOGY-SIM-v001",
+  "unit_id": "a9-u02",
+  "workload": {
+    "all_results_available_at_tick_zero": true,
+    "cohort_counts": {
+      "a1": 8,
+      "a10": 4,
+      "a2": 12,
+      "a3": 8,
+      "a4": 8,
+      "a5": 12,
+      "a6": 6,
+      "a7": 6,
+      "a8": 6,
+      "a9": 4
+    },
+    "declared_units": 74,
+    "note": "This isolates integration topology. A tick is one abstract service opportunity, not wall-clock time.",
+    "simulated_units": 74,
+    "source": "workstreams/po03/control/wave-a-spec.json"
+  }
+}
