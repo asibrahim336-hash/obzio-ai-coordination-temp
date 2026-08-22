@@ -133,12 +133,16 @@ class LeaseFenceStore:
     @contextmanager
     def _transaction(self) -> Iterator[sqlite3.Connection]:
         connection = self._connect()
+        begun = False
         try:
             connection.execute("BEGIN IMMEDIATE")
+            begun = True
             yield connection
             connection.execute("COMMIT")
+            begun = False
         except BaseException:
-            connection.execute("ROLLBACK")
+            if begun:
+                connection.execute("ROLLBACK")
             raise
         finally:
             connection.close()
@@ -205,10 +209,10 @@ class LeaseFenceStore:
         task_id = self._text("task_id", task_id)
         owner_id = self._text("owner_id", owner_id)
         lease_id = self._text("lease_id", lease_id)
-        now = self._now()
-        expires_at = self._expiry(now, ttl_ns)
 
         with self._transaction() as connection:
+            now = self._now()
+            expires_at = self._expiry(now, ttl_ns)
             row = connection.execute(
                 "SELECT * FROM leases WHERE task_id = ?", (task_id,)
             ).fetchone()
@@ -286,9 +290,9 @@ class LeaseFenceStore:
     def renew(self, grant: LeaseGrant, *, ttl_ns: int) -> LeaseGrant:
         """Extend only the exact current, unexpired grant."""
 
-        now = self._now()
-        expires_at = self._expiry(now, ttl_ns)
         with self._transaction() as connection:
+            now = self._now()
+            expires_at = self._expiry(now, ttl_ns)
             self._require_current(connection, grant, now)
             connection.execute(
                 """
@@ -321,10 +325,10 @@ class LeaseFenceStore:
         idempotency_key = self._text("idempotency_key", idempotency_key)
         if not isinstance(payload, bytes):
             raise InvalidRequest("payload must be bytes")
-        now = self._now()
         payload_sha256 = hashlib.sha256(payload).hexdigest()
 
         with self._transaction() as connection:
+            now = self._now()
             self._require_current(connection, grant, now)
             existing = connection.execute(
                 "SELECT * FROM commits WHERE task_id = ?", (grant.task_id,)

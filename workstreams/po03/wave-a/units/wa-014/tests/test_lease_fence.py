@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import sqlite3
 import sys
 import tempfile
 import threading
+import time
 import unittest
 from dataclasses import replace
 from pathlib import Path
@@ -162,6 +164,41 @@ class CommitAdversarialTests(StoreTestCase):
             self.store.commit(
                 expired, idempotency_key="result-a", payload=b"payload-a"
             )
+        self.assertIsNone(self.store.committed_result("task-1"))
+
+    def test_commit_samples_clock_after_waiting_for_transaction_lock(self):
+        grant = self.claim_a()
+        blocker = sqlite3.connect(self.store.database, isolation_level=None)
+        blocker.execute("BEGIN IMMEDIATE")
+        started = threading.Event()
+        errors = []
+        receipts = []
+
+        def delayed_commit():
+            started.set()
+            try:
+                receipts.append(
+                    self.store.commit(
+                        grant,
+                        idempotency_key="result-delayed",
+                        payload=b"delayed",
+                    )
+                )
+            except BaseException as exc:
+                errors.append(exc)
+
+        worker = threading.Thread(target=delayed_commit)
+        worker.start()
+        self.assertTrue(started.wait(timeout=1))
+        time.sleep(0.05)
+        self.clock.advance(100)
+        blocker.execute("ROLLBACK")
+        blocker.close()
+        worker.join(timeout=5)
+        self.assertFalse(worker.is_alive())
+        self.assertEqual([], receipts)
+        self.assertEqual(1, len(errors))
+        self.assertIsInstance(errors[0], LeaseExpired)
         self.assertIsNone(self.store.committed_result("task-1"))
 
     def test_stale_worker_cannot_commit_after_ownership_transfer(self):
