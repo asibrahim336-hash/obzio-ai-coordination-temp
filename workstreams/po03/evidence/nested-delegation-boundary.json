@@ -1,0 +1,68 @@
+{
+  "finding_id": "EV-PO03-NESTED-DELEGATION-BOUNDARY-20260822-b2e7",
+  "controller_run_id": "bc-2bb75c2e-66fe-4eee-b456-e1d5e22db2e7",
+  "recorded_at": "2026-08-22T07:45:00Z",
+  "decision_changed": [],
+  "function": "model-tool-runtime-context-memory-coordination-and-topology-evaluation",
+  "severity": "MATERIAL_TOPOLOGY_CONSTRAINT",
+
+  "observed_boundary": "A Cursor subordinate run is not exposed any subagent creation or dispatch tool. Nested delegation below the parent controller is NOT_SUPPORTED.",
+  "verbatim_producer_observation": "No subagent creation or dispatch tool is exposed to this subordinate run. The available create-subagent command only creates configuration files, which would write outside the owned subtree and would not execute or verify another model family.",
+  "observation_source": "cohort c7 lead, function frontier-research-reproduction-and-mechanism-change",
+  "corroboration": [
+    {"cohort": "c1", "reported": "no subagents were spawned; units ran sequentially, so no provider throttle or refusal was observed"},
+    {"cohort": "c3", "reported": "one worker used; no subagent spawn attempted, so no provider error, refusal or throttle occurred"},
+    {"cohort": "c5", "reported": "no subagents were spawned, so the three-concurrent ceiling was not exercised"},
+    {"cohort": "c7", "reported": "child subagents started: 0; no dispatch tool exposed"}
+  ],
+  "corroboration_strength": "Four independent cohort leads across three model families reported zero nested dispatch. One of them attempted to locate the capability and reported the exact reason it is unavailable rather than silently running sequentially.",
+
+  "what_this_falsifies": {
+    "superseded_claim": "workstreams/po03/evidence/concurrency-observations.json recorded cohort_internal_concurrency_cap 3 and theoretical_peak_in_flight 32",
+    "why_false": "That figure assumed cohort leads could spawn nested subagents. They cannot. The instruction to cap internal concurrency at 3 was never exercisable and no cohort ever ran more than one unit at a time.",
+    "corrected_peak_in_flight": 9,
+    "corrected_basis": "parallelism is available only at the parent controller's dispatch layer; within a cohort, execution is strictly sequential"
+  },
+
+  "actual_topology_observed": {
+    "parallel_layer": "parent controller dispatch only",
+    "parent_concurrent_subordinates_accepted": 9,
+    "provider_refusals": 0,
+    "provider_throttles": 0,
+    "nested_layers_available": 0,
+    "effective_wave_a_parallelism": "8 cohort leads plus 1 canary producer, each executing its units sequentially",
+    "observed_ceiling": "NOT_REACHED_AT_9_CONCURRENT_AT_THE_PARENT_LAYER",
+    "honest_limitation": "The parent-layer ceiling remains unmeasured because no refusal occurred at the concurrency driven. The nested-layer ceiling is not a throughput limit but a hard capability absence."
+  },
+
+  "founder_action_required": false,
+  "founder_action_analysis": "The launch instruction permits asking the founder to launch subagents only if Cursor exposes a genuine non-delegable control. A genuine control boundary was found, but it is non-delegable only for subordinates. The parent controller retains full dispatch capability, so the correct remedy is for the controller to dispatch the required independent cognition itself. No founder relay, no manual launch and no owner action is needed, and none was requested.",
+
+  "consequences_for_the_commission": {
+    "cross_family_independent_review": {
+      "commission_requirement": "blind adversarial review from at least two different frontier model families when exposed",
+      "why_subordinates_cannot_satisfy_it": "a producer cannot reach a second model family without nested dispatch, so any in-cohort 'independent' review would be the same model reviewing itself",
+      "affected_units": [
+        "po03-wa-b2e7-052-reproduction-independent-review",
+        "po03-wa-b2e7-059-adversarial-hidden-cases",
+        "po03-wa-b2e7-060-blind-review-harness"
+      ],
+      "unit_052_producer_verdict": "NOT_SUPPORTED with the observed boundary 'different-family identity unavailable'",
+      "unit_052_verdict_assessment": "correct and honest; the producer built and ran a deterministic blind-profile harness and refused to claim a cross-family result it could not obtain",
+      "remedy": "the controller dispatches the cross-family reviewers directly at the parent layer",
+      "remedy_state": "EXECUTING"
+    },
+    "scale_ladder": {
+      "implication": "Wave A's 64 attempts were delivered by 8 sequential workers rather than a wide fleet, so wall-clock throughput is bounded by the slowest cohort rather than by unit count. Any Wave B expansion must widen the parent dispatch layer, because deepening the tree is not available.",
+      "recorded_in": "workstreams/po03/evidence/scale-ladder.json"
+    }
+  },
+
+  "empirical_caution_from_unit_055": {
+    "measurement": "concurrency swept 4 to 32 against fixed acceptance capacity reduced good throughput from 3.86 to 1.15 and raised escaped defects from 0 to 0.582577",
+    "source_unit": "po03-wa-b2e7-055-reproduction-scale-versus-acceptance",
+    "relevance": "This is an independently produced measurement that raising attempt concurrency without proportional recovery and acceptance capacity degrades independently accepted throughput. It is direct evidence against widening the parent layer for Wave B before acceptance capacity is widened first.",
+    "status": "PROPOSAL_ONLY",
+    "interlock": "a strategy finding remains a proposal until the founder interlock binds it; decision_changed stays []"
+  }
+}
