@@ -1,0 +1,46 @@
+{
+  "protocol_version": "OBZIO-WAVE-A-HYPOTHESIS-v1",
+  "task_id": "PO03-WA-015",
+  "hypothesis_id": "H-PO03-WA-015",
+  "attempt": {
+    "attempt_id": "PO03-WA-015-A02",
+    "idempotency_key": "po03:100bc2079ced:wa-015:a02",
+    "lease_id": "lease-po03-wa-015-a02",
+    "fence_token": 2
+  },
+  "statement": "Duplicate and lost callbacks can replay without duplicate task transitions or external effects.",
+  "frozen_before_execution": true,
+  "falsification_conditions": [
+    "Any delivery id commits more than one task transition record in the durable journal.",
+    "Any effect key produces more than one record in the external effect sink.",
+    "A crash at any injected durability boundary leaves a transition without its queued effect, or an effect without the transition that authorised it.",
+    "A callback lost before its durable append is not replayable, or a callback whose acknowledgement was lost is applied a second time on redelivery.",
+    "A torn journal or sink frame is partially applied instead of truncated.",
+    "A worker displaced by a lease transfer commits under its expired fence.",
+    "A checkpoint sequence regresses, or a provider COMPLETED observation without a durable result commit is recorded as completion.",
+    "Repeated compilations of the replay report over the frozen fixtures are not byte-identical."
+  ],
+  "outcome": "SUPPORTED",
+  "outcome_basis": {
+    "scenarios": 16,
+    "duplicate_scenarios": 7,
+    "lost_scenarios": 9,
+    "injected_crashes": 12,
+    "phases_executed": 30,
+    "callback_deliveries_decided": 134,
+    "duplicates_suppressed": 31,
+    "committed_transitions": 83,
+    "external_effects_applied": 9,
+    "duplicate_external_effects": 0,
+    "duplicate_transitions": 0,
+    "structural_invariants_checked": 10,
+    "structural_invariant_violations": 0,
+    "torn_frame_repairs": 3,
+    "already_applied_replays": 2,
+    "reject_codes_exercised": 14,
+    "focused_tests": 165,
+    "recurrence_compilations": 6
+  },
+  "residual_risk": "Support is established for the boundaries this harness can inject in a single Python process against a local filesystem store. It does not extend to a real network transport, a multi-process writer race, or a filesystem that reorders or discards fsync.",
+  "decision_changed": []
+}

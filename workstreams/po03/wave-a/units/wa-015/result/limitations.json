@@ -1,0 +1,81 @@
+{
+  "protocol_version": "OBZIO-WAVE-A-LIMITATIONS-v1",
+  "task_id": "PO03-WA-015",
+  "hypothesis_id": "H-PO03-WA-015",
+  "attempt": {
+    "attempt_id": "PO03-WA-015-A02",
+    "idempotency_key": "po03:100bc2079ced:wa-015:a02",
+    "lease_id": "lease-po03-wa-015-a02",
+    "fence_token": 2
+  },
+  "count": 11,
+  "limitations": [
+    {
+      "limitation_id": "LM-001",
+      "statement": "Process loss is simulated in-process by raising at a named durability boundary and then reopening the store. It reproduces the loss of all in-memory state, but not signal delivery, partially flushed operating-system buffers, or a kill between the write and the fsync return.",
+      "state": "NOT_SUPPORTED",
+      "boundary": "A real SIGKILL harness would need a subprocess-per-phase runner, which this unit did not build."
+    },
+    {
+      "limitation_id": "LM-002",
+      "statement": "Durability relies on the platform honouring fsync on the journal and sink files. A filesystem or virtual device that reorders or discards fsync would break the crash argument, and this unit cannot detect that.",
+      "state": "NOT_SUPPORTED",
+      "boundary": "Filesystem write-barrier behaviour is not observable from the producer runtime."
+    },
+    {
+      "limitation_id": "LM-003",
+      "statement": "The mechanism assumes a single writer per store. Concurrent processes appending to the same journal are not fenced by a file lock, so a multi-writer race is out of scope and untested.",
+      "state": "NOT_SUPPORTED",
+      "boundary": "Wave A dispatch gives each producer an isolated worktree and store, so a single writer is the deployed condition; the general case remains unproven."
+    },
+    {
+      "limitation_id": "LM-004",
+      "statement": "The external effect sink is a local append-only log standing in for a real external system. Exactly-once is proven for the sink's own record surface, not for an external service that could itself duplicate or lose a call.",
+      "state": "PARTIALLY_SUPPORTED",
+      "boundary": "Any real sink must expose an idempotency key with the same semantics; this unit proves the caller side only."
+    },
+    {
+      "limitation_id": "LM-005",
+      "statement": "The journal grows without bound. There is no compaction, snapshotting or retention rule, so startup cost is linear in the number of records ever written.",
+      "state": "KNOWN_GAP",
+      "boundary": "Acceptable at Wave A scale; compaction would reintroduce a second durable object and was deliberately rejected (RJ-PO03-WA-015-001)."
+    },
+    {
+      "limitation_id": "LM-006",
+      "statement": "A retriable refusal appends one evidence record per delivery attempt, so a sender that redelivers an out-of-order callback indefinitely grows the journal indefinitely. There is no backoff or attempt cap.",
+      "state": "KNOWN_GAP",
+      "boundary": "No transition or external effect results, so the correctness claim is unaffected; only storage is."
+    },
+    {
+      "limitation_id": "LM-007",
+      "statement": "Callback authenticity is not verified. The mechanism enforces role, identity, fence and ordering discipline over a declared actor string; it does not authenticate that the sender is who the string says.",
+      "state": "OUT_OF_SCOPE",
+      "boundary": "Authentication belongs to the transport, which this unit does not own and did not touch."
+    },
+    {
+      "limitation_id": "LM-008",
+      "statement": "Lease expiry is not driven by a clock. Fencing is proven for explicit lease transfer; a lease that merely times out without a transfer callback is not modelled.",
+      "state": "KNOWN_GAP",
+      "boundary": "Introducing a clock would break the byte-identical determinism the recurrence test depends on; a logical expiry callback would be the deterministic alternative."
+    },
+    {
+      "limitation_id": "LM-009",
+      "statement": "The requested configuration claude-opus-5-thinking-high with high reasoning was not observable as an exact runtime value. The runtime self-identifies as Claude Opus 5 and the enclosing cloud-agent record reports originalModelName gpt-5.6-sol-max-fast for the parent run; no field exposes an effective reasoning level.",
+      "state": "NOT_SUPPORTED",
+      "boundary": "Recorded as observed without inference in result/result.json runtime_observation; the exact requested slug is not claimed as observed."
+    },
+    {
+      "limitation_id": "LM-010",
+      "statement": "Wall time as the dispatching controller would measure it is not available. Only a locally observed work window is recorded.",
+      "state": "NOT_SUPPORTED",
+      "boundary": "The producer runtime does not expose the controller dispatch clock; token and cost data are likewise unavailable."
+    },
+    {
+      "limitation_id": "LM-011",
+      "statement": "Independent acceptance is NOT_TESTED. This producer verified its own artifacts by immutable remote readback but did not and may not accept its own result, and did not record COMPLETED.",
+      "state": "NOT_TESTED",
+      "boundary": "Only the coordinator may record COMPLETED, and a different producer must accept or reject; the custody document keeps completion_actor null and independent_acceptance.state NOT_TESTED."
+    }
+  ],
+  "decision_changed": []
+}

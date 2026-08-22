@@ -1,0 +1,60 @@
+PO03-WA-015 / attempt PO03-WA-015-A02 -- recorded command output
+source base commit 7f9425655d6faa95219dc16d820bfbe18b91553f
+python: Python 3.12.3
+
+$ python3 -m unittest discover -s tests -t tests
+----------------------------------------------------------------------
+Ran 165 tests in 1.181s
+
+OK (skipped=9)
+
+$ python3 replay_harness.py | summary
+{
+  "duplicate_scenarios": 7,
+  "duplicates_suppressed": 31,
+  "external_effects_applied": 9,
+  "failures": [],
+  "injected_crashes": 12,
+  "lost_scenarios": 9,
+  "outcome": "PASS",
+  "reject_codes_exercised": [
+    "CHECKPOINT_REGRESSION",
+    "COMPLETION_ACTOR_FORBIDDEN",
+    "EFFECT_KEY_REBINDING",
+    "FUTURE_FENCE",
+    "IDEMPOTENCY_PAYLOAD_CONFLICT",
+    "ILLEGAL_TRANSITION",
+    "MALFORMED_CALLBACK",
+    "MISSING_REQUIRED_EFFECT",
+    "PRODUCER_SELF_REVIEW",
+    "ROLE_NOT_PERMITTED",
+    "STALE_FENCE",
+    "STATE_MISMATCH",
+    "UNKNOWN_TASK",
+    "WORKER_IDENTITY_MISMATCH"
+  ],
+  "scenario_count": 16
+}
+
+$ python3 verify_replay.py --repeats 6
+{"compilations":6,"distinct_digests":1,"matches_oracle":true,"oracle_present":true,"oracle_sha256":"80192db824bbe8a6321d8cc523357b8632e28c1b3650ca62f562be6cbfb54708","outcome":"PASS","report_bytes":27925,"report_sha256":"80192db824bbe8a6321d8cc523357b8632e28c1b3650ca62f562be6cbfb54708","self_consistent":true}
+
+$ python3 -m unittest discover -s workstreams/po03/tests -t workstreams/po03/tests   # seeded, unmodified
+----------------------------------------------------------------------
+Ran 58 tests in 0.978s
+
+OK
+
+$ python3 scripts/check_operator_taxonomy.py
+OPERATOR TAXONOMY CHECK: PASS
+active function: obzio.function.strategic-operations-orchestration
+active appointment: obzio.appointment.strategic-operations-orchestration.20260819.001
+classified aliases: 9
+
+$ sha256sum <immutable inputs>
+f06c344679f09cf4bc523fe904a98970b3fe82dce4026115ccd5d787da08e2f5  workstreams/po03/control/inputs/wave-a/wa-015-a02.json
+b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a  workstreams/po03/control/acceptance/wave-a-material-v1.json
+b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d  workstreams/po03/COMMISSION.md
+bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1  workstreams/po03/contracts/transactional-result.schema.json
+ead7d6c78c1f60aaf5440db7fc00fc2ae57d773647ed3b24c279d1a59b43da03  workstreams/po03/tools/validate_contracts.py
+401a684c0a2d3817d08a76044a331f0f241b16d687d2dd12d9ea0f31612dc112  workstreams/po03/tests/test_validate_contracts.py

@@ -1,0 +1,33 @@
+{
+  "protocol_version": "OBZIO-WAVE-A-STRATEGY-PROPOSALS-v1",
+  "task_id": "PO03-WA-015",
+  "hypothesis_id": "H-PO03-WA-015",
+  "attempt": {
+    "attempt_id": "PO03-WA-015-A02",
+    "idempotency_key": "po03:100bc2079ced:wa-015:a02",
+    "lease_id": "lease-po03-wa-015-a02",
+    "fence_token": 2
+  },
+  "proposal_count": 2,
+  "binding_state": "PROPOSAL_ONLY_NOT_BOUND",
+  "note": "Strategy findings remain proposals until the founder interlock binds them. Neither proposal was applied to any shared route by this attempt.",
+  "proposals": [
+    {
+      "proposal_id": "SP-PO03-WA-015-001",
+      "proposal": "Adopt the terminal-versus-retriable refusal split in the controller-side callback path, not only in this unit.",
+      "rationale": "Treating every refusal as final converts a benign ordering fault into silent work loss, because the delivery id is claimed and the corrected retry can never be admitted. Treating every refusal as retriable loses the guarantee that a reused delivery id cannot smuggle a different payload. The split preserves both.",
+      "evidence": "result/mechanism-change.json MC-PO03-WA-015-003 and SC-PO03-WA-015-LOST-07.",
+      "owner_action_required": false,
+      "disposition": "PROPOSED"
+    },
+    {
+      "proposal_id": "SP-PO03-WA-015-002",
+      "proposal": "Require every controller-recorded RESULT_COMMITTED transition to carry an external effect key, so a commit claim cannot exist without the durable act it asserts.",
+      "rationale": "MISSING_REQUIRED_EFFECT makes 'claimed a durable commit but produced nothing' a refusable callback rather than an untestable narrative, which is the same failure class the frozen PO-02 Code-2 packaging fixture represents.",
+      "evidence": "tests/test_outbox_processor.py::TestCustodyGuards::test_result_commit_requires_an_external_effect and SC-PO03-WA-015-DUP-06.",
+      "owner_action_required": false,
+      "disposition": "PROPOSED"
+    }
+  ],
+  "decision_changed": []
+}

@@ -1,0 +1,95 @@
+{
+  "protocol_version": "OBZIO-WAVE-A-REPRODUCTION-v1",
+  "task_id": "PO03-WA-015",
+  "hypothesis_id": "H-PO03-WA-015",
+  "attempt": {
+    "attempt_id": "PO03-WA-015-A02",
+    "idempotency_key": "po03:100bc2079ced:wa-015:a02",
+    "lease_id": "lease-po03-wa-015-a02",
+    "fence_token": 2
+  },
+  "reproduction_count": 1,
+  "reproductions": [
+    {
+      "reproduction_id": "RP-PO03-WA-015-001",
+      "title": "Duplicate and lost callback replay over a sanitized repository-native PO-03 custody workload.",
+      "workload": {
+        "path": "fixtures/sanitized-workload.json",
+        "workload_id": "WA015-SANITIZED-CUSTODY-WORKLOAD-v1",
+        "tasks": 3,
+        "callbacks": 38,
+        "sanitization": "Task ids, actor roles and effect keys mirror the PO-03 commission lifecycle. No endpoint, host, address, credential or token value appears in the workload; an automated test asserts the absence of external-surface keys and of any '://' or '@' in every string.",
+        "repository_native_subjects": [
+          "FIX-PO03-CUSTODY-ALPHA: a Wave A custody unit that runs CREATED through ACCEPTED with two external effects.",
+          "FIX-PO03-CUSTODY-BRAVO: a custody unit whose lease is transferred mid-flight so the displaced worker must be fenced out.",
+          "FIX-PO02-CODE2-PACKAGING: the frozen PO-02 Code-2 packaging fault fixture, used only as a PROVIDER_COMPLETED_UNCOMMITTED case and never as a completed deliverable."
+        ]
+      },
+      "fixtures": [
+        {
+          "path": "fixtures/duplicate-callbacks.json",
+          "fixture_id": "WA015-DUPLICATE-CALLBACKS-v1",
+          "scenarios": 7
+        },
+        {
+          "path": "fixtures/lost-callbacks.json",
+          "fixture_id": "WA015-LOST-CALLBACKS-v1",
+          "scenarios": 9
+        }
+      ],
+      "method": [
+        "Each scenario is a sequence of phases over one durable store directory.",
+        "A phase opens the store, registers the workload idempotently, delivers a list of callbacks by reference, and optionally drains the outbox.",
+        "A phase may arm a fault that aborts it at a named durability boundary; the phase then loses all in-memory state and the next phase reopens the store from bytes on disk, exactly as a restarted process would.",
+        "After the last phase the harness reopens the store without faults, runs the recovery scanner, drains whatever remains, audits ten structural invariants over the durable journal and the sink log, and compares the observed outcome against the expectations frozen in the fixture.",
+        "An unknown expectation key, an unknown fault point, an unknown callback reference, a duplicate scenario id or an empty expectation block is refused before any scenario runs."
+      ],
+      "fault_boundaries_fired": [
+        "before_journal_append",
+        "after_journal_append",
+        "journal_torn_write",
+        "before_sink_write",
+        "sink_torn_write",
+        "after_sink_apply",
+        "after_dispatch_record"
+      ],
+      "observed": {
+        "scenarios": 16,
+        "outcome": "PASS",
+        "failures": [],
+        "phases_executed": 30,
+        "injected_crashes": 12,
+        "callback_deliveries_decided": 134,
+        "duplicates_suppressed": 31,
+        "committed_transitions": 83,
+        "external_effects_applied": 9,
+        "duplicate_transitions": 0,
+        "duplicate_external_effects": 0,
+        "pending_effects_after_recovery": 0,
+        "structural_invariant_violations": 0,
+        "torn_frame_repairs": 3,
+        "already_applied_replays": 2
+      },
+      "recurrence": {
+        "oracle": "reproduction/expected-report.json",
+        "oracle_sha256": "80192db824bbe8a6321d8cc523357b8632e28c1b3650ca62f562be6cbfb54708",
+        "oracle_bytes": 27925,
+        "compilations": 6,
+        "distinct_digests": 1,
+        "state": "PASS",
+        "determinism_basis": "No wall-clock, path, process id, environment value or iteration order derived from a filesystem listing enters any journal record or report field; every store lives in a fresh temporary directory that never appears in the output."
+      },
+      "clean_clone_commands": [
+        "cd workstreams/po03/wave-a/units/wa-015",
+        "python3 -m unittest discover -s tests -t tests",
+        "python3 replay_harness.py",
+        "python3 verify_replay.py --repeats 6",
+        "python3 compile_artifact_manifest.py --output result/artifact-manifest.json --check"
+      ],
+      "state": "PASS"
+    }
+  ],
+  "external_claim_reproductions": "NOT_SUPPORTED",
+  "external_claim_reproductions_reason": "This unit admitted no external method source; every input was a pinned repository-native immutable SHA. Nothing external was therefore available to reproduce.",
+  "decision_changed": []
+}

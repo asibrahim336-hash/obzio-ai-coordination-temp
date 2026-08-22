@@ -1,0 +1,193 @@
+{
+  "protocol_version": "OBZIO-WAVE-A-MATERIAL-RESULT-v1",
+  "task_id": "PO03-WA-015",
+  "hypothesis_id": "H-PO03-WA-015",
+  "hypothesis_outcome": "SUPPORTED",
+  "wave_id": "PO03-WAVE-A",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "acceptance_contract_sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a",
+  "immutable_input_manifest_sha256": "f06c344679f09cf4bc523fe904a98970b3fe82dce4026115ccd5d787da08e2f5",
+  "attempt": {
+    "attempt_id": "PO03-WA-015-A02",
+    "checkpoint_seq": 0,
+    "fence_token": 2,
+    "idempotency_key": "po03:100bc2079ced:wa-015:a02",
+    "lease_expires_at": "2026-08-22T14:10:50Z",
+    "lease_id": "lease-po03-wa-015-a02"
+  },
+  "supersedes": {
+    "attempt_id": "PO03-WA-015-A01",
+    "defect": "UNRESOLVABLE_MINIMUM_PROTOCOL_ANCESTOR",
+    "fenced_before_dispatch": true
+  },
+  "assignment": {
+    "title": "Transactional outbox replay",
+    "standing_function": "operating-system-recovery",
+    "required_executable_output": "Outbox processor, duplicate/lost callback fixtures, and tests.",
+    "delivered_executable_output": [
+      "outbox_processor.py: append-only framed journal, inbox deduplication, transactional outbox, idempotent effect sink, lease fencing, monotonic checkpoints and a recovery scanner.",
+      "fixtures/duplicate-callbacks.json: 7 duplicate-callback scenarios.",
+      "fixtures/lost-callbacks.json: 9 lost-callback and crash-recovery scenarios.",
+      "fixtures/sanitized-workload.json: 3 sanitized repository-native custody tasks and 38 callbacks.",
+      "replay_harness.py, verify_replay.py, compile_artifact_manifest.py and 165 focused automated tests."
+    ]
+  },
+  "method": {
+    "durable_state": "One append-only CRC-framed journal per store is the only durable state; every projection is rebuilt by replaying frames from byte zero, so no crash can leave a snapshot disagreeing with the log.",
+    "atomicity": "An admitted callback commits its task transition and its outbox enqueue inside a single journal frame, so a transition can never exist without its queued effect and an effect can never exist without its authorising transition.",
+    "deduplication": "delivery_id is the idempotency key over a canonical digest of every other field. An identical redelivery is suppressed without appending; a differing payload under the same id is IDEMPOTENCY_PAYLOAD_CONFLICT.",
+    "refusal_classes": "STATE_MISMATCH and FUTURE_FENCE are retriable and do not claim the delivery id; the other twelve refusal codes are terminal and claim it permanently.",
+    "exactly_once_effects": "External effects pass through a sink that is idempotent on effect_key and is applied before the journal records the dispatch, so a crash between the two replays as ALREADY_APPLIED. One sink record per key means one external effect.",
+    "fencing": "A lease transfer bumps the fence by exactly one and rebinds the producer; a displaced worker offering the old fence is refused with STALE_FENCE.",
+    "recovery": "A torn tail frame is detected by its length and CRC header, truncated, and recorded once. The scanner reports pending effects, uncommitted tasks and uncommitted provider completions, and is idempotent.",
+    "custody_guards": "Only a coordinator may record COMPLETED, a producer may not review its own result, RESULT_COMMITTED requires an external effect, and provider COMPLETED without a durable commit derives PROVIDER_COMPLETED_UNCOMMITTED.",
+    "fault_injection": "Faults are armed at eight named durability boundaries; a tripped phase loses all in-memory state and the next phase reopens the store from bytes on disk.",
+    "determinism": "No wall-clock, path, process id or environment value enters any record or report, so the compiled report is byte-identical across runs, machines and clean clones.",
+    "sanitized_workload": "Task ids, roles and effect keys mirror the PO-03 commission lifecycle; an automated test asserts the workload carries no external-surface key, no '://', no '@' and no PO-01 path."
+  },
+  "artifacts": [
+    "README.md",
+    "outbox_processor.py",
+    "replay_harness.py",
+    "verify_replay.py",
+    "compile_artifact_manifest.py",
+    "fixtures/sanitized-workload.json",
+    "fixtures/duplicate-callbacks.json",
+    "fixtures/lost-callbacks.json",
+    "reproduction/expected-report.json",
+    "tests/_support.py",
+    "tests/test_outbox_processor.py",
+    "tests/test_replay_harness.py",
+    "tests/test_artifact_manifest.py",
+    "tests/test_custody_document.py",
+    "result/hypothesis.json",
+    "result/reproduction.json",
+    "result/mechanism-change.json",
+    "result/source-claims.json",
+    "result/strategy-proposals.json",
+    "result/tests.json",
+    "result/limitations.json",
+    "result/test-output.txt",
+    "result/result.json"
+  ],
+  "tests": {
+    "path": "result/tests.json",
+    "status": "PASS",
+    "focused": "PASS",
+    "seeded": "PASS",
+    "scenarios": "PASS",
+    "recurrence": "PASS",
+    "taxonomy": "PASS",
+    "focused_tests": 165,
+    "seeded_tests": 58,
+    "total_automated_test_executions": 223,
+    "command_output": "result/test-output.txt"
+  },
+  "source_claims": {
+    "path": "result/source-claims.json",
+    "count": 15,
+    "external_method_sources": "NOT_SUPPORTED"
+  },
+  "limitations": {
+    "path": "result/limitations.json",
+    "count": 11
+  },
+  "metrics": {
+    "wall_time": "NOT_SUPPORTED_CONTROLLER_DISPATCH_CLOCK_NOT_EXPOSED",
+    "observed_local_work_window_seconds": 4020,
+    "test_count": 223,
+    "test_executions": 223,
+    "first_pass_outcome": "PASS_AFTER_PRE_COMMIT_REPAIR",
+    "artifact_count": "RECORDED_IN_ARTIFACT_MANIFEST",
+    "artifact_bytes": "RECORDED_IN_ARTIFACT_MANIFEST",
+    "source_claim_count": 15,
+    "reproduction_count": 1,
+    "mechanism_change_count": 3,
+    "evidence_backed_rejection_count": 2,
+    "strategy_proposal_count": 2,
+    "defects": 0,
+    "defects_escaped_to_commit": 0,
+    "defects_found_by_own_tests_before_commit": 2,
+    "rework": 2,
+    "provider_block": 0,
+    "collision": 0,
+    "recovery_events": 12,
+    "torn_frame_repairs": 3,
+    "duplicate_transitions": 0,
+    "duplicate_external_effects": 0,
+    "false_completion": 0,
+    "out_of_allowlist_writes": 0,
+    "po01_contact_or_mutation": 0,
+    "protected_external_effects": 0,
+    "token_data": "NOT_SUPPORTED",
+    "cost_data": "NOT_SUPPORTED"
+  },
+  "metrics_notes": {
+    "first_pass_outcome": "The first compiled harness run found one real mechanism gap (a redelivered malformed callback appended an unbounded run of identical rejection records) and one test-helper defect (a state-advance helper replayed already-committed steps). Both were found by this unit's own tests before any commit, both were repaired, and the committed run is green. No defect escaped to the commit.",
+    "observed_local_work_window_seconds": "Producer-observed session window at minute resolution, not the controller dispatch clock.",
+    "recovery_events": "Twelve injected crashes, each followed by a durable-journal replay that converged without a duplicate transition or a duplicate external effect."
+  },
+  "model_observed": "claude-opus-5",
+  "reasoning_observed": "NOT_SUPPORTED",
+  "runtime_observation": {
+    "auto_model_selection_requested": false,
+    "model_requested": "claude-opus-5-thinking-high",
+    "reasoning_requested": "high",
+    "model_observed_source": "producer runtime self-identification string 'Claude Opus 5'",
+    "provider_run_model_field_observed": "gpt-5.6-sol-max-fast",
+    "provider_run_model_field_source": "cloud-agent run record originalModelName for the enclosing parent run bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+    "requested_configuration_observed_exactly": false,
+    "requested_configuration_observation_note": "No runtime field exposes the exact slug 'claude-opus-5-thinking-high' or an effective reasoning level. Both observations above are recorded verbatim without inferring which one served this attempt.",
+    "reasoning_observed": "NOT_SUPPORTED",
+    "provider_run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+    "provider_run_url": "https://cursor.com/agents/bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+    "execution_environment": "isolated-git-worktree",
+    "subagent_type": "best-of-n-runner",
+    "python": "3.12.3",
+    "kernel": "Linux 6.12.94+ x86_64 GNU/Linux",
+    "runtime_details_are_authority": false
+  },
+  "source_base": {
+    "repository": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+    "commit": "7f9425655d6faa95219dc16d820bfbe18b91553f",
+    "commit_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/commit/7f9425655d6faa95219dc16d820bfbe18b91553f",
+    "tree": "ce8e9f4b9a5e8c547768453f8a7331ea32ea8c7f",
+    "minimum_protocol_ancestor": "100bc2079cedc193af3524234ab833cc9f9f4669",
+    "minimum_protocol_ancestor_verified": true
+  },
+  "governing_route": {
+    "function_id": "obzio.function.strategic-operations-orchestration",
+    "appointment_id": "obzio.appointment.strategic-operations-orchestration.20260819.001",
+    "commission_id": "obzio.commission.full-scale-chatgpt-phase-one.20260819.001",
+    "authority_envelope_id": "obzio.authority-envelope.strategic-operations-orchestration.20260819.001",
+    "runtime_binding_id": "obzio.runtime-binding.strategic-operations-orchestration.20260819.001",
+    "instruction_stack": "state/operator-system/ACTIVE_INSTRUCTION_STACK.json",
+    "execution_state": "V010_EXECUTED_AND_CONTINUING",
+    "taxonomy_check": "PASS"
+  },
+  "workstream_commission": {
+    "appointment": "PO-03",
+    "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+    "institutional_function": "obzio.function.repository-engineering-portable-runtime"
+  },
+  "exclusions": [
+    "No PO-01 path, branch, actor, pull request, workspace or artifact was read, contacted or mutated.",
+    "Pull request #8 and the branch cursor/setup-dev-environment-b5ce were not read or touched.",
+    "workstreams/po03/control/**, state/**, dispatch/**, receipts/**, .cursor/environment.json, packs/**, modules/**, and _transport/** were not written.",
+    "Every write is confined to workstreams/po03/wave-a/units/wa-015/**.",
+    "No external system was contacted, no secret was read or exposed, no spend or obligation was created, and no protected production, security, DNS or deployment surface was mutated.",
+    "No external method source and no producer narrative was admitted as substantive evidence."
+  ],
+  "provider_state": "RUNNING",
+  "obzio_state": "RESULT_COMMITTED",
+  "completion_actor": null,
+  "independent_acceptance": {
+    "state": "NOT_TESTED",
+    "reviewer_id": null,
+    "receipt_uri": null
+  },
+  "terminal_report": "READY_TO_COMMIT",
+  "started_at": "2026-08-22T08:58:00Z",
+  "finished_at": "2026-08-22T10:05:00Z",
+  "decision_changed": []
+}

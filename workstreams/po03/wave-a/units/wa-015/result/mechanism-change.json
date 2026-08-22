@@ -1,0 +1,74 @@
+{
+  "protocol_version": "OBZIO-WAVE-A-MECHANISM-CHANGE-v1",
+  "task_id": "PO03-WA-015",
+  "hypothesis_id": "H-PO03-WA-015",
+  "attempt": {
+    "attempt_id": "PO03-WA-015-A02",
+    "idempotency_key": "po03:100bc2079ced:wa-015:a02",
+    "lease_id": "lease-po03-wa-015-a02",
+    "fence_token": 2
+  },
+  "required_by_input": false,
+  "mechanism_change_count": 3,
+  "changes": [
+    {
+      "change_id": "MC-PO03-WA-015-001",
+      "title": "Transition and outbox enqueue commit in one journal frame.",
+      "route": "workstreams/po03/wave-a/units/wa-015/outbox_processor.py",
+      "before": "PO-03 had a seeded transactional-result contract and a controller-side outbox ledger, but no executable component that made a task transition and its external-effect enqueue atomic with respect to process loss.",
+      "after": "An admitted callback writes exactly one CRC-framed journal record carrying the post-transition task snapshot and, when present, the outbox entry. Durable state is only the journal; every projection is rebuilt by replaying frames from byte zero, so no crash can leave a transition without its queued effect or an effect without its transition.",
+      "evidence": [
+        "tests/test_outbox_processor.py::TestTransactionalAppend (4 tests)",
+        "reproduction/expected-report.json: 12 injected crashes across 30 phases leave 0 invariant violations"
+      ],
+      "independent_recurrence_test": "verify_replay.py compiles the report six times and requires byte-identity with the committed oracle.",
+      "disposition": "RETAIN"
+    },
+    {
+      "change_id": "MC-PO03-WA-015-002",
+      "title": "External effects pass through a sink that is idempotent on effect key and is consulted before the dispatch record.",
+      "route": "workstreams/po03/wave-a/units/wa-015/outbox_processor.py",
+      "before": "A lost dispatch acknowledgement had no defined resolution, so a replay could reapply an external effect.",
+      "after": "The sink log is the external effect surface: one record per effect key means one external effect. The sink is applied before the journal records the dispatch, so a crash between the two replays as ALREADY_APPLIED. A torn sink frame proves the effect never became durable, so it is truncated and applied exactly once. Reusing an effect key for a different payload is refused.",
+      "evidence": [
+        "tests/test_outbox_processor.py::TestEffectSink (5 tests)",
+        "tests/test_outbox_processor.py::TestOutboxDrain (5 tests)",
+        "SC-PO03-WA-015-DUP-05, SC-PO03-WA-015-LOST-03, SC-PO03-WA-015-LOST-04, SC-PO03-WA-015-LOST-05: 9 external effects applied, 0 duplicated"
+      ],
+      "independent_recurrence_test": "replay_harness.py audits single_effect_per_key and no_effect_without_transition over the sink log in every scenario.",
+      "disposition": "RETAIN"
+    },
+    {
+      "change_id": "MC-PO03-WA-015-003",
+      "title": "Refusals are split into terminal and retriable, so an out-of-order callback is not permanently lost.",
+      "route": "workstreams/po03/wave-a/units/wa-015/outbox_processor.py",
+      "before": "A first draft treated every refusal as final. A legal callback that merely arrived before the state it expected therefore claimed its delivery id permanently and could never be redelivered, which converts a benign ordering fault into silent work loss.",
+      "after": "STATE_MISMATCH and FUTURE_FENCE are recorded as evidence but do not claim the delivery id, so the sender may redeliver once the store reaches the expected state. Every other refusal is terminal and claims the delivery id, so a corrected retry under a reused id is refused as IDEMPOTENCY_PAYLOAD_CONFLICT rather than silently accepted.",
+      "evidence": [
+        "tests/test_outbox_processor.py::TestDuplicateSuppression::test_a_retriable_rejection_does_not_claim_the_delivery_id",
+        "tests/test_outbox_processor.py::TestDuplicateSuppression::test_a_terminal_rejection_permanently_claims_the_delivery_id",
+        "SC-PO03-WA-015-LOST-07: an out-of-order callback is refused as retriable and applies exactly once when redelivered in order"
+      ],
+      "independent_recurrence_test": "SC-PO03-WA-015-DUP-06 redelivers a 23-callback batch after restart; only the two retriable refusals recur, and the batch adds no transition and no effect.",
+      "disposition": "RETAIN"
+    }
+  ],
+  "rejections": [
+    {
+      "rejection_id": "RJ-PO03-WA-015-001",
+      "candidate": "Keep a mutable derived-state snapshot file beside the journal for fast startup.",
+      "evidence": "A snapshot introduces a second durable object that a crash can leave disagreeing with the log, and the recovery scanner would then have to arbitrate between them. Rebuilding the projection from frames is already sufficient at this scale, and it makes crash correctness a property of one file instead of two.",
+      "disposition": "REJECT"
+    },
+    {
+      "rejection_id": "RJ-PO03-WA-015-002",
+      "candidate": "Suppress a redelivered malformed callback only after it is normalised.",
+      "evidence": "A malformed delivery cannot be deduplicated before normalisation, so a retrying sender appended an unbounded run of identical rejection records. The terminal-rejection index is now consulted on the rejection path as well, which was verified by tests/test_outbox_processor.py::TestDuplicateSuppression::test_repeated_malformed_delivery_is_suppressed and changed SC-PO03-WA-015-DUP-06 from FAIL to PASS.",
+      "disposition": "SUPERSEDE"
+    }
+  ],
+  "strengthened_seeded_controls": [
+    "tests/test_custody_document.py imports the seeded workstreams/po03/tools/validate_contracts.py rather than reimplementing it, and asserts that a forged COMPLETED, a forged producer self-acceptance, a forged byte total and a provider completion without a durable commit are all refused."
+  ],
+  "decision_changed": []
+}

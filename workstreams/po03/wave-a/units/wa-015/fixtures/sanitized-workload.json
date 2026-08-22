@@ -1,0 +1,463 @@
+{
+  "protocol_version": "OBZIO-WA015-WORKLOAD-v1",
+  "workload_id": "WA015-SANITIZED-CUSTODY-WORKLOAD-v1",
+  "purpose": "Sanitized repository-native PO-03 result-custody workload. Task identifiers, roles and effect keys mirror the commission lifecycle; no endpoint, credential, token value, host or external address appears anywhere in this file.",
+  "sanitization": {
+    "external_addresses": "none",
+    "credentials": "none",
+    "po01_paths": "none",
+    "wall_clock_values": "none"
+  },
+  "tasks": [
+    {
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "state": "CREATED",
+      "fence_token": 1,
+      "checkpoint_seq": 0,
+      "producer_id": null,
+      "provider_state": "QUEUED",
+      "note": "Nominal Wave A custody unit that runs the full commission lifecycle to ACCEPTED."
+    },
+    {
+      "task_id": "FIX-PO03-CUSTODY-BRAVO",
+      "state": "CREATED",
+      "fence_token": 1,
+      "checkpoint_seq": 0,
+      "producer_id": null,
+      "provider_state": "QUEUED",
+      "note": "Custody unit whose lease is transferred mid-flight so a displaced worker must be fenced out."
+    },
+    {
+      "task_id": "FIX-PO02-CODE2-PACKAGING",
+      "state": "CREATED",
+      "fence_token": 1,
+      "checkpoint_seq": 0,
+      "producer_id": null,
+      "provider_state": "QUEUED",
+      "note": "Frozen PO-02 Code-2 packaging fault fixture: provider reports COMPLETED with no durable result commit."
+    }
+  ],
+  "callbacks": [
+    {
+      "ref": "alpha-lease",
+      "delivery_id": "dlv-alpha-0001",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "controller:integration-controller",
+      "fence_token": 1,
+      "from_state": "CREATED",
+      "to_state": "LEASED",
+      "checkpoint_seq": 0,
+      "producer_id": "runner-alpha"
+    },
+    {
+      "ref": "alpha-run",
+      "delivery_id": "dlv-alpha-0002",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "worker:runner-alpha",
+      "fence_token": 1,
+      "from_state": "LEASED",
+      "to_state": "RUNNING",
+      "checkpoint_seq": 0
+    },
+    {
+      "ref": "alpha-checkpoint-1",
+      "delivery_id": "dlv-alpha-0003",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "worker:runner-alpha",
+      "fence_token": 1,
+      "from_state": "RUNNING",
+      "to_state": "CHECKPOINTED",
+      "checkpoint_seq": 1
+    },
+    {
+      "ref": "alpha-checkpoint-2",
+      "delivery_id": "dlv-alpha-0004",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "worker:runner-alpha",
+      "fence_token": 1,
+      "from_state": "CHECKPOINTED",
+      "to_state": "CHECKPOINTED",
+      "checkpoint_seq": 2
+    },
+    {
+      "ref": "alpha-staging",
+      "delivery_id": "dlv-alpha-0005",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "worker:runner-alpha",
+      "fence_token": 1,
+      "from_state": "CHECKPOINTED",
+      "to_state": "RESULT_STAGING",
+      "checkpoint_seq": 2
+    },
+    {
+      "ref": "alpha-staged",
+      "delivery_id": "dlv-alpha-0006",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "worker:runner-alpha",
+      "fence_token": 1,
+      "from_state": "RESULT_STAGING",
+      "to_state": "RESULT_STAGED",
+      "checkpoint_seq": 2
+    },
+    {
+      "ref": "alpha-verified",
+      "delivery_id": "dlv-alpha-0007",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "controller:integration-controller",
+      "fence_token": 1,
+      "from_state": "RESULT_STAGED",
+      "to_state": "RESULT_VERIFIED",
+      "checkpoint_seq": 2
+    },
+    {
+      "ref": "alpha-committed",
+      "delivery_id": "dlv-alpha-0008",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "worker:runner-alpha",
+      "fence_token": 1,
+      "from_state": "RESULT_VERIFIED",
+      "to_state": "RESULT_COMMITTED",
+      "checkpoint_seq": 2,
+      "effect": {
+        "effect_key": "ef-alpha-result-commit",
+        "kind": "durable_result_commit",
+        "payload": {
+          "artifact_count": 3,
+          "manifest_logical_name": "result/artifact-manifest.json",
+          "result_slot": "wave-a/units/alpha/result/"
+        }
+      }
+    },
+    {
+      "ref": "alpha-ingested",
+      "delivery_id": "dlv-alpha-0009",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "controller:integration-controller",
+      "fence_token": 1,
+      "from_state": "RESULT_COMMITTED",
+      "to_state": "PARENT_INGESTED",
+      "checkpoint_seq": 2,
+      "effect": {
+        "effect_key": "ef-alpha-parent-ingest",
+        "kind": "parent_ingestion",
+        "payload": {
+          "ingested_artifacts": 3,
+          "parent_id": "PO03-WAVE-A"
+        }
+      }
+    },
+    {
+      "ref": "alpha-completed",
+      "delivery_id": "dlv-alpha-0010",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "coordinator:integration-coordinator",
+      "fence_token": 1,
+      "from_state": "PARENT_INGESTED",
+      "to_state": "COMPLETED",
+      "checkpoint_seq": 2
+    },
+    {
+      "ref": "alpha-accepted",
+      "delivery_id": "dlv-alpha-0011",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "reviewer:independent-reviewer-delta",
+      "fence_token": 1,
+      "from_state": "COMPLETED",
+      "to_state": "ACCEPTED",
+      "checkpoint_seq": 2
+    },
+    {
+      "ref": "alpha-conflicting-run",
+      "delivery_id": "dlv-alpha-0002",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "worker:runner-alpha",
+      "fence_token": 1,
+      "from_state": "LEASED",
+      "to_state": "RUNNING",
+      "checkpoint_seq": 1,
+      "note": "Reuses the alpha-run delivery id with a different payload."
+    },
+    {
+      "ref": "alpha-stale-checkpoint",
+      "delivery_id": "dlv-alpha-0012",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "worker:runner-alpha",
+      "fence_token": 1,
+      "from_state": "CHECKPOINTED",
+      "to_state": "CHECKPOINTED",
+      "checkpoint_seq": 2,
+      "note": "Replays an already-recorded checkpoint sequence."
+    },
+    {
+      "ref": "alpha-future-fence",
+      "delivery_id": "dlv-alpha-0013",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "worker:runner-alpha",
+      "fence_token": 7,
+      "from_state": "RUNNING",
+      "to_state": "CHECKPOINTED",
+      "checkpoint_seq": 1,
+      "note": "Claims a fence token no lease transfer ever issued."
+    },
+    {
+      "ref": "alpha-illegal-edge",
+      "delivery_id": "dlv-alpha-0014",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "worker:runner-alpha",
+      "fence_token": 1,
+      "from_state": "LEASED",
+      "to_state": "RESULT_STAGED",
+      "checkpoint_seq": 0,
+      "note": "Skips the RUNNING and RESULT_STAGING states."
+    },
+    {
+      "ref": "alpha-wrong-role",
+      "delivery_id": "dlv-alpha-0015",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "worker:runner-alpha",
+      "fence_token": 1,
+      "from_state": "CREATED",
+      "to_state": "LEASED",
+      "checkpoint_seq": 0,
+      "producer_id": "runner-alpha",
+      "note": "A worker cannot grant its own lease."
+    },
+    {
+      "ref": "alpha-completed-by-worker",
+      "delivery_id": "dlv-alpha-0016",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "worker:runner-alpha",
+      "fence_token": 1,
+      "from_state": "PARENT_INGESTED",
+      "to_state": "COMPLETED",
+      "checkpoint_seq": 2,
+      "note": "Only the coordinator may record COMPLETED."
+    },
+    {
+      "ref": "alpha-self-review",
+      "delivery_id": "dlv-alpha-0017",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "reviewer:runner-alpha",
+      "fence_token": 1,
+      "from_state": "COMPLETED",
+      "to_state": "ACCEPTED",
+      "checkpoint_seq": 2,
+      "note": "The producer cannot independently accept its own result."
+    },
+    {
+      "ref": "alpha-commit-without-effect",
+      "delivery_id": "dlv-alpha-0018",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "worker:runner-alpha",
+      "fence_token": 1,
+      "from_state": "RESULT_VERIFIED",
+      "to_state": "RESULT_COMMITTED",
+      "checkpoint_seq": 2,
+      "note": "Claims a durable commit while carrying no external effect."
+    },
+    {
+      "ref": "alpha-rebound-effect",
+      "delivery_id": "dlv-alpha-0019",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "controller:integration-controller",
+      "fence_token": 1,
+      "from_state": "RESULT_COMMITTED",
+      "to_state": "PARENT_INGESTED",
+      "checkpoint_seq": 2,
+      "effect": {
+        "effect_key": "ef-alpha-result-commit",
+        "kind": "parent_ingestion",
+        "payload": {
+          "ingested_artifacts": 99,
+          "parent_id": "PO03-WAVE-A"
+        }
+      },
+      "note": "Reuses a bound effect key for a different payload."
+    },
+    {
+      "ref": "alpha-impostor-worker",
+      "delivery_id": "dlv-alpha-0020",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "worker:runner-bravo",
+      "fence_token": 1,
+      "from_state": "RUNNING",
+      "to_state": "CHECKPOINTED",
+      "checkpoint_seq": 1,
+      "note": "A worker that never held this lease reports progress on it."
+    },
+    {
+      "ref": "alpha-malformed-role",
+      "delivery_id": "dlv-alpha-0021",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "ghost:runner-alpha",
+      "fence_token": 1,
+      "from_state": "RUNNING",
+      "to_state": "CHECKPOINTED",
+      "checkpoint_seq": 1,
+      "note": "Actor role is outside the institutional role vocabulary."
+    },
+    {
+      "ref": "alpha-unknown-task",
+      "delivery_id": "dlv-alpha-0022",
+      "task_id": "FIX-PO03-CUSTODY-NEVER-REGISTERED",
+      "actor": "worker:runner-alpha",
+      "fence_token": 1,
+      "from_state": "LEASED",
+      "to_state": "RUNNING",
+      "checkpoint_seq": 0,
+      "note": "References a task the store never registered."
+    },
+    {
+      "ref": "alpha-late-run",
+      "delivery_id": "dlv-alpha-0023",
+      "task_id": "FIX-PO03-CUSTODY-ALPHA",
+      "actor": "worker:runner-alpha",
+      "fence_token": 1,
+      "from_state": "LEASED",
+      "to_state": "RUNNING",
+      "checkpoint_seq": 0,
+      "note": "A legal callback that arrives out of order; retriable rather than terminal."
+    },
+    {
+      "ref": "bravo-lease",
+      "delivery_id": "dlv-bravo-0001",
+      "task_id": "FIX-PO03-CUSTODY-BRAVO",
+      "actor": "controller:integration-controller",
+      "fence_token": 1,
+      "from_state": "CREATED",
+      "to_state": "LEASED",
+      "checkpoint_seq": 0,
+      "producer_id": "runner-bravo"
+    },
+    {
+      "ref": "bravo-run",
+      "delivery_id": "dlv-bravo-0002",
+      "task_id": "FIX-PO03-CUSTODY-BRAVO",
+      "actor": "worker:runner-bravo",
+      "fence_token": 1,
+      "from_state": "LEASED",
+      "to_state": "RUNNING",
+      "checkpoint_seq": 0
+    },
+    {
+      "ref": "bravo-lease-transfer",
+      "delivery_id": "dlv-bravo-0003",
+      "task_id": "FIX-PO03-CUSTODY-BRAVO",
+      "kind": "lease_transfer",
+      "actor": "controller:integration-controller",
+      "fence_token": 2,
+      "new_producer_id": "runner-bravo-successor"
+    },
+    {
+      "ref": "bravo-stale-worker-commit",
+      "delivery_id": "dlv-bravo-0004",
+      "task_id": "FIX-PO03-CUSTODY-BRAVO",
+      "actor": "worker:runner-bravo",
+      "fence_token": 1,
+      "from_state": "RUNNING",
+      "to_state": "RESULT_STAGING",
+      "checkpoint_seq": 0,
+      "note": "The displaced worker tries to commit under its expired fence."
+    },
+    {
+      "ref": "bravo-successor-staging",
+      "delivery_id": "dlv-bravo-0005",
+      "task_id": "FIX-PO03-CUSTODY-BRAVO",
+      "actor": "worker:runner-bravo-successor",
+      "fence_token": 2,
+      "from_state": "RUNNING",
+      "to_state": "RESULT_STAGING",
+      "checkpoint_seq": 0
+    },
+    {
+      "ref": "bravo-recovery-required",
+      "delivery_id": "dlv-bravo-0006",
+      "task_id": "FIX-PO03-CUSTODY-BRAVO",
+      "actor": "controller:integration-controller",
+      "fence_token": 2,
+      "from_state": "RESULT_STAGING",
+      "to_state": "RECOVERY_REQUIRED",
+      "checkpoint_seq": 0
+    },
+    {
+      "ref": "bravo-retry-scheduled",
+      "delivery_id": "dlv-bravo-0007",
+      "task_id": "FIX-PO03-CUSTODY-BRAVO",
+      "actor": "controller:integration-controller",
+      "fence_token": 2,
+      "from_state": "RECOVERY_REQUIRED",
+      "to_state": "RETRY_SCHEDULED",
+      "checkpoint_seq": 0
+    },
+    {
+      "ref": "bravo-resumed",
+      "delivery_id": "dlv-bravo-0008",
+      "task_id": "FIX-PO03-CUSTODY-BRAVO",
+      "actor": "worker:runner-bravo-successor",
+      "fence_token": 2,
+      "from_state": "RETRY_SCHEDULED",
+      "to_state": "RUNNING",
+      "checkpoint_seq": 0
+    },
+    {
+      "ref": "bravo-stale-transfer",
+      "delivery_id": "dlv-bravo-0009",
+      "task_id": "FIX-PO03-CUSTODY-BRAVO",
+      "kind": "lease_transfer",
+      "actor": "controller:integration-controller",
+      "fence_token": 1,
+      "new_producer_id": "runner-bravo-third",
+      "note": "Replays an already-issued fence token instead of the next one."
+    },
+    {
+      "ref": "bravo-worker-transfer",
+      "delivery_id": "dlv-bravo-0010",
+      "task_id": "FIX-PO03-CUSTODY-BRAVO",
+      "kind": "lease_transfer",
+      "actor": "worker:runner-bravo",
+      "fence_token": 2,
+      "new_producer_id": "runner-bravo",
+      "note": "A worker cannot transfer its own lease back to itself."
+    },
+    {
+      "ref": "packaging-lease",
+      "delivery_id": "dlv-pkg-0001",
+      "task_id": "FIX-PO02-CODE2-PACKAGING",
+      "actor": "controller:integration-controller",
+      "fence_token": 1,
+      "from_state": "CREATED",
+      "to_state": "LEASED",
+      "checkpoint_seq": 0,
+      "producer_id": "runner-code2"
+    },
+    {
+      "ref": "packaging-run",
+      "delivery_id": "dlv-pkg-0002",
+      "task_id": "FIX-PO02-CODE2-PACKAGING",
+      "actor": "worker:runner-code2",
+      "fence_token": 1,
+      "from_state": "LEASED",
+      "to_state": "RUNNING",
+      "checkpoint_seq": 0
+    },
+    {
+      "ref": "packaging-provider-completed",
+      "delivery_id": "dlv-pkg-0003",
+      "task_id": "FIX-PO02-CODE2-PACKAGING",
+      "kind": "provider_observation",
+      "actor": "provider:provider-route-observer",
+      "fence_token": 1,
+      "provider_state": "COMPLETED",
+      "note": "Provider completion is only an observation; no durable result commit exists."
+    },
+    {
+      "ref": "packaging-provider-running",
+      "delivery_id": "dlv-pkg-0004",
+      "task_id": "FIX-PO02-CODE2-PACKAGING",
+      "kind": "provider_observation",
+      "actor": "provider:provider-route-observer",
+      "fence_token": 1,
+      "provider_state": "RUNNING"
+    }
+  ]
+}

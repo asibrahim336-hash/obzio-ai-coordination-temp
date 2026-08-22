@@ -1,0 +1,450 @@
+{
+  "protocol_version": "OBZIO-WA015-SCENARIOS-v1",
+  "fixture_id": "WA015-LOST-CALLBACKS-v1",
+  "purpose": "Lost callbacks must replay: a crash before a durable write, a torn journal or sink frame, a lost outbox dispatch and a whole runtime loss must all resume from the durable journal and finish with exactly one transition per callback and exactly one external effect per key.",
+  "scenarios": [
+    {
+      "scenario_id": "SC-PO03-WA-015-LOST-01",
+      "class": "lost",
+      "title": "A callback lost before its durable append never happened and replays exactly once.",
+      "phases": [
+        {
+          "phase": "crash-before-append",
+          "deliveries": ["alpha-lease", "alpha-run"],
+          "faults": [{ "point": "before_journal_append", "occurrence": 2 }]
+        },
+        {
+          "phase": "replay-after-restart",
+          "deliveries": ["alpha-run"],
+          "drain": true
+        }
+      ],
+      "expect": {
+        "decisions": ["APPLIED", "APPLIED"],
+        "reject_codes": [],
+        "crashes": 1,
+        "final_states": {
+          "FIX-PO02-CODE2-PACKAGING": "CREATED",
+          "FIX-PO03-CUSTODY-ALPHA": "RUNNING",
+          "FIX-PO03-CUSTODY-BRAVO": "CREATED"
+        },
+        "transition_counts": {
+          "FIX-PO02-CODE2-PACKAGING": 0,
+          "FIX-PO03-CUSTODY-ALPHA": 2,
+          "FIX-PO03-CUSTODY-BRAVO": 0
+        },
+        "sink_effects": 0,
+        "pending_effects": [],
+        "repairs": []
+      }
+    },
+    {
+      "scenario_id": "SC-PO03-WA-015-LOST-02",
+      "class": "lost",
+      "title": "A torn journal frame is truncated by the recovery scanner and the callback replays exactly once.",
+      "phases": [
+        {
+          "phase": "tear-the-journal-tail",
+          "deliveries": ["alpha-lease", "alpha-run"],
+          "faults": [
+            {
+              "point": "journal_torn_write",
+              "mode": "tear",
+              "occurrence": 2,
+              "keep_bytes": 9
+            }
+          ]
+        },
+        {
+          "phase": "replay-after-truncation",
+          "deliveries": ["alpha-run"],
+          "drain": true
+        }
+      ],
+      "expect": {
+        "decisions": ["APPLIED", "APPLIED"],
+        "reject_codes": [],
+        "crashes": 1,
+        "final_states": {
+          "FIX-PO02-CODE2-PACKAGING": "CREATED",
+          "FIX-PO03-CUSTODY-ALPHA": "RUNNING",
+          "FIX-PO03-CUSTODY-BRAVO": "CREATED"
+        },
+        "transition_counts": {
+          "FIX-PO02-CODE2-PACKAGING": 0,
+          "FIX-PO03-CUSTODY-ALPHA": 2,
+          "FIX-PO03-CUSTODY-BRAVO": 0
+        },
+        "sink_effects": 0,
+        "pending_effects": [],
+        "repairs": [
+          {
+            "observed_at": "replay-after-truncation",
+            "journal_torn_reason": "SHORT_HEADER",
+            "journal_truncated_bytes": 9,
+            "sink_torn_reason": null,
+            "sink_truncated_bytes": 0
+          }
+        ]
+      }
+    },
+    {
+      "scenario_id": "SC-PO03-WA-015-LOST-03",
+      "class": "lost",
+      "title": "An external effect lost before the sink write is re-applied exactly once from the durable outbox.",
+      "phases": [
+        {
+          "phase": "crash-before-sink-write",
+          "deliveries": [
+            "alpha-lease",
+            "alpha-run",
+            "alpha-checkpoint-1",
+            "alpha-checkpoint-2",
+            "alpha-staging",
+            "alpha-staged",
+            "alpha-verified",
+            "alpha-committed"
+          ],
+          "drain": true,
+          "faults": [{ "point": "before_sink_write", "occurrence": 1 }]
+        },
+        {
+          "phase": "replay-outbox",
+          "deliveries": [],
+          "drain": true
+        }
+      ],
+      "expect": {
+        "crashes": 1,
+        "reject_codes": [],
+        "final_states": {
+          "FIX-PO02-CODE2-PACKAGING": "CREATED",
+          "FIX-PO03-CUSTODY-ALPHA": "RESULT_COMMITTED",
+          "FIX-PO03-CUSTODY-BRAVO": "CREATED"
+        },
+        "transition_counts": {
+          "FIX-PO02-CODE2-PACKAGING": 0,
+          "FIX-PO03-CUSTODY-ALPHA": 8,
+          "FIX-PO03-CUSTODY-BRAVO": 0
+        },
+        "sink_effects": 1,
+        "effect_receipts": { "ef-alpha-result-commit": 1 },
+        "pending_effects": [],
+        "repairs": []
+      }
+    },
+    {
+      "scenario_id": "SC-PO03-WA-015-LOST-04",
+      "class": "lost",
+      "title": "A torn sink frame proves the effect never became durable, so it is truncated and applied exactly once.",
+      "phases": [
+        {
+          "phase": "tear-the-sink-record",
+          "deliveries": [
+            "alpha-lease",
+            "alpha-run",
+            "alpha-checkpoint-1",
+            "alpha-checkpoint-2",
+            "alpha-staging",
+            "alpha-staged",
+            "alpha-verified",
+            "alpha-committed"
+          ],
+          "drain": true,
+          "faults": [
+            {
+              "point": "sink_torn_write",
+              "mode": "tear",
+              "occurrence": 1,
+              "keep_bytes": 7
+            }
+          ]
+        },
+        {
+          "phase": "replay-outbox",
+          "deliveries": [],
+          "drain": true
+        }
+      ],
+      "expect": {
+        "crashes": 1,
+        "reject_codes": [],
+        "final_states": {
+          "FIX-PO02-CODE2-PACKAGING": "CREATED",
+          "FIX-PO03-CUSTODY-ALPHA": "RESULT_COMMITTED",
+          "FIX-PO03-CUSTODY-BRAVO": "CREATED"
+        },
+        "transition_counts": {
+          "FIX-PO02-CODE2-PACKAGING": 0,
+          "FIX-PO03-CUSTODY-ALPHA": 8,
+          "FIX-PO03-CUSTODY-BRAVO": 0
+        },
+        "sink_effects": 1,
+        "effect_receipts": { "ef-alpha-result-commit": 1 },
+        "pending_effects": [],
+        "repairs": [
+          {
+            "observed_at": "replay-outbox",
+            "journal_torn_reason": null,
+            "journal_truncated_bytes": 0,
+            "sink_torn_reason": "SHORT_HEADER",
+            "sink_truncated_bytes": 7
+          }
+        ]
+      }
+    },
+    {
+      "scenario_id": "SC-PO03-WA-015-LOST-05",
+      "class": "lost",
+      "title": "A crash after the first dispatch record leaves exactly one effect outstanding and no effect is repeated.",
+      "phases": [
+        {
+          "phase": "crash-after-first-dispatch-record",
+          "deliveries": [
+            "alpha-lease",
+            "alpha-run",
+            "alpha-checkpoint-1",
+            "alpha-checkpoint-2",
+            "alpha-staging",
+            "alpha-staged",
+            "alpha-verified",
+            "alpha-committed",
+            "alpha-ingested"
+          ],
+          "drain": true,
+          "faults": [{ "point": "after_dispatch_record", "occurrence": 1 }]
+        },
+        {
+          "phase": "replay-remaining-outbox",
+          "deliveries": [],
+          "drain": true
+        }
+      ],
+      "expect": {
+        "crashes": 1,
+        "reject_codes": [],
+        "final_states": {
+          "FIX-PO02-CODE2-PACKAGING": "CREATED",
+          "FIX-PO03-CUSTODY-ALPHA": "PARENT_INGESTED",
+          "FIX-PO03-CUSTODY-BRAVO": "CREATED"
+        },
+        "transition_counts": {
+          "FIX-PO02-CODE2-PACKAGING": 0,
+          "FIX-PO03-CUSTODY-ALPHA": 9,
+          "FIX-PO03-CUSTODY-BRAVO": 0
+        },
+        "sink_effects": 2,
+        "effect_receipts": {
+          "ef-alpha-parent-ingest": 1,
+          "ef-alpha-result-commit": 2
+        },
+        "pending_effects": [],
+        "repairs": []
+      }
+    },
+    {
+      "scenario_id": "SC-PO03-WA-015-LOST-06",
+      "class": "lost",
+      "title": "Provider COMPLETED without a durable result commit stays PROVIDER_COMPLETED_UNCOMMITTED and its duplicate is suppressed.",
+      "phases": [
+        {
+          "phase": "observe-provider-completion",
+          "deliveries": [
+            "packaging-lease",
+            "packaging-run",
+            "packaging-provider-completed",
+            "packaging-provider-completed"
+          ],
+          "drain": true
+        }
+      ],
+      "expect": {
+        "decisions": [
+          "APPLIED",
+          "APPLIED",
+          "APPLIED",
+          "DUPLICATE_SUPPRESSED"
+        ],
+        "reject_codes": [],
+        "crashes": 0,
+        "final_states": {
+          "FIX-PO02-CODE2-PACKAGING": "RUNNING",
+          "FIX-PO03-CUSTODY-ALPHA": "CREATED",
+          "FIX-PO03-CUSTODY-BRAVO": "CREATED"
+        },
+        "transition_counts": {
+          "FIX-PO02-CODE2-PACKAGING": 2,
+          "FIX-PO03-CUSTODY-ALPHA": 0,
+          "FIX-PO03-CUSTODY-BRAVO": 0
+        },
+        "provider_completed_uncommitted": ["FIX-PO02-CODE2-PACKAGING"],
+        "sink_effects": 0,
+        "pending_effects": [],
+        "repairs": []
+      }
+    },
+    {
+      "scenario_id": "SC-PO03-WA-015-LOST-07",
+      "class": "lost",
+      "title": "An out-of-order callback is refused as retriable, not terminal, and applies once when redelivered in order.",
+      "phases": [
+        {
+          "phase": "deliver-out-of-order",
+          "deliveries": ["alpha-run", "alpha-lease", "alpha-run"],
+          "drain": true
+        }
+      ],
+      "expect": {
+        "decisions": ["REJECTED", "APPLIED", "APPLIED"],
+        "reject_codes": ["STATE_MISMATCH"],
+        "crashes": 0,
+        "final_states": {
+          "FIX-PO02-CODE2-PACKAGING": "CREATED",
+          "FIX-PO03-CUSTODY-ALPHA": "RUNNING",
+          "FIX-PO03-CUSTODY-BRAVO": "CREATED"
+        },
+        "transition_counts": {
+          "FIX-PO02-CODE2-PACKAGING": 0,
+          "FIX-PO03-CUSTODY-ALPHA": 2,
+          "FIX-PO03-CUSTODY-BRAVO": 0
+        },
+        "sink_effects": 0,
+        "pending_effects": [],
+        "repairs": []
+      }
+    },
+    {
+      "scenario_id": "SC-PO03-WA-015-LOST-08",
+      "class": "lost",
+      "title": "A whole provider runtime loss is recovered by the controller and the displaced worker cannot commit.",
+      "phases": [
+        {
+          "phase": "lose-the-runtime",
+          "deliveries": ["bravo-lease", "bravo-run"],
+          "faults": [{ "point": "after_journal_append", "occurrence": 2 }]
+        },
+        {
+          "phase": "controller-recovers-and-refences",
+          "deliveries": [
+            "bravo-lease-transfer",
+            "bravo-stale-worker-commit",
+            "bravo-successor-staging",
+            "bravo-recovery-required",
+            "bravo-retry-scheduled",
+            "bravo-resumed"
+          ],
+          "drain": true
+        }
+      ],
+      "expect": {
+        "decisions": [
+          "APPLIED",
+          "APPLIED",
+          "REJECTED",
+          "APPLIED",
+          "APPLIED",
+          "APPLIED",
+          "APPLIED"
+        ],
+        "reject_codes": ["STALE_FENCE"],
+        "crashes": 1,
+        "final_states": {
+          "FIX-PO02-CODE2-PACKAGING": "CREATED",
+          "FIX-PO03-CUSTODY-ALPHA": "CREATED",
+          "FIX-PO03-CUSTODY-BRAVO": "RUNNING"
+        },
+        "transition_counts": {
+          "FIX-PO02-CODE2-PACKAGING": 0,
+          "FIX-PO03-CUSTODY-ALPHA": 0,
+          "FIX-PO03-CUSTODY-BRAVO": 6
+        },
+        "sink_effects": 0,
+        "pending_effects": [],
+        "repairs": []
+      }
+    },
+    {
+      "scenario_id": "SC-PO03-WA-015-LOST-09",
+      "class": "lost",
+      "title": "Cascading losses at four consecutive durability boundaries still converge on one commit and one effect.",
+      "phases": [
+        {
+          "phase": "lose-before-append",
+          "deliveries": ["alpha-lease"],
+          "faults": [{ "point": "before_journal_append", "occurrence": 1 }]
+        },
+        {
+          "phase": "lose-to-torn-frame",
+          "deliveries": ["alpha-lease", "alpha-run"],
+          "faults": [
+            {
+              "point": "journal_torn_write",
+              "mode": "tear",
+              "occurrence": 2,
+              "keep_bytes": 9
+            }
+          ]
+        },
+        {
+          "phase": "lose-the-acknowledgement",
+          "deliveries": ["alpha-run", "alpha-checkpoint-1"],
+          "faults": [{ "point": "after_journal_append", "occurrence": 2 }]
+        },
+        {
+          "phase": "lose-the-dispatch-record",
+          "deliveries": [
+            "alpha-checkpoint-1",
+            "alpha-checkpoint-2",
+            "alpha-staging",
+            "alpha-staged",
+            "alpha-verified",
+            "alpha-committed"
+          ],
+          "drain": true,
+          "faults": [{ "point": "after_sink_apply", "occurrence": 1 }]
+        },
+        {
+          "phase": "replay-to-quiescence",
+          "deliveries": [],
+          "drain": true
+        }
+      ],
+      "expect": {
+        "decisions": [
+          "APPLIED",
+          "APPLIED",
+          "DUPLICATE_SUPPRESSED",
+          "APPLIED",
+          "APPLIED",
+          "APPLIED",
+          "APPLIED",
+          "APPLIED"
+        ],
+        "reject_codes": [],
+        "crashes": 4,
+        "final_states": {
+          "FIX-PO02-CODE2-PACKAGING": "CREATED",
+          "FIX-PO03-CUSTODY-ALPHA": "RESULT_COMMITTED",
+          "FIX-PO03-CUSTODY-BRAVO": "CREATED"
+        },
+        "transition_counts": {
+          "FIX-PO02-CODE2-PACKAGING": 0,
+          "FIX-PO03-CUSTODY-ALPHA": 8,
+          "FIX-PO03-CUSTODY-BRAVO": 0
+        },
+        "sink_effects": 1,
+        "effect_receipts": { "ef-alpha-result-commit": 1 },
+        "pending_effects": [],
+        "repairs": [
+          {
+            "observed_at": "lose-the-acknowledgement",
+            "journal_torn_reason": "SHORT_HEADER",
+            "journal_truncated_bytes": 9,
+            "sink_torn_reason": null,
+            "sink_truncated_bytes": 0
+          }
+        ]
+      }
+    }
+  ]
+}

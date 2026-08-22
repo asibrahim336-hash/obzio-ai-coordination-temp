@@ -1,0 +1,134 @@
+{
+  "protocol_version": "OBZIO-WAVE-A-TESTS-v1",
+  "task_id": "PO03-WA-015",
+  "hypothesis_id": "H-PO03-WA-015",
+  "attempt": {
+    "attempt_id": "PO03-WA-015-A02",
+    "idempotency_key": "po03:100bc2079ced:wa-015:a02",
+    "lease_id": "lease-po03-wa-015-a02",
+    "fence_token": 2
+  },
+  "status": "PASS",
+  "totals": {
+    "focused_tests": 165,
+    "focused_passed": 165,
+    "focused_failed": 0,
+    "focused_skipped_before_custody_document": 9,
+    "seeded_contract_tests": 58,
+    "seeded_passed": 58,
+    "seeded_failed": 0,
+    "scenario_assertions": 16,
+    "structural_invariants_per_scenario": 10,
+    "recurrence_compilations": 6,
+    "total_automated_test_executions": 223
+  },
+  "suites": [
+    {
+      "suite": "tests/test_outbox_processor.py",
+      "command": "python3 -m unittest discover -s tests -t tests",
+      "tests": 90,
+      "state": "PASS",
+      "covers": [
+        "Canonical encoding and digest stability.",
+        "Frame encoding and every torn-tail class: SHORT_HEADER, BAD_MAGIC, SHORT_PAYLOAD, CRC_MISMATCH.",
+        "Journal append, parent creation, partial append detection and truncation.",
+        "Effect sink: apply once, ALREADY_APPLIED, dense receipts, refused key rebinding, torn record truncated and reapplied exactly once.",
+        "Callback normalisation: non-object, unknown field, missing or blank or mistyped field, actor outside the role vocabulary, unknown kind or state, effect shape, and field discipline for every callback kind.",
+        "Workload loading: protocol, empty task or callback list, duplicate task, missing or duplicate callback reference.",
+        "Registration: seeding, idempotence, impossible seed, survival across reopen.",
+        "Transactional append: transition and enqueue in one frame, crash before append, crash after append, torn frame truncated rather than applied.",
+        "Duplicate suppression: exact duplicate, duplicate across reopen, conflicting payload, idempotent refusal, repeated malformed delivery, terminal versus retriable claim.",
+        "Custody guards: all fourteen refusal codes reachable from a real callback.",
+        "Lease fencing: fence bump, duplicate transfer, displaced worker refused, successor admitted, next-fence discipline, controller-only transfer.",
+        "Provider observation: PROVIDER_COMPLETED_UNCOMMITTED derivation, clearing on durable commit, role discipline.",
+        "Outbox drain: one effect per key, deterministic order, loss before sink write, crash between sink and dispatch record, no second dispatch.",
+        "Recovery scanner: pending effects, uncommitted tasks, uncommitted provider completion, idempotence, truncation recorded exactly once.",
+        "Snapshot canonicality, journal-replay equality and the module command line."
+      ]
+    },
+    {
+      "suite": "tests/test_replay_harness.py",
+      "command": "python3 -m unittest discover -s tests -t tests",
+      "tests": 40,
+      "state": "PASS",
+      "covers": [
+        "Every shipped scenario passes with no mismatch and no invariant violation.",
+        "Both callback classes are covered and faults are demonstrably fired at five or more distinct boundaries.",
+        "No scenario leaves a pending effect; effect receipts are dense in every scenario.",
+        "The compiled report contains no path, temporary directory or environment value.",
+        "Fixture validation refuses an unknown expectation key, fault point, fault mode, callback reference, duplicate scenario id, blank title, unknown class, empty phase list and empty expectation block.",
+        "The sanitized workload declares no external-surface key and no string containing '://' or '@', and no PO-01 path.",
+        "The fault injector fires on the requested occurrence, counts arrivals per boundary and never fires unarmed.",
+        "The structural audit catches a forged duplicate transition record, a forged duplicate sink receipt, a smuggled effect with no enqueue, a forged illegal edge and a non-dense journal sequence.",
+        "Report determinism: byte-identical compilations, equality with the committed oracle, refusal of a single compilation, failure against a wrong oracle, and canonical single-trailing-newline oracle bytes."
+      ]
+    },
+    {
+      "suite": "tests/test_artifact_manifest.py",
+      "command": "python3 -m unittest discover -s tests -t tests",
+      "tests": 26,
+      "state": "PASS",
+      "covers": [
+        "Discovery order, envelope exclusion, bytecode exclusion, and refusal of temporary, hidden, symlinked, non-NFC and empty artifacts.",
+        "Internal consistency of artifact_count and total_bytes, determinism of rendering, unique name-derived artifact ids.",
+        "Content-tree digest reacting to both content and renaming.",
+        "Media types, repository-relative content URIs, verbatim attempt identity and the hash-closure declaration.",
+        "The real owned subtree compiles, every declared digest matches the file on disk, and the pinned immutable input, acceptance contract and source base digests are correct.",
+        "Command line: write, current, stale, missing output and stdout mode."
+      ]
+    },
+    {
+      "suite": "tests/test_custody_document.py",
+      "command": "python3 -m unittest discover -s tests -t tests",
+      "tests": 9,
+      "state": "PASS",
+      "note": "These nine tests skip during the result commit because the custody document can only be written once the result commit it describes exists. They execute and pass against the return commit.",
+      "covers": [
+        "The seeded workstreams/po03/tools/validate_contracts.py accepts the custody document with no errors.",
+        "The document carries exactly the seeded schema's property set and every required member.",
+        "The dispatched attempt identity is carried verbatim.",
+        "The producer neither completes nor accepts its own result.",
+        "A forged COMPLETED, a forged producer self-acceptance, a forged byte total and a provider completion without a durable commit are each refused by the seeded validator.",
+        "Every artifact carries a readback timestamp and an immutable git content URI."
+      ]
+    },
+    {
+      "suite": "workstreams/po03/tests",
+      "command": "python3 -m unittest discover -s workstreams/po03/tests -t workstreams/po03/tests",
+      "tests": 58,
+      "state": "PASS",
+      "note": "Seeded PO-03 contract, reconciliation and supersession tests, executed unmodified. No seeded file was edited."
+    },
+    {
+      "suite": "replay_harness.py",
+      "command": "python3 replay_harness.py",
+      "tests": 16,
+      "state": "PASS",
+      "note": "Sixteen scenarios, thirty phases, twelve injected crashes, one hundred and thirty-four decided deliveries, ten structural invariants each; exits non-zero on any mismatch or violation."
+    },
+    {
+      "suite": "verify_replay.py",
+      "command": "python3 verify_replay.py --repeats 6",
+      "tests": 6,
+      "state": "PASS",
+      "note": "Six compilations, one distinct digest, byte-identical to reproduction/expected-report.json."
+    },
+    {
+      "suite": "scripts/check_operator_taxonomy.py",
+      "command": "python3 scripts/check_operator_taxonomy.py",
+      "tests": 1,
+      "state": "PASS",
+      "note": "Repository currentness check required by AGENTS.md before commit."
+    }
+  ],
+  "adversarial_cases": [
+    "Redelivering an entire twenty-three callback batch after restart adds no transition and no external effect.",
+    "A reused delivery id carrying a different payload is refused, and the refusal is itself idempotent.",
+    "A displaced worker offering its expired fence cannot commit after ownership transfers.",
+    "A forged duplicate transition record, a forged duplicate sink receipt and a smuggled effect with no enqueue are all caught by the structural audit.",
+    "A forged COMPLETED and a forged producer self-acceptance are refused by the seeded validator.",
+    "Four consecutive crashes at four different durability boundaries still converge on exactly one durable commit and exactly one external effect."
+  ],
+  "command_output": "result/test-output.txt",
+  "decision_changed": []
+}

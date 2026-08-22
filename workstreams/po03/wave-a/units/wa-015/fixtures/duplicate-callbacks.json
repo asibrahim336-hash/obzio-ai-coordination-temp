@@ -1,0 +1,377 @@
+{
+  "protocol_version": "OBZIO-WA015-SCENARIOS-v1",
+  "fixture_id": "WA015-DUPLICATE-CALLBACKS-v1",
+  "purpose": "Duplicate callbacks must be harmless: a redelivered callback may never produce a second task transition or a second external effect, and a reused delivery id carrying a different payload must be refused.",
+  "scenarios": [
+    {
+      "scenario_id": "SC-PO03-WA-015-DUP-01",
+      "class": "duplicate",
+      "title": "Successive identical redeliveries inside one process are suppressed.",
+      "phases": [
+        {
+          "phase": "deliver-with-repeats",
+          "deliveries": ["alpha-lease", "alpha-run", "alpha-run", "alpha-run"],
+          "drain": true
+        }
+      ],
+      "expect": {
+        "decisions": [
+          "APPLIED",
+          "APPLIED",
+          "DUPLICATE_SUPPRESSED",
+          "DUPLICATE_SUPPRESSED"
+        ],
+        "reject_codes": [],
+        "crashes": 0,
+        "final_states": {
+          "FIX-PO02-CODE2-PACKAGING": "CREATED",
+          "FIX-PO03-CUSTODY-ALPHA": "RUNNING",
+          "FIX-PO03-CUSTODY-BRAVO": "CREATED"
+        },
+        "transition_counts": {
+          "FIX-PO02-CODE2-PACKAGING": 0,
+          "FIX-PO03-CUSTODY-ALPHA": 2,
+          "FIX-PO03-CUSTODY-BRAVO": 0
+        },
+        "sink_effects": 0,
+        "pending_effects": [],
+        "repairs": []
+      }
+    },
+    {
+      "scenario_id": "SC-PO03-WA-015-DUP-02",
+      "class": "duplicate",
+      "title": "A callback whose acknowledgement was lost is durable, so the retry after restart is suppressed.",
+      "phases": [
+        {
+          "phase": "lose-acknowledgement",
+          "deliveries": ["alpha-lease", "alpha-run"],
+          "faults": [{ "point": "after_journal_append", "occurrence": 2 }]
+        },
+        {
+          "phase": "retry-after-restart",
+          "deliveries": ["alpha-run", "alpha-run"],
+          "drain": true
+        }
+      ],
+      "expect": {
+        "decisions": ["APPLIED", "DUPLICATE_SUPPRESSED", "DUPLICATE_SUPPRESSED"],
+        "reject_codes": [],
+        "crashes": 1,
+        "final_states": {
+          "FIX-PO02-CODE2-PACKAGING": "CREATED",
+          "FIX-PO03-CUSTODY-ALPHA": "RUNNING",
+          "FIX-PO03-CUSTODY-BRAVO": "CREATED"
+        },
+        "transition_counts": {
+          "FIX-PO02-CODE2-PACKAGING": 0,
+          "FIX-PO03-CUSTODY-ALPHA": 2,
+          "FIX-PO03-CUSTODY-BRAVO": 0
+        },
+        "sink_effects": 0,
+        "pending_effects": [],
+        "repairs": []
+      }
+    },
+    {
+      "scenario_id": "SC-PO03-WA-015-DUP-03",
+      "class": "duplicate",
+      "title": "Redelivering an effect-bearing commit callback applies the external effect exactly once.",
+      "phases": [
+        {
+          "phase": "run-to-result-commit",
+          "deliveries": [
+            "alpha-lease",
+            "alpha-run",
+            "alpha-checkpoint-1",
+            "alpha-checkpoint-2",
+            "alpha-staging",
+            "alpha-staged",
+            "alpha-verified",
+            "alpha-committed"
+          ],
+          "drain": true
+        },
+        {
+          "phase": "redeliver-commit-twice",
+          "deliveries": ["alpha-committed", "alpha-committed"],
+          "drain": true
+        }
+      ],
+      "expect": {
+        "decisions": [
+          "APPLIED",
+          "APPLIED",
+          "APPLIED",
+          "APPLIED",
+          "APPLIED",
+          "APPLIED",
+          "APPLIED",
+          "APPLIED",
+          "DUPLICATE_SUPPRESSED",
+          "DUPLICATE_SUPPRESSED"
+        ],
+        "reject_codes": [],
+        "crashes": 0,
+        "final_states": {
+          "FIX-PO02-CODE2-PACKAGING": "CREATED",
+          "FIX-PO03-CUSTODY-ALPHA": "RESULT_COMMITTED",
+          "FIX-PO03-CUSTODY-BRAVO": "CREATED"
+        },
+        "transition_counts": {
+          "FIX-PO02-CODE2-PACKAGING": 0,
+          "FIX-PO03-CUSTODY-ALPHA": 8,
+          "FIX-PO03-CUSTODY-BRAVO": 0
+        },
+        "sink_effects": 1,
+        "effect_receipts": { "ef-alpha-result-commit": 1 },
+        "pending_effects": [],
+        "repairs": []
+      }
+    },
+    {
+      "scenario_id": "SC-PO03-WA-015-DUP-04",
+      "class": "duplicate",
+      "title": "A reused delivery id carrying a different payload is refused, and the refusal itself is idempotent.",
+      "phases": [
+        {
+          "phase": "conflicting-redelivery",
+          "deliveries": [
+            "alpha-lease",
+            "alpha-run",
+            "alpha-conflicting-run",
+            "alpha-conflicting-run"
+          ],
+          "drain": true
+        }
+      ],
+      "expect": {
+        "decisions": [
+          "APPLIED",
+          "APPLIED",
+          "REJECTED",
+          "DUPLICATE_SUPPRESSED"
+        ],
+        "reject_codes": ["IDEMPOTENCY_PAYLOAD_CONFLICT"],
+        "crashes": 0,
+        "final_states": {
+          "FIX-PO02-CODE2-PACKAGING": "CREATED",
+          "FIX-PO03-CUSTODY-ALPHA": "RUNNING",
+          "FIX-PO03-CUSTODY-BRAVO": "CREATED"
+        },
+        "transition_counts": {
+          "FIX-PO02-CODE2-PACKAGING": 0,
+          "FIX-PO03-CUSTODY-ALPHA": 2,
+          "FIX-PO03-CUSTODY-BRAVO": 0
+        },
+        "sink_effects": 0,
+        "pending_effects": [],
+        "repairs": []
+      }
+    },
+    {
+      "scenario_id": "SC-PO03-WA-015-DUP-05",
+      "class": "duplicate",
+      "title": "A crash between sink apply and dispatch record replays as ALREADY_APPLIED, not as a second external effect.",
+      "phases": [
+        {
+          "phase": "crash-after-sink-apply",
+          "deliveries": [
+            "alpha-lease",
+            "alpha-run",
+            "alpha-checkpoint-1",
+            "alpha-checkpoint-2",
+            "alpha-staging",
+            "alpha-staged",
+            "alpha-verified",
+            "alpha-committed"
+          ],
+          "drain": true,
+          "faults": [{ "point": "after_sink_apply", "occurrence": 1 }]
+        },
+        {
+          "phase": "replay-outbox",
+          "deliveries": [],
+          "drain": true
+        }
+      ],
+      "expect": {
+        "decisions": [
+          "APPLIED",
+          "APPLIED",
+          "APPLIED",
+          "APPLIED",
+          "APPLIED",
+          "APPLIED",
+          "APPLIED",
+          "APPLIED"
+        ],
+        "reject_codes": [],
+        "crashes": 1,
+        "final_states": {
+          "FIX-PO02-CODE2-PACKAGING": "CREATED",
+          "FIX-PO03-CUSTODY-ALPHA": "RESULT_COMMITTED",
+          "FIX-PO03-CUSTODY-BRAVO": "CREATED"
+        },
+        "transition_counts": {
+          "FIX-PO02-CODE2-PACKAGING": 0,
+          "FIX-PO03-CUSTODY-ALPHA": 8,
+          "FIX-PO03-CUSTODY-BRAVO": 0
+        },
+        "sink_effects": 1,
+        "effect_receipts": { "ef-alpha-result-commit": 1 },
+        "pending_effects": [],
+        "repairs": []
+      }
+    },
+    {
+      "scenario_id": "SC-PO03-WA-015-DUP-06",
+      "class": "duplicate",
+      "title": "Every custody guard fires once, and redelivering the whole batch adds no transition and no effect.",
+      "phases": [
+        {
+          "phase": "full-lifecycle-with-guard-probes",
+          "deliveries": [
+            "alpha-wrong-role",
+            "alpha-malformed-role",
+            "alpha-unknown-task",
+            "alpha-lease",
+            "alpha-illegal-edge",
+            "alpha-run",
+            "alpha-late-run",
+            "alpha-impostor-worker",
+            "alpha-future-fence",
+            "alpha-checkpoint-1",
+            "alpha-checkpoint-2",
+            "alpha-stale-checkpoint",
+            "alpha-staging",
+            "alpha-staged",
+            "alpha-verified",
+            "alpha-commit-without-effect",
+            "alpha-committed",
+            "alpha-rebound-effect",
+            "alpha-ingested",
+            "alpha-completed-by-worker",
+            "alpha-completed",
+            "alpha-self-review",
+            "alpha-accepted"
+          ],
+          "drain": true
+        },
+        {
+          "phase": "redeliver-entire-batch",
+          "deliveries": [
+            "alpha-wrong-role",
+            "alpha-malformed-role",
+            "alpha-unknown-task",
+            "alpha-lease",
+            "alpha-illegal-edge",
+            "alpha-run",
+            "alpha-late-run",
+            "alpha-impostor-worker",
+            "alpha-future-fence",
+            "alpha-checkpoint-1",
+            "alpha-checkpoint-2",
+            "alpha-stale-checkpoint",
+            "alpha-staging",
+            "alpha-staged",
+            "alpha-verified",
+            "alpha-commit-without-effect",
+            "alpha-committed",
+            "alpha-rebound-effect",
+            "alpha-ingested",
+            "alpha-completed-by-worker",
+            "alpha-completed",
+            "alpha-self-review",
+            "alpha-accepted"
+          ],
+          "drain": true
+        }
+      ],
+      "expect": {
+        "reject_codes": [
+          "ROLE_NOT_PERMITTED",
+          "MALFORMED_CALLBACK",
+          "UNKNOWN_TASK",
+          "ILLEGAL_TRANSITION",
+          "STATE_MISMATCH",
+          "WORKER_IDENTITY_MISMATCH",
+          "FUTURE_FENCE",
+          "CHECKPOINT_REGRESSION",
+          "MISSING_REQUIRED_EFFECT",
+          "EFFECT_KEY_REBINDING",
+          "COMPLETION_ACTOR_FORBIDDEN",
+          "PRODUCER_SELF_REVIEW",
+          "STATE_MISMATCH",
+          "FUTURE_FENCE"
+        ],
+        "crashes": 0,
+        "final_states": {
+          "FIX-PO02-CODE2-PACKAGING": "CREATED",
+          "FIX-PO03-CUSTODY-ALPHA": "ACCEPTED",
+          "FIX-PO03-CUSTODY-BRAVO": "CREATED"
+        },
+        "transition_counts": {
+          "FIX-PO02-CODE2-PACKAGING": 0,
+          "FIX-PO03-CUSTODY-ALPHA": 11,
+          "FIX-PO03-CUSTODY-BRAVO": 0
+        },
+        "sink_effects": 2,
+        "effect_receipts": {
+          "ef-alpha-parent-ingest": 1,
+          "ef-alpha-result-commit": 2
+        },
+        "pending_effects": [],
+        "repairs": []
+      }
+    },
+    {
+      "scenario_id": "SC-PO03-WA-015-DUP-07",
+      "class": "duplicate",
+      "title": "A duplicated lease transfer bumps the fence once and the displaced worker stays fenced out.",
+      "phases": [
+        {
+          "phase": "transfer-lease-twice",
+          "deliveries": [
+            "bravo-lease",
+            "bravo-run",
+            "bravo-lease-transfer",
+            "bravo-lease-transfer",
+            "bravo-stale-worker-commit",
+            "bravo-worker-transfer",
+            "bravo-stale-transfer",
+            "bravo-successor-staging"
+          ],
+          "drain": true
+        }
+      ],
+      "expect": {
+        "decisions": [
+          "APPLIED",
+          "APPLIED",
+          "APPLIED",
+          "DUPLICATE_SUPPRESSED",
+          "REJECTED",
+          "REJECTED",
+          "REJECTED",
+          "APPLIED"
+        ],
+        "reject_codes": ["STALE_FENCE", "ROLE_NOT_PERMITTED", "STALE_FENCE"],
+        "crashes": 0,
+        "final_states": {
+          "FIX-PO02-CODE2-PACKAGING": "CREATED",
+          "FIX-PO03-CUSTODY-ALPHA": "CREATED",
+          "FIX-PO03-CUSTODY-BRAVO": "RESULT_STAGING"
+        },
+        "transition_counts": {
+          "FIX-PO02-CODE2-PACKAGING": 0,
+          "FIX-PO03-CUSTODY-ALPHA": 0,
+          "FIX-PO03-CUSTODY-BRAVO": 3
+        },
+        "sink_effects": 0,
+        "pending_effects": [],
+        "repairs": []
+      }
+    }
+  ]
+}
