@@ -197,7 +197,11 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
         "provider_ui_agent_creation_model_selection_and_instruction_submission",
         "SW surface requires founder-authenticated client with TLS certificate",
         "founder_held_ops_gate_and_provider_action_approval",
-        "provider_ui_stop_run"
+        "provider_ui_stop_run",
+        # Discovered during CUR-ORCH-QUAL-01: an agent can neither issue a
+        # credential against the owner's account nor appoint its own acceptor.
+        "owner_held_api_credential_issuance_and_attachment",
+        "independent_acceptor_appointment_is_an_authority_act"
     }
     for action in data.get("current_founder_actions", []):
         prefix = f"founder-action {action.get('action_id')}"

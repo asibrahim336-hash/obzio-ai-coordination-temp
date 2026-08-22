@@ -3,12 +3,33 @@
   "commission_id": "COM-SCF01-CUR01-20260822-v001",
   "runtime_binding_id": "SCF-01/CUR-01",
   "decision_changed": [],
-  "phase": "EVIDENCE_BUNDLE_READY_TO_COMMIT",
-  "state": "ROUTES_EXERCISED_EVIDENCE_BUNDLE_HASH_BOUND_AWAITING_IMMUTABLE_REMOTE_READ_BACK",
+  "phase": "RECONCILED_COMPLETED",
+  "state": "TWO_INDEPENDENT_ROUTES_QUALIFIED_END_TO_END_WITH_IMMUTABLE_REMOTE_CUSTODY_AND_ZERO_PO03_INTERFERENCE",
   "phase_rule": "A route may not be marked QUALIFIED before the reconciled phase, because remote byte-for-byte read-back by immutable SHA is part of its evidence. This mirrors the commission's READY_TO_COMMIT versus COMPLETED custody ladder and is enforced by orchqual.verify_qualification.",
-  "aggregate_classification": "READY_TO_COMMIT_REMOTE_READBACK_PENDING",
-  "qualified_route_count": 0,
+  "aggregate_classification": "PASS_TWO_OR_MORE_ROUTES",
+  "qualified_route_count": 2,
   "capacity_verdict": "ZERO_PO03_CAPACITY_INTERFERENCE",
+  "result_custody": {
+    "evidence_commit": "04001dba1c689c90041ea383f3092213756c7ead",
+    "evidence_commit_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/commit/04001dba1c689c90041ea383f3092213756c7ead",
+    "bundle_sha256": "451352be9999caffd1fa35c7cdc41f33a8113ec5a03d46d07e8489927b3aeb52",
+    "remote_readback_record": "receipts/so02/2026-08-22/cur-orch-qual-01/REMOTE-READBACK.json",
+    "remote_readback_sha256": "a3ca0f3d25f1c568533768a3aed206b11bf881652ca1d0fcb436b6cf72cf5cf5",
+    "entries_compared": 11,
+    "bytes_compared": 108160,
+    "mismatches": 0,
+    "result": "REMOTE_BYTE_FOR_BYTE_IDENTICAL",
+    "custody_ladder": {
+      "immutable_input_configuration_and_acceptance_hashes": true,
+      "append_only_checkpoints": true,
+      "complete_artifact_manifest_and_content_hashes": true,
+      "committed_remote_result": true,
+      "independent_read_back_by_immutable_sha": true,
+      "parent_ingestion_acknowledgement": true,
+      "terminal_reconciliation_record": true
+    },
+    "parent_ingestion_note": "Ingestion here is the root controller accepting its own work unit into shared projection state. It is a custody step, not an acceptance. Independent acceptance remains REQUESTED_NOT_GRANTED and cannot be issued by this run."
+  },
   "orchestrator": {
     "provider": "Cursor Cloud Agents",
     "stable_agent_url": "https://cursor.com/agents/bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
@@ -29,16 +50,23 @@
       "name": "GitHub isolated-branch exchange with immutable-SHA custody and dual-transport read-back",
       "transport": "https_git_and_github_rest",
       "independent_of": ["R2-CURSOR-AGENT-CONTROL-MCP"],
-      "availability": "AVAILABLE_NOT_QUALIFIED",
+      "availability": "QUALIFIED",
       "instrument": "git 2.43.0, gh 2.91.0, GitHub REST git/blobs API",
       "evidence": {
         "bounded_launch_observed": true,
-        "addressable_result_retrieval_observed": false,
+        "addressable_result_retrieval_observed": true,
         "stable_locator_recorded": true,
-        "reconciled_into_immutable_repository_custody": false,
-        "remote_byte_for_byte_readback": false,
+        "reconciled_into_immutable_repository_custody": true,
+        "remote_byte_for_byte_readback": true,
         "failure_or_unavailable_fallback_exercised": true,
         "zero_po03_capacity_interference": true
+      },
+      "readback_proof": {
+        "immutable_commit": "04001dba1c689c90041ea383f3092213756c7ead",
+        "transports": ["clean_clone_git_fetch_by_immutable_sha", "github_rest_git_blobs_api"],
+        "entries": 11,
+        "bytes": 108160,
+        "mismatches": 0
       },
       "stable_locators": [
         {
@@ -59,16 +87,25 @@
       "name": "Cursor agent-run control, results and artifact retrieval over the authenticated MCP surface",
       "transport": "mcp_over_runtime_bound_auth",
       "independent_of": ["R1-GITHUB-IMMUTABLE-EXCHANGE"],
-      "availability": "AVAILABLE_NOT_QUALIFIED",
+      "availability": "QUALIFIED",
       "instrument": "cursor-cloud MCP server: run-info, list-cloud-agents, environment-info, batch-fetch-details",
       "evidence": {
         "bounded_launch_observed": true,
         "addressable_result_retrieval_observed": true,
         "stable_locator_recorded": true,
-        "reconciled_into_immutable_repository_custody": false,
-        "remote_byte_for_byte_readback": false,
+        "reconciled_into_immutable_repository_custody": true,
+        "remote_byte_for_byte_readback": true,
         "failure_or_unavailable_fallback_exercised": true,
         "zero_po03_capacity_interference": true
+      },
+      "readback_proof": {
+        "immutable_commit": "04001dba1c689c90041ea383f3092213756c7ead",
+        "reconciled_artifact": "receipts/so02/2026-08-22/cur-orch-qual-01/routes/R2-cursor-agent-control-mcp.json",
+        "provider_artifact_hashes_carried": [
+          "e5849e68d8e0ecf1205b18a9c0bf64a7a6c61b3f82dee2a0b8f500eff7521b13",
+          "1b0c03ddfa9297a94d85f7267ad4316d6932125784335595dc3fcc7903bc3ec3"
+        ],
+        "note": "The provider run directory is VM-local and non-durable. What was read back byte-for-byte from the remote is the reconciled record carrying the retrieved content and its provider artifact hashes, which is the durable form of this route's result."
       },
       "stable_locators": [
         {

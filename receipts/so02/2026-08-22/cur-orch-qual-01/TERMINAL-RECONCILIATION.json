@@ -1,0 +1,65 @@
+{
+  "record_id": "CUR-ORCH-QUAL-01-TERMINAL-RECONCILIATION",
+  "decision_changed": [],
+  "work_unit_id": "CUR-ORCH-QUAL-01",
+  "recorded_at": "2026-08-22T13:43:00Z",
+  "root_controller": "bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+  "shared_state_writers": 1,
+  "terminal_state": "OBZIO_COMPLETED",
+  "aggregate_classification": "PASS_TWO_OR_MORE_ROUTES",
+  "custody_sequence": [
+    {
+      "step": 1,
+      "requirement": "immutable input, configuration and acceptance hashes",
+      "satisfied_by": "LAUNCH-RECEIPT.json records the immutable start SHA a5adfdff6921b34b05c1ea6eed0c1752bb4ebbbb, the exact model configuration and the tool census; EVIDENCE-MANIFEST.json binds every artifact by SHA-256."
+    },
+    {
+      "step": 2,
+      "requirement": "append-only checkpoints",
+      "satisfied_by": "Two ordered commits on the isolated branch plus four ordered capacity snapshots and the hash-chained strategic event log."
+    },
+    {
+      "step": 3,
+      "requirement": "complete artifact manifest and content hashes",
+      "satisfied_by": "EVIDENCE-MANIFEST.json with 11 entries and bundle_sha256 451352be9999caffd1fa35c7cdc41f33a8113ec5a03d46d07e8489927b3aeb52; orchqual verify rejects any uncovered, absent or altered file."
+    },
+    {
+      "step": 4,
+      "requirement": "committed remote result",
+      "satisfied_by": "Commit 04001dba1c689c90041ea383f3092213756c7ead pushed to cursor/so02-cur-orch-qual-01."
+    },
+    {
+      "step": 5,
+      "requirement": "independent read-back by immutable SHA",
+      "satisfied_by": "REMOTE-READBACK.json: 11 entries and 108160 bytes compared over two independent transports, zero mismatches. The git leg used a throwaway clean clone so the bytes came off the wire rather than from this checkout's object cache."
+    },
+    {
+      "step": 6,
+      "requirement": "parent-ingestion acknowledgement",
+      "satisfied_by": "The root controller ingested the result into control-plane.json and runtime-surface-locators.json and recorded events SCF01-EVT-0020 through SCF01-EVT-0022. This is custody, not acceptance."
+    },
+    {
+      "step": 7,
+      "requirement": "terminal reconciliation record",
+      "satisfied_by": "This record."
+    }
+  ],
+  "read_back_regress_termination": {
+    "problem": "The commit that records a read-back cannot contain its own read-back.",
+    "rule": "The evidence commit 04001dba1c689c90041ea383f3092213756c7ead is read back inside this repository by immutable SHA over two transports. The reconciliation commit that carries this record is verified instead by an instrument that is not this run: the SO-02 control-plane CI job, which clones the repository fresh at the pull-request head and re-executes scctl validate, orchqual verify and the full unit suite with no provider access.",
+    "consequence": "No claim in this bundle depends on trusting this run's local filesystem."
+  },
+  "provider_completed_uncommitted_guard": {
+    "rule": "A provider card, callback or completed badge never satisfies reconciliation.",
+    "applied_here": "The R2 provider retrieval returned real artifacts in a VM-local directory. That state was treated as PROVIDER_COMPLETED_UNCOMMITTED until its content and hashes were reconciled into receipts/so02/** and read back from the remote."
+  },
+  "what_this_record_does_not_do": [
+    "It does not accept the qualification. Independent acceptance is REQUESTED_NOT_GRANTED and cannot be issued by the producing run.",
+    "It does not merge, promote or cut over anything.",
+    "It does not admit a second Cursor Multiple Agents group or any unproved route.",
+    "It does not bind company strategy. decision_changed remains empty.",
+    "It does not create exclusive dependence on Cursor or on SW; the repository remains canonical and route R1 survives total loss of the Cursor control plane."
+  ],
+  "founder_actions_consumed_by_this_work_unit": 0,
+  "founder_retrieval_comparison_monitoring_or_merge": "none requested and none performed"
+}

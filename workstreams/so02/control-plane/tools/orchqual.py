@@ -14,6 +14,7 @@ import json
 import re
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -403,67 +404,91 @@ def verify_qualification(errors: list[str]) -> None:
 # --------------------------------------------------------------------------
 
 def remote_readback(commit: str, use_api: bool = True) -> dict[str, Any]:
-    """Fetch the immutable commit from the remote and compare every bundle byte."""
-    code, _, err = run(["git", "fetch", "--no-tags", "origin", commit])
-    if code != 0:
-        code, _, err = run(["git", "fetch", "--no-tags", "origin", QUALIFICATION_BRANCH])
-        if code != 0:
-            raise RuntimeError(f"remote fetch failed: {err.strip()}")
+    """Retrieve the immutable commit from the remote and compare every bundle byte.
 
-    manifest = read_json(MANIFEST_PATH)
-    comparisons = []
-    mismatches = []
-    for entry in manifest["entries"]:
-        path_text = entry["path"]
-        local = (REPO / path_text).read_bytes()
-        code, out, err = run(["git", "cat-file", "-p", f"{commit}:{path_text}"])
+    The git leg clones fresh into a throwaway directory so the bytes come off
+    the wire rather than out of this checkout's object cache. The REST leg is
+    an independent transport with its own encoding path.
+    """
+    remote_url = run(["git", "remote", "get-url", "origin"])[1].strip()
+    comparisons: list[dict[str, Any]] = []
+    mismatches: list[str] = []
+
+    # Read the manifest as committed, so the comparison is anchored to the
+    # immutable commit rather than to a working tree that may have moved on.
+    code, manifest_blob, err = run(["git", "show", f"{commit}:{MANIFEST_PATH.relative_to(REPO).as_posix()}"])
+    if code != 0:
+        raise RuntimeError(f"manifest absent from commit {commit}: {err.strip()}")
+    manifest = json.loads(manifest_blob)
+
+    with tempfile.TemporaryDirectory(prefix="orchqual-readback-") as workdir:
+        clone = Path(workdir) / "clone"
+        code, _, err = run(["git", "clone", "--quiet", "--no-checkout", remote_url, str(clone)], cwd=Path(workdir))
         if code != 0:
-            mismatches.append(f"{path_text}: absent from remote commit {commit}")
-            continue
-        remote_git = subprocess.run(
-            ["git", "cat-file", "-p", f"{commit}:{path_text}"], cwd=REPO, capture_output=True
-        ).stdout
-        record = {
-            "path": path_text,
-            "manifest_sha256": entry["sha256"],
-            "local_sha256": sha256_bytes(local),
-            "remote_git_sha256": sha256_bytes(remote_git),
-            "byte_length_local": len(local),
-            "byte_length_remote_git": len(remote_git),
-            "identical_git_transport": remote_git == local,
-        }
-        if use_api:
-            blob_sha = run(["git", "rev-parse", f"{commit}:{path_text}"])[1].strip()
-            code, out, _ = run([
-                "gh", "api",
-                f"/repos/asibrahim336-hash/obzio-ai-coordination-temp/git/blobs/{blob_sha}",
-                "--jq", ".content",
-            ])
-            if code == 0 and out.strip():
-                remote_api = base64.b64decode(out.strip())
-                record["blob_sha1"] = blob_sha
-                record["remote_api_sha256"] = sha256_bytes(remote_api)
-                record["byte_length_remote_api"] = len(remote_api)
-                record["identical_api_transport"] = remote_api == local
-            else:
-                record["identical_api_transport"] = None
-                record["api_note"] = "REST blob transport unavailable for this entry"
-        if record["manifest_sha256"] != record["local_sha256"]:
-            mismatches.append(f"{path_text}: manifest hash does not match working tree")
-        if not record["identical_git_transport"]:
-            mismatches.append(f"{path_text}: remote git bytes differ from local bytes")
-        if record.get("identical_api_transport") is False:
-            mismatches.append(f"{path_text}: remote REST blob bytes differ from local bytes")
-        comparisons.append(record)
+            raise RuntimeError(f"clean clone from the remote failed: {err.strip()}")
+        code, _, err = run(["git", "fetch", "--quiet", "--no-tags", "origin", commit], cwd=clone)
+        if code != 0:
+            raise RuntimeError(f"remote fetch of {commit} failed: {err.strip()}")
+        code, _, _ = run(["git", "cat-file", "-e", f"{commit}^{{commit}}"], cwd=clone)
+        if code != 0:
+            raise RuntimeError(f"commit {commit} is not present on the remote")
+
+        for entry in manifest["entries"]:
+            path_text = entry["path"]
+            local = subprocess.run(
+                ["git", "cat-file", "-p", f"{commit}:{path_text}"], cwd=REPO, capture_output=True
+            ).stdout
+            fetched = subprocess.run(
+                ["git", "cat-file", "-p", f"{commit}:{path_text}"], cwd=clone, capture_output=True
+            )
+            if fetched.returncode != 0:
+                mismatches.append(f"{path_text}: absent from remote commit {commit}")
+                continue
+            remote_git = fetched.stdout
+            record: dict[str, Any] = {
+                "path": path_text,
+                "manifest_sha256": entry["sha256"],
+                "local_sha256": sha256_bytes(local),
+                "remote_git_sha256": sha256_bytes(remote_git),
+                "byte_length_local": len(local),
+                "byte_length_remote_git": len(remote_git),
+                "identical_git_transport": remote_git == local,
+            }
+            if use_api:
+                blob_sha = run(["git", "rev-parse", f"{commit}:{path_text}"], cwd=clone)[1].strip()
+                code, out, _ = run([
+                    "gh", "api",
+                    f"/repos/asibrahim336-hash/obzio-ai-coordination-temp/git/blobs/{blob_sha}",
+                    "--jq", ".content",
+                ])
+                if code == 0 and out.strip():
+                    remote_api = base64.b64decode(out.strip())
+                    record["blob_sha1"] = blob_sha
+                    record["remote_api_sha256"] = sha256_bytes(remote_api)
+                    record["byte_length_remote_api"] = len(remote_api)
+                    record["identical_api_transport"] = remote_api == local
+                else:
+                    record["identical_api_transport"] = None
+                    record["api_note"] = "REST blob transport unavailable for this entry"
+            if record["manifest_sha256"] != record["local_sha256"]:
+                mismatches.append(f"{path_text}: committed bytes do not match the manifest hash")
+            if not record["identical_git_transport"]:
+                mismatches.append(f"{path_text}: remote git bytes differ from local bytes")
+            if record.get("identical_api_transport") is False:
+                mismatches.append(f"{path_text}: remote REST blob bytes differ from local bytes")
+            comparisons.append(record)
 
     api_confirmed = sum(1 for item in comparisons if item.get("identical_api_transport") is True)
+    total_bytes = sum(item["byte_length_local"] for item in comparisons)
     return {
         "readback_id": "CUR-ORCH-QUAL-01-REMOTE-READBACK",
         "decision_changed": [],
         "immutable_commit": commit,
         "bundle_sha256": manifest["bundle_sha256"],
         "entry_count": len(comparisons),
-        "transports": ["git_protocol_fetch_by_immutable_sha", "github_rest_git_blobs_api"],
+        "compared_byte_total": total_bytes,
+        "transports": ["clean_clone_git_fetch_by_immutable_sha", "github_rest_git_blobs_api"],
+        "git_transport_note": "Retrieved into a throwaway clean clone, so the bytes came off the wire and not from this checkout's object cache.",
         "api_confirmed_entry_count": api_confirmed,
         "comparisons": comparisons,
         "mismatches": mismatches,

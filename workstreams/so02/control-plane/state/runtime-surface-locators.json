@@ -1,6 +1,6 @@
 {
-  "locator_set_id": "SCF01-RUNTIME-SURFACE-LOCATORS-20260822-v001",
-  "state": "KNOWN_GITHUB_SURFACES_VERIFIED_SW_SPACE_ID_FOUNDER_REPORTED_OTHER_PROVIDER_SURFACES_AWAIT_LAUNCH_OR_OWNER_CAPTURE",
+  "locator_set_id": "SCF01-RUNTIME-SURFACE-LOCATORS-20260822-v002",
+  "state": "CURSOR_ORCHESTRATOR_AND_QUALIFICATION_SURFACES_VERIFIED_SW_SPACE_ID_FOUNDER_REPORTED_CREDENTIAL_BLOCKED_SURFACES_AWAIT_OWNER_CAPTURE",
   "canonical_store": "git_repository",
   "capture_rule": "Every new provider project, space, operation, thread, agent, run or return branch must record the exact stable URL or provider ID, account/workspace alias, immutable resume checkpoint, return path and verification time before it can be called resumable. Never invent a locator when the provider does not expose one.",
   "decision_changed": [],
@@ -34,24 +34,72 @@
       "runtime_binding_id": "SCF-01/CUR-01",
       "surface_kind": "cursor_cloud_agent",
       "account_or_workspace_alias": "founder-authenticated-cursor",
-      "state": "AWAITING_PROVIDER_CREATION",
+      "state": "VERIFIED",
+      "stable_locator": "https://cursor.com/agents/bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+      "resume_checkpoint": "bcId=bc-c6f63d58-9611-495a-96f6-2f2dcbef696d; model=claude-opus-5-thinking-max-fast; immutable start SHA a5adfdff6921b34b05c1ea6eed0c1752bb4ebbbb; resume by addressing the run id through cursor-cloud run-info or batch-fetch-details",
+      "return_path": "isolated branch cursor/so02-cur-orch-qual-01 then immutable SO-02 ingestion",
+      "last_verified_at": "2026-08-22T13:42:17Z",
+      "capture_trigger": null
+    },
+    {
+      "locator_id": "LOC-CURSOR-QUAL-BRANCH",
+      "runtime_binding_id": "SCF-01/CUR-01",
+      "surface_kind": "github_isolated_qualification_branch",
+      "account_or_workspace_alias": "github/asibrahim336-hash",
+      "state": "VERIFIED",
+      "stable_locator": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/tree/cursor/so02-cur-orch-qual-01",
+      "resume_checkpoint": "resolve the branch head with git ls-remote and act only on the resolved immutable SHA",
+      "return_path": "workstreams/so02/control-plane/** and receipts/so02/**",
+      "last_verified_at": "2026-08-22T13:41:00Z",
+      "capture_trigger": null
+    },
+    {
+      "locator_id": "LOC-CURSOR-QUAL-EVIDENCE-COMMIT",
+      "runtime_binding_id": "SCF-01/CUR-01",
+      "surface_kind": "github_immutable_evidence_commit",
+      "account_or_workspace_alias": "github/asibrahim336-hash",
+      "state": "VERIFIED",
+      "stable_locator": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/commit/04001dba1c689c90041ea383f3092213756c7ead",
+      "resume_checkpoint": "bundle_sha256=451352be9999caffd1fa35c7cdc41f33a8113ec5a03d46d07e8489927b3aeb52; 11 entries and 108160 bytes read back byte-for-byte over two transports with zero mismatches",
+      "return_path": "receipts/so02/2026-08-22/cur-orch-qual-01/REMOTE-READBACK.json",
+      "last_verified_at": "2026-08-22T13:42:02Z",
+      "capture_trigger": null
+    },
+    {
+      "locator_id": "LOC-CURSOR-EVENT-RETURN",
+      "runtime_binding_id": "SCF-01/CUR-01",
+      "surface_kind": "asynchronous_event_return_subscription",
+      "account_or_workspace_alias": "founder-authenticated-cursor",
+      "state": "ROUTE_QUALIFICATION_PENDING",
       "stable_locator": null,
       "resume_checkpoint": null,
-      "return_path": "isolated canary branch then immutable SO-02 ingestion",
+      "return_path": "CUR-ORCH-QUAL-01 successor evidence bundle",
       "last_verified_at": null,
-      "capture_trigger": "Immediately after CUR-ORCH-QUAL-01 launch, capture the exact agent URL or provider ID and immutable start SHA."
+      "capture_trigger": "Record the subscription ID once an asynchronous external result has been delivered and reconciled; the subscription surface is inventoried but not yet qualified end to end."
     },
     {
       "locator_id": "LOC-CURSOR-OPENAI-CONVERSATION",
       "runtime_binding_id": "SCF-01/CUR-01",
       "surface_kind": "openai_api_conversation",
       "account_or_workspace_alias": "authorised-openai-api-project-if-available",
-      "state": "ROUTE_QUALIFICATION_PENDING",
+      "state": "OWNER_CAPTURE_REQUIRED",
       "stable_locator": null,
       "resume_checkpoint": null,
       "return_path": "CUR-ORCH-QUAL-01 immutable evidence bundle",
       "last_verified_at": null,
-      "capture_trigger": "If an authorised Responses/Conversations API route is available, record the conversation ID and API project alias without recording credentials."
+      "capture_trigger": "Route probed 2026-08-22T13:37:38Z: reachable, HTTP 401, no credential present. Owner action OA-CURORCH-01 attaches OPENAI_API_KEY; the conversation ID is then recorded here without any credential material."
+    },
+    {
+      "locator_id": "LOC-CURSOR-AGENT-REST-API",
+      "runtime_binding_id": "SCF-01/CUR-01",
+      "surface_kind": "cursor_agent_rest_api",
+      "account_or_workspace_alias": "founder-authenticated-cursor",
+      "state": "OWNER_CAPTURE_REQUIRED",
+      "stable_locator": null,
+      "resume_checkpoint": null,
+      "return_path": "CUR-ORCH-QUAL-01 successor evidence bundle",
+      "last_verified_at": null,
+      "capture_trigger": "Route probed 2026-08-22T13:37:38Z: reachable, HTTP 401 'Invalid User API Key'. Owner action OA-CURORCH-02 attaches CURSOR_API_KEY; created run IDs are then recorded here."
     },
     {
       "locator_id": "LOC-CURSOR-CHATGPT-CANARY-PROJECT",
