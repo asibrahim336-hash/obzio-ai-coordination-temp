@@ -1,0 +1,194 @@
+{
+  "attempt_id": "PO03-WA-013-A02",
+  "deterministic": true,
+  "fixture_count": 16,
+  "fixtures": [
+    {
+      "bytes": 3104,
+      "description": "Control fixture: one unit traverses the entire lifecycle to ACCEPTED with no fault injected.",
+      "fault_class": "clean-full-lifecycle",
+      "fixture": "fx-01-clean-full-lifecycle.jsonl",
+      "lines": 11,
+      "newline_terminated": true,
+      "sha256": "a13aec8d093c5d8ee95323a1f4d6b79e13c2f45b1af9be808de0efdfdff6652c",
+      "sidecars": []
+    },
+    {
+      "bytes": 2456,
+      "description": "Lost return callback after a durable result commit. The producer committed and pushed; the parent never recorded PARENT_INGESTED. The result is recoverable without rerunning the producer, so the scanner must emit REPLAY_PARENT_INGESTION and never RERUN.",
+      "fault_class": "committed-not-ingested",
+      "fixture": "fx-02-committed-not-ingested.jsonl",
+      "lines": 8,
+      "newline_terminated": true,
+      "sha256": "3099a5c85d4b7b5701f8b04b849d9c599d81f2572044bdaf60b3bb54101cb823",
+      "sidecars": []
+    },
+    {
+      "bytes": 1265,
+      "description": "Sanitized analogue of the frozen PO-02 Code-2 packaging loss: the provider runtime reported COMPLETED while the ledger stops at CHECKPOINTED with no result commit. Obzio state must be PROVIDER_COMPLETED_UNCOMMITTED and never COMPLETED.",
+      "fault_class": "provider-completed-uncommitted",
+      "fixture": "fx-03-provider-completed-uncommitted.jsonl",
+      "lines": 4,
+      "newline_terminated": true,
+      "sha256": "b06a2973ef01b6e14100c2216b2fb532a82d9e9e80c2334745f624a343ec4780",
+      "sidecars": [
+        {
+          "bytes": 61,
+          "file": "fx-03-provider-observations.json",
+          "sha256": "1233fe54d34f2516d8b571119a05e3e4ff2e39894a0c169a42eeb937efa57b75"
+        }
+      ]
+    },
+    {
+      "bytes": 1931,
+      "description": "False completion: a coordinator event asserts COMPLETED directly from RESULT_STAGED with no RESULT_COMMITTED and no result_commit_id. Acceptance requires zero false completion, so the scanner must refuse the transition and raise a CRITICAL finding.",
+      "fault_class": "false-completion",
+      "fixture": "fx-04-false-completion.jsonl",
+      "lines": 7,
+      "newline_terminated": true,
+      "sha256": "9e618154a19378a1b36a8a94f8d12f3b23b9044a658d8240dbcac3a52ffa1563",
+      "sidecars": []
+    },
+    {
+      "bytes": 2196,
+      "description": "Stale lease: after the coordinator fences attempt A01 at token 2, the evicted worker attempts RESULT_COMMITTED and PARENT_INGESTED at token 1. Both must be refused so the stale worker cannot commit after ownership transfers.",
+      "fault_class": "stale-lease-commit",
+      "fixture": "fx-05-stale-lease-commit.jsonl",
+      "lines": 7,
+      "newline_terminated": true,
+      "sha256": "007f4a841fe77f3367d60a26eec52b889d03eafd2216c28af5d11a254feabb4d",
+      "sidecars": []
+    },
+    {
+      "bytes": 4602,
+      "description": "Duplicate callbacks: the RESULT_COMMITTED and PARENT_INGESTED events are redelivered verbatim twice by an at-least-once transport. Deduplication by event_id must leave the reconstructed state unchanged and raise no defect.",
+      "fault_class": "duplicate-callback",
+      "fixture": "fx-06-duplicate-callback.jsonl",
+      "lines": 16,
+      "newline_terminated": true,
+      "sha256": "2eb75a565e0d359ff308a81c00f9f565d16ee623f5cf6b7c65e944a926e3af3b",
+      "sidecars": []
+    },
+    {
+      "bytes": 2565,
+      "description": "Partial write: the process died while appending the PARENT_INGESTED event, leaving half a JSON object and no trailing newline. The scanner must truncate the torn tail safely, report it as recoverable, and still reconstruct COMMITTED_NOT_INGESTED from the durable prefix rather than refusing to scan.",
+      "fault_class": "torn-tail",
+      "fixture": "fx-07-torn-tail.jsonl",
+      "lines": 9,
+      "newline_terminated": false,
+      "sha256": "00280ea42ea16865e56a32dfcd786fab7c0283a6ace03f44193dd06cea872057",
+      "sidecars": []
+    },
+    {
+      "bytes": 2084,
+      "description": "Interior corruption: a complete newline-terminated line in the middle of the ledger is not valid JSON. Unlike a torn tail this cannot be a crash artefact of the last append, so it is a CRITICAL append-only integrity violation, not a skippable line.",
+      "fault_class": "corrupt-interior-line",
+      "fixture": "fx-08-corrupt-interior-line.jsonl",
+      "lines": 8,
+      "newline_terminated": true,
+      "sha256": "ed75e6f9b0fa12fb75e9313c439dd60089b6286dad906780a357c49d15a9f277",
+      "sidecars": []
+    },
+    {
+      "bytes": 1720,
+      "description": "Checkpoint regression: a later event carries a lower checkpoint_seq than one already durable. Checkpoints must be monotonic, so the regression is a defect and the retained checkpoint must not move backwards.",
+      "fault_class": "checkpoint-regression",
+      "fixture": "fx-09-checkpoint-regression.jsonl",
+      "lines": 6,
+      "newline_terminated": true,
+      "sha256": "f8322b5ea2396c4a96660ec68711dbdc92f5779537eaddc615fd1e3247809b86",
+      "sidecars": []
+    },
+    {
+      "bytes": 1045,
+      "description": "Entire provider-runtime loss: the unit is RUNNING, its lease has expired, and no result commit exists. The scanner must classify it ORPHANED_LEASE_EXPIRED and emit a redispatch directive that raises the fence token.",
+      "fault_class": "orphaned-lease-expired",
+      "fixture": "fx-10-orphaned-lease-expired.jsonl",
+      "lines": 3,
+      "newline_terminated": true,
+      "sha256": "0bc047563f07a416290ce7c3d68b495b5711b12c44876f68820a0d283319669c",
+      "sidecars": []
+    },
+    {
+      "bytes": 2676,
+      "description": "Identifier reuse: a second event reuses the event_id of the RESULT_COMMITTED event while carrying different content. Idempotent deduplication must not silently absorb it, because that would let a rewritten event hide behind a delivered one.",
+      "fault_class": "event-id-conflict",
+      "fixture": "fx-11-event-id-conflict.jsonl",
+      "lines": 9,
+      "newline_terminated": true,
+      "sha256": "231b9e8f6d99fea28e850a2e6942b096ad3080fc607c0bee477125b846af4f56",
+      "sidecars": []
+    },
+    {
+      "bytes": 2883,
+      "description": "Self-promotion: the producer records COMPLETED for its own unit. Only the coordinator may record COMPLETED, so the event must be refused even though the lifecycle position and the durable result commit are both valid.",
+      "fault_class": "unauthorized-completion-actor",
+      "fixture": "fx-12-unauthorized-completion-actor.jsonl",
+      "lines": 10,
+      "newline_terminated": true,
+      "sha256": "97f89c07599522428d2524a5655287283cb056959a9970191a5facc8c20acf36",
+      "sidecars": []
+    },
+    {
+      "bytes": 3090,
+      "description": "Self-acceptance: the same producer actor that generated the result records ACCEPTED. A producer cannot independently accept its own result, so the review event must be refused.",
+      "fault_class": "producer-self-acceptance",
+      "fixture": "fx-13-producer-self-acceptance.jsonl",
+      "lines": 11,
+      "newline_terminated": true,
+      "sha256": "5a443c37b6c4e159a7a3ff7706221e88581978aa9fab1b1985e5ff4023a75060",
+      "sidecars": []
+    },
+    {
+      "bytes": 2456,
+      "description": "Storage reordering: two lines are persisted out of event_seq order. Ordering by event_seq must still reconstruct the correct lifecycle while the file-order divergence is reported.",
+      "fault_class": "file-order-shuffled",
+      "fixture": "fx-14-file-order-shuffled.jsonl",
+      "lines": 8,
+      "newline_terminated": true,
+      "sha256": "a25bf7251a471aa4bf6558d8884fecbc8f083dd841f897837a2cf2f64bb1276a",
+      "sidecars": []
+    },
+    {
+      "bytes": 2456,
+      "description": "Missing artifact behind a durable commit: the ledger declares a manifest digest for a committed result, but read-back finds no artifact. Recovery must not treat the commit as trustworthy; the test supplies an empty artifact root as the probe surface.",
+      "fault_class": "committed-artifact-missing",
+      "fixture": "fx-15-committed-artifact-missing.jsonl",
+      "lines": 8,
+      "newline_terminated": true,
+      "sha256": "5d48e5166d2c6bf01ed2c5c1cd23b28bb0ca68976cbc7e63ae877ad5739b586e",
+      "sidecars": []
+    },
+    {
+      "bytes": 15491,
+      "description": "Mixed fleet in one pass: an accepted unit, a committed-not-ingested unit, a provider-completed-uncommitted unit, an orphaned expired lease, an ingested-not-completed unit, an undispatched lease, and a task whose first attempt was fenced and superseded before its second attempt committed without ingestion. Provider observation COMPLETED is also present on units that do hold durable commits, so the scanner must not let a provider observation override durable evidence in either direction.",
+      "fault_class": "mixed-fleet",
+      "fixture": "fx-16-mixed-fleet.jsonl",
+      "lines": 50,
+      "newline_terminated": true,
+      "sha256": "30107791be9d6d5388b7a7d916aa16ad4f426019d83ab877020da59fcbb6ca4f",
+      "sidecars": [
+        {
+          "bytes": 233,
+          "file": "fx-16-provider-observations.json",
+          "sha256": "ecb8368efecbbad6fb9fc05b330987ad9c96dc360298aac868e918f1d56b2311"
+        }
+      ]
+    }
+  ],
+  "generator": "make_fixtures.py",
+  "protocol_version": "OBZIO-RECOVERY-CRASH-FIXTURE-v1",
+  "regenerate_command": "PYTHONDONTWRITEBYTECODE=1 python3 make_fixtures.py fixtures",
+  "sanitization": {
+    "actors": "synthetic fx-coordinator / fx-worker / fx-assurance / fx-harness",
+    "commit_ids": "40-hex derived by SHA-256 over a fixture label; not real git objects",
+    "external_effects": "NONE",
+    "manifest_digests": "64-hex derived by SHA-256 over a fixture label; not real artifacts",
+    "policy": "NO_LIVE_IDENTIFIERS_COPIED",
+    "provider_run_ids": "derived by SHA-256 over a fixture label",
+    "secrets_present": false,
+    "task_ids": "synthetic PO03-FX-* namespace"
+  },
+  "task_id": "PO03-WA-013",
+  "total_fixture_bytes": 52020
+}

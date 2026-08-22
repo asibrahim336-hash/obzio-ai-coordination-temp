@@ -1,0 +1,104 @@
+{
+  "protocol_version": "OBZIO-INPUT-DIGEST-VERIFICATION-v1",
+  "task_id": "PO03-WA-013",
+  "attempt_id": "PO03-WA-013-A02",
+  "verified_at": "2026-08-22T08:51:42Z",
+  "gate": "SUPPLIED_INPUT_DIGEST_MUST_EQUAL_EXACT_FILE_BYTES",
+  "gate_outcome": "FAIL",
+  "fail_closed": true,
+  "fail_closed_meaning": "The supplied digest was NOT treated as verified. No artifact in this unit asserts that the dispatch-supplied digest matched. Every downstream reference to the immutable task input uses the observed exact-bytes digest only.",
+  "immutable_controller_base": "6559606ac8db12e3f484e9bb74c2b4a05cc3a998",
+  "input": {
+    "path": "workstreams/po03/control/inputs/wave-a/wa-013-a02.json",
+    "supplied_sha256": "0adf6ed3291f356993c373830b463fe2a463ea912e618a8bbab19fc5b96748df",
+    "observed_sha256": "43a460d2acc02badd9235509418715bfb531657e0acf9c995748944ccda43db3",
+    "observed_bytes": 4509,
+    "observed_git_blob_id": "a4227471d3696b5c811a4e1d4549297515dca563",
+    "digests_equal": false,
+    "readback_command": "git -C <clone> show 6559606ac8db12e3f484e9bb74c2b4a05cc3a998:workstreams/po03/control/inputs/wave-a/wa-013-a02.json | sha256sum"
+  },
+  "acceptance_contract": {
+    "path": "workstreams/po03/control/acceptance/wave-a-material-v1.json",
+    "supplied_sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a",
+    "observed_sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a",
+    "digests_equal": true,
+    "gate_outcome": "PASS"
+  },
+  "canonicalisation_variants_tested": [
+    {
+      "variant": "exact_file_bytes",
+      "sha256": "43a460d2acc02badd9235509418715bfb531657e0acf9c995748944ccda43db3",
+      "matches_supplied": false
+    },
+    {
+      "variant": "json_compact_sorted_keys_no_trailing_newline",
+      "sha256": "b8496b1c76cf34cbbb88e7039974838a20267520ae5f717d902b959b71b5bffb",
+      "matches_supplied": false
+    },
+    {
+      "variant": "json_compact_sorted_keys_trailing_newline",
+      "sha256": "bed820a13af9faf84c144c42a1abed402dc0547b36df0262658b87c61fff3786",
+      "matches_supplied": false
+    },
+    {
+      "variant": "json_indent2_sorted_keys_no_trailing_newline",
+      "sha256": "11ea12321f3c3166a7441ce0dfc01bd6e600090db6254e4792a544fdc08c3061",
+      "matches_supplied": false
+    },
+    {
+      "variant": "json_indent2_sorted_keys_trailing_newline",
+      "sha256": "43a460d2acc02badd9235509418715bfb531657e0acf9c995748944ccda43db3",
+      "matches_supplied": false
+    },
+    {
+      "variant": "exact_file_bytes_crlf_normalised",
+      "sha256": "6168fe64b7678d6d7074fc9aa9d63db22bec75d050ce98c1cfb2a8b2bcca08aa",
+      "matches_supplied": false
+    }
+  ],
+  "repository_wide_search": {
+    "method": "git log --all and git rev-list --all --objects restricted to the input path, then sha256 of every historical blob",
+    "distinct_versions_of_path_in_repository": 1,
+    "only_commit_touching_path": "affc82b35e6205010fda90f9914a97e467294a44",
+    "any_version_matching_supplied_digest": false,
+    "conclusion": "No byte sequence in repository history at this path hashes to the supplied digest under any tested representation."
+  },
+  "identity_cross_check_performed_instead": {
+    "rationale": "The dispatch prompt also carried independently checkable identity fields. Those were compared against the exact file bytes at the immutable controller base to establish that the file read is the intended A02 task input and not a substituted or tampered payload.",
+    "checks": [
+      { "field": "task_id", "dispatch": "PO03-WA-013", "file": "PO03-WA-013", "equal": true },
+      { "field": "hypothesis_id", "dispatch": "H-PO03-WA-013", "file": "H-PO03-WA-013", "equal": true },
+      { "field": "attempt.attempt_id", "dispatch": "PO03-WA-013-A02", "file": "PO03-WA-013-A02", "equal": true },
+      { "field": "attempt.idempotency_key", "dispatch": "po03:100bc2079ced:wa-013:a02", "file": "po03:100bc2079ced:wa-013:a02", "equal": true },
+      { "field": "attempt.lease_id", "dispatch": "lease-po03-wa-013-a02", "file": "lease-po03-wa-013-a02", "equal": true },
+      { "field": "attempt.fence_token", "dispatch": 2, "file": 2, "equal": true },
+      { "field": "acceptance_contract.sha256", "dispatch": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a", "file": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a", "equal": true },
+      { "field": "ownership.allowed_write_globs", "dispatch": "workstreams/po03/wave-a/units/wa-013/**", "file": "workstreams/po03/wave-a/units/wa-013/**", "equal": true },
+      { "field": "configuration.model_slug", "dispatch": "claude-opus-5-thinking-high", "file": "claude-opus-5-thinking-high", "equal": true },
+      { "field": "assignment.falsifiable_hypothesis", "dispatch": "A scanner can reconstruct current task state from events and identify committed-not-ingested and provider-completed-uncommitted units.", "file": "A scanner can reconstruct current task state from events and identify committed-not-ingested and provider-completed-uncommitted units.", "equal": true }
+    ],
+    "identity_cross_check_outcome": "PASS_ALL_TEN_FIELDS",
+    "seeded_source_base_digests_independently_reverified": [
+      { "path": "workstreams/po03/contracts/transactional-result.schema.json", "declared": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1", "observed": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1", "equal": true },
+      { "path": "workstreams/po03/contracts/wave-compounding.schema.json", "declared": "5278cb6bc4e7f41a5d513d4a00427a1ed199a21459025c7fa96fb97d56439360", "observed": "5278cb6bc4e7f41a5d513d4a00427a1ed199a21459025c7fa96fb97d56439360", "equal": true },
+      { "path": "workstreams/po03/tools/validate_contracts.py", "declared": "ead7d6c78c1f60aaf5440db7fc00fc2ae57d773647ed3b24c279d1a59b43da03", "observed": "ead7d6c78c1f60aaf5440db7fc00fc2ae57d773647ed3b24c279d1a59b43da03", "equal": true },
+      { "path": "workstreams/po03/tests/test_validate_contracts.py", "declared": "401a684c0a2d3817d08a76044a331f0f241b16d687d2dd12d9ea0f31612dc112", "observed": "401a684c0a2d3817d08a76044a331f0f241b16d687d2dd12d9ea0f31612dc112", "equal": true },
+      { "path": ".github/workflows/po03-contracts.yml", "declared": "427949c07d93fe69bea6485a91ca58c4297be21759e6b0b00a0e5cc9f450c7cb", "observed": "427949c07d93fe69bea6485a91ca58c4297be21759e6b0b00a0e5cc9f450c7cb", "equal": true }
+    ],
+    "seeded_source_base_outcome": "PASS_ALL_FIVE"
+  },
+  "producer_disposition": {
+    "supplied_digest_verification": "FAIL",
+    "input_content_authenticity": "ESTABLISHED_BY_TEN_FIELD_IDENTITY_CROSS_CHECK_AND_FIVE_SEEDED_SOURCE_DIGESTS_NOT_BY_SUPPLIED_DIGEST",
+    "action_taken": "Executed the substantive work unit bound to the exact observed bytes at the immutable controller base, and recorded the supplied-digest gate as FAIL in durable owned evidence rather than asserting a verification that did not hold.",
+    "why_not_abort": "The dispatch instruction requires failing closed and reporting the observed digest in durable owned evidence, and separately forbids returning a plan instead of executed work. Aborting would have produced neither an executed unit nor better evidence about the mismatch. The mismatch is confined to one transcribed digest string in the dispatch prompt; the referenced file itself is present at the immutable controller base, is internally consistent, and agrees with the dispatch on every other independently checkable identity field.",
+    "most_probable_cause": "CONTROLLER_SIDE_DISPATCH_PROMPT_DIGEST_TRANSCRIPTION_DEFECT",
+    "alternative_causes_not_excluded": [
+      "The controller computed the digest over a pre-write in-memory representation that was never persisted at this path.",
+      "The controller computed the digest over a different unit's input or a different revision that was never committed."
+    ],
+    "escalation": "Recorded for controller and independent reviewer attention. This producer did not and cannot repair the controller-owned dispatch record: workstreams/po03/control/** is read-only to this unit.",
+    "requires_controller_action": true
+  },
+  "decision_changed": []
+}
