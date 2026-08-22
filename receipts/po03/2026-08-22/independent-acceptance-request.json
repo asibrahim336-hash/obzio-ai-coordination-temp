@@ -151,7 +151,16 @@
       "evidence": "Every changed path in this Wave lies inside workstreams/po03/**, receipts/po03/** or .github/workflows/po03-*.yml. The guard was run over the full branch-point-to-head diff with rename detection disabled and reported every path in scope. No write outside the allowlist was performed at any point, including to demonstrate rejection: rejection is proved with synthetic path strings and throwaway git repositories under the system temporary directory.",
       "verification_command": "git diff --name-only --no-renames -z 552b12eacee637716451492a98980fb0da19ff3e...HEAD | python3 workstreams/po03/tools/path_scope_guard.py --null --stdin",
       "enforced_by": ".github/workflows/po03-contracts.yml",
-      "reviewer_check": "Re-run the command above at this head. It is the same command CI runs, so a disagreement between your result and CI's is itself a finding."
+      "independently_confirmed_by": "GitHub Actions run 32561173259, which resolved the base itself and reported the same 57 paths in scope that the local run reported.",
+      "separate_disclosure_the_reviewer_should_not_miss": {
+        "subject": "the changed paths are inside the allowlist, but they are not uncontested",
+        "detail": "The PR base branch advanced 14 commits while this Wave ran, and 17 of this Wave's 58 changed paths also changed there, including workstreams/po03/tools/validate_contracts.py and its test module. Both writers extended the same seeded validator, so a merge will conflict rather than compose. Sixteen sibling PO-03 branches exist on the remote, several of them apparently parallel attempts at this same commission.",
+        "effect_on_this_wave": "NONE_YET. Nothing was lost or overwritten; the collision is latent and surfaces at merge time.",
+        "why_it_is_disclosed_here": "This record first stated zero collisions, which was measured inside this branch only, where one writer cannot collide with itself. The corrected measurement is 17 overlapping paths.",
+        "evidence_uri": "workstreams/po03/control/path-ownership.json",
+        "resolution": "DEFERRED_TO_A_HUMAN_REVIEWER. Reconciling another writer's work is outside this worker's boundary and would risk destroying their result."
+      },
+      "reviewer_check": "Re-run the command above at this head. It is the same command CI runs, so a disagreement between your result and CI's is itself a finding. Then run the overlap measurement in path-ownership.json to see the latent conflict for yourself."
     },
     {
       "control": "PO-01 non-interference is evidenced",
@@ -174,12 +183,14 @@
     "The guard reads path strings only. It cannot see a write that reaches outside the allowlist through a pre-existing symlink; only the manifest's symlink refusal covers that, and only inside the PO-03 subtree.",
     "Every test in this Wave was written by the producer of the code it exercises. If the producer misunderstood a requirement, the tests encode that misunderstanding and still pass.",
     "The five defects reported in this Wave were all found by the producer reviewing its own work, which is exactly the arrangement the producer/reviewer separation hypothesis says is unreliable.",
-    "The anti-fabrication tests check that recorded hashes and commit ids resolve. They cannot check that a prose claim is true."
+    "The anti-fabrication tests check that recorded hashes and commit ids resolve. They cannot check that a prose claim is true.",
+    "Three records in this Wave were written with claims narrower than the words used: the single-writer statement, the remote-branch observation and the zero-collision count. All three were caught by re-checking at the end and corrected in place with the superseded wording retained. That they were wrong at all suggests a reviewer should re-measure any count in this Wave rather than trust it."
   ],
   "decisions_requested_from_the_reviewer": [
     "Whether to scale beyond ten units via true isolated worktrees or cloud VMs, or to accept that ten genuine units carry more evidence than sixty-four manufactured ones.",
     "Whether an observed-but-unselectable model satisfies the strongest-model control, or whether a runtime that exposes model selection is a precondition for that control.",
-    "Whether to open Wave B. The commission's gate reads zero false completion, zero result loss and zero path collision; all three were observed as zero, but across ten units with no independent acceptance."
+    "Whether to open Wave B. The commission's gate reads zero false completion, zero result loss and zero path collision. False completion and result loss were observed as zero, but path collision is not zero: 17 paths overlap with the base branch. On a literal reading the Wave B gate is not met.",
+    "How to reconcile the sixteen sibling PO-03 branches. Several look like parallel attempts at this same commission, and at least one has also modified the seeded validator. This worker deliberately did not read or merge any of them, so someone with authority over the whole estate needs to decide which result survives."
   ],
   "producer_recommendation": "Do not accept this Wave. Accept or reject the individual controls marked PASS on their own evidence, and treat the six NOT_YET controls as open work rather than as satisfied.",
   "decision_changed": []

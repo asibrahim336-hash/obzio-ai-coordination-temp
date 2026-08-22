@@ -1,0 +1,41 @@
+{
+  "event_id": "EVT-PO03-WAVE-A-0011",
+  "seq": 11,
+  "occurred_at": "2026-08-22T08:08:15Z",
+  "timestamp_provenance": "REAL_SHELL_CLOCK_AT_OBSERVATION",
+  "event_type": "defect-found-in-own-evidence",
+  "wave": "WAVE-A",
+  "actor": "po03-integration-controller-bc-ecd55d9e",
+  "subject": "three understated claims in this Wave's own control records",
+  "detail": {
+    "found_by": "re-running `git branch -r` and `git for-each-ref` while assembling the Wave return, instead of reusing the earlier observation",
+    "defects": [
+      {
+        "record": "workstreams/po03/control/path-ownership.json",
+        "claim": "No subordinate writer branch, worktree or agent existed during Wave A.",
+        "reality": "Sixteen sibling PO-03 branches exist on the remote and write the same subtree, several of them apparently parallel attempts at this same commission. The claim was true of this working directory and false as written about the estate.",
+        "repair": "The statement is now scoped THIS_BRANCH_AND_WORKING_DIRECTORY_ONLY, the sixteen branches are listed with their PO-03 path counts, and the superseded wording is retained in amended_from."
+      },
+      {
+        "record": "workstreams/po03/control/path-ownership.json",
+        "claim": "collision_count: 0",
+        "reality": "The PR base branch advanced 14 commits during the Wave and 17 of this Wave's 58 changed paths also changed there, including workstreams/po03/tools/validate_contracts.py and workstreams/po03/tests/test_validate_contracts.py. Both writers extended the same seeded validator, so a merge will conflict rather than compose.",
+        "repair": "collision_count is 1, describing a latent PATH_OVERLAP_WITH_THE_PR_BASE_BRANCH event pinned to base head 0e973ed3fb1c2a51e23edba4ae2d5f303fe33b2d with all 17 paths listed.",
+        "regression_test": "workstreams/po03/tests/test_control_evidence.py::PathOwnershipTests::test_the_recorded_base_branch_overlap_is_not_understated"
+      },
+      {
+        "record": "workstreams/po03/evidence/reproduction-results.json",
+        "claim": "an enumerated list of remote branches",
+        "reality": "The list omitted twelve cursor/po03-* branches, three po03/* branches and one so02/* branch that were already present in this clone's remote-tracking refs.",
+        "repair": "The observation now reports all 28 remote branches by family and retains the superseded list. The PO-01 conclusion is unchanged, because none of the omitted branches is a PO-01 branch."
+      }
+    ],
+    "effect_on_this_wave": "NONE_YET",
+    "effect_detail": "No content was lost or overwritten. This branch was never merged or rebased, and no sibling branch was checked out or read for content. Only ref names and diff path names were read.",
+    "wave_b_gate_consequence": "The commission opens Wave B only on zero false completion, zero result loss and zero path collision. Path collision is not zero, so on a literal reading the gate is not met. This is recorded rather than reinterpreted.",
+    "frozen_receipt_note": "workstreams/po03/evidence/wave-a-compounding-receipt.json was left unchanged. Its digest is attested by GitHub Actions run 32561173259, and amending it after that attestation would invalidate real evidence. This finding is recorded here and in the receipts instead.",
+    "resolution": "DEFERRED_TO_A_HUMAN_REVIEWER",
+    "result_commit_id": "PENDING_SELF_REFERENTIAL"
+  },
+  "decision_changed": []
+}

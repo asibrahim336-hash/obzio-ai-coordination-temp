@@ -49,16 +49,17 @@
   },
   "test_counts": {
     "at_branch_point": 23,
-    "at_this_receipt": 173,
-    "net_added": 150,
+    "at_this_receipt": 181,
+    "net_added": 158,
     "per_module_observed": {
       "test_validate_contracts.py": 52,
-      "test_control_evidence.py": 40,
+      "test_control_evidence.py": 48,
       "test_path_scope_guard.py": 30,
       "test_repository_disposition.py": 30,
       "test_manifest.py": 21
     },
-    "per_module_note": "Each count comes from running discovery restricted to that one module. The five sum to 173, which matches the full-suite total.",
+    "per_module_note": "Each count comes from running discovery restricted to that one module. The five sum to 181, which matches the full-suite total observed at 2026-08-22T08:12:05Z.",
+    "count_history": "The gate log below shows 178, observed before the last three tests were added. Those three came from the collision finding in workstreams/po03/control/events/0011-base-branch-path-collision-measured.json, which arrived after the log was transcribed.",
     "pre_existing_invariants_weakened": 0,
     "pre_existing_invariants_weakened_evidence": "The 23 seeded tests in test_validate_contracts.py are unmodified in substance and still pass; the module's additions are new test classes."
   },
@@ -119,8 +120,10 @@
     "note": "The gate log above is a local run. After the push, GitHub Actions run 32561173259 executed the same five gates on a clean checkout and reproduced identical counts and an identical wave digest. The counts in the local log are therefore not warm-checkout artefacts.",
     "run_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32561173259",
     "detail_uri": "receipts/po03/2026-08-22/ci-clean-clone.json",
-    "changed_paths_after_this_receipt": 58,
-    "changed_paths_note": "58 rather than the 57 in the gate log, because the CI observation added one event record after the run was read."
+    "changed_paths_after_this_receipt": 59,
+    "changed_paths_note": "59 rather than the 57 in the gate log: the CI observation added one event record, and the collision finding added another.",
+    "manifest_entries_after_this_receipt": 56,
+    "re_run_note": "The clean-clone run attested the tree at 5f93a3db8b1077ebc1369a73d5113848f61cea12. Two commits followed it, each pushed and each re-running the same five gates, so the attestation is refreshed rather than stale."
   },
   "commit_sequence": [
     { "sha": "d67598ac516e8ebe8c5d11d715275cff6a848062", "message": "po03: freeze wave A acceptance criteria and source hashes" },
@@ -164,8 +167,15 @@
       "regression_test": "workstreams/po03/tests/test_manifest.py::WriteAndVerifyTests::test_untracked_file_blocks_manifest_generation"
     }
   ],
+  "defects_found_in_this_wave_own_evidence": {
+    "count": 3,
+    "detail": "Three control records were written with claims narrower than their wording: the single-writer statement, the remote-branch list and the zero-collision count. All three were caught by re-measuring at the end of the Wave rather than reusing an earlier observation, and all three were corrected in place with the superseded wording retained.",
+    "most_material": "collision_count was 0 and is 1. The PR base branch advanced 14 commits during the Wave and 17 of this Wave's changed paths also changed there, including the seeded validator and its test module. On a literal reading this means the commission's Wave B gate, which requires zero path collision, is not met.",
+    "event_uri": "workstreams/po03/control/events/0011-base-branch-path-collision-measured.json",
+    "regression_test": "workstreams/po03/tests/test_control_evidence.py::PathOwnershipTests::test_the_recorded_base_branch_overlap_is_not_understated"
+  },
   "defect_discovery_independence": "NOT_INDEPENDENT_SAME_PRODUCER",
-  "defect_discovery_independence_note": "All five defects were found by the producer reviewing its own work. Self-review that finds real defects is worth more than none, but it is not the independent adversarial review the commission asks for.",
+  "defect_discovery_independence_note": "All eight defects, five in the code and three in the evidence, were found by the producer reviewing its own work. Self-review that finds real defects is worth more than none, but it is not the independent adversarial review the commission asks for, and the fact that three evidence records were wrong on first writing is itself a reason to re-measure rather than trust any count in this Wave.",
   "external_research_performed": "NOT_YET",
   "external_research_reason": "No browse or search tool is available in this runtime. Plain curl reaches cursor.com, but there is no way to search or render practitioner repositories, papers and communities at the scale the commission envisions. Rather than cite sources it did not fetch, this Wave reproduced eight well-established engineering hypotheses inside this repository's own code and marked the external corpus NOT_YET.",
   "external_citations_recorded": 0,

@@ -8,8 +8,14 @@
   "observations": [
     {
       "check": "PO-01 branch present",
-      "method": "git branch -a",
-      "observed": "No PO-01 branch exists locally or on the remote. The remote branches observed are main, cursor/setup-dev-environment-b5ce, po03/repository-engineering-portable-runtime-20260822-v001, agent/operator-function-taxonomy-continuity-repair, two packs/* branches and four soo/* branches. None is a PO-01 branch."
+      "method": "git branch -r, re-run and counted at 2026-08-22T08:08:15Z",
+      "observed": "No branch is named for PO-01. The remote carries 28 branches: main, cursor/setup-dev-environment-b5ce, twelve cursor/po03-* branches, four po03/* branches including the PR base, agent/operator-function-taxonomy-continuity-repair, two packs/* branches, one so02/* branch and four soo/* branches.",
+      "amended_from": {
+        "superseded_observation": "The remote branches observed are main, cursor/setup-dev-environment-b5ce, po03/repository-engineering-portable-runtime-20260822-v001, agent/operator-function-taxonomy-continuity-repair, two packs/* branches and four soo/* branches.",
+        "why_it_was_wrong": "That list was incomplete. It omitted twelve cursor/po03-* branches, three po03/* branches and one so02/* branch that were already present in this clone's remote-tracking refs. The conclusion is unchanged, because none of the omitted branches is a PO-01 branch either, but the observation as written understated what was on the remote.",
+        "amended_at": "2026-08-22T08:08:15Z"
+      },
+      "conclusion": "No PO-01 branch exists locally or on the remote."
     },
     {
       "check": "packs/** present in the working tree",
@@ -30,7 +36,7 @@
   "reproduction_attempted": false,
   "reproduction_not_attempted_reason": "A reproduction requires a claim and an artifact to reproduce it against. Neither exists at this head. Fabricating a pack tree in order to appear to reproduce it would be invented evidence.",
   "note_on_remote_pack_branches": {
-    "observed": "Two remote branches named packs/operator-packs-v1-20260820 and packs/operator-packs-v1-source, plus four soo/* branches, exist on the remote.",
+    "observed": "Two remote branches named packs/operator-packs-v1-20260820 and packs/operator-packs-v1-source, plus four soo/* branches, exist on the remote. Sixteen sibling PO-03 branches also exist and are recorded in workstreams/po03/control/path-ownership.json; they were likewise not read.",
     "action_taken": "None. They were not fetched, checked out, read or pinned.",
     "reason": "They are not identified as PO-01 branches by any pointer available to this Wave, and the commission restricts PO-03 to reading immutable PO-01 commits only for reproduction purposes. With no PO-01 identification and no reproduction claim in scope, reading them would be unnecessary contact with another workstream's surfaces rather than evidence gathering.",
     "state": "NOT_READ_BY_CHOICE"

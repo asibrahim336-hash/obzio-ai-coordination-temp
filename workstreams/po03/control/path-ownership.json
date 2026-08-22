@@ -13,10 +13,82 @@
   ],
   "concurrent_subordinate_writers": [],
   "concurrent_subordinate_writer_count": 0,
-  "concurrency_statement": "No subordinate writer branch, worktree or agent existed during Wave A. Every write in the owned subtree was made by this single sequential worker on the branch named above. No two writers ever ran against this working directory at the same time.",
-  "collision_events": [],
-  "collision_count": 0,
-  "collision_detection_method": "Single-writer invariant plus `git status --porcelain` inspection before each commit; no lock service was required because no second writer existed.",
+  "concurrency_statement": "This worker dispatched no subordinate writer. Every write on this branch was made by one sequential worker, and no two writers ever ran against this working directory at the same time.",
+  "concurrency_statement_scope": "THIS_BRANCH_AND_WORKING_DIRECTORY_ONLY",
+  "amended_from": {
+    "recorded_at": "2026-08-22T07:16:29Z",
+    "superseded_claim": "No subordinate writer branch, worktree or agent existed during Wave A.",
+    "why_it_was_wrong": "The claim was scoped to this working directory but written as a statement about the estate. Re-inspecting the already-fetched remote refs at the end of the Wave showed sixteen other PO-03 branches on the remote, several of them writing the same paths. The original wording is kept here rather than erased.",
+    "amended_at": "2026-08-22T08:08:15Z",
+    "found_by": "end-of-wave re-inspection of `git branch -r` while assembling the return"
+  },
+  "other_po03_writers_on_the_remote": {
+    "state": "PRESENT",
+    "observed_at": "2026-08-22T08:08:15Z",
+    "method": "git branch -r plus, per branch, `git diff --name-only --no-renames 552b12ea...<branch> | grep -c '^workstreams/po03/'`. Read from remote-tracking refs already present in this clone; no new fetch, checkout or read of another branch's file contents was performed.",
+    "branch_count_touching_workstreams_po03": 16,
+    "branches": [
+      { "branch": "origin/po03/wave-a-041-schema-adversarial-review", "po03_paths_changed": 304 },
+      { "branch": "origin/po03/repository-engineering-portable-runtime-20260822-v001", "po03_paths_changed": 304, "note": "the PR base branch, now 14 commits ahead of this Wave's branch point" },
+      { "branch": "origin/cursor/po03-wave-a-transactional-factory-b2e7", "po03_paths_changed": 278 },
+      { "branch": "origin/cursor/po03-wa-route-01-material-6e19", "po03_paths_changed": 160 },
+      { "branch": "origin/cursor/po03-wave-a-factory-6e19", "po03_paths_changed": 155 },
+      { "branch": "origin/cursor/po03-route-06-canary-6e19", "po03_paths_changed": 151 },
+      { "branch": "origin/cursor/po03-transactional-sink-canary-route-01-6e19", "po03_paths_changed": 150 },
+      { "branch": "origin/cursor/po03-route-06-sink-canary-6e19", "po03_paths_changed": 150 },
+      { "branch": "origin/cursor/po03-canary-route-05-6e19", "po03_paths_changed": 150 },
+      { "branch": "origin/cursor/po03-wave-a-transactional-factory-ed20", "po03_paths_changed": 84 },
+      { "branch": "origin/cursor/po03-independent-challenger-70f8", "po03_paths_changed": 30 },
+      { "branch": "origin/cursor/po03-canary-custody-b759", "po03_paths_changed": 30 },
+      { "branch": "origin/po03/po03-canary-001", "po03_paths_changed": 19 },
+      { "branch": "origin/cursor/po03-wave-a-b195-1a9f", "po03_paths_changed": 16 },
+      { "branch": "origin/cursor/po03-canary-b195-1a9f", "po03_paths_changed": 12 },
+      { "branch": "origin/po03/custody/route-canary", "po03_paths_changed": 7 }
+    ],
+    "implication": "The single-writer invariant held inside this working directory and says nothing about the estate. Several of these branches appear to be parallel attempts at this same commission, so the PO-03 subtree has many writers even though this branch had one.",
+    "contact_made": "NONE",
+    "contact_detail": "No sibling branch was checked out, merged, rebased onto, pushed to, or read for file content. Only ref names and diff path names were read."
+  },
+  "collision_events": [
+    {
+      "collision_id": "COL-PO03-WAVE-A-001",
+      "kind": "PATH_OVERLAP_WITH_THE_PR_BASE_BRANCH",
+      "observed_at": "2026-08-22T08:08:15Z",
+      "base_branch_head_measured": "0e973ed3fb1c2a51e23edba4ae2d5f303fe33b2d",
+      "base_branch_commits_ahead_of_branch_point": 14,
+      "base_branch_ancestry": "552b12eacee637716451492a98980fb0da19ff3e is still an ancestor of the base branch head, so the histories have not forked; the base has simply advanced.",
+      "overlapping_path_count": 17,
+      "overlapping_paths": [
+        ".github/workflows/po03-contracts.yml",
+        "receipts/po03/2026-08-22/amendment-activation.json",
+        "workstreams/po03/.gitignore",
+        "workstreams/po03/control/model-capability-register.json",
+        "workstreams/po03/control/path-ownership.json",
+        "workstreams/po03/control/recovery-state.json",
+        "workstreams/po03/control/work-unit-registry.jsonl",
+        "workstreams/po03/evidence/criteria-freeze.json",
+        "workstreams/po03/evidence/model-allocation-and-exceptions.json",
+        "workstreams/po03/evidence/recovery-fault-matrix.json",
+        "workstreams/po03/evidence/scale-ladder.json",
+        "workstreams/po03/evidence/source-lock.json",
+        "workstreams/po03/metrics/metric-definitions.json",
+        "workstreams/po03/metrics/work-unit-runs.jsonl",
+        "workstreams/po03/research/hypotheses.jsonl",
+        "workstreams/po03/tests/test_validate_contracts.py",
+        "workstreams/po03/tools/validate_contracts.py"
+      ],
+      "most_consequential_overlaps": "workstreams/po03/tools/validate_contracts.py and its test module. This Wave extended the seeded validator with a validate-dir mode and closed-schema enforcement; another writer has also changed both files on the base branch, so a merge will conflict there rather than compose.",
+      "effect_on_this_wave": "NONE_YET",
+      "effect_detail": "Nothing was lost or overwritten. This branch was never merged, rebased or pushed anywhere but itself, and no sibling branch's content was read or incorporated. The collision is latent and will surface at merge time.",
+      "resolution": "DEFERRED_TO_A_HUMAN_REVIEWER",
+      "resolution_detail": "Resolving it would mean reading and reconciling another writer's work, which is outside this worker's boundary and would risk destroying their result. The overlap is reported instead.",
+      "disclosed_in": "receipts/po03/2026-08-22/independent-acceptance-request.json"
+    }
+  ],
+  "collision_count": 1,
+  "collision_count_note": "One latent path-overlap collision with the PR base branch, covering 17 paths. Recorded as 0 in the first draft of this record, which was measured only within this branch. Zero collisions inside a single writer's own branch is not a collision-free estate.",
+  "collision_detection_method": "Within this branch: single-writer invariant plus `git status --porcelain` inspection before each commit. Across the estate: path-set intersection between this branch's diff and the base branch's diff from the shared branch point, measured at the end of the Wave and pinned to the base head sha above so it is re-checkable.",
+  "collision_detection_gap": "The intersection was measured once, at the end. Nothing detected it while the Wave was running, so a genuine concurrent overwrite would not have been noticed until the same end-of-wave check. A live collision detector remains NOT_YET.",
   "worktree_isolation": {
     "state": "NOT_APPLICABLE",
     "reason": "Isolated worktrees exist to separate concurrent writers. Wave A had exactly one writer, so no isolation boundary was needed. Isolated worktrees or separate cloud VMs remain the correct mechanism if a future wave runs concurrent subordinate writers, and are recorded as available-but-unused in workstreams/po03/evidence/scale-ladder.json."
@@ -40,6 +112,11 @@
     "cursor/setup-dev-environment-b5ce",
     "po03/repository-engineering-portable-runtime-20260822-v001"
   ],
+  "all_other_branches_untouched": {
+    "state": "PASS",
+    "detail": "The only ref this worker wrote is refs/heads/cursor/po03-wave-a-transactional-factory-5086 and its origin counterpart. All 28 other remote branches, including the sixteen sibling PO-03 branches listed above, were neither checked out, merged, rebased onto, pushed to nor read for content.",
+    "verification": "git for-each-ref over refs/heads and refs/remotes, compared against this branch's push history"
+  },
   "pull_requests_untouched": [8, 9],
   "merge_or_promotion_performed": false,
   "enforcement": "workstreams/po03/tools/path_scope_guard.py, enforced on every pull_request and po03/cursor-po03 push by .github/workflows/po03-contracts.yml",

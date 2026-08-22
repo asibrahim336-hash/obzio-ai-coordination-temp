@@ -537,6 +537,41 @@ class PathOwnershipTests(unittest.TestCase):
     def test_no_merge_or_promotion_was_performed(self):
         self.assertFalse(self.record["merge_or_promotion_performed"])
 
+    def test_the_single_writer_claim_is_scoped_to_this_branch(self):
+        self.assertEqual(
+            "THIS_BRANCH_AND_WORKING_DIRECTORY_ONLY",
+            self.record["concurrency_statement_scope"],
+        )
+
+    def test_collision_count_matches_the_recorded_events(self):
+        self.assertEqual(len(self.record["collision_events"]), self.record["collision_count"])
+
+    @unittest.skipUnless(GIT, "git is required to measure the collision surface")
+    def test_the_recorded_base_branch_overlap_is_not_understated(self):
+        collisions = [
+            event
+            for event in self.record["collision_events"]
+            if event["kind"] == "PATH_OVERLAP_WITH_THE_PR_BASE_BRANCH"
+        ]
+        self.assertEqual(1, len(collisions))
+        event = collisions[0]
+        base_head = event["base_branch_head_measured"]
+        if not commit_resolves(base_head):
+            self.skipTest("the measured base branch head is not present in this clone")
+
+        def changed(against):
+            out = git_output("diff", "--name-only", "--no-renames", BRANCH_POINT, against)
+            return set(out.decode("utf-8").split())
+
+        measured = changed("HEAD") & changed(base_head)
+        recorded = set(event["overlapping_paths"])
+        self.assertEqual(len(recorded), event["overlapping_path_count"])
+        self.assertEqual(
+            set(),
+            measured - recorded,
+            "the base-branch overlap is understated; these paths collide but are not disclosed",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
