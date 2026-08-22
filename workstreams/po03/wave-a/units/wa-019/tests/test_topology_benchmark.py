@@ -1,10 +1,13 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import subprocess
 import sys
+import tempfile
 import unittest
+from contextlib import redirect_stdout
 from pathlib import Path
 
 
@@ -15,6 +18,7 @@ from benchmark.model import load_workload  # noqa: E402
 from benchmark.runner import (  # noqa: E402
     FALSIFIABLE_HYPOTHESIS,
     HYPOTHESIS_ID,
+    main,
     run_matched_benchmark,
     run_topology,
 )
@@ -212,6 +216,19 @@ class ExecutableEntryPointTests(unittest.TestCase):
             for name in forbidden:
                 with self.subTest(path=path.name, name=name):
                     self.assertNotIn(f"import {name}", text)
+
+    def test_output_option_creates_a_missing_parent_directory(self):
+        with tempfile.TemporaryDirectory(dir=UNIT_ROOT) as temporary:
+            output = Path(temporary) / "nested" / "result.json"
+            with redirect_stdout(io.StringIO()):
+                returncode = main(["--topology", "all", "--output", str(output)])
+            self.assertEqual(0, returncode)
+            self.assertEqual(
+                "SUPPORTED",
+                json.loads(output.read_text(encoding="utf-8"))[
+                    "hypothesis_assessment"
+                ]["outcome"],
+            )
 
 
 if __name__ == "__main__":

@@ -128,6 +128,7 @@ def main(argv: list[str] | None = None) -> int:
         }
     rendered = json.dumps(result, indent=2, sort_keys=True) + "\n"
     if args.output:
+        args.output.parent.mkdir(parents=True, exist_ok=True)
         args.output.write_text(rendered, encoding="utf-8")
     print(rendered, end="")
     if args.topology == "all":
