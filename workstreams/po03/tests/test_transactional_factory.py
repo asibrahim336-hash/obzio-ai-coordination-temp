@@ -80,6 +80,7 @@ class TransactionalFactoryTests(unittest.TestCase):
             state="RUNNING",
             actor="worker-1",
             fence_token=1,
+            details={"provider_task_id": "provider-task-1", "worker_agent_id": "agent-1"},
         )
         self._git("init")
         self._git("config", "user.name", "PO-03 Test")
@@ -127,7 +128,13 @@ class TransactionalFactoryTests(unittest.TestCase):
         self._git("commit", "-m", "produce immutable result")
         return base_commit, self._git("rev-parse", "HEAD")
 
-    def _parent_ingested_result_with_review(self, *, reviewer_family="claude-opus-5"):
+    def _parent_ingested_result_with_review(
+        self,
+        *,
+        reviewer_family="claude-opus-5",
+        reviewer_model_exact=None,
+        reviewer_execution_id="review-execution-1",
+    ):
         result_base_commit, result_commit_id = self._committed_ready_result()
         MODULE.ingest_committed_result(
             "po03-test-task",
@@ -140,12 +147,19 @@ class TransactionalFactoryTests(unittest.TestCase):
             MODULE.CONTROL_ROOT / "tasks" / "po03-test-task" / "acceptance.json"
         )
         receipt_path = "workstreams/po03/reviews/po03-test-task-review.json"
+        exact_model = reviewer_model_exact or {
+            "claude-opus-5": "claude-opus-5-thinking-high",
+            "gpt-5.6-sol": "gpt-5.6-sol-xhigh",
+        }.get(reviewer_family, reviewer_family)
         receipt = {
             "review_version": "PO03-INDEPENDENT-REVIEW-v1",
             "task_id": "po03-test-task",
             "result_commit_id": result_commit_id,
             "reviewer_id": "reviewer-2",
             "reviewer_model_family": reviewer_family,
+            "reviewer_model_exact": exact_model,
+            "reviewer_runtime_id": "review-runtime-2",
+            "reviewer_execution_id": reviewer_execution_id,
             "disposition": "ACCEPTED",
             "criteria_sha256": acceptance_sha256,
             "reviewed_at": "2026-08-22T08:00:00Z",
@@ -313,7 +327,7 @@ class TransactionalFactoryTests(unittest.TestCase):
         event.write_bytes(MODULE.canonical_json(document))
         self.assertTrue(any("invalid lease fence" in error for error in MODULE.verify_chain("po03-test-task")))
 
-    def test_controller_predispatch_transition_requires_explicit_marker(self):
+    def test_running_requires_worker_execution_evidence(self):
         self._create_task()
         MODULE.advance_task(
             "po03-test-task",
@@ -328,15 +342,62 @@ class TransactionalFactoryTests(unittest.TestCase):
                 state="RUNNING",
                 actor="integration-controller",
                 fence_token=1,
+                details={"controller_pre_dispatch": True, "provider_run_id": "reserved-run-1"},
+            )
+        with self.assertRaises(MODULE.FactoryError):
+            MODULE.advance_task(
+                "po03-test-task",
+                state="RUNNING",
+                actor="worker-1",
+                fence_token=1,
             )
         MODULE.advance_task(
             "po03-test-task",
             state="RUNNING",
-            actor="integration-controller",
+            actor="worker-1",
             fence_token=1,
-            details={"controller_pre_dispatch": True, "provider_run_id": "reserved-run-1"},
+            details={"provider_task_id": "provider-task-1", "worker_agent_id": "agent-1"},
         )
         self.assertEqual("RUNNING", MODULE.task_events("po03-test-task")[-1]["state"])
+
+    def test_undispatched_reservation_is_recovered_without_claiming_provider_execution(self):
+        original_utc_now = MODULE.utc_now
+        self.addCleanup(setattr, MODULE, "utc_now", original_utc_now)
+        MODULE.utc_now = lambda: "2000-01-01T00:00:00Z"
+        self._create_task()
+        MODULE.advance_task(
+            "po03-test-task",
+            state="LEASED",
+            actor="integration-controller",
+            fence_token=1,
+            details={"worker_id": "worker-1", "provider_run_id": "reservation:task:attempt-1"},
+        )
+        MODULE.hash_chain_event(
+            "po03-test-task",
+            "RUNNING",
+            actor="integration-controller",
+            details={
+                "controller_pre_dispatch": True,
+                "fence_token": 1,
+                "prior_state": "LEASED",
+                "provider_run_id": "reservation:task:attempt-1",
+            },
+        )
+        events = MODULE.task_events("po03-test-task")
+        self.assertEqual("NOT_DISPATCHED", MODULE.provider_state_from_events(events))
+        self.assertEqual(
+            "AWAIT_PROVIDER_ADMISSION_OR_LEASE_EXPIRY",
+            MODULE._recovery_action("RUNNING", provider_dispatched=False),
+        )
+        recovered = MODULE.recover_undispatched_task(
+            "po03-test-task",
+            reason="reservation did not produce provider execution evidence",
+        )
+        self.assertEqual("RETRY_SCHEDULED", recovered["status"])
+        self.assertEqual(
+            ["RECOVERY_REQUIRED", "RETRY_SCHEDULED"],
+            [event["state"] for event in MODULE.task_events("po03-test-task")][-2:],
+        )
 
     def _advance_to_result_committed(self):
         self._create_task()
@@ -352,6 +413,7 @@ class TransactionalFactoryTests(unittest.TestCase):
             state="RUNNING",
             actor="worker-1",
             fence_token=1,
+            details={"provider_task_id": "provider-task-1", "worker_agent_id": "agent-1"},
         )
         MODULE.advance_task(
             "po03-test-task",
@@ -570,6 +632,20 @@ class TransactionalFactoryTests(unittest.TestCase):
     def test_same_model_family_cannot_independently_complete_result(self):
         _, review_commit_id, receipt_path = self._parent_ingested_result_with_review(
             reviewer_family="gpt-5.6-sol"
+        )
+        with self.assertRaises(MODULE.FactoryError):
+            MODULE.complete_task_after_independent_review(
+                "po03-test-task",
+                review_commit_id=review_commit_id,
+                review_ref="HEAD",
+                receipt_path=receipt_path,
+            )
+        self.assertEqual("PARENT_INGESTED", MODULE.task_events("po03-test-task")[-1]["state"])
+
+    def test_unobserved_reviewer_model_cannot_independently_complete_result(self):
+        _, review_commit_id, receipt_path = self._parent_ingested_result_with_review(
+            reviewer_family="gpt-5.6-terra",
+            reviewer_model_exact="gpt-5.6-terra-max-fast",
         )
         with self.assertRaises(MODULE.FactoryError):
             MODULE.complete_task_after_independent_review(

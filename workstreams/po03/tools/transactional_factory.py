@@ -38,6 +38,12 @@ TASK_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{2,95}$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 GIT_OBJECT_RE = re.compile(r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")
 EVENT_FILE_RE = re.compile(r"^(?P<sequence>[0-9]{6})-(?P<state>[a-z_]+)\.json$")
+# Only current selector-exposed, independently usable families may authorize
+# a Wave A review. Unavailable families remain NOT_SUPPORTED evidence.
+FRONTIER_MODEL_FAMILIES = (
+    "claude-opus-5",
+    "gpt-5.6-sol",
+)
 
 ALLOWED_WRITE_PREFIXES = (
     "workstreams/po03/",
@@ -395,14 +401,23 @@ def verify_chain(task_id: str) -> list[str]:
                 errors.append(f"{repo_relative(path)}: stale or missing fence token")
 
         if isinstance(state, str) and state in PRODUCER_STATES:
-            controller_pre_dispatch = (
+            legacy_controller_pre_dispatch = (
                 state == "RUNNING"
                 and actor == "integration-controller"
                 and details.get("controller_pre_dispatch") is True
                 and _nonempty(details.get("provider_run_id"))
             )
-            if actor != lease_owner and not controller_pre_dispatch:
+            if actor != lease_owner and not legacy_controller_pre_dispatch:
                 errors.append(f"{repo_relative(path)}: producer state has no active leased worker")
+            if (
+                state == "RUNNING"
+                and actor == lease_owner
+                and (
+                    not _nonempty(details.get("provider_task_id"))
+                    or not _nonempty(details.get("worker_agent_id"))
+                )
+            ):
+                errors.append(f"{repo_relative(path)}: running worker lacks provider execution evidence")
         if isinstance(state, str) and state in CONTROLLER_STATES and actor != "integration-controller":
             errors.append(f"{repo_relative(path)}: controller state has non-controller actor")
 
@@ -623,6 +638,19 @@ def _lease_owner(events: list[dict[str, Any]]) -> str | None:
     return None
 
 
+def _has_provider_execution_evidence(events: list[dict[str, Any]]) -> bool:
+    """Return whether a provider worker, rather than a reservation, actually ran."""
+    for event in events:
+        if event.get("state") not in PRODUCER_STATES or event.get("actor") == "integration-controller":
+            continue
+        details = event.get("details")
+        if isinstance(details, dict) and _nonempty(details.get("provider_task_id")) and _nonempty(
+            details.get("worker_agent_id")
+        ):
+            return True
+    return False
+
+
 def _provider_projection(state: str) -> str:
     if state == "CREATED":
         return "NOT_DISPATCHED"
@@ -647,6 +675,8 @@ def provider_state_from_events(events: list[dict[str, Any]]) -> str:
     """Preserve completed provider evidence when custody later needs recovery."""
     latest = events[-1] if events else {}
     latest_details = latest.get("details") if isinstance(latest, dict) else None
+    if latest.get("state") in {"LEASED", "RUNNING"} and not _has_provider_execution_evidence(events):
+        return "NOT_DISPATCHED"
     if (
         latest.get("state") in {"RECOVERY_REQUIRED", "RETRY_SCHEDULED"}
         and isinstance(latest_details, dict)
@@ -681,7 +711,9 @@ def _latest_result_commit(events: list[dict[str, Any]]) -> str | None:
     return None
 
 
-def _recovery_action(state: str) -> str:
+def _recovery_action(state: str, *, provider_dispatched: bool = True) -> str:
+    if not provider_dispatched and state in {"LEASED", "RUNNING", "CHECKPOINTED"}:
+        return "AWAIT_PROVIDER_ADMISSION_OR_LEASE_EXPIRY"
     if state in {"PROVIDER_COMPLETED_UNCOMMITTED", "RECOVERY_REQUIRED", "RETRY_SCHEDULED"}:
         return "RERUN_OR_RECONCILE"
     if state == "PARENT_INGESTED":
@@ -698,6 +730,7 @@ def _recovery_unit(task_id: str) -> dict[str, Any]:
     latest = events[-1]
     input_document = read_json(CONTROL_ROOT / "tasks" / task_id / "input.json")
     event_path = _event_files(task_id)[-1]
+    provider_dispatched = _has_provider_execution_evidence(events)
     return {
         "obzio_state": latest["state"],
         "provider_state": provider_state_from_events(events),
@@ -706,7 +739,7 @@ def _recovery_unit(task_id: str) -> dict[str, Any]:
         "latest_event_sha256": sha256_file(event_path),
         "fence_token": _latest_fence(events, int(input_document["transaction"]["fence_token"])),
         "result_commit_id": _latest_result_commit(events),
-        "recovery_action": _recovery_action(latest["state"]),
+        "recovery_action": _recovery_action(latest["state"], provider_dispatched=provider_dispatched),
     }
 
 
@@ -1270,15 +1303,10 @@ def _frontier_model_family(value: Any) -> str:
     if not _nonempty(value):
         raise FactoryError("model family must be non-empty")
     normalized = value.strip()
-    for family in (
-        "claude-opus-5",
-        "gpt-5.6-sol",
-        "gemini-3.1-pro",
-        "composer-2.5",
-    ):
-        if normalized.startswith(family):
+    for family in FRONTIER_MODEL_FAMILIES:
+        if normalized == family or normalized.startswith(f"{family}-"):
             return family
-    return normalized
+    raise FactoryError("model does not map to an account-observed frontier family")
 
 
 def _resolve_visible_commit(*, commit_id: str, result_ref: str) -> str:
@@ -1305,6 +1333,7 @@ def _load_independent_review(
     acceptance_sha256: str,
     producer_worker_id: str,
     producer_model_family: str,
+    producer_execution_id: str,
     review_commit_id: str,
     review_ref: str,
     receipt_path: str,
@@ -1327,6 +1356,9 @@ def _load_independent_review(
         "result_commit_id",
         "reviewer_id",
         "reviewer_model_family",
+        "reviewer_model_exact",
+        "reviewer_runtime_id",
+        "reviewer_execution_id",
         "disposition",
         "criteria_sha256",
         "reviewed_at",
@@ -1345,8 +1377,15 @@ def _load_independent_review(
     if not _nonempty(review["reviewer_id"]) or review["reviewer_id"] == producer_worker_id:
         raise FactoryError("independent review must name a non-producer reviewer")
     reviewer_family = _frontier_model_family(review["reviewer_model_family"])
+    reviewer_model_family = _frontier_model_family(review["reviewer_model_exact"])
+    if reviewer_family != reviewer_model_family:
+        raise FactoryError("independent review model family does not match the exact model")
     if reviewer_family == producer_model_family:
         raise FactoryError("independent review must use a different frontier model family")
+    if not _nonempty(review["reviewer_runtime_id"]) or not _nonempty(review["reviewer_execution_id"]):
+        raise FactoryError("independent review requires runtime and execution provenance")
+    if review["reviewer_execution_id"] == producer_execution_id:
+        raise FactoryError("independent review reuses the producer execution identity")
     if review["disposition"] not in {"ACCEPTED", "REJECTED"}:
         raise FactoryError("independent review disposition must be ACCEPTED or REJECTED")
     if (
@@ -1383,6 +1422,9 @@ def validate_independent_acceptance(task_id: str) -> list[str]:
         "result_commit_id",
         "reviewer_id",
         "reviewer_model_family",
+        "reviewer_model_exact",
+        "reviewer_runtime_id",
+        "reviewer_execution_id",
         "disposition",
         "criteria_sha256",
         "reviewed_at",
@@ -1445,6 +1487,7 @@ def validate_independent_acceptance(task_id: str) -> list[str]:
             acceptance_sha256=created["acceptance_contract_sha256"],
             producer_worker_id=worker_id,
             producer_model_family=producer_model,
+            producer_execution_id=ingested["attempt"]["provider_run_id"],
             review_commit_id=record["review_commit_id"],
             review_ref=record["review_ref"],
             receipt_path=record["receipt_path"],
@@ -1457,7 +1500,16 @@ def validate_independent_acceptance(task_id: str) -> list[str]:
         errors.append("acceptance receipt URI is not canonical")
     if record["visible_from_commit_id"] != visible_from:
         errors.append("acceptance review visibility proof diverges from the declared ref")
-    for field in ("reviewer_id", "reviewer_model_family", "disposition", "criteria_sha256", "reviewed_at"):
+    for field in (
+        "reviewer_id",
+        "reviewer_model_family",
+        "reviewer_model_exact",
+        "reviewer_runtime_id",
+        "reviewer_execution_id",
+        "disposition",
+        "criteria_sha256",
+        "reviewed_at",
+    ):
         if record[field] != review[field]:
             errors.append(f"acceptance record {field} diverges from immutable review receipt")
     return errors
@@ -1515,6 +1567,7 @@ def complete_task_after_independent_review(
             acceptance_sha256=created["acceptance_contract_sha256"],
             producer_worker_id=worker_id,
             producer_model_family=producer_model,
+            producer_execution_id=ingested["attempt"]["provider_run_id"],
             review_commit_id=review_commit_id,
             review_ref=review_ref,
             receipt_path=receipt_path,
@@ -1525,6 +1578,9 @@ def complete_task_after_independent_review(
             "result_commit_id": result_commit_id,
             "reviewer_id": review["reviewer_id"],
             "reviewer_model_family": review["reviewer_model_family"],
+            "reviewer_model_exact": review["reviewer_model_exact"],
+            "reviewer_runtime_id": review["reviewer_runtime_id"],
+            "reviewer_execution_id": review["reviewer_execution_id"],
             "disposition": review["disposition"],
             "criteria_sha256": created["acceptance_contract_sha256"],
             "reviewed_at": review["reviewed_at"],
@@ -1577,8 +1633,18 @@ def _require_detail_positive_int(details: dict[str, Any], name: str) -> None:
         raise FactoryError(f"{name} must be an integer >= 1")
 
 
+def _require_detail_nonempty(details: dict[str, Any], name: str) -> None:
+    if not _nonempty(details.get(name)):
+        raise FactoryError(f"{name} must be a non-empty string")
+
+
 def _validate_transition_evidence(task_id: str, state: str, details: dict[str, Any]) -> None:
-    if state == "RESULT_STAGED":
+    if state == "RUNNING":
+        if details.get("controller_pre_dispatch") is True:
+            raise FactoryError("RUNNING requires provider execution, not a controller pre-dispatch reservation")
+        _require_detail_nonempty(details, "provider_task_id")
+        _require_detail_nonempty(details, "worker_agent_id")
+    elif state == "RESULT_STAGED":
         _require_detail_sha256(details, "manifest_sha256")
         _require_detail_positive_int(details, "total_bytes")
     elif state == "RESULT_VERIFIED":
@@ -1666,13 +1732,7 @@ def _advance_task_locked(
             raise FactoryError(f"stale fence token {fence_token}; current is {current_fence}")
     owner = _lease_owner(events)
     if state in PRODUCER_STATES and actor != owner:
-        controller_pre_dispatch = (
-            state == "RUNNING"
-            and actor == "integration-controller"
-            and bool((details or {}).get("controller_pre_dispatch"))
-        )
-        if not controller_pre_dispatch:
-            raise FactoryError("only the active leased worker may advance producer states")
+        raise FactoryError("only the active leased worker may advance producer states")
     if state in CONTROLLER_STATES and actor != "integration-controller":
         raise FactoryError("only integration-controller may advance custody and recovery states")
     event_details = dict(details or {})
@@ -1700,6 +1760,68 @@ def _advance_task_locked(
         details=event_details,
     )
     return event_path
+
+
+def recover_undispatched_task(task_id: str, *, reason: str) -> dict[str, Any]:
+    """Release a reservation that never acquired provider execution evidence."""
+    if not _nonempty(reason):
+        raise FactoryError("recovery reason must be non-empty")
+    with _task_lock(task_id):
+        events = task_events(task_id)
+        latest = events[-1]
+        if latest["state"] == "RETRY_SCHEDULED":
+            details = latest.get("details")
+            if isinstance(details, dict) and details.get("provider_dispatched") is False:
+                return {"task_id": task_id, "status": "ALREADY_RETRY_SCHEDULED"}
+            raise FactoryError("retry-scheduled task does not prove an undispatched reservation")
+        if latest["state"] not in {"LEASED", "RUNNING"}:
+            raise FactoryError(
+                f"undispatched recovery requires LEASED or RUNNING custody, found {latest['state']}"
+            )
+        if _has_provider_execution_evidence(events):
+            raise FactoryError("cannot recover as undispatched after provider execution evidence")
+        lease = next((event for event in reversed(events) if event["state"] == "LEASED"), None)
+        lease_run_id = lease.get("details", {}).get("provider_run_id") if lease else None
+        if not isinstance(lease_run_id, str) or not lease_run_id.startswith("reservation:"):
+            raise FactoryError("undispatched recovery requires a pre-allocation reservation identifier")
+        input_document = read_json(CONTROL_ROOT / "tasks" / task_id / "input.json")
+        lease_seconds = input_document.get("transaction", {}).get("lease_seconds")
+        leased_at = lease.get("observed_at") if lease else None
+        if not isinstance(lease_seconds, int) or lease_seconds < 1 or not _nonempty(leased_at):
+            raise FactoryError("undispatched recovery requires a valid frozen lease duration and timestamp")
+        try:
+            lease_deadline = datetime.fromisoformat(leased_at.replace("Z", "+00:00")).astimezone(
+                timezone.utc
+            ).timestamp() + lease_seconds
+        except ValueError as exc:
+            raise FactoryError("undispatched recovery lease timestamp is invalid") from exc
+        if datetime.now(timezone.utc).timestamp() < lease_deadline:
+            raise FactoryError("undispatched recovery cannot preempt a still-valid reservation lease")
+        fence_token = _latest_fence(events, int(input_document["transaction"]["fence_token"]))
+        recovery = _advance_task_locked(
+            task_id,
+            state="RECOVERY_REQUIRED",
+            actor="integration-controller",
+            fence_token=fence_token,
+            details={"provider_dispatched": False, "reason": reason},
+        )
+        retry = _advance_task_locked(
+            task_id,
+            state="RETRY_SCHEDULED",
+            actor="integration-controller",
+            fence_token=fence_token,
+            details={
+                "provider_dispatched": False,
+                "reason": reason,
+                "recovery_source_event": recovery.name,
+            },
+        )
+        return {
+            "task_id": task_id,
+            "recovery_event": repo_relative(recovery),
+            "retry_event": repo_relative(retry),
+            "status": "RETRY_SCHEDULED",
+        }
 
 
 def recovery_scan() -> list[dict[str, Any]]:
@@ -2034,6 +2156,12 @@ def complete_after_review(args: argparse.Namespace) -> int:
     return 0
 
 
+def recover_undispatched(args: argparse.Namespace) -> int:
+    result = recover_undispatched_task(args.task_id, reason=args.reason)
+    print(json.dumps(result, sort_keys=True))
+    return 0
+
+
 def _json_object(value: str) -> dict[str, Any]:
     parsed = json.loads(value)
     if not isinstance(parsed, dict):
@@ -2076,6 +2204,10 @@ def build_parser() -> argparse.ArgumentParser:
     complete_parser.add_argument("--review-ref", default="HEAD")
     complete_parser.add_argument("--receipt-path", required=True)
     complete_parser.set_defaults(handler=complete_after_review)
+    recover_undispatched_parser = subparsers.add_parser("recover-undispatched")
+    recover_undispatched_parser.add_argument("task_id")
+    recover_undispatched_parser.add_argument("--reason", required=True)
+    recover_undispatched_parser.set_defaults(handler=recover_undispatched)
     scan_parser = subparsers.add_parser("scan-recovery")
     scan_parser.set_defaults(handler=lambda args: (print(json.dumps(recovery_scan(), sort_keys=True)) or 0))
     rebuild_parser = subparsers.add_parser("rebuild-recovery")
