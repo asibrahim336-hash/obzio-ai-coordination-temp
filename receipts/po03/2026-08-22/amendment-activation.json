@@ -156,6 +156,27 @@
     "control_plane_verify": "ledger_chain_valid=true, units_total=74, false_completions=0, orphaned_units=0, expired_leases=0",
     "path_scope_check": "PASS — every changed path inside workstreams/po03/**, receipts/po03/** or .github/workflows/po03-*.yml"
   },
+  "ci_gap_found_and_closed": {
+    "subject": ".github/workflows/po03-contracts.yml push trigger",
+    "gap": "The seeded gate triggered on push only for po03/** branches and on pull_request. Wave A is executed on cursor/po03-*-ed20 branches, so the gate never fired on the branches the work is actually done on and a clean-runtime failure would have surfaced only at pull-request time.",
+    "repair": "Added the cursor/po03-*-ed20 push pattern without weakening the existing triggers, scoped to this run's branch suffix so other runs' branches are unaffected.",
+    "seeded_control_weakened": false,
+    "disposition": "RETAIN"
+  },
+  "clean_runtime_ci_observed": {
+    "workflow": "PO-03 result custody and compounding contracts",
+    "workflow_file": ".github/workflows/po03-contracts.yml",
+    "branch": "cursor/po03-wave-a-transactional-factory-ed20",
+    "event": "push",
+    "run_id": "32559213710",
+    "run_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32559213710",
+    "conclusion": "success",
+    "duration": "12s",
+    "started_at": "2026-08-22T07:17:42Z",
+    "runner": "ubuntu-latest, actions/setup-python 3.12",
+    "command": "python -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+    "significance": "The suite reproduces in a clean GitHub Actions environment with no Cursor memory, no local hidden state, no /tmp dependency and no uncommitted files. Deeper clean-clone, determinism, offline and path-scope enforcement are cohort a3's units."
+  },
   "acceptance": "NOT_TESTED",
   "self_marked_accepted": false,
   "outcome_vocabulary_note": "Only PASS, FAIL, NOT_YET, NOT_SUPPORTED and OWNER_BLOCKED are used, with exact evidence for every non-PASS outcome.",
