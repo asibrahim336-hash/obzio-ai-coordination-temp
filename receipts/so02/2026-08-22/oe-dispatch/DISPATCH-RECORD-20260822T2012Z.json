@@ -1,0 +1,66 @@
+{
+  "record_id": "OE-GROUP-DISPATCH-20260822T2012Z",
+  "commission_id": "COM-CUR-ENV-01-20260822-v001",
+  "decision_changed": [
+    "SO-02 founder browser/setup batch HALTED",
+    "strategic development and human-operator implementation guidance for this capability moves to Cursor"
+  ],
+  "authority_basis": "FOUNDER-EXPRESSED",
+  "recorded_at": "2026-08-22T20:13:10Z",
+  "root_controller": "bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+  "continues_existing_operation": true,
+  "duplicate_top_level_agent_created": false,
+  "immutable_source_sha": "fe0a595206e5986de7eaac6cabc619215a1eb81b",
+  "return_branch": "cursor/operating-environment-return-20260822-v001",
+  "pre_dispatch_manifest_commit": "9aea2fee28afdfb4203e29c8c0f06c27b8d837cc",
+  "dispatched_lanes": [
+    {"parent_id": "OE-L1-CURSOR-BASELINE", "provider_id": "1b6c7644-72e0-4a31-96fd-c958df15de45", "branch": "cursor/oe-l1-cursor-baseline-696d", "model": "claude-opus-5-thinking-max-fast"},
+    {"parent_id": "OE-L2-CAPABILITY-RESEARCH", "provider_id": "69e38132-1353-45f9-ab32-75aa39d6980d", "branch": "cursor/oe-l2-capability-research-696d", "model": "claude-opus-5-thinking-max-fast"},
+    {"parent_id": "OE-L3-INDEPENDENT-ACCEPTANCE", "provider_id": "c0f87d27-7d2f-4ff4-87c7-ba27142c7b07", "branch": "cursor/oe-l3-independent-acceptance-696d", "model": "gpt-5.6-sol-xhigh"},
+    {"parent_id": "OE-L4-CURRENTNESS-RECOVERY", "provider_id": "70fdf034-7176-4f32-8a90-ef336bbaaffe", "branch": "cursor/oe-l4-currentness-recovery-696d", "model": "claude-opus-5-thinking-max-fast"},
+    {"parent_id": "OE-L5-CHATGPT-SCALE", "provider_id": "dbee0722-4e75-49e4-bfe6-433ad10512b3", "branch": "cursor/oe-l5-chatgpt-scale-696d", "model": "claude-opus-5-thinking-max-fast"}
+  ],
+  "model_family_diversity": {
+    "claude_family_lanes": 4,
+    "gpt_family_lanes": 1,
+    "rationale": "The independent acceptance lane was deliberately placed on a different model family from the run that produced the evidence it evaluates, so its independence is structural rather than only procedural. The founder directed independence through 'distinct model/agent identity where useful'."
+  },
+  "capacity_observation_at_dispatch": {
+    "observed_at": "2026-08-22T20:12:55Z",
+    "instrument": "cursor-cloud list-cloud-agents, read-only",
+    "visible_top_level_runs_before_dispatch": 9,
+    "visible_top_level_runs_after_dispatching_five_lanes": 9,
+    "pre_existing_po03_top_level_tasks": 8,
+    "po03_status_transitions": 0,
+    "po03_updatedAtMs_changes": 0,
+    "verdict": "ZERO_PO03_CAPACITY_INTERFERENCE",
+    "finding": "Five concurrently dispatched lanes did not appear in the account-level top-level run listing and the visible total stayed at 9. Local lane fan-out therefore consumes no account-level top-level agent slot, which is a materially different capacity profile from a Cursor Multiple Agents group.",
+    "finding_class": "DIRECTLY_REPRODUCED",
+    "honest_limit": "This shows lanes are not counted in the visible top-level denominator. It does not measure underlying compute, rate-limit or token contention, which this instrument cannot see. Do not treat it as unlimited fan-out headroom."
+  },
+  "shared_write_discipline": {
+    "shared_state_writers": 1,
+    "root_is_sole_writer_of_return_branch": true,
+    "each_lane_isolated_branch_and_namespace": true,
+    "lanes_may_return_only": "READY_TO_COMMIT",
+    "integration_requires_remote_readback": true,
+    "integration_requires_independent_criteria": true,
+    "founder_is_comparison_retrieval_or_merge_layer": false
+  },
+  "protected_surfaces_untouched_at_dispatch": {
+    "verified_at": "2026-08-22T20:12:55Z",
+    "main": "37943ec2ff9f6702d72e127a3c8e56c81b0c3812",
+    "so02_source_branch": "fe0a595206e5986de7eaac6cabc619215a1eb81b",
+    "po03_branch_pr9": "4949d1a5ee8ea21177aa48740c08ef45ac63000e",
+    "cur01_evidence_branch": "11a60dcf6dbc2eac4e6d975efab5d985ebbabd62",
+    "sw": "not messaged, not operated, not configured",
+    "claude_extension_route": "not refilled and not made a dependency",
+    "po01_po03_manus": "not contacted or mutated"
+  },
+  "halted_batch_disposition": {
+    "state": "HALTED_PRESERVED_AS_CANDIDATE_EVIDENCE",
+    "source": "workstreams/so02/control-plane/launch/BROWSER-CONTROL-CANARY-NOW.md",
+    "rule": "Its research, links and reasoning are retained as candidate evidence only. No lane may execute, install or expand it, and no named product in it is founder-bound.",
+    "named_products_not_bound": ["Playwright Extension", "Goose", "HARPA", "Nanobrowser", "BrowserMCP", "Chrome DevTools MCP", "Sider/Sidebar", "Aircrift/Aircraft", "Kimi", "Qwen", "DeepSeek"]
+  }
+}
