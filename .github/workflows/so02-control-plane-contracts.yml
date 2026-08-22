@@ -26,4 +26,21 @@ jobs:
         run: python -I workstreams/so02/control-plane/tools/scctl.py validate
       - name: Run recurrence tests
         run: python -I -m unittest discover -s workstreams/so02/control-plane/tests -p "test_*.py" -v
+      - name: Run operating-environment integration controls
+        run: python -I -m unittest discover -s workstreams/so02/control-plane/operating-environment/tools -p "test_*.py"
+      - name: Run operating-environment lane suites
+        run: |
+          set -e
+          for suite in $(find workstreams/so02/control-plane/operating-environment -mindepth 2 -name 'test_*.py' -not -path '*/operating-environment/tools/*' -printf '%h\n' | sort -u); do
+            echo "::group::$suite"
+            python -I -m unittest discover -s "$suite" -p "test_*.py"
+            echo "::endgroup::"
+          done
+      - name: Run lane validators that do not follow the test_ naming convention
+        run: |
+          set -e
+          cd workstreams/so02/control-plane/operating-environment/l5-chatgpt-scale
+          python -I scripts/check_function_register.py
+          python -I scripts/negative_tests_register.py
+          python -I scripts/negative_tests_canary.py
 
