@@ -129,6 +129,23 @@ def entries_for_document(
         claimed = value.get(field)
         if not isinstance(claimed, Mapping):
             continue
+        published_at = claimed.get("published_at")
+        if (
+            field == "shared_spine"
+            and isinstance(published_at, str)
+            and isinstance(claimed.get("sha256"), str)
+        ):
+            digest, byte_count = _metadata(claimed)
+            entries.append(
+                ManifestEntry(
+                    manifest_path=document.path,
+                    logical_path=published_at,
+                    tree_path=_join(parent, published_at, root),
+                    expected_sha256=digest,
+                    expected_bytes=byte_count,
+                )
+            )
+            continue
         for logical_path, metadata in claimed.items():
             if not isinstance(logical_path, str):
                 continue

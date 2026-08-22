@@ -6,7 +6,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT))
 
-from workstreams.po03.packverify.manifest_model import ManifestEntry
+from workstreams.po03.packverify.manifest_model import (
+    ManifestDocument,
+    ManifestEntry,
+    entries_for_document,
+)
 from workstreams.po03.packverify.qualify import find_missing
 
 
@@ -32,6 +36,22 @@ class MissingBlobFixtureTests(unittest.TestCase):
         self.assertEqual(len(findings), 1)
         self.assertEqual(findings[0]["tree_path"], "packs/demo/missing.py")
         self.assertEqual(findings[0]["class"], "manifest_entry_missing_blob")
+
+    def test_manifest_all_shared_spine_metadata_is_one_file_claim(self):
+        document = ManifestDocument(
+            path="packs/MANIFEST_ALL.json",
+            value={
+                "shared_spine": {
+                    "published_at": "packs/_shared/_spine.py",
+                    "sha256": "a" * 64,
+                    "bytes": 10,
+                    "copies_collapsed": 6,
+                }
+            },
+        )
+        entries = entries_for_document(document, "packs")
+        self.assertEqual(len(entries), 1)
+        self.assertEqual(entries[0].tree_path, "packs/_shared/_spine.py")
 
 
 if __name__ == "__main__":
