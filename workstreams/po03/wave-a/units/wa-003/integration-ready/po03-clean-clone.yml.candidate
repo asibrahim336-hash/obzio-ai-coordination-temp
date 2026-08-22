@@ -1,0 +1,132 @@
+# Integration-ready candidate produced by PO03-WA-003. NOT APPLIED.
+#
+# This file deliberately carries the .candidate suffix so GitHub Actions cannot
+# load it. `.github/workflows/po03-*.yml` is controller-owned, and this unit's
+# allowlist is workstreams/po03/wave-a/units/wa-003/**, so the unit proposes the
+# workflow instead of installing it. To adopt it, the controller copies this file
+# to .github/workflows/po03-clean-clone.yml unchanged.
+#
+# The existing po03-contracts.yml proves the seeded suite passes in a clean
+# GitHub checkout. It does not prove independence from the runner's environment,
+# home directory, temporary directory, ambient git configuration or network, and
+# it does not enforce changed-path ownership. This candidate closes those gaps
+# with the executable gate delivered by WA-003.
+
+name: PO-03 clean-clone runtime gate
+
+on:
+  pull_request:
+    paths:
+      - "workstreams/po03/**"
+      - "receipts/po03/**"
+      - ".github/workflows/po03-*.yml"
+  push:
+    branches:
+      - "po03/**"
+      - "cursor/po03-**"
+    paths:
+      - "workstreams/po03/**"
+      - "receipts/po03/**"
+      - ".github/workflows/po03-*.yml"
+
+permissions:
+  contents: read
+
+env:
+  UNIT: workstreams/po03/wave-a/units/wa-003
+
+jobs:
+  clean-clone-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Gate own tests
+        run: python -I -m unittest discover -s "$UNIT/tests" -p 'test_*.py' -v
+
+      - name: Certify the seeded PO-03 suite from a pristine clone
+        run: |
+          python "$UNIT/harness/clean_clone_harness.py" \
+            --source-repo "$PWD" \
+            --commit "$(git rev-parse HEAD)" \
+            --work-root "$RUNNER_TEMP/po03-clean-clone/seeded" \
+            --suite-command "python -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py'" \
+            --scan-path workstreams/po03/tests \
+            --scan-path workstreams/po03/tools/validate_contracts.py \
+            --scan-path workstreams/po03/contracts \
+            --recurrence-clones 2 \
+            --label ci-seeded-suite \
+            --receipt "$RUNNER_TEMP/po03-clean-clone/seeded-receipt.json"
+
+      - name: Certify the WA-003 gate itself from a pristine clone
+        run: |
+          python "$UNIT/harness/clean_clone_harness.py" \
+            --source-repo "$PWD" \
+            --commit "$(git rev-parse HEAD)" \
+            --work-root "$RUNNER_TEMP/po03-clean-clone/unit" \
+            --suite-command "python -I -m unittest discover -s $UNIT/tests -p 'test_*.py'" \
+            --scan-path "$UNIT/harness" \
+            --scan-path "$UNIT/tests" \
+            --scan-exclude "$UNIT/harness/clean_clone_harness.py" \
+            --scan-exclude "$UNIT/harness/run_reproductions.py" \
+            --scan-exclude "$UNIT/tests/**" \
+            --recurrence-clones 2 \
+            --timeout-seconds 1800 \
+            --label ci-unit-suite \
+            --receipt "$RUNNER_TEMP/po03-clean-clone/unit-receipt.json"
+
+      - name: Enforce changed-path ownership on the pull-request range
+        if: github.event_name == 'pull_request'
+        run: |
+          python "$UNIT/harness/ownership_guard.py" \
+            --repo "$PWD" \
+            --base "${{ github.event.pull_request.base.sha }}" \
+            --head "${{ github.event.pull_request.head.sha }}" \
+            --allow 'workstreams/po03/**' \
+            --allow 'receipts/po03/**' \
+            --allow '.github/workflows/po03-*.yml' \
+            --deny 'state/**' \
+            --deny 'dispatch/**' \
+            --deny 'packs/**' \
+            --deny 'modules/operators/**' \
+            --deny '_transport/**' \
+            --deny 'modules/work_unit_contract/**' \
+            --deny 'receipts/po01/**' \
+            --deny 'workstreams/po01/**' \
+            --deny '.cursor/environment.json' \
+            --receipt "$RUNNER_TEMP/po03-clean-clone/ownership.json"
+
+      - name: Prove the guard rejects a deliberate out-of-allowlist mutation
+        run: |
+          set -e
+          SCRATCH="$RUNNER_TEMP/po03-out-of-allowlist-fixture"
+          git clone --quiet --no-hardlinks "$PWD" "$SCRATCH"
+          cd "$SCRATCH"
+          BASE="$(git rev-parse HEAD)"
+          mkdir -p state
+          printf '{"deliberate_out_of_allowlist_fixture": true}\n' > state/po03-path-scope-fixture.json
+          git -c user.email=fixture@obzio.invalid -c user.name=fixture \
+            -c commit.gpgsign=false add state/po03-path-scope-fixture.json
+          git -c user.email=fixture@obzio.invalid -c user.name=fixture \
+            -c commit.gpgsign=false commit --quiet -m 'deliberate out-of-allowlist mutation fixture'
+          cd "$GITHUB_WORKSPACE"
+          if python "$UNIT/harness/ownership_guard.py" \
+              --repo "$SCRATCH" --base "$BASE" --head HEAD \
+              --allow 'workstreams/po03/**' --deny 'state/**'; then
+            echo "path-scope guard failed to reject a protected-state mutation"
+            exit 1
+          fi
+          echo "path-scope guard rejected the deliberate out-of-allowlist mutation as required"
+
+      - name: Publish gate receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: po03-clean-clone-receipts
+          path: ${{ runner.temp }}/po03-clean-clone/*.json
+          if-no-files-found: warn

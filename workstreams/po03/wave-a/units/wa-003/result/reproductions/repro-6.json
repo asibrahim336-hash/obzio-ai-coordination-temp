@@ -1,0 +1,461 @@
+{
+  "blocking_failures": [
+    "CC-08"
+  ],
+  "checks": [
+    {
+      "blocking": true,
+      "detail": {
+        "clone_targets": [
+          "/tmp/po03-wa-003-b1956656/repro/work/repro-6/clone-1"
+        ]
+      },
+      "disposition": "PASS",
+      "evidence": "1 clone target(s) under /tmp/po03-wa-003-b1956656/repro/work/repro-6 did not pre-exist",
+      "id": "CC-01",
+      "name": "no_warm_checkout_reuse"
+    },
+    {
+      "blocking": true,
+      "detail": {
+        "head": "7bbe7b45aaffe6e4461791d3a06482e5ec81f575",
+        "requested": "7bbe7b45aaffe6e4461791d3a06482e5ec81f575",
+        "tree": "1a671a47d75c6552d62d8069d2693e93f6fbbdfd"
+      },
+      "disposition": "PASS",
+      "evidence": "clone HEAD 7bbe7b45aaffe6e4461791d3a06482e5ec81f575 vs requested 7bbe7b45aaffe6e4461791d3a06482e5ec81f575; tree 1a671a47d75c6552d62d8069d2693e93f6fbbdfd",
+      "id": "CC-02",
+      "name": "clone_at_immutable_commit"
+    },
+    {
+      "blocking": true,
+      "detail": {
+        "alternates_path": "/tmp/po03-wa-003-b1956656/repro/work/repro-6/clone-1/.git/objects/info/alternates"
+      },
+      "disposition": "PASS",
+      "evidence": "no .git/objects/info/alternates; object store is self-contained",
+      "id": "CC-03",
+      "name": "no_borrowed_object_store"
+    },
+    {
+      "blocking": true,
+      "detail": {
+        "missing": [],
+        "porcelain": [],
+        "tracked_count": 384,
+        "untracked": []
+      },
+      "disposition": "PASS",
+      "evidence": "384 tracked paths reproduce the working tree exactly",
+      "id": "CC-04",
+      "name": "worktree_equals_committed_tree"
+    },
+    {
+      "blocking": true,
+      "detail": {
+        "patterns": [
+          "**/__pycache__",
+          "**/*.pyc",
+          "**/*.pyo",
+          "**/.pytest_cache",
+          "**/.mypy_cache",
+          "**/.ruff_cache",
+          "**/node_modules",
+          "**/.venv",
+          "**/*.egg-info",
+          "**/.tox"
+        ],
+        "residue": []
+      },
+      "disposition": "PASS",
+      "evidence": "no bytecode, cache, vendored-dependency or virtualenv residue in the clone",
+      "id": "CC-05",
+      "name": "no_warm_build_residue"
+    },
+    {
+      "blocking": false,
+      "detail": {},
+      "disposition": "NOT_SUPPORTED",
+      "evidence": "no pins declared",
+      "id": "CC-06",
+      "name": "provenance_pins_resolve"
+    },
+    {
+      "blocking": false,
+      "detail": {},
+      "disposition": "NOT_SUPPORTED",
+      "evidence": "no hash expectations declared",
+      "id": "CC-07",
+      "name": "declared_source_hashes_match"
+    },
+    {
+      "blocking": true,
+      "detail": {
+        "findings": [
+          {
+            "line": 65,
+            "path": "workstreams/po03/wave-a/units/wa-003/harness/clean_clone_harness.py",
+            "pattern": "system_tmp",
+            "text": "(\"system_tmp\", re.compile(r\"(?<![\\w./$-])/tmp(?:/|\\Z|\\b)\")),"
+          },
+          {
+            "line": 66,
+            "path": "workstreams/po03/wave-a/units/wa-003/harness/clean_clone_harness.py",
+            "pattern": "var_tmp",
+            "text": "(\"var_tmp\", re.compile(r\"(?<![\\w./$-])/var/tmp(?:/|\\Z|\\b)\")),"
+          },
+          {
+            "line": 67,
+            "path": "workstreams/po03/wave-a/units/wa-003/harness/clean_clone_harness.py",
+            "pattern": "dev_shm",
+            "text": "(\"dev_shm\", re.compile(r\"(?<![\\w./$-])/dev/shm(?:/|\\Z|\\b)\")),"
+          },
+          {
+            "line": 68,
+            "path": "workstreams/po03/wave-a/units/wa-003/harness/clean_clone_harness.py",
+            "pattern": "workspace_root",
+            "text": "(\"workspace_root\", re.compile(r\"(?<![\\w./$-])/workspace(?:/|\\Z|\\b)\")),"
+          },
+          {
+            "line": 531,
+            "path": "workstreams/po03/wave-a/units/wa-003/harness/clean_clone_harness.py",
+            "pattern": "system_tmp",
+            "text": "system_tmp = Path(os.environ.get(\"__PO03_SYSTEM_TMP__\", \"/tmp\"))"
+          },
+          {
+            "line": 67,
+            "path": "workstreams/po03/wave-a/units/wa-003/harness/run_reproductions.py",
+            "pattern": "system_tmp",
+            "text": "WARM_STATE_PATH = \"/tmp/po03-warm-state.json\""
+          },
+          {
+            "line": 290,
+            "path": "workstreams/po03/wave-a/units/wa-003/harness/run_reproductions.py",
+            "pattern": "system_tmp",
+            "text": "\"Redirecting TMPDIR does not detect a hardcoded /tmp path; only the static \""
+          },
+          {
+            "line": 74,
+            "path": "workstreams/po03/wave-a/units/wa-003/tests/test_clean_clone_harness.py",
+            "pattern": "system_tmp",
+            "text": "STATE_PATH = \"/tmp/po03-fixture-state\""
+          },
+          {
+            "line": 219,
+            "path": "workstreams/po03/wave-a/units/wa-003/tests/test_clean_clone_harness.py",
+            "pattern": "system_tmp",
+            "text": "(root / \"suite\" / \"notes.md\").write_text(\"see /tmp/ignored\\n\", encoding=\"utf-8\")"
+          }
+        ],
+        "scan_paths": [
+          "workstreams/po03/wave-a/units/wa-003/harness",
+          "workstreams/po03/wave-a/units/wa-003/tests"
+        ],
+        "scanned_files": 5
+      },
+      "disposition": "FAIL",
+      "evidence": "9 non-portable path literal(s) in the declared suite closure: [('workstreams/po03/wave-a/units/wa-003/harness/clean_clone_harness.py', 'system_tmp', 65), ('workstreams/po03/wave-a/units/wa-003/harness/clean_clone_harness.py', 'var_tmp', 66), ('workstreams/po03/wave-a/units/wa-003/harness/clean_clone_harness.py', 'dev_shm', 67), ('workstreams/po03/wave-a/units/wa-003/harness/clean_clone_harness.py', 'workspace_root', 68), ('workstreams/po03/wave-a/units/wa-003/harness/clean_clone_harness.py', 'system_tmp', 531), ('workstreams/po03/wave-a/units/wa-003/harness/run_reproductions.py', 'system_tmp', 67), ('workstreams/po03/wave-a/units/wa-003/harness/run_reproductions.py', 'system_tmp', 290), ('workstreams/po03/wave-a/units/wa-003/tests/test_clean_clone_harness.py', 'system_tmp', 74), ('workstreams/po03/wave-a/units/wa-003/tests/test_clean_clone_harness.py', 'system_tmp', 219)]",
+      "id": "CC-08",
+      "name": "no_non_portable_path_literals"
+    },
+    {
+      "blocking": true,
+      "detail": {
+        "admitted_names": [
+          "ALL_PROXY",
+          "GIT_CONFIG_GLOBAL",
+          "GIT_CONFIG_SYSTEM",
+          "GIT_TERMINAL_PROMPT",
+          "HOME",
+          "HTTPS_PROXY",
+          "HTTP_PROXY",
+          "LANG",
+          "LC_ALL",
+          "NO_PROXY",
+          "PATH",
+          "PYTHONDONTWRITEBYTECODE",
+          "PYTHONHASHSEED",
+          "PYTHONNOUSERSITE",
+          "TEMP",
+          "TMP",
+          "TMPDIR",
+          "http_proxy",
+          "https_proxy",
+          "no_proxy"
+        ],
+        "dropped_count": 37,
+        "dropped_provider_names": [
+          "AGENT_TRANSCRIPTS",
+          "AUREA_E2E_SUPABASE_PUBLISHABLE_KEY",
+          "AUREA_E2E_SUPABASE_URL",
+          "AUREA_E2E_USER_EMAIL",
+          "AUREA_E2E_USER_PASSWORD",
+          "CARGO_HOME",
+          "CLOUD_AGENT_ALL_SECRET_NAMES",
+          "CLOUD_AGENT_INJECTED_SECRET_NAMES",
+          "CURSOR_AGENT",
+          "CURSOR_AGENT_SOCKET",
+          "CURSOR_CONVERSATION_ID",
+          "CURSOR_RIPGREP_PATH",
+          "EXEC_DAEMON_STARTUP_TRACEPARENT",
+          "GH_TELEMETRY",
+          "NVM_BIN",
+          "NVM_CD_FLAGS",
+          "NVM_DIR",
+          "NVM_INC",
+          "RUSTUP_HOME"
+        ],
+        "dropped_secret_shaped_count": 3,
+        "leaks": {
+          "provider": [],
+          "secret_shaped": [],
+          "unexpected": []
+        }
+      },
+      "disposition": "PASS",
+      "evidence": "20 admitted variables; 37 caller variables dropped, including 19 provider/runtime and 3 secret-shaped names",
+      "id": "CC-09",
+      "name": "scrubbed_environment_admitted"
+    },
+    {
+      "blocking": true,
+      "detail": {
+        "expected_home": "/tmp/po03-wa-003-b1956656/repro/work/repro-6/sandbox-1/home",
+        "expected_tempdir": "/tmp/po03-wa-003-b1956656/repro/work/repro-6/sandbox-1/tmp",
+        "probe": {
+          "cwd": "/tmp/po03-wa-003-b1956656/repro/work/repro-6/clone-1",
+          "dont_write_bytecode": false,
+          "env_names": [
+            "ALL_PROXY",
+            "GIT_CONFIG_GLOBAL",
+            "GIT_CONFIG_SYSTEM",
+            "GIT_TERMINAL_PROMPT",
+            "HOME",
+            "HTTPS_PROXY",
+            "HTTP_PROXY",
+            "LANG",
+            "LC_ALL",
+            "NO_PROXY",
+            "PATH",
+            "PYTHONDONTWRITEBYTECODE",
+            "PYTHONHASHSEED",
+            "PYTHONNOUSERSITE",
+            "TEMP",
+            "TMP",
+            "TMPDIR",
+            "http_proxy",
+            "https_proxy",
+            "no_proxy"
+          ],
+          "home": "/tmp/po03-wa-003-b1956656/repro/work/repro-6/sandbox-1/home",
+          "ignore_environment": true,
+          "isolated": true,
+          "no_user_site": true,
+          "tempdir": "/tmp/po03-wa-003-b1956656/repro/work/repro-6/sandbox-1/tmp"
+        }
+      },
+      "disposition": "PASS",
+      "evidence": "suite runtime sees tempdir=/tmp/po03-wa-003-b1956656/repro/work/repro-6/sandbox-1/tmp home=/tmp/po03-wa-003-b1956656/repro/work/repro-6/sandbox-1/home isolated=True; tempfile silently falls back to the system temporary directory when TMPDIR is unset or absent, so this is measured from inside the runtime rather than assumed from the environment",
+      "id": "CC-10",
+      "name": "temp_and_home_redirected_into_sandbox"
+    },
+    {
+      "blocking": false,
+      "detail": {
+        "probe_suite_flags": {
+          "dont_write_bytecode": false,
+          "ignore_environment": true,
+          "isolated": true
+        },
+        "probe_without_isolation": {
+          "dont_write_bytecode": true,
+          "ignore_environment": false,
+          "isolated": false
+        },
+        "suite_command_isolated": true
+      },
+      "disposition": "INFO",
+      "evidence": "the declared suite command runs Python in isolated mode, which implies -E; PYTHONDONTWRITEBYTECODE and PYTHONHASHSEED are therefore ignored (observed dont_write_bytecode=False under the suite's own flags versus True without them). HOME and TMPDIR are OS-level and remain honoured, so environment scrubbing still holds; only PYTHON* hardening is inert",
+      "id": "CC-20",
+      "name": "python_environment_hardening_effective"
+    },
+    {
+      "blocking": true,
+      "detail": {
+        "run": "clean_primary"
+      },
+      "disposition": "PASS",
+      "evidence": "exit=0 timed_out=False summary={'tests_ran': 23, 'verdict': 'OK'} duration=0.218s",
+      "id": "CC-11",
+      "name": "suite_passes_in_pristine_clone"
+    },
+    {
+      "blocking": true,
+      "detail": {
+        "porcelain": [
+          "?? workstreams/po03/tests/__pycache__/",
+          "?? workstreams/po03/tools/__pycache__/"
+        ],
+        "semantic_mutations": []
+      },
+      "disposition": "PASS",
+      "evidence": "no semantic change to the checkout after execution; only interpreter bytecode caches may differ and those are reported separately by CC-19",
+      "id": "CC-12",
+      "name": "no_semantic_checkout_mutation_by_suite"
+    },
+    {
+      "blocking": false,
+      "detail": {
+        "bytecode_paths": [
+          "workstreams/po03/tests/__pycache__",
+          "workstreams/po03/tests/__pycache__/",
+          "workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+          "workstreams/po03/tools/__pycache__",
+          "workstreams/po03/tools/__pycache__/",
+          "workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+        ]
+      },
+      "disposition": "INFO",
+      "evidence": "the suite wrote 6 bytecode cache path(s) into its own checkout, for example ['workstreams/po03/tests/__pycache__', 'workstreams/po03/tests/__pycache__/', 'workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc', 'workstreams/po03/tools/__pycache__', 'workstreams/po03/tools/__pycache__/']. This is the mechanism by which a warm checkout accumulates the residue CC-05 rejects; suppressing it requires the interpreter flag -B in the suite command, because PYTHONDONTWRITEBYTECODE is ignored under isolated mode (see CC-20)",
+      "id": "CC-19",
+      "name": "bytecode_residue_written_into_checkout"
+    },
+    {
+      "blocking": false,
+      "detail": {
+        "new_entries": [
+          "po03-wa016-fuzz-qjnvsiao"
+        ],
+        "sandbox_tmp_entries_after": [],
+        "system_tmp": "/tmp"
+      },
+      "disposition": "INCONCLUSIVE",
+      "evidence": "new entries in shared /tmp: ['po03-wa016-fuzz-qjnvsiao']; the system temporary directory has concurrent writers so per-process attribution is NOT_SUPPORTED by this mechanism",
+      "id": "CC-13",
+      "name": "no_system_temp_residue"
+    },
+    {
+      "blocking": false,
+      "detail": {
+        "closed_proxy": "http://127.0.0.1:1"
+      },
+      "disposition": "PASS",
+      "evidence": "suite exited 0 with every proxy variable pinned to http://127.0.0.1:1 and no_proxy empty; raw-socket and DNS egress are NOT_SUPPORTED by this mechanism",
+      "id": "CC-14",
+      "name": "no_proxy_aware_network_egress_required"
+    },
+    {
+      "blocking": false,
+      "detail": {},
+      "disposition": "NOT_SUPPORTED",
+      "evidence": "no warm baseline declared",
+      "id": "CC-15",
+      "name": "warm_versus_clean_divergence"
+    },
+    {
+      "blocking": false,
+      "detail": {},
+      "disposition": "NOT_SUPPORTED",
+      "evidence": "no warm baseline declared",
+      "id": "CC-16",
+      "name": "warm_source_uncommitted_files"
+    },
+    {
+      "blocking": false,
+      "detail": {
+        "observations": [
+          {
+            "clone": "clone-1",
+            "exit_code": 0,
+            "head": "7bbe7b45aaffe6e4461791d3a06482e5ec81f575",
+            "summary": {
+              "tests_ran": 23,
+              "verdict": "OK"
+            },
+            "tree": "1a671a47d75c6552d62d8069d2693e93f6fbbdfd"
+          }
+        ]
+      },
+      "disposition": "NOT_SUPPORTED",
+      "evidence": "recurrence_clones < 2",
+      "id": "CC-17",
+      "name": "recurrence_across_independent_clean_clones"
+    },
+    {
+      "blocking": true,
+      "detail": {
+        "created_paths": [
+          "/tmp/po03-wa-003-b1956656/repro/work/repro-6",
+          "/tmp/po03-wa-003-b1956656/repro/work/repro-6/clone-1",
+          "/tmp/po03-wa-003-b1956656/repro/work/repro-6/sandbox-1/home",
+          "/tmp/po03-wa-003-b1956656/repro/work/repro-6/sandbox-1/tmp"
+        ],
+        "work_root": "/tmp/po03-wa-003-b1956656/repro/work/repro-6"
+      },
+      "disposition": "PASS",
+      "evidence": "all 4 harness-created paths are under /tmp/po03-wa-003-b1956656/repro/work/repro-6",
+      "id": "CC-18",
+      "name": "harness_writes_confined_to_work_root"
+    }
+  ],
+  "config": {
+    "base_env_variable_count": 42,
+    "commit": "7bbe7b45aaffe6e4461791d3a06482e5ec81f575",
+    "expect_sha256": {},
+    "python_executable": "/usr/bin/python3",
+    "recurrence_clones": 1,
+    "require_pins": [],
+    "scan_exclude": [],
+    "scan_paths": [
+      "workstreams/po03/wave-a/units/wa-003/harness",
+      "workstreams/po03/wave-a/units/wa-003/tests"
+    ],
+    "scan_suffixes": [
+      ".py",
+      ".sh",
+      ".bash",
+      ".yml",
+      ".yaml",
+      ".toml",
+      ".cfg",
+      ".ini",
+      ".mk",
+      ".json"
+    ],
+    "source_repo": "/tmp/po03-wa-003-b1956656/runner",
+    "suite_command": "/usr/bin/python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py'",
+    "warm_baseline_dir": null,
+    "work_root": "/tmp/po03-wa-003-b1956656/repro/work/repro-6"
+  },
+  "counts": {
+    "checks": 20,
+    "fail": 1,
+    "inconclusive": 1,
+    "info": 2,
+    "not_supported": 5,
+    "pass": 11
+  },
+  "finished_at": "2026-08-22T07:52:31Z",
+  "hypothesis_outcome": "REFUTED",
+  "label": "repro-6-unit-scan-exclusion-audit",
+  "non_blocking_failures": [],
+  "overall": "FAIL",
+  "runs": {
+    "clean_primary": {
+      "command": "/usr/bin/python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py'",
+      "cwd": "/tmp/po03-wa-003-b1956656/repro/work/repro-6/clone-1",
+      "duration_seconds": 0.218,
+      "exit_code": 0,
+      "stderr_tail": ".......................\n----------------------------------------------------------------------\nRan 23 tests in 0.001s\n\nOK\n",
+      "stdout_tail": "",
+      "summary": {
+        "tests_ran": 23,
+        "verdict": "OK"
+      },
+      "timed_out": false
+    }
+  },
+  "schema_version": "OBZIO-PO03-CLEAN-CLONE-HARNESS-v1",
+  "started_at": "2026-08-22T07:52:30Z",
+  "wall_time_seconds": 0.536
+}

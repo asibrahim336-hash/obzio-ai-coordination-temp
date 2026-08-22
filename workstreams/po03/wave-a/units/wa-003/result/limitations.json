@@ -1,0 +1,126 @@
+{
+  "schema_version": "OBZIO-PO03-WA003-LIMITATIONS-v1",
+  "task_id": "PO03-WA-003",
+  "attempt_id": "PO03-WA-003-A01",
+  "generated_at": "2026-08-22T07:55:00Z",
+  "not_supported": [
+    {
+      "id": "NS-1",
+      "subject": "External source claims",
+      "status": "NOT_SUPPORTED",
+      "observed_boundary": "This runner performed no web fetch, search or documentation retrieval. Every source claim in source-claims.json is an immutable repository read with a computed SHA-256. No external URL is recorded, and none is invented to satisfy the frontier-research function; that function belongs to other Wave A units."
+    },
+    {
+      "id": "NS-2",
+      "subject": "Per-subagent model attestation",
+      "status": "NOT_SUPPORTED",
+      "observed_boundary": "The immutable input requested model_slug claude-opus-5-thinking-high with reasoning high. The runtime self-identifies as Claude Opus 5 in its own system prompt. The provider's run metadata endpoint reports originalModelName gpt-5.6-sol-max-fast, which is the enclosing controller run's model, not this subagent's. No provider-signed per-subagent model or reasoning-effort readback exists, so model_observed and reasoning_observed are recorded as requested-plus-self-report and the divergence is stated rather than resolved."
+    },
+    {
+      "id": "NS-3",
+      "subject": "Isolated best-of-N execution as a separate provider machine",
+      "status": "NOT_SUPPORTED",
+      "observed_boundary": "Isolation is evidenced by a separate no-hardlink clone at /tmp/po03-wa-003-b1956656/runner on the unique branch cursor/po03-wa-003-b195-a01-1a9f, by the absence of any write to /workspace, and by the ownership guard over the commit range. The provider exposes no separate best-of-N VM identity or signed runner attestation, and this subagent shares the controller's cloud-agent run bc-b1956656-b897-4889-aeab-82c4556c1a9f. A distinct physical machine is not claimed."
+    },
+    {
+      "id": "NS-4",
+      "subject": "Attribution of system temporary-directory writes to a specific process",
+      "status": "NOT_SUPPORTED",
+      "observed_boundary": "CC-13 compares the entry set of the system temporary directory before and after the run. That directory has concurrent writers: during REPRO-5 the check observed po03-wa-001-repro-yu7psbzr, created by a sibling Wave A runner on the same machine. CC-13 therefore weakens to INCONCLUSIVE rather than FAIL when new entries appear, and per-process attribution is not supported without kernel-level tracing."
+    },
+    {
+      "id": "NS-5",
+      "subject": "Complete network-egress isolation",
+      "status": "NOT_SUPPORTED",
+      "observed_boundary": "CC-14 pins http_proxy, https_proxy, ALL_PROXY and their uppercase forms to http://127.0.0.1:1 and empties no_proxy. This proves the suite needs no proxy-aware HTTP client. Raw sockets, DNS and any library that ignores proxy variables are not blocked, so CC-14 is non-blocking and does not claim full egress isolation."
+    },
+    {
+      "id": "NS-6",
+      "subject": "Independent acceptance",
+      "status": "NOT_SUPPORTED",
+      "observed_boundary": "This producer does not accept its own result. independent_acceptance remains NOT_TESTED, completion_actor is null, and the reported obzio_state is RESULT_COMMITTED. Only the coordinator may record COMPLETED, and a different producer must decide PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED."
+    },
+    {
+      "id": "NS-7",
+      "subject": "Clean GitHub Actions execution of the new gate",
+      "status": "NOT_SUPPORTED",
+      "observed_boundary": "The integration-ready workflow candidate is deliberately named po03-clean-clone.yml.candidate inside this unit's subtree, because .github/workflows/po03-*.yml is controller-owned and outside this unit's allowlist. It has therefore never run in GitHub Actions and no workflow-run URL exists for it. The gate's GitHub-hosted behaviour is unproven until the controller adopts the candidate."
+    },
+    {
+      "id": "NS-8",
+      "subject": "Post-return verification of the controller checkout",
+      "status": "NOT_SUPPORTED",
+      "observed_boundary": "This producer read /workspace only to resolve the operator route, the immutable input and the remote URL, and never wrote to it. It cannot certify its own non-interference after returning. A distinct controller process must compare its post-return branch and HEAD against the observed pre-dispatch state, branch cursor/po03-wave-a-b195-1a9f at e56eda6e8e4a4e958795f7157839926d93272b30."
+    }
+  ],
+  "limitations": [
+    {
+      "id": "LIM-1",
+      "subject": "Static scanner false-positive surface",
+      "detail": "CC-08 is a line-oriented literal scanner. It flags the detector module and the adversarial fixtures that necessarily embed the patterns it looks for, which is why REPRO-5 excludes three files and REPRO-6 audits that exclusion by scanning with no exclusions and confirming the flagged set is exactly clean_clone_harness.py, run_reproductions.py and test_clean_clone_harness.py. The scanner has no notion of comments, string context or reachability, so a project with prose in code files will need per-path exclusions. Portfolio unit PO03-WA-007 owns the general portable-path scanner with false-positive measurement; this unit does not claim that result."
+    },
+    {
+      "id": "LIM-2",
+      "subject": "Suite-agnostic outcome parsing",
+      "detail": "parse_unittest_summary recognises unittest's 'Ran N tests' and OK/FAILED lines. For any other runner the harness still uses the exit code, but tests_ran and verdict are null and the CC-17 recurrence signature degrades to head, tree and exit code only."
+    },
+    {
+      "id": "LIM-3",
+      "subject": "Ambient git configuration is neutralised but not asserted",
+      "detail": "The harness disables global and system git configuration for its own local repository operations, and the unit's fixtures inherit that hardening. The gate does not yet assert that the suite under test is independent of ambient git configuration, even though this unit measured a 72x wall-time effect from a single inherited setting. That assertion is a named successor candidate, not a delivered check."
+    },
+    {
+      "id": "LIM-4",
+      "subject": "Clone transport keeps the caller environment",
+      "detail": "clone_immutable deliberately runs git clone and git fetch with the caller environment so that credentials and URL rewrites still work for remote sources. A malicious or misconfigured global git configuration could therefore still influence the clone step, which the gate does not currently detect."
+    },
+    {
+      "id": "LIM-5",
+      "subject": "Provenance-pin repair is out of scope",
+      "detail": "REPRO-2 proves that all 64 Wave A immutable inputs declare a minimum_protocol_ancestor that does not resolve, and locates the root cause at the PROTOCOL_ANCESTOR literal on line 25 of workstreams/po03/tools/prepare_wave_a.py. Both that generator and the immutable inputs are read-only for this unit, so the defect is reported with an executable detector and a strategy proposal. It is not repaired here, and repairing it would rewrite immutable inputs, which this unit must not do."
+    },
+    {
+      "id": "LIM-6",
+      "subject": "Single measurement environment",
+      "detail": "Every figure was measured on one Linux runner with Python 3.12.3, git 2.43.0 and 8 CPUs. Recurrence is demonstrated across independent clean clones on that machine, not across operating systems, Python versions or hosted runners."
+    },
+    {
+      "id": "LIM-7",
+      "subject": "Hash self-reference",
+      "detail": "artifact-manifest.json cannot contain its own SHA-256, and ready-to-commit.json is written in a later commit than the artifacts it accounts for. The chain is explicit: the manifest covers every delivered artifact, ready-to-commit.json carries the manifest hash, and the producer terminal response carries the ready-to-commit hash and byte count. Every link is recomputable from the immutable return commit."
+    },
+    {
+      "id": "LIM-8",
+      "subject": "First-pass outcome",
+      "detail": "The first execution of the new suite failed. Six defects, all in this unit's own code or fixtures, were found and repaired, and two of them were found by the gate assessing its own delivered commit. first_pass_outcome is recorded as FAIL_THEN_REPAIRED rather than PASS."
+    }
+  ],
+  "exclusions": [
+    {
+      "id": "EXC-1",
+      "subject": "PO-01",
+      "detail": "No PO-01 branch, path, artifact, workspace or pull request was read, written, contacted or signalled. workstreams/po01/** and receipts/po01/** appear in this unit only as denylist patterns in the ownership guard and its fixtures, where the fixture repository is a throwaway created inside a temporary directory."
+    },
+    {
+      "id": "EXC-2",
+      "subject": "Pull request #8 and the cursor/setup-dev-environment-b5ce branch",
+      "detail": "Never fetched, read, referenced or modified. No pull request was created, updated, commented on, merged or enabled for auto-merge by this unit."
+    },
+    {
+      "id": "EXC-3",
+      "subject": "Protected and shared paths",
+      "detail": "state/**, dispatch/**, packs/**, modules/operators/**, _transport/**, modules/work_unit_contract/**, .cursor/environment.json and every controller-owned PO-03 path were read-only or untouched. The only writes in the delivered commit range are under workstreams/po03/wave-a/units/wa-003/, verified by the ownership guard."
+    },
+    {
+      "id": "EXC-4",
+      "subject": "Secret values",
+      "detail": "The runtime exposes injected secrets and provider tokens as environment variables. The harness drops them from every suite environment, records only counts and non-secret provider variable names, and redacts secret-shaped values out of captured warm-baseline output. No secret value, and no git remote URL containing an access token, appears in any delivered artifact."
+    },
+    {
+      "id": "EXC-5",
+      "subject": "Wave A units other than WA-003",
+      "detail": "No sibling unit's subtree was read or written. The sibling runner's temporary directory was observed only as an entry name by CC-13 and is reported as evidence that the system temporary directory is shared."
+    }
+  ],
+  "decision_changed": []
+}
