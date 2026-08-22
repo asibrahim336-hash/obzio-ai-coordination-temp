@@ -1,0 +1,249 @@
+{
+  "cell_count": 101,
+  "cells_with_violations": 0,
+  "false_completions": 0,
+  "fault_kinds_covered": [
+    "CALLBACK_LOSS",
+    "CORRUPT_ARTIFACT",
+    "DUPLICATE_CALLBACK",
+    "DUPLICATE_COMMIT_REPLAY",
+    "MISSING_ARTIFACT",
+    "NETWORK_INTERRUPTION",
+    "PARENT_RESTART",
+    "PARTIAL_WRITE",
+    "POST_WRITE_LOSS",
+    "PRE_WRITE_LOSS",
+    "PROCESS_LOSS",
+    "PROVIDER_RUNTIME_LOSS",
+    "SNAPSHOT_ROLLBACK",
+    "STALE_LEASE"
+  ],
+  "final_state_histogram": {
+    "COMPLETED": 97,
+    "FAILED_TERMINAL": 4
+  },
+  "fuzz_campaign": {
+    "case_count": 12,
+    "cases_budget_exhausted": 0,
+    "cases_with_safety_violations": 0,
+    "compared_invariants": [
+      "I1_NO_FALSE_COMPLETION",
+      "I4_NO_DUPLICATE_EXTERNAL_EFFECT",
+      "I5_COMPLETE_HASH_COVERAGE",
+      "I6_JOURNAL_INTEGRITY",
+      "I8_SEEDED_VALIDATOR_ACCEPTS",
+      "I10_STRENGTHENED_INVARIANTS_HOLD"
+    ],
+    "excluded_invariants": {
+      "I2_COMMITTED_RESULT_RECOVERED": "liveness; a schedule may legitimately prevent progress",
+      "I3_UNCOMMITTED_RESUMES_FROM_IMMUTABLE_INPUT": "conditional on a retry being required",
+      "I7_STALE_FENCE_REJECTED": "conditional on a stale lease being scheduled at a reachable point",
+      "I9_RECOVERY_TERMINATES": "bounded by the harness retry budget, not by the machine"
+    },
+    "final_state_histogram": {
+      "COMPLETED": 12
+    },
+    "max_distinct_external_effects": 1,
+    "max_faults_per_case": 3,
+    "safety_violation_classes": {},
+    "seed_range": [
+      1,
+      12
+    ]
+  },
+  "fuzz_comparison": {
+    "classes_found_only_by_fuzz": [],
+    "exhaustive_cells": 101,
+    "exhaustive_safety_classes": [],
+    "fuzz_cases": 12,
+    "fuzz_found_new_class": false,
+    "fuzz_safety_classes": []
+  },
+  "inapplicable_cell_count": 61,
+  "machine": "CustodyStore",
+  "mutants": [
+    {
+      "defect": "snapshot written before the journal and trusted on reload",
+      "mutant": "SnapshotFirstStore",
+      "summary": {
+        "cell_count": 101,
+        "cells_with_violations": 30,
+        "false_completions": 0,
+        "fault_kinds_covered": [
+          "CALLBACK_LOSS",
+          "CORRUPT_ARTIFACT",
+          "DUPLICATE_CALLBACK",
+          "DUPLICATE_COMMIT_REPLAY",
+          "MISSING_ARTIFACT",
+          "NETWORK_INTERRUPTION",
+          "PARENT_RESTART",
+          "PARTIAL_WRITE",
+          "POST_WRITE_LOSS",
+          "PRE_WRITE_LOSS",
+          "PROCESS_LOSS",
+          "PROVIDER_RUNTIME_LOSS",
+          "SNAPSHOT_ROLLBACK",
+          "STALE_LEASE"
+        ],
+        "machine": "SnapshotFirstStore",
+        "rows_digest": "b4661ebee5332f011b01d21780d22be058a7bb122cd9a3b2c4187beb33468b65",
+        "transitions_covered": [
+          "T01",
+          "T02",
+          "T03",
+          "T04",
+          "T05",
+          "T06",
+          "T07",
+          "T08",
+          "T09",
+          "T10"
+        ],
+        "violation_counts": {
+          "I6_JOURNAL_INTEGRITY": 30
+        }
+      }
+    },
+    {
+      "defect": "provider completion promoted to Obzio completion",
+      "mutant": "ProviderTrustingStore",
+      "summary": {
+        "cell_count": 101,
+        "cells_with_violations": 3,
+        "false_completions": 3,
+        "fault_kinds_covered": [
+          "CALLBACK_LOSS",
+          "CORRUPT_ARTIFACT",
+          "DUPLICATE_CALLBACK",
+          "DUPLICATE_COMMIT_REPLAY",
+          "MISSING_ARTIFACT",
+          "NETWORK_INTERRUPTION",
+          "PARENT_RESTART",
+          "PARTIAL_WRITE",
+          "POST_WRITE_LOSS",
+          "PRE_WRITE_LOSS",
+          "PROCESS_LOSS",
+          "PROVIDER_RUNTIME_LOSS",
+          "SNAPSHOT_ROLLBACK",
+          "STALE_LEASE"
+        ],
+        "machine": "ProviderTrustingStore",
+        "rows_digest": "4da1875a4e3499d8efd7f1eb37fa41b16481ed9e409ba90b346328a04a22de78",
+        "transitions_covered": [
+          "T01",
+          "T02",
+          "T03",
+          "T04",
+          "T05",
+          "T06",
+          "T07",
+          "T08",
+          "T09",
+          "T10"
+        ],
+        "violation_counts": {
+          "I10_STRENGTHENED_INVARIANTS_HOLD": 3,
+          "I1_NO_FALSE_COMPLETION": 3,
+          "I8_SEEDED_VALIDATOR_ACCEPTS": 3
+        }
+      }
+    },
+    {
+      "defect": "fence token never checked, so a stale worker can still write",
+      "mutant": "UnfencedStore",
+      "summary": {
+        "cell_count": 101,
+        "cells_with_violations": 7,
+        "false_completions": 0,
+        "fault_kinds_covered": [
+          "CALLBACK_LOSS",
+          "CORRUPT_ARTIFACT",
+          "DUPLICATE_CALLBACK",
+          "DUPLICATE_COMMIT_REPLAY",
+          "MISSING_ARTIFACT",
+          "NETWORK_INTERRUPTION",
+          "PARENT_RESTART",
+          "PARTIAL_WRITE",
+          "POST_WRITE_LOSS",
+          "PRE_WRITE_LOSS",
+          "PROCESS_LOSS",
+          "PROVIDER_RUNTIME_LOSS",
+          "SNAPSHOT_ROLLBACK",
+          "STALE_LEASE"
+        ],
+        "machine": "UnfencedStore",
+        "rows_digest": "e5f600dc51e58f8623294ea8b4e7a9d2a4384ce51057d3bd4782ceb78bbab3eb",
+        "transitions_covered": [
+          "T01",
+          "T02",
+          "T03",
+          "T04",
+          "T05",
+          "T06",
+          "T07",
+          "T08",
+          "T09",
+          "T10"
+        ],
+        "violation_counts": {
+          "I7_STALE_FENCE_REJECTED": 7
+        }
+      }
+    },
+    {
+      "defect": "torn trailing journal record left in place",
+      "mutant": "TornTailTrustingStore",
+      "summary": {
+        "cell_count": 101,
+        "cells_with_violations": 10,
+        "false_completions": 0,
+        "fault_kinds_covered": [
+          "CALLBACK_LOSS",
+          "CORRUPT_ARTIFACT",
+          "DUPLICATE_CALLBACK",
+          "DUPLICATE_COMMIT_REPLAY",
+          "MISSING_ARTIFACT",
+          "NETWORK_INTERRUPTION",
+          "PARENT_RESTART",
+          "PARTIAL_WRITE",
+          "POST_WRITE_LOSS",
+          "PRE_WRITE_LOSS",
+          "PROCESS_LOSS",
+          "PROVIDER_RUNTIME_LOSS",
+          "SNAPSHOT_ROLLBACK",
+          "STALE_LEASE"
+        ],
+        "machine": "TornTailTrustingStore",
+        "rows_digest": "2a65dd78d0b06b98240d8f71854ba5aa813ffd1afa8bd90d10fbd8747259c1e2",
+        "transitions_covered": [
+          "T01",
+          "T02",
+          "T03",
+          "T04",
+          "T05",
+          "T06",
+          "T07",
+          "T08",
+          "T09",
+          "T10"
+        ],
+        "violation_counts": {
+          "I6_JOURNAL_INTEGRITY": 10
+        }
+      }
+    }
+  ],
+  "rows_digest": "a1aa005bd4e79e39e80469607a971e485d1353658f794feb91f4cf9c32bfeb76",
+  "transitions_covered": [
+    "T01",
+    "T02",
+    "T03",
+    "T04",
+    "T05",
+    "T06",
+    "T07",
+    "T08",
+    "T09",
+    "T10"
+  ]
+}
