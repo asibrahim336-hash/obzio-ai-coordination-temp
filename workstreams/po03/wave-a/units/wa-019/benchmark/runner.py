@@ -81,11 +81,16 @@ def run_matched_benchmark(workload: Workload) -> dict[str, Any]:
         for name in ("centralized", "sharded", "event-sourced")
     }
     assessment = assess_hypothesis(candidates)
+    source_path = Path(workload.source_path)
+    try:
+        fixture_path = source_path.resolve().relative_to(UNIT_ROOT.resolve()).as_posix()
+    except ValueError:
+        fixture_path = source_path.as_posix()
     return {
         "protocol_version": "PO03-MATCHED-TOPOLOGY-BENCHMARK-v1",
         "fixture": {
             "fixture_id": workload.fixture_id,
-            "path": workload.source_path,
+            "path": fixture_path,
             "sha256": workload.fixture_sha256,
             "task_count": len(workload.tasks),
         },

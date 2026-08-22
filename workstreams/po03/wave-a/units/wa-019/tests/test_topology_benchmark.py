@@ -94,6 +94,13 @@ class CandidateTests(unittest.TestCase):
         }
         self.assertEqual({self.workload.fixture_sha256}, digests)
 
+    def test_report_uses_a_clean_clone_portable_fixture_path(self):
+        self.assertEqual(
+            "fixtures/sanitized-wave-workload.json",
+            self.report["fixture"]["path"],
+        )
+        self.assertNotIn("/tmp/", json.dumps(self.report))
+
     def test_every_candidate_receives_the_same_capacity(self):
         controls = {
             tuple(sorted(self.result(topology)["coordination"].items()))
