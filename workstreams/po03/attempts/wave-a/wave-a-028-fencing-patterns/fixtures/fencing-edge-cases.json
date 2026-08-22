@@ -1,0 +1,67 @@
+{
+  "cases": [
+    {
+      "expected": {
+        "captured_fence": 1,
+        "current_fence": 2,
+        "safe_path_error": "StaleOwnership",
+        "unsafe_entry_owner": "owner-a",
+        "unsafe_stale_write_accepted": true
+      },
+      "id": "split-validation-stale-write",
+      "purpose": "Reproduce the check-then-transfer-then-write gap. A ledger-sequence-only append admits the old owner, while the atomic current-snapshot path rejects it."
+    },
+    {
+      "expected": {
+        "accepted_owner": "owner-b",
+        "accepted_sequence": 2,
+        "stale_error": "StaleOwnership",
+        "stale_used_next_sequence": 2
+      },
+      "id": "ledger-sequence-not-fence",
+      "purpose": "Show that knowing the exact next ledger sequence does not confer current ownership."
+    },
+    {
+      "expected": {
+        "current_snapshot_valid": true,
+        "ledger_entry_count": 1,
+        "sequence_error": "LedgerSequenceMismatch"
+      },
+      "id": "snapshot-not-ledger-sequence",
+      "purpose": "Show that a current ownership snapshot does not make a duplicate or stale ledger position valid."
+    },
+    {
+      "expected": {
+        "equal_token_error": "FenceRegression",
+        "first_transfer_fence": 8,
+        "jumped_transfer_fence": 12,
+        "lower_token_error": "FenceRegression"
+      },
+      "id": "monotonic-transfer",
+      "purpose": "Reject token reuse and rollback while permitting a strictly increasing, non-contiguous token."
+    },
+    {
+      "expected": {
+        "sink_highest_seen": 2,
+        "stale_after_observation_error": "StaleOwnership",
+        "stale_during_gap_accepted": true,
+        "write_count": 3
+      },
+      "id": "highest-seen-observation-gap",
+      "purpose": "Refute the overbroad claim that a highest-seen sink immediately fences an old owner at authority transfer. It rejects token 1 only after observing token 2."
+    },
+    {
+      "expected": {
+        "conflict_error": "IdempotencyConflict",
+        "entry_count": 1,
+        "replay_returned_original": true
+      },
+      "id": "idempotent-replay-after-transfer",
+      "purpose": "Permit an exact retry to return its old receipt without a new effect, but reject operation-identifier reuse with changed content."
+    }
+  ],
+  "decision_changed": [],
+  "fixture_version": "PO03-FENCING-EDGE-CASES-v1",
+  "hypothesis": "Fencing tokens have known edge cases that should appear in fault fixtures.",
+  "task_id": "wave-a-028-fencing-patterns"
+}

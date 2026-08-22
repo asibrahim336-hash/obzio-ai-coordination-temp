@@ -1,0 +1,169 @@
+{
+  "base_and_heads": {
+    "capsule_controller_head_sha": "1bb843b2a81fd8d73617caf2f1db81909266bb6e",
+    "capsule_registration_commit": "9edfd8ed08e0d27727f66e128a87b24aa561432c",
+    "controller_branch": "po03/repository-engineering-portable-runtime-20260822-v001",
+    "controller_tip_at_admission": "ffb6bef150bbb9894ea6ba2bce290585b2e48d31",
+    "dispatch_base": "e63fbae079774b151fd24a4132e4a5e571f75298",
+    "dispatch_base_parent": "0221316d957f23ed1b22b04dabd719bcb5077b90",
+    "post_historical_head_commit_count_at_admission": 50,
+    "result_branch": "po03/wave-a-028-fencing-patterns",
+    "result_head_at_manifest_generation": "PENDING",
+    "result_remote_final_head": "EXTERNALLY_VERIFIED_AFTER_FINAL_COMMIT",
+    "statement": "The task capsule records historical source head 1bb843b. The capsule files were registered by 9edfd8e. The required dispatch base e63fbae and admission tip ffb6bef are descendants with additive controller, custody, route-isolation, schema, validation, event and lease hardening. This attempt remains based exactly on e63fbae and does not ingest later controller commits."
+  },
+  "capsule_verification": {
+    "all_declared_hashes_match_registration_commit": true,
+    "frozen_sources": [
+      {
+        "bytes": 1729,
+        "declared_by": "000001-created.json details.input_sha256",
+        "git_blob_sha": "d9544a30437896c65151419a10dcf00c004e8969",
+        "match": true,
+        "path": "workstreams/po03/control/tasks/wave-a-028-fencing-patterns/input.json",
+        "sha256": "d406cd8567d554b9e5d0de08c5cb55a0e1a79b33f160283ae7f3720643b4c010"
+      },
+      {
+        "bytes": 619,
+        "declared_by": "input.json source_hashes.acceptance_contract_sha256",
+        "git_blob_sha": "a2d3eccd61a38bb59dd75aa962f4e562c814694a",
+        "match": true,
+        "path": "workstreams/po03/control/tasks/wave-a-028-fencing-patterns/acceptance.json",
+        "sha256": "6fcc99a7ebb5f168ab7d200770b357da67bedde23dc1e825c823068d0dd71b47"
+      },
+      {
+        "bytes": 16030,
+        "declared_by": "input.json source_hashes.commission_sha256",
+        "git_blob_sha": "1947aa35f59b2a0b0d73abfbe260134699496da4",
+        "match": true,
+        "path": "workstreams/po03/COMMISSION.md",
+        "sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d"
+      },
+      {
+        "bytes": 4618,
+        "declared_by": "input.json source_hashes.transaction_schema_sha256",
+        "git_blob_sha": "1622fa976ee089f3c75fa1e1e33273434477c143",
+        "match": true,
+        "path": "workstreams/po03/contracts/transactional-result.schema.json",
+        "sha256": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1"
+      }
+    ],
+    "registration_commit": "9edfd8ed08e0d27727f66e128a87b24aa561432c",
+    "schema_additive_hardening": {
+      "dispatch_and_admission_bytes": 5251,
+      "dispatch_and_admission_git_blob_sha": "06d8be28c02e4b8b1709884171457f675a618c27",
+      "dispatch_and_admission_sha256": "91fb63c1238a895dc7be8e837c7e101522ac12984aff2a62ea6bc78e98152102",
+      "frozen_bytes": 4618,
+      "frozen_git_blob_sha": "1622fa976ee089f3c75fa1e1e33273434477c143",
+      "frozen_sha256": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1",
+      "note": "The frozen hash verifies at capsule registration. Later commits harden nullable forms, result commit identifiers, zero-byte artifact handling and coordinator-only completion_actor. The changed hash is disclosed rather than treated as a capsule mismatch."
+    },
+    "source_head_note": "input.json and acceptance.json do not exist at the historical source head 1bb843b; they first exist in the immutable registration commit 9edfd8e. Commission and frozen schema bytes also verify at 1bb843b."
+  },
+  "commands": [
+    {
+      "command": "gh api -H \"Accept: application/vnd.github.raw+json\" \"/repos/asibrahim336-hash/obzio-ai-coordination-temp/contents/workstreams/po03/control/events/wave-a-028-fencing-patterns/000003-running.json?ref=po03%2Frepository-engineering-portable-runtime-20260822-v001\"",
+      "exit_code": 0,
+      "purpose": "Read the exact RUNNING admission path through the remote API before cloning."
+    },
+    {
+      "command": "gh api \"/repos/asibrahim336-hash/obzio-ai-coordination-temp/git/ref/heads/po03%2Fwave-a-028-fencing-patterns\" --jq .object.sha",
+      "exit_code": 1,
+      "purpose": "Expected HTTP 404 proved the result branch did not already exist."
+    },
+    {
+      "command": "git clone --no-checkout \"https://github.com/asibrahim336-hash/obzio-ai-coordination-temp.git\" \"/home/ubuntu/po03-wave-a-028-fencing-patterns-isolated\"",
+      "exit_code": 0,
+      "purpose": "First repository mutation: create the mandated independent clone."
+    },
+    {
+      "command": "git checkout -b \"po03/wave-a-028-fencing-patterns\" \"e63fbae079774b151fd24a4132e4a5e571f75298\" && git branch -D main",
+      "exit_code": 0,
+      "purpose": "Check out the sole working branch at the exact dispatch base and remove the no-checkout clone's transient default ref."
+    },
+    {
+      "command": "for path in workstreams/po03/control/tasks/wave-a-028-fencing-patterns/input.json workstreams/po03/control/tasks/wave-a-028-fencing-patterns/acceptance.json workstreams/po03/COMMISSION.md workstreams/po03/contracts/transactional-result.schema.json; do expected=$(git show \"9edfd8ed08e0d27727f66e128a87b24aa561432c:$path\" | sha256sum | cut -d' ' -f1); bytes=$(git show \"9edfd8ed08e0d27727f66e128a87b24aa561432c:$path\" | wc -c); blob=$(git rev-parse \"9edfd8ed08e0d27727f66e128a87b24aa561432c:$path\"); printf '%s sha256=%s bytes=%s blob=%s\\n' \"$path\" \"$expected\" \"$bytes\" \"$blob\"; done",
+      "exit_code": 0,
+      "purpose": "Verify all frozen capsule identities from immutable Git bytes."
+    }
+  ],
+  "decision_changed": [],
+  "event_chain": {
+    "chain_valid": true,
+    "events": [
+      {
+        "event_sha256_field": "aa1fd64acdccbf6755056f84f6bb182f7deec982fe8c44e642c109f9378adf4f",
+        "git_blob_sha": "e28f9f85a737b5ce9a36aa95bbbe39a7dd65f8b1",
+        "path": "workstreams/po03/control/events/wave-a-028-fencing-patterns/000001-created.json",
+        "previous_event_sha256": null,
+        "raw_bytes": 560,
+        "raw_sha256": "24e12aaded18bba8aae032a2a91fd83ad9bb394d74d63b860893d76030668c9e",
+        "sequence": 1,
+        "state": "CREATED"
+      },
+      {
+        "event_sha256_field": "c49786855b10e1fd9858360ef802d635fbaf41f65d536b12b48943361deb8ea4",
+        "git_blob_sha": "9061d52a9ec85bcf0c48658f6d1f64f245c0e782",
+        "path": "workstreams/po03/control/events/wave-a-028-fencing-patterns/000002-leased.json",
+        "previous_event_sha256": "24e12aaded18bba8aae032a2a91fd83ad9bb394d74d63b860893d76030668c9e",
+        "raw_bytes": 764,
+        "raw_sha256": "018bdb2bce4fbdadf9595ea572dbbc69e8789d7f83bda63b38c4212bbf2822bd",
+        "sequence": 2,
+        "state": "LEASED"
+      },
+      {
+        "admission": {
+          "clone_path": "/home/ubuntu/po03-wave-a-028-fencing-patterns-isolated",
+          "provider": "Cursor",
+          "provider_task_id": "agent:59a9c3e7-095d-4951-aa74-94a5cef2b443",
+          "requested_model": "gpt-5.6-sol-xhigh",
+          "worker_agent_id": "59a9c3e7-095d-4951-aa74-94a5cef2b443"
+        },
+        "event_sha256_field": "553544dc4988c68063c0a5e22731d29fa824ca08a15f62dd82da227b8b241134",
+        "git_blob_sha": "5ee499e339ab6f93930458c9467f5e14b9202110",
+        "path": "workstreams/po03/control/events/wave-a-028-fencing-patterns/000003-running.json",
+        "previous_event_sha256": "018bdb2bce4fbdadf9595ea572dbbc69e8789d7f83bda63b38c4212bbf2822bd",
+        "raw_bytes": 742,
+        "raw_sha256": "5fc3cd615c5827f7a2213afb3fbc0f8eff225bcd7818bf8d741931616c2c9d48",
+        "sequence": 3,
+        "state": "RUNNING"
+      }
+    ],
+    "verification_note": "Each previous_event_sha256 equals the complete raw SHA-256 of the preceding event file. The event_sha256 field is retained separately and was not mistaken for the raw-file chain value."
+  },
+  "runtime": {
+    "admitted_worker_agent_id": "59a9c3e7-095d-4951-aa74-94a5cef2b443",
+    "cloud_agent_bc_id": "bc-13b664e4-a9eb-4a06-9b23-3283644e5b31",
+    "cloud_agent_url": "https://cursor.com/agents/bc-13b664e4-a9eb-4a06-9b23-3283644e5b31",
+    "git": "2.43.0",
+    "machine_observed_model": "gpt-5.6-sol-max-fast",
+    "machine_observed_reasoning_control": "NOT_SUPPORTED",
+    "model_discrepancy": "The controller requested gpt-5.6-sol-xhigh. Cursor run-info reports originalModelName gpt-5.6-sol-max-fast and returns no separate reasoning-control field; xhigh is not claimed as observed.",
+    "operating_system": "Linux 6.12.94+",
+    "provider": "Cursor",
+    "python": "CPython 3.12.3",
+    "requested_exact_model": "gpt-5.6-sol-xhigh",
+    "requested_reasoning_control": "xhigh",
+    "tools_used": [
+      "git",
+      "GitHub read-only API via gh",
+      "python3 standard library",
+      "repository file tools",
+      "Cursor Cloud run-info"
+    ]
+  },
+  "task_id": "wave-a-028-fencing-patterns",
+  "topology": {
+    "alternates_present": false,
+    "branch": "po03/wave-a-028-fencing-patterns",
+    "clone_path": "/home/ubuntu/po03-wave-a-028-fencing-patterns-isolated",
+    "common_dir": "/home/ubuntu/po03-wave-a-028-fencing-patterns-isolated/.git",
+    "git_dir": "/home/ubuntu/po03-wave-a-028-fencing-patterns-isolated/.git",
+    "index": "/home/ubuntu/po03-wave-a-028-fencing-patterns-isolated/.git/index",
+    "linked_worktree": false,
+    "object_store": "/home/ubuntu/po03-wave-a-028-fencing-patterns-isolated/.git/objects",
+    "own_git_directory": true,
+    "sole_local_branch": "po03/wave-a-028-fencing-patterns",
+    "worktree": "/home/ubuntu/po03-wave-a-028-fencing-patterns-isolated"
+  }
+}

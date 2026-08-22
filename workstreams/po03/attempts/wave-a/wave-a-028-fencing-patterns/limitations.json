@@ -1,0 +1,42 @@
+{
+  "decision_changed": [],
+  "limitations": [
+    {
+      "effect": "The tests establish state-machine behavior, not performance or availability under a distributed runtime.",
+      "id": "L1",
+      "statement": "The reproduction is an in-memory deterministic reference model, not a production storage engine."
+    },
+    {
+      "effect": "A production implementation still needs a database transaction, compare-and-set, or equivalent linearizable boundary.",
+      "id": "L2",
+      "statement": "A Python RLock models atomicity only inside one process."
+    },
+    {
+      "effect": "The max-observed-token fixture intentionally demonstrates this gap rather than claiming to repair it.",
+      "id": "L3",
+      "statement": "A sink with no authoritative ownership lookup cannot know about a transfer until it observes a newer token."
+    },
+    {
+      "effect": "Wall-clock expiry, network delay distributions and provider interruption are outside this fixture.",
+      "id": "L4",
+      "statement": "No timing assumptions, network services or external side effects are exercised."
+    },
+    {
+      "effect": "The model requires one fence domain per protected resource or an explicitly comparable global domain.",
+      "id": "L5",
+      "statement": "Tokens from unrelated allocators are not necessarily comparable."
+    },
+    {
+      "effect": "The capsule's schema hash remains valid at its registration commit, while the dispatch-base schema has a different additive-hardening hash.",
+      "id": "L6",
+      "statement": "The task capsule records historical source bytes; it is not a claim that every source stayed unchanged through dispatch."
+    },
+    {
+      "effect": "The requested reasoning label cannot be confirmed as the executing runtime setting.",
+      "id": "L7",
+      "statement": "Machine evidence reports model gpt-5.6-sol-max-fast; it does not expose an xhigh reasoning field."
+    }
+  ],
+  "outcome": "SUPPORTED_WITH_BOUNDARIES",
+  "task_id": "wave-a-028-fencing-patterns"
+}
