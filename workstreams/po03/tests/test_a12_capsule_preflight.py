@@ -18,6 +18,8 @@ V2_PATH = CAPSULE_DIR / "po03-wave-a-sources-v002.json"
 DRIFT_EVIDENCE_PATH = (
     REPO_ROOT / "workstreams" / "po03" / "evidence" / "source-capsule-drift.json"
 )
+PINNED_DRIFT_EVIDENCE_COMMIT = "773be21a8843311f16c97fb4705478eb5c5797ca"
+PINNED_DRIFT_SNAPSHOT_COMMIT = "b7b1888ad17eb232b9f284c753df79da3c0633ba"
 SPEC = importlib.util.spec_from_file_location("a12_capsule_preflight", PREFLIGHT_PATH)
 PREFLIGHT = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
@@ -55,20 +57,22 @@ def run_preflight(repo: Path, capsule: Path, current_ref: str):
 
 class CapsulePreflightTests(unittest.TestCase):
     def test_four_real_drifts_are_rejected_at_immutable_evidence_snapshot(self):
-        evidence = json.loads(DRIFT_EVIDENCE_PATH.read_text(encoding="utf-8"))
-        evidence_commit = git(
-            REPO_ROOT,
-            "log",
-            "--diff-filter=A",
-            "--format=%H",
-            "-1",
-            "--",
-            str(DRIFT_EVIDENCE_PATH.relative_to(REPO_ROOT)),
+        evidence = json.loads(
+            git(
+                REPO_ROOT,
+                "cat-file",
+                "blob",
+                (
+                    f"{PINNED_DRIFT_EVIDENCE_COMMIT}:"
+                    f"{DRIFT_EVIDENCE_PATH.relative_to(REPO_ROOT).as_posix()}"
+                ),
+            )
         )
-        evidence_snapshot = git(REPO_ROOT, "rev-parse", f"{evidence_commit}^")
         capsule = PREFLIGHT.load_capsule(V1_PATH)
         report = PREFLIGHT.classify_capsule(
-            REPO_ROOT, capsule, current_ref=evidence_snapshot
+            REPO_ROOT,
+            capsule,
+            current_ref=PINNED_DRIFT_SNAPSHOT_COMMIT,
         )
 
         expected = {
@@ -85,7 +89,9 @@ class CapsulePreflightTests(unittest.TestCase):
         self.assertEqual(4, report["summary"]["DRIFTED"])
         self.assertEqual(3, PREFLIGHT.strict_exit_code(report))
 
-        completed = run_preflight(REPO_ROOT, V1_PATH, evidence_snapshot)
+        completed = run_preflight(
+            REPO_ROOT, V1_PATH, PINNED_DRIFT_SNAPSHOT_COMMIT
+        )
         self.assertEqual(3, completed.returncode, completed.stdout + completed.stderr)
         self.assertEqual("DRIFTED", json.loads(completed.stdout)["aggregate_state"])
 
