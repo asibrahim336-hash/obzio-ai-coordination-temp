@@ -1,0 +1,58 @@
+{
+  "assertions": {
+    "concurrent_worker_a_write_isolated": true,
+    "concurrent_worker_b_write_isolated": true,
+    "controller_checkout_clean": true,
+    "controller_file_untouched": true,
+    "distinct_git_dirs": true,
+    "distinct_toplevels": true,
+    "occupied_branch_switch_rejected": true,
+    "shared_common_dir_is_explicit": true,
+    "worker_branch_switch_did_not_move_controller_identity": true
+  },
+  "git_version": "git version 2.43.0",
+  "identities": {
+    "controller_after": {
+      "branch": "controller",
+      "common_dir": "$SANITIZED_ROOT/sanitized-obzio/.git",
+      "git_dir": "$SANITIZED_ROOT/sanitized-obzio/.git",
+      "head": "2ef9b59fb8ab81a3eda6569a48f712cf359e3e45",
+      "toplevel": "$SANITIZED_ROOT/sanitized-obzio"
+    },
+    "controller_before": {
+      "branch": "controller",
+      "common_dir": "$SANITIZED_ROOT/sanitized-obzio/.git",
+      "git_dir": "$SANITIZED_ROOT/sanitized-obzio/.git",
+      "head": "2ef9b59fb8ab81a3eda6569a48f712cf359e3e45",
+      "toplevel": "$SANITIZED_ROOT/sanitized-obzio"
+    },
+    "worker_a": {
+      "branch": "worker-a-switched",
+      "common_dir": "$SANITIZED_ROOT/sanitized-obzio/.git",
+      "git_dir": "$SANITIZED_ROOT/sanitized-obzio/.git/worktrees/worker-a",
+      "head": "2ef9b59fb8ab81a3eda6569a48f712cf359e3e45",
+      "toplevel": "$SANITIZED_ROOT/worker-a"
+    },
+    "worker_b": {
+      "branch": "worker-b",
+      "common_dir": "$SANITIZED_ROOT/sanitized-obzio/.git",
+      "git_dir": "$SANITIZED_ROOT/sanitized-obzio/.git/worktrees/worker-b",
+      "head": "2ef9b59fb8ab81a3eda6569a48f712cf359e3e45",
+      "toplevel": "$SANITIZED_ROOT/worker-b"
+    }
+  },
+  "occupied_branch_attempt": {
+    "command": "git switch worker-a-switched",
+    "returncode": 128,
+    "stderr": "fatal: 'worker-a-switched' is already used by worktree at '$SANITIZED_ROOT/worker-a'"
+  },
+  "protocol_version": "PO03-WA-023-REPRODUCTION-v1",
+  "result": "PASS",
+  "sanitization": {
+    "external_mutation": false,
+    "real_repository_content_used": false,
+    "secrets_used": false,
+    "temporary_repository_removed_after_run": true
+  },
+  "workload": "sanitized repository with one controller and two workers"
+}

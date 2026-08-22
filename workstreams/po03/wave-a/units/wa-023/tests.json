@@ -1,0 +1,87 @@
+{
+  "protocol_version": "PO03-WAVE-A-TEST-RECEIPT-v1",
+  "task_id": "PO03-WA-023",
+  "recorded_at": "2026-08-22T07:25:49Z",
+  "summary": {
+    "final_outcome": "PASS",
+    "focused_test_count": 5,
+    "seeded_contract_test_count": 23,
+    "taxonomy_check_count": 1,
+    "reproduction_assertion_count": 9,
+    "first_pass_outcome": "FAIL",
+    "final_focused_passes": 5,
+    "final_focused_failures": 0
+  },
+  "runs": [
+    {
+      "run_id": "TEST-WA-023-FOCUSED-01",
+      "command": "python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-023 -p 'test_*.py' -v",
+      "exit_code": 1,
+      "tests_run": 5,
+      "passed": 4,
+      "failed": 1,
+      "outcome": "FAIL",
+      "failure": "test_git_rejects_same_branch_in_second_worktree expected 'already checked out'; Git 2.43.0 emitted the semantically equivalent 'already used by worktree at'.",
+      "repair": "Use a bounded regular expression accepting both upstream diagnostic forms."
+    },
+    {
+      "run_id": "TEST-WA-023-SEEDED-01",
+      "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+      "exit_code": 0,
+      "tests_run": 23,
+      "passed": 23,
+      "failed": 0,
+      "outcome": "PASS"
+    },
+    {
+      "run_id": "TEST-WA-023-FOCUSED-02",
+      "command": "python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-023 -p 'test_*.py' -v",
+      "exit_code": 0,
+      "tests_run": 5,
+      "passed": 5,
+      "failed": 0,
+      "outcome": "PASS"
+    },
+    {
+      "run_id": "TEST-WA-023-FOCUSED-03",
+      "command": "python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-023 -p 'test_*.py' -v",
+      "exit_code": 0,
+      "tests_run": 5,
+      "passed": 5,
+      "failed": 0,
+      "outcome": "PASS",
+      "note": "This run includes the portable-output assertion and the fail-closed CLI exit assertion."
+    },
+    {
+      "run_id": "TEST-WA-023-REPRODUCTION-01",
+      "command": "python3 workstreams/po03/wave-a/units/wa-023/probe_worktree_isolation.py reproduce --scratch-root workstreams/po03/wave-a/units/wa-023 --output workstreams/po03/wave-a/units/wa-023/reproduction.json",
+      "exit_code": 0,
+      "assertions": 9,
+      "passed": 9,
+      "failed": 0,
+      "outcome": "PASS"
+    },
+    {
+      "run_id": "TEST-WA-023-TAXONOMY-01",
+      "command": "python3 scripts/check_operator_taxonomy.py",
+      "exit_code": 0,
+      "checks": 1,
+      "outcome": "PASS",
+      "exact_summary": "OPERATOR TAXONOMY CHECK: PASS"
+    }
+  ],
+  "focused_coverage": [
+    "sanitized branch switching preserves controller identity",
+    "concurrent same-relative-path writes retain worker-specific bytes",
+    "occupied branch checkout is rejected",
+    "stable checkout identity passes",
+    "branch drift fails closed",
+    "guard CLI returns nonzero on drift",
+    "reproduction output contains no checkout-specific absolute path"
+  ],
+  "unsupported_test_telemetry": {
+    "per_test_wall_time": "NOT_SUPPORTED",
+    "provider_token_usage": "NOT_SUPPORTED",
+    "provider_cost": "NOT_SUPPORTED"
+  }
+}
