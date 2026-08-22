@@ -1,0 +1,29 @@
+test_complete_before_any_ingestion_is_rejected (test_a10_control_plane_attacks.TestInv1CompletionRequiresIngestion.test_complete_before_any_ingestion_is_rejected) ... ok
+test_a_stale_fence_after_release_is_rejected (test_a10_control_plane_attacks.TestInv2FenceToken.test_a_stale_fence_after_release_is_rejected) ... ok
+test_b_never_leased_fence_token_is_accepted_BREAK (test_a10_control_plane_attacks.TestInv2FenceToken.test_b_never_leased_fence_token_is_accepted_BREAK)
+BREAK: ingest_result only checks `incoming_fence < unit['fence_token']` ... ok
+test_a_byte_identical_duplicate_is_a_harmless_noop (test_a10_control_plane_attacks.TestInv3DuplicateCallbacks.test_a_byte_identical_duplicate_is_a_harmless_noop) ... ok
+test_b_non_identical_resubmission_after_completed_enables_second_completion_BREAK (test_a10_control_plane_attacks.TestInv3DuplicateCallbacks.test_b_non_identical_resubmission_after_completed_enables_second_completion_BREAK)
+BREAK: dedup is keyed on sha256(canonical(full result document)), not on ... ok
+test_hash_mismatch_at_readback_is_rejected (test_a10_control_plane_attacks.TestInv4ReadbackByteMismatch.test_hash_mismatch_at_readback_is_rejected) ... ok
+test_missing_artifact_at_readback_is_rejected (test_a10_control_plane_attacks.TestInv4ReadbackByteMismatch.test_missing_artifact_at_readback_is_rejected) ... ok
+test_manifest_sha_copied_from_a_different_unit_is_rejected (test_a10_control_plane_attacks.TestInv5WrongDispatchManifest.test_manifest_sha_copied_from_a_different_unit_is_rejected) ... ok
+test_a_mid_string_traversal_is_rejected (test_a10_control_plane_attacks.TestInv6AllowlistAndOwnershipEscape.test_a_mid_string_traversal_is_rejected) ... ok
+test_b_leading_dotslash_traversal_escapes_repo_root_BREAK (test_a10_control_plane_attacks.TestInv6AllowlistAndOwnershipEscape.test_b_leading_dotslash_traversal_escapes_repo_root_BREAK)
+BREAK: `path_in_allowlist`/`check_ownership` normalise with ... ok
+test_c_string_level_divergence_absolute_path (test_a10_control_plane_attacks.TestInv6AllowlistAndOwnershipEscape.test_c_string_level_divergence_absolute_path)
+Companion, code-level demonstration (no subprocess needed): an ... ok
+test_a_exact_owner_string_is_rejected (test_a10_control_plane_attacks.TestInv7SelfAcceptance.test_a_exact_owner_string_is_rejected) ... ok
+test_b_alias_reviewer_id_is_accepted_BOUNDARY (test_a10_control_plane_attacks.TestInv7SelfAcceptance.test_b_alias_reviewer_id_is_accepted_BOUNDARY)
+BOUNDARY (not a full break, but a real gap): the self-acceptance ... ok
+test_a_in_place_edit_without_rehash_is_rejected (test_a10_control_plane_attacks.TestInv8LedgerTamper.test_a_in_place_edit_without_rehash_is_rejected) ... ok
+test_b_cascade_rehashed_tamper_passes_verification_BREAK (test_a10_control_plane_attacks.TestInv8LedgerTamper.test_b_cascade_rehashed_tamper_passes_verification_BREAK)
+BREAK: verify_chain only checks internal self-consistency (each ... ok
+test_fabricated_result_commit_id_over_uncommitted_working_tree_file_reaches_completed_BREAK (test_a10_control_plane_attacks.TestInv9ProviderCompletedUncommitted.test_fabricated_result_commit_id_over_uncommitted_working_tree_file_reaches_completed_BREAK)
+BREAK: `ingest_result` never checks that `result_commit_id` refers ... ok
+test_schema_forces_the_label_when_result_commit_id_is_empty (test_a10_control_plane_attacks.TestInv9ProviderCompletedUncommitted.test_schema_forces_the_label_when_result_commit_id_is_empty) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 8.409s
+
+OK
