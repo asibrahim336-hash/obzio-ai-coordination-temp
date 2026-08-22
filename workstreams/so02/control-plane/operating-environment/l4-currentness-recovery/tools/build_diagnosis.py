@@ -22,7 +22,7 @@ SCOPES = LANE_ROOT / "ledger/currentness-scopes.json"
 OUT_JSON = LANE_ROOT / "diagnosis/DIAGNOSIS-L4-20260822-v001.json"
 OUT_MD = LANE_ROOT / "diagnosis/DIAGNOSIS-L4-20260822-v001.md"
 
-OBSERVATION_WINDOW = "2026-08-22T20:12Z to 2026-08-22T20:28Z"
+OBSERVATION_WINDOW = "2026-08-22T20:12Z to 2026-08-22T20:36Z"
 SOURCE_SHA = "fe0a595206e5986de7eaac6cabc619215a1eb81b"
 
 # The recurring failures quoted in the founder review, each mapped to the finding
@@ -76,7 +76,7 @@ UNDETERMINED = [
      "why": "Both are open against main and both rewrite the same pointer files with different bytes. Choosing between them is a founder-bound or independently-evaluated act, not a compilation result. The tool refuses to pick and records the refusal.",
      "label": "DIRECTLY_REPRODUCED for the conflict, deliberately undetermined for the winner"},
     {"question": "The exact remote ref denominator",
-     "why": "The observed ref count moved from 166 to 171 during the observation window because four sibling lanes of this same group were pushing their branches concurrently. Every count here is pinned to the projection's own ref list rather than to a moment, and the projection hash changes when the estate moves.",
+     "why": "The observed ref count moved from 166 to 171 during the observation window because four sibling lanes of this same group were pushing their branches concurrently. The count then held at 171 while sibling heads kept advancing, so a stable denominator does not mean a stable estate: a recompile over the same 171 refs produced a different projection hash purely because two sibling heads moved. Every count here is pinned to the projection's own ref list rather than to a moment.",
      "label": "DIRECTLY_REPRODUCED"},
 ]
 
