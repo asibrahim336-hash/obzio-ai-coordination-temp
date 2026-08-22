@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://obzio.internal/schemas/strategic-event-v1.schema.json",
+  "title": "Obzio strategic control event v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "event_id", "aggregate_type", "aggregate_id", "sequence",
+    "previous_event_sha256", "event_sha256", "event_type",
+    "occurred_at", "recorded_at", "actor", "authority",
+    "strategy_snapshot_id", "subject", "payload", "idempotency_key"
+  ],
+  "properties": {
+    "event_id": {"type": "string", "minLength": 1},
+    "aggregate_type": {"type": "string", "minLength": 1},
+    "aggregate_id": {"type": "string", "minLength": 1},
+    "sequence": {"type": "integer", "minimum": 1},
+    "previous_event_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "event_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "event_type": {"type": "string", "minLength": 1},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "recorded_at": {"type": "string", "format": "date-time"},
+    "actor": {"type": "object"},
+    "authority": {"type": "object"},
+    "strategy_snapshot_id": {"type": "string", "minLength": 1},
+    "subject": {"type": "string", "minLength": 1},
+    "payload": {"type": "object"},
+    "idempotency_key": {"type": "string", "minLength": 1}
+  }
+}
+
