@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -327,6 +328,7 @@ def task_capsule(
     lease_seconds: int,
     fence_token: int,
     nonce: str | None = None,
+    function: str | None = None,
 ) -> dict[str, str]:
     if not TASK_ID_RE.fullmatch(task_id):
         raise ValueError(f"invalid task id: {task_id}")
@@ -341,7 +343,7 @@ def task_capsule(
         "commission_id": COMMISSION_ID,
         "controller_head_sha": head_sha,
         "controller_run_id": run_id,
-        "function": "transactional-route-canary" if nonce else "wave-a-work-unit",
+        "function": function or ("transactional-route-canary" if nonce else "wave-a-work-unit"),
         "falsifiable_hypothesis": hypothesis,
         "task_prompt": prompt,
         "source_hashes": {
@@ -660,6 +662,397 @@ def verify(args: argparse.Namespace) -> int:
     return 0
 
 
+class StaleFenceError(RuntimeError):
+    """Raised when a superseded worker attempts to commit after ownership moved."""
+
+
+def append_registry(entry: dict[str, Any]) -> str:
+    """Append one durable line to the append-only work-unit registry."""
+    registry = CONTROL_ROOT / "work-unit-registry.jsonl"
+    assert_allowed_path(registry)
+    registry.parent.mkdir(parents=True, exist_ok=True)
+    payload = canonical_json(entry)
+    with registry.open("ab") as handle:
+        handle.write(payload)
+        handle.flush()
+        os.fsync(handle.fileno())
+    return sha256_bytes(payload)
+
+
+def allocate_fence() -> int:
+    """Allocate a strictly monotonic fence token.
+
+    The previous value survives a crash mid-allocation because the counter is
+    replaced atomically rather than rewritten in place.
+    """
+    counter = CONTROL_ROOT / "fence-counter.json"
+    current = read_json(counter)["fence_token"] if counter.is_file() else 0
+    nxt = int(current) + 1
+    replace_atomic(counter, canonical_json({"fence_token": nxt, "allocated_at": utc_now()}))
+    return nxt
+
+
+def _lease_path(task_id: str) -> Path:
+    return CONTROL_ROOT / "leases" / f"{task_id}.json"
+
+
+def grant_lease(task_id: str, *, holder: str, lease_seconds: int, attempt: int) -> dict[str, Any]:
+    """Grant or transfer a lease, always advancing the fence token."""
+    fence_token = allocate_fence()
+    lease = {
+        "lease_version": "PO03-LEASE-v1",
+        "task_id": task_id,
+        "lease_id": f"lease-{task_id}-{attempt}",
+        "holder": holder,
+        "attempt": attempt,
+        "fence_token": fence_token,
+        "granted_at": utc_now(),
+        "lease_seconds": lease_seconds,
+    }
+    replace_atomic(_lease_path(task_id), canonical_json(lease))
+    hash_chain_event(
+        task_id,
+        "LEASED",
+        actor="integration-controller",
+        details={"holder": holder, "fence_token": fence_token, "attempt": attempt},
+    )
+    return lease
+
+
+def current_fence(task_id: str) -> int:
+    lease = _lease_path(task_id)
+    return int(read_json(lease)["fence_token"]) if lease.is_file() else 0
+
+
+def assert_fence_current(task_id: str, fence_token: int) -> None:
+    """Reject a write from a worker whose lease has been superseded."""
+    active = current_fence(task_id)
+    if active and int(fence_token) < active:
+        raise StaleFenceError(
+            f"{task_id}: fence {fence_token} is stale; active fence is {active}"
+        )
+
+
+def read_object_bytes(locator: str) -> bytes:
+    """Read committed bytes by immutable Git object id, never from the worktree."""
+    if not locator.startswith("git:"):
+        raise ValueError(f"non-durable artifact locator: {locator}")
+    revision_path = locator[len("git:") :]
+    result = subprocess.run(
+        ("git", "cat-file", "blob", revision_path),
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+    )
+    return result.stdout
+
+
+def load_result_validator():
+    module_path = PO03_ROOT / "tools" / "validate_contracts.py"
+    spec = importlib.util.spec_from_file_location("po03_validate_contracts", module_path)
+    if spec is None or spec.loader is None:
+        raise ValueError(f"cannot load contract validator: {repo_relative(module_path)}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def ingest_result(task_id: str, document: dict[str, Any]) -> dict[str, Any]:
+    """Verify a subordinate result and record parent ingestion.
+
+    Provider completion is only an observation.  A result advances only when the
+    seeded contract validates it, every artifact is read back from an immutable
+    object by this process, and the worker's fence is still current.  Re-ingesting
+    the same result is harmless so a duplicated callback cannot double-count.
+    """
+    validator = load_result_validator()
+    errors = list(validator.validate_result(document))
+    attempt = document.get("attempt", {}) if isinstance(document.get("attempt"), dict) else {}
+
+    if not errors:
+        try:
+            assert_fence_current(task_id, attempt.get("fence_token", 0))
+        except StaleFenceError as exc:
+            errors.append(str(exc))
+
+    readback: list[dict[str, Any]] = []
+    if not errors:
+        for artifact in document["artifacts"]:
+            try:
+                observed = read_object_bytes(artifact["content_uri"])
+            except (ValueError, subprocess.CalledProcessError) as exc:
+                errors.append(f"artifact {artifact['artifact_id']}: read-back failed ({exc})")
+                continue
+            observed_sha = sha256_bytes(observed)
+            matched = observed_sha == artifact["sha256"] and len(observed) == artifact["bytes"]
+            if not matched:
+                errors.append(
+                    f"artifact {artifact['artifact_id']}: read-back mismatch "
+                    f"sha256={observed_sha} bytes={len(observed)}"
+                )
+            readback.append(
+                {
+                    "artifact_id": artifact["artifact_id"],
+                    "locator": artifact["content_uri"],
+                    "expected_sha256": artifact["sha256"],
+                    "observed_sha256": observed_sha,
+                    "expected_bytes": artifact["bytes"],
+                    "observed_bytes": len(observed),
+                    "match": matched,
+                }
+            )
+        if not document["artifacts"]:
+            errors.append("result carries no artifacts; nothing durable to ingest")
+
+    result_bytes = canonical_json(document)
+    result_sha = sha256_bytes(result_bytes)
+    task_directory = CONTROL_ROOT / "tasks" / task_id
+    state = "PARENT_INGESTED" if not errors else "RECOVERY_REQUIRED"
+
+    ingestion = {
+        "ingestion_version": "PO03-INGESTION-v1",
+        "task_id": task_id,
+        "obzio_state": state,
+        "result_sha256": result_sha,
+        "idempotency_key": attempt.get("idempotency_key"),
+        "fence_token": attempt.get("fence_token"),
+        "worker_id": attempt.get("worker_id"),
+        "provider_state": document.get("provider_state"),
+        "result_commit_id": document.get("result_transaction", {}).get("result_commit_id"),
+        "artifact_readback": readback,
+        "errors": errors,
+        "ingested_by": "coordinator",
+        "ingested_at": utc_now(),
+    }
+    # write_once makes a replayed identical callback a no-op instead of a duplicate.
+    destination = task_directory / f"ingestion-{result_sha[:16]}.json"
+    ingestion_bytes = canonical_json(ingestion)
+    if destination.is_file():
+        ingestion["duplicate_callback_suppressed"] = True
+        return ingestion
+    write_once(task_directory / f"result-{result_sha[:16]}.json", result_bytes)
+    write_once(destination, ingestion_bytes)
+    hash_chain_event(
+        task_id,
+        state,
+        actor="integration-controller",
+        details={"result_sha256": result_sha, "readback_count": len(readback), "errors": errors},
+    )
+    append_registry(
+        {
+            "registry_event": "INGESTION",
+            "task_id": task_id,
+            "obzio_state": state,
+            "result_sha256": result_sha,
+            "fence_token": attempt.get("fence_token"),
+            "worker_id": attempt.get("worker_id"),
+            "artifact_count": len(readback),
+            "errors": errors,
+            "recorded_at": ingestion["ingested_at"],
+        }
+    )
+    return ingestion
+
+
+def complete_unit(task_id: str, document: dict[str, Any], *, reviewer_id: str | None = None) -> dict[str, Any]:
+    """Set Obzio COMPLETED. Only the coordinator may call this, and only after ingestion."""
+    events = sorted((CONTROL_ROOT / "events" / task_id).glob("*.json"))
+    ingested = any(read_json(path).get("state") == "PARENT_INGESTED" for path in events)
+    if not ingested:
+        raise ValueError(f"{task_id}: cannot complete before PARENT_INGESTED")
+
+    completed = json.loads(json.dumps(document))
+    completed["obzio_state"] = "COMPLETED"
+    completed["completion_actor"] = "coordinator"
+    completed["independent_acceptance"] = {
+        "state": "PENDING",
+        "reviewer_id": reviewer_id,
+        "receipt_uri": None,
+    }
+    validator = load_result_validator()
+    errors = validator.validate_result(completed)
+    if errors:
+        raise ValueError(f"{task_id}: completion rejected by contract: {errors}")
+    write_once(CONTROL_ROOT / "tasks" / task_id / "transaction-completed.json", canonical_json(completed))
+    hash_chain_event(
+        task_id,
+        "COMPLETED",
+        actor="integration-controller",
+        details={"completion_actor": "coordinator"},
+    )
+    append_registry(
+        {
+            "registry_event": "COMPLETED",
+            "task_id": task_id,
+            "obzio_state": "COMPLETED",
+            "completion_actor": "coordinator",
+            "recorded_at": utc_now(),
+        }
+    )
+    return completed
+
+
+def scan_recovery(run_id: str, head_sha: str) -> dict[str, Any]:
+    """Reconcile every known unit against durable evidence and write recovery state."""
+    tasks_root = CONTROL_ROOT / "tasks"
+    units: dict[str, Any] = {}
+    false_completion = 0
+    orphans = 0
+    for task_directory in sorted(p for p in tasks_root.glob("*") if p.is_dir()):
+        task_id = task_directory.name
+        events = sorted((CONTROL_ROOT / "events" / task_id).glob("*.json"))
+        states = [read_json(path).get("state") for path in events]
+        latest = states[-1] if states else None
+        ingestions = sorted(task_directory.glob("ingestion-*.json"))
+        verified = any(
+            read_json(path).get("obzio_state") == "PARENT_INGESTED" for path in ingestions
+        )
+        completed = (task_directory / "transaction-completed.json").is_file()
+        if completed and not verified:
+            false_completion += 1
+        action = "NONE"
+        if not events:
+            action = "REDISPATCH_FROM_IMMUTABLE_INPUT"
+            orphans += 1
+        elif completed:
+            action = "NONE"
+        elif verified:
+            action = "AWAIT_COORDINATOR_COMPLETION"
+        elif latest in {"CREATED"}:
+            action = "DISPATCH"
+        else:
+            action = "RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT"
+        units[task_id] = {
+            "obzio_state": "COMPLETED" if completed else (latest or "UNKNOWN"),
+            "latest_event_sequence": len(events),
+            "fence_token": current_fence(task_id),
+            "ingested": verified,
+            "recovery_action": action,
+        }
+    state = {
+        "recovery_version": "PO03-RECOVERY-STATE-v1",
+        "controller_run_id": run_id,
+        "controller_head_sha": head_sha,
+        "scan_state": "ACTIVE",
+        "scanned_at": utc_now(),
+        "units": units,
+        "unit_count": len(units),
+        "false_completion_count": false_completion,
+        "orphan_count": orphans,
+        "duplicate_callback_count": 0,
+        "collision_count": 0,
+        "decision_changed": [],
+    }
+    replace_atomic(CONTROL_ROOT / "recovery-state.json", canonical_json(state))
+    return state
+
+
+def detect_path_collisions() -> list[str]:
+    """Fail closed if two subordinates claim overlapping owned subtrees."""
+    ownership = read_json(CONTROL_ROOT / "path-ownership.json")
+    claims: list[tuple[str, str]] = []
+    for subordinate in ownership.get("subordinates", []):
+        for path in subordinate.get("owned_paths", []):
+            claims.append((subordinate["task_id"], path.rstrip("*").rstrip("/")))
+    collisions: list[str] = []
+    for index, (task_a, path_a) in enumerate(claims):
+        for task_b, path_b in claims[index + 1 :]:
+            if task_a == task_b:
+                continue
+            if path_a == path_b or path_a.startswith(path_b + "/") or path_b.startswith(path_a + "/"):
+                collisions.append(f"{task_a}:{path_a} overlaps {task_b}:{path_b}")
+    return sorted(set(collisions))
+
+
+def create_units(args: argparse.Namespace) -> int:
+    spec = read_json(Path(args.spec))
+    head_sha = git("rev-parse", "HEAD")
+    created: list[dict[str, str]] = []
+    ownership = read_json(CONTROL_ROOT / "path-ownership.json")
+    existing = {entry["task_id"] for entry in ownership.get("subordinates", [])}
+    for unit in spec["units"]:
+        fence_token = allocate_fence()
+        capsule = task_capsule(
+            task_id=unit["task_id"],
+            head_sha=head_sha,
+            run_id=spec["run_id"],
+            model=unit["model"],
+            reasoning=unit["reasoning"],
+            hypothesis=unit["hypothesis"],
+            prompt=unit["prompt"],
+            owned_paths=unit["owned_paths"],
+            result_slot=unit["result_slot"],
+            acceptance=unit["acceptance"],
+            lease_seconds=unit.get("lease_seconds", 10800),
+            fence_token=fence_token,
+            function=unit["function"],
+        )
+        capsule["function"] = unit["function"]
+        capsule["exact_model"] = unit["model"]
+        capsule["fence_token"] = str(fence_token)
+        created.append(capsule)
+        append_registry(
+            {
+                "registry_event": "CREATED",
+                "wave": spec.get("wave", "A"),
+                "task_id": unit["task_id"],
+                "function": unit["function"],
+                "exact_model": unit["model"],
+                "fence_token": fence_token,
+                "input_sha256": capsule["input_sha256"],
+                "acceptance_sha256": capsule["acceptance_sha256"],
+                "owned_paths": unit["owned_paths"],
+                "result_slot": unit["result_slot"],
+                "recorded_at": utc_now(),
+            }
+        )
+        if unit["task_id"] not in existing:
+            ownership["subordinates"].append(
+                {
+                    "task_id": unit["task_id"],
+                    "provider_run_id": "PENDING_PROVIDER_ASSIGNMENT",
+                    "owned_paths": unit["owned_paths"],
+                    "fence_token": fence_token,
+                }
+            )
+    ownership["controller"]["run_id"] = spec["run_id"]
+    replace_atomic(CONTROL_ROOT / "path-ownership.json", canonical_json(ownership))
+    collisions = detect_path_collisions()
+    if collisions:
+        raise ValueError(f"path collision detected: {collisions}")
+    print(json.dumps({"created": len(created), "units": created, "collisions": []}, indent=2, sort_keys=True))
+    return 0
+
+
+def ingest(args: argparse.Namespace) -> int:
+    document = read_json(Path(args.result))
+    ingestion = ingest_result(args.task_id, document)
+    print(json.dumps(ingestion, indent=2, sort_keys=True))
+    return 0 if not ingestion["errors"] else 1
+
+
+def complete(args: argparse.Namespace) -> int:
+    document = read_json(Path(args.result))
+    completed = complete_unit(args.task_id, document, reviewer_id=args.reviewer_id)
+    print(json.dumps({"task_id": args.task_id, "obzio_state": completed["obzio_state"]}, indent=2))
+    return 0
+
+
+def recover(args: argparse.Namespace) -> int:
+    state = scan_recovery(args.run_id, git("rev-parse", "HEAD"))
+    print(json.dumps(state, indent=2, sort_keys=True))
+    return 0
+
+
+def collisions(args: argparse.Namespace) -> int:
+    found = detect_path_collisions()
+    for item in found:
+        print(f"PO03_PATH_COLLISION: {item}")
+    if not found:
+        print("PO03_PATH_COLLISION_PASS")
+    return 1 if found else 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -673,6 +1066,28 @@ def build_parser() -> argparse.ArgumentParser:
     verify_parser = subparsers.add_parser("verify")
     verify_parser.add_argument("task_id")
     verify_parser.set_defaults(handler=verify)
+
+    create_parser = subparsers.add_parser("create-units")
+    create_parser.add_argument("spec")
+    create_parser.set_defaults(handler=create_units)
+
+    ingest_parser = subparsers.add_parser("ingest")
+    ingest_parser.add_argument("task_id")
+    ingest_parser.add_argument("result")
+    ingest_parser.set_defaults(handler=ingest)
+
+    complete_parser = subparsers.add_parser("complete")
+    complete_parser.add_argument("task_id")
+    complete_parser.add_argument("result")
+    complete_parser.add_argument("--reviewer-id", default=None)
+    complete_parser.set_defaults(handler=complete)
+
+    recover_parser = subparsers.add_parser("recover")
+    recover_parser.add_argument("--run-id", required=True)
+    recover_parser.set_defaults(handler=recover)
+
+    collision_parser = subparsers.add_parser("collisions")
+    collision_parser.set_defaults(handler=collisions)
     return parser
 
 
@@ -680,7 +1095,7 @@ def main(argv: Iterable[str] | None = None) -> int:
     args = build_parser().parse_args(list(argv) if argv is not None else None)
     try:
         return args.handler(args)
-    except (OSError, ValueError, FileExistsError, subprocess.CalledProcessError) as exc:
+    except (OSError, ValueError, FileExistsError, StaleFenceError, subprocess.CalledProcessError) as exc:
         print(f"ERROR: {exc}")
         return 2
 
