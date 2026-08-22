@@ -1,0 +1,262 @@
+$ python3 -I derive_metrics.py --repo-root . --rows <057 rows> --out derived-metrics.json
+{
+  "decision_changed": [],
+  "derivation_version": "PO03-DERIVED-METRICS-v1",
+  "derived_metrics": {
+    "false_green_rate": {
+      "definition": "share of units whose recorded first-pass verdict is PASS but whose artifacts do not read back byte-identical from an immutable Git object",
+      "denominator": 19,
+      "inputs": [
+        "first_pass_outcome",
+        "readback_state"
+      ],
+      "metric": "false_green_rate",
+      "missing_inputs": [],
+      "numerator": 0,
+      "numerator_rule": "readback_state is not VERIFIED",
+      "population": "rows whose first_pass_outcome is PASS",
+      "rows_excluded_for_unsupported_inputs": [
+        "po03-wa-b2e7-005-deterministic-rerun-equivalence",
+        "po03-wa-b2e7-006-interpreter-flag-portability",
+        "po03-wa-b2e7-007-network-independence",
+        "po03-wa-b2e7-008-warm-checkout-adversarial",
+        "po03-wa-b2e7-011-alias-resolution",
+        "po03-wa-b2e7-012-currentness-gate-reproduction",
+        "po03-wa-b2e7-013-launch-surface-classifier",
+        "po03-wa-b2e7-014-pointer-conflict-adversarial",
+        "po03-wa-b2e7-015-disposition-completeness",
+        "po03-wa-b2e7-016-semantic-state-contract",
+        "po03-wa-b2e7-019-manifest-gap-detection",
+        "po03-wa-b2e7-020-pack-nonportable-paths",
+        "po03-wa-b2e7-021-process-boundary-failure",
+        "po03-wa-b2e7-022-po01-claim-reproduction",
+        "po03-wa-b2e7-023-isolated-repair-candidate",
+        "po03-wa-b2e7-024-forged-completeness-adversarial",
+        "po03-wa-b2e7-026-provenance-chain",
+        "po03-wa-b2e7-027-changed-path-rejection-fixture",
+        "po03-wa-b2e7-028-path-guard-hardening",
+        "po03-wa-b2e7-029-hash-coverage-completeness",
+        "po03-wa-b2e7-030-tamper-evidence",
+        "po03-wa-b2e7-031-clean-ci-suite-gate",
+        "po03-wa-b2e7-032-omitted-file-adversarial",
+        "po03-wa-b2e7-034-transport-debris-detector",
+        "po03-wa-b2e7-041-session-loss-injection",
+        "po03-wa-b2e7-043-partial-and-commit-failure",
+        "po03-wa-b2e7-044-push-failure-injection",
+        "po03-wa-b2e7-045-stale-lease-fencing",
+        "po03-wa-b2e7-046-duplicate-callback-idempotence",
+        "po03-wa-b2e7-047-corrupt-artifact-recovery",
+        "po03-wa-b2e7-048-provider-runtime-loss-and-code2-fixture",
+        "po03-wa-b2e7-052-reproduction-independent-review",
+        "po03-wa-b2e7-053-reproduction-outbox-durability",
+        "po03-wa-b2e7-054-reproduction-checkpoint-granularity",
+        "po03-wa-b2e7-055-reproduction-scale-versus-acceptance",
+        "po03-wa-b2e7-056-mechanism-change-and-recurrence",
+        "po03-wa-b2e7-057-metric-collection-harness",
+        "po03-wa-b2e7-058-derived-metrics",
+        "po03-wa-b2e7-059-adversarial-hidden-cases",
+        "po03-wa-b2e7-060-blind-review-harness",
+        "po03-wa-b2e7-061-g0-reconstruction",
+        "po03-wa-b2e7-062-g1-packaging",
+        "po03-wa-b2e7-063-g2-successor",
+        "po03-wa-b2e7-064-generation-comparison"
+      ],
+      "value": 0.0
+    },
+    "first_pass_acceptance_rate": {
+      "definition": "share of units carrying a terminal independent disposition that were ACCEPTED on the first attempt",
+      "denominator": 0,
+      "inputs": [
+        "independent_disposition",
+        "rework_count"
+      ],
+      "metric": "first_pass_acceptance_rate",
+      "missing_inputs": [
+        "non-empty population: rows whose independent_disposition is ACCEPTED or REJECTED matched 0 of 64 recorded rows"
+      ],
+      "numerator": 0,
+      "numerator_rule": "disposition ACCEPTED and rework_count == 0",
+      "population": "rows whose independent_disposition is ACCEPTED or REJECTED",
+      "rows_excluded_for_unsupported_inputs": [
+        "po03-wa-b2e7-005-deterministic-rerun-equivalence",
+        "po03-wa-b2e7-006-interpreter-flag-portability",
+        "po03-wa-b2e7-007-network-independence",
+        "po03-wa-b2e7-008-warm-checkout-adversarial",
+        "po03-wa-b2e7-011-alias-resolution",
+        "po03-wa-b2e7-012-currentness-gate-reproduction",
+        "po03-wa-b2e7-013-launch-surface-classifier",
+        "po03-wa-b2e7-014-pointer-conflict-adversarial",
+        "po03-wa-b2e7-015-disposition-completeness",
+        "po03-wa-b2e7-016-semantic-state-contract",
+        "po03-wa-b2e7-019-manifest-gap-detection",
+        "po03-wa-b2e7-020-pack-nonportable-paths",
+        "po03-wa-b2e7-021-process-boundary-failure",
+        "po03-wa-b2e7-022-po01-claim-reproduction",
+        "po03-wa-b2e7-023-isolated-repair-candidate",
+        "po03-wa-b2e7-024-forged-completeness-adversarial",
+        "po03-wa-b2e7-026-provenance-chain",
+        "po03-wa-b2e7-027-changed-path-rejection-fixture",
+        "po03-wa-b2e7-028-path-guard-hardening",
+        "po03-wa-b2e7-029-hash-coverage-completeness",
+        "po03-wa-b2e7-030-tamper-evidence",
+        "po03-wa-b2e7-031-clean-ci-suite-gate",
+        "po03-wa-b2e7-032-omitted-file-adversarial",
+        "po03-wa-b2e7-041-session-loss-injection",
+        "po03-wa-b2e7-043-partial-and-commit-failure",
+        "po03-wa-b2e7-044-push-failure-injection",
+        "po03-wa-b2e7-045-stale-lease-fencing",
+        "po03-wa-b2e7-046-duplicate-callback-idempotence",
+        "po03-wa-b2e7-047-corrupt-artifact-recovery",
+        "po03-wa-b2e7-048-provider-runtime-loss-and-code2-fixture",
+        "po03-wa-b2e7-053-reproduction-outbox-durability",
+        "po03-wa-b2e7-054-reproduction-checkpoint-granularity",
+        "po03-wa-b2e7-055-reproduction-scale-versus-acceptance",
+        "po03-wa-b2e7-056-mechanism-change-and-recurrence",
+        "po03-wa-b2e7-057-metric-collection-harness",
+        "po03-wa-b2e7-058-derived-metrics",
+        "po03-wa-b2e7-059-adversarial-hidden-cases",
+        "po03-wa-b2e7-060-blind-review-harness",
+        "po03-wa-b2e7-061-g0-reconstruction",
+        "po03-wa-b2e7-062-g1-packaging",
+        "po03-wa-b2e7-063-g2-successor",
+        "po03-wa-b2e7-064-generation-comparison"
+      ],
+      "value": "NOT_SUPPORTED"
+    },
+    "independently_accepted_throughput": {
+      "definition": "count of counted units with a terminal ACCEPTED independent disposition and a VERIFIED read-back, divided by the observation window in hours",
+      "denominator": null,
+      "inputs": [
+        "independent_disposition",
+        "readback_state",
+        "observation_window_hours (external)"
+      ],
+      "metric": "independently_accepted_throughput",
+      "missing_inputs": [
+        "observation_window_hours: no absolute attempt start or end timestamp exists in the frozen required_fields of PO03-METRIC-DEFINITIONS-v1, so no time base can be derived from the recorded rows alone"
+      ],
+      "numerator": 0,
+      "value": "NOT_SUPPORTED"
+    },
+    "lesson_to_live_change_conversion": {
+      "definition": "share of accepted lessons that produced a live mechanism change with preserved lineage",
+      "inputs": [
+        "accepted_lesson_ledger",
+        "live_mechanism_change_lineage"
+      ],
+      "metric": "lesson_to_live_change_conversion",
+      "missing_inputs": [
+        "accepted_lesson_ledger: no accepted-lesson field exists in the frozen row schema",
+        "live_mechanism_change_lineage: produced by the successor units (063 lineage, 064 dispositions) and not present in the recorded rows"
+      ],
+      "value": "NOT_SUPPORTED"
+    },
+    "recovery_rate": {
+      "definition": "share of units that recorded a recovery event and nevertheless reached a VERIFIED artifact read-back",
+      "denominator": 0,
+      "inputs": [
+        "recovery_events",
+        "readback_state"
+      ],
+      "metric": "recovery_rate",
+      "missing_inputs": [
+        "non-empty population: rows with recovery_events > 0 matched 0 of 64 recorded rows"
+      ],
+      "numerator": 0,
+      "numerator_rule": "readback_state is VERIFIED",
+      "population": "rows with recovery_events > 0",
+      "rows_excluded_for_unsupported_inputs": [],
+      "value": "NOT_SUPPORTED"
+    },
+    "research_to_reproduction_conversion": {
+      "definition": "share of research-function counted units whose reproduction evidence reads back byte-identical from an immutable Git object",
+      "denominator": 8,
+      "inputs": [
+        "function",
+        "readback_state"
+      ],
+      "metric": "research_to_reproduction_conversion",
+      "missing_inputs": [],
+      "numerator": 4,
+      "numerator_rule": "readback_state is VERIFIED",
+      "population": "rows whose function is frontier-research-reproduction-and-mechanism-change",
+      "research_function": "frontier-research-reproduction-and-mechanism-change",
+      "rows_excluded_for_unsupported_inputs": [],
+      "value": 0.5
+    },
+    "successor_lift": {
+      "definition": "combined pass-rate difference between the successor generation and the current generation on the frozen public suite plus evaluator-held holdout cases",
+      "inputs": [
+        "generation_comparison"
+      ],
+      "metric": "successor_lift",
+      "missing_inputs": [
+        "generation_comparison: no generation field exists in the frozen row schema; the value is produced by the generation comparison unit (064) and cannot be derived from work-unit rows"
+      ],
+      "value": "NOT_SUPPORTED"
+    }
+  },
+  "emitted_count": 2,
+  "hypothesis_probe": {
+    "computed_count": 1,
+    "hypothesis": "Independently accepted throughput, first-pass acceptance, false-green rate, recovery time and coordination overhead are computable from the recorded rows alone.",
+    "population_blocked_count": 1,
+    "quantities": [
+      {
+        "computable_from_rows_alone": false,
+        "missing_inputs": [
+          "observation_window_hours: no absolute attempt start or end timestamp exists in the frozen required_fields of PO03-METRIC-DEFINITIONS-v1, so no time base can be derived from the recorded rows alone"
+        ],
+        "quantity": "independently_accepted_throughput",
+        "value": "NOT_SUPPORTED"
+      },
+      {
+        "computable_from_rows_alone": false,
+        "missing_inputs": [
+          "non-empty population: rows whose independent_disposition is ACCEPTED or REJECTED matched 0 of 64 recorded rows"
+        ],
+        "quantity": "first_pass_acceptance_rate",
+        "value": "NOT_SUPPORTED"
+      },
+      {
+        "computable_from_rows_alone": true,
+        "missing_inputs": [],
+        "quantity": "false_green_rate",
+        "value": 0.0
+      },
+      {
+        "computable_from_rows_alone": false,
+        "missing_inputs": [
+          "active_ms is NOT_SUPPORTED in 64 of 64 rows",
+          "population with recovery_events > 0 matched 0 of 64 rows"
+        ],
+        "quantity": "recovery_time",
+        "value": "NOT_SUPPORTED"
+      },
+      {
+        "computable_from_rows_alone": false,
+        "missing_inputs": [
+          "queue_ms is NOT_SUPPORTED in 64 of 64 rows",
+          "review_ms is NOT_SUPPORTED in 64 of 64 rows"
+        ],
+        "quantity": "coordination_overhead",
+        "value": "NOT_SUPPORTED"
+      }
+    ],
+    "structurally_blocked_count": 3,
+    "timing_field_unsupported_counts": {
+      "active_ms": 64,
+      "queue_ms": 64,
+      "review_ms": 64,
+      "wall_ms": 42
+    },
+    "verdict": "REFUTED",
+    "verdict_basis": "The hypothesis is refuted when at least one named quantity cannot be computed from the frozen row schema at all; it is NOT_YET when every remaining gap is an empty population that later rows could fill."
+  },
+  "metrics_version": "PO03-METRIC-DEFINITIONS-v1",
+  "refused_count": 5,
+  "row_count": 64,
+  "rows_sha256": "1d62d1ac623754d07f1b0b8705902441b6aa5a38fe3e74a7d33bd13f80b43bad",
+  "rows_uri": "workstreams/po03/attempts/po03-wa-b2e7-057-metric-collection-harness/work-unit-runs.jsonl"
+}
+exit=0
