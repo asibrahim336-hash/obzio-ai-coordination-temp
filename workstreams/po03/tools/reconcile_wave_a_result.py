@@ -381,7 +381,9 @@ def main() -> int:
     _write_jsonl("control/events/ledger.jsonl", events)
 
     recovery = _read_json("control/recovery-state.json")
-    recovery["scanned_at"] = args.verified_at
+    recovery["scanned_at"] = max(
+        str(recovery.get("scanned_at", "")), args.verified_at
+    )
     recovery["last_event_seq"] = max(int(row["event_seq"]) for row in events)
     recovery["active_leases"] = [
         lease for lease in recovery["active_leases"]
