@@ -793,13 +793,86 @@ def current_fence(task_id: str) -> int:
     return int(read_json(lease)["fence_token"]) if lease.is_file() else 0
 
 
-def assert_fence_current(task_id: str, fence_token: int) -> None:
-    """Reject a write from a worker whose lease has been superseded."""
-    active = current_fence(task_id)
-    if active and int(fence_token) < active:
-        raise StaleFenceError(
-            f"{task_id}: fence {fence_token} is stale; active fence is {active}"
+def lease_status(task_id: str, *, now: int | None = None) -> dict[str, Any]:
+    """Report whether a lease is live or has outlived its declared lifetime."""
+    lease_file = _lease_path(task_id)
+    if not lease_file.is_file():
+        return {"state": "NO_LEASE", "fence_token": 0, "expired": False, "seconds_remaining": None}
+    lease = read_json(lease_file)
+    granted = lease.get("granted_at", "")
+    try:
+        granted_epoch = int(
+            datetime.strptime(granted, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc).timestamp()
         )
+    except (TypeError, ValueError):
+        return {"state": "UNPARSABLE_GRANT", "fence_token": lease.get("fence_token"), "expired": False, "seconds_remaining": None}
+    deadline = granted_epoch + int(lease.get("lease_seconds", 0))
+    current = int(datetime.now(timezone.utc).timestamp()) if now is None else now
+    remaining = deadline - current
+    return {
+        "state": "EXPIRED" if remaining <= 0 else "LIVE",
+        "fence_token": lease.get("fence_token"),
+        "holder": lease.get("holder"),
+        "expired": remaining <= 0,
+        "seconds_remaining": remaining,
+    }
+
+
+def assert_fence_current(task_id: str, fence_token: int) -> None:
+    """Reject a write from a worker that does not hold the active lease.
+
+    A lower fence means the worker was superseded. A *higher* fence means no
+    lease ever granted it, so accepting it would let a worker mint its own
+    authority. Only exact possession of the active fence is authorised.
+    """
+    active = current_fence(task_id)
+    if not active:
+        return
+    supplied = int(fence_token)
+    if supplied < active:
+        raise StaleFenceError(
+            f"{task_id}: fence {supplied} is stale; active fence is {active}"
+        )
+    if supplied > active:
+        raise StaleFenceError(
+            f"{task_id}: fence {supplied} was never granted; active fence is {active}"
+        )
+
+
+def reap_expired_leases(*, now: int | None = None) -> list[dict[str, Any]]:
+    """Transfer ownership away from leases that have outlived their lifetime.
+
+    Expiry alone is not dangerous while the holder is still the only claimant, so
+    an expired lease is not treated as an invalid one. The hazard is a zombie
+    committing after ownership moves, and transferring the lease advances the
+    fence, which is what actually blocks it.
+    """
+    reaped: list[dict[str, Any]] = []
+    leases_root = CONTROL_ROOT / "leases"
+    if not leases_root.is_dir():
+        return reaped
+    for lease_file in sorted(leases_root.glob("*.json")):
+        task_id = lease_file.stem
+        status = lease_status(task_id, now=now)
+        if not status["expired"]:
+            continue
+        previous = read_json(lease_file)
+        transferred = grant_lease(
+            task_id,
+            holder="integration-controller-reaper",
+            lease_seconds=int(previous.get("lease_seconds", 3600)),
+            attempt=int(previous.get("attempt", 1)) + 1,
+        )
+        reaped.append(
+            {
+                "task_id": task_id,
+                "previous_holder": previous.get("holder"),
+                "previous_fence": previous.get("fence_token"),
+                "new_fence": transferred["fence_token"],
+                "seconds_overdue": -status["seconds_remaining"],
+            }
+        )
+    return reaped
 
 
 REMOTE_LEASE_PREFIX = "refs/heads/po03/lease/"
@@ -1175,6 +1248,7 @@ def ingest_result(task_id: str, document: dict[str, Any]) -> dict[str, Any]:
     result_sha = sha256_bytes(result_bytes)
     task_directory = CONTROL_ROOT / "tasks" / task_id
     state = "PARENT_INGESTED" if not errors else "RECOVERY_REQUIRED"
+    result_commit_id = document.get("result_transaction", {}).get("result_commit_id")
 
     ingestion = {
         "ingestion_version": "PO03-INGESTION-v1",
@@ -1185,17 +1259,53 @@ def ingest_result(task_id: str, document: dict[str, Any]) -> dict[str, Any]:
         "fence_token": attempt.get("fence_token"),
         "worker_id": attempt.get("worker_id"),
         "provider_state": document.get("provider_state"),
-        "result_commit_id": document.get("result_transaction", {}).get("result_commit_id"),
+        "result_commit_id": result_commit_id,
+        "lease_status": lease_status(task_id),
         "artifact_readback": readback,
         "errors": errors,
         "ingested_by": "coordinator",
         "ingested_at": utc_now(),
     }
-    # write_once makes a replayed identical callback a no-op instead of a duplicate.
-    destination = task_directory / f"ingestion-{result_sha[:16]}.json"
+
+    # Suppression is keyed on transaction identity, not payload bytes. A retry
+    # regenerated with a fresh timestamp is the same transaction and must not be
+    # counted twice, even though its bytes differ.
+    identity = f"{attempt.get('idempotency_key')}|{attempt.get('attempt_id')}"
+    identity_key = sha256_bytes(identity.encode("utf-8"))[:16]
+    destination = task_directory / f"ingestion-{identity_key}.json"
     ingestion_bytes = canonical_json(ingestion)
     if destination.is_file():
+        previous = read_json(destination)
         ingestion["duplicate_callback_suppressed"] = True
+        ingestion["first_ingested_at"] = previous.get("ingested_at")
+        # Suppressed duplicates are recorded out of band so the registry stays
+        # one row per counted result while the duplicate remains measurable.
+        with (task_directory / "duplicate-callbacks.jsonl").open("ab") as handle:
+            handle.write(
+                canonical_json(
+                    {
+                        "task_id": task_id,
+                        "idempotency_key": attempt.get("idempotency_key"),
+                        "attempt_id": attempt.get("attempt_id"),
+                        "observed_at": ingestion["ingested_at"],
+                        "result_sha256": result_sha,
+                        "first_ingested_at": previous.get("ingested_at"),
+                    }
+                )
+            )
+            handle.flush()
+            os.fsync(handle.fileno())
+        # Same transaction identity but a different durable result is a genuine
+        # conflict, not a benign replay, so it must not be silently swallowed.
+        if previous.get("result_commit_id") != result_commit_id:
+            ingestion["obzio_state"] = "RECOVERY_REQUIRED"
+            ingestion["errors"] = [
+                f"idempotency key {attempt.get('idempotency_key')!r} already ingested result commit "
+                f"{previous.get('result_commit_id')!r}; this callback claims {result_commit_id!r}"
+            ]
+            conflict = task_directory / f"conflict-{identity_key}-{result_sha[:8]}.json"
+            if not conflict.is_file():
+                write_once(conflict, canonical_json(ingestion))
         return ingestion
     write_once(task_directory / f"result-{result_sha[:16]}.json", result_bytes)
     write_once(destination, ingestion_bytes)
@@ -1221,8 +1331,13 @@ def ingest_result(task_id: str, document: dict[str, Any]) -> dict[str, Any]:
     return ingestion
 
 
-def find_ingestion(task_id: str, result_sha256: str) -> dict[str, Any] | None:
-    candidate = CONTROL_ROOT / "tasks" / task_id / f"ingestion-{result_sha256[:16]}.json"
+def find_ingestion(task_id: str, document: dict[str, Any]) -> dict[str, Any] | None:
+    """Locate the ingestion record for this document's transaction identity."""
+    attempt = document.get("attempt", {}) if isinstance(document.get("attempt"), dict) else {}
+    identity = f"{attempt.get('idempotency_key')}|{attempt.get('attempt_id')}"
+    candidate = (
+        CONTROL_ROOT / "tasks" / task_id / f"ingestion-{sha256_bytes(identity.encode('utf-8'))[:16]}.json"
+    )
     return read_json(candidate) if candidate.is_file() else None
 
 
@@ -1242,11 +1357,16 @@ def complete_unit(task_id: str, document: dict[str, Any], *, reviewer_id: str | 
         raise ValueError(
             f"{task_id}: producer supplied parent_ingested_at; only the coordinator records ingestion"
         )
-    ingestion = find_ingestion(task_id, sha256_bytes(canonical_json(document)))
+    ingestion = find_ingestion(task_id, document)
     if ingestion is None:
         raise ValueError(f"{task_id}: no ingestion record matches this result document")
     if ingestion.get("errors"):
         raise ValueError(f"{task_id}: cannot complete a result that failed ingestion")
+    # Identity locates the record; the hash proves the bytes were not substituted.
+    if ingestion.get("result_sha256") != sha256_bytes(canonical_json(document)):
+        raise ValueError(
+            f"{task_id}: document differs from the ingested result; substitution refused"
+        )
 
     completed = json.loads(json.dumps(document))
     completed["result_transaction"]["parent_ingested_at"] = ingestion["ingested_at"]
@@ -1348,6 +1468,65 @@ def dispose_unit(
     return disposed
 
 
+def locator_availability(locator: str) -> str:
+    """Distinguish never-committed from committed-but-unfetched.
+
+    `git cat-file` fails identically whether a commit was never created, was
+    created but never pushed, or was pushed but never fetched here. Recovery has
+    to tell those apart, because only the first requires rerunning the work.
+    """
+    if not locator.startswith("git:"):
+        return "NOT_DURABLE"
+    revision = locator[len("git:") :].partition(":")[0]
+    if not GIT_OBJECT_RE.fullmatch(revision):
+        return "MUTABLE_REVISION"
+    present = subprocess.run(
+        ("git", "cat-file", "-e", f"{revision}^{{commit}}"),
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+    )
+    if present.returncode == 0:
+        return "PRESENT_LOCALLY"
+    fetched = subprocess.run(
+        ("git", "fetch", "--no-tags", "--quiet", "origin", revision),
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+    )
+    if fetched.returncode == 0:
+        return "FETCHABLE_FROM_REMOTE"
+    return "ABSENT_EVERYWHERE_OBSERVED"
+
+
+def _committed_result_locator(task_id: str) -> dict[str, Any] | None:
+    """Find a durable result for a task that was never ingested."""
+    capsule_file = CONTROL_ROOT / "tasks" / task_id / "input.json"
+    if not capsule_file.is_file():
+        return None
+    capsule = read_json(capsule_file)
+    slot = capsule.get("ownership", {}).get("result_slot")
+    if not slot:
+        return None
+    listing = subprocess.run(
+        ("git", "for-each-ref", "--format=%(refname)", "refs/heads/po03/"),
+        cwd=REPO_ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    for ref in listing.stdout.split():
+        found = subprocess.run(
+            ("git", "cat-file", "-e", f"{ref}:{slot}/result.json"),
+            cwd=REPO_ROOT,
+            check=False,
+            capture_output=True,
+        )
+        if found.returncode == 0:
+            return {"ref": ref, "path": f"{slot}/result.json", "availability": "PRESENT_LOCALLY"}
+    return None
+
+
 def scan_recovery(run_id: str, head_sha: str) -> dict[str, Any]:
     """Reconcile every known unit against durable evidence and write recovery state."""
     tasks_root = CONTROL_ROOT / "tasks"
@@ -1367,6 +1546,7 @@ def scan_recovery(run_id: str, head_sha: str) -> dict[str, Any]:
         if completed and not verified:
             false_completion += 1
         action = "NONE"
+        replayable = None
         if not events:
             action = "REDISPATCH_FROM_IMMUTABLE_INPUT"
             orphans += 1
@@ -1374,22 +1554,36 @@ def scan_recovery(run_id: str, head_sha: str) -> dict[str, Any]:
             action = "NONE"
         elif verified:
             action = "AWAIT_COORDINATOR_COMPLETION"
-        elif latest in {"CREATED"}:
-            action = "DISPATCH"
         else:
-            action = "RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT"
+            # A result that is durably committed but never reported must be
+            # replayed from the committed bytes, not rerun. Rerunning discards
+            # work that already exists and violates full recovery of committed
+            # results, so look for the durable result before prescribing a rerun.
+            replayable = _committed_result_locator(task_id)
+            if replayable is not None:
+                action = "REPLAY_FROM_COMMITTED_RESULT"
+            elif latest in {"CREATED"}:
+                action = "DISPATCH"
+            else:
+                action = "RESUME_OR_RERUN_FROM_IMMUTABLE_INPUT"
         units[task_id] = {
             "obzio_state": "COMPLETED" if completed else (latest or "UNKNOWN"),
             "latest_event_sequence": len(events),
             "fence_token": current_fence(task_id),
+            "lease": lease_status(task_id),
             "ingested": verified,
             "recovery_action": action,
+            "replayable_result": replayable,
         }
     # Measured, not asserted: a reconciliation that hardcodes zero is a false green.
     collisions = detect_path_collisions() if (CONTROL_ROOT / "path-ownership.json").is_file() else []
-    duplicate_callbacks = sum(
-        max(0, len(list((tasks_root / task_id).glob("ingestion-*.json"))) - 1) for task_id in units
-    )
+    duplicate_callbacks = 0
+    conflicts = 0
+    for task_id in units:
+        log = tasks_root / task_id / "duplicate-callbacks.jsonl"
+        if log.is_file():
+            duplicate_callbacks += sum(1 for line in log.read_text(encoding="utf-8").splitlines() if line.strip())
+        conflicts += len(list((tasks_root / task_id).glob("conflict-*.json")))
     state = {
         "recovery_version": "PO03-RECOVERY-STATE-v1",
         "controller_run_id": run_id,
@@ -1401,6 +1595,7 @@ def scan_recovery(run_id: str, head_sha: str) -> dict[str, Any]:
         "false_completion_count": false_completion,
         "orphan_count": orphans,
         "duplicate_callback_count": duplicate_callbacks,
+        "result_conflict_count": conflicts,
         "collision_count": len(collisions),
         "collisions": collisions,
         "decision_changed": [],

@@ -681,19 +681,125 @@ class G1FailureRegressionTests(CustodyTestCase):
         self.assertEqual(1, state["collision_count"])
         self.assertEqual(1, len(state["collisions"]))
 
-    def test_recovery_counts_duplicate_callbacks(self):
+    def test_recovery_counts_suppressed_duplicate_callbacks(self):
         body = b'{"unit":"po03-unit-001"}\n'
         commit = self._init_repository_with_artifact(body)
         document = self._result_document(
             commit=commit, sha256=MODULE.sha256_bytes(body), size=len(body)
         )
-        MODULE.grant_lease("po03-unit-001", holder="producer-1", lease_seconds=60, attempt=1)
+        MODULE.grant_lease("po03-unit-001", holder="producer-1", lease_seconds=600, attempt=1)
+        document["attempt"]["fence_token"] = MODULE.current_fence("po03-unit-001")
         MODULE.ingest_result("po03-unit-001", document)
         second = json.loads(json.dumps(document))
         second["attempt"]["checkpoint_seq"] = 3
         MODULE.ingest_result("po03-unit-001", second)
         state = MODULE.scan_recovery("bc-test", "a" * 40)
         self.assertEqual(1, state["duplicate_callback_count"])
+        self.assertEqual(0, state["result_conflict_count"])
+
+
+class C6DefectRegressionTests(CustodyTestCase):
+    """Regression cover for the four defects cohort c6 recorded as FAIL verdicts."""
+
+    def test_a_forged_higher_fence_is_refused(self):
+        MODULE.grant_lease("po03-unit-020", holder="worker-a", lease_seconds=60, attempt=1)
+        active = MODULE.current_fence("po03-unit-020")
+        MODULE.assert_fence_current("po03-unit-020", active)
+        with self.assertRaises(MODULE.StaleFenceError):
+            MODULE.assert_fence_current("po03-unit-020", active + 1)
+        with self.assertRaises(MODULE.StaleFenceError):
+            MODULE.assert_fence_current("po03-unit-020", 999999)
+
+    def test_lease_expiry_is_observable(self):
+        MODULE.grant_lease("po03-unit-021", holder="worker-a", lease_seconds=60, attempt=1)
+        live = MODULE.lease_status("po03-unit-021")
+        self.assertEqual("LIVE", live["state"])
+        self.assertFalse(live["expired"])
+        import time as _time
+
+        expired = MODULE.lease_status("po03-unit-021", now=int(_time.time()) + 3600)
+        self.assertEqual("EXPIRED", expired["state"])
+        self.assertTrue(expired["expired"])
+
+    def test_reaping_an_expired_lease_blocks_the_zombie(self):
+        import time as _time
+
+        MODULE.grant_lease("po03-unit-022", holder="worker-a", lease_seconds=60, attempt=1)
+        zombie_fence = MODULE.current_fence("po03-unit-022")
+        reaped = MODULE.reap_expired_leases(now=int(_time.time()) + 3600)
+        self.assertEqual(1, len(reaped))
+        self.assertGreater(reaped[0]["new_fence"], zombie_fence)
+        with self.assertRaises(MODULE.StaleFenceError):
+            MODULE.assert_fence_current("po03-unit-022", zombie_fence)
+
+    def test_a_live_lease_is_not_reaped(self):
+        MODULE.grant_lease("po03-unit-023", holder="worker-a", lease_seconds=3600, attempt=1)
+        self.assertEqual([], MODULE.reap_expired_leases())
+
+    def _ingestable(self, *, heartbeat, commit, body):
+        document = self._result_document(
+            commit=commit, sha256=MODULE.sha256_bytes(body), size=len(body)
+        )
+        document["attempt"]["heartbeat_at"] = heartbeat
+        return document
+
+    def test_regenerated_retry_of_one_transaction_is_suppressed(self):
+        body = b'{"unit":"po03-unit-001"}\n'
+        commit = self._init_repository_with_artifact(body)
+        MODULE.grant_lease("po03-unit-001", holder="producer-1", lease_seconds=600, attempt=1)
+        fence = MODULE.current_fence("po03-unit-001")
+        first = self._ingestable(heartbeat="2026-08-22T08:00:00Z", commit=commit, body=body)
+        first["attempt"]["fence_token"] = fence
+        MODULE.ingest_result("po03-unit-001", first)
+        registry = MODULE.CONTROL_ROOT / "work-unit-registry.jsonl"
+        rows_before = registry.read_text(encoding="utf-8").count("\n")
+
+        # Same transaction identity, different bytes: a regenerated retry.
+        retry = self._ingestable(heartbeat="2026-08-22T09:30:00Z", commit=commit, body=body)
+        retry["attempt"]["fence_token"] = fence
+        second = MODULE.ingest_result("po03-unit-001", retry)
+        self.assertTrue(second.get("duplicate_callback_suppressed"))
+        self.assertEqual(rows_before, registry.read_text(encoding="utf-8").count("\n"))
+
+    def test_same_key_with_a_different_result_is_a_conflict_not_a_replay(self):
+        body = b'{"unit":"po03-unit-001"}\n'
+        commit = self._init_repository_with_artifact(body)
+        MODULE.grant_lease("po03-unit-001", holder="producer-1", lease_seconds=600, attempt=1)
+        fence = MODULE.current_fence("po03-unit-001")
+        first = self._ingestable(heartbeat="2026-08-22T08:00:00Z", commit=commit, body=body)
+        first["attempt"]["fence_token"] = fence
+        MODULE.ingest_result("po03-unit-001", first)
+
+        forged = self._ingestable(heartbeat="2026-08-22T08:00:00Z", commit=commit, body=body)
+        forged["attempt"]["fence_token"] = fence
+        forged["result_transaction"]["result_commit_id"] = "f" * 40
+        outcome = MODULE.ingest_result("po03-unit-001", forged)
+        self.assertEqual("RECOVERY_REQUIRED", outcome["obzio_state"])
+        self.assertTrue(any("already ingested result commit" in e for e in outcome["errors"]))
+
+    def test_substituted_document_still_cannot_complete(self):
+        body = b'{"unit":"po03-unit-001"}\n'
+        commit = self._init_repository_with_artifact(body)
+        MODULE.grant_lease("po03-unit-001", holder="producer-1", lease_seconds=600, attempt=1)
+        fence = MODULE.current_fence("po03-unit-001")
+        document = self._ingestable(heartbeat="2026-08-22T08:00:00Z", commit=commit, body=body)
+        document["attempt"]["fence_token"] = fence
+        MODULE.ingest_result("po03-unit-001", document)
+        substituted = json.loads(json.dumps(document))
+        substituted["attempt"]["checkpoint_seq"] = 99
+        with self.assertRaises(ValueError):
+            MODULE.complete_unit("po03-unit-001", substituted)
+
+    def test_locator_availability_distinguishes_the_push_boundary(self):
+        body = b'{"unit":"po03-unit-001"}\n'
+        commit = self._init_repository_with_artifact(body)
+        path = "workstreams/po03/attempts/unit/result.json"
+        self.assertEqual("PRESENT_LOCALLY", MODULE.locator_availability(f"git:{commit}:{path}"))
+        self.assertEqual("MUTABLE_REVISION", MODULE.locator_availability(f"git:HEAD:{path}"))
+        self.assertEqual("NOT_DURABLE", MODULE.locator_availability(f"file:///tmp/{path}"))
+        self.assertEqual(
+            "ABSENT_EVERYWHERE_OBSERVED", MODULE.locator_availability(f"git:{'e' * 40}:{path}")
+        )
 
 
 class RegistryTests(CustodyTestCase):
