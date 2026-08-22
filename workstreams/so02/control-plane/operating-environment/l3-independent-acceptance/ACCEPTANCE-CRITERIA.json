@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.0",
+  "record_type": "INDEPENDENT_ACCEPTANCE_CRITERIA",
+  "qualification_id": "CUR-ORCH-QUAL-01",
+  "commission_context": "COM-CUR-ENV-01-20260822-v001",
+  "lane_id": "OE-L3-INDEPENDENT-ACCEPTANCE",
+  "criteria_fixed_before_evidence_review": true,
+  "acceptor_independence": {
+    "producer_result_or_verdict_read_before_fixing_criteria": false,
+    "producer_transcript_or_run_events_permitted": false,
+    "producer_verifier_treated_as_independent_evidence": false,
+    "post_verdict_mutation_rule": "A committed verdict is immutable; any later change must be an additive superseding record."
+  },
+  "commission_sources": [
+    {
+      "path": "workstreams/so02/control-plane/commissions/CURSOR-SCP-01.md",
+      "commit_sha": "fe0a595206e5986de7eaac6cabc619215a1eb81b",
+      "git_blob_sha1": "eb3b24523dc8e7046a3be309f5b1d6b7c156359e"
+    },
+    {
+      "path": "workstreams/so02/control-plane/launch/CURSOR-LAUNCH-NOW.md",
+      "commit_sha": "fe0a595206e5986de7eaac6cabc619215a1eb81b",
+      "git_blob_sha1": "12b90a2b8831b120071e86f01647554b38c0295e"
+    }
+  ],
+  "decision_rule": {
+    "ACCEPTED": "Every mandatory criterion passes on independently reproduced evidence, with no unresolved material limitation.",
+    "ACCEPTED_WITH_LIMITATIONS": "Every safety-, custody-, and claim-essential criterion passes; only explicitly bounded non-material limitations remain and they do not contradict the qualification's advertised classification.",
+    "NOT_YET": "No mandatory claim has been falsified, but one or more remediable evidence or execution prerequisites remain incomplete.",
+    "REFUSED": "A mandatory claim is falsified, a protected boundary was crossed, credential material leaked, strategy was silently bound, or an advertised independent/end-to-end route is materially misclassified.",
+    "short_of_acceptance_requirement": "Name the exact failing check and the evidence needed to cure it."
+  },
+  "criteria": [
+    {
+      "id": "AC-01",
+      "name": "Immutable provenance and authorised scope",
+      "mandatory": true,
+      "pass_condition": "The qualification resolves to the stipulated immutable evidence commit, records its inputs and runtime bindings, stays within authorised paths, and does not treat provider completion as acceptance.",
+      "adversarial_method": "Resolve all recorded commits and locators independently; inspect the evidence commit's changed paths and ancestry; reject mutable-only provenance or an out-of-scope write."
+    },
+    {
+      "id": "AC-02",
+      "name": "Producer gates are reproducibly green",
+      "mandatory": true,
+      "pass_condition": "The seeded validator, qualification verifier, and complete control-plane unit-test discovery all exit zero from the immutable evidence tree without modifying evidence.",
+      "adversarial_method": "Run the exact three commissioned commands in a detached worktree or fresh clone, capture exit codes, and inspect whether any command relies on uncommitted or ambient state."
+    },
+    {
+      "id": "AC-03",
+      "name": "Manifest closure and independent cryptographic integrity",
+      "mandatory": true,
+      "pass_condition": "Every material file in the qualification bundle and every state or workflow artifact relied on for its claims is covered by an unambiguous manifest entry; independent byte hashing reproduces every size, file SHA-256, entry count, and bundle digest.",
+      "adversarial_method": "Use acceptor-authored hashing code, enumerate bundle and referenced evidence paths independently, compare set equality rather than only listed entries, and test whether adding or omitting a material file can leave verification green."
+    },
+    {
+      "id": "AC-04",
+      "name": "Remote immutable custody and byte-for-byte read-back",
+      "mandatory": true,
+      "pass_condition": "A fresh repository retrieves the exact immutable evidence commit from the remote and every manifested byte independently matches the committed manifest; no working-copy, local object-only, or mutable-ref substitution is accepted.",
+      "adversarial_method": "Clone into a new temporary directory, fetch the SHA/ref, verify commit identity and reachability, then hash bytes read from that fresh clone with acceptor code."
+    },
+    {
+      "id": "AC-05",
+      "name": "Phase and acceptance gates fail closed",
+      "mandatory": true,
+      "pass_condition": "The durable state machine prevents a route from becoming QUALIFIED before successful remote read-back and independent acceptance, rejects phase skipping and stale/fence-invalid attempts, and cannot be bypassed by a trivial direct field edit that still passes validation.",
+      "adversarial_method": "Mutate copies to mark a route qualified before read-back, skip phases, remove acceptance, or alter terminal state directly; run all applicable validators and require rejection."
+    },
+    {
+      "id": "AC-06",
+      "name": "Operational route reality and honest capability states",
+      "mandatory": true,
+      "pass_condition": "Each claimed route is demonstrated end to end with stable non-secret locator, submission or invocation, addressable result retrieval, fallback, immutable custody, and read-back. OWNER_REQUIRED, OWNER_BLOCKED, and NOT_SUPPORTED are used only after a concrete capability attempt distinguishes account or provider barriers from unattempted implementation.",
+      "adversarial_method": "Reconstruct each route from raw events and artifacts; identify missing hops; test locator stability; seek capabilities mislabeled unsupported or owner-required merely because the producer did not attempt them."
+    },
+    {
+      "id": "AC-07",
+      "name": "Two-route independence is substantive",
+      "mandatory": true,
+      "pass_condition": "Any routes advertised as independent do not share a decisive credential, account, transport, repository write path, verifier, orchestration controller, or provider failure domain. If common dependencies remain, the claim is explicitly downgraded to redundant observations rather than independent corroboration.",
+      "adversarial_method": "Construct a dependency and failure-domain graph for both routes and identify a single compromise or outage capable of manufacturing or suppressing both results."
+    },
+    {
+      "id": "AC-08",
+      "name": "PO-03 capacity non-interference is supported and detector is sensitive",
+      "mandatory": true,
+      "pass_condition": "Raw before/during/after observations independently recompute to the recorded non-interference result using stated denominators and thresholds, and a synthetic material PO-03 capacity regression is rejected rather than silently passing.",
+      "adversarial_method": "Implement separate recomputation logic, vary each relevant capacity field across threshold boundaries, and require an interfering synthetic snapshot to fail."
+    },
+    {
+      "id": "AC-09",
+      "name": "Append-only event lineage is complete and tamper-evident",
+      "mandatory": true,
+      "pass_condition": "Every event hash recomputes from a canonical documented encoding, each predecessor link is exact, sequence and transaction lineage are contiguous, and terminal claims reconcile to the event history without mutable retroactive edits.",
+      "adversarial_method": "Independently recompute the chain; alter, delete, duplicate, reorder, and splice events in copies and require detection."
+    },
+    {
+      "id": "AC-10",
+      "name": "Protected surfaces and producer isolation remain untouched",
+      "mandatory": true,
+      "pass_condition": "No producer write reached main, the strategic-control base, PO-03 branches, SOO branches, any cursor/po03-* branch, PO-01, MANUS, or SW. Evidence distinguishes current-ref observation from proof of no transient historical write and does not overclaim beyond retrievable audit evidence.",
+      "adversarial_method": "Inspect remote refs, commit ancestry, changed refs captured before and after, pull-request metadata, and available immutable remote history; fail an absolute no-write claim if available evidence contradicts it and mark it unverified if transient writes cannot be excluded."
+    },
+    {
+      "id": "AC-11",
+      "name": "No credential leakage or silent strategy binding",
+      "mandatory": true,
+      "pass_condition": "Locators and artifacts expose no secret, token, cookie, signed URL, embedded credential, or identity act; decision_changed is empty in every qualification artifact and no architecture, company strategy, spend, outreach, or protected production action was silently bound.",
+      "adversarial_method": "Scan all changed bytes and decoded locator components for credential patterns; enumerate every decision_changed occurrence and compare prose, route states, and workflow effects for undeclared binding."
+    },
+    {
+      "id": "AC-12",
+      "name": "Corroboration is non-circular",
+      "mandatory": true,
+      "pass_condition": "A GitHub Actions result is treated as independent only to the extent that an actor independent of the producer fixed the workflow, assertions, inputs, and acceptance rule before execution. Producer-authored CI may corroborate reproducibility but cannot independently accept the producer's own claims.",
+      "adversarial_method": "Trace workflow authorship, commit order, asserted properties, permissions, and data sources; determine whether CI merely executes producer-authored success conditions."
+    },
+    {
+      "id": "AC-13",
+      "name": "Independent sub-lane convergence",
+      "mandatory": true,
+      "pass_condition": "At least two separately reasoned internal sub-lanes evaluate (a) custody/cryptographic integrity and (b) operational capability/governance; disagreements are preserved and resolved by the stricter reasoning for material claims.",
+      "adversarial_method": "Apply distinct checklists without sharing a conclusion, compare findings, and document any disagreement rather than averaging it away."
+    }
+  ]
+}
