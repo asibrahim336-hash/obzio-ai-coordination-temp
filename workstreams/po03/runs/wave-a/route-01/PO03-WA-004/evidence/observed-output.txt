@@ -1,0 +1,90 @@
+$ python3 outbox_relay.py --demo
+{
+  "with_outbox": {
+    "channel_attempts": 3,
+    "channel_deliveries": 1,
+    "drop_schedule": [
+      true,
+      true,
+      false
+    ],
+    "history": [
+      {
+        "outcomes": [
+          {
+            "detail": "attempt 1 dropped in transit",
+            "outbox_id": "obx-PO03-WA-004-1",
+            "outcome": "LOST"
+          }
+        ],
+        "scan": 1,
+        "still_pending": 1
+      },
+      {
+        "outcomes": [
+          {
+            "detail": "attempt 2 dropped in transit",
+            "outbox_id": "obx-PO03-WA-004-1",
+            "outcome": "LOST"
+          }
+        ],
+        "scan": 2,
+        "still_pending": 1
+      },
+      {
+        "outcomes": [
+          {
+            "attempts": 3,
+            "outbox_id": "obx-PO03-WA-004-1",
+            "outcome": "INGESTED"
+          }
+        ],
+        "scan": 3,
+        "still_pending": 0
+      }
+    ],
+    "outbox_final": [
+      {
+        "attempts": 3,
+        "outbox_id": "obx-PO03-WA-004-1",
+        "status": "ACKNOWLEDGED"
+      }
+    ],
+    "parent_deliveries_seen": 1,
+    "parent_ingested": 1,
+    "pending_after_commit": 1,
+    "pending_after_drain": 0,
+    "scans": 3
+  },
+  "without_outbox_control": {
+    "callback_lost": true,
+    "classification": "PROVIDER_COMPLETED_UNCOMMITTED",
+    "parent_ingested": 0,
+    "recoverable_rows_after_restart": 0,
+    "recovery_outcomes": [],
+    "result_committed": true
+  }
+}
+exit=0
+
+$ python3 -m unittest -v test_outbox_relay
+test_no_committed_result_ever_lacks_an_outbox_row (test_outbox_relay.AtomicityTests.test_no_committed_result_ever_lacks_an_outbox_row) ... ok
+test_result_and_outbox_row_become_durable_together (test_outbox_relay.AtomicityTests.test_result_and_outbox_row_become_durable_together) ... ok
+test_state_survives_a_fresh_store_object (test_outbox_relay.AtomicityTests.test_state_survives_a_fresh_store_object) ... ok
+test_at_least_once_delivery_yields_exactly_one_ingestion (test_outbox_relay.ExactlyOnceEffectTests.test_at_least_once_delivery_yields_exactly_one_ingestion)
+Force a genuine double delivery and prove the effect stays single. ... ok
+test_idempotency_key_is_stable_across_redeliveries (test_outbox_relay.ExactlyOnceEffectTests.test_idempotency_key_is_stable_across_redeliveries) ... ok
+test_a_totally_dead_channel_leaves_the_row_pending_not_lost (test_outbox_relay.LostCallbackRecoveryTests.test_a_totally_dead_channel_leaves_the_row_pending_not_lost) ... ok
+test_every_drop_schedule_up_to_length_five_recovers (test_outbox_relay.LostCallbackRecoveryTests.test_every_drop_schedule_up_to_length_five_recovers)
+Sweep, rather than pick, the loss pattern. ... ok
+test_first_callback_lost_then_recovered (test_outbox_relay.LostCallbackRecoveryTests.test_first_callback_lost_then_recovered) ... ok
+test_relay_is_safe_to_rerun_after_success (test_outbox_relay.LostCallbackRecoveryTests.test_relay_is_safe_to_rerun_after_success) ... ok
+test_reports_are_json_serialisable_for_evidence_capture (test_outbox_relay.SerialisationTests.test_reports_are_json_serialisable_for_evidence_capture) ... ok
+test_control_and_guarded_paths_differ_only_in_the_outbox (test_outbox_relay.UnsafeControlTests.test_control_and_guarded_paths_differ_only_in_the_outbox) ... ok
+test_loss_without_outbox_is_unrecoverable (test_outbox_relay.UnsafeControlTests.test_loss_without_outbox_is_unrecoverable) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.154s
+
+OK
+exit=0
