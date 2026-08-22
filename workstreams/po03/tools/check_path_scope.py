@@ -57,9 +57,18 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--base", default=PINNED_BASE_SHA)
     parser.add_argument("--head", default="HEAD")
     parser.add_argument("--path", action="append", dest="paths")
+    parser.add_argument(
+        "--fixture",
+        action="store_true",
+        help="prove that a deliberate out-of-allowlist mutation is rejected",
+    )
     args = parser.parse_args(argv)
     try:
         paths = args.paths if args.paths is not None else changed_paths(args.base, args.head)
+        if args.fixture:
+            fixture = "state/PO03-SHOULD-NOT-WRITE.json"
+            if violations(["workstreams/po03/control/allowed.json", fixture]) != [fixture]:
+                raise ValueError("deliberate scope-escape fixture unexpectedly passed")
         invalid = violations(paths)
     except (OSError, ValueError, subprocess.CalledProcessError) as exc:
         print(f"PO03_PATH_SCOPE_ERROR: {exc}", file=sys.stderr)

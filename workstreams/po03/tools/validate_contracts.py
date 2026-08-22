@@ -38,6 +38,25 @@ RESULT_STATES = {
 }
 
 TERMINAL_RESULT_STATES = {"RESULT_COMMITTED", "PARENT_INGESTED", "COMPLETED"}
+PROVIDER_STATES = {"QUEUED", "RUNNING", "COMPLETED", "FAILED", "CANCELLED", "UNKNOWN"}
+TRANSACTION_STATES = {"RESERVED", "STAGING", "STAGED", "VERIFIED", "COMMITTED", "INGESTED"}
+EXPECTED_TRANSACTION_STATES = {
+    "CREATED": {"RESERVED"},
+    "LEASED": {"RESERVED"},
+    "RUNNING": {"RESERVED"},
+    "CHECKPOINTED": {"RESERVED"},
+    "RESULT_STAGING": {"STAGING"},
+    "RESULT_STAGED": {"STAGED"},
+    "RESULT_VERIFIED": {"VERIFIED"},
+    "RESULT_COMMITTED": {"COMMITTED"},
+    "PARENT_INGESTED": {"INGESTED"},
+    "COMPLETED": {"INGESTED"},
+    "PROVIDER_COMPLETED_UNCOMMITTED": {"RESERVED"},
+    "RECOVERY_REQUIRED": {"RESERVED", "STAGING", "STAGED", "VERIFIED", "COMMITTED", "INGESTED"},
+    "RETRY_SCHEDULED": {"RESERVED"},
+    "FAILED_TERMINAL": {"RESERVED", "STAGING", "STAGED", "VERIFIED", "COMMITTED", "INGESTED"},
+    "CANCELLED": {"RESERVED"},
+}
 
 
 def _nonempty(value: Any) -> bool:
@@ -85,6 +104,8 @@ def validate_result(doc: dict[str, Any]) -> list[str]:
     provider_state = doc["provider_state"]
     if state not in RESULT_STATES:
         errors.append("$.obzio_state: invalid")
+    if provider_state not in PROVIDER_STATES:
+        errors.append("$.provider_state: invalid")
 
     attempt = doc["attempt"]
     if not isinstance(attempt, dict):
@@ -134,6 +155,10 @@ def validate_result(doc: dict[str, Any]) -> list[str]:
     errors.extend(_required(txn, txn_required, "$.result_transaction"))
     if errors:
         return errors
+    if txn["state"] not in TRANSACTION_STATES:
+        errors.append("$.result_transaction.state: invalid")
+    elif state in EXPECTED_TRANSACTION_STATES and txn["state"] not in EXPECTED_TRANSACTION_STATES[state]:
+        errors.append("$.result_transaction.state: incompatible with $.obzio_state")
 
     artifacts = doc["artifacts"]
     if not isinstance(artifacts, list):
@@ -173,6 +198,12 @@ def validate_result(doc: dict[str, Any]) -> list[str]:
         errors.append("$.result_transaction.total_bytes: does not match artifact bytes")
 
     committed = state in TERMINAL_RESULT_STATES
+    uncommitted_states = {"CREATED", "LEASED", "RUNNING", "CHECKPOINTED", "RETRY_SCHEDULED", "CANCELLED"}
+    if state in uncommitted_states:
+        if txn["result_commit_id"] is not None or txn["committed_at"] is not None:
+            errors.append("$.result_transaction: uncommitted state cannot claim a result commit")
+        if artifacts:
+            errors.append("$.artifacts: uncommitted state cannot expose committed artifacts")
     if committed:
         for field in ("manifest_uri", "manifest_sha256", "committed_at", "verified_at", "result_commit_id"):
             if not _nonempty(txn[field]):

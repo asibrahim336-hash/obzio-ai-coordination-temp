@@ -134,6 +134,21 @@ class TransactionalResultTests(unittest.TestCase):
         doc["independent_acceptance"] = {"state": "NOT_TESTED", "reviewer_id": None, "receipt_uri": None}
         self.assertEqual([], MODULE.validate_result(doc))
 
+    def test_result_transaction_state_must_match_custody_state(self):
+        self.assert_invalid(
+            lambda d: d["result_transaction"].update(state="COMMITTED"),
+            "incompatible with $.obzio_state",
+        )
+
+    def test_invalid_provider_state_is_rejected(self):
+        self.assert_invalid(lambda d: d.update(provider_state="DONE"), "$.provider_state")
+
+    def test_running_state_cannot_claim_committed_artifacts(self):
+        self.assert_invalid(
+            lambda d: d.update(obzio_state="RUNNING"),
+            "uncommitted state cannot",
+        )
+
     def test_manifest_required_after_commit(self):
         self.assert_invalid(lambda d: d["result_transaction"].update(manifest_uri=None), "manifest_uri")
 
