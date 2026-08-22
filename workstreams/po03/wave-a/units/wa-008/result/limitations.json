@@ -1,0 +1,98 @@
+{
+  "protocol_version": "OBZIO-LIMITATIONS-v1",
+  "task_id": "PO03-WA-008",
+  "hypothesis_id": "H-PO03-WA-008",
+  "limitations": [
+    {
+      "limitation_id": "LIM-PO03-WA-008-01",
+      "limitation": "Detection is outcome-differential. Hidden state that is read without changing the normalised exit code, stdout or stderr is not detected.",
+      "status": "MEASURED_BOUND",
+      "evidence": "Fixture silent-hidden-state-dependency reads an untracked file and still returns NO_HIDDEN_STATE_DEPENDENCY_DETECTED; recorded as known_false_negative in fixture-matrix-result.json and asserted by test_silent_hidden_state_read_is_a_documented_false_negative."
+    },
+    {
+      "limitation_id": "LIM-PO03-WA-008-02",
+      "limitation": "The nondeterminism control depends on repeating each side at least twice. At repeats=1 an intrinsically flaky command can be reported as a hidden-state finding.",
+      "status": "MEASURED_BOUND",
+      "evidence": "test_determinism_control_requires_more_than_one_run_per_side. A workload flaky at a rate below the repeat count can also evade the control; the residual escape rate is NOT_MEASURED."
+    },
+    {
+      "limitation_id": "LIM-PO03-WA-008-03",
+      "limitation": "Per-side path normalisation deliberately masks location-only differences, so dependence on an absolute path is detected only when it changes the outcome beyond the path text itself.",
+      "status": "DESIGN_TRADE_OFF",
+      "evidence": "MC-PO03-WA-008-01; the same normalisation is what prevents a false positive when the two checkouts sit at different locations."
+    },
+    {
+      "limitation_id": "LIM-PO03-WA-008-04",
+      "limitation": "classification_digest covers the command, which in every run here contains the absolute interpreter path, so digests are host-scoped. Recurrence claims hold for the same interpreter location, not across hosts.",
+      "status": "SCOPE_BOUND",
+      "evidence": "Fixture commands are built with sys.executable, observed as /usr/bin/python3 with CPython 3.12.3."
+    },
+    {
+      "limitation_id": "LIM-PO03-WA-008-05",
+      "limitation": "Attribution probes copy contaminating files with shutil.copy2, which preserves mode and mtime but not ownership or extended attributes. A cache whose validity depends on ownership, xattrs or inode identity may not be faithfully reconstructed, which would understate rather than overstate a finding.",
+      "status": "UNTESTED_BOUND",
+      "evidence": "NOT_MEASURED; no fixture exercises xattr- or ownership-sensitive caches."
+    },
+    {
+      "limitation_id": "LIM-PO03-WA-008-06",
+      "limitation": "Modified tracked content and checkout ref state are reported but never attributed, because the frozen hypothesis names only untracked files, environment leakage and warm caches.",
+      "status": "SCOPE_BOUND_BY_FROZEN_HYPOTHESIS",
+      "evidence": "Fixtures unattributed-git-ref-state and unattributed-modified-tracked-file; widening is proposed as SP-PO03-WA-008-02, not performed here."
+    },
+    {
+      "limitation_id": "LIM-PO03-WA-008-07",
+      "limitation": "Cache classification is glob-based. A cache stored outside the declared globs and outside the XDG cache root is classified as an untracked file, so the class label can be wrong even when detection is right.",
+      "status": "DESIGN_TRADE_OFF",
+      "evidence": "DEFAULT_CACHE_GLOBS in differential_run.py; the classes are disjoint by construction with cache globs taking precedence, asserted by test_cache_and_untracked_classes_are_disjoint."
+    },
+    {
+      "limitation_id": "LIM-PO03-WA-008-08",
+      "limitation": "Environment values are recorded only as SHA-256 digests and lengths, so a leaked value cannot be inspected from the artefact.",
+      "status": "DELIBERATE_SAFETY_TRADE_OFF",
+      "evidence": "RJ-PO03-WA-008-03 and test_environment_values_are_never_written_to_the_report."
+    },
+    {
+      "limitation_id": "LIM-PO03-WA-008-09",
+      "limitation": "Cost scales with one independent clone per side and per probe. This was measured only on a repository whose clone is about 1.5 MiB; behaviour on a large repository or a shallow or partial clone is unmeasured.",
+      "status": "NOT_MEASURED",
+      "evidence": "Three-scenario repository-native reproduction completed in about 3.6 s; the 11-fixture matrix in about 5.6 s."
+    },
+    {
+      "limitation_id": "LIM-PO03-WA-008-10",
+      "limitation": "The live-checkout census compares path membership against a commit tree only; it does not measure content differences or environment state in that checkout, and it executes nothing there.",
+      "status": "SCOPE_BOUND",
+      "evidence": "live-checkout-census.json records ENVIRONMENT_LEAKAGE as NOT_MEASURED_NO_EXECUTION_IN_THIS_CHECKOUT. The compared commit affc82b is not an ancestor of the live checkout's HEAD 65335a4; the two histories diverge, so the census is a comparison against the attempt's base, not against that checkout's own HEAD."
+    },
+    {
+      "limitation_id": "LIM-PO03-WA-008-11",
+      "limitation": "Every result here is from one Linux host with git 2.43.0 and CPython 3.12.3. Windows, macOS, alternative git object formats and container-boundary effects are NOT_SUPPORTED by this evidence.",
+      "status": "NOT_SUPPORTED"
+    },
+    {
+      "limitation_id": "LIM-PO03-WA-008-12",
+      "limitation": "No external documentation, paper, practitioner repository or postmortem was retrieved; no web retrieval route was exposed to this runner. No current-method external hypothesis is claimed.",
+      "status": "NOT_SUPPORTED",
+      "evidence": "source-claims.json external_network_retrieval NOT_SUPPORTED. The immutable input sets minimum_current_method_hypotheses to 0 for this attempt."
+    },
+    {
+      "limitation_id": "LIM-PO03-WA-008-13",
+      "limitation": "The reasoning setting actually applied by the provider is not separately attested to this runner; only the model family is observable from the runtime.",
+      "status": "NOT_SUPPORTED",
+      "evidence": "model_observed is claude-opus-5 as self-reported by the runtime; reasoning_observed is NOT_SUPPORTED against the requested claude-opus-5-thinking-high."
+    },
+    {
+      "limitation_id": "LIM-PO03-WA-008-14",
+      "limitation": "This unit is not independently accepted. The producer reports READY_TO_COMMIT only, does not set COMPLETED, and cannot accept its own result.",
+      "status": "NOT_TESTED",
+      "evidence": "ready-to-commit.json records completion_actor null and independent_acceptance NOT_TESTED."
+    },
+    {
+      "limitation_id": "LIM-PO03-WA-008-15",
+      "limitation": "The differential runner was applied to the seeded PO-03 workloads and to a fast subset of this unit's own tests, not to the unit's full 28-test suite as a differential workload, because the suite itself spawns the fixture matrix and the nested cost was judged not worth the evidence.",
+      "status": "PARTIAL",
+      "evidence": "tests.json self_application records the subset actually run under differential comparison."
+    }
+  ],
+  "limitation_count": 15,
+  "decision_changed": []
+}

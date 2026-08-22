@@ -174,6 +174,19 @@ class AdversarialBoundTests(unittest.TestCase):
         self.assertIsNotNone(report["closure"])
         self.assertFalse(report["closure"]["reproduces_warm"])
 
+    def test_modified_tracked_content_is_reported_as_out_of_scope(self):
+        spec, report = build_and_run("unattributed-modified-tracked-file")
+        self.assertEqual(D.VERDICT_UNATTRIBUTED, report["verdict"])
+        self.assertEqual([], report["attributed_classes"])
+        out_of_scope = report["hidden_state_inventory"]["out_of_scope_state"]
+        self.assertTrue(out_of_scope["modified_tracked_measured"])
+        self.assertEqual(["data.txt"], out_of_scope["modified_tracked_paths"])
+        self.assertIn("MODIFIED_TRACKED_CONTENT", report["out_of_scope_candidates"])
+        self.assertEqual(
+            {name: False for name in D.HIDDEN_STATE_CLASSES},
+            report["hidden_state_inventory"]["class_present"],
+        )
+
     def test_differing_checkout_locations_do_not_create_a_false_positive(self):
         root = Path(tempfile.mkdtemp(prefix="po03-wa-008-paths-"))
         try:
@@ -253,6 +266,39 @@ class RecurrenceTests(unittest.TestCase):
         self.assertNotEqual(
             untracked["classification_digest"], environment["classification_digest"]
         )
+
+    def test_matrix_verdicts_and_deterministic_digests_recur(self):
+        first = F.run_matrix(repeats=2)
+        second = F.run_matrix(repeats=2)
+        self.assertEqual("PASS", first["outcome"])
+        self.assertEqual("PASS", second["outcome"])
+        first_rows = {row["fixture_id"]: row for row in first["fixtures"]}
+        second_rows = {row["fixture_id"]: row for row in second["fixtures"]}
+        self.assertEqual(sorted(first_rows), sorted(second_rows))
+        stable = 0
+        for fixture_id, row in first_rows.items():
+            other = second_rows[fixture_id]
+            self.assertEqual(row["observed_verdict"], other["observed_verdict"], fixture_id)
+            self.assertEqual(row["observed_classes"], other["observed_classes"], fixture_id)
+            if row["observed_verdict"] == D.VERDICT_NONDETERMINISTIC:
+                # A nondeterministic workload cannot have a stable outcome digest;
+                # only its verdict is required to recur.
+                self.assertNotEqual(
+                    row["classification_digest"], other["classification_digest"], fixture_id
+                )
+                continue
+            self.assertEqual(
+                row["classification_digest"], other["classification_digest"], fixture_id
+            )
+            stable += 1
+        self.assertEqual(len(F.FIXTURE_IDS) - 1, stable)
+
+    def test_determinism_control_requires_more_than_one_run_per_side(self):
+        spec, report = build_and_run("nondeterministic-command", repeats=1)
+        self.assertNotEqual(D.VERDICT_NONDETERMINISTIC, report["verdict"])
+        self.assertTrue(report["warm"]["deterministic"])
+        spec, controlled = build_and_run("nondeterministic-command", repeats=2)
+        self.assertEqual(D.VERDICT_NONDETERMINISTIC, controlled["verdict"])
 
     def test_report_excludes_wall_time_from_the_classification_digest(self):
         spec, report = build_and_run("clean-control-pure")
@@ -336,6 +382,13 @@ class IsolationTests(unittest.TestCase):
             import shutil
 
             shutil.rmtree(root, ignore_errors=True)
+
+    def test_report_carries_no_runtime_temporary_paths(self):
+        spec, report = build_and_run("untracked-file-dependency")
+        serialised = json.dumps(report)
+        self.assertNotIn(tempfile.gettempdir() + "/", serialised)
+        self.assertEqual("<SANDBOX>", report["sandbox_root"])
+        self.assertEqual("<REPO>", report["repo"])
 
     def test_environment_values_are_never_written_to_the_report(self):
         secret_shaped = "po03-wa-008-value-shaped-like-a-credential-0123456789"
@@ -490,6 +543,11 @@ class FixtureMatrixTests(unittest.TestCase):
         covered = {row["class_under_test"] for row in summary["fixtures"]}
         for name in D.HIDDEN_STATE_CLASSES:
             self.assertIn(name, covered, name)
+        self.assertEqual(11, summary["fixture_count"])
+        self.assertEqual(
+            2,
+            sum(1 for row in summary["fixtures"] if row["observed_verdict"] == D.VERDICT_UNATTRIBUTED),
+        )
 
 
 if __name__ == "__main__":

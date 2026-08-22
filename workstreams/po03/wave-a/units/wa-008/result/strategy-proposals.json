@@ -1,0 +1,36 @@
+{
+  "protocol_version": "OBZIO-STRATEGY-PROPOSALS-v1",
+  "task_id": "PO03-WA-008",
+  "state": "UNBOUND_PROPOSAL",
+  "state_note": "These are proposals only. They are recorded separately from source claims, hypotheses, reproductions and the mechanism changes actually made in this unit's owned subtree. Nothing here was applied to any shared path, and none of it binds programme strategy; the founder interlock remains unengaged.",
+  "proposals": [
+    {
+      "proposal_id": "SP-PO03-WA-008-01",
+      "proposal": "Require a CLEAN differential verdict before a Wave B unit's passing tests are counted as portability evidence, using the runner's exit code as the gate (0 clean, 3 attributed, 4 unattributed, 5 nondeterministic).",
+      "rationale": "Reproduction scenario S2 shows the exact shape of a false-green claim: the seeded validator exits 0 in a checkout where the candidate document exists only as an untracked file and exits 2 in a clean checkout of the same commit.",
+      "cost_observed": "One clean clone per side plus one per attribution probe; on this 1.5 MiB repository the three-scenario reproduction completed in about 3.6 seconds. Cost on a large repository is unmeasured.",
+      "status": "UNBOUND_PROPOSAL",
+      "requires": "Coordinator decision; no PO-03 shared path was changed by this unit."
+    },
+    {
+      "proposal_id": "SP-PO03-WA-008-02",
+      "proposal": "Promote MODIFIED_TRACKED_CONTENT and CHECKOUT_REF_STATE from reported observations to first-class attributable classes in a successor unit, with their own replay probes.",
+      "rationale": "Two fixtures already produce genuine divergences that the current three-class scope can only report as unattributed. The frozen hypothesis for this unit names three classes, so widening attribution here would substitute a different hypothesis.",
+      "status": "UNBOUND_PROPOSAL"
+    },
+    {
+      "proposal_id": "SP-PO03-WA-008-03",
+      "proposal": "Close the silent-read false negative with filesystem access instrumentation, for example an open-trace or an overlay that records reads of paths absent from the commit tree, rather than relying on outcome differences alone.",
+      "rationale": "The silent-hidden-state-dependency fixture proves that a real untracked-file read is invisible to outcome-differential detection. Today's honest answer is a documented bound; instrumentation would convert it into a detection.",
+      "status": "UNBOUND_PROPOSAL"
+    },
+    {
+      "proposal_id": "SP-PO03-WA-008-04",
+      "proposal": "Run the read-only hidden-state census against the live controller checkout before any wave-level evidence claim, and record the result with the claim.",
+      "rationale": "The census found that the live controller checkout carries bytecode-cache files absent from the compared commit, so results produced there are warm-checkout results. That is cheap to state and cheap to check, and it changes how such evidence should be read.",
+      "status": "UNBOUND_PROPOSAL"
+    }
+  ],
+  "proposal_count": 4,
+  "decision_changed": []
+}

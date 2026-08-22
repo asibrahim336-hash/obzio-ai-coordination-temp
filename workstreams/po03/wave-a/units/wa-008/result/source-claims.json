@@ -1,0 +1,101 @@
+{
+  "protocol_version": "OBZIO-SOURCE-CLAIMS-v1",
+  "task_id": "PO03-WA-008",
+  "hypothesis_id": "H-PO03-WA-008",
+  "state": "SOURCE_CLAIM",
+  "state_note": "Source claims are recorded separately from hypotheses, reproductions, mechanism changes and strategy proposals. A claim here is an input that was read or observed, never a conclusion of this unit.",
+  "external_network_retrieval": "NOT_SUPPORTED",
+  "external_network_retrieval_detail": "This runner had no web retrieval tool exposed. No official documentation, practitioner repository, paper or postmortem was fetched. No external URL is claimed as read. Claims below are either immutable repository reads or tool behaviour observed by execution on this host.",
+  "immutable_repository_base": "affc82b35e6205010fda90f9914a97e467294a44",
+  "repository": "github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+  "claims": [
+    {
+      "claim_id": "SC-PO03-WA-008-01",
+      "type": "IMMUTABLE_REPOSITORY_READ",
+      "source": "affc82b35e6205010fda90f9914a97e467294a44:workstreams/po03/control/inputs/wave-a/wa-008-a02.json",
+      "source_sha256": "0750a47cff491c5dc64cbd24629337ac6484326f88be11a00a8461f862fdddb2",
+      "claim": "The frozen falsifiable hypothesis is that a two-checkout differential run can expose dependencies on untracked files, environment leakage, or warm caches; the required executable output is a differential runner, hidden-state fixtures and deterministic tests; fence token is 2 and the owned write glob is workstreams/po03/wave-a/units/wa-008/**.",
+      "verification": "sha256sum of the blob at the immutable base equals the value dispatched with this attempt."
+    },
+    {
+      "claim_id": "SC-PO03-WA-008-02",
+      "type": "IMMUTABLE_REPOSITORY_READ",
+      "source": "affc82b35e6205010fda90f9914a97e467294a44:workstreams/po03/control/acceptance/wave-a-material-v1.json",
+      "source_sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a",
+      "claim": "An engineering attempt must include focused automated tests and command output; unexecuted code fails. The result must contain result.json, tests.json, limitations.json, artifact-manifest.json and ready-to-commit.json with complete SHA-256 and byte accounting, and the producer may report only READY_TO_COMMIT.",
+      "verification": "Hash matches the acceptance_contract.sha256 recorded in the immutable input."
+    },
+    {
+      "claim_id": "SC-PO03-WA-008-03",
+      "type": "IMMUTABLE_REPOSITORY_READ",
+      "source": "affc82b35e6205010fda90f9914a97e467294a44:workstreams/po03/COMMISSION.md",
+      "source_sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+      "claim": "The commission's hard guardrails require clean-clone reproduction without provider memory, /tmp dependence, uncommitted files or a warm checkout, and treat provider COMPLETED without a verified durable result commit as PROVIDER_COMPLETED_UNCOMMITTED.",
+      "verification": "Hash matches source_base.commission_sha256 in the immutable input; this is the motivating requirement the detector operationalises."
+    },
+    {
+      "claim_id": "SC-PO03-WA-008-04",
+      "type": "IMMUTABLE_REPOSITORY_READ",
+      "source": "affc82b35e6205010fda90f9914a97e467294a44:workstreams/po03/tools/validate_contracts.py and workstreams/po03/tests/test_validate_contracts.py",
+      "source_sha256": "ead7d6c78c1f60aaf5440db7fc00fc2ae57d773647ed3b24c279d1a59b43da03",
+      "claim": "The seeded validator is a CLI taking a kind and a document path, exits 0 on a valid document, 1 on validation errors and 2 when the document cannot be loaded; the seeded tests are stdlib unittest and require no third-party package.",
+      "verification": "Validator hash matches source_base.validator_sha256; behaviour confirmed by executing the CLI and the seeded suite (37 tests, OK)."
+    },
+    {
+      "claim_id": "SC-PO03-WA-008-05",
+      "type": "TOOL_BEHAVIOUR_OBSERVED_LOCALLY",
+      "source": "git version 2.43.0 on this host",
+      "claim": "git clone --no-hardlinks --no-local produces a checkout whose files share no inode with the source and whose object store has no alternates file pointing at the source, so the materialised checkout is independent of the source working copy.",
+      "verification": "test_materialised_checkout_is_pristine_and_shares_no_inode asserts differing st_ino, st_nlink == 1, absence of .git/objects/info/alternates, and that mutating the clone leaves the source byte-identical."
+    },
+    {
+      "claim_id": "SC-PO03-WA-008-06",
+      "type": "TOOL_BEHAVIOUR_OBSERVED_LOCALLY",
+      "source": "git version 2.43.0 on this host",
+      "claim": "git clean -xdff followed by an empty git status --porcelain --ignored is a sufficient local check that a freshly materialised checkout carries no untracked or ignored working-tree state.",
+      "verification": "materialise_clean_checkout raises DifferentialRunError if residue remains; every clean side and probe checkout in 11 fixtures and 3 repository-native scenarios passed the check."
+    },
+    {
+      "claim_id": "SC-PO03-WA-008-07",
+      "type": "TOOL_BEHAVIOUR_OBSERVED_LOCALLY",
+      "source": "git version 2.43.0 on this host",
+      "claim": "Commit ids are byte-reproducible when author and committer identity and dates are pinned, so an independently rebuilt fixture repository yields the same commit id.",
+      "verification": "Two FixtureFactory instances in separate temporary directories both produced commit e8d8d0937ba523aa7e8d4ae8fe898e2826d8a4cc for the untracked-file fixture; asserted by test_classification_digest_recurs_across_independent_fixture_builds."
+    },
+    {
+      "claim_id": "SC-PO03-WA-008-08",
+      "type": "TOOL_BEHAVIOUR_OBSERVED_LOCALLY",
+      "source": "git version 2.43.0 on this host",
+      "claim": "git diff --name-only <commit> inside a working tree reports tracked paths whose working-tree content differs from that commit, which is state a path-membership census cannot see.",
+      "verification": "inventory_modified_tracked reported exactly ['data.txt'] for the modified-tracked-file fixture; asserted by test_modified_tracked_content_is_reported_as_out_of_scope."
+    },
+    {
+      "claim_id": "SC-PO03-WA-008-09",
+      "type": "TOOL_BEHAVIOUR_OBSERVED_LOCALLY",
+      "source": "CPython 3.12.3 on this host",
+      "claim": "CPython writes __pycache__ bytecode beside imported modules unless suppressed, so simply running a suite once converts a checkout into a warm-cache checkout.",
+      "verification": "Reproduction scenario S1 ran the seeded contract suite once in the warm checkout and the census then found 2 cache files: workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc and workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc."
+    },
+    {
+      "claim_id": "SC-PO03-WA-008-10",
+      "type": "RUNTIME_OBSERVATION",
+      "source": "ambient environment of this cloud-agent runtime",
+      "claim": "This runtime sets PYTHONDONTWRITEBYTECODE=1, which suppresses bytecode caches for commands that inherit its environment.",
+      "verification": "Observed directly in the shell. The detector's sanitised environment deliberately does not set that variable, which is why scenario S1 still generated bytecode caches; had the runner inherited the ambient environment, that warm-cache class would have been silently unobservable."
+    },
+    {
+      "claim_id": "SC-PO03-WA-008-11",
+      "type": "RUNTIME_OBSERVATION_READ_ONLY",
+      "source": "live controller checkout /workspace, compared against affc82b35e6205010fda90f9914a97e467294a44",
+      "claim": "The live controller checkout carries 2 working-tree files absent from the compared commit, both Python bytecode caches under workstreams/, so evidence produced there is warm-checkout evidence.",
+      "verification": "live-checkout-census.json, produced by read-only os.walk plus git ls-tree; nothing was written to or executed in that checkout. Path membership only; content differences there were not measured."
+    }
+  ],
+  "claim_count": 11,
+  "excluded": [
+    "No PO-01 branch, artefact, narrative or producer claim was read or used as evidence.",
+    "No state/**, dispatch/** or current-pointer file was written.",
+    "No external documentation, paper, repository or community source was retrieved; nothing external is claimed as read."
+  ],
+  "decision_changed": []
+}
