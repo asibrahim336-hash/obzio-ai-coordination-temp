@@ -1,14 +1,6 @@
 {
   "active_leases": [
     {
-      "cohort": 1,
-      "expires_at": "2026-08-22T13:13:11Z",
-      "fence_token": 1,
-      "lease_id": "lease-po03-wa-001-a01",
-      "state": "LEASED",
-      "task_id": "PO03-WA-001"
-    },
-    {
       "cohort": 2,
       "expires_at": "2026-08-22T13:13:11Z",
       "fence_token": 1,
@@ -486,11 +478,15 @@
       "disposition": "REJECT_CONCURRENT_DEFAULT_CHECKOUT",
       "reason": "Eight concurrent best-of-N dispatches left /workspace on the WA-025 branch with untracked WA-023 and WA-025 files. Individual runners did not uniformly use dedicated worktrees.",
       "route": "best-of-n-runner without controller-separated and worker-dedicated worktree verification"
+    },
+    {
+      "disposition": "RETRY_ONLY_AFTER_CORRECTED_A02_INPUT",
+      "reason": "PO03-WA-001 A01 timed out with no matching remote branch or durable result commit; its immutable input also carries the confirmed invalid full protocol-ancestor pin.",
+      "route": "PO03-WA-001-A01"
     }
   ],
-  "last_event_seq": 195,
+  "last_event_seq": 197,
   "pending_outbox": [
-    "outbox-po03-wa-001-dispatch-a01",
     "outbox-po03-wa-016-dispatch-a01",
     "outbox-po03-wa-024-dispatch-a01",
     "outbox-po03-wa-004-dispatch-a01",
@@ -557,6 +553,18 @@
     "result_state": "UNRECOVERED_AFTER_FOUR_REPORTED_ROUTES"
   },
   "provider_completed_uncommitted": [],
+  "recovery_required": [
+    {
+      "attempt_id": "PO03-WA-001-A01",
+      "detected_at": "2026-08-22T08:10:00Z",
+      "fence_token": 1,
+      "provider_error": "Activity task timed out",
+      "provider_run_id": "cf58e62e-37c7-421c-bb8c-64103822cf35",
+      "remote_branch_readback": "NO_MATCHING_REMOTE_BRANCH",
+      "required_action": "FENCE_A01_AND_RETRY_WITH_CORRECTED_A02_AFTER_PROVENANCE_SUPERSESSION",
+      "task_id": "PO03-WA-001"
+    }
+  ],
   "replay_actions": [],
   "retained_routes": [
     {
@@ -567,11 +575,11 @@
       "route": "best-of-n-runner with explicitly verified dedicated git worktree"
     }
   ],
-  "scanned_at": "2026-08-22T08:07:00Z",
+  "scanned_at": "2026-08-22T08:10:00Z",
   "schema_version": "1.0",
   "stale_attempts_blocked": [],
   "wave_a": {
-    "active_provider_runs": 4,
+    "active_provider_runs": 3,
     "completed_durable": 5,
     "independently_accepted": 5,
     "next_dispatch_cohort": 1,
@@ -580,6 +588,6 @@
     "portfolio_sha256": "515cf2325bda326471140aa1a294696f02c6c10effc3bae9022d55934c063ebd",
     "registered": 64,
     "remaining": 59,
-    "state": "COHORT_1_FOUR_RUNNING_FURTHER_DISPATCH_FENCED_PENDING_RECONCILIATION"
+    "state": "COHORT_1_THREE_RUNNING_ONE_TIMEOUT_RECOVERY_REQUIRED_FURTHER_DISPATCH_FENCED"
   }
 }
