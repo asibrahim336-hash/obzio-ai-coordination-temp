@@ -73,6 +73,23 @@ class ProducerAttemptTests(unittest.TestCase):
             {"task_id": "PO03-WA-009"},
         )
 
+    def test_matching_partial_result_context_is_accepted(self):
+        TOOL._validate_producer_attempt(
+            "PO03-WA-009",
+            self.attempt,
+            dict(self.attempt),
+            {"attempt_id": self.attempt["attempt_id"]},
+        )
+
+    def test_stale_partial_result_context_is_refused(self):
+        with self.assertRaisesRegex(ValueError, "stale or divergent"):
+            TOOL._validate_producer_attempt(
+                "PO03-WA-009",
+                self.attempt,
+                dict(self.attempt),
+                {"attempt_id": "PO03-WA-009-A01"},
+            )
+
     def test_stale_fence_is_refused(self):
         stale = dict(self.attempt, fence_token=1)
         with self.assertRaisesRegex(ValueError, "stale or divergent"):
@@ -131,6 +148,19 @@ class TrustedSourceBaseTests(unittest.TestCase):
                 {
                     "source_base": {
                         "immutable_controller_base": self.source_base,
+                    }
+                },
+                self.return_commit,
+                self.ingestion_commit,
+            )
+        self.assertEqual(observed, self.source_base)
+
+    def test_nested_producer_start_commit_is_trusted(self):
+        with mock.patch.object(TOOL, "_git", side_effect=self.git_result):
+            observed = TOOL._trusted_source_base(
+                {
+                    "source_base": {
+                        "producer_start_commit": self.source_base,
                     }
                 },
                 self.return_commit,

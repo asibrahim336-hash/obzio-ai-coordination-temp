@@ -110,15 +110,17 @@ def _validate_producer_attempt(
             observed = nested
         else:
             present = [field for field in fields if field in document]
-            if present and len(present) != len(fields):
+            if required and present and len(present) != len(fields):
                 raise ValueError(f"{label} has a partial attempt envelope")
-            observed = {field: document[field] for field in fields} if present else None
+            observed = {field: document[field] for field in present} if present else None
         if observed is None:
             if required:
                 raise ValueError(f"{label} lacks an attempt envelope")
             continue
-        for field, value in expected.items():
-            if observed.get(field) != value:
+        if required and any(field not in observed for field in fields):
+            raise ValueError(f"{label} has a partial attempt envelope")
+        for field, observed_value in observed.items():
+            if field in expected and observed_value != expected[field]:
                 raise ValueError(
                     f"{label} is stale or divergent for {task_id}: {field}"
                 )
@@ -136,7 +138,10 @@ def _trusted_source_base(
 ) -> str:
     source_base = ready.get("source_base_commit")
     if source_base is None and isinstance(ready.get("source_base"), dict):
-        source_base = ready["source_base"].get("immutable_controller_base")
+        source_base = ready["source_base"].get(
+            "immutable_controller_base",
+            ready["source_base"].get("producer_start_commit"),
+        )
     if not isinstance(source_base, str) or not FULL_COMMIT_RE.fullmatch(source_base):
         raise ValueError("producer return lacks an exact source_base_commit")
     try:
