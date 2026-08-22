@@ -161,6 +161,8 @@ def hash_chain_event(
         "RETRY_SCHEDULED",
         "FAILED_TERMINAL",
         "CANCELLED",
+        "ACCEPTED",
+        "REJECTED",
     }:
         raise ValueError(f"unsupported event state: {state}")
     event_directory = CONTROL_ROOT / "events" / task_id
@@ -1089,6 +1091,74 @@ def complete_unit(task_id: str, document: dict[str, Any], *, reviewer_id: str | 
     return completed
 
 
+def dispose_unit(
+    task_id: str,
+    *,
+    reviewer_id: str,
+    decision: str,
+    receipt_uri: str,
+    criteria_sha256: str,
+    reviewer_model: str,
+    notes: str,
+) -> dict[str, Any]:
+    """Record an independent disposition by a reviewer who is not the producer.
+
+    Acceptance is only meaningful when a different actor renders it against
+    criteria frozen before the producer's conclusions were visible, so both the
+    reviewer identity and the frozen criteria hash are required here.
+    """
+    if decision not in {"ACCEPTED", "REJECTED"}:
+        raise ValueError(f"{task_id}: disposition must be ACCEPTED or REJECTED")
+    if not SHA256_RE.fullmatch(criteria_sha256):
+        raise ValueError(f"{task_id}: frozen criteria hash must be a lowercase SHA-256")
+
+    completed_path = CONTROL_ROOT / "tasks" / task_id / "transaction-completed.json"
+    if not completed_path.is_file():
+        raise ValueError(f"{task_id}: cannot dispose before coordinator completion")
+    completed = read_json(completed_path)
+    producer = completed.get("attempt", {}).get("worker_id")
+    if reviewer_id == producer:
+        raise ValueError(f"{task_id}: producer {producer} cannot render its own disposition")
+
+    disposed = json.loads(json.dumps(completed))
+    disposed["independent_acceptance"] = {
+        "state": decision,
+        "reviewer_id": reviewer_id,
+        "receipt_uri": receipt_uri,
+    }
+    validator = load_result_validator()
+    errors = validator.validate_result(disposed)
+    if errors:
+        raise ValueError(f"{task_id}: disposition rejected by contract: {errors}")
+
+    write_once(CONTROL_ROOT / "tasks" / task_id / "transaction-disposed.json", canonical_json(disposed))
+    hash_chain_event(
+        task_id,
+        decision,
+        actor=reviewer_id,
+        details={
+            "reviewer_model": reviewer_model,
+            "producer_worker_id": producer,
+            "frozen_criteria_sha256": criteria_sha256,
+            "receipt_uri": receipt_uri,
+            "notes": notes,
+        },
+    )
+    append_registry(
+        {
+            "registry_event": "DISPOSITION",
+            "task_id": task_id,
+            "independent_disposition": decision,
+            "reviewer_id": reviewer_id,
+            "reviewer_model": reviewer_model,
+            "producer_worker_id": producer,
+            "frozen_criteria_sha256": criteria_sha256,
+            "recorded_at": utc_now(),
+        }
+    )
+    return disposed
+
+
 def scan_recovery(run_id: str, head_sha: str) -> dict[str, Any]:
     """Reconcile every known unit against durable evidence and write recovery state."""
     tasks_root = CONTROL_ROOT / "tasks"
@@ -1235,6 +1305,29 @@ def complete(args: argparse.Namespace) -> int:
     return 0
 
 
+def dispose(args: argparse.Namespace) -> int:
+    disposed = dispose_unit(
+        args.task_id,
+        reviewer_id=args.reviewer_id,
+        decision=args.decision,
+        receipt_uri=args.receipt_uri,
+        criteria_sha256=args.criteria_sha256,
+        reviewer_model=args.reviewer_model,
+        notes=args.notes,
+    )
+    print(
+        json.dumps(
+            {
+                "task_id": args.task_id,
+                "independent_acceptance": disposed["independent_acceptance"],
+            },
+            indent=2,
+            sort_keys=True,
+        )
+    )
+    return 0
+
+
 def recover(args: argparse.Namespace) -> int:
     state = scan_recovery(args.run_id, git("rev-parse", "HEAD"))
     print(json.dumps(state, indent=2, sort_keys=True))
@@ -1286,6 +1379,16 @@ def build_parser() -> argparse.ArgumentParser:
     complete_parser.add_argument("result")
     complete_parser.add_argument("--reviewer-id", default=None)
     complete_parser.set_defaults(handler=complete)
+
+    dispose_parser = subparsers.add_parser("dispose")
+    dispose_parser.add_argument("task_id")
+    dispose_parser.add_argument("--reviewer-id", required=True)
+    dispose_parser.add_argument("--decision", required=True, choices=("ACCEPTED", "REJECTED"))
+    dispose_parser.add_argument("--receipt-uri", required=True)
+    dispose_parser.add_argument("--criteria-sha256", required=True)
+    dispose_parser.add_argument("--reviewer-model", required=True)
+    dispose_parser.add_argument("--notes", default="")
+    dispose_parser.set_defaults(handler=dispose)
 
     recover_parser = subparsers.add_parser("recover")
     recover_parser.add_argument("--run-id", required=True)

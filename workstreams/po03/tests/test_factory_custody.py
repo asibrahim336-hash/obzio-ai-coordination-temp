@@ -262,6 +262,85 @@ class CompletionTests(CustodyTestCase):
         self.assertNotEqual("ACCEPTED", completed["independent_acceptance"]["state"])
 
 
+class DispositionTests(CustodyTestCase):
+    def _completed_unit(self):
+        body = b'{"unit":"po03-unit-001"}\n'
+        commit = self._init_repository_with_artifact(body)
+        document = self._result_document(
+            commit=commit, sha256=MODULE.sha256_bytes(body), size=len(body)
+        )
+        MODULE.grant_lease("po03-unit-001", holder="producer-1", lease_seconds=60, attempt=1)
+        MODULE.ingest_result("po03-unit-001", document)
+        document["result_transaction"]["parent_ingested_at"] = "2026-08-22T07:03:00Z"
+        MODULE.complete_unit("po03-unit-001", document, reviewer_id="reviewer-2")
+
+    def test_disposition_before_completion_is_impossible(self):
+        with self.assertRaises(ValueError):
+            MODULE.dispose_unit(
+                "po03-unit-001",
+                reviewer_id="reviewer-2",
+                decision="ACCEPTED",
+                receipt_uri="git:receipt.json",
+                criteria_sha256=H,
+                reviewer_model="gpt-5.6-sol-xhigh",
+                notes="",
+            )
+
+    def test_producer_cannot_render_its_own_disposition(self):
+        self._completed_unit()
+        with self.assertRaises(ValueError):
+            MODULE.dispose_unit(
+                "po03-unit-001",
+                reviewer_id="producer-1",
+                decision="ACCEPTED",
+                receipt_uri="git:receipt.json",
+                criteria_sha256=H,
+                reviewer_model="gpt-5.6-sol-xhigh",
+                notes="",
+            )
+
+    def test_independent_reviewer_disposition_is_recorded(self):
+        self._completed_unit()
+        disposed = MODULE.dispose_unit(
+            "po03-unit-001",
+            reviewer_id="reviewer-2",
+            decision="ACCEPTED",
+            receipt_uri="git:receipt.json",
+            criteria_sha256=H,
+            reviewer_model="gpt-5.6-sol-xhigh",
+            notes="criteria frozen before producer conclusions",
+        )
+        self.assertEqual("ACCEPTED", disposed["independent_acceptance"]["state"])
+        self.assertEqual("reviewer-2", disposed["independent_acceptance"]["reviewer_id"])
+        self.assertEqual([], MODULE.verify_chain("po03-unit-001"))
+
+    def test_rejection_is_a_valid_disposition(self):
+        self._completed_unit()
+        disposed = MODULE.dispose_unit(
+            "po03-unit-001",
+            reviewer_id="reviewer-3",
+            decision="REJECTED",
+            receipt_uri="git:receipt.json",
+            criteria_sha256=H,
+            reviewer_model="claude-sonnet-5-thinking-xhigh",
+            notes="hidden case failed",
+        )
+        self.assertEqual("REJECTED", disposed["independent_acceptance"]["state"])
+
+    def test_unfrozen_criteria_hash_is_refused(self):
+        self._completed_unit()
+        with self.assertRaises(ValueError):
+            MODULE.dispose_unit(
+                "po03-unit-001",
+                reviewer_id="reviewer-2",
+                decision="ACCEPTED",
+                receipt_uri="git:receipt.json",
+                criteria_sha256="not-a-hash",
+                reviewer_model="gpt-5.6-sol-xhigh",
+                notes="",
+            )
+
+
 class RecoveryAndCollisionTests(CustodyTestCase):
     def test_recovery_scan_marks_created_units_for_dispatch(self):
         MODULE.task_capsule(

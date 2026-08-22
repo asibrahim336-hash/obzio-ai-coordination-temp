@@ -1,0 +1,126 @@
+name: PO-03 aggregate suite, path scope and custody gates
+
+on:
+  pull_request:
+    paths:
+      - "workstreams/po03/**"
+      - "receipts/po03/**"
+      - ".github/workflows/po03-*.yml"
+  push:
+    branches:
+      - "po03/**"
+      - "cursor/po03-**"
+    paths:
+      - "workstreams/po03/**"
+      - "receipts/po03/**"
+      - ".github/workflows/po03-*.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  suite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Assert the runtime is clean
+        run: |
+          set -euo pipefail
+          test -z "$(git status --porcelain)" || { echo "PO03_DIRTY_RUNTIME"; git status --porcelain; exit 1; }
+          echo "PO03_CLEAN_RUNTIME_PASS"
+
+      - name: Run the complete PO-03 suite, including work-unit subtrees
+        run: python -I workstreams/po03/tools/run_suite.py --verbosity 2
+
+      - name: Enforce the changed-path allowlist
+        run: python -I workstreams/po03/tools/check_path_scope.py
+
+      # The commission requires the path-scope workflow to carry a deliberate
+      # out-of-allowlist mutation fixture and prove the guard rejects it, so a
+      # vacuous guard cannot pass this job.
+      - name: Prove the path-scope guard rejects an out-of-allowlist mutation
+        run: |
+          set -euo pipefail
+          for forbidden in \
+            "state/ACTIVE_CONTROL_POINTER_CURRENT.json" \
+            "packs/operator-packs-v1/manifest.json" \
+            "modules/operators/anything.py" \
+            "_transport/debris.tar" \
+            ".cursor/environment.json" \
+            ".github/workflows/unrelated.yml" \
+            "../escape.json" \
+            "/absolute/escape.json"
+          do
+            if python -I workstreams/po03/tools/check_path_scope.py --path "$forbidden"; then
+              echo "PO03_GUARD_VACUOUS: accepted $forbidden"
+              exit 1
+            fi
+            echo "PO03_GUARD_REJECTED: $forbidden"
+          done
+          python -I workstreams/po03/tools/check_path_scope.py \
+            --path "workstreams/po03/control/work-unit-registry.jsonl" \
+            --path "receipts/po03/2026-08-22/dispatch-authorization.json" \
+            --path ".github/workflows/po03-suite.yml"
+          echo "PO03_GUARD_REJECTION_FIXTURE_PASS"
+
+      - name: Refuse overlapping subordinate ownership
+        run: python -I workstreams/po03/tools/transactional_factory.py collisions
+
+      - name: Verify every task capsule and its hash-chained events
+        run: |
+          set -euo pipefail
+          failed=0
+          for task in workstreams/po03/control/tasks/*/; do
+            id="$(basename "$task")"
+            if ! python -I workstreams/po03/tools/transactional_factory.py verify "$id"; then
+              failed=1
+            fi
+          done
+          test "$failed" -eq 0 || { echo "PO03_CAPSULE_VERIFICATION_FAILED"; exit 1; }
+          echo "PO03_CAPSULE_VERIFICATION_PASS"
+
+      - name: Validate committed result and wave documents against the seeded contracts
+        run: |
+          set -euo pipefail
+          checked=0
+          for result in $(git ls-files 'workstreams/po03/attempts/*/result.json'); do
+            python -I workstreams/po03/tools/validate_contracts.py result "$result"
+            checked=$((checked + 1))
+          done
+          for wave in $(git ls-files 'workstreams/po03/evidence/compounding-results.json' 'workstreams/po03/evidence/wave-*-compounding.json'); do
+            python -I workstreams/po03/tools/validate_contracts.py wave "$wave"
+            checked=$((checked + 1))
+          done
+          echo "PO03_CONTRACT_DOCUMENTS_CHECKED=$checked"
+
+      - name: Reconcile custody state and refuse any false completion
+        run: |
+          set -euo pipefail
+          python -I workstreams/po03/tools/transactional_factory.py recover \
+            --run-id "${GITHUB_RUN_ID}-ci" > /dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          state = json.loads(Path("workstreams/po03/control/recovery-state.json").read_text(encoding="utf-8"))
+          false_completions = state["false_completion_count"]
+          orphans = state["orphan_count"]
+          print(f"units={state['unit_count']} false_completions={false_completions} orphans={orphans}")
+          if false_completions or orphans:
+              raise SystemExit("PO03_CUSTODY_RECONCILIATION_FAILED")
+          print("PO03_CUSTODY_RECONCILIATION_PASS")
+          PY
+
+      - name: Assert the run left no uncommitted state behind
+        run: |
+          set -euo pipefail
+          git checkout -- workstreams/po03/control/recovery-state.json 2>/dev/null || true
+          test -z "$(git status --porcelain)" || { echo "PO03_GATE_MUTATED_TREE"; git status --porcelain; exit 1; }
+          echo "PO03_NO_HIDDEN_STATE_PASS"
