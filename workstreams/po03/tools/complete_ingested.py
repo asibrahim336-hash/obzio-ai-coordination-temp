@@ -67,6 +67,7 @@ def complete(repo: Path, route_id: str, completed_at: str) -> int:
         result_path = repo / task["receipt_uri"]
         result = read_json(result_path)
         old_sha = sha256(result_path)
+        parent_ingested_sha = task["receipt_sha256"]
         if result.get("provider_state") != "COMPLETED":
             raise ValueError(f"{task_id}: provider result is not complete")
         if result.get("obzio_state") not in {"PARENT_INGESTED", "COMPLETED"}:
@@ -83,6 +84,8 @@ def complete(repo: Path, route_id: str, completed_at: str) -> int:
             raise ValueError(f"{task_id}: acceptance must remain PENDING")
         if acceptance.get("reviewer_id") is not None or acceptance.get("receipt_uri") is not None:
             raise ValueError(f"{task_id}: premature reviewer or acceptance receipt")
+        if result["obzio_state"] == "PARENT_INGESTED" and old_sha != parent_ingested_sha:
+            raise ValueError(f"{task_id}: parent-ingested receipt hash mismatch")
 
         result["obzio_state"] = "COMPLETED"
         result["completion_actor"] = "coordinator"
@@ -100,7 +103,7 @@ def complete(repo: Path, route_id: str, completed_at: str) -> int:
             {
                 "task_id": task_id,
                 "result_uri": task["receipt_uri"],
-                "parent_ingested_receipt_sha256": old_sha,
+                "parent_ingested_receipt_sha256": parent_ingested_sha,
                 "completed_receipt_sha256": new_sha,
                 "result_commit_id": result["result_transaction"]["result_commit_id"],
             }
