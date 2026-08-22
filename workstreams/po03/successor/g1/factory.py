@@ -11,11 +11,22 @@ without that directory, and scoring it would write into another owner's files.
 So G1 is re-rooted: identical algorithms, identical row schema, identical hash
 chain, with every path taken from a constructor argument.
 
-Fidelity is tested, not asserted.  ``tests/test_a8_g1_fidelity.py`` loads the
-live module read-only, rebinds its path constants to a scratch directory, and
-asserts that this port and the live factory produce the same canonical ledger
-rows, the same chain verdicts and the same admit/reject decisions with the same
-grounds.  Two deliberate differences are recorded there:
+What "fidelity" means here: fidelity to a pin
+--------------------------------------------
+This port replicates the factory **as of commit dd2fcc6**, the commit recorded
+in ``packaging.json`` under ``packaged_from.source_commit``.  It does not track
+HEAD and is not meant to: G1 is one endpoint of a measured lift, and an endpoint
+that moves with the live tree is not something a score can be attached to.  When
+the coordinator later changes ``control_plane.py``, this file stays as it is and
+the difference is recorded in ``packaging.json`` under
+``divergence_from_head_after_the_pin`` rather than silently absorbed.
+
+Fidelity is tested, not asserted.  ``tests/test_a8_g1_fidelity.py`` materialises
+the factory and its validator from git at that pin, verifies them against the
+digests recorded in ``packaging.json``, loads them read-only into a scratch
+mirror of the tree, and asserts that this port and the pinned factory produce
+the same canonical ledger rows, the same chain verdicts and the same admit/reject
+decisions with the same grounds.  Two deliberate differences are recorded there:
 
 1. Time comes from an injectable clock instead of ``time.time()``, because a
    lease-expiry score that depends on wall clock is not reproducible.
@@ -85,7 +96,15 @@ ALLOWLIST_WORKFLOW_SUFFIX = ".yml"
 
 
 def path_in_allowlist(path: str) -> bool:
-    """Verbatim semantics of ``control_plane.path_in_allowlist``."""
+    """Verbatim semantics of ``control_plane.path_in_allowlist`` at ``dd2fcc6``.
+
+    ``lstrip("./")`` strips leading ``.`` and ``/`` *characters*, not a leading
+    ``./`` segment, so ``.github/...`` loses its dot and falls out of the
+    workflow branch below.  That is what the factory did at the pin, and copying
+    it is the point: a port that quietly fixed it would manufacture lift for G2.
+    The live plane was corrected after the pin; see
+    ``packaging.json`` -> ``divergence_from_head_after_the_pin``.
+    """
     normalised = path.strip().lstrip("./")
     if not normalised or ".." in normalised.split("/"):
         return False
@@ -106,7 +125,7 @@ def check_allowlist(paths: list[str]) -> list[str]:
 
 
 def check_ownership(prefixes: tuple[str, ...], paths: list[str]) -> list[str]:
-    """Verbatim semantics of ``control_plane.check_ownership``: prefix match only."""
+    """Semantics of ``control_plane.check_ownership`` at ``dd2fcc6``: prefix match only."""
     violations = [path.strip().lstrip("./") for path in paths if not path.strip().lstrip("./").startswith(prefixes)]
     return sorted(set(violations))
 

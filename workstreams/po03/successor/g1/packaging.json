@@ -11,6 +11,17 @@
     ],
     "source_branch": "cursor/po03-wave-a-transactional-factory-ed20",
     "source_commit": "dd2fcc63694bea365153a5930472816037b6e4ff",
+    "source_sha256": {
+      "control_plane.py": "9c3d3c95a7bd333c8e2e9f19c2095a9cfe7520ae5f1adafd71b4199b135f84c8",
+      "make_result.py": "35d330d3293e91ee3f50bba79f6ac10067d2733dc33692c290bb93075fe08e89",
+      "validate_contracts.py": "ead7d6c78c1f60aaf5440db7fc00fc2ae57d773647ed3b24c279d1a59b43da03"
+    },
+    "source_blob_ids": {
+      "control_plane.py": "cfcf12df1c9cb966e6f4ff412a9050be86806299",
+      "make_result.py": "e95b4c6d3b73ec4666f449e4bf0682081d4f1b38",
+      "validate_contracts.py": "a75427f41e853e547a3725e163e8d77153d7f100"
+    },
+    "digest_purpose": "The commit alone names the target; the per-file digests let the fidelity test verify what it materialised from git rather than trust it. Recomputable with `git cat-file blob dd2fcc63694bea365153a5930472816037b6e4ff:workstreams/po03/tools/<file> | sha256sum`.",
     "read_method": "read-only; the live modules are never written to and never imported at runtime by the packaged generation"
   },
   "why_a_port_and_not_an_import": "control_plane.py binds its ledger, registry, dispatch and recovery paths to module-level constants under workstreams/po03/control/, which is coordinator-owned shared state. Importing it would make the generation unable to run from a clean clone without that directory, and scoring it would write into another owner's files. The port keeps the algorithms, the row schema and the hash chain, and takes every path from a constructor argument.",
@@ -21,10 +32,47 @@
     "third_party_packages": [],
     "verified_by": "workstreams/po03/tests/test_a8_g1_fidelity.py::NonInterferenceTests::test_exercising_the_live_module_writes_nothing_to_shared_control_state"
   },
+  "fidelity_claim": {
+    "claim": "G1 replicates the transactional factory as of commit dd2fcc63694bea365153a5930472816037b6e4ff. It does NOT claim to replicate the factory as of HEAD, and it is not expected to.",
+    "pinned_to": "dd2fcc63694bea365153a5930472816037b6e4ff",
+    "not_pinned_to": "HEAD of cursor/po03-wave-a-transactional-factory-ed20",
+    "why_a_pin_and_not_HEAD": "G1 is a generation, and a generation that silently tracks HEAD is not a fixed point anything can be measured against. If the comparison target moved with the live tree, then every later coordinator change to control_plane.py would either move G1's recorded score or turn the fidelity test red without any generation having changed. The G1-to-G2 lift is only a measurement if both endpoints are immutable.",
+    "chosen_over": "re-syncing G1 to the live factory and re-scoring, which was the alternative considered. Re-sync was refused because it would make G1 a moving baseline and would have to be repeated on every subsequent live change, destroying the comparability of the recorded scores.",
+    "consequence_for_the_reader": "Any statement in this cohort's records that G1 'is' the transactional factory means the factory at the pin. A reader comparing G1 against a current checkout of workstreams/po03/tools/control_plane.py should expect differences wherever the live plane has been changed since the pin, and should consult divergence_from_head_after_the_pin below.",
+    "scores_affected": "none. G1's public 21/31 and holdout 7/10 were measured against the packaged port, which has not been edited. No score in workstreams/po03/successor/scores/generation-comparison.json moves as a result of pinning the claim, because pinning changes what is asserted about the port and not the port itself."
+  },
+  "divergence_from_head_after_the_pin": [
+    {
+      "surface": "repository-relative path normalisation, used by path_in_allowlist and check_ownership",
+      "at_the_pin": "normalised = path.strip().lstrip('./'), which strips every leading '.' and '/' character rather than a leading './' segment, so '.github/workflows/po03-successor.yml' becomes 'github/workflows/po03-successor.yml' and falls out of the workflow allowlist branch",
+      "packaged_in_g1": "identical to the pin; G1 carries the same expression verbatim in successor/g1/factory.py",
+      "changed_live_at": "6f5e386",
+      "live_behaviour_now": "control_plane.normalise_path refuses anything absolute, empty, or containing a '.' or '..' segment, strips only a leading './' segment, and preserves a leading dot in a real name such as '.github'",
+      "found_by": "workstreams/po03/tests/test_a8_g1_fidelity.py::PathRuleTests, when the cohort branch was merged with the integration branch",
+      "is_a_defect_in_g1": false,
+      "reading": "G1 is faithful to its pin on this surface: the pre-fix normaliser is what the factory did at dd2fcc6, and `git show dd2fcc6:workstreams/po03/tools/control_plane.py` shows the same lstrip('./') expression. The divergence is between the pin and HEAD, not between G1 and the pin. The fidelity test now compares against the pin, so it measures the port rather than the coordinator's subsequent progress.",
+      "does_it_move_a_score": "no. Neither the public nor the holdout suite scores a bare-dot workflow path, so no case changes verdict on either side of the divergence. This was checked by re-running score_generations.py --check after the pin was recorded.",
+      "note_for_a_future_generation": "A G3 packaged after 6f5e386 would carry the corrected normaliser and should record that as a fixed gap relative to G1, pinning its own claim the same way."
+    }
+  ],
+  "post_packaging_edits": [
+    {
+      "edit": "docstrings in successor/g1/factory.py were corrected to state fidelity-at-pin instead of fidelity-to-live, and path_in_allowlist gained a comment naming the lstrip('./') behaviour as the pin's behaviour",
+      "scope": "comments and docstrings only; no statement, expression or control flow was changed",
+      "reason": "the previous docstring claimed the fidelity test 'loads the live module read-only' and compares against 'the live factory'. That is no longer what the test does and, as the path-rule divergence showed, is not the claim G1 can support. Leaving a false claim inside the generation to preserve a source digest would be the wrong trade.",
+      "g1_source_sha256_before": "7a63f8a8ab5a91e26c16f699d90c585b015d1f9ce9803e7f8b96ba31d321f50a",
+      "g1_source_sha256_after": "3e240ea968086d09cb28b6feaedab929e16fa40bcfb6c4949b3bb65283f36b26",
+      "before_digest_pinned_at": "f15928a39367d03f482559bb79a53c2506504c2c",
+      "before_digest_readable_by": "git show f15928a39367d03f482559bb79a53c2506504c2c:workstreams/po03/successor/scores/generation-comparison.json",
+      "effect_on_scores": "none. generation-comparison.json was regenerated and compared leaf by leaf against the committed document at f15928a: exactly one leaf differs, generations.G1.source_sha256. Every per-case verdict, every suite total (G0 3/31 and 0/10, G1 21/31 and 7/10, G2 31/31 and 10/10), every false-completion count, every guard and the PASS headline at 0.30 holdout lift are byte-identical.",
+      "why_the_digest_moved_at_all": "the score document records each generation's source digest so a reader can tell which bytes produced a score. A comment-only edit therefore moves the digest without moving the behaviour, which is the correct and honest outcome: the digest tracks the file, and the scores are shown to be unaffected rather than assumed to be."
+    }
+  ],
   "fidelity_evidence": {
-    "method": "the live control_plane.py is loaded read-only with its writable path constants rebound to a scratch directory, and the port is compared against it on ledger row schema, row digest computation, chain verdicts, allowlist and ownership rules, state projection, and real ingest_result admit/reject decisions",
+    "method": "control_plane.py and validate_contracts.py are materialised from git at the pinned commit, verified against the source_sha256 digests above, loaded read-only into a scratch mirror of the tree layout with their writable path constants rebound, and the port is compared against them on ledger row schema, row digest computation, chain verdicts, allowlist and ownership rules, state projection, and real ingest_result admit/reject decisions",
+    "comparison_target": "the factory at commit dd2fcc63694bea365153a5930472816037b6e4ff, not the working tree",
     "test_file": "workstreams/po03/tests/test_a8_g1_fidelity.py",
-    "test_count": 17,
+    "test_count": 25,
     "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a8_g1_fidelity.py'",
     "decisions_compared": [
       "well-formed result admitted",
@@ -92,6 +140,7 @@
   "fidelity_rule": "The port must not be quieter or stronger than what it represents. Every gap above is asserted somewhere: the forged-fence gap is asserted against the live module directly, and the truncation gap is asserted against the live verify_chain. A port that had silently fixed a gap would manufacture lift for G2, so the fidelity tests are part of the measurement, not decoration.",
   "limitations": [
     "Fidelity is established on the decision surface the suite scores: row schema, chain verdicts, path rules, projection and ingest decisions. It is not a line-by-line equivalence proof, and behaviour outside that surface, for example the CLI argument handling and the create-from-wave-spec path, is not compared.",
-    "The source commit is the wave-A factory branch head that this cohort merged. If the coordinator changes control_plane.py afterwards, this packaging describes the commit named above and not the newer file."
+    "The source commit is the wave-A factory branch head that this cohort merged. If the coordinator changes control_plane.py afterwards, this packaging describes the commit named above and not the newer file. That has since happened at least once; see divergence_from_head_after_the_pin.",
+    "Fidelity-at-pin is only evaluable in a clone that holds the pinned commit. In a shallow clone the fidelity tests skip with the pin named in the skip reason rather than passing silently. CI checks out with fetch-depth: 0, so the pin resolves there."
   ]
 }
