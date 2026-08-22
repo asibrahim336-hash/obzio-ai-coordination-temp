@@ -1,0 +1,31 @@
+{
+  "schema": "po03-hermeticity-fixture-expectations-v1",
+  "rationale": "Every rule in hermeticity-rules.json has a planted defect here and an exact expected count. The test compares the prober's output to these counts, so a rule that silently stops firing fails the suite instead of quietly reporting a clean tree.",
+  "fixture_dir": "workstreams/po03/runtime/fixtures/non_portable",
+  "expected_findings": {
+    "workstreams/po03/runtime/fixtures/non_portable/absolute_paths.py": {
+      "ABS_PATH_LITERAL": 3
+    },
+    "workstreams/po03/runtime/fixtures/non_portable/env_dependence.py": {
+      "ENV_READ": 3
+    },
+    "workstreams/po03/runtime/fixtures/non_portable/home_dependence.py": {
+      "HOME_API": 2,
+      "HOME_PATH_LITERAL": 1
+    },
+    "workstreams/po03/runtime/fixtures/non_portable/import_path_mutation.py": {
+      "SYS_PATH_MUTATION": 2
+    },
+    "workstreams/po03/runtime/fixtures/non_portable/network_dependence.py": {
+      "NETWORK_CALL": 2,
+      "NETWORK_IMPORT": 2
+    },
+    "workstreams/po03/runtime/fixtures/non_portable/temp_state.py": {
+      "ABS_PATH_LITERAL": 2,
+      "TEMP_PATH_LITERAL": 2
+    }
+  },
+  "total_expected_findings": 19,
+  "rules_without_a_committed_fixture": ["PARSE_ERROR"],
+  "rules_without_a_committed_fixture_note": "PARSE_ERROR is proved with a synthetic unparseable source built inside the test. Committing a file that does not parse would break unrelated tooling that walks the tree."
+}

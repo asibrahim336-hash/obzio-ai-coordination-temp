@@ -1,0 +1,85 @@
+{
+  "schema": "po03-hermeticity-rules-v1",
+  "rationale": "The detection patterns live in data, not in the prober's source, because a prober whose own module contained the literals it hunts for would report itself and force a self-exemption. Data rules keep the prober scannable by its own gate.",
+  "scan_root": "workstreams/po03",
+  "excluded_dir_names": ["__pycache__", ".git", ".mypy_cache", ".pytest_cache"],
+  "excluded_relative_dirs": ["workstreams/po03/runtime/fixtures"],
+  "excluded_relative_dirs_note": "Exclusion applies only to directory discovery. A file named explicitly on the command line is always scanned, which is how the planted fixtures are proved to be detected rather than merely skipped.",
+  "rules": {
+    "ABS_PATH_LITERAL": {
+      "severity": "high",
+      "description": "Absolute filesystem path baked into a string literal; breaks on any host whose layout differs.",
+      "string_regex": "^(/[A-Za-z0-9_.][^\\n]*|[A-Za-z]:[\\\\/])"
+    },
+    "TEMP_PATH_LITERAL": {
+      "severity": "high",
+      "description": "Hard-coded system temporary directory; makes the run depend on state outside the committed tree.",
+      "string_regex": "(^|[^A-Za-z0-9_])/(tmp|var/tmp)(/|$)"
+    },
+    "HOME_PATH_LITERAL": {
+      "severity": "high",
+      "description": "Tilde-relative path; resolves against the invoking user's home directory.",
+      "string_regex": "^~($|/)"
+    },
+    "HOME_API": {
+      "severity": "high",
+      "description": "Call that resolves the user's home directory.",
+      "calls": [
+        "Path.home",
+        "pathlib.Path.home",
+        "os.path.expanduser",
+        "posixpath.expanduser"
+      ]
+    },
+    "ENV_READ": {
+      "severity": "medium",
+      "description": "Ambient environment read; the value is not in the committed tree, so the run is not reproducible from source alone.",
+      "calls": ["os.getenv", "os.environ.get", "os.environ.copy", "environ.get"],
+      "subscript_targets": ["os.environ", "environ"]
+    },
+    "NETWORK_IMPORT": {
+      "severity": "high",
+      "description": "Import of a network transport module; the suite must pass with outbound network disabled.",
+      "modules": [
+        "socket",
+        "ssl",
+        "urllib",
+        "urllib.request",
+        "urllib.error",
+        "http",
+        "http.client",
+        "ftplib",
+        "smtplib",
+        "poplib",
+        "imaplib",
+        "telnetlib",
+        "xmlrpc.client",
+        "requests",
+        "httpx",
+        "urllib3",
+        "aiohttp"
+      ]
+    },
+    "NETWORK_CALL": {
+      "severity": "high",
+      "description": "Call that opens an outbound connection.",
+      "calls": [
+        "urlopen",
+        "urllib.request.urlopen",
+        "socket.socket",
+        "socket.create_connection",
+        "socket.getaddrinfo",
+        "socket.gethostbyname",
+        "http.client.HTTPConnection",
+        "http.client.HTTPSConnection",
+        "requests.get",
+        "requests.post"
+      ]
+    },
+    "SYS_PATH_MUTATION": {
+      "severity": "medium",
+      "description": "Mutation of the import path; hides a dependency on a directory layout that a clean clone may not have.",
+      "calls": ["sys.path.append", "sys.path.insert", "sys.path.extend"]
+    }
+  }
+}
