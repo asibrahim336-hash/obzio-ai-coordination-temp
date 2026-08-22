@@ -441,6 +441,32 @@ MECHANISM_CHANGES: tuple[dict[str, Any], ...] = (
         ),
     },
     {
+        "mechanism_id": "M9",
+        "hypothesis_ids": ["CM-H7"],
+        "scope": "LIVE_IN_THIS_UNIT",
+        "change": (
+            "The return documents record where each undigestable digest is deferred to instead of reading "
+            "their own path off disk. A document cannot contain its own digest, and an implementation that "
+            "tries reports whatever an earlier run left behind: a digest that is plausible, current-looking "
+            "and wrong. The manifest and result now defer explicitly and name the link that closes the chain."
+        ),
+        "target": "harness/emit_result.py:build_manifest, harness/emit_result.py:artifact_accounting",
+        "recurrence_test": (
+            "tests/test_emit_result.py::ArtifactAccountingTests::"
+            "test_a_stale_digest_left_by_an_earlier_run_is_not_reported_as_current"
+        ),
+        "additional_recurrence_test": (
+            "tests/test_emit_result.py::ArtifactAccountingTests::"
+            "test_the_chain_accounts_for_every_owned_file_exactly_once"
+        ),
+        "disposition": "RETAIN",
+        "rationale": (
+            "The same class of defect as a false completion, in the reporting layer rather than the machine: "
+            "a self-digest reads as verified while attesting to bytes that are no longer there. Caught here "
+            "only because the digest was recomputed rather than trusted."
+        ),
+    },
+    {
         "mechanism_id": "M6",
         "hypothesis_ids": ["CM-H8"],
         "scope": "REJECTION",
