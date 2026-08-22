@@ -9,6 +9,7 @@ on:
   push:
     branches:
       - "po03/**"
+      - "cursor/po03-**"
     paths:
       - "workstreams/po03/**"
       - "receipts/po03/**"
@@ -27,5 +28,46 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Enforce the PO-03 changed-path allowlist
+        env:
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE_SHA: ${{ github.event.before }}
+          ZERO_SHA: "0000000000000000000000000000000000000000"
+          PO03_BASE_REF: po03/repository-engineering-portable-runtime-20260822-v001
+        run: |
+          set -euo pipefail
+          git fetch --no-tags --prune origin '+refs/heads/*:refs/remotes/origin/*' >/dev/null 2>&1 || true
+          first_existing_ref() {
+            for candidate in "$@"; do
+              if git rev-parse --verify --quiet "${candidate}^{commit}" >/dev/null; then
+                echo "$candidate"
+                return 0
+              fi
+            done
+            return 1
+          }
+          resolve_base() {
+            if [ -n "${PR_BASE_SHA:-}" ] \
+              && git rev-parse --verify --quiet "${PR_BASE_SHA}^{commit}" >/dev/null; then
+              echo "$PR_BASE_SHA"
+              return 0
+            fi
+            if [ -n "${PUSH_BEFORE_SHA:-}" ] \
+              && [ "$PUSH_BEFORE_SHA" != "$ZERO_SHA" ] \
+              && git rev-parse --verify --quiet "${PUSH_BEFORE_SHA}^{commit}" >/dev/null; then
+              echo "$PUSH_BEFORE_SHA"
+              return 0
+            fi
+            REF="$(first_existing_ref \
+              "origin/${PO03_BASE_REF}" "${PO03_BASE_REF}" "origin/main" "main")"
+            git merge-base "$REF" HEAD
+          }
+          BASE="$(resolve_base)"
+          echo "changed-path base: ${BASE}"
+          git diff --name-only "${BASE}...HEAD"
+          git diff --name-only -z "${BASE}...HEAD" \
+            | python -I workstreams/po03/tools/path_scope_guard.py --null --stdin
       - name: Run dependency-free contract tests
         run: python -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v
+      - name: Verify the PO-03 subtree manifest
+        run: python -I workstreams/po03/tools/manifest.py --verify
