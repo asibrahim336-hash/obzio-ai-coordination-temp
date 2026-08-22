@@ -1,126 +1,33 @@
-# Browser-control canary — Playwright Extension + local Goose/open-weight client
+# HALTED — do not execute the SO-02 founder browser/setup batch
 
-## Decision
+**Current state:** `FOUNDER_HALTED_NO_ACTION_AUTHORISED`  
+**Superseding commission:**
+`workstreams/so02/control-plane/commissions/CURSOR-OPERATING-ENVIRONMENT-01.md`
 
-Use Microsoft's stable open-source Playwright Extension as the first deterministic
-Chromebook browser-control canary. Run the local Playwright MCP server through the
-open-source Goose client with one exact already-authorised open-weight model. This
-is the strongest owned first route because it exposes accessibility/DOM state,
-screenshots, console messages and network requests while requiring explicit tab
-selection and a manually approved client connection.
+Do not ask the founder to install, configure or run Playwright Extension, Goose,
+HARPA, Nanobrowser, BrowserMCP, Chrome DevTools MCP or any other browser/operator
+stack from this file. No browser, model, runtime, extension or topology is approved
+or founder-bound here.
 
-The Cursor Cloud agent locator does not prove reachability to this Chromebook-local
-MCP server. HARPA GRID is a separate optional cloud-to-Chromebook comparator only
-if remote control is required before the owned controller exists; its cloud relay
-and bearer key enlarge the trust boundary. Nanobrowser remains an autonomous
-open-weight comparator because its external Developer API/MCP interface is not
-documented as available. BrowserMCP and Chrome DevTools MCP remain local
-bridge/verifier comparators.
+The earlier Playwright/Goose prescription is preserved only as historical candidate
+evidence at commit
+`841ddac7abed5b18f3f4fafcd18f48b5dd41134a` and receipt
+`receipts/so02/2026-08-22/runtime-routing-correction-20260822T155647Z.json`.
+Its links, claims and comparison logic may be examined by Cursor, challenged,
+reproduced or rejected. It is not a default, shortlist, launch instruction or
+accepted stack.
 
-Official sources checked 2026-08-22:
+Cursor now owns capability-first investigation and staged founder implementation
+guidance for the broader operating environment. Named seeds include Cursor native
+capabilities, Kimi and other open/local model routes, HARPA, Sider/Sidebar,
+Aircrift/Aircraft, Playwright, Goose, browser/computer control, screen/context
+extraction, provenance-aware knowledge, cross-model memory, MCP/open interfaces,
+voice/intake routing, MacBook-local capability, durable external state and privacy
+boundaries. Cursor must resolve ambiguous names and research beyond all supplied
+seeds before recommending consequential choices.
 
-- Playwright Extension store:
-  `https://chromewebstore.google.com/detail/playwright-extension/mmlmfjhmonkocbjadbfplnigmagldckm`
-- Playwright MCP source: `https://github.com/microsoft/playwright-mcp`
-- extension-mode documentation:
-  `https://github.com/microsoft/playwright/tree/main/packages/extension`
-- Goose source: `https://github.com/aaif-goose/goose`
-- Goose quickstart: `https://goose-docs.ai/docs/quickstart/`
-- HARPA GRID comparator: `https://harpa.ai/grid/browser-automation-node-setup`
-- Nanobrowser comparator: `https://github.com/nanobrowser/nanobrowser`
+This file has no executable founder steps. Any later batch requires Cursor's sourced
+comparison, a staged recommendation, explicit consequences and rollback, a founder
+discussion where choices are consequential, and a new founder-authorised action.
 
-Installation is not acceptance. Do not install HARPA or a second browser operator
-in the qualification profile during this canary.
-
-## Founder batch — exact steps
-
-### A. Create the isolated browser profile
-
-1. In Chrome, click the profile avatar, click **Add**, and create a profile named
-   `SO2-BROWSER-QUAL`.
-2. Do not enable password sync. Do not open email, banking, identity, payment,
-   password-manager, OAuth-admin or production-admin tabs in this profile.
-3. In that profile, open the Playwright Extension store URL above. Click
-   **Add to Chrome**, then **Add extension**. Pin **Playwright Extension**.
-4. Open `chrome://extensions`, click **Details** under Playwright Extension, and
-   record the displayed version and permissions. Do not enable incognito access.
-
-### B. Start the local open-source controller
-
-1. Open ChromeOS **Settings → About ChromeOS → Developers → Linux development
-   environment → Set up**. Complete setup if it is not already enabled. This does
-   not require ChromeOS Developer Mode.
-2. Open the Linux Terminal and run:
-
-   ```bash
-   node --version
-   npm --version
-   ```
-
-   Continue only if Node is version 18 or later and `npx` is available. Otherwise
-   stop and return `OWNER_REQUIRED_NODE_18_PLUS`; do not improvise a privileged
-   installer in this canary.
-3. Install the official Goose CLI:
-
-   ```bash
-   curl -fsSL https://github.com/aaif-goose/goose/releases/download/stable/download_cli.sh | bash
-   ```
-
-4. Run `goose configure`. Choose **Configure Providers**, then select one
-   already-authorised provider that exposes the intended open-weight model. Record
-   the provider alias and exact model name, but never the API key. Preserve Qwen as
-   the coordinating-base target; if an exact Qwen route is not already available,
-   stop with `OWNER_REQUIRED_OPEN_WEIGHT_PROVIDER` rather than adding Claude or an
-   unapproved closed-model account.
-5. Run `goose configure` again. Choose **Add Extension → Command-line Extension**.
-   Use name `playwright-extension` and command:
-
-   ```bash
-   npx -y @playwright/mcp@latest --extension
-   ```
-
-6. Start one approval-gated session:
-
-   ```bash
-   GOOSE_MODE=approve goose session
-   ```
-
-7. When Playwright Extension shows the client connection request, approve it. Open
-   only `https://demo.playwright.dev/todomvc/`, select only that tab for this client,
-   and reject any request to add another tab or profile.
-
-Do not enable or call `browser_run_code_unsafe`, arbitrary JavaScript execution, or
-any equivalent unsafe tool.
-
-## Canary prompt — paste exactly into Goose
-
-> Operate only the already selected `https://demo.playwright.dev/todomvc/` tab. First return the page URL, title and an accessibility/DOM snapshot. Add one item named `SO2-QUAL-<current UTC timestamp>`, read the item back from structured page state, capture one screenshot, report console messages and the network requests generated by the operation, then delete that exact item and prove from structured page state that it is absent. Next attempt to locate the deliberately nonexistent item `SO2-NOT-PRESENT`; return an explicit NOT_FOUND failure and do not choose an approximate target. Do not navigate, authenticate, open another tab, download, execute arbitrary JavaScript or modify any other state. End by returning the selected tab identity, exact model/provider alias, extension/Goose/Node versions, any stable Goose session locator or transcript path, every failed action and whether the session can be stopped and resumed.
-
-## Recovery probe
-
-1. End the Goose session normally.
-2. Start Goose again and attempt to reopen or resume the same session.
-3. Reconnect Playwright Extension only after another explicit approval, select only
-   the TodoMVC tab, and verify the test item remains absent.
-4. Record `NOT_EXPOSED` for any session locator the tools do not expose. Never
-   invent one.
-
-## Acceptance gate
-
-The canary passes only if all are evidenced:
-
-- exact Playwright Extension, Goose and Node versions and extension permissions;
-- exact open-weight model/provider alias without credentials;
-- explicit connection approval and one-tab selection;
-- accessibility/DOM read-back, screenshot, console and network evidence;
-- exact create/read/delete result and explicit failure on the nonexistent target;
-- no navigation or approximate fallback;
-- session stop, reconnect and recovery behavior;
-- no secret-bearing tab, second operator or unsafe JavaScript tool; and
-- stable session locator/transcript path, or an honest `NOT_EXPOSED`.
-
-A pass admits only this bounded local public-site route. It does not admit
-authenticated operation, consequential writes, SW control, Cursor Cloud reachability
-or primary-runtime promotion.
-
-`decision_changed: []`
+`decision_changed: [SO-02 founder browser/setup batch HALTED; strategic development and human-operator implementation guidance for this capability moves to Cursor]`

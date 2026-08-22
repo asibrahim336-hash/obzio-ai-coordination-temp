@@ -5,15 +5,11 @@ No initial message was sent and no return branch was created. The founder paused
 before commission because it was not yet being operated strategically. Do not open,
 rename, message, commission or otherwise mutate the space in the current operation.
 
-SW may be reactivated only after an Obzio-owned open-weight controller plus an
-authenticated SW adapter proves all of the following in a bounded canary:
-
-1. resolve the stable space and operation locators;
-2. launch and stop work without a founder relay;
-3. retrieve completed results and artifacts;
-4. reconcile them into provider-independent Git custody;
-5. resume after controller or provider failure; and
-6. preserve owner gates and one active browser operator per profile.
+SW may be reactivated only by a separate founder decision after Cursor has compared
+the operating options and returned staged guidance. No controller, adapter, browser
+operator or reactivation architecture is preselected. Any later route must still
+prove stable locators, launch and stop, result and artifact retrieval,
+provider-independent Git custody, recovery and owner gates before it is accepted.
 
 The platform remains available and capable. This pause is not provider rejection,
 retirement or a model-quality finding.
@@ -30,5 +26,6 @@ The founder-edited message is retained verbatim for a later reactivation decisio
 >
 > Record space ID `1054976614269477`, the immutable source commit, and every operation, thread, coworker, automation and return-branch URL or exact provider ID the surface exposes. Return completed artifacts, test results, failures, repairs, capacity evidence and unresolved blockers—not a plan or acknowledgement.
 
-This retained packet remains subject to the later reactivation gate. It does not
-create or implement the deferred disclosure-policy workstream.
+This retained packet remains subject to a later founder reactivation. It does not
+create or implement the deferred disclosure-policy workstream or select the
+reactivation mechanism.

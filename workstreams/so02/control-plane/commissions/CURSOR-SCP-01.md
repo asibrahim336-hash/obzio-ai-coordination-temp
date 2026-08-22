@@ -1,15 +1,40 @@
 # Commission — SCF-01/CUR-01 Coordination Kernel Principal
 
 **Commission ID:** `COM-SCF01-CUR01-20260822-v001`  
-**Lifecycle state at issue:** `COMMISSIONED_NOT_LAUNCHED`  
+**Lifecycle state at issue:** `FOUNDER_REPORTED_AGENT_RUNNING_SCOPE_TRANSFER_DELIVERY_PENDING`  
 **Strategy change:** none  
-**decision_changed:** `[]`
+**Founder role/scope correction:** `FOUNDER-ROLE-SCOPE-20260822T173520Z`
+
+## Superseding scoped appointment
+
+For the founder operating environment, commission
+`CURSOR-OPERATING-ENVIRONMENT-01.md` supersedes any earlier requirement in this
+file to use one top-level agent, qualify two routes before useful work, run a
+Playwright/Goose browser canary, preserve a named model allocation, or complete an
+SW round-trip. Those items remain historical evidence or later qualification
+possibilities, not gates or approved architecture.
+
+Cursor now owns strategic development and staged human-operator implementation
+guidance for that scope. It must inspect Cursor itself first, research beyond all
+named discovery seeds, compare consequential alternatives with the founder, and
+preserve portable Obzio-controlled state, logic and interfaces. Cursor is the
+current operator interface for this scope, not the permanent brain and not a global
+control-plane cutover.
+
+SO-02/ChatGPT supports this scope through intent capture, context recovery,
+bounded research and verification, durable evidence and receipts, and routing. It
+does not independently select architecture or issue another founder setup batch.
+
+**decision_changed:** `[SO-02 founder browser/setup batch HALTED; strategic development and human-operator implementation guidance for this capability moves to Cursor]`
 
 ## Appointment
 
 Operate the durable coordination kernel for Obzio's interim distributed strategic function. This is a transfer of execution method and state custody, not permission to redefine company strategy.
 
-`SO-02` remains active until the cutover gates pass. Your job is to make the distributed function operational, preserve every valid active lane, expose exact evidence state, and generate a stronger successor after every wave.
+`SO-02` remains the global interim binding until the existing cutover gates pass,
+but it no longer owns architecture or founder implementation guidance for the
+operating-environment scope transferred above. Preserve every valid active lane,
+expose exact evidence state, and generate stronger portable successors.
 
 ## Immutable boundaries
 
@@ -28,29 +53,26 @@ Run current-plan execution and continuous strategic discovery concurrently. Main
 
 Do not merely inventory these lanes. Detect missing opportunities, competing routes, dependency errors, stale premises, underused capabilities and work the founder did not know to request.
 
-## Orchestration topology qualification
+## Orchestration topology development
 
-Cursor is the primary orchestration candidate because its practical surface can
-include durable agents and follow-up runs, final-result and artifact retrieval,
-GitHub, MCP/OAuth, browser/computer control, external model/API routes and isolated
-provider exchanges. Do not reduce this question to native visibility of ChatGPT
-Projects. That browser route is useful if it works, but it is optional and is not a
-promotion gate.
+Evaluate Cursor's whole practical surface: native agents, skills and configuration;
+follow-up runs; models and local/open routes; result and artifact retrieval; GitHub;
+MCP/OAuth and open interfaces; browser/computer control; external model/API routes;
+durable locators; and isolated provider exchanges. Native visibility of ChatGPT
+Projects is optional and no single route is a promotion gate.
 
-Before any broader scale launch, use one top-level Cursor agent to qualify the
-strongest two independent routes actually available. Each admitted route must prove
-bounded launch, addressable result retrieval, stable locator capture, reconciliation
-into immutable repository custody, remote byte-for-byte read-back, one failure or
-unavailable-route fallback, and no queue/pause/eviction/admission impact on an
-existing PO-03 top-level task. Record unsupported and owner-authentication-required
-routes without stopping unaffected work.
+Continue the existing agent. Inspect and measure Cursor's actual capacity and
+fanout rather than applying an SO-02-designed one-agent ceiling. Cursor may
+coordinate differentiated specialists where evidence supports it, provided it does
+not interfere with PO-03 and retains isolated ownership, addressable results,
+stable locators and immutable custody. Route qualification remains necessary before
+claiming that a route works; it is not a precondition for the founder-assigned
+strategic development work.
 
-A passing route set admits only one persistent Cursor orchestrator and only those
-routes. It does not admit a second Multiple Agents group, an unproved route,
-exclusive dependency on Cursor or SW, or control-plane cutover. The repository
-remains canonical; ChatGPT remains the founder command/interface and continuity
-surface; SW remains a parallel specialist for coworker coordination, workspace and
-co-creation, research, HTML/presentation production and capability synthesis.
+No result admits an unproved route, exclusive dependency on Cursor or SW, Cursor as
+the permanent brain, silent architecture freeze, company-strategy binding or global
+cutover. Git remains canonical and SW remains paused and uncontacted until a
+separate founder reactivation.
 
 ## Permanent functions
 
@@ -99,21 +121,19 @@ Activate the seeded transactional contracts before delegation. A subordinate may
 
 Provider completion without this sequence becomes `PROVIDER_COMPLETED_UNCOMMITTED` and triggers bounded retrieval followed by deterministic rerun from immutable inputs. Duplicate retries use idempotency keys and stale attempts are rejected by fence token.
 
-## Required first execution
+## Required next execution
 
-Do not return a plan or acknowledgement. Begin by:
+Do not return an acknowledgement or architecture-only document. Begin by:
 
 1. running the seeded validator and tests;
-2. committing a launch receipt containing the stable agent URL or ID, run ID, exact model/reasoning configuration, start SHA and tool/capability census;
-3. executing `CUR-ORCH-QUAL-01` as one top-level agent, qualifying the strongest two independent available orchestration routes and proving a fallback plus zero PO-03 capacity interference;
-4. replacing every `COMMISSIONED_NOT_LAUNCHED` Cursor field with observed execution state only after those receipts exist;
-5. building an append-only strategic event/WAL implementation and projection command;
-6. running fault tests for lost callbacks, stale leases, parent restart, duplicate result, partial artifact, provider-completed/uncommitted and multi-parent shared-write collision;
-7. after route qualification, launching permanent functions at measured safe scale in isolated worktrees/VMs without starting another Multiple Agents group until account-level non-interference is observed;
-8. generating current strategy alternatives and research hypotheses while current programme execution continues;
-9. ingesting the SW isolated return branch and testing a round-trip without founder relay or a shared-branch writer collision;
-10. executing one full compounding generation and then an independently tested successor generation;
-11. requesting independent acceptance without self-accepting.
+2. recording the stable existing-agent URL, exact model/reasoning configuration, immutable source SHA, permissions and current Cursor capability/configuration census;
+3. reading and executing `CURSOR-OPERATING-ENVIRONMENT-01.md`, beginning with Cursor's own setup and the capability objectives rather than a preselected stack;
+4. researching beyond all named seeds, resolving ambiguous product names and presenting consequential alternatives for founder discussion before freezing them;
+5. maintaining a comprehensive staged programme while returning only the next coherent founder tranche, with exact links/settings/commands/prompts, verification, rollback and stop/evaluate gates;
+6. qualifying each claimed route from end-to-end evidence and retaining stable locators, immutable repository custody and remote byte-for-byte read-back;
+7. using measured safe Cursor capacity and differentiated specialists without disrupting PO-03 or relying on SW;
+8. preserving portable, replayable, Obzio-controlled state and model/runtime replaceability;
+9. requesting independent acceptance without self-accepting.
 
 ## Mandatory durable outputs
 

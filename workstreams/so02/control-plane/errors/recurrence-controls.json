@@ -107,8 +107,8 @@
       "error_id": "ERR-UNBOUND-STRATEGY-CHANGE",
       "failure": "Converting a discovery recommendation into company strategy without founder binding",
       "control_state": "ENFORCED",
-      "fail_closed_mechanism": "Every state, plan, control and event requires decision_changed empty; STRATEGY_DECISION events require founder-bound authority.",
-      "old_behaviour_probe": "test_strategy_change_without_binding_is_rejected and test_strategy_decision_event_requires_founder_binding",
+      "fail_closed_mechanism": "Nonempty decision_changed is rejected except for the exact founder-expressed operating-environment role/scope correction carried by the dedicated founder-bound event and current projections; STRATEGY_DECISION still requires separate founder-bound authority.",
+      "old_behaviour_probe": "test_strategy_change_without_binding_is_rejected, test_founder_role_scope_event_requires_exact_authority and test_strategy_decision_event_requires_founder_binding",
       "probe_result": "PASS_OLD_BEHAVIOUR_REJECTED",
       "owner": "SCF-01/CGPT-01"
     },
@@ -124,7 +124,7 @@
       "error_id": "ERR-IDLE-WITHOUT-LAUNCH",
       "failure": "Publishing a control plane but leaving ready provider operations without a launch instruction",
       "control_state": "UNCONTROLLED",
-      "uncontrolled_reason": "Exact Cursor, SW and ChatGPT launches now exist, but the response runtime has no structural end-of-turn launch/effect gate.",
+      "uncontrolled_reason": "The existing Cursor follow-up is complete but provider security verification blocked direct submission; SW and the browser setup batch are intentionally paused or halted and are not executable launches. The response runtime still lacks a structural end-of-turn launch/effect gate.",
       "next_control": "Add command-layer closure validation requiring changed live operation or executable launch plus evidence.",
       "owner": "SCF-01/CGPT-01"
     },
@@ -175,8 +175,8 @@
       "error_id": "ERR-ORCHESTRATION-SINGLE-ROUTE-BIAS",
       "failure": "Making native ChatGPT Projects visibility or any one provider route the governing test for Cursor orchestration",
       "control_state": "ENFORCED",
-      "fail_closed_mechanism": "The control-plane validator requires the Projects UI route to remain optional and rejects Cursor promotion without at least two independently qualified end-to-end routes and complete launch/retrieval/reconciliation/fallback evidence.",
-      "old_behaviour_probe": "test_chatgpt_projects_ui_cannot_be_made_promotion_gate and test_cursor_cannot_be_promoted_without_two_route_evidence",
+      "fail_closed_mechanism": "The validator requires the Projects UI route to remain optional, makes Cursor's founder-assigned scoped role independent of any one route, and requires every claimed route or capability to be accepted only from reproduced end-to-end evidence.",
+      "old_behaviour_probe": "test_chatgpt_projects_ui_cannot_be_made_promotion_gate and test_cursor_scope_does_not_depend_on_arbitrary_route_or_agent_ceiling",
       "probe_result": "PASS_OLD_BEHAVIOUR_REJECTED",
       "owner": "SCF-01/CGPT-01"
     },
@@ -185,7 +185,7 @@
       "failure": "A provider project, space, operation, thread, agent, run or return branch cannot be found and resumed from repository state",
       "control_state": "UNCONTROLLED",
       "uncontrolled_reason": "The founder-reported SW space ID and canonical GitHub URLs are captured and pending locators now fail invented-value checks, but CUR-01, the SW operation/return branch and current ChatGPT project/thread do not yet have live verified stable locators or an independent cold-resume pass.",
-      "next_control": "Launch CUR-01 and send the first SW message, capture exact provider URLs/IDs and checkpoints, then have an independent clean-start operator reopen and read back each active surface without display-name search or founder result relay.",
+      "next_control": "Deliver the exact follow-up to the existing Cursor agent, capture its provider acknowledgement and isolated return-branch locator, and independently cold-resume each active surface. Do not send an SW message unless the founder separately reactivates SW.",
       "owner": "SCF-01/CUR-01"
     },
     {
@@ -193,8 +193,17 @@
       "failure": "SW and the SO-02 coordinator write the same source branch and create another provider collision",
       "control_state": "UNCONTROLLED",
       "uncontrolled_reason": "The SW launch now makes SO-02 read-only and requires an isolated return branch, but no first SW operation or provider permission read-back proves that the runtime enforces the boundary.",
-      "next_control": "Rename space 1054976614269477 to the neutral provider-visible name Capability Extraction Lab, then send the neutral first message; require immutable source SHA plus isolated return-branch URL before the first write, and record NOT_SUPPORTED or the exact owner permission if branch isolation is unavailable.",
+      "next_control": "Keep SW paused. If the founder later reactivates it, require immutable source SHA plus isolated return-branch URL before the first write and record NOT_SUPPORTED or the exact owner permission if branch isolation is unavailable; no controller architecture is preselected.",
       "owner": "SCF-01/SW-01"
+    },
+    {
+      "error_id": "ERR-SUPPORT-LANE-ARCHITECTURE-PRESCRIPTION",
+      "failure": "SO-02 converts exploratory tools into an approved architecture or founder setup batch after the operating-environment scope moved to Cursor",
+      "control_state": "ENFORCED",
+      "fail_closed_mechanism": "The validator requires the SO-02 browser file to remain a non-executable founder-halted tombstone, requires selected_stack null and no named tool founder-bound, removes the browser canary from current founder actions, and requires Cursor ownership plus staged guidance, research beyond seeds and portable Obzio custody.",
+      "old_behaviour_probe": "test_old_active_browser_batch_is_rejected, test_unbound_named_stack_is_rejected and test_so02_architecture_prescription_is_rejected",
+      "probe_result": "PASS_OLD_BEHAVIOUR_REJECTED",
+      "owner": "SCF-01/CGPT-01"
     }
   ]
 }

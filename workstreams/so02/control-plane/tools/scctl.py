@@ -15,6 +15,10 @@ from typing import Any, Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+ROLE_SCOPE_DECISION = [
+    "SO-02 founder browser/setup batch HALTED; strategic development and human-operator implementation guidance for this capability moves to Cursor"
+]
+ROLE_SCOPE_CORRECTION_ID = "FOUNDER-ROLE-SCOPE-20260822T173520Z"
 
 
 def read_json(path: Path) -> Any:
@@ -58,7 +62,7 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
         errors,
         data,
         [
-            "control_plane_id", "revision", "strategy_snapshot_id", "decision_changed",
+            "control_plane_id", "revision", "strategy_snapshot_id", "role_scope_correction_id", "decision_changed",
             "migration_state", "active_primary", "canonical_store", "runtime_bindings",
             "protected_workstreams", "cutover_gates", "cutover_evidence",
             "current_founder_actions", "global_pointer_state", "multi_parent_execution_contract",
@@ -67,7 +71,9 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
         "control-plane"
     )
     add(errors, data.get("control_plane_id") == "SCF-01", "control-plane: wrong identity")
-    add(errors, data.get("decision_changed") == [], "control-plane: unbound strategy change")
+    add(errors, data.get("strategy_snapshot_id") == "CURRENT_ACTIVE_STRATEGY_SNAPSHOT_UNCHANGED", "control-plane: company strategy snapshot changed by role correction")
+    add(errors, data.get("role_scope_correction_id") == ROLE_SCOPE_CORRECTION_ID, "control-plane: founder role/scope correction missing")
+    add(errors, data.get("decision_changed") == ROLE_SCOPE_DECISION, "control-plane: unbound or incomplete role/scope change")
 
     orchestration = data.get("orchestration_assignment", {})
     require_keys(
@@ -77,13 +83,15 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
             "programme_coordinator", "cursor_binding", "cursor_role_state",
             "sw_binding", "sw_role_state", "chatgpt_binding", "chatgpt_role_state",
             "repository_remains_provider_independent", "chatgpt_project_api_equivalence_assumed",
-            "cursor_control_surface_qualification", "browser_control_replacement"
+            "cursor_control_surface_qualification", "founder_operating_environment_assignment"
         ],
         "orchestration-assignment"
     )
     add(errors, orchestration.get("programme_coordinator") == "SO-02", "orchestration: programme coordinator changed before cutover")
     add(errors, orchestration.get("cursor_binding") == "SCF-01/CUR-01", "orchestration: unexpected Cursor binding")
+    add(errors, orchestration.get("cursor_role_state") == "CURRENT_STRATEGIC_OPERATOR_INTERFACE_FOR_FOUNDER_OPERATING_ENVIRONMENT_PORTABLE_NOT_PERMANENT", "orchestration: Cursor scoped role missing or made permanent")
     add(errors, orchestration.get("sw_role_state") == "PARALLEL_SPECIALIST_FACTORY_NOT_PRIMARY", "orchestration: SW incorrectly made central")
+    add(errors, orchestration.get("chatgpt_role_state") == "FOUNDER_INTENT_CONTEXT_EVIDENCE_VERIFICATION_AND_ROUTING_SUPPORT_FOR_THIS_SCOPE", "orchestration: SO-02 escaped supporting role")
     add(errors, orchestration.get("repository_remains_provider_independent") is True, "orchestration: provider-independent canonical state lost")
     add(errors, orchestration.get("chatgpt_project_api_equivalence_assumed") is False, "orchestration: ChatGPT Projects UI conflated with API conversation state")
 
@@ -92,41 +100,61 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
         errors,
         qualification,
         [
-            "qualification_id", "state", "maximum_cursor_top_level_agents",
-            "initial_subagents_allowed", "qualified_route_count", "routes",
+            "qualification_id", "state", "current_entry_agent_id",
+            "existing_operation_continuation_required", "capacity_and_fanout_authority",
+            "role_assignment_not_contingent_on_route_acceptance", "qualified_route_count", "routes",
             "required_end_to_end_evidence", "projects_ui_probe_required_for_promotion",
-            "pass_admits", "pass_does_not_admit", "promotion_rule"
+            "capability_acceptance_rule", "role_assignment_does_not_admit", "global_promotion_rule"
         ],
         "cursor-orchestration-qualification"
     )
-    add(errors, qualification.get("maximum_cursor_top_level_agents") == 1, "orchestration: unqualified second Cursor top-level agent")
-    add(errors, qualification.get("initial_subagents_allowed") is False, "orchestration: subagent fanout before capacity qualification")
+    add(errors, qualification.get("current_entry_agent_id") == "bc-7137a066-3242-43a2-a30e-9a352047b759", "orchestration: existing Cursor operation not preserved")
+    add(errors, qualification.get("existing_operation_continuation_required") is True, "orchestration: correction restarts Cursor operation")
+    add(errors, "INSPECT_AND_MEASURE" in qualification.get("capacity_and_fanout_authority", ""), "orchestration: SO-02 imposed or omitted Cursor topology evaluation")
+    add(errors, qualification.get("role_assignment_not_contingent_on_route_acceptance") is True, "orchestration: scoped Cursor appointment made contingent on arbitrary route proof")
     add(errors, qualification.get("projects_ui_probe_required_for_promotion") is False, "orchestration: ChatGPT Projects UI made an artificial promotion gate")
     add(errors, qualification.get("routes", {}).get("chatgpt_projects_ui_via_browser") == "OPTIONAL_PROBE_NOT_A_PROMOTION_GATE", "orchestration: ChatGPT Projects browser route not optional")
-    add(errors, "CHATGPT_PROJECTS_UI_VISIBILITY_IS_OPTIONAL" in qualification.get("promotion_rule", ""), "orchestration: promotion rule requires native ChatGPT Projects visibility")
-    if orchestration.get("cursor_role_state") == "MAJOR_ORCHESTRATION_LAYER_QUALIFIED":
-        required = qualification.get("required_end_to_end_evidence", {})
-        add(errors, qualification.get("qualified_route_count", 0) >= 2, "orchestration: Cursor promoted without two qualified routes")
-        add(errors, bool(required) and all(value is True for value in required.values()), "orchestration: Cursor promoted without complete end-to-end evidence")
+    add(errors, "EACH_ROUTE_OR_CAPABILITY_IS_ACCEPTED_ONLY" in qualification.get("capability_acceptance_rule", ""), "orchestration: unproved route can be treated as accepted")
+    add(errors, "THIS_SCOPED_ASSIGNMENT_IS_NOT_GLOBAL_PROMOTION" in qualification.get("global_promotion_rule", ""), "orchestration: scoped appointment conflated with global cutover")
 
-    browser = orchestration.get("browser_control_replacement", {})
+    environment = orchestration.get("founder_operating_environment_assignment", {})
     require_keys(
         errors,
-        browser,
+        environment,
         [
-            "qualification_id", "state", "objective", "first_canary",
-            "first_canary_reason", "cloud_cursor_route", "cloud_route_tradeoff",
-            "comparators", "cursor_cloud_constraint", "required_evidence",
-            "sw_reactivation_gate", "selection_is_acceptance"
+            "assignment_id", "state", "owner", "so02_role", "browser_setup_batch",
+            "selected_stack", "named_tools_role", "no_named_tool_founder_bound",
+            "architecture_frozen", "cursor_setup_inspection_first", "human_guidance_mode",
+            "research_beyond_named_seeds_required",
+            "portable_obzio_controlled_state_logic_and_interfaces_required",
+            "model_and_runtime_replaceability_required", "discovery_seeds",
+            "capability_scope", "delivery"
         ],
-        "browser-control-qualification"
+        "founder-operating-environment-assignment"
     )
-    add(errors, browser.get("first_canary") == "MICROSOFT_PLAYWRIGHT_EXTENSION_PLUS_LOCAL_GOOSE_OPEN_WEIGHT_MCP_CLIENT", "browser-control: deterministic owned first canary changed")
-    add(errors, browser.get("selection_is_acceptance") is False, "browser-control: selection or installation treated as acceptance")
-    add(errors, "PROPRIETARY_CLOUD_RELAY" in browser.get("cloud_route_tradeoff", ""), "browser-control: HARPA trust-boundary cost hidden")
-    add(errors, "NANOBROWSER_OPEN_WEIGHT_SELF_CONTAINED_NO_EXTERNAL_MCP_API" in browser.get("comparators", ""), "browser-control: Nanobrowser external-control limitation hidden")
-    add(errors, "CURSOR_CLOUD_AGENT_LOCATOR_ALONE_DOES_NOT_PROVE" in browser.get("cursor_cloud_constraint", ""), "browser-control: local MCP reachability assumed")
-    add(errors, "LOCATE_LAUNCH_RETRIEVE_RECONCILE_STOP_AND_RESUME" in browser.get("sw_reactivation_gate", ""), "browser-control: SW reactivation lacks control-and-custody proof")
+    add(errors, environment.get("assignment_id") == "CUR-ENV-01", "operating-environment: wrong constituted lane")
+    add(errors, environment.get("owner") == "SCF-01/CUR-01", "operating-environment: strategic development not owned by Cursor")
+    add(errors, environment.get("so02_role") == "FOUNDER_INTENT_CAPTURE_CONTEXT_RECOVERY_RESEARCH_VERIFICATION_EVIDENCE_RECEIPTS_AND_ROUTING_SUPPORT", "operating-environment: SO-02 architecture prescription remains")
+    add(errors, environment.get("browser_setup_batch") == "FOUNDER_HALTED_NO_ACTION_AUTHORISED", "operating-environment: old active browser batch not rejected")
+    add(errors, environment.get("selected_stack") is None, "operating-environment: unbound named stack selected")
+    add(errors, environment.get("named_tools_role") == "DISCOVERY_SEEDS_AND_CANDIDATE_EVIDENCE_ONLY", "operating-environment: discovery seeds converted to requirements")
+    add(errors, environment.get("no_named_tool_founder_bound") is True, "operating-environment: named tool falsely founder-bound")
+    add(errors, environment.get("architecture_frozen") is False, "operating-environment: architecture silently frozen")
+    add(errors, environment.get("cursor_setup_inspection_first") is True, "operating-environment: Cursor setup inspection not first")
+    add(errors, environment.get("research_beyond_named_seeds_required") is True, "operating-environment: research bounded to founder seed list")
+    add(errors, environment.get("portable_obzio_controlled_state_logic_and_interfaces_required") is True, "operating-environment: portable Obzio custody missing")
+    add(errors, environment.get("model_and_runtime_replaceability_required") is True, "operating-environment: model/runtime sovereignty missing")
+    add(errors, "STAGED_IMPLEMENTATION" in environment.get("human_guidance_mode", ""), "operating-environment: human guidance reduced to architecture document")
+    seeds = " ".join(environment.get("discovery_seeds", []))
+    for seed in ("Cursor native", "Kimi", "HARPA", "Sider", "Aircrift", "Playwright", "Goose", "stronger alternatives"):
+        add(errors, seed in seeds, f"operating-environment: missing discovery seed {seed}")
+    scope = " ".join(environment.get("capability_scope", []))
+    for capability in ("browser and computer control", "screen and context extraction", "knowledge graphs", "cross-model memory", "MCP", "voice-first", "MacBook", "durable external state", "privacy", "broader Obzio"):
+        add(errors, capability in scope, f"operating-environment: missing capability scope {capability}")
+    delivery = environment.get("delivery", {})
+    add(errors, delivery.get("direct_submission_state") == "NOT_DELIVERED", "operating-environment: Cursor delivery claimed without provider acknowledgement")
+    add(errors, delivery.get("message_typed_or_submitted") is False, "operating-environment: blocked browser delivery misreported")
+    add(errors, "CLOUDFLARE_SECURITY_VERIFICATION_LOOP" in delivery.get("blocker", ""), "operating-environment: exact Cursor delivery blocker missing")
 
     capacity = data.get("provider_capacity_observations", [])
     claude = next((item for item in capacity if item.get("provider_route") == "Claude browser-extension account"), {})
@@ -185,7 +213,7 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
     add(errors, set(ids) == required_ids, "control-plane: runtime binding denominator mismatch")
     add(errors, len(ids) == len(set(ids)), "control-plane: duplicate runtime binding")
 
-    operational = {"EXECUTING", "OUTPUT_OBSERVED", "DURABLE", "INDEPENDENTLY_VALIDATED", "ACCEPTED", "ACTIVE_INTERIM", "FOUNDER_REPORTED_LAUNCHED_RUNNING_QUALIFICATION_PENDING"}
+    operational = {"EXECUTING", "OUTPUT_OBSERVED", "DURABLE", "INDEPENDENTLY_VALIDATED", "ACCEPTED", "ACTIVE_INTERIM", "FOUNDER_REPORTED_LAUNCHED_RUNNING_QUALIFICATION_PENDING", "FOUNDER_REPORTED_AGENT_RUNNING_SCOPE_TRANSFER_DELIVERY_PENDING"}
     durable = {"DURABLE", "INDEPENDENTLY_VALIDATED", "ACCEPTED"}
     for binding in bindings:
         if not isinstance(binding, dict):
@@ -220,7 +248,7 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
     valid_reasons = {
         "provider_ui_model_selection_and_instruction_submission",
         "provider_ui_agent_creation_model_selection_and_instruction_submission",
-        "provider_ui_browser_extension_install_model_configuration_and_connection_approval",
+        "provider_ui_existing_agent_followup_submission_security_verification_block",
         "SW surface requires founder-authenticated client with TLS certificate",
         "founder_held_ops_gate_and_provider_action_approval",
         "provider_ui_stop_run"
@@ -236,6 +264,8 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
             add(errors, linked.is_file(), f"{prefix}: instruction path missing")
         else:
             add(errors, instruction_path == "workstreams/po03/LAUNCH-NOW.md", f"{prefix}: unexpected inherited instruction path")
+    action_ids = {item.get("action_id") for item in data.get("current_founder_actions", [])}
+    add(errors, "FA-BROWSER-CONTROL-CANARY" not in action_ids, "founder-actions: halted browser setup remains live")
 
 
 def validate_sources(data: dict[str, Any], errors: list[str]) -> None:
@@ -251,7 +281,9 @@ def validate_sources(data: dict[str, Any], errors: list[str]) -> None:
 
 
 def validate_plan(data: dict[str, Any], errors: list[str]) -> None:
-    add(errors, data.get("decision_changed") == [], "plan: unbound strategy change")
+    add(errors, data.get("strategy_snapshot_id") == "CURRENT_ACTIVE_STRATEGY_SNAPSHOT_UNCHANGED", "plan: company strategy snapshot changed by role correction")
+    add(errors, data.get("role_scope_correction_id") == ROLE_SCOPE_CORRECTION_ID, "plan: founder role/scope correction missing")
+    add(errors, data.get("decision_changed") == ROLE_SCOPE_DECISION, "plan: unbound or incomplete role/scope change")
     items = data.get("items", [])
     ids = [item.get("item_id") for item in items]
     add(errors, len(items) >= 20, "plan: prior programme denominator incompletely admitted")
@@ -259,6 +291,10 @@ def validate_plan(data: dict[str, Any], errors: list[str]) -> None:
     for item in items:
         for key in ("name", "state", "durable_owner", "next_executable"):
             add(errors, bool(item.get(key)), f"plan {item.get('item_id')}: missing {key}")
+    by_id = {item.get("item_id"): item for item in items}
+    add(errors, "HALTED" in by_id.get("PLAN-023", {}).get("state", ""), "plan: browser setup batch remains active")
+    add(errors, "none from SO-02" in by_id.get("PLAN-023", {}).get("next_executable", ""), "plan: SO-02 still prescribes browser execution")
+    add(errors, by_id.get("PLAN-024", {}).get("durable_owner") == "SCF-01/CUR-01", "plan: founder operating environment not owned by Cursor")
 
 
 def validate_locators(data: dict[str, Any], errors: list[str]) -> None:
@@ -271,7 +307,8 @@ def validate_locators(data: dict[str, Any], errors: list[str]) -> None:
     allowed_states = {
         "VERIFIED", "FOUNDER_REPORTED_CAPTURED", "AWAITING_PROVIDER_CREATION",
         "OWNER_CAPTURE_REQUIRED", "NOT_YET_CREATED", "ROUTE_QUALIFICATION_PENDING",
-        "OPTIONAL_PROBE_NOT_REQUIRED", "FOUNDER_PAUSED_BEFORE_CREATION"
+        "OPTIONAL_PROBE_NOT_REQUIRED", "FOUNDER_PAUSED_BEFORE_CREATION",
+        "FOUNDER_HALTED_BEFORE_CREATION"
     }
     captured_states = {"VERIFIED", "FOUNDER_REPORTED_CAPTURED"}
     for record in records:
@@ -332,21 +369,27 @@ def validate_durable_directives(root: Path, errors: list[str]) -> None:
     if not path.is_file():
         return
     text = path.read_text(encoding="utf-8")
+    compact = " ".join(text.split())
     required = [
         "one hundred coworkers and agents",
         "discover/create → real-operation test → validate → extract → package → redeploy",
         "Manus must receive full useful administrative enablement across multiple",
-        "Qwen is locked",
+        "prior founder directive records Qwen",
         "Kimi and DeepSeek",
-        "Grok is qualified on Cursor",
+        "Grok on Cursor",
         "voice-first",
         "ten working projects",
         "ten to twenty next operators",
         "data and knowledge governance office",
         "founder activation and acquisition package",
+        "SO-02 founder browser/setup batch is halted",
+        "Cursor owns the complete capability problem",
+        "discovery seeds, not a shopping list",
+        "comprehensive staged programme",
+        "portable, reconstructable, Obzio-controlled",
     ]
     for phrase in required:
-        add(errors, phrase in text, f"directives: missing executable content: {phrase}")
+        add(errors, phrase in compact, f"directives: missing executable content: {phrase}")
 
 
 def validate_automation_receipt(data: dict[str, Any], errors: list[str]) -> None:
@@ -362,20 +405,57 @@ def validate_automation_receipt(data: dict[str, Any], errors: list[str]) -> None
     add(errors, data.get("probe_result") == "PASS_OLD_BEHAVIOUR_REJECTED", "automation: old behavior not rejected")
 
 
+def validate_role_scope_receipt(root: Path, data: dict[str, Any], errors: list[str]) -> None:
+    add(errors, data.get("authority", {}).get("class") == "FOUNDER_BOUND_ROLE_SCOPE_DECISION", "role-scope receipt: exact founder authority missing")
+    add(errors, data.get("authority", {}).get("role_scope_correction_id") == ROLE_SCOPE_CORRECTION_ID, "role-scope receipt: correction ID missing")
+    add(errors, data.get("decision_changed") == ROLE_SCOPE_DECISION, "role-scope receipt: decision incomplete")
+    add(errors, data.get("named_tool_binding") == [], "role-scope receipt: tool silently bound")
+    add(errors, data.get("prior_browser_setup_batch", {}).get("new_state") == "FOUNDER_HALTED_NO_ACTION_AUTHORISED_CANDIDATE_EVIDENCE_ONLY", "role-scope receipt: browser batch not halted")
+    add(errors, data.get("scoped_assignment", {}).get("owner") == "SCF-01/CUR-01", "role-scope receipt: Cursor ownership missing")
+    add(errors, data.get("scoped_assignment", {}).get("current_interface_not_permanent_brain") is True, "role-scope receipt: Cursor made permanent brain")
+    delivery = data.get("cursor_delivery", {})
+    add(errors, delivery.get("direct_submission_state") == "NOT_DELIVERED", "role-scope receipt: blocked Cursor delivery misreported")
+    add(errors, delivery.get("provider_acknowledgement") is None, "role-scope receipt: provider acknowledgement invented")
+    add(errors, delivery.get("message_typed_or_submitted") is False, "role-scope receipt: message submission invented")
+    packet = root / "launch/CURSOR-LAUNCH-NOW.md"
+    if packet.is_file():
+        packet_hash = hashlib.sha256(packet.read_bytes()).hexdigest()
+        add(errors, delivery.get("packet_sha256") == packet_hash, "role-scope receipt: Cursor packet hash mismatch")
+    protected = data.get("protected_noninterference", {})
+    add(errors, bool(protected) and all(value is False for value in protected.values()), "role-scope receipt: protected mutation or incomplete noninterference record")
+
+
 def validate_instruction_contracts(root: Path, errors: list[str]) -> None:
     commission = (root / "commissions/CURSOR-SCP-01.md").read_text(encoding="utf-8")
+    environment_commission = (root / "commissions/CURSOR-OPERATING-ENVIRONMENT-01.md").read_text(encoding="utf-8")
+    environment_compact = " ".join(environment_commission.lower().split())
+    chatgpt_commission = (root / "commissions/CHATGPT-SIR-01.md").read_text(encoding="utf-8")
     launch = (root / "launch/CURSOR-LAUNCH-NOW.md").read_text(encoding="utf-8")
     sw_launch = (root / "launch/SW-LAUNCH-NOW.md").read_text(encoding="utf-8")
     add(errors, "receipts/so02/**" in commission, "cursor commission: receipt allowlist missing")
     add(errors, "receipts/workstreams/so02/control-plane/**" not in commission, "cursor commission: obsolete receipt allowlist present")
     add(errors, "https://cursor.com/t/meta-ai4p/agents/bc-7137a066-3242-43a2-a30e-9a352047b759" in launch, "cursor launch: live agent locator missing")
-    add(errors, "Do not start another Cursor top-level agent or agent group" in launch, "cursor launch: unqualified second group not prohibited")
-    add(errors, "native ChatGPT Projects visibility remains optional" in launch, "cursor launch: Projects UI incorrectly governs orchestration")
-    add(errors, "PASS_TWO_OR_MORE_ROUTES" in launch and "PASS_ONE_ROUTE_PARTIAL" in launch, "cursor launch: multi-route qualification missing")
-    add(errors, "agent ID `bc-7137a066-3242-43a2-a30e-9a352047b759`" in launch, "cursor launch: stable agent ID capture missing")
-    add(errors, "Do not write PR #9" in launch, "cursor launch: PO-03 write prohibition missing")
-    add(errors, "Microsoft Playwright Extension" in launch and "Goose" in launch, "cursor launch: owned deterministic browser candidate missing")
-    add(errors, "HARPA GRID only as a separate" in launch, "cursor launch: cloud bridge not isolated as comparator")
+    add(errors, "Continue the existing operation" in launch, "cursor launch: existing operation continuation missing")
+    add(errors, "CURSOR-OPERATING-ENVIRONMENT-01.md" in launch, "cursor launch: superseding operating-environment commission missing")
+    add(errors, "The SO-02 founder browser/setup batch is **HALTED**" in launch, "cursor launch: browser/setup halt missing")
+    add(errors, "Inspect Cursor itself first" in launch, "cursor launch: Cursor self-inspection not first")
+    add(errors, "Do not make a full authenticated view of ChatGPT Projects" in launch, "cursor launch: Projects UI incorrectly governs orchestration")
+    add(errors, "Aircrift/Aircraft" in launch and "research beyond" in launch.lower(), "cursor launch: broad discovery and ambiguous seed resolution missing")
+    add(errors, "staged implementation programme" in launch and "stop conditions" in launch, "cursor launch: staged human guidance contract missing")
+    add(errors, "portable, reconstructable and Obzio-controlled" in launch and "models and runtimes replaceable" in launch, "cursor launch: portability or runtime sovereignty missing")
+    add(errors, "cursor/operating-environment-return-20260822-v001" in launch, "cursor launch: isolated return branch missing")
+    add(errors, "Do not touch PO-03, PR #9" in launch, "cursor launch: protected workstreams missing")
+    add(errors, "No named browser, model, extension, runtime, memory system or orchestration topology is founder-bound" in launch, "cursor launch: named stack still bound")
+
+    for phrase in (
+        "Inspect Cursor's own operating setup first",
+        "research beyond all named discovery seeds",
+        "Guide staged human implementation",
+        "portable founder operating environment",
+        "Do not execute the halted SO-02 browser/setup batch",
+    ):
+        add(errors, phrase.lower() in environment_compact, f"cursor environment commission: missing {phrase}")
+    add(errors, "supporting function" in chatgpt_commission and "does not independently select architecture" in chatgpt_commission, "chatgpt commission: narrower support role missing")
     add(errors, "capability-factory/return-20260822-v001" in sw_launch, "SW launch: isolated return branch missing")
     add(errors, "Treat the selected source branch as read-only" in sw_launch, "SW launch: shared source branch write not rejected")
     add(errors, "1054976614269477" in sw_launch, "SW launch: founder-verified space ID missing")
@@ -383,11 +463,11 @@ def validate_instruction_contracts(root: Path, errors: list[str]) -> None:
     add(errors, "every operation, thread, coworker, automation and return-branch URL or exact provider ID" in sw_launch, "SW launch: stable provider locator capture missing")
 
     browser_launch = (root / "launch/BROWSER-CONTROL-CANARY-NOW.md").read_text(encoding="utf-8")
-    add(errors, "Microsoft's stable open-source Playwright Extension" in browser_launch, "browser launch: first canary missing")
-    add(errors, "npx -y @playwright/mcp@latest --extension" in browser_launch, "browser launch: local MCP command missing")
-    add(errors, "GOOSE_MODE=approve goose session" in browser_launch, "browser launch: approval mode missing")
-    add(errors, "SO2-BROWSER-QUAL" in browser_launch, "browser launch: dedicated profile missing")
-    add(errors, "Do not enable or call `browser_run_code_unsafe`" in browser_launch, "browser launch: unsafe JavaScript capability not prohibited")
+    add(errors, browser_launch.startswith("# HALTED"), "browser launch: founder halt is not unmistakable")
+    add(errors, "This file has no executable founder steps" in browser_launch, "browser launch: executable status not revoked")
+    add(errors, "candidate evidence" in " ".join(browser_launch.lower().split()), "browser launch: historical work not classified as candidate evidence")
+    for prohibited in ("Add to Chrome", "npx -y @playwright/mcp", "GOOSE_MODE=", "goose configure", "SO2-BROWSER-QUAL"):
+        add(errors, prohibited not in browser_launch, f"browser launch: halted packet still contains executable instruction {prohibited}")
 
     lanes = (root / "launch/CHATGPT-LANES-NOW.md").read_text(encoding="utf-8")
     add(errors, lanes.count("## CGPT-") >= 12, "chatgpt lanes: fewer than twelve launch sheets")
@@ -424,7 +504,14 @@ def validate_events(events: list[dict[str, Any]], errors: list[str]) -> None:
         expected_hash = canonical_event_hash(event)
         add(errors, event.get("event_sha256") == expected_hash, f"{prefix}: event hash mismatch")
         payload = event.get("payload", {})
-        add(errors, payload.get("decision_changed") == [], f"{prefix}: unbound strategy change")
+        is_role_scope_correction = event.get("event_type") == "FOUNDER_ROLE_SCOPE_CORRECTION_APPLIED"
+        if is_role_scope_correction:
+            add(errors, event.get("authority", {}).get("class") == "FOUNDER_BOUND_ROLE_SCOPE_DECISION", f"{prefix}: founder role/scope correction lacks exact authority")
+            add(errors, event.get("role_scope_snapshot_id") == ROLE_SCOPE_CORRECTION_ID, f"{prefix}: founder role/scope snapshot missing")
+            add(errors, payload.get("decision_changed") == ROLE_SCOPE_DECISION, f"{prefix}: founder role/scope decision incomplete")
+            add(errors, payload.get("named_tool_binding") == [], f"{prefix}: founder role/scope correction silently binds a tool")
+        else:
+            add(errors, payload.get("decision_changed") == [], f"{prefix}: unbound strategy change")
         if event.get("event_type") == "STRATEGY_DECISION":
             add(errors, event.get("authority", {}).get("class") == "FOUNDER_BOUND_DECISION", f"{prefix}: strategy decision lacks founder binding")
         previous = str(event.get("event_sha256"))
@@ -446,6 +533,8 @@ def validate(root: Path = ROOT) -> list[str]:
     validate_durable_directives(root, errors)
     automation = read_json(root.parent.parent.parent / "receipts/so02/2026-08-22/po03-automation-reshape-20260822T0924Z.json")
     validate_automation_receipt(automation, errors)
+    role_scope_receipt = read_json(root.parent.parent.parent / "receipts/so02/2026-08-22/founder-operating-environment-role-correction-20260822T173520Z.json")
+    validate_role_scope_receipt(root, role_scope_receipt, errors)
     validate_events(events, errors)
     validate_instruction_contracts(root, errors)
     return errors

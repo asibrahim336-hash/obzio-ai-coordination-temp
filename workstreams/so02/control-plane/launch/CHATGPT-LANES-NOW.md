@@ -1,11 +1,20 @@
-# ChatGPT lane launch sheet — twelve working projects
+# ChatGPT supporting-lane launch sheet — twelve evidence and verification projects
 
 Create each as a separate ChatGPT project, select the listed exact model and effort,
 paste the prompt, and attach no source beyond the prompt unless it requests a named
 immutable artifact. Return routes are inside the SO-02 allowlist; if a project lacks
 GitHub write capability, attach its immutable bundle in the current command-layer
 project once and the command layer ingests it. The founder is never the comparison,
-monitoring or merge layer. `decision_changed: []`.
+monitoring or merge layer.
+
+For the founder operating environment, these lanes are supporting evidence routes
+only. Cursor owns strategic development and staged human-operator implementation
+guidance. No ChatGPT lane may select the architecture, bind a named stack, issue a
+founder setup batch, or compete with Cursor's programme. Route relevant findings to
+`CURSOR-OPERATING-ENVIRONMENT-01.md`. The earlier browser/setup batch remains
+halted.
+
+`decision_changed: [SO-02 founder browser/setup batch HALTED; strategic development and human-operator implementation guidance for this capability moves to Cursor]`.
 
 For every launched lane, record the stable project URL or ID, stable chat/Work-thread
 URL or ID, exact titles, operation key, launch time and repository return path. A
@@ -26,7 +35,7 @@ useful but is not required, and the founder is not the routine result relay.
 
 - Project: `CGPT-02 Runtime Qualification`
 - Model/effort: `GPT-5.6 Sol / Max`
-- Prompt: `Build matched trials for exact model, runtime, prompt, skill, context, memory and topology configurations. Include Qwen as locked coordinating-base candidate, Kimi and DeepSeek alongside, and Grok on Cursor. Report route-specific floors/ceilings and quality/cost/latency/recovery; never infer an alias. Return to workstreams/so02/control-plane/returns/cgpt-02/**.`
+- Prompt: `Support Cursor with matched evidence for exact model, runtime, prompt, skill, context, memory and topology configurations. Treat Qwen, Kimi, DeepSeek, Grok and all other names as candidates unless a separate still-valid founder decision binds them. Research beyond supplied names. Report route-specific floors/ceilings and quality/cost/latency/recovery; never infer an alias or select the architecture. Return evidence to workstreams/so02/control-plane/returns/cgpt-02/** and route it to CUR-ENV-01.`
 - Acceptance: immutable fixtures, repeated trials, raw denominators, independent reviewer and no global ceiling claim.
 
 ## CGPT-03 — PO-02 candidate requalification
@@ -47,7 +56,7 @@ useful but is not required, and the founder is not the routine result relay.
 
 - Project: `CGPT-05 Knowledge Governance`
 - Model/effort: `GPT-5.6 Sol / Max`
-- Prompt: `Constitute the data/knowledge governance office: stable identity, provenance, ontology, source/currentness, access class, retention/deletion, redaction, quality, conflict, supersession, lineage and evidence-state rules. Implement schemas plus live migration of one current corpus. Return to workstreams/so02/control-plane/returns/cgpt-05/**.`
+- Prompt: `Research and verify requirements and candidate mechanisms for the data/knowledge governance office: stable identity, provenance, ontology, source/currentness, access class, retention/deletion, redaction, quality, conflict, supersession, lineage and evidence state. Do not select the operating-environment architecture or issue a founder setup batch. Return evidence, risks and acceptance fixtures to workstreams/so02/control-plane/returns/cgpt-05/** and route them to CUR-ENV-01.`
 - Acceptance: executable admission/currentness checks, migrated fixture, conflict/revocation test and owner map.
 
 ## CGPT-06 — Manus estate recovery
@@ -68,7 +77,7 @@ useful but is not required, and the founder is not the routine result relay.
 
 - Project: `CGPT-08 Founder Voice Interface`
 - Model/effort: `GPT-5.6 Sol / Max`
-- Prompt: `Implement speech intake → semantic strengthening → read-back → intent/authority confirmation → typed durable event → delegated execution → consolidated return. Preserve verbatim source and corrections. Return a tested package to workstreams/so02/control-plane/returns/cgpt-08/**.`
+- Prompt: `Recover, research and independently verify requirements for speech intake → semantic strengthening → read-back → intent/authority confirmation → typed durable event → delegated execution → consolidated return. Preserve verbatim source and corrections. Do not choose the operating-environment architecture. Return fixtures, evidence and failure cases to workstreams/so02/control-plane/returns/cgpt-08/** and route them to CUR-ENV-01.`
 - Acceptance: one end-to-end replay, correction propagation, no silent strategy binding and measured founder steps.
 
 ## CGPT-09 — Successor launch factory
@@ -89,8 +98,8 @@ useful but is not required, and the founder is not the routine result relay.
 
 - Project: `CGPT-11 Activation Package`
 - Model/effort: `GPT-5.6 Terra / Max`
-- Prompt: `Produce the exact founder activation/acquisition package: provider/account, plan or SKU, quantity, buy/setup/connect/delegate steps, access scopes, security owner, verification, cost/renewal surface and stop condition for the full authorised estate. Distinguish required now, optional and already owned. Return to workstreams/so02/control-plane/returns/cgpt-11/**.`
-- Acceptance: every line is purchase/setup executable, source-backed and has validation plus stop/renewal control.
+- Prompt: `Support Cursor by researching current official provider/account, plan or SKU, quantity, access scopes, security, cost/renewal, portability and stop-condition evidence for the authorised estate. Do not decide what the founder buys, selects or configures and do not issue a setup batch. Return verified options and uncertainties to workstreams/so02/control-plane/returns/cgpt-11/** and route them to CUR-ENV-01.`
+- Acceptance: source-current comparison evidence, explicit uncertainty and consequences, no purchase/setup prescription, no named-stack binding and a complete return to Cursor.
 
 ## CGPT-12 — Portfolio and opportunity office
 

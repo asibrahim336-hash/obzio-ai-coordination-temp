@@ -30,7 +30,7 @@ class ControlPlaneTests(unittest.TestCase):
 
     def test_project_rebuilds_from_event_head(self) -> None:
         projection = scctl.project(self.root)
-        self.assertEqual(20, projection["event_count"])
+        self.assertEqual(21, projection["event_count"])
         self.assertEqual("ACTIVE_INTERIM", projection["subjects"]["SCF-01/CGPT-01"]["state"])
 
     def test_event_chain_is_valid(self) -> None:
@@ -57,7 +57,7 @@ class ControlPlaneTests(unittest.TestCase):
     def test_strategy_change_without_binding_is_rejected(self) -> None:
         changed = copy.deepcopy(self.control)
         changed["decision_changed"] = ["invented"]
-        self.assertTrue(any("unbound strategy change" in item for item in self.errors_for(changed)))
+        self.assertTrue(any("unbound or incomplete role/scope change" in item for item in self.errors_for(changed)))
 
     def test_cutover_before_gates_is_rejected(self) -> None:
         changed = copy.deepcopy(self.control)
@@ -70,12 +70,17 @@ class ControlPlaneTests(unittest.TestCase):
         changed["cutover_evidence"] = {gate: True for gate in changed["cutover_gates"]}
         self.assertFalse(any("primary changed before" in item for item in self.errors_for(changed)))
 
-    def test_cursor_cannot_be_promoted_without_two_route_evidence(self) -> None:
-        changed = copy.deepcopy(self.control)
-        changed["orchestration_assignment"]["cursor_role_state"] = "MAJOR_ORCHESTRATION_LAYER_QUALIFIED"
-        errors = self.errors_for(changed)
-        self.assertTrue(any("promoted without two qualified routes" in item for item in errors))
-        self.assertTrue(any("promoted without complete end-to-end evidence" in item for item in errors))
+    def test_cursor_scope_is_not_global_promotion_or_permanent_brain(self) -> None:
+        orchestration = self.control["orchestration_assignment"]
+        self.assertEqual(
+            "CURRENT_STRATEGIC_OPERATOR_INTERFACE_FOR_FOUNDER_OPERATING_ENVIRONMENT_PORTABLE_NOT_PERMANENT",
+            orchestration["cursor_role_state"],
+        )
+        self.assertIn(
+            "THIS_SCOPED_ASSIGNMENT_IS_NOT_GLOBAL_PROMOTION",
+            orchestration["cursor_control_surface_qualification"]["global_promotion_rule"],
+        )
+        self.assertEqual("SO-02", self.control["active_primary"])
 
     def test_chatgpt_projects_ui_cannot_be_made_promotion_gate(self) -> None:
         changed = copy.deepcopy(self.control)
@@ -83,10 +88,13 @@ class ControlPlaneTests(unittest.TestCase):
         qualification["projects_ui_probe_required_for_promotion"] = True
         self.assertTrue(any("artificial promotion gate" in item for item in self.errors_for(changed)))
 
-    def test_unqualified_second_cursor_group_is_rejected(self) -> None:
+    def test_cursor_scope_does_not_depend_on_arbitrary_route_or_agent_ceiling(self) -> None:
         changed = copy.deepcopy(self.control)
-        changed["orchestration_assignment"]["cursor_control_surface_qualification"]["maximum_cursor_top_level_agents"] = 8
-        self.assertTrue(any("second Cursor top-level agent" in item for item in self.errors_for(changed)))
+        qualification = changed["orchestration_assignment"]["cursor_control_surface_qualification"]
+        self.assertNotIn("maximum_cursor_top_level_agents", qualification)
+        self.assertNotIn("initial_subagents_allowed", qualification)
+        qualification["role_assignment_not_contingent_on_route_acceptance"] = False
+        self.assertTrue(any("appointment made contingent" in item for item in self.errors_for(changed)))
 
     def test_execution_claim_without_locator_is_rejected(self) -> None:
         changed = copy.deepcopy(self.control)
@@ -217,7 +225,7 @@ class ControlPlaneTests(unittest.TestCase):
     def test_cursor_launch_is_observed_but_not_promoted(self) -> None:
         cursor = next(item for item in self.control["runtime_bindings"] if item["binding_id"] == "SCF-01/CUR-01")
         qualification = self.control["orchestration_assignment"]["cursor_control_surface_qualification"]
-        self.assertEqual("FOUNDER_REPORTED_LAUNCHED_RUNNING_QUALIFICATION_PENDING", cursor["state"])
+        self.assertEqual("FOUNDER_REPORTED_AGENT_RUNNING_SCOPE_TRANSFER_DELIVERY_PENDING", cursor["state"])
         self.assertEqual("https://cursor.com/t/meta-ai4p/agents/bc-7137a066-3242-43a2-a30e-9a352047b759", cursor["provider_locator"])
         self.assertEqual(0, qualification["qualified_route_count"])
         self.assertFalse(any(qualification["required_end_to_end_evidence"].values()))
@@ -225,21 +233,55 @@ class ControlPlaneTests(unittest.TestCase):
     def test_sw_pause_is_fail_closed_before_message(self) -> None:
         sw = next(item for item in self.control["runtime_bindings"] if item["binding_id"] == "SCF-01/SW-01")
         launch = (self.root / "launch/SW-LAUNCH-NOW.md").read_text(encoding="utf-8")
-        self.assertEqual("FOUNDER_PAUSED_BEFORE_COMMISSION_PENDING_OPEN_WEIGHT_CONTROL", sw["state"])
+        self.assertEqual("FOUNDER_PAUSED_BEFORE_COMMISSION_NO_MESSAGE_SENT", sw["state"])
         self.assertIn("SW is paused — do not send a message", launch)
         self.assertIn("not active; do not paste", launch)
 
-    def test_browser_selection_cannot_be_called_acceptance(self) -> None:
+    def test_old_active_browser_batch_is_rejected(self) -> None:
         changed = copy.deepcopy(self.control)
-        browser = changed["orchestration_assignment"]["browser_control_replacement"]
-        browser["selection_is_acceptance"] = True
-        self.assertTrue(any("selection or installation treated as acceptance" in item for item in self.errors_for(changed)))
+        environment = changed["orchestration_assignment"]["founder_operating_environment_assignment"]
+        environment["browser_setup_batch"] = "OWNER_INSTALL_REQUIRED_NOW"
+        self.assertTrue(any("old active browser batch not rejected" in item for item in self.errors_for(changed)))
 
-    def test_browser_first_canary_is_owned_deterministic_route(self) -> None:
-        browser = self.control["orchestration_assignment"]["browser_control_replacement"]
-        self.assertEqual("MICROSOFT_PLAYWRIGHT_EXTENSION_PLUS_LOCAL_GOOSE_OPEN_WEIGHT_MCP_CLIENT", browser["first_canary"])
-        self.assertIn("PROPRIETARY_CLOUD_RELAY", browser["cloud_route_tradeoff"])
-        self.assertFalse(browser["selection_is_acceptance"])
+    def test_unbound_named_stack_is_rejected(self) -> None:
+        changed = copy.deepcopy(self.control)
+        environment = changed["orchestration_assignment"]["founder_operating_environment_assignment"]
+        environment["selected_stack"] = "PLAYWRIGHT_PLUS_GOOSE"
+        self.assertTrue(any("unbound named stack selected" in item for item in self.errors_for(changed)))
+
+    def test_so02_architecture_prescription_is_rejected(self) -> None:
+        changed = copy.deepcopy(self.control)
+        environment = changed["orchestration_assignment"]["founder_operating_environment_assignment"]
+        environment["so02_role"] = "ARCHITECT_AND_FOUNDER_SETUP_OWNER"
+        self.assertTrue(any("SO-02 architecture prescription remains" in item for item in self.errors_for(changed)))
+
+    def test_halted_browser_packet_contains_no_executable_setup(self) -> None:
+        browser = (self.root / "launch/BROWSER-CONTROL-CANARY-NOW.md").read_text(encoding="utf-8")
+        self.assertTrue(browser.startswith("# HALTED"))
+        for prohibited in ("Add to Chrome", "npx -y @playwright/mcp", "GOOSE_MODE=", "goose configure", "SO2-BROWSER-QUAL"):
+            self.assertNotIn(prohibited, browser)
+        actions = {item["action_id"] for item in self.control["current_founder_actions"]}
+        self.assertNotIn("FA-BROWSER-CONTROL-CANARY", actions)
+
+    def test_cursor_transfer_contains_full_owner_and_guidance_contract(self) -> None:
+        launch = (self.root / "launch/CURSOR-LAUNCH-NOW.md").read_text(encoding="utf-8")
+        for phrase in (
+            "Inspect Cursor itself first",
+            "Aircrift/Aircraft",
+            "staged implementation programme",
+            "stop conditions",
+            "portable, reconstructable and Obzio-controlled",
+            "No named browser, model, extension, runtime, memory system or orchestration topology is founder-bound",
+        ):
+            self.assertIn(phrase, launch)
+        self.assertIn("research beyond", launch.lower())
+
+    def test_chatgpt_role_is_support_not_architecture_owner(self) -> None:
+        orchestration = self.control["orchestration_assignment"]
+        self.assertEqual(
+            "FOUNDER_INTENT_CONTEXT_EVIDENCE_VERIFICATION_AND_ROUTING_SUPPORT_FOR_THIS_SCOPE",
+            orchestration["chatgpt_role_state"],
+        )
 
     def test_claude_capacity_is_not_quality_evidence(self) -> None:
         observation = self.control["provider_capacity_observations"][0]
@@ -296,6 +338,25 @@ class ControlPlaneTests(unittest.TestCase):
         errors: list[str] = []
         scctl.validate_durable_directives(self.root, errors)
         self.assertEqual([], errors)
+
+    def test_founder_role_scope_event_requires_exact_authority(self) -> None:
+        events = scctl.read_jsonl(self.root / "state/events.jsonl")
+        self.assertEqual("FOUNDER_ROLE_SCOPE_CORRECTION_APPLIED", events[-1]["event_type"])
+        changed = copy.deepcopy(events)
+        changed[-1]["authority"]["class"] = "FOUNDER_DELEGATED_OPERATING_AUTHORITY"
+        changed[-1]["event_sha256"] = scctl.canonical_event_hash(changed[-1])
+        errors: list[str] = []
+        scctl.validate_events(changed, errors)
+        self.assertTrue(any("founder role/scope correction lacks exact authority" in item for item in errors))
+
+    def test_founder_role_scope_event_cannot_flatten_decision_to_empty(self) -> None:
+        events = scctl.read_jsonl(self.root / "state/events.jsonl")
+        changed = copy.deepcopy(events)
+        changed[-1]["payload"]["decision_changed"] = []
+        changed[-1]["event_sha256"] = scctl.canonical_event_hash(changed[-1])
+        errors: list[str] = []
+        scctl.validate_events(changed, errors)
+        self.assertTrue(any("founder role/scope decision incomplete" in item for item in errors))
 
     def test_event_triggered_automation_old_behaviour_is_rejected(self) -> None:
         receipt = scctl.read_json(self.root.parent.parent.parent / "receipts/so02/2026-08-22/po03-automation-reshape-20260822T0924Z.json")

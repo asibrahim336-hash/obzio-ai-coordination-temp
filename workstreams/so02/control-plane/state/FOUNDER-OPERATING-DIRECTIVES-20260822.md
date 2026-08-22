@@ -1,7 +1,10 @@
 # Founder operating directives recoverable from the repository
 
-This is executable content, not a pointer index. It preserves the current strategy,
-adds the founder's operating controls, and records `decision_changed: []`.
+This is executable content, not a pointer index. It preserves the current company
+strategy and includes the founder-bound role/scope correction
+`FOUNDER-ROLE-SCOPE-20260822T173520Z`:
+
+`decision_changed: [SO-02 founder browser/setup batch HALTED; strategic development and human-operator implementation guidance for this capability moves to Cursor]`.
 
 ## Capability factory and compounding loop
 
@@ -29,25 +32,32 @@ qualified new capability, or a measured topology/model/context/evaluation change
 
 ## Estate and runtime allocation
 
-- Cursor is an internal repository engineering and coordination factory. Use one
-  integration contract, disjoint ownership and isolated branches; do not create
-  duplicate whole-programme factories.
+- Cursor is the current strategic/operator interface for development of the founder
+  operating environment and staged human-operator implementation guidance. It is
+  not the permanent brain or canonical state store. It must inspect its own native
+  setup first, use isolated return branches, and preserve portable Obzio-controlled
+  state, logic and interfaces.
 - SW remains a capable repository-connected discovery/synthesis factory, but the
   founder paused it before its first message because the available operation was
-  not yet strategically controlled. Do not commission or contact it until an
-  Obzio-owned open-weight controller and authenticated SW adapter prove locate,
-  launch, retrieve, reconcile, stop and resume with durable custody. This is a
+  not yet strategically controlled. Do not commission or contact it without a
+  separate founder reactivation. Cursor must evaluate the eventual reactivation
+  mechanism; no controller or adapter architecture is preselected. This is a
   reversible routing pause, not a rejection of the platform.
 - Manus must receive full useful administrative enablement across multiple
   authorised accounts during the high-capacity window. OAuth, approval,
   installation, download or owner-only actions are surfaced immediately while
   unaffected work continues.
-- ChatGPT hosts the privileged founder interface, state recovery, strategic
-  coordination, commissioning, acceptance, research and specialist offices. Expand
-  to at least ten working projects with launch sheets and durable return routes.
-- Qwen is locked as the coordinating open-weight base. Kimi and DeepSeek operate
-  alongside it as independent model families; Grok is qualified on Cursor. This is
-  an allocation constraint, not a claim that any untested runtime is accepted.
+- ChatGPT/SO-02 supports founder-intent capture, context recovery, bounded research
+  and verification, durable evidence and receipts, and routing. For the founder
+  operating environment it does not select architecture, prescribe a named stack
+  or issue a founder setup batch. Existing specialist lanes remain evidence routes,
+  not a competing implementation programme. Maintain at least ten working projects
+  as supporting research, assurance and continuity lanes with durable return routes.
+- A prior founder directive records Qwen as the coordinating open-weight base, with
+  Kimi and DeepSeek alongside it and Grok on Cursor. The present role/scope
+  correction neither silently deletes nor newly binds that earlier allocation.
+  Cursor must recover its authority/currentness, test exact routes and discuss any
+  consequential conflict before it freezes the operating-environment design.
 
 ## Founder interface and activation
 
@@ -96,21 +106,23 @@ knowledge packages. Provider memory is never constitutional authority.
 
 ## Orchestration topology and resumable surfaces
 
-Treat Cursor as a strong candidate for the major or primary machine-orchestration
-layer, not merely as a coding surface. Evaluate its whole practical control surface:
+Cursor now owns strategic development and staged founder implementation guidance
+for the founder operating environment. This is a scoped operational appointment,
+not proof of architecture, permanent-Cursor dependence or global SCF cutover.
+Evaluate its whole practical control surface:
 durable agent and follow-up runs, model or agent prompting, final-result and artifact
 retrieval, GitHub, MCP/OAuth, browser/computer operation, authorised API routes,
 cross-provider exchange, reconciliation and restartable state. Full authenticated
 visibility into native ChatGPT Projects would add a route but is not a governing
 requirement and must not become an artificial promotion gate.
 
-Admit each route separately from live end-to-end evidence. Cursor becomes the major
-orchestration layer when the strongest available combination proves launch,
-retrieval, reconciliation, stable locators, failure fallback, remote custody and no
-PO-03 capacity interference. Never create exclusive dependency on Cursor or SW:
-Git remains canonical, ChatGPT retains the founder command/interface and continuity
-function, and SW continues in parallel for coworker coordination, workspace and
-co-creation, HTML/presentation generation, research, reproduction and synthesis.
+Admit each route separately from live end-to-end evidence, but do not make route
+acceptance a gate to the founder-assigned strategic development work. Cursor must
+inspect and measure its own account, configuration, models, routes, skills, MCP,
+permissions, local/open integrations, durable-state interfaces and practical
+fanout. Never create exclusive dependency on Cursor or SW: Git and other open,
+portable Obzio-controlled state remain canonical, ChatGPT/SO-02 remains a support
+and evidence function, and SW remains paused and uncontacted.
 
 Record stable provider URLs or exact IDs for every project, space, operation,
 thread, agent, run, automation and return branch that must be found again. A display
@@ -125,43 +137,44 @@ before its first message. This locator rule is an
 internal state and coordination requirement and does not widen what is disclosed to
 SW.
 
-The founder-reported Cursor qualification agent is
+The founder-reported Cursor operating agent is
 `https://cursor.com/t/meta-ai4p/agents/bc-7137a066-3242-43a2-a30e-9a352047b759`
-(agent ID `bc-7137a066-3242-43a2-a30e-9a352047b759`). Continue that agent; do not
-start another top-level Cursor agent or group. Its launch is an execution
-observation, not route acceptance or orchestration promotion. Its immutable start
-SHA, exact model/settings, outputs, fallback evidence and PO-03 non-interference
-remain to be proved.
+(agent ID `bc-7137a066-3242-43a2-a30e-9a352047b759`). Continue that operation.
+Cursor may inspect and measure its own topology and use differentiated specialists
+without PO-03 interference; SO-02 does not impose an architectural one-agent ceiling.
+The launch remains an execution observation, not route acceptance or global
+promotion. Its immutable start SHA, exact model/settings, outputs, fallback evidence
+and PO-03 non-interference remain to be proved.
 
-## Current runtime routing and browser-control correction
+## Founder operating-environment role/scope correction
 
 The Claude browser-extension account is founder-reported token-capacity exhausted.
 Classify that route as unavailable for the current run, without inferring that the
 Claude model or SW platform is low quality and without making a quota refill the
 default next action.
 
-The browser replacement objective is a provider-independent control stack for the
-future open-weight command layer, not merely another branded assistant. On the
-current Chromebook, first qualify Microsoft's open-source Playwright Extension in
-a dedicated non-secret Chrome profile, controlled through a local open-source Goose
-client and one exact open-weight model. This route provides explicit tab selection
-and deterministic accessibility/DOM, screenshot, console and network evidence.
-Nanobrowser remains an autonomous open-weight comparator because its external
-Developer API/MCP control is not yet documented as available. BrowserMCP and Chrome
-DevTools MCP remain local bridge/verifier comparators. HARPA GRID is an optional
-separate cloud-to-Chromebook canary only if remote control is needed before the
-owned controller exists; it introduces a proprietary relay and a bearer key that
-controls the node. The Cursor Cloud agent URL alone does not prove access to a
-server running locally on the Chromebook.
+The SO-02 founder browser/setup batch is halted. Do not ask the founder to install,
+configure or run Playwright, Goose or another browser/operator stack from the prior
+packet. Preserve that work only as historical candidate evidence.
 
-No extension is accepted by selection or installation. The canary must record exact
-extension, Node and Goose versions and permissions; model/provider alias without
-credentials; explicit selected tab group; bounded navigation; visual plus
-structured-page operation; console and network evidence; result retrieval; stable
-session locator or transcript path; stop/recovery behavior; and owner gates. The
-unsafe arbitrary-JavaScript tool is not enabled or called. Run only one browser
-operator per profile and exclude email, banking, password-manager, identity,
-payment and other secret-bearing tabs.
+Cursor owns the complete capability problem: its own native skills, account and
+workspace configuration, models and routes; Kimi and other open/local routes;
+HARPA; Sider/Sidebar; the ambiguous Aircrift/Aircraft referent; Playwright; Goose;
+browser/computer control; screen/context extraction; provenance-aware knowledge
+flows and graphs; cross-model memory; MCP/open interfaces; voice/intake routing;
+Chromebook and eventual MacBook-local capability; durable external state; privacy
+boundaries; and the eventual broader Obzio operating environment. These names are
+discovery seeds, not a shopping list, default stack or closed candidate set. Cursor
+must resolve ambiguities and research beyond them.
+
+Cursor must produce a comprehensive staged programme and guide the founder through
+it incrementally. Each founder-operated stage identifies what to open, install or
+configure; official/GitHub links; exact settings, commands or prompts where useful;
+permissions, privacy, cost and rollback implications; verification evidence; and a
+deliberate stop/evaluate gate. Cursor must discuss consequential alternatives before
+freezing them. It may return no founder action until the relevant assumptions are
+verified. Strategy, logic, state, evidence and interfaces remain portable,
+reconstructable, Obzio-controlled and model/runtime replaceable.
 
 ## Deferred disclosure factory workstream
 
