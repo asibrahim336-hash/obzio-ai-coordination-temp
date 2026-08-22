@@ -1,0 +1,54 @@
+{
+  "protocol_version": "PO03-WA-023-RUNTIME-OBSERVATION-v1",
+  "task_id": "PO03-WA-023",
+  "observation_class": "EMPIRICAL_CLAIM",
+  "expected": {
+    "configured_execution_environment": "isolated-git-worktree",
+    "configured_subagent_type": "best-of-n-runner",
+    "assigned_base_branch": "cursor/po03-wave-a-b195-1a9f",
+    "owned_runner_branch": "cursor/po03-wa-023-b195-runner-a01-1a9f"
+  },
+  "observations": [
+    {
+      "observation_id": "OBS-WA-023-01",
+      "observed_at": "NOT_SUPPORTED",
+      "timestamp_limitation": "The command transcript preserved ordering and exact output but did not expose a per-command timestamp.",
+      "command": "git status --short --branch",
+      "working_directory": "/workspace",
+      "exact_relevant_output": "## cursor/po03-wa-002-b195-runner-1a9f",
+      "interpretation": "The WA-023 runner initially found the shared /workspace checkout on another unit's branch."
+    },
+    {
+      "observation_id": "OBS-WA-023-02",
+      "observed_at": "NOT_SUPPORTED",
+      "timestamp_limitation": "The command transcript preserved ordering and exact output but did not expose a per-command timestamp.",
+      "command": "git switch -c cursor/po03-wa-023-b195-runner-1a9f cursor/po03-wave-a-b195-1a9f",
+      "working_directory": "/workspace",
+      "exact_relevant_output": "Switched to a new branch 'cursor/po03-wa-023-b195-runner-1a9f'",
+      "interpretation": "The runner explicitly moved /workspace to a unique WA-023 branch before research."
+    },
+    {
+      "observation_id": "OBS-WA-023-03",
+      "observed_at": "2026-08-22T07:20:29Z",
+      "command": "git -C /workspace symbolic-ref --short HEAD",
+      "working_directory": "/workspace/workstreams/po03/wave-a/units/wa-023/.runner",
+      "exact_relevant_output": "cursor/po03-wa-025-b195-1a9f",
+      "interpretation": "After OBS-WA-023-02 and without this runner switching /workspace again, the same toplevel reported a second other unit's branch."
+    },
+    {
+      "observation_id": "OBS-WA-023-04",
+      "observed_at": "2026-08-22T07:20:29Z",
+      "command": "git symbolic-ref --short HEAD && git rev-parse --show-toplevel",
+      "working_directory": "/workspace/workstreams/po03/wave-a/units/wa-023/.runner",
+      "exact_relevant_output": "cursor/po03-wa-023-b195-runner-a01-1a9f\n/workspace/workstreams/po03/wave-a/units/wa-023/.runner",
+      "interpretation": "A linked worktree created as a fail-closed fallback retained the WA-023 branch and a distinct toplevel."
+    }
+  ],
+  "assignment_hypothesis_outcome": "REFUTED",
+  "outcome_basis": [
+    "OBS-WA-023-01 and OBS-WA-023-03 show that the assigned /workspace checkout was shared across unit branches rather than isolated for this best-of-N runner.",
+    "OBS-WA-023-04 shows that the underlying Git linked-worktree mechanism can restore checkout-level isolation when a distinct toplevel is actually allocated."
+  ],
+  "scope_limit": "The observations refute this run's assigned checkout isolation. They do not establish a defect in every Cursor worktree route or version.",
+  "external_effects": "NONE"
+}
