@@ -1,0 +1,128 @@
+{
+  "schema": "po03-clean-runner-suite-failures-v1",
+  "produced_by": "po03-worker-a3",
+  "unit": "a3-u04",
+  "document_status": "OBSERVATION_AT_A_PIN. This records why my clean-runner workflow is red on the integrated tree and who each failure belongs to. Nothing here is an invariant and nothing recomputes it: every entry is expected to disappear as its owner acts, and a test that failed when that happened would be an argument for leaving the failures alone.",
+  "why_this_document_exists": "My clean-runner workflow runs the whole PO-03 suite, so once the integration branch merged in it began reporting the whole suite's health rather than mine. It went from success to failure at my first post-merge commit and the temptation is to narrow it to test_a3_ so it goes green again. That would be the wrong repair: the workflow's whole purpose under a3-u04 is that CI fails when it should, and the suite genuinely does not pass on the integrated tree. So the red stays and the attribution is written down instead.",
+  "observation": {
+    "run_id": "32566458612",
+    "workflow": "PO-03 clean-runner reproduction",
+    "conclusion": "failure",
+    "commit": "c75e7c979f11",
+    "tests_run": 906,
+    "failures": 11,
+    "skipped": 4,
+    "expected_failures": 13,
+    "failures_in_my_own_files": 0,
+    "last_green_run": "32563158207",
+    "last_green_commit_tree": "pre-merge, 18 files, mine only",
+    "first_red_run": "32564819964",
+    "transition_cause": "the merge of cursor/po03-wave-a-transactional-factory-ed20, not any commit of mine. The workflow text was unchanged across the transition apart from the --require-pristine strengthening, which passes."
+  },
+  "interpretation": "This is the same finding the coordinator recorded as integration_is_a_distinct_test_surface, seen from the suite rather than from the gates. Each cohort's tests passed over a tree holding only that cohort's files. Eight of the eleven failures are assertions that were only ever true in that narrower world; three are genuine defects that the whole tree exposes. None of the eleven is a defect in the workflow that reports them.",
+  "failure_classes": {
+    "ASSERTS_A_DEFECT_STILL_EXISTS": "The test froze a defect that has since been fixed upstream, so the fix reads as a regression. This is the anti-coupling rule's second prohibition and the repair is the owner's: assert the desired invariant under expectedFailure, or retire the test.",
+    "ASSERTS_A_RECOMPUTATION_EQUALS_A_COMMITTED_RECORD": "The anti-coupling rule's first prohibition. Live state moved, the committed record did not, and the test compares them.",
+    "ASSUMED_A_TREE_HOLDING_ONLY_ITS_OWN_FILES": "The assertion is true of the cohort's branch and false of the integrated tree. Not a defect in either the test's subject or the tree, but the test states a property it does not own.",
+    "GENUINE_DEFECT_EXPOSED_BY_INTEGRATION": "A real defect that only the whole tree could reveal. These are the three worth routing."
+  },
+  "failures": [
+    {
+      "test": "test_a8_g1_fidelity.PathRuleTests.test_ownership_agrees_on_every_path",
+      "owner": "po03-worker-a8",
+      "class": "GENUINE_DEFECT_EXPOSED_BY_INTEGRATION",
+      "observed": "Lists differ: the live control plane returned '.github/workflows/nested/po03-x.yml', a8's packaged G1 port returned 'github/workflows/nested/po03-x.yml'",
+      "defect_location": "workstreams/po03/successor/g1/factory.py:110",
+      "diagnosis": "The test compares the live control plane against a8's packaged G1 port and is working exactly as designed. The port still carries path.strip().lstrip(\"./\") under a docstring claiming 'Verbatim semantics of control_plane.check_ownership'. Upstream was fixed at 6f5e386 and the port was not, so the claim of verbatim semantics is now false and the fidelity test is correctly reporting it. The divergence is the fix, not a break.",
+      "minimal_fix": "Update workstreams/po03/successor/g1/factory.py:110 to match the fixed normaliser, or have the port delegate rather than restate. A port that claims verbatim semantics has to be re-checked whenever its subject changes.",
+      "why_this_one_matters_most": "G1 is the baseline against which G2 lift is measured, and a8's own module docstring states that a port which is secretly weaker would manufacture lift. lstrip(\"./\") is weaker in exactly that direction: it admits paths the fixed rule refuses. So this is not only a stale copy, it is a measurement hazard in the successor scores.",
+      "corroborates": "This is the downstream consequence of the defect I independently rediscovered as PO03-CP-001, and it is the concrete reason retiring my own compensation mattered rather than being bookkeeping: a live copy of the bug is still in the tree, and my compensation would have hidden that the fixed and unfixed normalisers disagree."
+    },
+    {
+      "test": "test_a8_g1_fidelity.PathRuleTests.test_allowlist_agrees_on_every_path",
+      "owner": "po03-worker-a8",
+      "class": "GENUINE_DEFECT_EXPOSED_BY_INTEGRATION",
+      "observed": "True != False : allowlist verdict diverged for '.github/workflows/po03-successor.yml'",
+      "defect_location": "workstreams/po03/successor/g1/factory.py:89",
+      "diagnosis": "Same cause in the allowlist half of the same port. The stripped leading dot turns a workflow path into a non-workflow path, so the port admits or refuses it differently from the fixed control plane. Note this is the exact path shape my own guard probes, which is why I recognised it.",
+      "minimal_fix": "Same fix at line 89 as at line 110.",
+      "corroborates": "PO03-CP-001, same measurement hazard as above."
+    },
+    {
+      "test": "test_a7_probe_telemetry.TestProbeTelemetry.test_rerunning_the_probe_reproduces_the_same_structural_findings",
+      "owner": "po03-worker-a7",
+      "class": "GENUINE_DEFECT_EXPOSED_BY_INTEGRATION",
+      "observed": "Lists differ: the probe's own structural findings are not stable across two runs on one host",
+      "diagnosis": "probe_telemetry.py reads the environment and opens sockets, so its recorded output varies with what happens to be listening and what happens to be exported. That is precisely the non-portability my hermeticity gate reports in this file.",
+      "minimal_fix": "As routed: record NOT_OBSERVABLE for every candidate consulted instead of letting host state change the result.",
+      "corroborates": "The thirteen GENUINE hermeticity findings I routed to a7 in this same file. The suite failure and the gate finding are the same defect seen twice, which is why I did not downgrade them."
+    },
+    {
+      "test": "test_a6_clean_clone_attack.CleanCloneAttackTests.test_fetched_a3_commit_probe_records_tracked_debris",
+      "owner": "po03-worker-a6",
+      "class": "ASSERTS_A_DEFECT_STILL_EXISTS",
+      "observed": "'ESCAPE_FOUND' != 'NO_ESCAPE_IN_PROBES'",
+      "diagnosis": "The test pins a commit of mine and asserts the tracked .pyc debris is observable there. That debris was PO03-REPO-002 and was removed at e19982d. The test now asserts a defect that no longer exists.",
+      "minimal_fix": "Re-pin to the immutable commit where the debris genuinely existed and say so, or invert to assert the fixed state. Note the debris was the coordinator's broad git add -A, not mine.",
+      "note": "This one names my commit, so I checked it rather than assuming: my current tree tracks no bytecode, which is what makes the assertion fail."
+    },
+    {
+      "test": "test_a8_lessons.HygieneMechanismTests.test_the_residual_boundary_is_still_true",
+      "owner": "po03-worker-a8",
+      "class": "ASSERTS_A_DEFECT_STILL_EXISTS",
+      "observed": "[] is not true : no derived file is tracked anywhere any more, so L-13 should move from RETEST to RETAIN",
+      "diagnosis": "The test's own failure message states the correct conclusion. The tracked-bytecode condition it was guarding was fixed upstream.",
+      "minimal_fix": "Move L-13 from RETEST to RETAIN, as the assertion message already instructs."
+    },
+    {
+      "test": "test_a8_scores.ReceiptTests.test_the_receipt_does_not_write_into_another_cohorts_path",
+      "owner": "po03-worker-a8",
+      "class": "ASSUMED_A_TREE_HOLDING_ONLY_ITS_OWN_FILES",
+      "observed": "True is not false, asserting workstreams/po03/metrics does not exist",
+      "diagnosis": "Absence of another cohort's directory is not evidence that a8 did not write to it. On the integrated tree metrics/ exists because a7 owns it and populated it.",
+      "minimal_fix": "Assert that a8's own receipt writes no path under metrics/, which is the property actually intended, rather than that the directory is absent."
+    },
+    {
+      "test": "test_a7_generation_comparison.TestGenerationComparison.test_recomputation_matches_committed_report_at_the_recorded_pin",
+      "owner": "po03-worker-a7",
+      "class": "ASSERTS_A_RECOMPUTATION_EQUALS_A_COMMITTED_RECORD",
+      "observed": "recomputed document != committed document",
+      "diagnosis": "The prohibited shape, named in the test's own title. Even pinned, it recomputes from live inputs and compares to a stored artifact.",
+      "minimal_fix": "Assert the invariant the comparison is meant to protect, or reproduce strictly from content pinned by hash rather than from the working tree."
+    },
+    {
+      "test": "test_a9_semantic_check.SemanticCheckTests.test_results_reproduce_from_pinned_pointer_chain",
+      "owner": "po03-worker-a9",
+      "class": "ASSERTS_A_RECOMPUTATION_EQUALS_A_COMMITTED_RECORD",
+      "observed": "rebuilt report != committed report, differing in current_chain",
+      "diagnosis": "The differing key is current_chain, which by its name tracks live state. Comparing it to a committed record cannot hold across any change to the chain.",
+      "minimal_fix": "Exclude the live-state keys from the comparison, or compare only fields pinned at the recorded commit."
+    },
+    {
+      "test": "test_a6_readback_audit.ReadbackAuditTests.test_a7_artifacts_match_but_declared_result_commit_lacks_record",
+      "owner": "po03-worker-a6",
+      "class": "ASSERTS_A_DEFECT_STILL_EXISTS",
+      "observed": "True is not false",
+      "diagnosis": "The test asserts a specific a7 custody discrepancy is present. a7's documents have been re-emitted since, so the discrepancy it froze is gone.",
+      "minimal_fix": "Pin the audit to the commit where the discrepancy was observed, or restate it as the invariant that artifacts and declared commits must agree."
+    },
+    {
+      "test": "test_a10_u04_dispositions.A9IndependentReproductionTests.test_full_a9_suite_passes_in_isolated_clone",
+      "owner": "po03-worker-a10",
+      "class": "ASSUMED_A_TREE_HOLDING_ONLY_ITS_OWN_FILES",
+      "observed": "1 != 0",
+      "diagnosis": "a10 runs a9's suite in an isolated clone and requires exit 0. It now inherits the a9 failure above, so this is a consequence rather than an independent finding.",
+      "minimal_fix": "None of a10's own. It clears when the a9 recomputation test is repaired."
+    },
+    {
+      "test": "test_a5_recurrence_probes_u12.TestU06ProbeQualitativeStability.test_default_seed_finds_the_same_missed_mutants_as_the_original",
+      "owner": "po03-worker-a5",
+      "class": "ASSERTS_A_DEFECT_STILL_EXISTS",
+      "observed": "1 != 2",
+      "diagnosis": "The probe expects two mutants to survive and one now dies, meaning the tree got stricter. A mutation probe that pins the count of surviving mutants fails whenever a gate is strengthened.",
+      "minimal_fix": "Assert that the mutants which survive are a subset of those recorded, so a strengthening reads as an improvement rather than a regression."
+    }
+  ],
+  "what_i_did_not_do": "I did not narrow the workflow to my own tests to make it green, and I did not touch any of the eleven files or the G1 port. Nine of the eleven are other cohorts' assertions about their own subjects; the two a8 fidelity failures point at a live copy of a defect already fixed at its source. All of it is routed, none of it is mine to repair.",
+  "one_correction_to_my_own_earlier_reporting": "I first wrote that a8 had re-implemented the path rules inside its test file. That was wrong and I checked it before committing: the test loads the live control plane properly and compares it against the packaged G1 port, which is where the stale copy lives. The failure is a8's to fix but the test itself is sound, and calling a sound test a re-implementation would have sent the owner to the wrong file."
+}

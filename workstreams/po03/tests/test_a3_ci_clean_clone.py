@@ -32,6 +32,7 @@ EXPECTED_PATH = FIXTURE_DIR / "expected-findings.json"
 WORKFLOW_PATH = REPO_ROOT / ".github" / "workflows" / "po03-clean-clone.yml"
 SEEDED_PATH = REPO_ROOT / ".github" / "workflows" / "po03-contracts.yml"
 RECEIPT_PATH = REPO_ROOT / "receipts" / "po03" / "2026-08-22" / "ci-clean-clone.json"
+SUITE_FAILURES_PATH = RUNTIME_DIR / "clean-runner-suite-failures.json"
 
 
 def load_module(path: Path, name: str):
@@ -289,6 +290,52 @@ class CommandLineBehaviour(unittest.TestCase):
             result = self.run_cli("--rules", str(bad))
             self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
             self.assertIn("CI_SURFACE_ERROR", result.stderr)
+
+
+class TheRedIsAttributedRatherThanMuted(unittest.TestCase):
+    """SCOPE: whole-tree, and deliberately not narrowed.
+
+    This workflow runs the whole PO-03 suite, so after the integration merge it
+    began reporting the whole tree's health instead of mine, and it went red. The
+    cheap repair is to narrow the gate command to ``test_a3_*.py``. That would
+    destroy the only thing a3-u04 is for -- a clean runner that reproduces the
+    entire suite -- so instead the red stays and every failure is attributed.
+
+    ``test_workflow_runs_the_canonical_gate_command`` above is what actually
+    forbids the narrowing, because it pins the ``test_*.py`` pattern. What this
+    class adds is the accounting that makes the red readable.
+    """
+
+    def setUp(self) -> None:
+        self.document = json.loads(SUITE_FAILURES_PATH.read_text(encoding="utf-8"))
+
+    def test_it_is_an_observation_rather_than_an_invariant(self) -> None:
+        self.assertEqual(self.document["schema"], "po03-clean-runner-suite-failures-v1")
+        self.assertTrue(self.document["document_status"].startswith("OBSERVATION_AT_A_PIN"))
+
+    def test_every_failure_names_an_owner_a_class_and_a_fix(self) -> None:
+        classes = set(self.document["failure_classes"])
+        self.assertTrue(self.document["failures"])
+        for entry in self.document["failures"]:
+            self.assertIn(entry["class"], classes, entry["test"])
+            for field in ("test", "owner", "diagnosis", "minimal_fix"):
+                self.assertTrue(entry[field].strip(), f"{field} empty for {entry['test']}")
+
+    def test_no_failure_is_attributed_to_me(self) -> None:
+        """If one were, routing it would be the wrong response to my own bug."""
+        self.assertEqual(self.document["observation"]["failures_in_my_own_files"], 0)
+        for entry in self.document["failures"]:
+            self.assertNotIn("test_a3_", entry["test"], entry)
+            self.assertNotEqual(entry["owner"], "po03-worker-a3", entry)
+
+    def test_the_counted_failures_match_the_listed_ones(self) -> None:
+        self.assertEqual(len(self.document["failures"]), self.document["observation"]["failures"])
+
+    def test_the_gate_command_is_still_the_whole_suite(self) -> None:
+        """The narrowing this document exists to avoid, asserted directly."""
+        text = WORKFLOW_PATH.read_text(encoding="utf-8")
+        self.assertIn("-p 'test_*.py'", text)
+        self.assertNotIn("test_a3_*.py", text)
 
 
 class Receipt(unittest.TestCase):
