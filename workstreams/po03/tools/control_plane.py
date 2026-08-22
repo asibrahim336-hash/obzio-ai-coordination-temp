@@ -900,6 +900,7 @@ def scan_recovery(now: float | None = None, *, repo: Path | None = None) -> dict
     resumable: list[str] = []
     false_completions: list[str] = []
     unresolvable: list[str] = []
+    flagged: list[str] = []
     for unit_id, unit in sorted(units.items()):
         lease = unit.get("lease")
         if lease and lease.get("expires_at"):
@@ -922,6 +923,11 @@ def scan_recovery(now: float | None = None, *, repo: Path | None = None) -> dict
                 unresolvable.append(unit_id)
                 if unit["obzio_state"] == "COMPLETED":
                     false_completions.append(unit_id)
+        if unit["obzio_state"] == "RECOVERY_REQUIRED":
+            # Something already refused this unit durably.  A scan that reported
+            # no recovery needed while a recorded rejection sat in the ledger
+            # would make the recording pointless.
+            flagged.append(unit_id)
         if unit["obzio_state"] not in TERMINAL_STATES:
             resumable.append(unit_id)
             if not lease:
@@ -939,11 +945,169 @@ def scan_recovery(now: float | None = None, *, repo: Path | None = None) -> dict
         "resumable_units": resumable,
         "false_completions": sorted(set(false_completions)),
         "unresolvable_result_commits": sorted(set(unresolvable)),
+        "recorded_rejections": sorted(set(flagged)),
         "commit_resolution_available": git_repo_root(repo) is not None,
-        "recovery_required": bool(chain_errors or expired or uncommitted or false_completions or unresolvable),
+        "recovery_required": bool(
+            chain_errors or expired or uncommitted or false_completions or unresolvable or flagged
+        ),
     }
     write_json(RECOVERY_PATH, state)
     return state
+
+
+def _sweep_targets(rows: list[dict[str, Any]], wanted: set[str] | None) -> dict[str, dict[str, Any]]:
+    """The latest ingestion row per unit: what was actually admitted, and from where.
+
+    Only ``PARENT_INGESTED`` rows carry verified artifacts read out of a commit.
+    A unit whose result was never durably committed has no object to re-read, so
+    it is not a sweep target rather than a sweep failure.
+    """
+    latest: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        if row["event"] != "PARENT_INGESTED":
+            continue
+        if wanted is not None and row["unit_id"] not in wanted:
+            continue
+        latest[row["unit_id"]] = row
+    return latest
+
+
+def rehash_committed_artifacts(
+    *, repo: Path | None = None, unit_ids: Iterable[str] | None = None
+) -> dict[str, Any]:
+    """Re-read every ingested artifact from the commit it was ingested from.
+
+    A hash taken once at ingestion is a statement about that moment.  It does
+    not establish that the bytes are still retrievable: an object store can lose
+    an object, a transfer can be incomplete, and a clone can simply never have
+    received the commit.  This sweep re-resolves each artifact and compares
+    bytes again, so custody is re-proved rather than assumed.
+
+    What corruption can look like is constrained by git itself.  A commit id is
+    a hash over its own content, so nobody can make a fixed commit id yield
+    different artifact bytes; the reachable failures are an object that has
+    become *unreadable*, and a ledger record that no longer *agrees* with the
+    object store.  Both are detected and both record RECOVERY_REQUIRED.
+
+    Idempotent: a finding already recorded for a unit is not recorded twice, so
+    the sweep is safe to run on a timer.
+    """
+    rows = ledger_rows()
+    wanted = set(unit_ids) if unit_ids is not None else None
+    targets = _sweep_targets(rows, wanted)
+    available = git_repo_root(repo) is not None
+    report: dict[str, Any] = {
+        "generated_at": utc_now(),
+        "status": "OK" if available else "NOT_SUPPORTED",
+        "commit_resolution_available": available,
+        "units": sorted(targets),
+        "units_swept": 0,
+        "artifacts_rehashed": 0,
+        "verified": [],
+        "corrupt": [],
+        "unreadable": [],
+        "not_immutably_located": [],
+        "recorded": [],
+        "recovery_required": False,
+    }
+    if not available:
+        report["detail"] = (
+            f"no git object database is reachable from {repo or REPO_ROOT}; committed "
+            "artifacts cannot be re-hashed here, so nothing is claimed either way"
+        )
+        return report
+
+    for unit_id in sorted(targets):
+        payload = targets[unit_id].get("payload") or {}
+        findings: list[dict[str, Any]] = []
+        unlocated: list[str] = []
+        report["units_swept"] += 1
+        for artifact in payload.get("verified_artifacts") or []:
+            read_from = str(artifact.get("read_from") or "")
+            scheme, _, locator = read_from.partition(":")
+            if scheme != "git" or ":" not in locator:
+                # Ingested before the immutable-locator rule, or ingested from a
+                # working tree.  There is no commit and path to re-read from, so
+                # it is reported as un-sweepable, never counted as verified.
+                unlocated.append(str(artifact.get("logical_name") or "?"))
+                continue
+            commit_id, _, relative = locator.partition(":")
+            report["artifacts_rehashed"] += 1
+            raw = read_blob(commit_id, relative, repo)
+            if raw is None:
+                finding = {
+                    "unit_id": unit_id,
+                    "commit_id": commit_id,
+                    "path": relative,
+                    "kind": "unreadable",
+                    "detail": f"{commit_id}:{relative} can no longer be read from the object database",
+                }
+                report["unreadable"].append(finding)
+                findings.append(finding)
+                continue
+            actual_sha = sha256_bytes(raw)
+            if actual_sha != artifact.get("sha256") or len(raw) != artifact.get("bytes"):
+                finding = {
+                    "unit_id": unit_id,
+                    "commit_id": commit_id,
+                    "path": relative,
+                    "kind": "corrupt",
+                    "detail": (
+                        f"{commit_id}:{relative} no longer matches the ingested record "
+                        f"(ingested {artifact.get('sha256')} / {artifact.get('bytes')} bytes, "
+                        f"read {actual_sha} / {len(raw)} bytes)"
+                    ),
+                }
+                report["corrupt"].append(finding)
+                findings.append(finding)
+                continue
+            report["verified"].append(
+                {"unit_id": unit_id, "commit_id": commit_id, "path": relative, "sha256": actual_sha}
+            )
+        if unlocated:
+            report["not_immutably_located"].append(
+                {
+                    "unit_id": unit_id,
+                    "artifacts": len(unlocated),
+                    "logical_names": sorted(set(unlocated)),
+                    "result_commit_id": payload.get("result_commit_id"),
+                    "detail": (
+                        "ingested before the immutable read-back rule: the ingestion row "
+                        "records no commit and path, so these artifacts cannot be re-hashed "
+                        "without re-ingesting the result"
+                    ),
+                }
+            )
+        if not findings:
+            continue
+        report["recovery_required"] = True
+        digest = sha256_text(canonical(findings))
+        already = any(
+            row["unit_id"] == unit_id
+            and row["event"] == "RECOVERY_REQUIRED"
+            and (row.get("payload") or {}).get("sweep_digest") == digest
+            for row in rows
+        )
+        if already:
+            continue
+        detail = "; ".join(item["detail"] for item in findings)
+        record_rejection(
+            unit_id,
+            f"re-hash sweep found {len(findings)} artifact(s) no longer verifiable: {detail}",
+            extra={
+                "reason": "post-commit corruption detected by the re-hash sweep",
+                "sweep_digest": digest,
+                "findings": findings,
+            },
+            rejected_by="rehash_sweep",
+        )
+        report["recorded"].append(unit_id)
+    report["units_not_immutably_located"] = [
+        item["unit_id"] for item in report["not_immutably_located"]
+    ]
+    if report["recorded"]:
+        materialize()
+    return report
 
 
 # ---------------------------------------------------------------------------
@@ -1061,6 +1225,51 @@ def _load_validator():
     return module
 
 
+def record_rejection(
+    unit_id: str,
+    detail: str,
+    *,
+    fence_token: int | None = None,
+    extra: dict[str, Any] | None = None,
+    rejection_event: str | None = None,
+    rejected_by: str = "ingest_result",
+) -> dict[str, Any]:
+    """Write the durable trace of a refusal without raising.
+
+    Separated from ``_reject`` because the re-hash sweep records the same kind
+    of finding but is a scanner: it reports every corrupt unit it finds rather
+    than aborting on the first one.
+    """
+    payload = dict(extra or {})
+    payload.setdefault("reason", detail)
+    payload["detail"] = detail
+    if rejection_event:
+        append_event(
+            unit_id,
+            rejection_event,
+            actor=COORDINATOR,
+            fence_token=fence_token,
+            payload=payload,
+        )
+    row = append_event(
+        unit_id,
+        "RECOVERY_REQUIRED",
+        actor=COORDINATOR,
+        fence_token=fence_token,
+        payload={
+            **{k: v for k, v in payload.items() if k not in {"reason", "detail"}},
+            "reason": payload.get("reason"),
+            "detail": detail,
+            "rejected_by": rejected_by,
+            "rejection_event": rejection_event,
+        },
+    )
+    # The registry is the projection an operator reads.  A refusal that is in
+    # the ledger but not in the projection is only half durable.
+    materialize()
+    return row
+
+
 def _reject(
     unit_id: str,
     detail: str,
@@ -1074,31 +1283,18 @@ def _reject(
     Raising without recording was the defect: the unit stayed in whatever state
     it was already in and the rejection was invisible to recovery, so an
     operator reading the ledger could not tell that a result had been refused.
-    Every rejection now leaves a RECOVERY_REQUIRED row carrying its reason.
+    Cohort a2 measured twenty rejection classes and all twenty left no recovery
+    state.  Every rejection now leaves a RECOVERY_REQUIRED row carrying its
+    reason before the exception propagates, so the refusal outlives the process
+    that made it.
     """
-    payload = dict(extra or {})
-    payload.setdefault("reason", detail)
-    payload["detail"] = detail
     try:
-        if rejection_event:
-            append_event(
-                unit_id,
-                rejection_event,
-                actor=COORDINATOR,
-                fence_token=fence_token,
-                payload=payload,
-            )
-        append_event(
+        record_rejection(
             unit_id,
-            "RECOVERY_REQUIRED",
-            actor=COORDINATOR,
+            detail,
             fence_token=fence_token,
-            payload={
-                "reason": payload.get("reason"),
-                "detail": detail,
-                "rejected_by": "ingest_result",
-                "rejection_event": rejection_event,
-            },
+            extra=extra,
+            rejection_event=rejection_event,
         )
     except ControlPlaneError as exc:
         # The rejection itself must never be swallowed by a bookkeeping failure.
@@ -1118,14 +1314,24 @@ def ingest_result(
     Every rejection reason here corresponds to a way the PO-02 Code-2 return was
     lost or could have been silently faked.
     """
+    # The projection is consulted before the contract check so that a document
+    # which fails validation can still be refused *against its unit*.  A
+    # contract violation that raises without recording is exactly as invisible
+    # to recovery as a corrupt artifact that does.
+    unit_id = result_doc.get("task_id") if isinstance(result_doc, dict) else None
+    units = project_units()
+    unit = units.get(unit_id) if isinstance(unit_id, str) else None
+
     validator = _load_validator()
     errors = validator.validate_result(result_doc)
     if errors:
-        raise ControlPlaneError("result contract invalid: " + "; ".join(errors))
+        detail = "result contract invalid: " + "; ".join(errors)
+        if unit is None:
+            # No unit means there is nothing to attach a trace to.  Reported as
+            # a boundary rather than silently dropped.
+            raise ControlPlaneError(detail)
+        _reject(unit_id, detail, extra={"contract_errors": errors})
 
-    unit_id = result_doc["task_id"]
-    units = project_units()
-    unit = units.get(unit_id)
     if unit is None:
         raise ControlPlaneError(f"unknown unit: {unit_id}")
 
@@ -1166,12 +1372,22 @@ def ingest_result(
 
     dispatch_path = DISPATCH_DIR / f"{unit_id}.json"
     if not dispatch_path.exists():
-        raise ControlPlaneError(f"no immutable dispatch record for {unit_id}")
+        _reject(unit_id, f"no immutable dispatch record for {unit_id} at {dispatch_path}")
     dispatch = json.loads(dispatch_path.read_text(encoding="utf-8"))
     if result_doc["immutable_input_manifest_sha256"] != dispatch["immutable_input_manifest_sha256"]:
-        raise ControlPlaneError("result does not reference the dispatched immutable input manifest")
+        _reject(
+            unit_id,
+            "result does not reference the dispatched immutable input manifest: "
+            f"declared {result_doc['immutable_input_manifest_sha256']}, "
+            f"dispatched {dispatch['immutable_input_manifest_sha256']}",
+        )
     if result_doc["acceptance_contract_sha256"] != dispatch["acceptance_contract_sha256"]:
-        raise ControlPlaneError("result does not reference the frozen acceptance contract")
+        _reject(
+            unit_id,
+            "result does not reference the frozen acceptance contract: "
+            f"declared {result_doc['acceptance_contract_sha256']}, "
+            f"dispatched {dispatch['acceptance_contract_sha256']}",
+        )
 
     parsed = [parse_content_uri(artifact["content_uri"]) for artifact in result_doc["artifacts"]]
     relative_paths = [item[2] for item in parsed]
@@ -1421,6 +1637,23 @@ def cmd_scan(args: argparse.Namespace) -> int:
     return 1 if state["recovery_required"] and args.strict else 0
 
 
+def cmd_rehash(args: argparse.Namespace) -> int:
+    """Re-prove that every ingested artifact is still readable at its commit.
+
+    Exit 0 when every artifact re-hashed clean, 2 when a finding was recorded,
+    and 1 when no object database was reachable, because "could not check" is a
+    different answer from "checked and clean".
+    """
+    report = rehash_committed_artifacts(
+        repo=Path(args.repo).resolve() if args.repo else None,
+        unit_ids=args.unit or None,
+    )
+    print(canonical(report))
+    if not report["commit_resolution_available"]:
+        return 1
+    return 2 if report["recovery_required"] else 0
+
+
 def cmd_check_paths(args: argparse.Namespace) -> int:
     paths = [line.strip() for line in Path(args.paths).read_text(encoding="utf-8").splitlines() if line.strip()]
     outside = check_allowlist(paths)
@@ -1484,6 +1717,11 @@ def build_parser() -> argparse.ArgumentParser:
     scan = sub.add_parser("scan", help="run the recovery scanner")
     scan.add_argument("--strict", action="store_true")
     scan.set_defaults(func=cmd_scan)
+
+    rehash = sub.add_parser("rehash", help="re-hash ingested artifacts at their commits")
+    rehash.add_argument("--repo", default=None)
+    rehash.add_argument("--unit", action="append", default=[])
+    rehash.set_defaults(func=cmd_rehash)
 
     check = sub.add_parser("check-paths", help="enforce the wave-one path allowlist")
     check.add_argument("paths")
