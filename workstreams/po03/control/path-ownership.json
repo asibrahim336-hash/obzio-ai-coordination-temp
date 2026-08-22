@@ -31,10 +31,6 @@
         "workstreams/po03/control/model-capability-register.json",
         "workstreams/po03/control/wave-a-spec.json",
         ".github/workflows/po03-contracts.yml",
-        "workstreams/po03/tools/control_plane.py",
-        "workstreams/po03/tools/make_result.py",
-        "workstreams/po03/tools/ingest_wave.py",
-        "workstreams/po03/tests/test_control_plane.py",
         "workstreams/po03/evidence/scale-ladder.json",
         "workstreams/po03/evidence/model-allocation-and-exceptions.json",
         "workstreams/po03/evidence/compounding-results.json",
@@ -42,7 +38,14 @@
         "receipts/po03/2026-08-22/amendment-activation.json",
         "receipts/po03/2026-08-22/producer-execution.json",
         "receipts/po03/2026-08-22/independent-acceptance-request.json"
-      ]
+      ],
+      "stood_off_paths": [
+        "workstreams/po03/tools/control_plane.py",
+        "workstreams/po03/tools/make_result.py",
+        "workstreams/po03/tools/ingest_wave.py",
+        "workstreams/po03/tests/test_control_plane.py"
+      ],
+      "stand_off_reason": "Transferred to po03-worker-a11 for the custody remediation cohort. The single-writer invariant is what prevents collision, not the identity of the writer; the controller resumes ownership on ingestion."
     },
     "po03-worker-a1": {
       "role": "transactional custody engine",
@@ -153,6 +156,20 @@
         "workstreams/po03/review/sonnet/",
         "workstreams/po03/tests/test_a10_"
       ]
+    },
+    "po03-worker-a11": {
+      "role": "custody remediation compiled from a2 and a6 findings",
+      "model": "claude-opus-5-thinking-high",
+      "branch": "cursor/po03-a11-custody-remediation-ed20",
+      "owned_prefixes": [
+        "workstreams/po03/tools/control_plane.py",
+        "workstreams/po03/tools/make_result.py",
+        "workstreams/po03/tools/ingest_wave.py",
+        "workstreams/po03/tests/test_control_plane.py",
+        "workstreams/po03/control/units/a11/",
+        "workstreams/po03/tests/test_a11_"
+      ],
+      "ownership_transferred_from": "coordinator"
     }
   },
   "cross_family_review_matrix": {
@@ -168,7 +185,8 @@
       "po03-worker-a2",
       "po03-worker-a4",
       "po03-worker-a9",
-      "coordinator"
+      "coordinator",
+      "po03-worker-a11"
     ]
   }
 }
