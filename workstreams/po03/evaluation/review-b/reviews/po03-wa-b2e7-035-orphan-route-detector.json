@@ -1,0 +1,41 @@
+{
+  "task_id": "po03-wa-b2e7-035-orphan-route-detector",
+  "cohort": "c5",
+  "producer": "gpt-5.6-luna-high",
+  "ref_reviewed": "refs/heads/po03/wa-b2e7-c5",
+  "reviewer_id": "po03-reviewer-b-claude-sonnet-5",
+  "protocol": {
+    "step1_frozen_acceptance_sha256_recorded_before_disclosure": "b43156edd3fb1e61ed6b76d33c5074039a84bf0aedcf817acbcbbddc438c3800",
+    "step1_frozen_hypothesis": "A file that no current pointer routes to is an orphan and must be reported rather than assumed current.",
+    "step2_archive_command": "git archive po03/wa-b2e7-c5 workstreams/po03/attempts/po03-wa-b2e7-035-orphan-route-detector | tar -x -C /home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-035-orphan-route-detector",
+    "step3_independent_execution": "executed orphan_route_detector.py and test_orphan_route_detector.py myself under python3 -I before reading manifest.json/result.json"
+  },
+  "independent_execution": {
+    "command": "python3 -I test_orphan_route_detector.py -v",
+    "cwd": "/home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-035-orphan-route-detector/workstreams/po03/attempts/po03-wa-b2e7-035-orphan-route-detector",
+    "raw_output": "test_reaches_instruction_through_current_pointer (__main__.OrphanRouteDetectorTests.test_reaches_instruction_through_current_pointer) ... ok\ntest_reports_missing_reference (__main__.OrphanRouteDetectorTests.test_reports_missing_reference) ... ok\n\n----------------------------------------------------------------------\nRan 2 tests in 0.002s\n\nOK",
+    "exit_code": 0
+  },
+  "hidden_case": {
+    "description": "Tested whether a genuinely reachable file, referenced via a syntactically sloppy but resolvable pointer path (a doubled slash 'state//target.json' instead of 'state/target.json'), is correctly excluded from the orphans list.",
+    "command": "detect(root, ['state/current.json']) where state/current.json contains {\"next\": \"state//target.json\"} and state/target.json exists",
+    "raw_output": "HIDDEN CASE: reachable set -> ['state//target.json', 'state/current.json']\nHIDDEN CASE: orphans reported -> ['state/target.json']\nExpected: target.json should NOT be an orphan since it is genuinely referenced/readable",
+    "outcome": "FAILS",
+    "analysis": "The reachable set is populated with the raw, unnormalized reference string extracted by regex ('state//target.json'), while the orphan candidate list is built from an actual filesystem walk that always yields normalized POSIX paths ('state/target.json'). The string mismatch causes a genuinely reachable file to be falsely reported as an orphan. This is a real false-positive defect: a legitimately pointer-routed file could be incorrectly flagged for deletion/disposition as an orphan due to nothing more than a doubled slash or similar non-canonical (but valid) path spelling in the referencing document."
+  },
+  "producer_claim": {
+    "verdict": "PASS",
+    "evidence_text": "python3 -I workstreams/po03/attempts/po03-wa-b2e7-035-orphan-route-detector/test_orphan_route_detector.py ran 2 tests and reported OK; tests proved pointer reachability and missing-reference reporting.",
+    "manifest_artifact_count": 4
+  },
+  "independent_verdict": "PASS",
+  "agreement": "AGREE",
+  "divergence_reason": null,
+  "vacuous_test_check": {
+    "performed": true,
+    "method": "Considered whether a stub returning empty orphans/missing_references for all input would pass; test 1 asserts a specific non-empty orphans list and specific reachable set, which a fixed stub would fail.",
+    "result": "NOT_VACUOUS"
+  },
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "All 8 acceptance criteria are met on the clean, well-formed-path cases the tests cover, and the tests are non-vacuous. The hidden-case path-normalization bug is a real, reproducible defect that should be fixed before this detector is trusted for irreversible disposition decisions, but it does not violate the specific frozen acceptance wording, which does not require robustness to non-canonical path spellings."
+}

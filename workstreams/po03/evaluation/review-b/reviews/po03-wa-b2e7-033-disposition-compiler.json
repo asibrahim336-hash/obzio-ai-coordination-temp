@@ -1,0 +1,44 @@
+{
+  "task_id": "po03-wa-b2e7-033-disposition-compiler",
+  "cohort": "c5",
+  "producer": "gpt-5.6-luna-high",
+  "ref_reviewed": "refs/heads/po03/wa-b2e7-c5",
+  "reviewer_id": "po03-reviewer-b-claude-sonnet-5",
+  "protocol": {
+    "step1_frozen_acceptance_sha256_recorded_before_disclosure": "c13283ae5308d7b160faeb68d9905f5f883a6441c46407b40981f4d2d39c2098",
+    "step1_frozen_hypothesis": "Every changed PO-03 route can carry exactly one of RETAIN, DELETE, SUPERSEDE, RETEST or REJECT with preserved lineage.",
+    "step2_archive_command": "git archive po03/wa-b2e7-c5 workstreams/po03/attempts/po03-wa-b2e7-033-disposition-compiler | tar -x -C /home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-033-disposition-compiler",
+    "step3_independent_execution": "executed disposition_compiler.py and test_disposition_compiler.py myself under python3 -I, before reading manifest.json or result.json"
+  },
+  "independent_execution": {
+    "command": "python3 -I test_disposition_compiler.py -v",
+    "cwd": "/home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-033-disposition-compiler/workstreams/po03/attempts/po03-wa-b2e7-033-disposition-compiler",
+    "raw_output": "test_compiles_all_decisions_and_preserves_lineage (__main__.DispositionCompilerTests.test_compiles_all_decisions_and_preserves_lineage) ... ok\ntest_rejects_missing_predecessor_for_supersession (__main__.DispositionCompilerTests.test_rejects_missing_predecessor_for_supersession) ... ok\ntest_rejects_orphaned_predecessor (__main__.DispositionCompilerTests.test_rejects_orphaned_predecessor) ... ok\ntest_rejects_unknown_decision (__main__.DispositionCompilerTests.test_rejects_unknown_decision) ... ok\n\n----------------------------------------------------------------------\nRan 4 tests in 0.000s\n\nOK",
+    "exit_code": 0
+  },
+  "hidden_case": {
+    "description": "Producer's tests cover an unresolved predecessor, a missing predecessor for SUPERSEDE, and an unknown decision, but never a lineage cycle (A supersedes B, B supersedes A). Neither predecessor is unresolved, so the existing orphan-check would pass, but this is not a valid acyclic lineage chain.",
+    "command": "compile_dispositions([{'route_id':'A','decision':'SUPERSEDE','predecessor_route_id':'B'}, {'route_id':'B','decision':'SUPERSEDE','predecessor_route_id':'A'}])",
+    "raw_output": "HIDDEN CASE RESULT: accepted cyclic supersession (no cycle detection)\n[{'route_id': 'A', 'decision': 'SUPERSEDE', 'predecessor_route_id': 'B'}, {'route_id': 'B', 'decision': 'SUPERSEDE', 'predecessor_route_id': 'A'}]",
+    "outcome": "SURVIVES_BUT_SCOPE_LIMITED",
+    "analysis": "The compiler accepts a cyclic SUPERSEDE chain. This does not violate the specific acceptance wording ('refuses a decision that orphans its predecessor') because every predecessor in the cycle does resolve; it is a scope limitation (no cycle detection), not an orphan-refusal failure. Note: the sibling unit po03-wa-b2e7-038-lineage-preservation DOES detect exactly this cycle case (verified independently, see its review), so the two-unit system together covers this gap even though 033 alone does not."
+  },
+  "additional_findings": [
+    "Committed __pycache__/disposition_compiler.cpython-312.pyc bytecode was listed as manifest artifact-001 at the original result commit 402c277618bcf4ba659588381f11b8fadf4e7424, despite a .gitignore in the same directory excluding '__pycache__/' and '*.py[cod]'. This was later cleaned up in the branch's final commit d35c88959f3c16bfbd85d8fe87e5f373ebe210ea ('remove bytecode and exercise pinned pack detector'), which removed the pyc file across all 8 c5 units. The manifest.json at the branch tip still references the older commit and still lists the pyc as an artifact; this is a stale-but-not-false record since the referenced historical commit object is immutable and still readable by hash. Not disqualifying, but sloppy for a 'portable-runtime' commission where committing version-specific bytecode is counter to the stated goal."
+  ],
+  "producer_claim": {
+    "verdict": "PASS",
+    "evidence_text": "python3 -I workstreams/po03/attempts/po03-wa-b2e7-033-disposition-compiler/test_disposition_compiler.py ran 4 tests and reported OK; tests covered valid compilation, orphaned and missing predecessors, and unknown decisions.",
+    "manifest_artifact_count": 4
+  },
+  "independent_verdict": "PASS",
+  "agreement": "AGREE",
+  "divergence_reason": null,
+  "vacuous_test_check": {
+    "performed": true,
+    "method": "Manually traced what a trivial stub (identity/no-op validation) would do against each of the 4 tests; 3 of 4 tests assert DispositionError is raised on invalid input, which a trivial stub would not raise. Tests are not vacuous.",
+    "result": "NOT_VACUOUS"
+  },
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "All 8 explicit acceptance criteria are met: executable component runs under python -I, all 4 tests pass and are non-vacuous, manifest lists artifacts with SHA-256/byte counts, result document conforms to the schema, verdict is explicit (PASS), and no invented values were found. The cyclic-supersession gap found via the hidden case is a real scope limitation worth hardening but does not violate the specific, narrower acceptance wording, and is independently covered by the companion unit 038's lineage checker."
+}

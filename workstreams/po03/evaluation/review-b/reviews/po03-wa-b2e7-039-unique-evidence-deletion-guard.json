@@ -1,0 +1,41 @@
+{
+  "task_id": "po03-wa-b2e7-039-unique-evidence-deletion-guard",
+  "cohort": "c5",
+  "producer": "gpt-5.6-luna-high",
+  "ref_reviewed": "refs/heads/po03/wa-b2e7-c5",
+  "reviewer_id": "po03-reviewer-b-claude-sonnet-5",
+  "protocol": {
+    "step1_frozen_acceptance_sha256_recorded_before_disclosure": "ddd7539b4f721f7036bb42b441cca01751e648fca2eba6cf39e5824376f6eeba",
+    "step1_frozen_hypothesis": "Deleting the only copy of depended-upon evidence is refused rather than performed.",
+    "step2_archive_command": "git archive po03/wa-b2e7-c5 workstreams/po03/attempts/po03-wa-b2e7-039-unique-evidence-deletion-guard | tar -x -C /home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-039-unique-evidence-deletion-guard",
+    "step3_independent_execution": "executed unique_evidence_deletion_guard.py and test_unique_evidence_deletion_guard.py myself under python3 -I before reading manifest.json/result.json"
+  },
+  "independent_execution": {
+    "command": "python3 -I test_unique_evidence_deletion_guard.py -v",
+    "cwd": "/home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-039-unique-evidence-deletion-guard/workstreams/po03/attempts/po03-wa-b2e7-039-unique-evidence-deletion-guard",
+    "raw_output": "test_allows_currently_referenced_duplicate_fixture (__main__.UniqueEvidenceDeletionGuardTests.test_allows_currently_referenced_duplicate_fixture) ... ok\ntest_allows_unreferenced_unique_fixture_for_review (__main__.UniqueEvidenceDeletionGuardTests.test_allows_unreferenced_unique_fixture_for_review) ... ok\ntest_refuses_unique_currently_referenced_fixture (__main__.UniqueEvidenceDeletionGuardTests.test_refuses_unique_currently_referenced_fixture) ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 0.001s\n\nOK",
+    "exit_code": 0
+  },
+  "hidden_case": {
+    "description": "The producer's own positive-control test always represents the candidate and the pointer reference to it with the IDENTICAL literal path object. Real callers commonly have a pointer file storing one path form (e.g. absolute) while a deletion candidate is supplied in another equivalent form (e.g. cwd-relative) for the SAME real file. Tested this exact, squarely in-scope, realistic mismatch on a genuinely unique, genuinely pointer-referenced file.",
+    "command": "assert_deletion_allowed(relative_candidate='evidence.md', inventory=['evidence.md'], current_pointer_paths=[absolute path to the same file]) after os.chdir into the file's directory",
+    "raw_output": "HIDDEN CASE RESULT: guard ALLOWED deletion of unique, truly-referenced evidence due to path-form mismatch (FAIL-OPEN BUG)\nDeletionDecision(allowed=True, path='evidence.md', sha256='508af006ff22197080b99a50f24f8cdbfe3c08a63ff95262fa86e85596c5e730', hash_copies=1, referenced=False, reason='duplicate content or no current-pointer dependency')",
+    "outcome": "FAILS",
+    "analysis": "evaluate_deletion() computes 'referenced' via plain string-set membership on Path(...).as_posix() without any path resolution/canonicalization. When the pointer path and the candidate path are equivalent but differ in absolute/relative form (an extremely common, foreseeable real-world condition -- pointer files commonly store one path convention while a caller's cwd or deletion tooling uses another), the guard silently concludes the file is NOT referenced and ALLOWS deletion of a genuinely unique, genuinely depended-upon file. This is a direct, severe violation of the guard's own core purpose: it fails OPEN exactly where the falsifiable hypothesis requires it to fail closed, and the failure mode is squarely within the literal scope of the stated hypothesis (a truly unique file, truly referenced by a current pointer)."
+  },
+  "producer_claim": {
+    "verdict": "PASS",
+    "evidence_text": "(inferred from manifest/result.json: 3 tests ran and reported OK)",
+    "manifest_artifact_count": 4
+  },
+  "independent_verdict": "FAIL",
+  "agreement": "DIVERGE",
+  "divergence_reason": "The producer's 3 tests all pass and are individually well-constructed, but they only ever exercise the guard with candidate and pointer paths expressed in an identical literal string form. My hidden case shows the guard is trivially bypassed by an ordinary, foreseeable path-representation mismatch (absolute vs. relative) between the pointer graph and the deletion candidate -- both referring to the exact same physical file. Because the hypothesis is specifically 'deleting the only copy of depended-upon evidence is refused rather than performed,' and I demonstrated the guard permits exactly that deletion under a realistic condition, my independent verdict is FAIL despite the producer's tests all passing.",
+  "vacuous_test_check": {
+    "performed": true,
+    "method": "Considered whether a stub always returning allowed=False would pass; tests 2 and 3 assert decision.allowed is True, which an always-blocking stub would fail. Considered whether a stub always returning allowed=True would pass; test 1 asserts DeletionBlocked is raised, which an always-allowing stub would fail.",
+    "result": "NOT_VACUOUS"
+  },
+  "disposition_recommendation": "REJECTED",
+  "disposition_reason": "This is a safety-critical guard whose entire purpose is to fail closed on deletion of unique, depended-upon evidence. The hidden case demonstrates a reproducible fail-open bypass under a realistic, in-scope condition (path-form mismatch between the pointer graph and the deletion candidate for the identical real file), which is a direct contradiction of the required deliverable ('refuses deletion of any artifact that is both unique by content hash and referenced by a current pointer'). The fix (canonicalize via os.path.realpath/Path.resolve() before comparing sets) is straightforward but was not done, and the producer's own tests never probed this realistic condition."
+}

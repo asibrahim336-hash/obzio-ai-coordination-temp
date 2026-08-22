@@ -1,0 +1,41 @@
+{
+  "task_id": "po03-wa-b2e7-036-renamed-clone-detector",
+  "cohort": "c5",
+  "producer": "gpt-5.6-luna-high",
+  "ref_reviewed": "refs/heads/po03/wa-b2e7-c5",
+  "reviewer_id": "po03-reviewer-b-claude-sonnet-5",
+  "protocol": {
+    "step1_frozen_acceptance_sha256_recorded_before_disclosure": "1878fa7f5d3aa5f2b8705980648e205ee9bac76ed28c07f88e8fe181789cf8dd",
+    "step1_frozen_hypothesis": "Renamed clones and duplicated summaries are detectable by content, so they cannot be counted as substantive units.",
+    "step2_archive_command": "git archive po03/wa-b2e7-c5 workstreams/po03/attempts/po03-wa-b2e7-036-renamed-clone-detector | tar -x -C /home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-036-renamed-clone-detector",
+    "step3_independent_execution": "executed renamed_clone_detector.py and test_renamed_clone_detector.py myself under python3 -I before reading manifest.json/result.json"
+  },
+  "independent_execution": {
+    "command": "python3 -I test_renamed_clone_detector.py -v",
+    "cwd": "/home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-036-renamed-clone-detector/workstreams/po03/attempts/po03-wa-b2e7-036-renamed-clone-detector",
+    "raw_output": "test_flags_exact_renamed_clone_with_hashes (__main__.RenamedCloneDetectorTests.test_flags_exact_renamed_clone_with_hashes) ... ok\ntest_flags_near_duplicate_but_not_unrelated_content (__main__.RenamedCloneDetectorTests.test_flags_near_duplicate_but_not_unrelated_content) ... ok\n\n----------------------------------------------------------------------\nRan 2 tests in 0.001s\n\nOK",
+    "exit_code": 0
+  },
+  "hidden_case": {
+    "description": "Tested whether the SAME real file, reachable through two syntactically different but filesystem-equivalent path strings (one containing a '..' backreference), is falsely reported as a 'renamed-clone' of itself. The tool's dedup in _files() is based on syntactic Path-object equality, not realpath/inode identity.",
+    "command": "detect([str(target), str(sub / '..' / 'sub' / 'foo.txt')]) where both point at the identical on-disk file",
+    "raw_output": "direct path: .../sub/foo.txt  alt path: .../sub/../sub/foo.txt  same file on disk: True\npairs found: [{'left': '.../sub/../sub/foo.txt', 'right': '.../sub/foo.txt', 'left_sha256': '4bb57d83977d7d8b3d6e6a5cf644ffc05dfcdb491b96fe0ca146dbd83db86ce2', 'right_sha256': '4bb57d83977d7d8b3d6e6a5cf644ffc05dfcdb491b96fe0ca146dbd83db86ce2', 'similarity': 1.0, 'kind': 'renamed-clone'}]",
+    "outcome": "FAILS",
+    "analysis": "A real, single file is reported as a 'renamed-clone' of itself when reached via overlapping/aliased input roots. This is plausible in real PO-03 usage where a caller might scan overlapping directories or symlinked paths. The detector lacks realpath-based deduplication before pairwise comparison. (A simpler alias test using pathlib's own '.' collapsing did NOT reproduce the bug, since PurePath silently drops single '.' segments; the '..'-based alias was required to demonstrate it.)"
+  },
+  "producer_claim": {
+    "verdict": "PASS",
+    "evidence_text": "python3 -I workstreams/po03/attempts/po03-wa-b2e7-036-renamed-clone-detector/test_renamed_clone_detector.py ran 2 tests and reported OK; tests flagged an exact renamed clone with SHA-256 hashes and a near duplicate while excluding unrelated content.",
+    "manifest_artifact_count": 4
+  },
+  "independent_verdict": "PASS",
+  "agreement": "AGREE",
+  "divergence_reason": null,
+  "vacuous_test_check": {
+    "performed": true,
+    "method": "Considered whether a stub returning an empty list for all input would pass; test 1 asserts exactly one pair with kind 'renamed-clone', which an empty-list stub would fail.",
+    "result": "NOT_VACUOUS"
+  },
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "The required deliverable (a content-similarity detector flagging near-duplicate/renamed-clone pairs with hashes) is implemented correctly and demonstrated on both an exact clone and a near-duplicate, with a true negative on unrelated content. All 8 acceptance criteria are met and tests are non-vacuous. The hidden-case self-clone false positive under overlapping/aliased roots is a real defect worth fixing (via os.path.realpath-based dedup) but is a robustness gap rather than a violation of the frozen acceptance wording."
+}

@@ -1,0 +1,42 @@
+{
+  "task_id": "po03-wa-b2e7-040-silent-deletion-adversarial",
+  "cohort": "c5",
+  "producer": "gpt-5.6-luna-high",
+  "ref_reviewed": "refs/heads/po03/wa-b2e7-c5",
+  "reviewer_id": "po03-reviewer-b-claude-sonnet-5",
+  "protocol": {
+    "step1_frozen_acceptance_sha256_recorded_before_disclosure": "70c99709af80754ae2721372f5e9ccb7f6450d34dc1f35bb4bacdb3810d94420",
+    "step1_frozen_hypothesis": "A silent deletion of unique evidence must be caught by the guard, proving it is not advisory.",
+    "step2_archive_command": "git archive po03/wa-b2e7-c5 workstreams/po03/attempts/po03-wa-b2e7-040-silent-deletion-adversarial | tar -x -C /home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-040-silent-deletion-adversarial",
+    "step3_independent_execution": "executed silent_deletion_adversarial.py and test_silent_deletion_adversarial.py myself under python3 -I before reading manifest.json/result.json"
+  },
+  "independent_execution": {
+    "command": "python3 -I test_silent_deletion_adversarial.py -v",
+    "cwd": "/home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-040-silent-deletion-adversarial/workstreams/po03/attempts/po03-wa-b2e7-040-silent-deletion-adversarial",
+    "raw_output": "test_guard_accepts_content_preserved_at_renamed_path (__main__.SilentDeletionAdversarialTests.test_guard_accepts_content_preserved_at_renamed_path) ... ok\ntest_guard_catches_simulated_silent_deletion (__main__.SilentDeletionAdversarialTests.test_guard_catches_simulated_silent_deletion) ... ok\n\n----------------------------------------------------------------------\nRan 2 tests in 0.000s\n\nOK",
+    "exit_code": 0
+  },
+  "structural_note": "This unit's silent_deletion_adversarial.py is a SEPARATE, standalone reimplementation (before/after content-map diffing) rather than a fixture that imports and directly exercises unit po03-wa-b2e7-039's actual unique_evidence_deletion_guard.assert_deletion_allowed(). Both units are independently readable (owned_paths restrict writes, not reads), so this unit could have imported 039's real guard to prove THAT specific guard fails closed under attack; instead it validates an analogous but distinct algorithm. This means unit 040 does not actually demonstrate that unit 039's guard 'is not advisory' -- it demonstrates a similarly-shaped standalone mechanism is not advisory.",
+  "hidden_case": {
+    "description": "The hypothesis is scoped to 'unique evidence' (content with exactly one copy at the time of the before-snapshot). Tested a case just outside that literal scope but within the same overall safety goal: two files with IDENTICAL content (2 duplicate copies, so before_counts[digest]==2, not 'unique') are BOTH deleted in the same transaction, resulting in total loss of that evidence (zero copies after).",
+    "command": "detect_silent_deletions(before={'evidence-copy-a.md': b'...', 'evidence-copy-b.md': b'...' (identical bytes)}, after={}, current_pointer_paths={'evidence-copy-a.md','evidence-copy-b.md'})",
+    "raw_output": "violations reported: []\nHIDDEN CASE RESULT: guard did NOT raise -- total loss of a fully-duplicated-but-now-zero-copy evidence item went UNDETECTED",
+    "outcome": "FAILS",
+    "analysis": "Because the check gate is 'before_counts[digest] == 1 and digest not in after_digests', simultaneous deletion of all copies of content that was merely duplicated (not unique) at the time of the before-snapshot is invisible to the detector, even though the net real-world outcome -- total, irreversible loss of pointer-referenced evidence -- is exactly the harm the unit exists to catch. This is technically outside the hypothesis's literal wording ('unique evidence') but is a significant, realistic coverage gap in the broader safety property the unit's name and required_deliverable imply ('proving it is not advisory')."
+  },
+  "producer_claim": {
+    "verdict": "PASS",
+    "evidence_text": "(inferred from manifest/result.json: 2 tests ran and reported OK)",
+    "manifest_artifact_count": 4
+  },
+  "independent_verdict": "PASS",
+  "agreement": "AGREE",
+  "divergence_reason": null,
+  "vacuous_test_check": {
+    "performed": true,
+    "method": "Considered whether a stub always returning [] (no violations) would pass; test 1 asserts SilentDeletionDetected IS raised and detect_silent_deletions returns exactly 1 violation, which an always-empty stub would fail.",
+    "result": "NOT_VACUOUS"
+  },
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "Against the literal, narrowly-scoped falsifiable hypothesis ('a silent deletion of unique evidence must be caught'), the fixture is real, non-vacuous, and correctly demonstrates both the positive control (simulated silent deletion of genuinely unique evidence is caught) and the negative control (a legitimate rename/move that preserves content is NOT flagged). I am recording, rather than penalizing to REJECTED, two real gaps for follow-up: (1) it validates a standalone reimplementation rather than unit 039's actual guard function, so it does not literally prove THAT guard is non-advisory; (2) it has a genuine blind spot for simultaneous deletion of all copies of duplicated (non-unique) evidence. Given the acceptance criteria are scoped to 'unique' evidence specifically and the two tests genuinely satisfy that scope, PASS is justified, but the coordinator should weigh the coverage-gap finding for any downstream reliance on this fixture as proof of the guard's general non-advisory status."
+}
