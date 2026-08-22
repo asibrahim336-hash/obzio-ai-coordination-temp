@@ -4,12 +4,24 @@
 from __future__ import annotations
 
 import copy
+import importlib.util
 import json
 import unittest
 from pathlib import Path
 
-import build_register
-import validate_hypotheses
+
+def load_local(name: str):
+    path = Path(__file__).with_name(f"{name}.py")
+    spec = importlib.util.spec_from_file_location(name, path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"cannot load {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+build_register = load_local("build_register")
+validate_hypotheses = load_local("validate_hypotheses")
 
 
 class HypothesisRegisterTests(unittest.TestCase):
