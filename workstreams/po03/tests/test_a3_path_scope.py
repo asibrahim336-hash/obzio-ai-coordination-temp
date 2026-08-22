@@ -267,6 +267,25 @@ class CommandLineBehaviour(unittest.TestCase):
         self.assertEqual(report["schema"], "po03-path-scope-report-v1")
         self.assertEqual(report["verdict"], "PASS")
         self.assertIn("merge-base", report["source"])
+        self.assertEqual(report["attribution"], {})
+
+
+class ViolationsAreAttributedToCommits(unittest.TestCase):
+    """A guard that cannot say which commit wrote the path is hard to act on."""
+
+    def test_attribution_names_the_commit_that_touched_a_path(self) -> None:
+        commits = path_scope.attribute(
+            "workstreams/po03/runtime/path_scope.py", "HEAD~1", "HEAD"
+        )
+        for commit in commits:
+            self.assertRegex(commit["commit"], r"^[0-9a-f]{40}$")
+            self.assertTrue(commit["subject"])
+
+    def test_attribution_of_an_untouched_path_is_empty(self) -> None:
+        self.assertEqual(path_scope.attribute("packs/nothing-here", "HEAD~1", "HEAD"), [])
+
+    def test_attribution_of_an_unresolvable_range_is_empty_not_an_error(self) -> None:
+        self.assertEqual(path_scope.attribute("anything", "not-a-ref", "HEAD"), [])
 
 
 class WorkflowSurface(unittest.TestCase):

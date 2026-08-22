@@ -228,6 +228,28 @@ def changed_paths_from_git(base: str, head: str) -> tuple[list[str], str]:
     return parse_path_list(output), strategy
 
 
+def attribute(path: str, base: str, head: str, limit: int = 5) -> list[dict[str, str]]:
+    """Name the commits in base..head that touched a path.
+
+    A guard that reports only "something is outside the allowlist" is hard to
+    act on, and it is indistinguishable from a guard misfiring.  Naming the
+    commit turns the failure into a fact: either one of the commits under review
+    wrote outside the allowlist, or the write was inherited from the lineage the
+    branch was created on and the base is the thing that is wrong.
+    """
+    try:
+        output = git("log", "--no-merges", f"--max-count={limit}", "--format=%H%x1f%s", f"{base}..{head}", "--", path)
+    except RuntimeError:
+        return []
+    commits: list[dict[str, str]] = []
+    for line in output.splitlines():
+        if "\x1f" not in line:
+            continue
+        sha, subject = line.split("\x1f", 1)
+        commits.append({"commit": sha, "subject": subject})
+    return commits
+
+
 def evaluate(paths: Iterable[str], *, source: str, owner: str | None = None) -> dict[str, Any]:
     """Decide each path individually against the upstream authority.
 
@@ -309,7 +331,18 @@ def emit(report: dict[str, Any], as_json: bool) -> int:
 def cmd_git(args: argparse.Namespace) -> int:
     paths, strategy = changed_paths_from_git(args.base, args.head)
     report = evaluate(paths, source=f"git {strategy}", owner=args.owner)
-    return emit(report, args.json)
+    report["base"] = args.base
+    report["head"] = args.head
+    report["attribution"] = {
+        path: attribute(path, args.base, args.head)
+        for path in report["allowlist_violations"] + report["ownership_violations"]
+    }
+    code = emit(report, args.json)
+    if not args.json:
+        for path, commits in report["attribution"].items():
+            for commit in commits:
+                print(f"  introduced by {commit['commit'][:12]} {commit['subject']}")
+    return code
 
 
 def cmd_paths(args: argparse.Namespace) -> int:
