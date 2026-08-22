@@ -23,6 +23,7 @@ import _bootstrap  # noqa: F401
 
 from harness.durable_io import sha256_bytes
 from harness.emit_result import (
+    ATTEMPT_FIELDS,
     MANIFEST_EXCLUDED,
     MANIFEST_NAME,
     READY_NAME,
@@ -30,6 +31,7 @@ from harness.emit_result import (
     RESULT_EXCLUDED,
     UNIT_ROOT,
     artifact_accounting,
+    attempt_envelope,
     branch_base,
     build_manifest,
     describe,
@@ -38,8 +40,9 @@ from harness.emit_result import (
     owned_files,
     parse_unittest_output,
     sanitized_remote,
+    validate_attempt,
 )
-from harness.seeded import repository_root
+from harness.seeded import repository_root, task_input
 
 OWNED_SUBTREE = "workstreams/po03/wave-a/units/wa-016/"
 
@@ -271,6 +274,94 @@ class BranchBaseTests(unittest.TestCase):
             "workstreams/po03/control/inputs/wave-a/wa-016.json",
             git_output("diff", "--name-only", f"{self.base}..HEAD").split(),
         )
+
+
+class AttemptEnvelopeTests(unittest.TestCase):
+    """The receipt has to name the lease it was dispatched under.
+
+    A return with no attempt envelope cannot be reconciled against the attempt
+    that produced it, and one naming a stale fence or the wrong lease would be
+    reconciled against the wrong attempt, which is worse than being rejected.
+    """
+
+    def test_the_envelope_is_the_frozen_one_and_is_complete(self):
+        envelope = attempt_envelope()
+        self.assertEqual(set(ATTEMPT_FIELDS), set(envelope))
+        self.assertEqual(task_input()["attempt"], envelope)
+
+    def test_the_four_dispatched_values_are_exact(self):
+        envelope = attempt_envelope()
+        self.assertEqual("PO03-WA-016-A01", envelope["attempt_id"])
+        self.assertEqual("po03:100bc20:wa-016:a01", envelope["idempotency_key"])
+        self.assertEqual("lease-po03-wa-016-a01", envelope["lease_id"])
+        self.assertEqual(1, envelope["fence_token"])
+        self.assertIsInstance(envelope["fence_token"], int)
+
+    def test_a_missing_field_is_refused_rather_than_filled_in(self):
+        for field in ATTEMPT_FIELDS:
+            partial = {k: v for k, v in attempt_envelope().items() if k != field}
+            with self.subTest(missing=field), self.assertRaises(SystemExit):
+                validate_attempt(partial)
+
+    def test_a_value_disagreeing_with_the_dispatch_is_refused(self):
+        for field, wrong in (
+            ("attempt_id", "PO03-WA-016-A02"),
+            ("idempotency_key", "po03:100bc20:wa-016:a02"),
+            ("lease_id", "lease-po03-wa-016-a02"),
+            ("fence_token", 2),
+        ):
+            with self.subTest(field=field), self.assertRaises(SystemExit):
+                validate_attempt({**attempt_envelope(), field: wrong})
+
+    def test_a_stale_fence_is_refused_even_though_it_is_an_integer(self):
+        with self.assertRaises(SystemExit):
+            validate_attempt({**attempt_envelope(), "fence_token": 0})
+
+    def test_the_emitted_receipt_carries_the_envelope_and_an_empty_decision_list(self):
+        path = UNIT_ROOT / "result" / READY_NAME
+        if not path.exists():
+            self.skipTest("no receipt emitted yet")
+            return
+        receipt = json.loads(path.read_text(encoding="utf-8"))
+        # assertIn would print the whole receipt, which is thousands of lines.
+        self.assertTrue("attempt" in receipt, f"{READY_NAME} carries no attempt envelope")
+        self.assertTrue("decision_changed" in receipt, f"{READY_NAME} carries no decision_changed")
+        self.assertEqual(attempt_envelope(), receipt["attempt"])
+        self.assertEqual([], receipt["decision_changed"])
+
+    def test_the_receipt_separates_the_recorded_run_from_the_rerun(self):
+        """A corrected return must not pass off the old run as covering new code.
+
+        Skipped only while the receipt predates this field, which is the same
+        bootstrap as the accounting chain: the emitter will not write a receipt
+        while the suite fails, so a hard failure here would deadlock. The property
+        itself is enforced in code, not here: build_ready refuses to emit unless
+        the rerun passes.
+        """
+        path = UNIT_ROOT / "result" / READY_NAME
+        if not path.exists():
+            self.skipTest("no receipt emitted yet")
+            return
+        tests = json.loads(path.read_text(encoding="utf-8"))["tests"]
+        if "rerun_for_this_return" not in tests:
+            self.skipTest("the receipt predates the rerun record")
+            return
+        rerun = tests["rerun_for_this_return"]
+        self.assertEqual("PASS", rerun["outcome"])
+        self.assertFalse(rerun["log_written"])
+        self.assertGreaterEqual(rerun["total"], tests["total"])
+        self.assertEqual(0, rerun["failed"])
+
+    def test_the_receipt_and_the_result_agree_on_the_attempt(self):
+        receipt_path = UNIT_ROOT / "result" / READY_NAME
+        result_path = UNIT_ROOT / "result" / "result.json"
+        if not receipt_path.exists() or not result_path.exists():
+            self.skipTest("both documents must exist to compare them")
+            return
+        receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        result = json.loads(result_path.read_text(encoding="utf-8"))
+        self.assertTrue("attempt" in receipt, f"{READY_NAME} carries no attempt envelope")
+        self.assertEqual(result["attempt"], receipt["attempt"])
 
 
 class RemoteSanitisationTests(unittest.TestCase):
