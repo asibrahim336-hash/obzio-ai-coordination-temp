@@ -51,6 +51,7 @@ ARTIFACTS = (
     "workstreams/po03/successor/suite/suite-manifest.json",
     "workstreams/po03/successor/scores/generation-comparison.json",
     "workstreams/po03/successor/lessons/lessons.json",
+    "workstreams/po03/successor/self-readback-audit.json",
 )
 
 UNITS = (
@@ -181,6 +182,21 @@ def build_document() -> dict:
                 ),
             },
             {
+                "boundary": "this cohort's own result records do not resolve at their declared commit",
+                "status": "NOT_SUPPORTED",
+                "detail": (
+                    "Every a8 result record declares a result_commit_id that does not contain it, because "
+                    "make_result.py resolves that field to HEAD before the record is committed. One record "
+                    "resolves to a stale earlier version of itself, which is worse than absent: an existence "
+                    "check would accept it. All artifact claims do read back byte-exact at their declared "
+                    "commits, so no evidence is lost, but a parent ingesting these records must resolve them "
+                    "at the branch head. Audited in workstreams/po03/successor/self-readback-audit.json; the "
+                    "tool that writes the records is coordinator-owned and was not modified. This is the "
+                    "defect class lesson L-08 names and G2's change C-09 refuses, reproduced on this "
+                    "cohort's own output."
+                ),
+            },
+            {
                 "boundary": "the live control plane still carries the defects G2 fixes",
                 "status": "NOT_SUPPORTED",
                 "detail": (
@@ -202,7 +218,9 @@ def build_document() -> dict:
         "merge_authority": False,
         "decision_changed": [],
         "read_back_verification": (
-            f"git cat-file blob origin/{BRANCH}:<path> | sha256sum must match the artifact hashes above"
+            f"git cat-file blob origin/{BRANCH}:<path> | sha256sum must match the artifact hashes above. "
+            "Resolve at the branch head, not at a record's declared result_commit_id - see the boundary on "
+            "result records above."
         ),
     }
 

@@ -46,6 +46,7 @@
       "disposition": "RETAIN",
       "disposition_basis": "The change closed both the frozen case P08 and a6's independently authored H02, and the recurrence test asserts G1's behaviour as well as G2's. The residual - that principal identity is still asserted by the caller rather than bound to a credential - was declared in G2's own docstring before a10 published, and a10's D6 independently confirms it as a boundary rather than contradicting the change.",
       "independently_supported": true,
+      "internal_reproduction": null,
       "lesson_id": "L-01",
       "lineage": {
         "derived_from": [],
@@ -98,6 +99,7 @@
       "disposition": "RETAIN",
       "disposition_basis": "G1 hashed artifacts at ingestion and never again; a6's H09 and the frozen case P21 both measured that, and both pass under G2's custody manifest with re-verification on every sweep.",
       "independently_supported": true,
+      "internal_reproduction": null,
       "lesson_id": "L-02",
       "lineage": {
         "derived_from": [],
@@ -136,6 +138,7 @@
       "disposition": "RETAIN",
       "disposition_basis": "G1 treated RESULT_COMMITTED as terminal for the recovery scanner and had no outbox, so such a result was stranded rather than replayed or re-run. This is the shape of the lost PO-02 Code-2 return that the commission was written around, and it is the only lesson here whose absence is measured by both a frozen case (P30) and an independently authored one (H10).",
       "independently_supported": true,
+      "internal_reproduction": null,
       "lesson_id": "L-03",
       "lineage": {
         "derived_from": [],
@@ -174,6 +177,7 @@
       "disposition": "SUPERSEDE",
       "disposition_basis": "The earlier formulation - 'fence tokens must increase monotonically' - is retained as a record and superseded by 'a fence must correspond to a grant issued to this worker, and that grant must still be live'. Monotonicity was not wrong, it was insufficient: it is one of the two conditions, and G1 implemented only that one. C-02 completes the pair by evaluating the lease deadline at the moment of commit rather than only in the recovery scanner.",
       "independently_supported": true,
+      "internal_reproduction": null,
       "lesson_id": "L-04",
       "lineage": {
         "derived_from": [],
@@ -217,6 +221,7 @@
       "disposition": "RETAIN",
       "disposition_basis": "Supported by this cohort's own cross-generation measurement, not by an independent evaluator: G0 detected pinned-input drift (P05) and G1 did not, which is a regression in the direction of travel and is reported rather than suppressed. Recorded here with independent support absent, because a lesson this cohort found itself must not be presented as externally confirmed.",
       "independently_supported": false,
+      "internal_reproduction": null,
       "lesson_id": "L-05",
       "lineage": {
         "derived_from": [],
@@ -239,6 +244,7 @@
       "disposition": "RETAIN",
       "disposition_basis": "G2 adjudicates on the idempotency key: identical content is a harmless duplicate, different content under the same key is a refused conflict, and neither produces a second ingestion. Frozen case P26 measured this and a10 independently reached the same root cause from an adversarial direction.",
       "independently_supported": true,
+      "internal_reproduction": null,
       "lesson_id": "L-06",
       "lineage": {
         "derived_from": [],
@@ -277,6 +283,7 @@
       "disposition": "RETEST",
       "disposition_basis": "The anchor closes the truncation case (P29) and is guarded by a recurrence test, and a companion test shows why a row-count-only anchor would not have. But a10's D5 is broader than truncation: an actor with write access to the whole store can rewrite the ledger and the anchor together, and G2's anchor lives in the same store as the ledger it protects. That residual is demonstrated by an executable test rather than described, and the lesson stays open until an anchor outside the store - a signed remote ref - exists to retest against.",
       "independently_supported": true,
+      "internal_reproduction": null,
       "lesson_id": "L-07",
       "lineage": {
         "derived_from": [],
@@ -313,8 +320,17 @@
     },
     {
       "disposition": "RETAIN",
-      "disposition_basis": "The most heavily supported lesson in the register: two evaluator cohorts of different owners, working from different directions, reached it independently, and a6 reached it by auditing real committed records rather than by attacking a fixture. G2 refuses admission unless the record resolves at its declared locator and the bytes there match the result being admitted.",
+      "disposition_basis": "The most heavily supported lesson in the register: two evaluator cohorts of different owners, working from different directions, reached it independently, and a6 reached it by auditing real committed records rather than by attacking a fixture. G2 refuses admission unless the record resolves at its declared locator and the bytes there match the result being admitted. Retained with the sharpest evidence available - this cohort ran the same audit inward and every one of its own records fails it, including one that resolves to a stale earlier version rather than to nothing.",
       "independently_supported": true,
+      "internal_reproduction": {
+        "cause": "make_result.py resolves result_commit_id to HEAD as it writes the record, which is necessarily before that record is committed. No sequence of correct operator behaviour can satisfy the locator, so this is a property of coordinator-owned tooling and not of how this cohort used it.",
+        "document": "workstreams/po03/successor/self-readback-audit.json",
+        "invariant_check": "python3 -I workstreams/po03/successor/audit_own_records.py --verify-invariant",
+        "not_independent_support": "Authored by po03-worker-a8. It is recorded as a reproduction of an independently established finding, and is not counted toward the independence threshold.",
+        "observed": "Applied to this cohort's own result records, the same check fails on every one of them: no a8 record resolves to its own bytes at the result_commit_id it declares. One is worse than absent - a record does exist at the declared commit, but it is an earlier version of that same record, so the locator resolves and returns the wrong answer.",
+        "recurrence_test": "test_a8_lessons.SelfReadbackTests.test_no_record_of_this_cohort_resolves_at_its_declared_commit",
+        "significance": "This is the lesson turned on its author. The defect class is not something other cohorts fell into and this one avoided; it is in this cohort's own output, produced by following the protocol exactly as instructed. It also shows why C-09 checks that the bytes at the locator are the bytes being admitted rather than merely that something is there: the stale case would pass an existence check."
+      },
       "lesson_id": "L-08",
       "lineage": {
         "derived_from": [],
@@ -328,7 +344,7 @@
       "mechanism_is_live": true,
       "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c09_unresolvable_locator_refused",
       "recurrence_test_author": "po03-worker-a8",
-      "residual_boundary": "G2 resolves against a modelled immutable store. The live equivalent is `git cat-file blob <commit>:<path>`, which is what the integration proposal recommends; this cohort has not changed the live control plane.",
+      "residual_boundary": "Two residuals, and the second is live. G2 resolves against a modelled immutable store; the live equivalent is `git cat-file blob <commit>:<path>`, which is what the integration proposal recommends, and this cohort has not changed the live control plane. Separately, this cohort's own six records carry locators that do not resolve to them, because the coordinator-owned tool that writes them is read-only here. A parent ingesting a8 must resolve these records at the branch head rather than at their declared commit.",
       "statement": "'Committed' is a claim about an immutable store, so it has to be checked against that store. A result record that cannot be read back at the locator it declares has not been committed, whatever its own contents assert.",
       "support": [
         {
@@ -380,6 +396,7 @@
       "disposition": "REJECT",
       "disposition_basis": "Refused on executed evidence rather than on taste. Applied to a real pair of score sets, the weighted candidate reports progress for a change that reintroduces a false completion - the precise outcome the preregistered guard exists to refuse. A metric that can be improved by regressing on safety is not a measure of progress. The guarded rule is retained.",
       "independently_supported": false,
+      "internal_reproduction": null,
       "lesson_id": "L-09",
       "lineage": {
         "derived_from": [],
@@ -402,6 +419,7 @@
       "disposition": "SUPERSEDE",
       "disposition_basis": "Built and shown insufficient rather than argued against: under truncate-then-forge, where the last row is dropped and a correctly chained replacement appended, the row count is unchanged and reports a healthy log. The head digest catches it. Superseded by the anchor in C-07, whose own residual is held open under L-07.",
       "independently_supported": false,
+      "internal_reproduction": null,
       "lesson_id": "L-10",
       "lineage": {
         "derived_from": [],
@@ -426,6 +444,7 @@
       "disposition": "RETAIN",
       "disposition_basis": "This lesson also falsifies something this cohort wrote down. G2's original lineage recorded that an independent traversal check was declined because 'the allowlist already refuses traversal before ownership is consulted, so no case measured a failure and no lesson supported it'. The premise was false, and the reason no case measured it is that the frozen public case P24 happens to use a mid-string traversal, which the character-strip does catch. An evaluator of a different owner found the shape this cohort's own suite was blind to. The declined entry is kept in lineage.json with an explicit SUPERSEDED_BY_C-10 disposition rather than deleted.",
       "independently_supported": true,
+      "internal_reproduction": null,
       "lesson_id": "L-11",
       "lineage": {
         "derived_from": [],
@@ -466,6 +485,7 @@
       "disposition": "RETAIN",
       "disposition_basis": "Reproduced against both the packaged G1 and G2 before the fix: after a unit reached COMPLETED, a resubmission was admitted, the projection fell back to RESULT_COMMITTED, and a second completion was recorded. Fixing it required naming the closed states separately from the merely committed ones, because refusing every unit that already holds a result would have made C-06's replay adjudication unreachable. G1's single TERMINAL_STATES set, which mixes the two, is the defect underneath a10's finding.",
       "independently_supported": true,
+      "internal_reproduction": null,
       "lesson_id": "L-12",
       "lineage": {
         "derived_from": [],
@@ -504,6 +524,7 @@
       "disposition": "RETEST",
       "disposition_basis": "The mechanism belongs where files enter the repository, not in the custody engine, because a6's corrected attribution shows the escape came from how work was staged. This cohort's owned prefixes are clean and the check enforces that. Two tracked bytecode files remain under coordinator-owned paths, which this cohort is forbidden to modify, so the lesson cannot be closed: it is retested by the same mechanism once those paths are cleaned by their owner. Recording this as RETAIN would claim a boundary this cohort does not control.",
       "independently_supported": true,
+      "internal_reproduction": null,
       "lesson_id": "L-13",
       "lineage": {
         "derived_from": [],
@@ -556,6 +577,7 @@
       "disposition": "DELETE",
       "disposition_basis": "Withdrawn on the evaluator's own correction. a6 initially disposed a8-u01..a8-u06 as REJECTED, and then recorded that those labels 'conflated unavailable evidence with a quality judgment': the branch was absent from a6's fetch at its scoring snapshot, so there was nothing to test. a6 reclassified 27 of its 30 rejections, including all six a8 rows, as availability boundaries and named only three units as quality-relevant, none of them a8's. Deleted rather than rejected because the claim was never evidenced in the first place - there is no finding to keep on file, only a misreading to withdraw. The correction is preserved by reference, not restated as vindication: a6's basis remains that no a8 result was available to test.",
       "independently_supported": false,
+      "internal_reproduction": null,
       "lesson_id": "L-14",
       "lineage": {
         "derived_from": [

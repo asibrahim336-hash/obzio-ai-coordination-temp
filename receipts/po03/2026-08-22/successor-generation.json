@@ -56,7 +56,11 @@
     },
     {
       "path": "workstreams/po03/successor/lessons/lessons.json",
-      "sha256": "19c51d13db95c822ec92f1e1402e405921844a8e6bb5dd351adf02efe8a3ef8e"
+      "sha256": "7cc49f74f4c5daa0580b374779679ea472627b4f1ddf1fa5f9b4eedbcb287859"
+    },
+    {
+      "path": "workstreams/po03/successor/self-readback-audit.json",
+      "sha256": "0f9ad10ef389b6381351238db55e2b870a1c5552b2f273514c214f5bcff29d20"
     }
   ],
   "boundaries": [
@@ -69,6 +73,11 @@
       "boundary": "no a8 unit has been independently accepted",
       "detail": "At a6's scoring snapshot this branch was absent from a6's fetch, so a6 recorded all six a8 units as unavailable evidence rather than as quality failures. Absence of an adverse finding is not acceptance.",
       "status": "NOT_YET"
+    },
+    {
+      "boundary": "this cohort's own result records do not resolve at their declared commit",
+      "detail": "Every a8 result record declares a result_commit_id that does not contain it, because make_result.py resolves that field to HEAD before the record is committed. One record resolves to a stale earlier version of itself, which is worse than absent: an existence check would accept it. All artifact claims do read back byte-exact at their declared commits, so no evidence is lost, but a parent ingesting these records must resolve them at the branch head. Audited in workstreams/po03/successor/self-readback-audit.json; the tool that writes the records is coordinator-owned and was not modified. This is the defect class lesson L-08 names and G2's change C-09 refuses, reproduced on this cohort's own output.",
+      "status": "NOT_SUPPORTED"
     },
     {
       "boundary": "the live control plane still carries the defects G2 fixes",
@@ -229,7 +238,7 @@
   "merge_authority": false,
   "owner": "po03-worker-a8",
   "po01_non_interference": true,
-  "read_back_verification": "git cat-file blob origin/cursor/po03-a8-successor-generations-ed20:<path> | sha256sum must match the artifact hashes above",
+  "read_back_verification": "git cat-file blob origin/cursor/po03-a8-successor-generations-ed20:<path> | sha256sum must match the artifact hashes above. Resolve at the branch head, not at a record's declared result_commit_id - see the boundary on result records above.",
   "receipt_id": "RCP-PO03-A8-SUCCESSOR-GENERATION-20260822-v001",
   "state": "RESULT_COMMITTED",
   "suites": [

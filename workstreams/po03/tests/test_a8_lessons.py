@@ -30,6 +30,13 @@ from successor.lessons.lessons import DISPOSITIONS, EVIDENCE, LESSONS, OWNER
 REGISTER = PO03 / "successor" / "lessons" / "lessons.json"
 BUILDER = "workstreams/po03/successor/lessons/build_lessons.py"
 HYGIENE = "workstreams/po03/successor/check_custody_hygiene.py"
+AUDITOR = "workstreams/po03/successor/audit_own_records.py"
+SNAPSHOT = PO03 / "successor" / "self-readback-audit.json"
+FINDING_CLASSES = {
+    "ABSENT_AT_DECLARED_COMMIT",
+    "STALE_AT_DECLARED_COMMIT",
+    "RESOLVES_TO_THIS_RECORD",
+}
 
 
 def register() -> dict:
@@ -267,6 +274,124 @@ class WithdrawnBeliefTests(unittest.TestCase):
         """Absence of an adverse finding is not acceptance."""
         record = {lesson["lesson_id"]: lesson for lesson in register()["lessons"]}["L-14"]
         self.assertIn("not acceptance", record["residual_boundary"])
+
+
+class SelfReadbackTests(unittest.TestCase):
+    """L-08's internal reproduction: the lesson applied to this cohort's own records.
+
+    The load-bearing test here reads backwards - it asserts that a defect is
+    still present. L-08 claims a8's own result records do not resolve at the
+    locators they declare, and a claim of that kind must not be allowed to
+    survive the condition that made it true. If the coordinator-owned tool is
+    repaired, this fails and says what to do about it.
+    """
+
+    def snapshot(self) -> dict:
+        return json.loads(SNAPSHOT.read_text(encoding="utf-8"))
+
+    def test_no_record_of_this_cohort_resolves_at_its_declared_commit(self):
+        completed = subprocess.run(
+            [sys.executable, "-I", AUDITOR, "--verify-invariant"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(
+            completed.returncode,
+            0,
+            "the read-back invariant no longer holds; if this says REVISIT, make_result.py was "
+            f"repaired and L-08 must be revisited:\n{completed.stdout}{completed.stderr}",
+        )
+        self.assertIn("INVARIANT HOLDS", completed.stdout)
+
+    def test_every_artifact_claim_read_back_byte_exact(self):
+        """The half of the protocol that does work, and the reason nothing is lost."""
+        snapshot = self.snapshot()
+        self.assertEqual(snapshot["aggregate"]["artifact_verification_failures"], 0)
+        self.assertGreater(snapshot["aggregate"]["artifact_claims_audited"], 0)
+        for unit in snapshot["units"]:
+            self.assertEqual(
+                unit["artifacts_verified"],
+                unit["artifact_count"],
+                f"{unit['unit_id']} has an artifact that does not read back at its declared commit",
+            )
+
+    def test_the_snapshot_states_the_commit_it_observed(self):
+        """A point-in-time observation has to say which point in time."""
+        commit = self.snapshot()["observed_at_commit"]
+        self.assertRegex(commit, r"^[0-9a-f]{40}$")
+        resolved = subprocess.run(
+            ["git", "cat-file", "-e", f"{commit}^{{commit}}"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+        )
+        self.assertEqual(resolved.returncode, 0, f"observed_at_commit {commit[:7]} is not a commit here")
+
+    def test_the_findings_account_for_every_record_audited(self):
+        aggregate = self.snapshot()["aggregate"]
+        self.assertEqual(aggregate["records_resolving_to_themselves"], 0)
+        self.assertEqual(
+            aggregate["records_absent_at_declared_commit"] + aggregate["records_stale_at_declared_commit"],
+            aggregate["records_audited"],
+        )
+        self.assertEqual(aggregate["result"], "DISCREPANCY_FOUND")
+        for unit in self.snapshot()["units"]:
+            self.assertIn(unit["record_finding"], FINDING_CLASSES, unit["unit_id"])
+
+    def test_the_stale_case_is_distinguished_from_the_absent_case(self):
+        """They are not equally bad, and collapsing them would hide the worse one."""
+        snapshot = self.snapshot()
+        stale = [
+            unit["unit_id"] for unit in snapshot["units"]
+            if unit["record_finding"] == "STALE_AT_DECLARED_COMMIT"
+        ]
+        absent = [
+            unit["unit_id"] for unit in snapshot["units"]
+            if unit["record_finding"] == "ABSENT_AT_DECLARED_COMMIT"
+        ]
+        self.assertTrue(stale, "no stale case observed, so the distinction is untested here")
+        self.assertTrue(absent)
+        self.assertEqual(sorted(snapshot["findings_by_class"]["STALE_AT_DECLARED_COMMIT"]), sorted(stale))
+
+        reproduction = {lesson["lesson_id"]: lesson for lesson in register()["lessons"]}["L-08"][
+            "internal_reproduction"
+        ]
+        self.assertIn(
+            "existence check",
+            reproduction["significance"],
+            "the reproduction must say why a resolving-but-stale locator is the worse case",
+        )
+
+    def test_the_classifier_reaches_all_three_outcomes(self):
+        """Including the one that does not occur today, which is the fixed case."""
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location("audit_own_records", REPO_ROOT / AUDITOR)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+
+        current = b'{"unit_id": "a8-u01"}\n'
+        self.assertEqual(module.classify(None, current), "ABSENT_AT_DECLARED_COMMIT")
+        self.assertEqual(module.classify(current, current), "RESOLVES_TO_THIS_RECORD")
+        self.assertEqual(module.classify(b'{"unit_id": "a8-u01", "older": true}\n', current), "STALE_AT_DECLARED_COMMIT")
+
+    def test_l08_records_the_reproduction_without_counting_it_as_independent(self):
+        record = {lesson["lesson_id"]: lesson for lesson in register()["lessons"]}["L-08"]
+        reproduction = record["internal_reproduction"]
+        self.assertIsNotNone(reproduction, "L-08 no longer carries its internal reproduction")
+        self.assertTrue((REPO_ROOT / reproduction["document"]).is_file())
+        self.assertEqual(
+            reproduction["recurrence_test"],
+            f"test_a8_lessons.SelfReadbackTests.{self.test_no_record_of_this_cohort_resolves_at_its_declared_commit.__name__}",
+        )
+        self.assertNotIn(OWNER, record["support_owners"], "the reproduction leaked into the support list")
+        self.assertTrue(record["independently_supported"])
+        self.assertIn(OWNER, reproduction["not_independent_support"])
+
+    def test_the_residual_names_how_a_parent_must_resolve_these_records(self):
+        """A defect this cohort cannot fix must at least be actionable downstream."""
+        record = {lesson["lesson_id"]: lesson for lesson in register()["lessons"]}["L-08"]
+        self.assertIn("branch head", record["residual_boundary"])
 
 
 class SupportVerificationTests(unittest.TestCase):

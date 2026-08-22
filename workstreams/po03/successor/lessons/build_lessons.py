@@ -87,6 +87,7 @@ def lesson_record(lesson: dict) -> dict:
         "mechanism_is_live": lesson["mechanism"]["kind"] != "none",
         "recurrence_test": lesson["recurrence_test"],
         "recurrence_test_author": OWNER,
+        "internal_reproduction": lesson.get("internal_reproduction"),
         "disposition": lesson["disposition"],
         "disposition_basis": lesson["disposition_basis"],
         "residual_boundary": lesson["residual_boundary"],
