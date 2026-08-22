@@ -338,6 +338,102 @@ def gate_refusal_evidence(pool: SubmissionPool, reviewer, adjudicator) -> dict[s
     }
 
 
+def _freeze_effect_under_blinding(by_id: dict[str, CellResult]) -> dict[str, Any]:
+    """Does removing the ordering gate still change anything once identity is hidden?
+
+    If it does not, the freeze would be redundant under blinding and the honest
+    reading of the hypothesis would be that only one of its two mechanisms is
+    doing work. The comparison is between the gated and ungated cells of the same
+    reviewer and adjudicator, with blinding on in both.
+    """
+    comparisons: list[dict[str, Any]] = []
+    for reviewer in ("neutral", "standing-sensitive"):
+        for adjudicator in ("credulous", "probing"):
+            gated = by_id.get(f"blind|gated|{reviewer}|{adjudicator}")
+            ungated = by_id.get(f"blind|ungated|{reviewer}|{adjudicator}")
+            if not gated or not ungated:
+                continue
+            changed_rankings = sorted(
+                permutation
+                for permutation in gated.ranking_by_permutation
+                if gated.ranking_by_permutation.get(permutation)
+                != ungated.ranking_by_permutation.get(permutation)
+            )
+            score_deltas = {
+                permutation: {
+                    submission_id: ungated.score_by_permutation[permutation][submission_id]
+                    - gated.score_by_permutation[permutation][submission_id]
+                    for submission_id in sorted(gated.score_by_permutation[permutation])
+                }
+                for permutation in sorted(gated.score_by_permutation)
+                if permutation in ungated.score_by_permutation
+            }
+            comparisons.append(
+                {
+                    "adjudicator": adjudicator,
+                    "permutations_with_changed_ranking": changed_rankings,
+                    "reviewer": reviewer,
+                    "score_deltas": score_deltas,
+                    "ungated_weighting_chosen": ungated.weighting_used,
+                }
+            )
+    any_change = any(item["permutations_with_changed_ranking"] for item in comparisons)
+
+    # The ranking metric is coarse. A weighting chosen after reading the
+    # candidates can move the margins a long way without reordering anyone, and a
+    # margin is what a close decision turns on, so the differential gain is
+    # recorded alongside the preregistered ranking metric rather than instead of it.
+    spreads: list[dict[str, Any]] = []
+    for item in comparisons:
+        for permutation, deltas in sorted(item["score_deltas"].items()):
+            values = list(deltas.values())
+            if not values:
+                continue
+            spreads.append(
+                {
+                    "adjudicator": item["adjudicator"],
+                    "gain_spread": max(values) - min(values),
+                    "largest_gain_submissions": sorted(
+                        key for key, value in deltas.items() if value == max(values)
+                    ),
+                    "permutation_id": permutation,
+                    "reviewer": item["reviewer"],
+                    "smallest_gain": min(values),
+                    "largest_gain": max(values),
+                }
+            )
+    max_spread = max((item["gain_spread"] for item in spreads), default=0)
+    return {
+        "any_ranking_changed_under_blinding": any_change,
+        "comparisons": comparisons,
+        "differential_gain": {
+            "max_gain_spread": max_spread,
+            "note": (
+                "The spread is the difference between the largest and smallest weighted gain any "
+                "submission receives when the weighting is chosen after ingestion. A spread above zero "
+                "means the choice favoured some candidates over others; zero would mean it only shifted "
+                "the scale."
+            ),
+            "per_permutation": spreads,
+        },
+        "preregistered_metric": "at least one ranking changes under blinding when the ordering gate is removed",
+        "reading": (
+            "Removing the ordering gate changes the ranking even with identity fully withheld, so "
+            "blinding does not make the freeze redundant: the two mechanisms close different channels."
+            if any_change
+            else (
+                "Removing the ordering gate changed no ranking under blinding, so the preregistered "
+                f"metric is not met. It did move the margins: the largest gain spread is {max_spread} "
+                "weighted points, and the extra gain lands on the candidate resting on a refuted claim "
+                "and on the candidate whose only strength is its own confidence. The freeze's effect "
+                "under blinding on this pool is therefore a margin effect rather than an order effect, "
+                "and this unit records the preregistered claim as refuted rather than restating the "
+                "metric to fit the observation."
+            )
+        ),
+    }
+
+
 def run_experiment(
     pool: SubmissionPool, probes, identities: Sequence[IdentityEnvelope] | None = None
 ) -> dict[str, Any]:
@@ -377,6 +473,7 @@ def run_experiment(
     blind_cells = [cell for cell in cells if cell.blind]
     unblinded_cells = [cell for cell in cells if not cell.blind]
     return {
+        "freeze_effect_under_blinding": _freeze_effect_under_blinding(by_id),
         "blinding_effect": {
             "blind_cells": len(blind_cells),
             "max_identity_swing_in_blind_cells": max((cell.max_identity_swing for cell in blind_cells), default=0),

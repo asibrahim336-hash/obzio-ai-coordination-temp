@@ -167,8 +167,18 @@ class RepositoryProbes:
             )
             lines = [line for line in completed.stdout.splitlines() if line.strip()]
             errors = [line.removeprefix("INVALID: ") for line in lines if line.startswith("INVALID: ")]
-            # The absolute temporary path is runtime noise, not evidence.
-            printable = [str(part) for part in command[:-1]] + ["<temporary document>"]
+            # Recorded without absolute paths. The interpreter location and the
+            # checkout directory are properties of this runner, not of the
+            # observation, and a command naming them cannot be re-run from a clean
+            # clone somewhere else.
+            printable = [
+                Path(sys.executable).name,
+                "-I",
+                "-B",
+                VALIDATOR_RELPATH,
+                "result",
+                "<temporary document>",
+            ]
             return printable, completed.returncode, errors
         finally:
             shutil.rmtree(workdir, ignore_errors=True)
@@ -316,21 +326,11 @@ class RepositoryProbes:
         )
 
     def seeded_control_suite(self) -> ProbeObservation:
-        command = [
-            sys.executable,
-            "-I",
-            "-B",
-            "-m",
-            "unittest",
-            "discover",
-            "-s",
-            SEEDED_TESTS_RELPATH,
-            "-p",
-            "test_*.py",
-        ]
+        arguments = ["-I", "-B", "-m", "unittest", "discover", "-s", SEEDED_TESTS_RELPATH, "-p", "test_*.py"]
+        command = [Path(sys.executable).name, *arguments]
         environment = dict(os.environ, PYTHONDONTWRITEBYTECODE="1")
         completed = subprocess.run(
-            command,
+            [sys.executable, *arguments],
             capture_output=True,
             text=True,
             timeout=600,
