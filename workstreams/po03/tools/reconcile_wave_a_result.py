@@ -80,6 +80,11 @@ def _args() -> argparse.Namespace:
     parser.add_argument("--branch", required=True)
     parser.add_argument("--result-commit", required=True)
     parser.add_argument("--return-commit", required=True)
+    parser.add_argument(
+        "--manifest-relative", default="result/artifact-manifest.json"
+    )
+    parser.add_argument("--ready-relative", default="result/ready-to-commit.json")
+    parser.add_argument("--producer-result-relative", default="result/result.json")
     parser.add_argument("--provider-run-id", required=True)
     parser.add_argument("--worker-id", required=True)
     parser.add_argument("--model-observed", required=True)
@@ -102,9 +107,9 @@ def main() -> int:
     slug = f"wa-{args.task_number:03d}"
     task_id = f"PO03-WA-{args.task_number:03d}"
     prefix = f"workstreams/po03/wave-a/units/{slug}/"
-    manifest_path = prefix + "result/artifact-manifest.json"
-    ready_path = prefix + "result/ready-to-commit.json"
-    result_path = prefix + "result/result.json"
+    manifest_path = prefix + args.manifest_relative
+    ready_path = prefix + args.ready_relative
+    result_path = prefix + args.producer_result_relative
 
     subprocess.run(
         ["git", "merge-base", "--is-ancestor", PROTOCOL_ANCESTOR, args.return_commit],
@@ -124,7 +129,8 @@ def main() -> int:
     ready_bytes = _show(args.return_commit, ready_path)
     ready = json.loads(ready_bytes)
     producer_result = json.loads(_show(args.return_commit, result_path))
-    if ready.get("status") != "READY_TO_COMMIT" or ready.get("task_id") != task_id:
+    terminal_report = ready.get("status", ready.get("terminal_report"))
+    if terminal_report != "READY_TO_COMMIT" or ready.get("task_id") != task_id:
         raise ValueError("invalid producer return envelope")
     if producer_result.get("task_id") != task_id:
         raise ValueError("result task mismatch")
@@ -134,13 +140,23 @@ def main() -> int:
         raise ValueError("manifest artifact count mismatch")
 
     artifacts: list[dict[str, Any]] = []
-    observed_bytes = 0
+    payload_bytes = 0
     for index, artifact in enumerate(manifest["artifacts"]):
-        relative = artifact["path"]
-        data = _show(args.return_commit, prefix + relative)
+        declared_path = artifact["path"]
+        content_path = (
+            declared_path
+            if declared_path.startswith("workstreams/")
+            else prefix + declared_path
+        )
+        relative = (
+            content_path[len(prefix):]
+            if content_path.startswith(prefix)
+            else content_path
+        )
+        data = _show(args.return_commit, content_path)
         if len(data) != artifact["bytes"] or _sha(data) != artifact["sha256"]:
             raise ValueError(f"immutable readback mismatch: {relative}")
-        observed_bytes += len(data)
+        payload_bytes += len(data)
         artifacts.append(
             {
                 "artifact_id": artifact.get(
@@ -148,7 +164,7 @@ def main() -> int:
                 ),
                 "logical_name": relative,
                 "content_uri": (
-                    f"git:{args.branch}@{args.return_commit}:{prefix}{relative}"
+                    f"git:{args.branch}@{args.return_commit}:{content_path}"
                 ),
                 "sha256": artifact["sha256"],
                 "bytes": artifact["bytes"],
@@ -158,8 +174,32 @@ def main() -> int:
                 "readback_verified_at": args.verified_at,
             }
         )
-    if observed_bytes != manifest["total_bytes"]:
+    if payload_bytes != manifest["total_bytes"]:
         raise ValueError("manifest byte total mismatch")
+    envelope_specs = [
+        ("ARTIFACT-MANIFEST", args.manifest_relative, manifest_path, manifest_bytes),
+        ("READY-TO-COMMIT", args.ready_relative, ready_path, ready_bytes),
+    ]
+    existing_content_paths = {
+        artifact["content_uri"].split(":", 2)[-1] for artifact in artifacts
+    }
+    for suffix, logical_name, content_path, data in envelope_specs:
+        if content_path in existing_content_paths:
+            continue
+        artifacts.append(
+            {
+                "artifact_id": f"{task_id}-{suffix}",
+                "logical_name": logical_name,
+                "content_uri": (
+                    f"git:{args.branch}@{args.return_commit}:{content_path}"
+                ),
+                "sha256": _sha(data),
+                "bytes": len(data),
+                "media_type": "application/json",
+                "readback_verified_at": args.verified_at,
+            }
+        )
+    observed_bytes = sum(int(artifact["bytes"]) for artifact in artifacts)
 
     control_result_rel = f"control/results/wave-a/{slug}.json"
     control_result = _read_json(control_result_rel)
@@ -217,8 +257,10 @@ def main() -> int:
             "state": "PASS",
             "manifest_sha256": _sha(manifest_bytes),
             "manifest_bytes": len(manifest_bytes),
-            "artifact_count": len(artifacts),
-            "artifact_bytes": observed_bytes,
+            "payload_artifact_count": len(manifest["artifacts"]),
+            "payload_artifact_bytes": payload_bytes,
+            "transaction_artifact_count": len(artifacts),
+            "transaction_artifact_bytes": observed_bytes,
             "return_envelope_sha256": _sha(ready_bytes),
             "return_envelope_bytes": len(ready_bytes),
         },
@@ -227,7 +269,14 @@ def main() -> int:
             "seeded_contracts": {"state": "PASS", "count": args.seeded_tests},
         },
         "hypothesis_outcome": producer_result.get("hypothesis_outcome"),
-        "source_claim_count": len(producer_result.get("source_claims", [])),
+        "source_claim_count": (
+            len(producer_result.get("source_claims", []))
+            if isinstance(producer_result.get("source_claims", []), list)
+            else producer_result.get("source_claims", {}).get(
+                "claim_count",
+                producer_result.get("source_claims", {}).get("count", 0),
+            )
+        ),
         "model_requested": _read_json(f"control/inputs/wave-a/{slug}.json")[
             "configuration"
         ]["model_slug"],
@@ -365,7 +414,9 @@ def main() -> int:
         row for row in _read_jsonl("metrics/work-unit-runs.jsonl")
         if row.get("task_id") != task_id
     ]
-    producer_metrics = producer_result.get("metrics", {})
+    producer_metrics = producer_result.get(
+        "metrics", producer_result.get("preregistered_metrics", {})
+    )
     metrics.append(
         {
             "task_id": task_id,
