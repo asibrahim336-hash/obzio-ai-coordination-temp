@@ -1,0 +1,79 @@
+$ python3 staging_gate.py --demo
+{
+  "any_reached_staged": false,
+  "any_slot_published": false,
+  "clean_slot_files": [
+    "FINDING.md",
+    "component.py",
+    "evidence/output.txt"
+  ],
+  "clean_stage_state": "RESULT_STAGED",
+  "truncation_attempts": [
+    {
+      "reason": "ARTIFACT_VERIFICATION_FAILED",
+      "recovery": {
+        "action": "SCRATCH_DISCARDED",
+        "debris_found": [],
+        "slot_published": false,
+        "state": "RESULT_STAGING"
+      },
+      "slot_published": false,
+      "state": "RESULT_STAGING",
+      "truncated_artifact": "component.py"
+    },
+    {
+      "reason": "ARTIFACT_VERIFICATION_FAILED",
+      "recovery": {
+        "action": "SCRATCH_DISCARDED",
+        "debris_found": [],
+        "slot_published": false,
+        "state": "RESULT_STAGING"
+      },
+      "slot_published": false,
+      "state": "RESULT_STAGING",
+      "truncated_artifact": "evidence/output.txt"
+    },
+    {
+      "reason": "ARTIFACT_VERIFICATION_FAILED",
+      "recovery": {
+        "action": "SCRATCH_DISCARDED",
+        "debris_found": [],
+        "slot_published": false,
+        "state": "RESULT_STAGING"
+      },
+      "slot_published": false,
+      "state": "RESULT_STAGING",
+      "truncated_artifact": "FINDING.md"
+    }
+  ]
+}
+exit=0
+
+$ python3 -m unittest -v test_staging_gate
+test_missing_artifact_is_distinguished_from_truncation (test_staging_gate.AdversarialTests.test_missing_artifact_is_distinguished_from_truncation) ... ok
+test_publishing_over_an_existing_slot_is_refused (test_staging_gate.AdversarialTests.test_publishing_over_an_existing_slot_is_refused) ... ok
+test_same_length_corruption_is_caught_by_the_hash_not_the_byte_count (test_staging_gate.AdversarialTests.test_same_length_corruption_is_caught_by_the_hash_not_the_byte_count)
+A byte-count-only gate would pass this; the hash must catch it. ... ok
+test_verification_reads_the_file_not_the_declaration (test_staging_gate.AdversarialTests.test_verification_reads_the_file_not_the_declaration)
+Overwrite after writing: the gate must notice the disk, not the intent. ... ok
+test_a_complete_write_reaches_staged (test_staging_gate.CleanStageTests.test_a_complete_write_reaches_staged) ... ok
+test_all_declared_artifacts_are_present_after_promotion (test_staging_gate.CleanStageTests.test_all_declared_artifacts_are_present_after_promotion) ... ok
+test_empty_declaration_is_refused (test_staging_gate.CleanStageTests.test_empty_declaration_is_refused) ... ok
+test_no_scratch_directory_survives_a_successful_stage (test_staging_gate.CleanStageTests.test_no_scratch_directory_survives_a_successful_stage) ... ok
+test_every_process_loss_point_fails_closed (test_staging_gate.CrashMatrixTests.test_every_process_loss_point_fails_closed)
+Loud crashes before and after each artifact never publish a slot. ... ok
+test_every_silent_short_write_fails_closed (test_staging_gate.CrashMatrixTests.test_every_silent_short_write_fails_closed)
+Exhaustive matrix over (artifact index x truncation point). ... ok
+test_truncation_is_reported_with_declared_and_observed_counts (test_staging_gate.CrashMatrixTests.test_truncation_is_reported_with_declared_and_observed_counts) ... ok
+test_zero_byte_artifact_is_caught (test_staging_gate.CrashMatrixTests.test_zero_byte_artifact_is_caught) ... ok
+test_crash_debris_is_discarded_and_named_on_recovery (test_staging_gate.RecoveryTests.test_crash_debris_is_discarded_and_named_on_recovery)
+A dead process cannot clean up after itself; recovery must. ... ok
+test_recovery_after_a_clean_stage_verifies_the_published_slot (test_staging_gate.RecoveryTests.test_recovery_after_a_clean_stage_verifies_the_published_slot) ... ok
+test_retry_after_a_failed_stage_succeeds (test_staging_gate.RecoveryTests.test_retry_after_a_failed_stage_succeeds) ... ok
+test_reproduction_never_stages_or_publishes_a_partial_slot (test_staging_gate.ReproductionTests.test_reproduction_never_stages_or_publishes_a_partial_slot) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.052s
+
+OK
+exit=0
