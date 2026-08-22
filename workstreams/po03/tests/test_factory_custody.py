@@ -509,6 +509,71 @@ class CrossControllerLeaseTests(CustodyTestCase):
         self.assertEqual("ACQUIRED", MODULE.acquire_remote_lease("po03-unit-903", "bc-beta")["state"])
 
 
+class DuplicateDispatchTests(CustodyTestCase):
+    """A key that already produced a durable result must not be dispatched again.
+
+    Regression cover for the po03-canary-001 collision, where a second producer
+    was handed a worktree pinned before the first producer's commit and could not
+    observe the conflict until its push was refused.
+    """
+
+    SLOT = "workstreams/po03/attempts/po03-dup-001"
+    KEY = "COM-PO03:po03-dup-001:attempt-1"
+
+    def setUp(self):
+        super().setUp()
+        root = Path(self.temporary.name)
+        self.remote = root / "remote.git"
+        subprocess.run(("git", "init", "--bare", "--quiet", str(self.remote)), check=True)
+        subprocess.run(("git", "init", "--quiet"), cwd=self.repository, check=True)
+        for key, value in (("user.email", "po03@obzio.invalid"), ("user.name", "PO-03 Test")):
+            subprocess.run(("git", "config", key, value), cwd=self.repository, check=True)
+        subprocess.run(
+            ("git", "remote", "add", "origin", str(self.remote)), cwd=self.repository, check=True
+        )
+        capsule_dir = MODULE.CONTROL_ROOT / "tasks" / "po03-dup-001"
+        capsule_dir.mkdir(parents=True, exist_ok=True)
+        (capsule_dir / "input.json").write_text(
+            json.dumps(
+                {
+                    "task_id": "po03-dup-001",
+                    "ownership": {"result_slot": self.SLOT},
+                    "transaction": {"idempotency_key": self.KEY},
+                },
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
+    def _publish_result(self, idempotency_key):
+        slot = self.repository / self.SLOT
+        slot.mkdir(parents=True, exist_ok=True)
+        (slot / "result.json").write_text(
+            json.dumps({"attempt": {"idempotency_key": idempotency_key},
+                        "result_transaction": {"result_commit_id": "deadbeef"}}),
+            encoding="utf-8",
+        )
+        self._git("add", "-A")
+        self._git("commit", "--quiet", "-m", "po03: prior producer result")
+        self._git("push", "--quiet", "origin", "HEAD:refs/heads/po03/prior-producer")
+
+    def test_unpublished_key_is_dispatchable(self):
+        outcome = MODULE.dispatch_precheck("po03-dup-001")
+        self.assertEqual("DISPATCHABLE", outcome["state"])
+
+    def test_published_key_is_already_satisfied(self):
+        self._publish_result(self.KEY)
+        outcome = MODULE.dispatch_precheck("po03-dup-001")
+        self.assertEqual("ALREADY_SATISFIED", outcome["state"])
+        self.assertEqual("refs/heads/po03/prior-producer", outcome["existing_ref"])
+        self.assertEqual("deadbeef", outcome["existing_result_commit_id"])
+
+    def test_a_different_key_in_the_same_slot_does_not_satisfy(self):
+        self._publish_result("COM-PO03:po03-dup-001:attempt-2")
+        outcome = MODULE.dispatch_precheck("po03-dup-001")
+        self.assertEqual("DISPATCHABLE", outcome["state"])
+
+
 class RegistryTests(CustodyTestCase):
     def test_registry_is_append_only(self):
         MODULE.append_registry({"registry_event": "CREATED", "task_id": "po03-unit-004"})

@@ -30,6 +30,19 @@ PROTOCOL_VERSION = "OBZIO-TRANSACTIONAL-RESULT-v1"
 GENERATED = ("manifest.json", "result.json")
 VERDICTS = ("PASS", "FAIL", "NOT_YET", "NOT_SUPPORTED", "OWNER_BLOCKED")
 
+# Interpreter bytecode is machine and interpreter specific, so counting it as a
+# durable artifact would put non-portable bytes inside the hash coverage that
+# clean-clone reproduction is supposed to guarantee.
+NON_PORTABLE_SUFFIXES = (".pyc", ".pyo", ".so", ".dylib", ".dll")
+NON_PORTABLE_DIRECTORIES = ("__pycache__", ".pytest_cache", ".mypy_cache", ".ruff_cache")
+
+
+def is_non_portable(path: str) -> bool:
+    parts = Path(path).parts
+    if any(part in NON_PORTABLE_DIRECTORIES for part in parts):
+        return True
+    return path.endswith(NON_PORTABLE_SUFFIXES)
+
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -96,8 +109,13 @@ def main(argv: list[str] | None = None) -> int:
     slot = capsule["ownership"]["result_slot"]
     transaction = capsule["transaction"]
 
-    committed = [path for path in list_committed(repo, args.artifact_commit, slot)
-                 if Path(path).name not in GENERATED]
+    all_committed = list_committed(repo, args.artifact_commit, slot)
+    excluded_non_portable = sorted(path for path in all_committed if is_non_portable(path))
+    committed = [
+        path
+        for path in all_committed
+        if Path(path).name not in GENERATED and not is_non_portable(path)
+    ]
     if not committed:
         raise SystemExit(
             f"{args.task_id}: commit {args.artifact_commit} contains no artifacts under {slot}; "
@@ -142,6 +160,7 @@ def main(argv: list[str] | None = None) -> int:
             "exact_model": args.exact_model,
             "provider_run_id": args.provider_run_id,
         },
+        "excluded_non_portable_paths": excluded_non_portable,
         "generated_at": utc_now(),
         "decision_changed": [],
     }
@@ -205,6 +224,7 @@ def main(argv: list[str] | None = None) -> int:
                 "total_bytes": total_bytes,
                 "manifest_sha256": result["result_transaction"]["manifest_sha256"],
                 "verdict": args.verdict,
+                "excluded_non_portable_paths": excluded_non_portable,
                 "next": "commit manifest.json and result.json, push, then report READY_TO_COMMIT",
             },
             indent=2,

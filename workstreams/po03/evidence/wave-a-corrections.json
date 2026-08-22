@@ -1,0 +1,113 @@
+{
+  "corrections_id": "EV-PO03-WAVE-A-CORRECTIONS-20260822-b2e7",
+  "controller_run_id": "bc-2bb75c2e-66fe-4eee-b456-e1d5e22db2e7",
+  "recorded_at": "2026-08-22T07:40:00Z",
+  "decision_changed": [],
+  "purpose": "Record coordinator decisions and live mechanism changes driven by defects measured during Wave A execution, each with the recurrence test that locks it.",
+
+  "correction_1_canary_slot_disposition": {
+    "subject": "po03-canary-001",
+    "decision_requested_by_producer": true,
+    "producer_refused_to_reconcile": true,
+    "producer_refusal_basis": "every reconciliation route available to it was a prohibited force-push, rebase or merge, and discarding either side would destroy unique evidence",
+    "coordinator_decision": "SUPERSEDE",
+    "canonical_slot_content": {
+      "ref": "refs/heads/po03/po03-canary-001",
+      "commit": "4b0506a440614875987f52616f04deba879b9e16",
+      "authored_by_controller": "bc-13b664e4-a9eb-4a06-9b23-3283644e5b31",
+      "accepted_as_canonical_fill": true,
+      "basis": "it was published first, its bytes were independently verified against the frozen capsule nonce and its recorded nonce hash recomputed correctly"
+    },
+    "second_producer_evidence_preserved": {
+      "durable_ref": "refs/heads/po03/canary-collision-b2e7",
+      "commit": "788f07fcf09d8caadf6e46271c5c018cec9ce1c1",
+      "artifacts": [
+        {"path": "workstreams/po03/attempts/canary/po03-canary-001/canary.json", "sha256": "8a7baed9734008103e28a14a745c72e712b5356fdaeae4652c9d5a034cc8523d", "bytes": 852},
+        {"path": "workstreams/po03/attempts/canary/po03-canary-001/readback.json", "sha256": "d95640814d7cd433c004cea3a8ba07093c70fe2affdfb3c3a63835d43473426e", "bytes": 3138}
+      ],
+      "why_preserved": "AGENTS.md rule 9 forbids silently deleting unique evidence. The second producer's collision analysis is the only record of how the defect was detected, so discarding it to tidy the slot was refused.",
+      "durability_gap_closed": "the evidence existed only on a local branch inside one ephemeral VM until it was published to a distinct remote ref; it would have been lost with the machine"
+    },
+    "no_prohibited_act_performed": {
+      "force_push": false,
+      "rebase": false,
+      "merge": false,
+      "remote_ref_of_other_controller_mutated": false
+    },
+    "counted_as_wave_a_unit": false,
+    "counted_basis": "a route precondition probe, not one of the 64 commissioned attempts"
+  },
+
+  "correction_2_duplicate_dispatch_is_now_a_no_op": {
+    "defect_reported_by": "po03-canary-001 producer",
+    "defect": "One idempotency key was executed twice against one result slot. Correct transactional semantics would make the second dispatch a no-op returning the existing result; instead the second producer was handed a fresh worktree pinned at the pre-collision base, so it could not observe the conflict until its push was refused.",
+    "defect_class": "dispatch-layer idempotency, not git route durability",
+    "producer_distinction_accepted": "the write, commit, push and read-back half of the route was verified sound; what failed was the dispatch layer's idempotency guarantee",
+    "live_mechanism_change": {
+      "implementation": [
+        "workstreams/po03/tools/transactional_factory.py::find_published_result",
+        "workstreams/po03/tools/transactional_factory.py::dispatch_precheck"
+      ],
+      "behaviour": "Before dispatch, the controller scans published po03 refs for an existing result.json in the unit's slot whose attempt.idempotency_key matches. A match returns ALREADY_SATISFIED with the existing ref and result commit, and the unit is not dispatched again.",
+      "recurrence_tests": [
+        "workstreams/po03/tests/test_factory_custody.py::DuplicateDispatchTests::test_unpublished_key_is_dispatchable",
+        "workstreams/po03/tests/test_factory_custody.py::DuplicateDispatchTests::test_published_key_is_already_satisfied",
+        "workstreams/po03/tests/test_factory_custody.py::DuplicateDispatchTests::test_a_different_key_in_the_same_slot_does_not_satisfy"
+      ]
+    },
+    "relationship_to_the_remote_lease_repair": "The remote-ref ownership claim prevents two controllers from both believing they own a slot. This precheck additionally prevents re-dispatching a key that has already produced a durable result, including by the same controller after a restart. They address different halves of the same failure.",
+    "residual_limitation": "The stale-capsule observation stands: a producer's worktree is pinned at the capsule's base commit, so it still cannot detect a conflict that appears after that base. The precheck moves detection to the controller before dispatch rather than making the producer able to detect it."
+  },
+
+  "correction_3_non_portable_bytecode_was_counted_as_durable": {
+    "defect_owner": "this controller",
+    "defect": "workstreams/po03/tools/emit_result.py enumerated every committed file in a unit slot as a counted artifact, so producers that left interpreter bytecode in their subtree had __pycache__/*.pyc counted, hashed and included in total_bytes.",
+    "why_it_matters": "Interpreter bytecode is machine and interpreter specific. Counting it places non-reproducible bytes inside the hash coverage that clean-clone reproduction is supposed to guarantee, and it inflates byte totals with derived output. In one observed case the 3839-byte bytecode artifact was larger than the 2710-byte source it was compiled from.",
+    "measured_scope": {
+      "manifests_examined": 42,
+      "manifests_affected": 10,
+      "bytecode_artifacts_counted": 11,
+      "measurement_method": "read every published manifest.json by immutable ref and counted artifacts whose logical_name is bytecode or sits under __pycache__"
+    },
+    "live_mechanism_change": {
+      "implementation": [
+        "workstreams/po03/tools/emit_result.py::is_non_portable",
+        "workstreams/po03/.gitignore"
+      ],
+      "behaviour": "Bytecode, native objects and tool caches are excluded from counted artifacts, the exclusion is recorded in manifest.json as excluded_non_portable_paths rather than applied silently, byte totals exclude them, and a slot containing only non-portable files is refused as having left nothing durable.",
+      "recurrence_tests": [
+        "workstreams/po03/tests/test_emit_result.py::NonPortableClassificationTests (4 cases)",
+        "workstreams/po03/tests/test_emit_result.py::EmitterExclusionTests::test_bytecode_is_excluded_from_counted_artifacts",
+        "workstreams/po03/tests/test_emit_result.py::EmitterExclusionTests::test_exclusion_is_recorded_rather_than_silent",
+        "workstreams/po03/tests/test_emit_result.py::EmitterExclusionTests::test_byte_total_excludes_bytecode",
+        "workstreams/po03/tests/test_emit_result.py::EmitterExclusionTests::test_a_slot_holding_only_bytecode_is_refused"
+      ]
+    },
+    "already_ingested_results_not_rewritten": true,
+    "not_rewritten_basis": "Those result documents and their ingestion records are immutable by design. Silently regenerating them to hide the defect would defeat the custody guarantee this mechanism exists to provide. The defect and its exact scope are recorded instead, and the fix applies to every subsequent emission.",
+    "affected_unit_disposition": "RETEST",
+    "retest_scope": "the 10 affected manifests should be re-emitted under the corrected emitter before Wave A is offered for independent acceptance"
+  },
+
+  "correction_4_surface_absence_was_over_generalised": {
+    "reported_by": "cohort c5, unit po03-wa-b2e7-034-transport-debris-detector",
+    "producer_verdict": "NOT_SUPPORTED",
+    "producer_basis": "_transport, packs and modules absent",
+    "coordinator_finding": "The verdict is honest about the working tree but conflates three surfaces with different truth values. At the PO-03 branch head none of the three exist. However packs/** does exist at the pinned immutable commit 1e6f53c323f8326d12af213557082a3665991f19 with real content, including per-pack MANIFEST.json, acceptance.py, checks.py, state_machine.py and test_pack.py. The detector was therefore never exercised against real pack content.",
+    "verified_by_controller": "git ls-tree -r 1e6f53c -- packs returned pack files; git ls-tree of the same commit and of main shows no _transport or modules path",
+    "surface_truth_table": {
+      "packs": "PRESENT at pinned commit 1e6f53c; ABSENT at branch head",
+      "_transport": "ABSENT at every commit observed by this controller",
+      "modules": "ABSENT at every commit observed by this controller"
+    },
+    "disposition": "RETEST",
+    "action_taken": "cohort c5 resumed to exercise the detector against the pinned immutable pack commit and to split the verdict per surface instead of returning one blanket NOT_SUPPORTED",
+    "note": "This is a scope correction, not a truthfulness failure. The producer reported exactly what it checked and did not invent debris to detect."
+  },
+
+  "producer_honesty_observations": {
+    "canary_producer": "refused a prohibited reconciliation, reported FAIL against its own hypothesis clause, separated the sound half of the route from the failed half, and escalated the decision rather than choosing unilaterally",
+    "c5_producer": "volunteered that it could not truthfully assert zero out-of-subtree deletion because transient generated bytecode had been cleaned during status tidying, and returned NOT_SUPPORTED rather than manufacturing debris to detect",
+    "assessment": "Both producers preferred an accurate negative to a manufactured positive, which is the behaviour the acceptance standard requires and the behaviour the lost PO-02 Code-2 return lacked."
+  }
+}

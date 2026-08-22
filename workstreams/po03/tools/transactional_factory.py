@@ -924,6 +924,82 @@ def claim_wave(spec_path: Path, controller_run_id: str, *, remote: str = "origin
     }
 
 
+def find_published_result(
+    slot: str,
+    idempotency_key: str,
+    *,
+    remote: str = "origin",
+    ref_glob: str = "refs/heads/po03/*",
+) -> dict[str, Any] | None:
+    """Locate an already-published result for one idempotency key.
+
+    A duplicate dispatch of a key that has already produced a durable result must
+    be a no-op that returns the existing result.  Without this the second producer
+    is handed a worktree pinned before the first producer's commit, so it cannot
+    observe the conflict until its push is refused, which is exactly how the
+    po03-canary-001 collision was discovered.
+    """
+    listing = git("ls-remote", "--heads", remote, ref_glob)
+    refs = [line.split("\t")[1] for line in listing.splitlines() if "\t" in line]
+    if not refs:
+        return None
+    git("fetch", "--no-tags", "--force", remote, f"+{ref_glob}:refs/po03-scan/*")
+    for ref in refs:
+        local = "refs/po03-scan/" + ref[len("refs/heads/po03/") :]
+        body = subprocess.run(
+            ("git", "cat-file", "blob", f"{local}:{slot}/result.json"),
+            cwd=REPO_ROOT,
+            check=False,
+            capture_output=True,
+        )
+        if body.returncode != 0:
+            continue
+        try:
+            document = json.loads(body.stdout.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            continue
+        attempt = document.get("attempt", {})
+        if isinstance(attempt, dict) and attempt.get("idempotency_key") == idempotency_key:
+            return {
+                "ref": ref,
+                "slot": slot,
+                "idempotency_key": idempotency_key,
+                "result": document,
+                "result_commit_id": document.get("result_transaction", {}).get("result_commit_id"),
+            }
+    return None
+
+
+def dispatch_precheck(task_id: str, *, remote: str = "origin") -> dict[str, Any]:
+    """Decide whether a unit may be dispatched, or is already satisfied.
+
+    Returns ALREADY_SATISFIED when this exact idempotency key has already left a
+    durable published result, so the controller returns that result instead of
+    handing a second producer a doomed worktree.
+    """
+    capsule = read_json(CONTROL_ROOT / "tasks" / task_id / "input.json")
+    slot = capsule["ownership"]["result_slot"]
+    idempotency_key = capsule["transaction"]["idempotency_key"]
+    published = find_published_result(slot, idempotency_key, remote=remote)
+    if published is not None:
+        return {
+            "state": "ALREADY_SATISFIED",
+            "task_id": task_id,
+            "slot": slot,
+            "idempotency_key": idempotency_key,
+            "existing_ref": published["ref"],
+            "existing_result_commit_id": published["result_commit_id"],
+            "action": "return the existing result; do not dispatch a second producer",
+        }
+    return {
+        "state": "DISPATCHABLE",
+        "task_id": task_id,
+        "slot": slot,
+        "idempotency_key": idempotency_key,
+        "action": "acquire a remote ownership claim, then dispatch",
+    }
+
+
 def assert_remote_ownership(task_id: str, controller_run_id: str, *, remote: str = "origin") -> None:
     """Refuse to publish into a result slot this controller does not own."""
     claim = read_remote_claim(task_id, remote=remote)
