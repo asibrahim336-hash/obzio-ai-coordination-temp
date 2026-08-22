@@ -1,0 +1,48 @@
+{
+  "task_id": "po03-wa-b2e7-019-manifest-gap-detection",
+  "cohort": "c3 (overlap unit, also reviewed independently by Reviewer A)",
+  "producer_claimed_model": "gpt-5.6-sol-xhigh",
+  "reviewer_id": "po03-reviewer-b-claude-sonnet-5",
+  "protocol_step_1_acceptance": {
+    "acceptance_path": "workstreams/po03/control/tasks/po03-wa-b2e7-019-manifest-gap-detection/acceptance.json",
+    "acceptance_sha256_recorded_before_disclosure": "0fe3910cafa128ceb9dd271440aeb66835dd55d342566411b2a2fd047ac09276",
+    "falsifiable_hypothesis": "Files present but undeclared, and declarations without hashes, are both manifest gaps and both detectable.",
+    "required_deliverable": "Bidirectional manifest gap detection reporting undeclared-present and declared-unhashed entries separately."
+  },
+  "protocol_step_2_extraction": {
+    "ref_used": "refs/heads/po03/wa-b2e7-c3",
+    "extracted_to": "/home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-019-manifest-gap-detection/workstreams/po03/attempts/po03-wa-b2e7-019-manifest-gap-detection",
+    "manifest_and_result_read_before_independent_execution": false
+  },
+  "protocol_step_3_independent_execution": {
+    "command": "python3 -I test_manifest_gaps.py -v",
+    "note": "python3 -I -m unittest test_manifest_gaps.py failed with ModuleNotFoundError because -I does not add the script's own directory to sys.path for -m unittest invocation; the test file's own sys.path.insert(0, ...) only takes effect when run directly, so it was run directly per the producer's own documented invocation style.",
+    "real_output_verbatim": "{\n  \"declared_count\": 2,\n  \"declared_unhashed\": [\n    \"declared-unhashed.txt\"\n  ],\n  \"fixture_label\": \"SYNTHETIC_BIDIRECTIONAL_MANIFEST_GAP_FIXTURE\",\n  \"present_count\": 3,\n  \"undeclared_present\": [\n    \"extra-present.txt\"\n  ],\n  \"verdict\": \"FAIL\"\n}\ntest_manifest_gaps: PASS",
+    "exit_code": 0,
+    "real_pack_verification": {
+      "description": "Independently extracted the real PO-01 pack packs/07-capability-manufacture from the immutable pinned commit 1e6f53c323f8326d12af213557082a3665991f19 via git archive (not synthetic data), and ran manifest_gaps.py against its real MANIFEST.json as a true negative-control / production-data check.",
+      "command": "git archive 1e6f53c323f8326d12af213557082a3665991f19 packs/07-capability-manufacture | tar -x -C /tmp/review_b_real_pack019; python3 -I manifest_gaps.py --pack-dir /tmp/review_b_real_pack019/packs/07-capability-manufacture --manifest MANIFEST.json",
+      "real_output_verbatim": "{\n  \"declared_count\": 7,\n  \"declared_unhashed\": [],\n  \"fixture_label\": null,\n  \"present_count\": 6,\n  \"undeclared_present\": [],\n  \"verdict\": \"PASS\"\n}",
+      "exit_code": 0
+    }
+  },
+  "protocol_step_4_independent_verdict": "PASS",
+  "protocol_step_5_hidden_case": {
+    "description": "The real production MANIFEST.json for packs/07-capability-manufacture (at the pinned commit) declares a file '_spine.py' (43928 bytes, sha256 431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182) that does NOT exist anywhere in the git tree for that directory at that commit -- verified independently with `git ls-tree -r packs/07-capability-manufacture` which lists only 6 real files plus MANIFEST.json itself, no _spine.py. This is a genuine, real (not synthetic) third category of manifest gap: 'declared but missing on disk'. manifest_gaps.py only checks two directions (present-but-undeclared, declared-but-unhashed) and does not check declared-but-absent at all, so it silently reports verdict PASS on a real pack whose manifest contains a phantom, non-existent entry.",
+    "command": "git -C /home/ubuntu/po03-worktrees/review-b ls-tree -r --name-only 1e6f53c323f8326d12af213557082a3665991f19 -- packs/07-capability-manufacture/",
+    "real_output_verbatim": "packs/07-capability-manufacture/BOUNDARIES.md\npacks/07-capability-manufacture/LAUNCH.md\npacks/07-capability-manufacture/MANIFEST.json\npacks/07-capability-manufacture/acceptance.py\npacks/07-capability-manufacture/checks.py\npacks/07-capability-manufacture/state_machine.py\npacks/07-capability-manufacture/test_pack.py",
+    "manifest_gaps_py_verdict_on_this_real_data": "PASS (declared_count=7, present_count=6, undeclared_present=[], declared_unhashed=[])",
+    "survives": true,
+    "survival_reasoning": "The frozen hypothesis and required_deliverable are explicitly and narrowly scoped to two directions only: 'files present but undeclared' and 'declarations without hashes', described as 'bidirectional' detection meaning exactly these two checks. A third failure mode (declared-but-missing / phantom manifest entries, which is what the real pack 07 manifest actually exhibits) is outside that literal scope, so the component does not violate its frozen acceptance criteria by missing it. However this is a materially important, real (not constructed) finding: a tool named 'manifest gap detection' that reports PASS on a real production pack whose manifest cites a nonexistent file is a meaningful blind spot relative to the parent function 'operator-pack-qualification-and-po01-reproduction', even though it is not a violation of the literal frozen hypothesis text."
+  },
+  "protocol_step_6_producer_disclosure": {
+    "producer_verdict": "PASS",
+    "producer_manifest_artifact_count": 7,
+    "producer_manifest_hashes_independently_reverified": true,
+    "reverification_note": "Recomputed sha256 and byte counts for all 7 declared artifacts locally; all matched manifest.json exactly. No __pycache__ or stray files present. Manifest is complete (unlike unit 034's stale manifest).",
+    "agreement": "AGREE",
+    "reason": "Both the synthetic-fixture test and the independent real-pack-data check confirm the tool correctly and separately reports undeclared-present and declared-unhashed gaps, and correctly reports zero gaps on a well-formed real pack for the two checked directions. The hidden case found a genuine real-world scope limitation (declared-but-missing not checked) but this does not fall within the frozen hypothesis's literal two-direction scope."
+  },
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "Independently re-executed under python3 -I with real output matching producer's evidence; independently reverified all 7 artifact hashes and byte counts; independently ran the tool against real, non-synthetic PO-01 pack data (packs/07-capability-manufacture at the pinned immutable commit) and confirmed correct PASS behavior as a true negative control. The hidden case surfaced a real out-of-scope blind spot (declared-but-missing entries, demonstrated with genuine production data showing pack 07's manifest cites a nonexistent _spine.py) worth flagging to the coordinator for potential follow-on work, but it does not invalidate the producer's PASS against the frozen, narrowly-scoped hypothesis."
+}
