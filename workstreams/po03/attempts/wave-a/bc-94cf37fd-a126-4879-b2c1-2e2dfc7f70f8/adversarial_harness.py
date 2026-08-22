@@ -11,11 +11,14 @@ import json
 import multiprocessing
 import os
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 from types import ModuleType, SimpleNamespace
 from typing import Any, Iterator
 
+
+sys.dont_write_bytecode = True
 
 RUN_ID = "bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8"
 PINNED_COMMIT = "7b9ee3e29f2d364cff5cdf2383dd512a0a6603e0"
