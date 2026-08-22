@@ -1,0 +1,80 @@
+$ python3 fenced_sink.py --demo
+{
+  "accepted_writes": 2,
+  "committed_by": "worker-B",
+  "committed_sha256": "4dbac8654068ccb96d481a59ab017f871ec3c1ca4a7b2fb46979bec8d9a215dd",
+  "final_high_water_fence": 2,
+  "final_txn_state": "COMMITTED",
+  "rejections": [
+    {
+      "high_water_fence": 2,
+      "operation": "stage",
+      "presented_fence": 1,
+      "reason": "StaleFenceError",
+      "worker": "worker-A"
+    },
+    {
+      "high_water_fence": 2,
+      "operation": "commit",
+      "presented_fence": 1,
+      "reason": "StaleFenceError",
+      "worker": "worker-A"
+    }
+  ],
+  "sink_bytes_unchanged_by_rejections": true,
+  "timeline": [
+    {
+      "outcome": "ACCEPTED",
+      "step": "A acquires lease at fence 1"
+    },
+    {
+      "outcome": "ACCEPTED",
+      "step": "A stalls; coordinator re-leases to B at fence 2"
+    },
+    {
+      "outcome": "ACCEPTED",
+      "step": "B stages its result at fence 2"
+    },
+    {
+      "outcome": "ACCEPTED",
+      "step": "B commits at fence 2"
+    },
+    {
+      "error": "StaleFenceError",
+      "message": "stage refused: fence 1 is below high-water 2 held by 'worker-B'",
+      "outcome": "REFUSED",
+      "step": "A wakes and stages at stale fence 1"
+    },
+    {
+      "error": "StaleFenceError",
+      "message": "commit refused: fence 1 is below high-water 2 held by 'worker-B'",
+      "outcome": "REFUSED",
+      "step": "A retries commit at stale fence 1"
+    }
+  ]
+}
+exit=0
+
+$ python3 -m unittest -v test_fenced_sink
+test_separate_process_with_a_stale_fence_is_refused (test_fenced_sink.ConcurrencyTests.test_separate_process_with_a_stale_fence_is_refused)
+The guard must be durable, not an artifact of one process's memory. ... ok
+test_threaded_stale_writers_never_win (test_fenced_sink.ConcurrencyTests.test_threaded_stale_writers_never_win) ... ok
+test_equal_fence_is_the_current_holder_and_is_accepted (test_fenced_sink.EqualAndHigherFenceTests.test_equal_fence_is_the_current_holder_and_is_accepted) ... ok
+test_high_water_never_decreases (test_fenced_sink.EqualAndHigherFenceTests.test_high_water_never_decreases) ... ok
+test_higher_fence_permanently_evicts_the_older_lease (test_fenced_sink.EqualAndHigherFenceTests.test_higher_fence_permanently_evicts_the_older_lease) ... ok
+test_non_positive_and_non_integer_fences_are_refused (test_fenced_sink.InvalidFenceTests.test_non_positive_and_non_integer_fences_are_refused) ... ok
+test_delayed_worker_reproduction_is_stopped_by_the_fence (test_fenced_sink.ReproductionTests.test_delayed_worker_reproduction_is_stopped_by_the_fence) ... ok
+test_every_lower_fence_is_rejected_for_every_operation (test_fenced_sink.StaleFenceRejectionTests.test_every_lower_fence_is_rejected_for_every_operation) ... ok
+test_rejection_is_audited_with_both_fences (test_fenced_sink.StaleFenceRejectionTests.test_rejection_is_audited_with_both_fences) ... ok
+test_rejection_leaves_the_sink_byte_identical_apart_from_the_audit_log (test_fenced_sink.StaleFenceRejectionTests.test_rejection_leaves_the_sink_byte_identical_apart_from_the_audit_log) ... ok
+test_stale_fence_cannot_commit (test_fenced_sink.StaleFenceRejectionTests.test_stale_fence_cannot_commit) ... ok
+test_stale_fence_cannot_stage (test_fenced_sink.StaleFenceRejectionTests.test_stale_fence_cannot_stage) ... ok
+test_commit_must_use_the_fence_that_staged (test_fenced_sink.TransactionStateTests.test_commit_must_use_the_fence_that_staged) ... ok
+test_commit_requires_a_stage_first (test_fenced_sink.TransactionStateTests.test_commit_requires_a_stage_first) ... ok
+test_committed_transaction_cannot_be_restaged_even_at_a_higher_fence (test_fenced_sink.TransactionStateTests.test_committed_transaction_cannot_be_restaged_even_at_a_higher_fence) ... ok
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.607s
+
+OK
+exit=0
