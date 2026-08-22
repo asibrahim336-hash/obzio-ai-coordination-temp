@@ -25,7 +25,11 @@ def run_mutations(root: Path, mutations_path: Path, command: str) -> dict:
         # review boundary; the temporary directory is removed after each case.
         with tempfile.TemporaryDirectory(prefix=".po03-fg-", dir=root) as scratch_name:
             scratch = Path(scratch_name) / "tree"
-            shutil.copytree(root, scratch)
+            shutil.copytree(
+                root,
+                scratch,
+                ignore=shutil.ignore_patterns(".po03-fg-*"),
+            )
             target = scratch / mutation["path"]
             original = target.read_text(encoding="utf-8")
             occurrences = original.count(mutation["old"])
