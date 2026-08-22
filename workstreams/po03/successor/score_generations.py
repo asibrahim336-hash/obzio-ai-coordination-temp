@@ -73,6 +73,45 @@ def load_generations() -> dict[str, Any]:
     return generations
 
 
+# Every holdout figure this document reports is provisional, and says so in the
+# document rather than only in a commit message.  The holdout cases, attacks and
+# expected outcomes are cohort a6's, authored before any producer branch was
+# published, but they were *selected and bound* by the same owner that authored
+# the generations being scored.  That is weaker independence than authorship by a
+# non-author, and a perfect score on a suite the author assembled is exactly the
+# result that most deserves a caveat.
+HOLDOUT_INDEPENDENCE: dict[str, Any] = {
+    "status": "PROVISIONAL",
+    "applies_to": "every holdout figure in this document, including G2's 10/10, and the headline verdict, which is computed on the holdout suite",
+    "why_provisional": (
+        "The holdout cases were authored by cohort po03-worker-a6 without sight of any generation, but "
+        "they were selected from a6's set and bound to executable operations by po03-worker-a8, the same "
+        "owner that authored the generations. Selection and encoding by the generation author is weaker "
+        "independence than authorship by a non-author, so a perfect holdout score cannot yet be read as "
+        "a blind result."
+    ),
+    "pending": {
+        "cohort": "a13",
+        "model": "gpt-5.6-sol-xhigh",
+        "design": (
+            "at least twenty cases authored from the commission's acceptance criteria alone, frozen and "
+            "pushed before reading anything of this cohort's, so neither selection nor encoding passes "
+            "through the generation author"
+        ),
+        "supersedes_this_status_when": "a13's suite is published and the generations are scored against it",
+    },
+    "what_would_count_as_the_finding": (
+        "If G2 scores materially lower on a13's blind suite than the 10/10 recorded here, that is the "
+        "result, and it is more honest than a perfect score on a suite this cohort assembled. Nothing in "
+        "this document should be read as predicting otherwise."
+    ),
+    "unaffected": (
+        "The public-suite figures and the G0-to-G1 and G1-to-G2 public comparisons do not depend on the "
+        "holdout, and the public suite was always this cohort's own and declared as such."
+    ),
+}
+
+
 def load_suites() -> list[dict[str, Any]]:
     """Load every declared suite, refusing any whose bytes drifted from the freeze."""
     manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
@@ -188,6 +227,7 @@ def build_document() -> dict[str, Any]:
         ],
         "generations": scores,
         "comparisons": comparisons,
+        "holdout_independence": HOLDOUT_INDEPENDENCE,
         "headline": {
             "metric_id": preregistration["primary_metric"]["metric_id"],
             "baseline": preregistration["primary_comparison"]["baseline"],
@@ -196,6 +236,8 @@ def build_document() -> dict[str, Any]:
             "verdict": headline["verdict"] if headline else "NOT_YET",
             "lift": headline.get("lift") if headline else None,
             "reason": headline["reason"] if headline else "primary comparison unavailable",
+            "result_status": "PROVISIONAL",
+            "provisional_because": HOLDOUT_INDEPENDENCE["why_provisional"],
         },
     }
 

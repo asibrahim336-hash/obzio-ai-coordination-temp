@@ -142,6 +142,28 @@ class HoldoutIndependenceTests(unittest.TestCase):
         self.assertEqual(self.provenance["boundary_states"]["cross_family_holdout_available"], "NOT_YET")
         self.assertEqual(self.provenance["boundary_states"]["independent_acceptance_of_this_cohort"], "NOT_TESTED")
 
+    def test_the_holdout_result_is_marked_provisional_and_names_what_would_close_it(self):
+        """A perfect score on a suite the author assembled needs the caveat attached.
+
+        The independence here is real but partial: a6 authored the cases blind,
+        and this cohort selected them and bound them to executable operations
+        while also authoring the generations. That is weaker than authorship by a
+        non-author, so the figure is provisional and says so in the record rather
+        than only in a commit message. The status must also name the cohort whose
+        blind suite would settle it, or "provisional" is just hedging.
+        """
+        status = self.provenance["holdout_result_status"]
+        self.assertEqual(status["status"], "PROVISIONAL")
+        self.assertEqual(self.provenance["boundary_states"]["holdout_result_status"], "PROVISIONAL")
+        self.assertEqual(self.provenance["boundary_states"]["holdout_independence_is_author_selected"], "NOT_YET")
+
+        pending = status["pending"]
+        self.assertEqual(pending["cohort"], "a13")
+        self.assertNotEqual(pending["cohort"], "a8")
+        self.assertTrue(pending["supersedes_this_status_when"].strip())
+        self.assertIn("10/10", status["applies_to"])
+        self.assertIn("materially lower", status["what_would_count_as_the_finding"])
+
 
 class PreregistrationTests(unittest.TestCase):
     def setUp(self) -> None:

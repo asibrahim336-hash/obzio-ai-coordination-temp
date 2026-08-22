@@ -53,6 +53,14 @@ PRE_REVISION = {
     "headline": {"baseline": "G1", "candidate": "G2", "suite": "holdout", "verdict": "PASS", "lift": 0.3},
     "g2_public": "31/31",
     "g2_holdout": "10/10",
+    "g2_holdout_status": "PROVISIONAL",
+    "g2_holdout_caveat": (
+        "The holdout figure is provisional wherever it appears in this cohort's records. a6 authored the "
+        "cases without sight of any generation, but po03-worker-a8 selected and bound them and also "
+        "authored the generations, which is weaker independence than authorship by a non-author. A fully "
+        "independent suite is dispatched as cohort a13 (gpt-5.6-sol-xhigh); see "
+        "workstreams/po03/successor/suite/holdout/provenance.json -> holdout_result_status."
+    ),
 }
 
 
@@ -192,8 +200,8 @@ def build_document() -> dict:
             ),
             "pre_revision_score": PRE_REVISION,
             "post_revision_effect_on_frozen_suites": (
-                "none: G2 scores 31/31 public and 10/10 holdout before and after, so the revision is "
-                "visible in the register and in git history rather than in the headline number"
+                "none: G2 scores 31/31 public and 10/10 holdout (provisional) before and after, so the "
+                "revision is visible in the register and in git history rather than in the headline number"
             ),
             "why_this_is_not_metric_tuning": (
                 "A change made to raise a score would target a case the score counts. These two target "

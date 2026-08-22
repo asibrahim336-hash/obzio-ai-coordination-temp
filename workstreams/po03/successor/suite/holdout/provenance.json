@@ -52,9 +52,26 @@
     "Cohort po03-worker-a10 (cursor/po03-a10-crossfamily-review-ed20) is the second declared independent evaluator. Its branch did not exist at scoring time, so no cross-family holdout material was available and none was substituted.",
     "The holdout was fetched and bound before G2 was written, but the same owner both read the holdout and authored G2. G2's changes are traceable to specific G1 failures and to a6's recorded findings rather than to holdout cases alone, and lineage.json records which cause drove each change, but this cohort cannot certify blindness to the holdout."
   ],
+  "holdout_result_status": {
+    "status": "PROVISIONAL",
+    "applies_to": "every holdout figure this cohort reports, including G2's 10/10 and G1's 7/10, and the headline PASS verdict, which is computed on the holdout suite",
+    "why": "The cases, attacks and expected outcomes are cohort a6's and were authored before any producer branch was published. But they were selected from a6's set and bound to executable operations by po03-worker-a8, the same owner that authored the generations being scored. Selection and encoding by the generation author is weaker independence than authorship by a non-author, so a perfect holdout score cannot yet be read as a blind result. Marked provisional here rather than argued away, because a 10/10 on a suite the author assembled is precisely the figure that most deserves the caveat.",
+    "pending": {
+      "cohort": "a13",
+      "model": "gpt-5.6-sol-xhigh",
+      "design": "at least twenty cases authored from the commission's acceptance criteria alone, frozen and pushed before reading anything of this cohort's, so neither selection nor encoding passes through the generation author",
+      "closes": "the independence gap recorded in limitations[0] and boundary_states.holdout_independence_is_author_selected",
+      "supersedes_this_status_when": "a13's suite is published and the three generations are scored against it"
+    },
+    "what_would_count_as_the_finding": "If G2 scores materially lower on a13's blind suite than the 10/10 recorded here, that is the result, and it is a more honest one than a perfect score on a suite this cohort assembled. Nothing in this cohort's records should be read as predicting otherwise, and no figure here is stated as final on the holdout.",
+    "unaffected": "The public-suite figures are unaffected: that suite was always this cohort's own and is declared as such. The G0-to-G1 NOT_YET finding is likewise unaffected, since it turns on false completions and critical correctness rather than on holdout lift."
+  },
   "boundary_states": {
     "external_holdout_available": "YES",
     "external_holdout_author": "po03-worker-a6",
+    "holdout_independence_is_author_selected": "NOT_YET",
+    "holdout_result_status": "PROVISIONAL",
+    "fully_independent_holdout_dispatched_as": "cohort a13 (gpt-5.6-sol-xhigh)",
     "cross_family_holdout_available": "NOT_YET",
     "cross_family_boundary": "branch cursor/po03-a10-crossfamily-review-ed20 did not exist when the suites were frozen or when the generations were scored",
     "independent_acceptance_of_this_cohort": "NOT_TESTED"

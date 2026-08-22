@@ -86,6 +86,7 @@ def build_document() -> dict:
             "source_sha256": value["source_sha256"],
             "public": f"{value['suites']['public']['cases_passed']}/{value['suites']['public']['cases_total']}",
             "holdout": f"{value['suites']['holdout']['cases_passed']}/{value['suites']['holdout']['cases_total']}",
+            "holdout_status": scores["holdout_independence"]["status"],
             "false_completions_public": value["suites"]["public"]["false_completion_count"],
             "false_completions_holdout": value["suites"]["holdout"]["false_completion_count"],
         }
@@ -138,6 +139,7 @@ def build_document() -> dict:
                 }
                 for row in scores["comparisons"]
             ],
+            "holdout_independence": scores["holdout_independence"],
             "reproduction_command": "python3 -I workstreams/po03/successor/score_generations.py --check",
             "test_gate": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py'",
         },
@@ -170,6 +172,22 @@ def build_document() -> dict:
                     "Every test under workstreams/po03/tests/test_a8_ is authored by po03-worker-a8. The "
                     "material each test is bound to is independent - a6's evaluator-held cases and a10's "
                     "published audit findings - but the test code is not."
+                ),
+            },
+            {
+                "boundary": "the holdout was selected and bound by the generation author",
+                "status": "NOT_YET",
+                "detail": (
+                    "Every holdout figure in this receipt is PROVISIONAL, including G2's 10/10 and the "
+                    "headline PASS verdict, which is computed on the holdout suite. a6 authored the cases, "
+                    "attacks and expected outcomes without sight of any generation, but po03-worker-a8 "
+                    "selected them from a6's set and bound them to executable operations, and a8 authored "
+                    "the generations. Selection and encoding by the generation author is weaker "
+                    "independence than authorship by a non-author. A fully independent suite is dispatched "
+                    "as cohort a13 (gpt-5.6-sol-xhigh): at least twenty cases from the commission's "
+                    "acceptance criteria alone, frozen and pushed before reading anything of this "
+                    "cohort's. If G2 scores materially lower there, that is the finding, and a more honest "
+                    "one than a perfect score on a suite this cohort assembled."
                 ),
             },
             {

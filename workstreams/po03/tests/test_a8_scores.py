@@ -303,6 +303,50 @@ class ReceiptTests(unittest.TestCase):
         for unit in self._receipt()["units"]:
             self.assertNotIn(unit["result_record"], cited, unit["unit_id"])
 
+    def test_the_receipt_never_states_a_holdout_figure_without_its_provisional_status(self):
+        """The caveat has to travel with the number, not sit in a footnote.
+
+        The headline verdict is computed on the holdout suite, so it inherits the
+        same status. Asserted on the receipt because that is the document a parent
+        reads, and a figure that arrives without its caveat has lost it.
+        """
+        receipt = self._receipt()
+        independence = receipt["measurement"]["holdout_independence"]
+        self.assertEqual(independence["status"], "PROVISIONAL")
+        self.assertEqual(independence["pending"]["cohort"], "a13")
+        self.assertEqual(receipt["measurement"]["headline"]["result_status"], "PROVISIONAL")
+        for generation_id, row in receipt["generations"].items():
+            self.assertEqual(row["holdout_status"], "PROVISIONAL", generation_id)
+        self.assertTrue(
+            any("holdout" in entry["boundary"] for entry in receipt["boundaries"]),
+            "the holdout independence gap must be one of the declared boundaries",
+        )
+
+    def test_the_score_document_carries_the_same_status_as_the_receipt(self):
+        """One status, stated once and referenced, rather than two that can diverge."""
+        document = _document()
+        independence = document["holdout_independence"]
+        self.assertEqual(independence["status"], "PROVISIONAL")
+        self.assertEqual(document["headline"]["result_status"], "PROVISIONAL")
+        self.assertEqual(document["headline"]["provisional_because"], independence["why_provisional"])
+        self.assertEqual(
+            independence, self._receipt()["measurement"]["holdout_independence"],
+            "the receipt must carry the score document's status verbatim, not a paraphrase of it",
+        )
+
+    def test_the_public_suite_figures_are_not_marked_provisional(self):
+        """Marking everything provisional would make the marking worthless.
+
+        The public suite was always this cohort's own and declared as such; its
+        weakness is overfitting, not independence, and it is recorded elsewhere.
+        Only the holdout carries this status.
+        """
+        document = _document()
+        self.assertIn("holdout", document["holdout_independence"]["applies_to"])
+        self.assertIn("public", document["holdout_independence"]["unaffected"])
+        for generation_id, row in self._receipt()["generations"].items():
+            self.assertNotIn("public_status", row, generation_id)
+
     def test_the_receipt_records_its_boundaries_rather_than_only_its_results(self):
         boundaries = self._receipt()["boundaries"]
         self.assertGreaterEqual(len(boundaries), 3)
