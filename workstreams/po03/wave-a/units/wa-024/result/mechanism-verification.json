@@ -1,0 +1,307 @@
+{
+  "interpreter": "3.12.3",
+  "mechanism_changes": [
+    {
+      "change_id": "MC-01-CONTRACT-TESTS-LEAVE-NO-BYTECODE",
+      "checks": [
+        {
+          "check": "patch_applies_to_pinned_tree",
+          "disposition": "PASS",
+          "evidence": "git apply --check succeeds against 0b799f0eeee450e1aaea7a243e91538a079fc516",
+          "phase": "patch"
+        },
+        {
+          "check": "tree_is_clean_before_workload",
+          "disposition": "PASS",
+          "evidence": "no untracked or modified paths",
+          "phase": "before"
+        },
+        {
+          "check": "declared_command_passes_before",
+          "disposition": "PASS",
+          "evidence": "declared command exits 0",
+          "phase": "before"
+        },
+        {
+          "check": "declared_command_contaminates_checkout_before",
+          "disposition": "PASS",
+          "evidence": "2 dirty paths, 2 of them bytecode caches, e.g. ?? workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+          "phase": "before"
+        },
+        {
+          "check": "environment_variable_remediation_is_ineffective_under_isolation",
+          "disposition": "PASS",
+          "evidence": "PYTHONDONTWRITEBYTECODE=1 with -I still leaves 2 bytecode caches",
+          "phase": "adversarial"
+        },
+        {
+          "check": "patch_applies",
+          "disposition": "PASS",
+          "evidence": "patch applied to the scratch clone",
+          "phase": "patch"
+        },
+        {
+          "check": "patched_workflow_command_suppresses_bytecode",
+          "disposition": "PASS",
+          "evidence": "patched contract-test command is \"python -B -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v\"",
+          "phase": "after"
+        },
+        {
+          "check": "patched_command_still_passes",
+          "disposition": "PASS",
+          "evidence": "patched command exits 0; tail: OK",
+          "phase": "after"
+        },
+        {
+          "check": "patched_command_leaves_checkout_unchanged",
+          "disposition": "PASS",
+          "evidence": "the patched command leaves no dirty path (saw [])",
+          "phase": "after"
+        },
+        {
+          "check": "patched_workflow_adds_a_cleanliness_gate",
+          "disposition": "PASS",
+          "evidence": "the workflow gains a post-test step that fails on a dirty checkout",
+          "phase": "after"
+        },
+        {
+          "check": "cleanliness_gate_is_not_vacuous",
+          "disposition": "PASS",
+          "evidence": "gate exits 0 on a clean tree and 1 once a bytecode cache is planted",
+          "phase": "adversarial"
+        }
+      ],
+      "disposition": "PASS",
+      "patch": "workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-01-contract-tests-leave-no-bytecode.diff"
+    },
+    {
+      "change_id": "MC-02-VERIFY-FROZEN-OBJECT-IDS",
+      "checks": [
+        {
+          "check": "patch_applies_to_pinned_tree",
+          "disposition": "PASS",
+          "evidence": "git apply --check succeeds against 0b799f0eeee450e1aaea7a243e91538a079fc516",
+          "phase": "patch"
+        },
+        {
+          "check": "recorded_identifier_is_prefix_only_correct_before",
+          "disposition": "PASS",
+          "evidence": "100bc20ad5eec62a4f35b60921423135cc0b9d9a names no commit, yet 100bc20 resolves to 100bc2079cedc193af3524234ab833cc9f9f4669",
+          "phase": "before"
+        },
+        {
+          "check": "generator_has_no_object_id_guard_before",
+          "disposition": "PASS",
+          "evidence": "the unpatched generator performs no object-existence check",
+          "phase": "before"
+        },
+        {
+          "check": "patch_applies",
+          "disposition": "PASS",
+          "evidence": "patch applied to the scratch clone",
+          "phase": "patch"
+        },
+        {
+          "check": "patched_identifier_names_a_real_commit",
+          "disposition": "PASS",
+          "evidence": "100bc2079cedc193af3524234ab833cc9f9f4669 names a commit in the repository",
+          "phase": "after"
+        },
+        {
+          "check": "patched_identifier_is_an_ancestor_of_the_pinned_commit",
+          "disposition": "PASS",
+          "evidence": "100bc2079cedc193af3524234ab833cc9f9f4669 is an ancestor of 0b799f0eeee450e1aaea7a243e91538a079fc516",
+          "phase": "after"
+        },
+        {
+          "check": "idempotency_keys_are_unaffected",
+          "disposition": "PASS",
+          "evidence": "the seven-character prefix stays 100bc20, so every po03:<prefix>:<slug>:a01 key is byte-identical",
+          "phase": "after"
+        },
+        {
+          "check": "guard_accepts_the_corrected_identifiers",
+          "disposition": "PASS",
+          "evidence": "verify_frozen_object_ids() returns without raising on the corrected literals",
+          "phase": "after"
+        },
+        {
+          "check": "guard_refuses_the_original_defect",
+          "disposition": "PASS",
+          "evidence": "reinstating 100bc20ad5eec62a4f35b60921423135cc0b9d9a raises: PROTOCOL_ANCESTOR 100bc20ad5eec62a4f35b60921423135cc0b9d9a names no commit in this repository; its abbreviation 100bc20 resolves to 100bc2079cedc193af3524234ab833cc9f9f4669, so the recorded identifier is prefix-only-correct",
+          "phase": "adversarial"
+        },
+        {
+          "check": "guard_refuses_an_identifier_with_no_resolvable_prefix",
+          "disposition": "PASS",
+          "evidence": "an all-zero identifier raises: PROTOCOL_ANCESTOR 0000000000000000000000000000000000000000 names no commit in this repository",
+          "phase": "adversarial"
+        },
+        {
+          "check": "guard_refuses_an_abbreviation",
+          "disposition": "PASS",
+          "evidence": "a seven-character identifier raises: PROTOCOL_ANCESTOR: must be a full lowercase commit id",
+          "phase": "adversarial"
+        },
+        {
+          "check": "guard_refuses_to_freeze_provenance_from_a_shallow_checkout",
+          "disposition": "PASS",
+          "evidence": "a depth-1 clone raises rather than silently skipping: refusing to freeze provenance from a shallow checkout: object identifiers are unverifiable here; re-run with full history",
+          "phase": "adversarial"
+        }
+      ],
+      "disposition": "PASS",
+      "patch": "workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-02-verify-frozen-object-ids.diff"
+    },
+    {
+      "change_id": "MC-03-CUSTODY-READBACK-NEEDS-A-FETCHABLE-REF",
+      "checks": [
+        {
+          "check": "patch_applies_to_pinned_tree",
+          "disposition": "PASS",
+          "evidence": "git apply --check succeeds against 0b799f0eeee450e1aaea7a243e91538a079fc516",
+          "phase": "patch"
+        },
+        {
+          "check": "control_files_already_embed_a_ref_in_the_manifest_locator",
+          "disposition": "PASS",
+          "evidence": "manifest_uri carries ref cursor/po03-canary-b195-1a9f",
+          "phase": "before"
+        },
+        {
+          "check": "recorded_result_commit_is_unreachable_from_this_checkout",
+          "disposition": "PASS",
+          "evidence": "a702a5a053d384377f63690a814233e27904233b is not an object in a clone of 0b799f0eeee450e1aaea7a243e91538a079fc516, so read-back needs its ref fetched first",
+          "phase": "before"
+        },
+        {
+          "check": "unpatched_validator_accepts_a_refless_ingested_result",
+          "disposition": "PASS",
+          "evidence": "the unpatched validator reports no error for an ingested result carrying no fetchable ref",
+          "phase": "before"
+        },
+        {
+          "check": "unpatched_validator_accepts_a_locator_whose_commit_disagrees",
+          "disposition": "PASS",
+          "evidence": "the unpatched validator reports no error when the locator commit differs from result_commit_id",
+          "phase": "before"
+        },
+        {
+          "check": "patch_applies",
+          "disposition": "PASS",
+          "evidence": "patch applied to the scratch clone",
+          "phase": "patch"
+        },
+        {
+          "check": "patched_validator_rejects_a_refless_ingested_result",
+          "disposition": "PASS",
+          "evidence": "patched validator reports ['$.result_transaction: ingested custody needs a fetchable ref, either result_commit_ref or a git:<ref>@<commit>:<path> manifest_uri']",
+          "phase": "after"
+        },
+        {
+          "check": "patched_validator_rejects_a_locator_commit_mismatch",
+          "disposition": "PASS",
+          "evidence": "patched validator reports ['$.result_transaction.manifest_uri: locator commit does not match result_commit_id']",
+          "phase": "after"
+        },
+        {
+          "check": "patched_validator_rejects_a_ref_that_disagrees_with_the_locator",
+          "disposition": "PASS",
+          "evidence": "patched validator reports ['$.result_transaction.result_commit_ref: disagrees with the manifest_uri locator']",
+          "phase": "after"
+        },
+        {
+          "check": "patched_validator_still_accepts_wa-canary-000",
+          "disposition": "PASS",
+          "evidence": "workstreams/po03/control/results/wa-canary-000.json validates with no error under the patched validator",
+          "phase": "after"
+        },
+        {
+          "check": "readback_ref_is_recoverable_for_wa-canary-000",
+          "disposition": "PASS",
+          "evidence": "a verifier must fetch cursor/po03-canary-b195-1a9f before reading a702a5a053d384377f63690a814233e27904233b",
+          "phase": "after"
+        },
+        {
+          "check": "patched_validator_still_accepts_wa-isolation-canary-001",
+          "disposition": "PASS",
+          "evidence": "workstreams/po03/control/results/wa-isolation-canary-001.json validates with no error under the patched validator",
+          "phase": "after"
+        },
+        {
+          "check": "readback_ref_is_recoverable_for_wa-isolation-canary-001",
+          "disposition": "PASS",
+          "evidence": "a verifier must fetch cursor/po03-isolation-canary-b195-001-a01-1a9f before reading 371e8da6ab306c2948e0fe1f47c884ae46b2e81f",
+          "phase": "after"
+        },
+        {
+          "check": "schema_admits_the_new_field",
+          "disposition": "PASS",
+          "evidence": "the schema declares result_commit_ref, which additionalProperties false would otherwise forbid",
+          "phase": "after"
+        },
+        {
+          "check": "seeded_contract_tests_still_pass",
+          "disposition": "PASS",
+          "evidence": "seeded suite exits 0: OK",
+          "phase": "after"
+        },
+        {
+          "check": "the_new_rule_is_enforced_by_the_repositorys_own_tests",
+          "disposition": "PASS",
+          "evidence": "the seeded suite grows from 23 to 28 tests, so the guard is covered upstream rather than only here",
+          "phase": "after"
+        }
+      ],
+      "disposition": "PASS",
+      "patch": "workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-03-custody-readback-needs-a-fetchable-ref.diff"
+    },
+    {
+      "change_id": "MC-COMBINED",
+      "checks": [
+        {
+          "check": "all_three_patches_apply_together",
+          "disposition": "PASS",
+          "evidence": "a single git apply of all three patches succeeds: ",
+          "phase": "patch"
+        },
+        {
+          "check": "seeded_contract_tests_pass_under_all_three",
+          "disposition": "PASS",
+          "evidence": "seeded suite exits 0: OK",
+          "phase": "after"
+        },
+        {
+          "check": "repository_taxonomy_check_passes_under_all_three",
+          "disposition": "PASS",
+          "evidence": "taxonomy check exits 0: classified aliases: 9",
+          "phase": "after"
+        },
+        {
+          "check": "no_workload_contaminates_the_checkout_under_all_three",
+          "disposition": "PASS",
+          "evidence": "the tree is unchanged after the seeded suite and the taxonomy check",
+          "phase": "after"
+        }
+      ],
+      "disposition": "PASS",
+      "patch": [
+        "workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-01-contract-tests-leave-no-bytecode.diff",
+        "workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-02-verify-frozen-object-ids.diff",
+        "workstreams/po03/wave-a/units/wa-024/proposals/patches/mc-03-custody-readback-needs-a-fetchable-ref.diff"
+      ]
+    }
+  ],
+  "patch_source": "repository_commit",
+  "protocol_version": "PO03-WA-024-MECHANISM-VERIFICATION-v1",
+  "repository_commit": "0b799f0eeee450e1aaea7a243e91538a079fc516",
+  "state": "MECHANISM_CHANGE_VERIFICATION",
+  "state_note": "This file records only whether each proposed mechanism change applies and removes its defect. It is not a source claim, a hypothesis, a reproduction of the parent hypothesis, or a strategy proposal.",
+  "summary": {
+    "change_count": 4,
+    "check_count": 43,
+    "disposition": "PASS",
+    "failed_changes": []
+  },
+  "task_id": "PO03-WA-024"
+}

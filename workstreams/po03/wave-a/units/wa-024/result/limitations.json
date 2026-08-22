@@ -1,0 +1,130 @@
+{
+  "protocol_version": "PO03-WAVE-A-MATERIAL-LIMITATIONS-v1",
+  "task_id": "PO03-WA-024",
+  "state": "LIMITATIONS",
+  "recorded_at": "2026-08-22T08:14:00Z",
+  "principle": "Anything this unit could not establish from evidence is recorded as NOT_SUPPORTED with the boundary that prevented it. No value here is inferred, computed after the fact and presented as an observation, or filled in to look complete.",
+
+  "not_supported": [
+    {
+      "id": "L-01",
+      "subject": "Behaviour observed on a real GitHub-hosted Actions runner",
+      "status": "NOT_SUPPORTED",
+      "boundary": "Dispatching a workflow run would mutate the repository's CI surface and would require creating or modifying a pull request. Both are explicitly forbidden to this unit.",
+      "what_was_done_instead": "The harness reconstructs the runner's checkout and environment shape locally from the pinned actions/checkout and setup-python manifests: a fresh clone of committed content only, at the depth the action would use, under a scrubbed environment with a private HOME and TMPDIR.",
+      "consequence": "Every conclusion is labelled CI-equivalent rather than CI-observed. The reconstruction is faithful to the checkout shape and to the documented defaults, and it is not evidence about the runner image, its preinstalled software, its network or its filesystem semantics.",
+      "how_a_reader_could_close_it": "Run the four stages as a workflow job on ubuntu-latest and compare probe-report.json field by field, ignoring the fields named in its nondeterministic_fields list."
+    },
+    {
+      "id": "L-02",
+      "subject": "Read-time byte counts and digests for the two github/docs Markdown sources",
+      "status": "NOT_SUPPORTED",
+      "boundary": "Those two files were read for their verbatim claim text and their transfer digests were not captured at the moment of reading.",
+      "what_was_done_instead": "Rather than compute a digest afterwards and present it as a read-time observation, retrieved_sha256 is left NOT_SUPPORTED for SC-WA024-03 and SC-WA024-04. The immutable commit id and path are recorded, which is sufficient for any reader to re-derive both.",
+      "consequence": "Those two claims are pinned by commit and path rather than by a transfer digest. The other four external claims carry both."
+    },
+    {
+      "id": "L-03",
+      "subject": "The model that actually executed this attempt",
+      "status": "PARTIALLY_SUPPORTED",
+      "boundary": "The immutable input requests configuration.model_slug claude-opus-5-thinking-high with auto_model_selection false. The provider exposes no per-subagent model field, and the enclosing run reports gpt-5.6-sol-max-fast.",
+      "what_was_done_instead": "result.json records model_observed as the value the provider actually reports, with a note that the requested slug could not be confirmed. reasoning_observed echoes the requested 'high' and is explicitly marked as not independent evidence.",
+      "consequence": "Any wave-level comparison across model families should treat this attempt's model attribution as provider-reported rather than verified."
+    },
+    {
+      "id": "L-04",
+      "subject": "Independent acceptance of this result",
+      "status": "NOT_SUPPORTED",
+      "boundary": "A producer cannot accept its own result, and only the coordinator may record COMPLETED.",
+      "what_was_done_instead": "independent_acceptance is NOT_TESTED and completion_actor is null. The producer reports READY_TO_COMMIT only.",
+      "consequence": "Producer self-verification only. The read-back recorded in ready-to-commit.json is the producer's own and does not substitute for a distinct verifier's."
+    }
+  ],
+
+  "scope_exclusions": [
+    {
+      "id": "L-05",
+      "subject": "Windows and macOS runners",
+      "boundary": "All reproductions ran on Linux. Path semantics, the default shell and the filesystem differ enough that extrapolating would be invention.",
+      "expected_direction": "NOT_SUPPORTED. The bytecode finding is likely platform-independent because it follows from CPython's documented behaviour, but this unit measured only Linux and does not claim it."
+    },
+    {
+      "id": "L-06",
+      "subject": "Self-hosted runners and GitHub Enterprise Server",
+      "boundary": "A self-hosted runner can reuse a workspace between jobs, which would change the conclusions materially: the bytecode contamination that a hosted runner discards would persist exactly as it does in the warm checkout.",
+      "expected_direction": "This would make F-01 more severe rather than less, but it is recorded as out of scope rather than asserted."
+    },
+    {
+      "id": "L-07",
+      "subject": "The runner image inventory",
+      "boundary": "actions/runner-images was not consulted. Preinstalled-software questions were outside this unit's hypotheses and would have added unverified breadth.",
+      "consequence": "F-07's claim is only that bare 'python' resolves because setup-python placed it on PATH, which is what the setup-python manifest states. It is not a claim about what the image does or does not ship."
+    },
+    {
+      "id": "L-08",
+      "subject": "Practitioner sources",
+      "boundary": "No blog, forum thread or social post was admitted as evidence. Every claim rests on an immutable upstream commit or an immutable repository digest.",
+      "consequence": "The 'practitioner' half of the input's 'official/practitioner sources' phrasing is satisfied by current-method claims that this unit states and then tests, rather than by citing an unversioned surface. Where a widely recommended practice is at issue, as with PYTHONDONTWRITEBYTECODE in H-WA024-02B, the practice is measured rather than cited."
+    }
+  ],
+
+  "instrument_limitations": [
+    {
+      "id": "L-09",
+      "subject": "The differential harness only speaks about paths a probe exercises",
+      "detail": "Twenty-four probes cover the two declared CI commands, the protocol's provenance checks, custody read-back, environment portability and interpreter availability. A hidden dependence in an unprobed path would not be found.",
+      "mitigation": "The static control scans all 188 files by inspection, which is how the identifier defect was generalised from one input to 65 files. Neither instrument alone is sufficient; strategy proposal SP-05 argues for keeping both."
+    },
+    {
+      "id": "L-10",
+      "subject": "AGREE does not mean clean",
+      "detail": "Seventeen of twenty-four probes agree across all three environments, and the unit's single most consequential finding is among them. A reader who treats the classification counts as a defect tally will draw the wrong conclusion.",
+      "mitigation": "The harness records worktree mutation separately from outcome, which is the only reason F-01 was visible at all. Both numbers are reported in result.json rather than the classification alone."
+    },
+    {
+      "id": "L-11",
+      "subject": "The warm mode is not reproducible by construction",
+      "detail": "Warm-mode results depend on the invoking host's environment and existing tree, so probes p18, p19 and p20 would give different answers elsewhere.",
+      "mitigation": "Those three probes are declared advisory in probes.json and hypotheses.json, so they are recorded as observations and are excluded from the binding expectations that gate the run. The nondeterministic fields of the report are named explicitly so a re-run can be compared."
+    },
+    {
+      "id": "L-12",
+      "subject": "The static control's R1 rule counts this unit's own documentation",
+      "detail": "Four files inside this unit quote the defective identifier in order to document or test it: harness/probes.json, sources/source-claims.json, proposals/mechanism-changes.json and the MC-02 patch. They appear among the 69 PREFIX_ONLY_CORRECT findings.",
+      "mitigation": "They are counted honestly rather than suppressed, and result.json separates the 65 real defect sites outside this unit from the 4 self-references. Suppressing them would have hidden the rule's own reach."
+    },
+    {
+      "id": "L-13",
+      "subject": "The workflow parser is a minimal YAML subset, not a YAML implementation",
+      "detail": "The static control parses workflow files with a purpose-built subset parser, because the reproduction must run with no third-party package.",
+      "mitigation": "It reports parse errors rather than failing silently, and the canonical run records workflow_parse_errors as empty for both workflows. tests/test_local_state_lint.py covers the parser directly. A workflow using YAML features outside the subset would be reported, not skipped."
+    },
+    {
+      "id": "L-14",
+      "subject": "The mechanism verifier proves a patch works, not that it should be applied",
+      "detail": "All 43 checks passing establishes that each change removes its defect without breaking the seeded suite or the taxonomy check. It does not establish that the coordinator should accept the cost.",
+      "mitigation": "Each change records its blast radius, and every one of the three invalidates a digest pinned in all 64 Wave A immutable inputs. Strategy proposal SP-02 addresses that structural problem directly. The decision is the coordinator's."
+    }
+  ],
+
+  "self_inflicted": [
+    {
+      "id": "L-15",
+      "subject": "An earlier revision of this unit's own reproduction script carried the defect class it studies",
+      "detail": "run.sh accepted a relative --out and passed it to stages that run with the clean clone as their working directory, so the JSON reports were written into the clone. They were discarded with it, and the writes dirtied the tree the probes measure, flipping four cleanliness gates from AGREE to CLEAN_ONLY_PASS.",
+      "detection": "The harness caught it. The run at commit 6778c22d50d178579ab75ad4fb54b4cdf470d41b exited 1 and the residue check named the three report files.",
+      "resolution": "run.sh resolves the output directory to an absolute path before any stage runs, and tests/test_run_script.py asserts that ordering so the regression cannot return silently. Recorded as finding F-08 and as one rework event rather than quietly fixed."
+    }
+  ],
+
+  "boundaries_observed": [
+    "Only workstreams/po03/wave-a/units/wa-024/ was written. Every changed path was checked against the declared allowed_write_globs before each commit.",
+    "Every proposed repair to a read-only path is a unified diff, applied only inside a throwaway clone by the verifier and never to this repository.",
+    "No pull request was created or modified. PR #8 was not touched. PO-01 was neither contacted nor mutated.",
+    "No workflow run was dispatched, nothing was merged or promoted, and no COMPLETED or ACCEPTED state is claimed.",
+    "No secret was read and no new external permission was requested. Network use was read-only HTTPS GET of public documentation at immutable commits, plus git push to this attempt's own runner branch.",
+    "No third-party outreach of any kind. Nothing was posted, commented on or replied to."
+  ],
+
+  "decision_changed": []
+}

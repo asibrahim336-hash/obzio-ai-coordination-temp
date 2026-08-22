@@ -1,0 +1,218 @@
+{
+  "protocol_version": "PO03-WAVE-A-MATERIAL-TESTS-v1",
+  "task_id": "PO03-WA-024",
+  "state": "TEST_EVIDENCE",
+  "recorded_at": "2026-08-22T08:14:00Z",
+  "commit_under_test": "0b799f0eeee450e1aaea7a243e91538a079fc516",
+  "first_pass_outcome": "PASS",
+  "toolchain": {
+    "python3": "3.12.3",
+    "git": "git version 2.43.0",
+    "third_party_packages": "none",
+    "note": "Every test runs under python3 -B -I: isolated so nothing leaks in from the environment, and with bytecode writing suppressed so the test run itself leaves the tree byte-identical. That is the same defect this unit found in the repository's own declared test command, so the unit holds itself to the standard it proposes."
+  },
+  "totals": {
+    "unit_tests": 86,
+    "seeded_contract_tests": 23,
+    "mechanism_verification_checks": 43,
+    "binding_probe_expectations": 22,
+    "total_assertions_executed": 174,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "groups": [
+    {
+      "group_id": "TG-01-UNIT",
+      "name": "Focused unit tests for this unit's own instruments",
+      "command": "python3 -B -I -m unittest discover -s workstreams/po03/wave-a/units/wa-024/tests -p 'test_*.py' -v",
+      "run_from": "repository root",
+      "tests": 86,
+      "outcome": "PASS",
+      "duration_seconds": 1.72,
+      "output": "workstreams/po03/wave-a/units/wa-024/result/tests-output.txt",
+      "files": [
+        {
+          "path": "workstreams/po03/wave-a/units/wa-024/tests/test_clean_runner_probe.py",
+          "tests": 28,
+          "classes": [
+            "ClassificationUnitTests",
+            "TreeMaterialisationTests",
+            "ScrubbedEnvironmentTests",
+            "DifferentialDetectionTests",
+            "DeclaredProbeSetTests"
+          ],
+          "covers": "The differential harness: classification of each outcome pattern, materialisation of the three trees, environment scrubbing, redaction of sandbox paths from the report, and cross-checks that every declared hypothesis names probes that exist and every probe is claimed by a hypothesis."
+        },
+        {
+          "path": "workstreams/po03/wave-a/units/wa-024/tests/test_local_state_lint.py",
+          "tests": 25,
+          "classes": [
+            "ObjectIdentifierRuleTests",
+            "WorkflowRuleTests",
+            "YamlSubsetTests",
+            "LiveRepositoryInvariantTests"
+          ],
+          "covers": "The static control: each of the five rules against synthetic git fixtures, the three R1 subclasses, the external-object-id allowlist, the suppression marker, the minimal workflow YAML parser, and invariants that must hold against the live repository."
+        },
+        {
+          "path": "workstreams/po03/wave-a/units/wa-024/tests/test_proposals.py",
+          "tests": 22,
+          "classes": [
+            "RegisterSeparationTests",
+            "MechanismChangeRegisterTests",
+            "StrategyProposalRegisterTests",
+            "DecisionChangedTests"
+          ],
+          "covers": "The registers: that the five recorded states stay distinct and no register carries another's payload, that every named patch exists with the recorded digest and byte count and applies to the pinned tree, that no patch touches a path this unit owns, that every proposal is grounded in a hypothesis this unit actually froze, and that no proposal claims authority or acceptance."
+        },
+        {
+          "path": "workstreams/po03/wave-a/units/wa-024/tests/test_run_script.py",
+          "tests": 11,
+          "classes": ["RunScriptTests"],
+          "covers": "The reproduction entry point: fail-fast settings, four consistently numbered stages, environment scrubbing and private HOME and TMPDIR before the first stage, commit verification rather than assumption, non-zero exit on a failing stage, and the F-08 regression that the output directory is made absolute before any stage runs."
+        }
+      ]
+    },
+    {
+      "group_id": "TG-02-SEEDED",
+      "name": "Seeded PO-03 contract tests, unmodified",
+      "command": "python3 -B -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+      "run_from": "repository root",
+      "tests": 23,
+      "outcome": "PASS",
+      "output": "workstreams/po03/wave-a/units/wa-024/result/seeded-tests-output.txt",
+      "note": "Run as declared, except with -B added so the run leaves no bytecode cache. This is the suite pinned as source_base.seed_tests_sha256 in the immutable input; it was not modified in this repository. MC-03 proposes extending it to 28 tests, which is verified only inside the verifier's throwaway clone."
+    },
+    {
+      "group_id": "TG-03-MECHANISM",
+      "name": "Mechanism-change verification",
+      "command": "python3 -B workstreams/po03/wave-a/units/wa-024/proposals/verify_mechanism_changes.py --repo . --commit 0b799f0eeee450e1aaea7a243e91538a079fc516 --json <out>",
+      "checks": 43,
+      "outcome": "PASS",
+      "output": "workstreams/po03/wave-a/units/wa-024/result/mechanism-verification.json",
+      "structure": [
+        { "change_id": "MC-01-CONTRACT-TESTS-LEAVE-NO-BYTECODE", "checks": 11, "before": 3, "after": 4, "adversarial": 2, "patch": 2, "disposition": "PASS" },
+        { "change_id": "MC-02-VERIFY-FROZEN-OBJECT-IDS", "checks": 12, "before": 2, "after": 4, "adversarial": 4, "patch": 2, "disposition": "PASS" },
+        { "change_id": "MC-03-CUSTODY-READBACK-NEEDS-A-FETCHABLE-REF", "checks": 16, "before": 4, "after": 10, "adversarial": 0, "patch": 2, "disposition": "PASS" },
+        { "change_id": "MC-COMBINED", "checks": 4, "before": 0, "after": 3, "adversarial": 0, "patch": 1, "disposition": "PASS" }
+      ],
+      "note": "Every change carries a matched before/after pair, so a check that passes after the patch is only counted when the same check fails before it. The combined entry establishes that the three changes compose: applied together, the seeded suite and the repository taxonomy check both pass and neither contaminates the checkout."
+    },
+    {
+      "group_id": "TG-04-PROBES",
+      "name": "Preregistered probe expectations",
+      "command": "python3 -B workstreams/po03/wave-a/units/wa-024/harness/clean_runner_probe.py --repo . --commit <sha> --probes harness/probes.json --json <out> --require-expectations",
+      "assertions": 22,
+      "outcome": "PASS",
+      "output": "workstreams/po03/wave-a/units/wa-024/result/probe-report.json",
+      "detail": {
+        "probe_count": 24,
+        "outcome_expectations_declared": 23,
+        "outcome_expectations_met": 23,
+        "mutation_expectations_declared": 4,
+        "mutation_expectations_met": 4,
+        "binding_expectation_failures": [],
+        "advisory_expectation_failures": []
+      },
+      "note": "Expectations were frozen in harness/probes.json before the reproduction ran, and the harness exits non-zero when a binding one is unmet, so a wrong prediction fails the run rather than being reinterpreted afterwards. Two probes are exploratory and declare no expected classification; three are advisory because their outcome depends on the invoking host rather than on repository content."
+    },
+    {
+      "group_id": "TG-05-REPOSITORY-GATES",
+      "name": "Repository-wide gates required before commit",
+      "outcome": "PASS",
+      "checks": [
+        {
+          "name": "operator taxonomy currentness",
+          "command": "python3 -B scripts/check_operator_taxonomy.py",
+          "exit_status": 0,
+          "result": "OPERATOR TAXONOMY CHECK: PASS",
+          "output": "workstreams/po03/wave-a/units/wa-024/result/taxonomy-output.txt",
+          "required_by": "AGENTS.md item 10"
+        },
+        {
+          "name": "seeded contract validator over every control result document",
+          "command": "python3 -B workstreams/po03/tools/validate_contracts.py result <document>",
+          "exit_status": 0,
+          "result": "Both control result documents validate.",
+          "output": "workstreams/po03/wave-a/units/wa-024/result/validator-output.txt"
+        },
+        {
+          "name": "ownership of changed paths",
+          "command": "git diff --cached --name-only, filtered against the declared allowed_write_globs",
+          "exit_status": 0,
+          "result": "Every changed path is under workstreams/po03/wave-a/units/wa-024/. No path outside the allowlist was written."
+        },
+        {
+          "name": "no workload contaminated this checkout",
+          "command": "git status --porcelain --untracked-files=all",
+          "exit_status": 0,
+          "result": "After the full reproduction, the seeded suite, the taxonomy check and the validator, no untracked or modified path exists outside this unit's own result slot."
+        }
+      ]
+    }
+  ],
+  "adversarial_cases": [
+    {
+      "case": "PYTHONDONTWRITEBYTECODE=1 applied to the declared isolated-mode command",
+      "expected_by_a_naive_reader": "bytecode writing is suppressed",
+      "observed": "the checkout is still contaminated",
+      "where": "probes p06 and p07, and the MC-01 verifier check environment_variable_remediation_is_ineffective_under_isolation",
+      "why_it_is_here": "It is the wrong turn a competent operator is most likely to take, so it is measured rather than left as a caveat."
+    },
+    {
+      "case": "The proposed cleanliness gate on a tree that is already clean, and then on one with a planted bytecode cache",
+      "expected": "a gate that cannot fail would be worthless",
+      "observed": "exits 0 on the clean tree and 1 once a cache is planted",
+      "where": "MC-01 verifier check cleanliness_gate_is_not_vacuous"
+    },
+    {
+      "case": "Reinstating the original prefix-only-correct identifier after the MC-02 guard is in place",
+      "expected": "the guard rejects it and names the diagnosis",
+      "observed": "raises, reporting that the abbreviation resolves elsewhere and the identifier is prefix-only-correct",
+      "where": "MC-02 verifier check guard_refuses_the_original_defect"
+    },
+    {
+      "case": "The MC-02 guard run from a depth-1 clone, where the question cannot be answered",
+      "expected": "refuse rather than pass vacuously",
+      "observed": "raises, refusing to freeze provenance from a shallow checkout",
+      "where": "MC-02 verifier check guard_refuses_to_freeze_provenance_from_a_shallow_checkout"
+    },
+    {
+      "case": "An explicit result_commit_ref that disagrees with the ref embedded in the manifest locator",
+      "expected": "the two sources of the ref must not be allowed to diverge silently",
+      "observed": "rejected",
+      "where": "MC-03 verifier check patched_validator_rejects_a_ref_that_disagrees_with_the_locator"
+    },
+    {
+      "case": "A commit reachable from the checked-out branch, used as a discriminating control against the unreachable canary result commits",
+      "expected": "if depth were the variable, this would fail the same way",
+      "observed": "fails only at depth 1, while the canary commits fail in every fresh tree, isolating reachability rather than depth",
+      "where": "probe p23 against p21 and p22"
+    }
+  ],
+  "negative_controls": [
+    {
+      "control": "p08 and p09: the same bytecode-suppressing variable without isolated mode",
+      "establishes": "the variable does work; isolated mode is what defeats it, so F-02 is not a claim that the variable is broken."
+    },
+    {
+      "control": "p10 and p11: the taxonomy check from the repository root and from a nested directory",
+      "establishes": "a workload that resolves its root from __file__ is working-directory independent, so F-07 is a property of the declared command rather than of the repository."
+    },
+    {
+      "control": "MC-03 verifier: a bare-path manifest_uri before ingestion",
+      "establishes": "the new rule constrains coordinator-owned records without breaking producer-owned ones."
+    },
+    {
+      "control": "R2, R4 and R5 report zero findings across 188 files",
+      "establishes": "the static control is not indiscriminate; it fires on two rules and stays silent on three."
+    }
+  ],
+  "known_gaps": [
+    "No test asserts behaviour on a real GitHub-hosted runner, because dispatching a workflow run is outside this unit's authority. See limitations.json.",
+    "test_run_script.py covers run.sh structurally rather than by re-executing it; the end-to-end execution evidence for run.sh is result/run-console.txt from the canonical reproduction.",
+    "Windows and macOS runners, self-hosted runners and GitHub Enterprise Server are untested."
+  ],
+  "decision_changed": []
+}
