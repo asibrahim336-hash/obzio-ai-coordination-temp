@@ -1,0 +1,42 @@
+{
+  "schema": "po03-repair-candidate-v1",
+  "defect_id": "PO03-REPO-002-committed-bytecode",
+  "found_by": "po03-worker-a3",
+  "found_in_unit": "a3-u04",
+  "severity": "degrades-clean-tree-gates",
+  "owning_writer": "coordinator",
+  "affected_file": "workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+  "also_affected": ["workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"],
+  "applied_by_this_writer": false,
+  "applied_by_this_writer_note": "Both paths sit outside po03-worker-a3's owned prefixes: one is a test module without the test_a3_ prefix, the other is under tools/. Removing them would be a write outside this writer's scope and a permanent deletion, so they are recorded and registered as a known exception instead.",
+  "statement": "Two interpreter bytecode caches are committed to the repository. Running the suite rewrites them, so `git status --porcelain` reports two modified tracked files after any test run on a clean checkout.",
+  "observed_consequences": [
+    "A clean-tree gate run after the suite sees a dirty tree that no author touched. The uncommitted-file gate from unit a3-u07 has to classify bytecode as tolerated build output to avoid failing on it, which weakens the gate for every other bytecode path too.",
+    "The clean-runner check from unit a3-u04 cannot simply require the checkout to contain no bytecode; it has to carry these two paths as registered exceptions in ci-surface-rules.json.",
+    "A .pyc committed alongside its source can shadow the source in an environment where the source is absent or newer, so the bytes that execute are not necessarily the bytes under review."
+  ],
+  "reproduction": "git checkout <clean tree>; python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py'; git status --porcelain  ->  two ' M' lines under __pycache__",
+  "observed_output": {
+    "git ls-files '*.pyc'": [
+      "workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+      "workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+    ],
+    "git status --porcelain after a suite run": [
+      " M workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+      " M workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+    ]
+  },
+  "proposed_repair": [
+    "git rm --cached the two paths, keeping the working files.",
+    "Add __pycache__/ and *.pyc to .gitignore, which is outside this writer's owned paths.",
+    "Remove the tracked_exceptions list from ci-surface-rules.json, at which point WARM_BYTECODE_CACHE covers every .pyc with no carve-out."
+  ],
+  "patch": "NOT_SUPPORTED: a patch is not supplied. Both the deletion and the .gitignore edit fall outside this writer's owned paths, and a patch that deletes committed files is not something this writer should stage even as a proposal.",
+  "disposition": "PROPOSED_TO_COORDINATOR",
+  "registered_exception": {
+    "file": "workstreams/po03/runtime/ci-surface-rules.json",
+    "field": "bytecode_policy.tracked_exceptions",
+    "narrowness": "Exactly the two committed paths. Any third .pyc, tracked or untracked, is a finding.",
+    "retire_when": "git ls-files '*.pyc' is empty, at which point the exception list becomes stale and STALE_BYTECODE_EXCEPTION fires until it is removed."
+  }
+}

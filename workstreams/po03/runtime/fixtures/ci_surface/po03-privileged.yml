@@ -1,0 +1,21 @@
+name: Planted defect - needs a secret, a self-hosted runner and write permission
+
+# Not a real workflow; see the sibling fixture. This one covers the boundaries
+# the commission draws around workflows added under it.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  privileged:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker://alpine:3.20
+      - name: Use a secret
+        run: echo "${{ secrets.PO03_PLANTED_TOKEN }}" | wc -c
+      - name: Install system packages
+        run: sudo apt-get install -y jq

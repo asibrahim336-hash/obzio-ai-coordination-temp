@@ -1,0 +1,30 @@
+name: Planted defect - restores a dependency cache and installs a package
+
+# Not a real workflow. It lives under runtime/fixtures so no GitHub Actions
+# trigger can pick it up, and exists so DEPENDENCY_CACHE and PACKAGE_INSTALL are
+# observed firing rather than assumed to work.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: po03-planted
+      - name: Install a dependency the standard forbids
+        run: pip install pyyaml
+      - name: Run the suite
+        run: python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py'
