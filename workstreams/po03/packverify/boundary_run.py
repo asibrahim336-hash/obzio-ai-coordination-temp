@@ -8,9 +8,13 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import uuid
 from pathlib import Path
 from typing import Mapping, Sequence
+
+if not __package__:  # Support ``python3 -I path/to/boundary_run.py``.
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 if __package__:
     from .git_tree import GitTree

@@ -5,8 +5,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Iterable
+
+if not __package__:  # Support ``python3 -I path/to/qualify.py``.
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 if __package__:
     from .git_tree import GitTree

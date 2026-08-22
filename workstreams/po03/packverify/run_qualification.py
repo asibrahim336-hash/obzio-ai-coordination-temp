@@ -6,8 +6,12 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import sys
 from pathlib import Path
 from typing import Mapping
+
+if not __package__:  # Support ``python3 -I path/to/run_qualification.py``.
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 if __package__:
     from . import boundary_run, debris, manifest_gaps, portability, qualify

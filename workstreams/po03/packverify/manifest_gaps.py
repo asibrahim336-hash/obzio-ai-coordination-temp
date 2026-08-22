@@ -6,8 +6,12 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import sys
 from pathlib import Path, PurePosixPath
 from typing import Iterable, Mapping
+
+if not __package__:  # Support ``python3 -I path/to/manifest_gaps.py``.
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 if __package__:
     from .git_tree import GitTree
