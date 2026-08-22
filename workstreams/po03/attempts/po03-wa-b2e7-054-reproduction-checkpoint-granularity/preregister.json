@@ -1,0 +1,21 @@
+{
+  "protocol": "PO03-REPRODUCTION-v1",
+  "hypothesis_id": "H-005",
+  "hypothesis": "Monotonic checkpoints reduce completed-step rework after identical induced failures relative to all-or-nothing replay.",
+  "registered_at": "2026-08-22T07:12:00Z",
+  "seed": 54054,
+  "sample_size": 120,
+  "steps_per_attempt": 20,
+  "checkpoint_granularities": [
+    1,
+    2,
+    5,
+    10,
+    20
+  ],
+  "matched_failures": true,
+  "primary_metric": "mean_reworked_steps",
+  "accept_when": "granularity_1 mean_reworked_steps < all_or_nothing mean_reworked_steps and reduction_fraction >= 0.50",
+  "refute_when": "granularity_1 mean_reworked_steps >= all_or_nothing mean_reworked_steps or reduction_fraction < 0.50",
+  "decision_changed": []
+}
