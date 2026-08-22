@@ -1,0 +1,571 @@
+{
+  "acceptance_authority_note": "Consequential acceptance requires a second frontier-family challenger. This receipt is a recommendation only and never sets ACCEPTED.",
+  "decision_changed": [],
+  "defects": [
+    "R4_MANIFEST_COMPLETE: slot has no manifest",
+    "R9_CONTRACT_ECHO: frozen contract binding broken"
+  ],
+  "dimensions": [
+    {
+      "critical": true,
+      "detail": "2 parseable module(s)",
+      "dimension": "R1_EXECUTABLE_UNIT",
+      "evidence": [
+        "mechanism.py",
+        "test_mechanism.py"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "critical": true,
+      "detail": "3 test(s) rerun green by reviewer",
+      "dimension": "R2_TESTS_RERUN",
+      "evidence": [
+        {
+          "ran": 3,
+          "returncode": 0,
+          "summary": "OK",
+          "test": "test_mechanism.py"
+        }
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "critical": true,
+      "detail": "slot has no manifest",
+      "dimension": "R4_MANIFEST_COMPLETE",
+      "evidence": [],
+      "verdict": "FAIL"
+    },
+    {
+      "critical": true,
+      "detail": "disposition(s) ['PASS'] within frozen enum",
+      "dimension": "R5_DISPOSITION_LEGAL",
+      "evidence": [],
+      "verdict": "PASS"
+    },
+    {
+      "critical": true,
+      "detail": "12 artifact(s) inside workstreams/po03/runs/wave-a/route-06/PO03-WA-041",
+      "dimension": "R7_PATH_CONFINEMENT",
+      "evidence": [],
+      "verdict": "PASS"
+    },
+    {
+      "critical": true,
+      "detail": "no producer self-acceptance (independent_acceptance=NOT_TESTED)",
+      "dimension": "R8_NO_SELF_ACCEPTANCE",
+      "evidence": [],
+      "verdict": "PASS"
+    },
+    {
+      "critical": true,
+      "detail": "frozen contract binding broken",
+      "dimension": "R9_CONTRACT_ECHO",
+      "evidence": [
+        "fixture.json: task_id=OBZIO-SANITIZED-001 != PO03-WA-041"
+      ],
+      "verdict": "FAIL"
+    },
+    {
+      "critical": false,
+      "detail": "command + observed output recorded",
+      "dimension": "R3_COMMANDS_AND_OBSERVED",
+      "evidence": [
+        "observed-result.json"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "critical": false,
+      "detail": "limitations recorded",
+      "dimension": "R6_LIMITATIONS_PRESENT",
+      "evidence": [
+        "recurrence-test.json"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "critical": false,
+      "detail": "5 assertions across 3 tests, coverage 0.60",
+      "dimension": "R10_HYPOTHESIS_EXERCISED",
+      "evidence": [],
+      "verdict": "PASS"
+    },
+    {
+      "critical": false,
+      "detail": "2 module(s) structurally distinct",
+      "dimension": "R11_NOT_DUPLICATED",
+      "evidence": [],
+      "verdict": "PASS"
+    }
+  ],
+  "frozen_criteria": {
+    "acceptance_contract_sha256": "7570d47ca753fed29153dc9f510f8a4f95f41d648494bc441fb9c9ff0bafa852",
+    "acceptance_contract_uri": "workstreams/po03/control/tasks/PO03-WA-041/acceptance.json",
+    "criteria_freeze_sha256": "901ecbffc27ecb2149c5a50c9c137618c8b6f568228e19f817cbdecc7d53cc31",
+    "criteria_freeze_uri": "workstreams/po03/evidence/criteria-freeze.json",
+    "immutable_input_manifest_sha256": "f66ba25343ceb8ce7810a7b241dd80b042b3b888ba498dcd61e48a29863c2f66",
+    "source_lock_sha256": "f66ba25343ceb8ce7810a7b241dd80b042b3b888ba498dcd61e48a29863c2f66",
+    "source_lock_uri": "workstreams/po03/evidence/source-lock.json"
+  },
+  "frozen_hypothesis": "Content-addressed task capsules reduce callback-loss ambiguity on an Obzio fixture.",
+  "function": "research-reproduction",
+  "hidden_cases": [
+    {
+      "case": "golden",
+      "expected_failed_dimensions": [],
+      "expected_recommendation": "RECOMMEND_ACCEPT",
+      "slot": "slots/golden"
+    },
+    {
+      "case": "prose_only",
+      "expected_failed_dimensions": [
+        "R1_EXECUTABLE_UNIT",
+        "R2_TESTS_RERUN"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/prose_only"
+    },
+    {
+      "case": "manifest_omission",
+      "expected_failed_dimensions": [
+        "R4_MANIFEST_COMPLETE"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/manifest_omission"
+    },
+    {
+      "case": "manifest_hash_corrupt",
+      "expected_failed_dimensions": [
+        "R4_MANIFEST_COMPLETE"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/manifest_hash_corrupt"
+    },
+    {
+      "case": "manifest_bytes_corrupt",
+      "expected_failed_dimensions": [
+        "R4_MANIFEST_COMPLETE"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/manifest_bytes_corrupt"
+    },
+    {
+      "case": "failing_test",
+      "expected_failed_dimensions": [
+        "R2_TESTS_RERUN"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/failing_test"
+    },
+    {
+      "case": "illegal_disposition",
+      "expected_failed_dimensions": [
+        "R5_DISPOSITION_LEGAL"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/illegal_disposition"
+    },
+    {
+      "case": "self_acceptance",
+      "expected_failed_dimensions": [
+        "R8_NO_SELF_ACCEPTANCE"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/self_acceptance"
+    },
+    {
+      "case": "terminal_overreach",
+      "expected_failed_dimensions": [
+        "R8_NO_SELF_ACCEPTANCE"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/terminal_overreach"
+    },
+    {
+      "case": "wrong_contract_hash",
+      "expected_failed_dimensions": [
+        "R9_CONTRACT_ECHO"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/wrong_contract_hash"
+    },
+    {
+      "case": "escaping_symlink",
+      "expected_failed_dimensions": [
+        "R7_PATH_CONFINEMENT"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/escaping_symlink"
+    },
+    {
+      "case": "missing_limitations",
+      "expected_failed_dimensions": [
+        "R6_LIMITATIONS_PRESENT"
+      ],
+      "expected_recommendation": "RETEST",
+      "slot": "slots/missing_limitations"
+    },
+    {
+      "case": "thin_tests",
+      "expected_failed_dimensions": [
+        "R10_HYPOTHESIS_EXERCISED"
+      ],
+      "expected_recommendation": "RETEST",
+      "slot": "slots/thin_tests"
+    },
+    {
+      "case": "no_observed_output",
+      "expected_failed_dimensions": [
+        "R3_COMMANDS_AND_OBSERVED"
+      ],
+      "expected_recommendation": "RETEST",
+      "slot": "slots/no_observed_output"
+    },
+    {
+      "case": "duplicate_unit",
+      "expected_failed_dimensions": [
+        "R11_NOT_DUPLICATED"
+      ],
+      "expected_recommendation": "RETEST",
+      "slot": "slots/duplicate_unit"
+    },
+    {
+      "case": "unmanifested_extra",
+      "expected_failed_dimensions": [
+        "R4_MANIFEST_COMPLETE"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/unmanifested_extra"
+    }
+  ],
+  "immutable_artifact_readback": [
+    {
+      "bytes": 4199,
+      "immutable_commit_sha256": "443adff8d08ddd5ed77d10299227776ee5485d90e1c0b5ed4b06f0e29595453f",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-06/PO03-WA-041/artifact-manifest.json",
+      "sha256": "443adff8d08ddd5ed77d10299227776ee5485d90e1c0b5ed4b06f0e29595453f"
+    },
+    {
+      "bytes": 249,
+      "immutable_commit_sha256": "b889ed80588720f35675ffce0e7deb58ed0ebf8f74fa9883f54eec4ccc035c52",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-06/PO03-WA-041/fixture.json",
+      "sha256": "b889ed80588720f35675ffce0e7deb58ed0ebf8f74fa9883f54eec4ccc035c52"
+    },
+    {
+      "bytes": 536,
+      "immutable_commit_sha256": "fad0db986d8ba63c3719e9391903af5708c16d90765641a44667d8936f203178",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-06/PO03-WA-041/frozen-hypothesis.json",
+      "sha256": "fad0db986d8ba63c3719e9391903af5708c16d90765641a44667d8936f203178"
+    },
+    {
+      "bytes": 547,
+      "immutable_commit_sha256": "ef432b1cf471e05c848b634178a6f1a7de2288460a34c865feffa64ba7592221",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-06/PO03-WA-041/mechanism-change.json",
+      "sha256": "ef432b1cf471e05c848b634178a6f1a7de2288460a34c865feffa64ba7592221"
+    },
+    {
+      "bytes": 2484,
+      "immutable_commit_sha256": "54f0830fc33435083c24798c7832b01bcf3d11d411062cd8fc67acd27742f957",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-06/PO03-WA-041/mechanism.py",
+      "sha256": "54f0830fc33435083c24798c7832b01bcf3d11d411062cd8fc67acd27742f957"
+    },
+    {
+      "bytes": 838,
+      "immutable_commit_sha256": "5855668869e860102e40341a479a400fef1dfc5c4c725800f3c1fec04801e5cb",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-06/PO03-WA-041/observed-result.json",
+      "sha256": "5855668869e860102e40341a479a400fef1dfc5c4c725800f3c1fec04801e5cb"
+    },
+    {
+      "bytes": 1033,
+      "immutable_commit_sha256": "93cf7337e99357af499a80c8ccc2fb5ed6aaaf724ea5adbf055624cb08173710",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-06/PO03-WA-041/recurrence-test.json",
+      "sha256": "93cf7337e99357af499a80c8ccc2fb5ed6aaaf724ea5adbf055624cb08173710"
+    },
+    {
+      "bytes": 615,
+      "immutable_commit_sha256": "2f882a15b69da0efe7d8fe9bbe06501e1b907936ee7653b83e73efd2ca29e823",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-06/PO03-WA-041/reproduction.json",
+      "sha256": "2f882a15b69da0efe7d8fe9bbe06501e1b907936ee7653b83e73efd2ca29e823"
+    },
+    {
+      "bytes": 5690,
+      "immutable_commit_sha256": "e25caf97a610f26bcd9025143a0a915628aa86732b24e28d1a60d3ec47e22ab0",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-06/PO03-WA-041/result.json",
+      "sha256": "e25caf97a610f26bcd9025143a0a915628aa86732b24e28d1a60d3ec47e22ab0"
+    },
+    {
+      "bytes": 957,
+      "immutable_commit_sha256": "f4374a470e45b6929c61ce2adfccae04e0063c83df4da38ee4f8af25ce363f05",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-06/PO03-WA-041/source.json",
+      "sha256": "f4374a470e45b6929c61ce2adfccae04e0063c83df4da38ee4f8af25ce363f05"
+    },
+    {
+      "bytes": 412,
+      "immutable_commit_sha256": "9571a168f0680da63c3913aa64de90191b30bdda0f35d45ce2139f48cc9f4ebc",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-06/PO03-WA-041/strategy-proposal.json",
+      "sha256": "9571a168f0680da63c3913aa64de90191b30bdda0f35d45ce2139f48cc9f4ebc"
+    },
+    {
+      "bytes": 1015,
+      "immutable_commit_sha256": "9909ded1c24a637490a55942fd4b50a6df6b496ac5d7b4ccf4af9fbf4a827e45",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-06/PO03-WA-041/test_mechanism.py",
+      "sha256": "9909ded1c24a637490a55942fd4b50a6df6b496ac5d7b4ccf4af9fbf4a827e45"
+    }
+  ],
+  "limitations": [],
+  "receipt_version": "PO03-ROUTE07-INDEPENDENT-REVIEW-RECEIPT-v1",
+  "recommendation": "RECOMMEND_REJECT",
+  "review_order": "BLIND_STAGE_1_CRITERIA_ONLY",
+  "reviewed_at": "2026-08-22T07:41:39Z",
+  "reviewer_function": "evaluation-and-semantics",
+  "reviewer_id": "po03-route-07-independent-reviewer",
+  "reviewer_model_family": "claude-opus-5",
+  "route_id": "route-06",
+  "rubric_freeze": {
+    "components": [
+      {
+        "bytes": 24024,
+        "path": "workstreams/po03/runs/wave-a/route-07/review/rubric_v1.py",
+        "sha256": "51fbef424eb31ad0b5706921a30c583950386b8c8c6de704a929dc51b6bd3904"
+      },
+      {
+        "bytes": 12371,
+        "path": "workstreams/po03/runs/wave-a/route-07/review/hidden_cases_v1.py",
+        "sha256": "62cfdac26f63246aab538c36e87f02d77035aef11d8012abd9e61fb7eb8afbde"
+      },
+      {
+        "bytes": 4161,
+        "path": "workstreams/po03/runs/wave-a/route-07/review/test_rubric_v1.py",
+        "sha256": "6a560d73c3aee69829978420a684381ec3ca1e87a36bce78821e4645cfbfc950"
+      },
+      {
+        "bytes": 10154,
+        "path": "workstreams/po03/runs/wave-a/route-07/review/run_review.py",
+        "sha256": "208bf292265aa2be6bcf1b70a6dc638997b13586da7316f312fe6a069a85070c"
+      }
+    ],
+    "composite_rubric_sha256": "c237b24c7242b80dddb29e62e6cf63ce284c6fc66fea1c722e31de7aa5fc05ad",
+    "criteria_freeze_sha256": "901ecbffc27ecb2149c5a50c9c137618c8b6f568228e19f817cbdecc7d53cc31",
+    "decision_changed": [],
+    "dimensions": {
+      "advisory": [
+        "R3_COMMANDS_AND_OBSERVED",
+        "R6_LIMITATIONS_PRESENT",
+        "R10_HYPOTHESIS_EXERCISED",
+        "R11_NOT_DUPLICATED"
+      ],
+      "critical": [
+        "R1_EXECUTABLE_UNIT",
+        "R2_TESTS_RERUN",
+        "R4_MANIFEST_COMPLETE",
+        "R5_DISPOSITION_LEGAL",
+        "R7_PATH_CONFINEMENT",
+        "R8_NO_SELF_ACCEPTANCE",
+        "R9_CONTRACT_ECHO"
+      ]
+    },
+    "exact_model_configuration": "claude-opus-5-thinking-high",
+    "freeze_id": "PO03-ROUTE07-RUBRIC-FREEZE-v1",
+    "frozen_at": "2026-08-22T07:41:16Z",
+    "frozen_at_base_commit": "1a93d690c81433913803fe370406e3da1700bb21",
+    "hidden_case_count": 16,
+    "hidden_cases": [
+      {
+        "case": "golden",
+        "expected_failed_dimensions": [],
+        "expected_recommendation": "RECOMMEND_ACCEPT",
+        "slot": "slots/golden"
+      },
+      {
+        "case": "prose_only",
+        "expected_failed_dimensions": [
+          "R1_EXECUTABLE_UNIT",
+          "R2_TESTS_RERUN"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/prose_only"
+      },
+      {
+        "case": "manifest_omission",
+        "expected_failed_dimensions": [
+          "R4_MANIFEST_COMPLETE"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/manifest_omission"
+      },
+      {
+        "case": "manifest_hash_corrupt",
+        "expected_failed_dimensions": [
+          "R4_MANIFEST_COMPLETE"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/manifest_hash_corrupt"
+      },
+      {
+        "case": "manifest_bytes_corrupt",
+        "expected_failed_dimensions": [
+          "R4_MANIFEST_COMPLETE"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/manifest_bytes_corrupt"
+      },
+      {
+        "case": "failing_test",
+        "expected_failed_dimensions": [
+          "R2_TESTS_RERUN"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/failing_test"
+      },
+      {
+        "case": "illegal_disposition",
+        "expected_failed_dimensions": [
+          "R5_DISPOSITION_LEGAL"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/illegal_disposition"
+      },
+      {
+        "case": "self_acceptance",
+        "expected_failed_dimensions": [
+          "R8_NO_SELF_ACCEPTANCE"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/self_acceptance"
+      },
+      {
+        "case": "terminal_overreach",
+        "expected_failed_dimensions": [
+          "R8_NO_SELF_ACCEPTANCE"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/terminal_overreach"
+      },
+      {
+        "case": "wrong_contract_hash",
+        "expected_failed_dimensions": [
+          "R9_CONTRACT_ECHO"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/wrong_contract_hash"
+      },
+      {
+        "case": "escaping_symlink",
+        "expected_failed_dimensions": [
+          "R7_PATH_CONFINEMENT"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/escaping_symlink"
+      },
+      {
+        "case": "missing_limitations",
+        "expected_failed_dimensions": [
+          "R6_LIMITATIONS_PRESENT"
+        ],
+        "expected_recommendation": "RETEST",
+        "slot": "slots/missing_limitations"
+      },
+      {
+        "case": "thin_tests",
+        "expected_failed_dimensions": [
+          "R10_HYPOTHESIS_EXERCISED"
+        ],
+        "expected_recommendation": "RETEST",
+        "slot": "slots/thin_tests"
+      },
+      {
+        "case": "no_observed_output",
+        "expected_failed_dimensions": [
+          "R3_COMMANDS_AND_OBSERVED"
+        ],
+        "expected_recommendation": "RETEST",
+        "slot": "slots/no_observed_output"
+      },
+      {
+        "case": "duplicate_unit",
+        "expected_failed_dimensions": [
+          "R11_NOT_DUPLICATED"
+        ],
+        "expected_recommendation": "RETEST",
+        "slot": "slots/duplicate_unit"
+      },
+      {
+        "case": "unmanifested_extra",
+        "expected_failed_dimensions": [
+          "R4_MANIFEST_COMPLETE"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/unmanifested_extra"
+      }
+    ],
+    "inputs_admitted_before_freeze": [
+      "workstreams/po03/evidence/criteria-freeze.json",
+      "workstreams/po03/evidence/source-lock.json",
+      "workstreams/po03/contracts/transactional-result.schema.json",
+      "workstreams/po03/contracts/wave-compounding.schema.json",
+      "workstreams/po03/metrics/metric-definitions.json",
+      "workstreams/po03/COMMISSION.md",
+      "workstreams/po03/control/path-ownership.json",
+      "workstreams/po03/control/protocol-activation.json",
+      "workstreams/po03/control/recovery-state.json",
+      "workstreams/po03/control/leases/route-07.json",
+      "workstreams/po03/control/canaries/route-07/challenge.json",
+      "workstreams/po03/control/canaries/route-07/response.json",
+      "workstreams/po03/control/tasks/PO03-WA-0{01-08,33-56}/input.json",
+      "workstreams/po03/control/tasks/PO03-WA-0{01-08,33-56}/acceptance.json",
+      "workstreams/po03/control/completions/route-01.json",
+      "workstreams/po03/control/completions/route-05.json",
+      "workstreams/po03/control/completions/route-06.json"
+    ],
+    "inputs_withheld_until_after_freeze": [
+      "workstreams/po03/runs/wave-a/route-01/**",
+      "workstreams/po03/runs/wave-a/route-05/**",
+      "workstreams/po03/runs/wave-a/route-06/**",
+      "workstreams/po03/control/results/**"
+    ],
+    "recommendation_enum": [
+      "RECOMMEND_ACCEPT",
+      "RECOMMEND_REJECT",
+      "RETEST"
+    ],
+    "review_order_declaration": "Rubric, hidden-case generators and stage-1 driver were compiled and hashed from frozen criteria only, before reading any producer conclusion, FINDING narrative, observed-result prose, per-task producer result receipt or route execution receipt.",
+    "reviewer_function": "evaluation-and-semantics",
+    "reviewer_id": "po03-route-07-independent-reviewer",
+    "self_test_command": "python3 -m unittest test_rubric_v1 -v",
+    "source_lock_sha256": "f66ba25343ceb8ce7810a7b241dd80b042b3b888ba498dcd61e48a29863c2f66",
+    "terminal_acceptance_permitted": false
+  },
+  "target": {
+    "completed_receipt_sha256": "67507070d0636e45c365d942b143a73819a1d214123937c341e0a3c5c8190d93",
+    "coordinator_state": "COMPLETED_PENDING_INDEPENDENT_ACCEPTANCE",
+    "parent_ingested_receipt_sha256": "aed24acb14f9a1bbf8776f0df5b3da94a2b6120bdd188ac3131f7904c515870d",
+    "result_commit_id": "53913c2beb9055fba66933a6b08d1ae6b8986127",
+    "result_slot": "workstreams/po03/runs/wave-a/route-06/PO03-WA-041",
+    "result_uri": "workstreams/po03/control/results/PO03-WA-041.json",
+    "reviewed_at_base_commit": "1a93d690c81433913803fe370406e3da1700bb21"
+  },
+  "task_id": "PO03-WA-041",
+  "terminal_acceptance_claimed": false,
+  "tests_rerun_by_reviewer": [
+    {
+      "ran": 3,
+      "returncode": 0,
+      "summary": "OK",
+      "test": "test_mechanism.py"
+    }
+  ]
+}
