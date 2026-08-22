@@ -58,6 +58,12 @@ class TransactionalFactoryTests(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertEqual(MODULE.sha256_bytes(first), MODULE.sha256_bytes(second))
 
+    def test_git_sha1_and_sha256_object_ids_are_supported(self):
+        MODULE.require_git_object_id("a" * 40, "head")
+        MODULE.require_git_object_id("b" * 64, "head")
+        with self.assertRaises(ValueError):
+            MODULE.require_git_object_id("c" * 39, "head")
+
     def test_write_once_is_idempotent_but_immutable(self):
         destination = MODULE.PO03_ROOT / "control" / "immutable.json"
         MODULE.write_once(destination, b"{}\n")

@@ -28,6 +28,7 @@ COMMISSION_ID = "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001"
 PROTOCOL_VERSION = "OBZIO-TRANSACTIONAL-RESULT-v1"
 TASK_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{2,95}$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+GIT_OBJECT_RE = re.compile(r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")
 
 ALLOWED_WRITE_PREFIXES = (
     "workstreams/po03/",
@@ -133,9 +134,9 @@ def git(*arguments: str) -> str:
     return result.stdout.strip()
 
 
-def require_sha256(value: str, field: str) -> None:
-    if not SHA256_RE.fullmatch(value):
-        raise ValueError(f"{field} must be a lowercase SHA-256")
+def require_git_object_id(value: str, field: str) -> None:
+    if not GIT_OBJECT_RE.fullmatch(value):
+        raise ValueError(f"{field} must be a full lowercase Git object ID")
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -445,7 +446,7 @@ def activate(args: argparse.Namespace) -> int:
     actual_head = git("rev-parse", "HEAD")
     if actual_head != args.head_sha:
         raise ValueError(f"head changed: expected {args.head_sha}, observed {actual_head}")
-    require_sha256(args.head_sha, "head_sha")
+    require_git_object_id(args.head_sha, "head_sha")
 
     source_document = source_lock(args.head_sha)
     criteria_document = criteria_freeze(args.head_sha)
