@@ -1,0 +1,42 @@
+{
+  "assertion": "all 13 enumerated injection points: none before the atomic publish yields an observable RESULT_COMMITTED, every one is recoverable by rerun from immutable input, and post-hoc torn/truncated/bit-flipped/extra/swapped published bytes are observed as CORRUPT",
+  "command": [
+    "python3",
+    "-I",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "workstreams/po03/tests",
+    "-p",
+    "test_a1_staging.py",
+    "-v"
+  ],
+  "command_string": "python3 -I -m unittest discover -s workstreams/po03/tests -p test_a1_staging.py -v",
+  "cwd": "<repository root>",
+  "exit_code": 0,
+  "recorded_at": "2026-08-22T07:42:07Z",
+  "runtime_binding": {
+    "isolated_mode": true,
+    "platform": "Linux-6.12.94+-x86_64-with-glibc2.39",
+    "python_implementation": "CPython",
+    "python_version": "3.12.3",
+    "third_party_imports": []
+  },
+  "stderr": {
+    "bytes": 2765,
+    "sha256": "b554bcfeebc9825f57511550e106b8cb0ff3d2750e3d7a2914299c4716dea134",
+    "text": "test_a_partial_artifact_is_never_visible_in_the_staging_directory (test_a1_staging.EveryInjectionPointTests.test_a_partial_artifact_is_never_visible_in_the_staging_directory) ... ok\ntest_every_pre_publish_injection_point_is_recoverable_by_rerun (test_a1_staging.EveryInjectionPointTests.test_every_pre_publish_injection_point_is_recoverable_by_rerun) ... ok\ntest_no_injection_point_before_publish_yields_a_committed_observation (test_a1_staging.EveryInjectionPointTests.test_no_injection_point_before_publish_yields_a_committed_observation) ... ok\ntest_a_transaction_id_is_single_use (test_a1_staging.HappyPathTests.test_a_transaction_id_is_single_use) ... ok\ntest_full_sequence_publishes_and_verifies (test_a1_staging.HappyPathTests.test_full_sequence_publishes_and_verifies) ... ok\ntest_publishing_an_unverified_result_is_refused (test_a1_staging.HappyPathTests.test_publishing_an_unverified_result_is_refused) ... ok\ntest_state_sequence_is_recorded_in_order (test_a1_staging.HappyPathTests.test_state_sequence_is_recorded_in_order) ... ok\ntest_publish_without_a_ledger_row_is_reconciled_idempotently (test_a1_staging.LostCallbackTests.test_publish_without_a_ledger_row_is_reconciled_idempotently) ... ok\ntest_reconciliation_refuses_a_result_that_does_not_verify (test_a1_staging.LostCallbackTests.test_reconciliation_refuses_a_result_that_does_not_verify) ... ok\ntest_a_flag_based_observation_would_have_accepted_the_forgery (test_a1_staging.NegativeControlTests.test_a_flag_based_observation_would_have_accepted_the_forgery) ... ok\ntest_a_marker_alone_is_not_enough_to_be_observed_as_committed (test_a1_staging.NegativeControlTests.test_a_marker_alone_is_not_enough_to_be_observed_as_committed) ... ok\ntest_a_corrupt_publication_is_quarantined_by_recovery (test_a1_staging.TornPublicationTests.test_a_corrupt_publication_is_quarantined_by_recovery) ... ok\ntest_a_swapped_manifest_is_observed_as_corrupt (test_a1_staging.TornPublicationTests.test_a_swapped_manifest_is_observed_as_corrupt) ... ok\ntest_an_extra_unmanifested_artifact_is_observed_as_corrupt (test_a1_staging.TornPublicationTests.test_an_extra_unmanifested_artifact_is_observed_as_corrupt) ... ok\ntest_flipping_a_bit_in_a_published_artifact_is_observed_as_corrupt (test_a1_staging.TornPublicationTests.test_flipping_a_bit_in_a_published_artifact_is_observed_as_corrupt) ... ok\ntest_removing_the_commit_marker_is_observed_as_corrupt (test_a1_staging.TornPublicationTests.test_removing_the_commit_marker_is_observed_as_corrupt) ... ok\ntest_truncating_a_published_artifact_is_observed_as_corrupt (test_a1_staging.TornPublicationTests.test_truncating_a_published_artifact_is_observed_as_corrupt) ... ok\n\n----------------------------------------------------------------------\nRan 17 tests in 0.450s\n\nOK\n",
+    "truncated": false
+  },
+  "stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "text": "",
+    "truncated": false
+  },
+  "unit_id": "a1-u06",
+  "verdict": "PASS",
+  "wall_seconds": 0.678,
+  "worker_id": "po03-worker-a1"
+}
