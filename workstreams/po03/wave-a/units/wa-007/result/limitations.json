@@ -1,0 +1,71 @@
+{
+  "protocol_version": "OBZIO-LIMITATIONS-v1",
+  "task_id": "PO03-WA-007",
+  "limitations": [
+    {
+      "limitation_id": "L-PO03-WA-007-01",
+      "status": "BOUNDED_SUPPORT",
+      "subject": "False-positive generalization",
+      "boundary": "The observed false-positive rate is exactly 0/44 for the labelled negative fixture cases. This bounded sample is not a population-wide statistical guarantee for every language, corpus, or artifact type."
+    },
+    {
+      "limitation_id": "L-PO03-WA-007-02",
+      "status": "KNOWN_FALSE_NEGATIVE_BOUNDARY",
+      "subject": "Pseudo-path suppression",
+      "boundary": "URI fragments, regex anchors, versioned routes, templated routes, common JSON Pointer roots, and unknown single-component slash tokens are intentionally suppressed. A real filesystem path with one of those lexical shapes will be missed."
+    },
+    {
+      "limitation_id": "L-PO03-WA-007-03",
+      "status": "NOT_SUPPORTED",
+      "subject": "UNC and network-share paths",
+      "boundary": "Double-slash and backslash UNC roots are not classified because they overlap protocol-relative URLs and network identifiers. Drive-letter Windows absolute paths are supported."
+    },
+    {
+      "limitation_id": "L-PO03-WA-007-04",
+      "status": "NOT_SUPPORTED",
+      "subject": "Dynamically constructed paths",
+      "boundary": "Lexically split, concatenated, encoded, encrypted, compressed, generated-at-runtime, or environment-expanded paths are not reconstructed."
+    },
+    {
+      "limitation_id": "L-PO03-WA-007-05",
+      "status": "SUPPORTED_BOUNDARY",
+      "subject": "Artifact encoding and node types",
+      "boundary": "The declared portable scan closure is UTF-8 regular files only. Binary, invalid UTF-8, symlink, special, missing, and duplicate nodes fail closed unless explicitly excluded; binary content is not inspected."
+    },
+    {
+      "limitation_id": "L-PO03-WA-007-06",
+      "status": "BOUNDED_SUPPORT",
+      "subject": "Quoted-string parsing",
+      "boundary": "The scanner supports ordinary single- and double-quoted values and escaped characters, but it is not a full parser for every programming language's raw strings, heredocs, interpolation, or multiline literal rules."
+    },
+    {
+      "limitation_id": "L-PO03-WA-007-07",
+      "status": "SUPPORTED_BOUNDARY",
+      "subject": "Checkout declaration",
+      "boundary": "Checkout-specific classification requires the caller to provide each absolute checkout root. Undeclared checkout roots may still be reported as absolute paths but cannot receive checkout-specific classification."
+    },
+    {
+      "limitation_id": "L-PO03-WA-007-08",
+      "status": "NOT_SUPPORTED",
+      "subject": "Observed reasoning configuration",
+      "boundary": "The runtime identifies the model family as GPT-5.6 Sol, while no separately attestable xhigh reasoning control is exposed to the producer. The immutable input requested gpt-5.6-sol-xhigh and xhigh."
+    },
+    {
+      "limitation_id": "L-PO03-WA-007-09",
+      "status": "NOT_TESTED",
+      "subject": "Independent acceptance",
+      "boundary": "Focused, seeded, adversarial, taxonomy, ownership, and immutable-readback checks are producer execution evidence. Coordinator ingestion, COMPLETED state, and independent acceptance remain outside this return."
+    },
+    {
+      "limitation_id": "L-PO03-WA-007-10",
+      "status": "NOT_SUPPORTED",
+      "subject": "Cross-platform runtime matrix",
+      "boundary": "Execution occurred on Linux with Python 3.12.3 and Git 2.43.0. Native Windows and macOS process/runtime behavior was not executed, although Windows drive-letter strings are lexical fixtures."
+    }
+  ],
+  "external_outreach": "NONE",
+  "external_mutation": "AUTHORIZED_BRANCH_PUSH_ONLY",
+  "po01_or_pr8_contact": "NONE",
+  "protected_state_mutation": "NONE",
+  "decision_changed": []
+}

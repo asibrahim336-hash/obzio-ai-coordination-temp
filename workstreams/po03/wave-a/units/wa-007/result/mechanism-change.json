@@ -1,0 +1,53 @@
+{
+  "protocol_version": "OBZIO-MECHANISM-CHANGE-v1",
+  "task_id": "PO03-WA-007",
+  "changes": [
+    {
+      "mechanism_change_id": "MC-PO03-WA-007-01",
+      "subject": "Dependency-free portable-path qualification",
+      "before": "The WA-007 owned subtree contained no executable scanner or declared closure semantics.",
+      "after": "portable_path_scanner.py recursively scans explicit UTF-8 roots, emits stable path categories and coordinates, hashes every scanned file, records every exclusion, and fails closed on incomplete closure.",
+      "implementation_paths": [
+        "workstreams/po03/wave-a/units/wa-007/portable_path_scanner.py",
+        "workstreams/po03/wave-a/units/wa-007/scan-closure-contract.json"
+      ],
+      "producer_disposition_recommendation": "RETAIN",
+      "independent_disposition": "NOT_TESTED",
+      "recurrence_evidence": [
+        "22 focused tests passed in Python isolated mode.",
+        "23/23 labelled positive cases were detected with every required category.",
+        "Closure tests reject binary, invalid UTF-8, symlink, duplicate-root, missing-root, and invalid-checkout conditions."
+      ]
+    },
+    {
+      "mechanism_change_id": "MC-PO03-WA-007-02",
+      "subject": "Dot-relative false-positive repair",
+      "before": "The first implementation entered at the slash inside ./ and ../ portable relative paths, producing 2/44 false positives.",
+      "after": "Generic slash-rooted matching rejects a slash immediately preceded by a dot, while absolute tokens separated by whitespace or punctuation remain eligible.",
+      "implementation_commit": "01689b2d1081b064c4475e6ab46cba23bd0eb238",
+      "producer_disposition_recommendation": "RETAIN",
+      "independent_disposition": "NOT_TESTED",
+      "recurrence_evidence": [
+        "NEG-006 and NEG-007 became clean.",
+        "Final measured false-positive rate is 0/44 (0.0).",
+        "Final positive recall remains 23/23 (1.0)."
+      ]
+    },
+    {
+      "mechanism_change_id": "MC-PO03-WA-007-03",
+      "subject": "Immutable result-custody readback",
+      "before": "Scanner output had no unit-local verifier for byte-exact remote result custody.",
+      "after": "verify_remote_readback.py fetches a named branch into a fresh repository, requires the exact expected tip, reads each manifest artifact with git show at the full commit, and compares SHA-256 plus bytes.",
+      "implementation_path": "workstreams/po03/wave-a/units/wa-007/result/verify_remote_readback.py",
+      "producer_disposition_recommendation": "RETAIN",
+      "independent_disposition": "NOT_TESTED",
+      "recurrence_evidence": [
+        "Fresh-repository payload and manifest readback passed.",
+        "Wrong manifest digest, branch movement, and parent traversal cases fail closed."
+      ]
+    }
+  ],
+  "mechanism_change_count": 3,
+  "strategy_effect": "NONE",
+  "decision_changed": []
+}

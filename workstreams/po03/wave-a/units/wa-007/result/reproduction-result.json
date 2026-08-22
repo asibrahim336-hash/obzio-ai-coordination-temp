@@ -1,0 +1,96 @@
+{
+  "protocol_version": "OBZIO-REPRODUCTION-RESULT-v1",
+  "task_id": "PO03-WA-007",
+  "reproduction_id": "R-PO03-WA-007-001",
+  "hypothesis_id": "H-PO03-WA-007",
+  "workload": {
+    "kind": "SANITIZED_REPOSITORY_NATIVE",
+    "fixture_manifest": "workstreams/po03/wave-a/units/wa-007/fixtures/case-manifest.json",
+    "fixture_manifest_sha256": "36bf16f331a558c92dd9f4fa4d14395156e95c82e0abe7cf69fc614c1d943218",
+    "fixture_manifest_bytes": 10977,
+    "fixtures": [
+      {
+        "path": "workstreams/po03/wave-a/units/wa-007/fixtures/positive.txt",
+        "sha256": "2cfce0202f3f173cdfd003a0d2f608207a098f44aad8780d7e910cb1408d2044",
+        "bytes": 452,
+        "cases": 14
+      },
+      {
+        "path": "workstreams/po03/wave-a/units/wa-007/fixtures/negative.txt",
+        "sha256": "f43de42e0b863f3c803809dbc8347f0af10e671d6ed7acefd347463a5428ae6a",
+        "bytes": 891,
+        "cases": 36
+      },
+      {
+        "path": "workstreams/po03/wave-a/units/wa-007/fixtures/adversarial.txt",
+        "sha256": "2af9f4ce5d1ddf20f6f6c9fd8747e90cbbf7658dd1e249f728d07a9fd49f16bb",
+        "bytes": 539,
+        "cases": 17
+      }
+    ],
+    "safety": {
+      "secrets": "NONE",
+      "personal_data": "SYNTHETIC_NAMES_ONLY",
+      "external_effects": "NONE",
+      "po01_contact": "NONE"
+    }
+  },
+  "method": {
+    "scanner": "workstreams/po03/wave-a/units/wa-007/portable_path_scanner.py",
+    "measurement": "workstreams/po03/wave-a/units/wa-007/measure_false_positives.py",
+    "closure_contract": "workstreams/po03/wave-a/units/wa-007/scan-closure-contract.json",
+    "command": "python3 -I -B workstreams/po03/wave-a/units/wa-007/measure_false_positives.py --pretty",
+    "case_unit": "One completely labelled physical fixture line.",
+    "positive_decision": "At least one finding on a line labelled expected_finding=true, with every required category present.",
+    "false_positive_decision": "Any finding on a line labelled expected_finding=false.",
+    "manifest_integrity": "Measurement refuses partial line labelling and hashes every fixture."
+  },
+  "first_pass": {
+    "outcome": "FAIL",
+    "focused_tests": {
+      "tests_run": 18,
+      "failures": 4,
+      "errors": 0
+    },
+    "defect": "The generic POSIX matcher began at the slash in portable ./scripts/run.py and ../shared/data.json tokens.",
+    "measured_false_positive": 2,
+    "measured_negative_cases": 44,
+    "measured_false_positive_rate": 0.045454545454545456,
+    "evidence": [
+      "NEG-006",
+      "NEG-007"
+    ]
+  },
+  "mechanism_repair": {
+    "mechanism_change_id": "MC-PO03-WA-007-02",
+    "change": "A dot was added to the disallowed immediate predecessors for a generic slash-rooted candidate.",
+    "why_bounded": "True absolute paths after sentence punctuation remain detectable when separated by whitespace; explicit ./ and ../ forms no longer enter at an interior slash.",
+    "repair_commit": "01689b2d1081b064c4475e6ab46cba23bd0eb238"
+  },
+  "final_observation": {
+    "status": "PASS",
+    "case_count": 67,
+    "positive_case_count": 23,
+    "negative_case_count": 44,
+    "true_positive": 23,
+    "true_negative": 44,
+    "false_positive": 0,
+    "false_negative": 0,
+    "false_positive_rate": 0.0,
+    "recall": 1.0,
+    "category_counts": {
+      "absolute-posix": 17,
+      "absolute-windows": 3,
+      "home-relative": 3,
+      "temporary": 4,
+      "checkout-specific": 3
+    },
+    "category_misses": [],
+    "scan_errors": []
+  },
+  "hypothesis_outcome": "SUPPORTED",
+  "support_boundary": "Support is exact for this 67-case labelled corpus. Zero observed false positives over 44 negative cases does not establish a population-wide rate.",
+  "started_at": "2026-08-22T08:24:57Z",
+  "finished_at": "2026-08-22T08:31:01Z",
+  "decision_changed": []
+}
