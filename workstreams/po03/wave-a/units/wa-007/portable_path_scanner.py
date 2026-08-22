@@ -29,7 +29,7 @@ _BARE_RE = re.compile(
     rf"(?<![A-Za-z0-9_])file:///{_BARE_CHAR}+"
     rf"|(?<![A-Za-z0-9_])(?:~|\$HOME|\$\{{HOME\}})(?:/{_BARE_CHAR}+)+"
     rf"|(?<![A-Za-z0-9_])[A-Za-z]:(?:\\|/){_BARE_CHAR}+"
-    rf"|(?<![A-Za-z0-9_:/])/(?!/){_BARE_CHAR}+"
+    rf"|(?<![A-Za-z0-9_:/.])/(?!/){_BARE_CHAR}+"
 )
 _WINDOWS_ABSOLUTE_RE = re.compile(r"^[A-Za-z]:(?:\\+|/)")
 _VERSIONED_ROUTE_RE = re.compile(r"^/v[0-9]+(?:\.[0-9]+)?(?:/|$)", re.IGNORECASE)
