@@ -1,0 +1,51 @@
+PO03-WA-035 execution evidence
+captured_at_utc: 2026-08-22T07:16:29Z
+python: Python 3.12.3
+platform: Linux 6.12.94+ x86_64
+worktree_head: 44de68e52a0baa480a8a8c0b95fd5071391dd4a1
+base_commit: 44de68e52a0baa480a8a8c0b95fd5071391dd4a1
+cwd: workstreams/po03/runs/wave-a/route-05/PO03-WA-035
+
+$ python3 -m unittest discover -s tests -p 'test_*.py' -v
+test_destination_only_check_would_have_admitted_the_capture (test_rename_guard.AdmissibilityMatrixTests.test_destination_only_check_would_have_admitted_the_capture)
+Shows why a single-endpoint guard is insufficient. ... ok
+test_foreign_to_foreign_is_rejected (test_rename_guard.AdmissibilityMatrixTests.test_foreign_to_foreign_is_rejected) ... ok
+test_foreign_to_owned_is_rejected_on_the_source (test_rename_guard.AdmissibilityMatrixTests.test_foreign_to_owned_is_rejected_on_the_source) ... ok
+test_owned_to_foreign_is_rejected_on_the_destination (test_rename_guard.AdmissibilityMatrixTests.test_owned_to_foreign_is_rejected_on_the_destination) ... ok
+test_owned_to_owned_is_allowed (test_rename_guard.AdmissibilityMatrixTests.test_owned_to_owned_is_allowed) ... ok
+test_source_only_check_would_have_admitted_the_escape (test_rename_guard.AdmissibilityMatrixTests.test_source_only_check_would_have_admitted_the_escape) ... ok
+test_escaping_rename_exits_one (test_rename_guard.CommandLineTests.test_escaping_rename_exits_one) ... ok
+test_internal_rename_exits_zero (test_rename_guard.CommandLineTests.test_internal_rename_exits_zero) ... ok
+test_malformed_payload_exits_two (test_rename_guard.CommandLineTests.test_malformed_payload_exits_two) ... ok
+test_case_only_rename_is_flagged (test_rename_guard.EdgeCaseTests.test_case_only_rename_is_flagged) ... ok
+test_no_op_rename_is_flagged (test_rename_guard.EdgeCaseTests.test_no_op_rename_is_flagged) ... ok
+test_prefix_boundary_is_respected (test_rename_guard.EdgeCaseTests.test_prefix_boundary_is_respected) ... ok
+test_traversal_in_destination_is_normalised_then_rejected (test_rename_guard.EdgeCaseTests.test_traversal_in_destination_is_normalised_then_rejected) ... ok
+test_unusable_owned_prefix_is_refused (test_rename_guard.EdgeCaseTests.test_unusable_owned_prefix_is_refused) ... ok
+test_diff_name_status_z_parses_renames_and_skips_plain_entries (test_rename_guard.ParserTests.test_diff_name_status_z_parses_renames_and_skips_plain_entries) ... ok
+test_diff_parser_handles_copies (test_rename_guard.ParserTests.test_diff_parser_handles_copies) ... ok
+test_diff_parser_rejects_truncated_rename (test_rename_guard.ParserTests.test_diff_parser_rejects_truncated_rename) ... ok
+test_paths_with_spaces_survive_nul_delimited_parsing (test_rename_guard.ParserTests.test_paths_with_spaces_survive_nul_delimited_parsing) ... ok
+test_porcelain_parser_rejects_rename_without_source (test_rename_guard.ParserTests.test_porcelain_parser_rejects_rename_without_source) ... ok
+test_status_porcelain_z_uses_new_then_old_order (test_rename_guard.ParserTests.test_status_porcelain_z_uses_new_then_old_order) ... ok
+test_real_escape_rename_is_detected_from_git_output (test_rename_guard.RealGitRenameTests.test_real_escape_rename_is_detected_from_git_output) ... ok
+test_real_internal_rename_is_admitted (test_rename_guard.RealGitRenameTests.test_real_internal_rename_is_admitted) ... ok
+
+----------------------------------------------------------------------
+Ran 22 tests in 0.457s
+
+OK
+[exit code: 0]
+
+$ python3 src/rename_guard.py --owned-prefix <slot> --input internal.bin
+ok   ALLOWED                                workstreams/po03/runs/wave-a/route-05/PO03-WA-035/a.json -> workstreams/po03/runs/wave-a/route-05/PO03-WA-035/b.json  (both endpoints are inside the owned subtree)
+summary: evaluated=1 rejected=0
+[exit code: 0]
+
+$ python3 src/rename_guard.py --owned-prefix <slot> --input escape.bin
+FAIL REJECTED_DESTINATION_NOT_OWNED         workstreams/po03/runs/wave-a/route-05/PO03-WA-035/a.json -> workstreams/po03/control/outbox.jsonl  (rename would move an owned artifact out of the owned subtree)
+FAIL REJECTED_SOURCE_NOT_OWNED              workstreams/po03/evidence/source-lock.json -> workstreams/po03/runs/wave-a/route-05/PO03-WA-035/captured.json  (rename would capture an unowned path into the owned subtree)
+FAIL REJECTED_BOTH_ENDPOINTS_NOT_OWNED      docs/a.md -> docs/b.md  (neither endpoint is inside the owned subtree)
+summary: evaluated=3 rejected=3
+[exit code: 1]
+
