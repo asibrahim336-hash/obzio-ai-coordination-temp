@@ -1,0 +1,32 @@
+# provenance walk of the live repository
+# HEAD: 9ba22ff252797c54fcf06475617367f614fe6c08
+
+$ python3 -I provenance_walker.py --repo-root . --commit 9ba22ff252797c54fcf06475617367f614fe6c08
+PO03_PROVENANCE_UNROOTED: ORPHAN_SLOT slot=workstreams/po03/attempts/po03-wa-b2e7-026-provenance-chain artifacts=3 result=absent
+ROOTED   task=po03-wa-b2e7-025-manifest-generator-verifier input=ad71ccbd4d660c0f17f0a4abc785953f16e59b28c9b76bb075b5cf51d5968e91 acceptance=cb35f44be1607bd5dd19b59fe19db9b03b5d81451bd666519fb052e48ed25fd8
+UNROOTED task=workstreams/po03/attempts/po03-wa-b2e7-026-provenance-chain input=None acceptance=None
+exit=1
+
+$ python3 -I provenance_walker.py --repo-root .   # working tree, includes this in-flight slot
+PO03_PROVENANCE_UNROOTED: ORPHAN_SLOT slot=workstreams/po03/attempts/po03-wa-b2e7-026-provenance-chain artifacts=5 result=absent
+ROOTED   task=po03-wa-b2e7-025-manifest-generator-verifier input=ad71ccbd4d660c0f17f0a4abc785953f16e59b28c9b76bb075b5cf51d5968e91 acceptance=cb35f44be1607bd5dd19b59fe19db9b03b5d81451bd666519fb052e48ed25fd8
+UNROOTED task=workstreams/po03/attempts/po03-wa-b2e7-026-provenance-chain input=None acceptance=None
+exit=1
+
+$ python3 -I provenance_walker.py --repo-root . --commit 9ba22ff252797c54fcf06475617367f614fe6c08 --task-id po03-wa-b2e7-025-manifest-generator-verifier --json
+{
+  "findings": [],
+  "records": [
+    {
+      "artifact_commit": "afb3e916f2a7bcae31f2ffd5bd31624fcd887edd",
+      "measured_acceptance_sha256": "cb35f44be1607bd5dd19b59fe19db9b03b5d81451bd666519fb052e48ed25fd8",
+      "measured_input_sha256": "ad71ccbd4d660c0f17f0a4abc785953f16e59b28c9b76bb075b5cf51d5968e91",
+      "rooted": true,
+      "slot": "workstreams/po03/attempts/po03-wa-b2e7-025-manifest-generator-verifier",
+      "task_id": "po03-wa-b2e7-025-manifest-generator-verifier"
+    }
+  ],
+  "source": "git:9ba22ff252797c54fcf06475617367f614fe6c08"
+}
+PO03_PROVENANCE_PASS rooted=1 source=git:9ba22ff252797c54fcf06475617367f614fe6c08
+exit=0
