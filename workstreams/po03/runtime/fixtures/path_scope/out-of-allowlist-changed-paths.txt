@@ -1,0 +1,43 @@
+# Deliberate out-of-allowlist mutation fixture (unit a3-u03).
+#
+# This is a synthetic changed-path list, not a commit. Proving the guard by
+# actually writing outside the allowlist would perform the exact act the guard
+# exists to prevent, so the mutation is expressed as data and replayed through
+# the same evaluation code CI runs on real changed paths.
+#
+# Every path below names a surface the commission marks read-only, plus the
+# near-miss workflow cases that a prefix-only check would wave through.
+
+# Read-only PO-01 and shared operator surfaces.
+packs/operator/pack-manifest.json
+modules/operators/operator-directory.md
+_transport/outbound/claude-v010-launch.json
+state/operator-system/ACTIVE_INSTRUCTION_STACK.json
+dispatch/current-pointer.json
+scripts/check_operator_taxonomy.py
+operations/README.md
+.cursor/environment.json
+
+# Workflow near misses: the allowlist admits .github/workflows/po03-*.yml only.
+.github/workflows/ci.yml
+.github/workflows/po03-path-scope.yaml
+.github/workflows/nested/po03-path-scope.yml
+.github/workflows/po03-.yml.bak
+
+# Receipt and workstream near misses: a substring match would admit these.
+receipts/po02/2026-08-22/code-2-packaging.json
+workstreams/po01/COMMISSION.md
+my-workstreams/po03/runtime/x.py
+
+# Traversal attempt that resolves outside the allowlist.
+workstreams/po03/../../packs/operator/pack-manifest.json
+
+# Absolute path that looks in-allowlist once its leading slash is stripped.
+# The upstream normaliser admits this; the guard fails closed and rejects it.
+/workstreams/po03/runtime/injected.py
+
+# In-allowlist paths, present so the fixture also proves the guard is
+# selective rather than simply rejecting everything.
+workstreams/po03/runtime/path_scope.py
+receipts/po03/2026-08-22/ci-clean-clone.json
+.github/workflows/po03-path-scope.yml

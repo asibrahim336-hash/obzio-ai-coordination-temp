@@ -1,0 +1,51 @@
+{
+  "schema": "po03-repair-candidate-v1",
+  "defect_id": "PO03-CP-001-lstrip-dot-directory",
+  "found_by": "po03-worker-a3",
+  "found_in_unit": "a3-u03",
+  "severity": "blocks-integration",
+  "owning_writer": "coordinator",
+  "affected_file": "workstreams/po03/tools/control_plane.py",
+  "affected_functions": ["path_in_allowlist", "check_ownership"],
+  "applied_by_this_writer": false,
+  "applied_by_this_writer_note": "control_plane.py is coordinator-owned and read-only for po03-worker-a3. The repair ships as a patch for the coordinator to apply; unit a3-u03 compensates for the defect at the guard boundary in the meantime and enumerates every path the compensation admits.",
+  "statement": "path_in_allowlist normalises with path.strip().lstrip('./'). str.lstrip strips a character set rather than a prefix, so it removes the leading dot from any dot directory. '.github/workflows/po03-path-scope.yml' normalises to 'github/workflows/po03-path-scope.yml', which no longer matches the '.github/workflows/' prefix, and the path is judged outside an allowlist that explicitly contains it. check_ownership normalises identically and rejects the same paths as unowned.",
+  "observed_consequences": [
+    "Every path in the commission's third allowlist entry, .github/workflows/po03-*.yml, is reported OUT_OF_ALLOWLIST by control_plane check-paths.",
+    "control_plane ingest_result raises 'artifacts outside the commission allowlist' for any result that lists a workflow file as an artifact, so units a3-u03 and a3-u04 cannot be ingested until this is repaired.",
+    "check_ownership reports .github/workflows/po03-path-scope.yml and .github/workflows/po03-clean-clone.yml as not owned by po03-worker-a3, although path-ownership.json assigns both to that writer verbatim.",
+    "The same normaliser is permissive in the other direction: lstrip removes a leading slash, so the absolute path '/workstreams/po03/probe' normalises to 'workstreams/po03/probe' and is admitted. An absolute path is never a valid repository-relative changed path, so the guard rejects it regardless of the upstream verdict."
+  ],
+  "reproduction": "python3 -I -c \"import importlib.util; s=importlib.util.spec_from_file_location('cp','workstreams/po03/tools/control_plane.py'); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); print(m.path_in_allowlist('.github/workflows/po03-path-scope.yml'))\"  ->  False",
+  "observed_output_before_repair": {
+    "path_in_allowlist('.github/workflows/po03-path-scope.yml')": false,
+    "path_in_allowlist('/workstreams/po03/probe')": true,
+    "check_ownership('po03-worker-a3', ['.github/workflows/po03-path-scope.yml'])": [
+      "github/workflows/po03-path-scope.yml"
+    ]
+  },
+  "observed_output_after_repair_in_isolated_tree": {
+    "path_in_allowlist('.github/workflows/po03-path-scope.yml')": true,
+    "path_in_allowlist('.github/workflows/ci.yml')": false,
+    "path_in_allowlist('.github/workflows/nested/po03-a.yml')": false,
+    "path_in_allowlist('.cursor/environment.json')": false,
+    "path_in_allowlist('./workstreams/po03/x')": true,
+    "check_ownership('po03-worker-a3', ['.github/workflows/po03-path-scope.yml', '.github/workflows/po03-clean-clone.yml', 'packs/x', 'workstreams/po03/engine/y.py'])": [
+      "packs/x",
+      "workstreams/po03/engine/y.py"
+    ]
+  },
+  "patch": "workstreams/po03/runtime/repair-candidates/control-plane-dot-directory-allowlist.patch",
+  "patch_verification": [
+    "git apply --check succeeds against the current tree (read-only; nothing is written).",
+    "Applied inside a throwaway copy of workstreams/po03 that also carries control/path-ownership.json, both the allowlist and ownership decisions become correct while every negative case stays rejected."
+  ],
+  "disposition": "PROPOSED_TO_COORDINATOR",
+  "guard_compensation": {
+    "module": "workstreams/po03/runtime/path_scope.py",
+    "function": "compensates_dot_directory_defect",
+    "scope": "Admits only .github/workflows/po03-*.yml with no path separator in the leaf and no '..' segment. No other widening.",
+    "reported_as": "compensated_allowlist_paths and compensated_ownership_paths in the path-scope report, never as a silent pass.",
+    "retire_when": "path_in_allowlist('.github/workflows/po03-probe.yml') returns True upstream, at which point the compensation becomes a no-op and test_a3_path_scope asserts the patch is obsolete instead of applicable."
+  }
+}

@@ -1,0 +1,74 @@
+name: PO-03 wave-one path scope
+
+# Fails the build for any write outside the commission's wave-one allowlist.
+#
+# The guard runs on pull requests and on pushes to the PO-03 and Cursor PO-03
+# branches, because a guard that only runs on one event class is a guard with a
+# documented bypass. It needs no secrets, no self-hosted runner and no network
+# beyond the checkout and the Python setup.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "po03/**"
+      - "cursor/po03-**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  path-scope:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Runs first and on purpose: if the guard cannot reject the committed
+      # out-of-allowlist mutation fixture, its verdict on the real changed
+      # paths is worthless and the build must stop here.
+      - name: Prove the guard rejects the out-of-allowlist mutation fixture
+        run: python3 -I workstreams/po03/runtime/path_scope.py selftest
+
+      - name: Resolve the base revision
+        id: base
+        run: |
+          set -eu
+          if [ -n "${{ github.event.pull_request.base.sha }}" ]; then
+            echo "ref=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+          else
+            git fetch --no-tags origin "${{ github.event.repository.default_branch }}"
+            echo "ref=FETCH_HEAD" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Enforce the allowlist on the real changed paths
+        run: |
+          python3 -I workstreams/po03/runtime/path_scope.py --json git \
+            --base "${{ steps.base.outputs.ref }}" \
+            --head "${{ github.sha }}"
+
+      # The coordinator-owned CLI is the authority for the allowlist rule, so it
+      # is required to reject the mutation fixture too. Asserting rejection
+      # through that entry point is what proves the guard is not enforcing a
+      # private, divergent copy of the rule.
+      - name: Prove the control plane's own check-paths rejects the fixture
+        run: |
+          set -eu
+          python3 -I workstreams/po03/runtime/path_scope.py --json paths \
+            workstreams/po03/runtime/fixtures/path_scope/out-of-allowlist-changed-paths.txt \
+            | python3 -I -c 'import json,sys; print("\n".join(json.load(sys.stdin)["changed_paths"]))' \
+            > "$RUNNER_TEMP/fixture-paths.txt"
+          if python3 -I workstreams/po03/tools/control_plane.py check-paths "$RUNNER_TEMP/fixture-paths.txt"; then
+            echo "control_plane check-paths accepted an out-of-allowlist mutation fixture" >&2
+            exit 1
+          fi
+          echo "control_plane check-paths rejected the mutation fixture, as required"
+
+      - name: Run the path-scope tests
+        run: python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a3_path_scope.py' -v
