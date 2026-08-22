@@ -1,0 +1,40 @@
+{
+  "disposition_id": "DISP-A10-U04-OVERALL-20260822-v001",
+  "reviewer": "po03-worker-a10",
+  "criteria_applied": "workstreams/po03/review/sonnet/criteria-overall-disposition.json, criteria-a2.json, criteria-a4.json, criteria-a9.json (all frozen and pushed before any producer branch content was read)",
+  "procedure_followed": "Per criteria-overall-disposition.json's disposition_procedure: applied each cohort's frozen per-unit bars verbatim without relaxing or adding a bar after reading; a cohort is ACCEPTED only if every one of its units meets its pass_bar; a single failing unit is sufficient for cohort REJECTED while still recording per-unit dispositions; this reviewer never sets COMPLETED and never accepts/rejects its own a10 units.",
+  "scoring_snapshot_utc": "2026-08-22T07:59:09Z (this reviewer's final a10-u04 scoring pass, after re-fetching all three cohorts' branches)",
+  "cohort_dispositions": [
+    {
+      "cohort_id": "a2",
+      "producer": "po03-worker-a2",
+      "producer_head_at_scoring": "1cb2ffceeaad99793c248cba6b0101aad9e286e1",
+      "units_available": "12/12 (a2-u01..a2-u12), none NOT_YET at scoring time",
+      "disposition": "REJECTED",
+      "disposition_record": "workstreams/po03/review/sonnet/a2-disposition.json",
+      "one_line_rationale": "Every unit's fault-injection workmanship independently re-executed and matched a2's own reported outcome, but the cohort-level rule scores the CLAIMED CAPABILITY, and 10/12 units honestly falsify the hypothesis that the coordinator's control plane already delivers fault-tolerant recovery/fencing/duplicate-safety -- a REJECTED disposition on capability, not a criticism of a2's rigor."
+    },
+    {
+      "cohort_id": "a4",
+      "producer": "po03-worker-a4",
+      "producer_head_at_scoring": "af3538081b9be827c0eb94f4c3ef0693be266996",
+      "units_available": "8/8 (a4-u01..a4-u08), none NOT_YET at scoring time",
+      "disposition": "ACCEPTED",
+      "disposition_record": "workstreams/po03/review/sonnet/a4-reexecution.json",
+      "one_line_rationale": "Every reproduction claim was independently re-executed (not read-and-agreed) from the pinned SHA via an isolated mirror clone and matched byte-for-byte or in substance; a4 does not overclaim on its two units with disclosed scope limits."
+    },
+    {
+      "cohort_id": "a9",
+      "producer": "po03-worker-a9",
+      "producer_head_at_scoring": "81ca1de204ff3e693fd90f39f7056c81d8f0fc26",
+      "units_available": "4/4 (a9-u01..a9-u04), none NOT_YET at scoring time",
+      "disposition": "ACCEPTED",
+      "disposition_record": "workstreams/po03/review/sonnet/a9-disposition.json",
+      "one_line_rationale": "All four units' claims were independently re-executed from an isolated clone (topology simulation byte-for-byte, full a9 test suite, a concrete evidence citation, and the before/after taxonomy-gate invariance) and matched; a9 also self-corrected a real reproducibility hazard in its own tests mid-review without prompting."
+    }
+  ],
+  "cross_cohort_observation": "The three cohorts this reviewer judges split 1 REJECTED / 2 ACCEPTED, but on different axes: a2 is rejected for what its rigorous, honest work PROVES about the coordinator's control plane, not for any defect in a2's own methodology; a4 and a9 are accepted for both sound methodology and honest, non-overclaiming self-reporting (a4's NOT_YET units, a9's self-corrected snapshot-pinning defect). None of the three cohorts exhibits ceremonial acceptance or unfalsifiable claims -- all three name a concrete falsifiable test and report the result even when unfavorable to their own unit (a2's 10 FAILs; a4's 2 disclosed scope limits; a9's own mid-flight bug fix).",
+  "units_unavailable_at_any_point_during_scoring": [
+    "None of a2/a4/a9's units were unavailable (NOT_YET) at this reviewer's final scoring pass. a9's branch head moved once during scoring (a3a7e92 -> 81ca1de); this reviewer re-scored against the later head rather than freezing on the earlier one, per COMMISSION.md's instruction to fetch periodically and review what has landed."
+  ]
+}

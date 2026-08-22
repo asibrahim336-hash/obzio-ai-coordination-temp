@@ -1,0 +1,79 @@
+{
+  "comparison_id": "CMP-A10-U04-VS-A6-20260822-v001",
+  "reviewer": "po03-worker-a10",
+  "counterpart": "po03-worker-a6",
+  "criteria_applied": "workstreams/po03/review/sonnet/criteria-overall-disposition.json#a6_comparison_methodology (frozen before this reviewer read any workstreams/po03/review/luna/ content)",
+  "counterpart_head_read_from": "origin/cursor/po03-a6-independent-review-ed20@da01535a4f1969a2ccbefb799a7d298b69b325c4",
+  "access_method": "git fetch / git show only, strictly read-only; nothing under workstreams/po03/review/luna/ or workstreams/po03/control/units/a6/ was written by this reviewer.",
+  "scope_note": "a6 reviews Claude-produced cohorts (a1, a3, a5, a7, a8, plus a12) and this reviewer reviews GPT-produced cohorts (a2, a4, a9) plus the coordinator's control_plane.py. There is no unit-for-unit overlap, so this comparison targets the shared infrastructure both reviewers necessarily exercise: tools/validate_contracts.py, tools/control_plane.py, tools/make_result.py, and the commission-level custody invariants named in COMMISSION.md's 'Transactional result custody' section.",
+  "axes": {
+    "defect_count_by_severity": {
+      "a6_hidden_cases_h01_to_h06": {
+        "attacked": 6,
+        "broken": 0,
+        "held": 6,
+        "rate_as_reported": "6/6 (100%)",
+        "target": "tools/validate_contracts.py's validate_result() function only -- a static, already-fully-formed JSON document is handed directly to the schema validator in Python; no subprocess, no CLI, no real ledger, no lease/ingest/complete/review invocation."
+      },
+      "a6_hidden_cases_h07_to_h10": {
+        "attacked": 0,
+        "status": "deferred/NOT_YET",
+        "a6_stated_reason": "'requires a producer lease/fence implementation' (H08), 'requires a producer custody engine or outbox implementation' (H07), 'requires a committed remote artifact to attack' (H09), 'requires a producer ingestion/recovery implementation' (H10)"
+      },
+      "a10_u03_control_plane_attacks": {
+        "attacked": 9,
+        "broken_or_partially_broken": 5,
+        "boundary_documented": 1,
+        "held": 3,
+        "target": "tools/control_plane.py itself, run as a real subprocess CLI against an isolated scratch git repository per test case (workstreams/po03/review/sonnet/attacks/scratch_control_plane.py) -- lease, ingest, complete, review, verify all actually invoked."
+      },
+      "reading": "a6's 100% figure and this reviewer's 5/9-broken figure are not measuring the same surface and are not in tension: a6 exhaustively confirmed the passive schema-shape validator behaves as documented on the 6 cases it constructed, while this reviewer attacked the active decision-making tool that receives untrusted producer input in the first place. Neither number should be read as contradicting the other; a reader who only saw a6's 100% could reasonably but incorrectly infer the custody protocol as a whole is well-defended."
+    },
+    "methodology_overlap": {
+      "shared_practice": "Both reviewers froze criteria/hidden cases before reading producer output (a6's cases.json states authored_before_producer_read: true and producer_test_hashes_seen_at_authoring: [], matching this reviewer's own criteria-*.json discipline), and both reviewers built scratch/isolated fixtures rather than editing the coordinator's tree.",
+      "key_divergence": "a6's hidden_cases.json H01-H06 are executed by importing validate_contracts.py as a Python module and calling validate_result(document) directly on a hand-constructed dict (see workstreams/po03/tests/test_a6_hidden_cases.py, committed_result() + assert_invalid()). This reviewer's a10-u03 cases (workstreams/po03/tests/test_a10_control_plane_attacks.py) run control_plane.py as an actual subprocess CLI against a real, isolated git repository per case (ScratchControlPlane), so the attack surface includes argument parsing, path resolution, ledger file I/O, and process-level actor identity -- none of which a pure schema-validator call can exercise, and precisely where 4 of this reviewer's 5 BREAK findings live (INV-2b fence bypass, INV-3b duplicate-completion, INV-6 path traversal, INV-8b ledger cascade-rehash, INV-9b fabricated commit id).",
+      "consequence_for_h07_to_h10": "a6 states H07/H08/H09/H10 require 'a producer lease/fence implementation' or 'a producer ingestion/recovery implementation' to exist before they can be attempted. This reviewer independently confirmed control_plane.py already implemented full lease/fence-token logic (lines documenting 'A stale worker (lower fence token) cannot commit after ownership transfers', a cmd_lease command minting fence tokens, and ingest_result's incoming_fence < unit['fence_token'] check) at the exact commit a6 froze its hidden cases (cd20a20, timestamp 2026-08-22T07:09:09Z) -- reproducible with `git show cd20a20:workstreams/po03/tools/control_plane.py | grep -n fence`. The mechanism a6 believed did not yet exist to test was already present in the one file a6's own H08 case names as its target. This is not a criticism of a6's rigor on the cases it did run (those 6 are genuinely well-executed); it is a scoping gap -- a6's methodology (schema-only, document-construction-based) structurally cannot reach the control-plane CLI surface where H07-H10 actually live, so 'deferred pending implementation' undercounts what was attackable at the time."
+    },
+    "unique_finds": {
+      "a6_found_and_this_reviewer_did_not_independently_check_for_a2_a4_a9": [
+        "a6-u05's readback_audit.py discovered a 'result_record_not_at_declared_commit' class: for a3-u01, a7-u01, a7-u02 (and, self-critically, a6's OWN a6-u01/a6-u02), result_transaction.result_commit_id names a git commit that does not itself contain the result record file at that path -- the record only appears in a later branch commit.",
+        "a6's rejection-assessment-correction.json is itself a notable, distinct finding: a6 caught and corrected its own initial conflation of 'producer branch not yet published' with 'producer quality failure' across 27 of its 30 a1/a3/a5/a7/a8 unit rejections, and separately traced a tracked __pycache__ bytecode escape to the COORDINATOR's own broad `git add -A` commits (04827c3, 6f5e386) rather than to the cohort it first suspected (a3) -- a finding about coordinator hygiene this reviewer's own a10-u03 audit did not check."
+      ],
+      "this_reviewer_found_and_extended_beyond_a6s_original_scope": [
+        "This reviewer independently confirmed a6's 'result_record_not_at_declared_commit' symptom is NOT specific to the Claude-produced cohorts a6 reviewed: it reproduces identically against a4-u01 (git cat-file -e f24545eea3c6887f8a539934032b4c176d7684ab:workstreams/po03/control/units/a4/a4-u01.json fails) and against this reviewer's own a10-u01/a10-u02/a10-u03 result records -- and root-caused it precisely by reading tools/make_result.py: `commit = git(root, 'rev-parse', 'HEAD')` is resolved BEFORE the result document is written to disk, and the worker commits the record itself in a separate, later commit per the documented per-unit protocol step 6. It is therefore architecturally impossible for result_commit_id to ever be a self-contained locator for the record under the current tool, for any cohort, not a cohort-specific mistake. See workstreams/po03/tests/test_a10_u04_dispositions.py::MakeResultSelfLocatorGapTests for a from-scratch, dependency-free reproduction that needs no other cohort's branch.",
+        "This reviewer's own a10-u03 findings (5 BREAK, 1 BOUNDARY against the real control_plane.py CLI) are themselves the largest unique-find set relative to a6's schema-only H01-H10 case design, as detailed under methodology_overlap above."
+      ]
+    },
+    "false_negative_check": {
+      "method": "For each of a6's H01-H06 HELD results, this reviewer checked whether the corresponding real control_plane.py invariant also held when attacked at the CLI/subprocess level in a10-u03, since a document-shape pass does not imply the tool that produces/accepts such documents is itself safe.",
+      "results": [
+        {
+          "a6_case": "H01-provider-completed-without-commit (HELD: schema forces PROVIDER_COMPLETED_UNCOMMITTED when result_commit_id is null)",
+          "a10_u03_equivalent": "INV-9",
+          "survives": false,
+          "detail": "This reviewer's INV-9 sub-case (test_fabricated_result_commit_id_over_uncommitted_working_tree_file_reaches_completed_BREAK) shows the schema guard a6 confirmed is trivially satisfied by ANY non-empty string in result_commit_id: control_plane.py's ingest_result never checks that the string names a real, resolvable git commit. A syntactically valid but entirely fabricated 40-hex-character commit id over a file that was never git-committed at all reaches COMPLETED. a6's H01 never varied result_commit_id to a non-null-but-fake value, so this gap does not appear in a6's own results despite being adjacent to exactly what H01 set out to test."
+        },
+        {
+          "a6_case": "H02-noncoordinator-completion (HELD: schema error mentions 'only coordinator' when completion_actor=worker)",
+          "a10_u03_equivalent": "INV-1 (HELD) and INV-7's boundary sub-case",
+          "survives": "partially",
+          "detail": "INV-1 holds independently (control_plane.py's cmd_complete requires obzio_state == PARENT_INGESTED). But this reviewer's INV-7 boundary finding shows completion_actor is hardcoded to the literal string 'coordinator' inside cmd_complete regardless of which real process invokes the CLI -- there is no caller-identity check anywhere in control_plane.py. a6's schema-only test cannot see this because it only asks whether a pre-built document with the wrong label is rejected; it never asks whether the real tool could be invoked by a non-coordinator actor and still write a compliant-looking label."
+        },
+        {
+          "a6_case": "H06-self-acceptance (HELD: schema rejects reviewer_id == worker_id exact match)",
+          "a10_u03_equivalent": "INV-7",
+          "survives": "partially",
+          "detail": "This reviewer's exact-match sub-case also HELD (cmd_review rejects --reviewer equal to dispatch['owner']). But the BOUNDARY sub-case (test_b_alias_reviewer_id_is_accepted_BOUNDARY) shows the real CLI accepts self-review under ANY string that is not byte-identical to the owner field, with no authentication binding --reviewer to a real caller identity. a6's own H06 fixture only ever tries the exact-match case (reviewer_id='producer-1' == worker_id='producer-1'), so it does not explore the alias boundary either -- both reviews stop at the same limit here, but a6's 100%-pass framing does not surface that the underlying defense is an unauthenticated string comparison."
+        },
+        {
+          "a6_case": "H03-terminal-without-readback, H04-accounting-drift, H05-duplicate-artifact-id",
+          "a10_u03_equivalent": "INV-4 (readback byte-mismatch) and general schema coverage, not independently re-attacked at the CLI level by this reviewer's 9 named invariants",
+          "survives": "not directly re-tested",
+          "detail": "This reviewer's a10-u03 dispatch named 9 specific invariants and did not include a dedicated CLI-level attack for artifact-count/byte-count reconciliation or duplicate-artifact-id beyond what INV-4 covers (missing/corrupted artifact at readback). This is recorded as a genuine boundary of THIS reviewer's own audit, not a claim that a6's H03-H05 are wrong."
+        }
+      ],
+      "summary": "2 of a6's 6 executed HELD results (H01, H02) have a real, CLI-reachable bypass this reviewer independently demonstrated against the exact same underlying file a6's fixture claims to test; 1 (H06) holds on the exact case a6 tested but shares an undocumented boundary with this reviewer's own finding; 3 (H03-H05) were not independently re-attacked by this reviewer's named invariant set and are recorded as NOT_YET/out-of-scope for this comparison, not as confirmed or refuted."
+    }
+  },
+  "overall_reading": "a6's methodology (freeze hidden cases against the schema validator; call validate_result() directly on constructed documents) is sound and honestly executed on the surface it targets, and its unrelated readback_audit.py / rejection-assessment-correction.json work independently found a real, non-overlapping defect class (result-locator/commit mismatch) that this reviewer had not checked for and has now confirmed also affects a4 and this reviewer's own a10 units. But a6's hidden-case design never reaches the control-plane CLI itself, so its 100% pass rate on H01-H06 and its 'NOT_YET, requires an implementation that does not exist' framing for H07-H10 both understate the coordinator's real attack surface: that implementation already existed at the exact commit a6 was working from, and this reviewer's a10-u03 audit shows 5 of 9 directly-attacked invariants have a real or boundary-level gap when the actual tool -- not a hand-built document -- is the thing under attack. The two reviews are complementary, not contradictory: neither alone would have surfaced everything this comparison now makes visible."
+}
