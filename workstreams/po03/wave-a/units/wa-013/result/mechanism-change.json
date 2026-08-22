@@ -88,9 +88,21 @@
       "after": "The successor claim is made only when successor_attempt_id is present. Otherwise the unit is ATTEMPT_FENCED_NO_SUCCESSOR with REDISPATCH_UNDER_NEW_FENCE.",
       "tested_by": "test_fx05_stale_worker_cannot_commit_after_ownership_transfer",
       "disposition": "RETAIN"
+    },
+    {
+      "change_id": "MC-PO03-WA-013-09",
+      "title": "Read-back verifier redacts remote credentials before writing evidence",
+      "layer": "OWNED_TOOLING_SECRET_HYGIENE",
+      "discovered_by": "Reading the origin URL in order to run the read-back, and noticing that the URL carries an x-access-token credential which the verifier recorded verbatim.",
+      "before": "verify_readback.py copied its --remote argument straight into the durable report. Because this repository's origin URL embeds a token, the first read-back would have committed a credential-bearing URL into owned evidence, and evidence is exactly what is meant to be permanent.",
+      "after": "Any userinfo component is replaced with <redacted-credential> before serialisation, so the report still identifies which host and repository were cloned while carrying no secret. The committed report was checked for token material after generation.",
+      "why_it_is_a_mechanism_change": "The verifier is executable behaviour in the owned subtree, and this changes what it writes. It is recorded here rather than in strategy-proposals because the fix was applied, not proposed.",
+      "tested_by": "Executed read-back against result commit 585d4c7132572c7c796d94c35e753f611e29f11b; the emitted report records the redacted form and contains no token material.",
+      "disposition": "RETAIN",
+      "lesson": "A verifier that records its own inputs can leak them. Secret hygiene applies to evidence-producing tooling with the same force as to application code."
     }
   ],
-  "mechanism_change_count": 8,
+  "mechanism_change_count": 9,
   "mechanism_change_required_by_input": false,
   "all_changes_tested_before_retention": true,
   "shared_path_mechanism_changes_applied": 0,

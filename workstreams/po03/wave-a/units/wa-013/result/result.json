@@ -58,7 +58,18 @@
     "tests": "workstreams/po03/wave-a/units/wa-013/result/tests.json",
     "execution_logs": "workstreams/po03/wave-a/units/wa-013/result/logs/",
     "manifest": "workstreams/po03/wave-a/units/wa-013/result/artifact-manifest.json",
+    "immutable_readback_verifier": "workstreams/po03/wave-a/units/wa-013/result/verify_readback.py",
+    "immutable_readback_evidence": "workstreams/po03/wave-a/units/wa-013/result/readback-verification.json",
+    "clean_clone_recurrence_evidence": "workstreams/po03/wave-a/units/wa-013/result/recurrence-evidence-clean-clone.json",
     "producer_return": "workstreams/po03/wave-a/units/wa-013/result/ready-to-commit.json"
+  },
+  "artifacts_committed_in_return_commit": {
+    "note": "These three artifacts describe verification of the immutable result commit, so they cannot exist inside it. They are committed in the return commit and accounted separately in ready-to-commit.json under ready_envelope_accounting.",
+    "paths": [
+      "workstreams/po03/wave-a/units/wa-013/result/readback-verification.json",
+      "workstreams/po03/wave-a/units/wa-013/result/recurrence-evidence-clean-clone.json",
+      "workstreams/po03/wave-a/units/wa-013/result/ready-to-commit.json"
+    ]
   },
   "tests": {
     "path": "workstreams/po03/wave-a/units/wa-013/result/tests.json",
@@ -98,7 +109,7 @@
   },
   "mechanism_changes": {
     "path": "workstreams/po03/wave-a/units/wa-013/result/mechanism-change.json",
-    "count": 8,
+    "count": 9,
     "disposition": "RETAIN",
     "shared_path_changes_applied": 0,
     "required_by_input": false
@@ -158,10 +169,10 @@
     "artifact_bytes": "RECORDED_IN_ARTIFACT_MANIFEST",
     "source_claim_count": 8,
     "reproduction_count": 9,
-    "mechanism_change_count": 8,
-    "defects": 9,
-    "defects_detail": "8 scanner defects and 1 incorrect test assertion, all found by this unit's own execution and enumerated in tests.json",
-    "rework": 9,
+    "mechanism_change_count": 9,
+    "defects": 10,
+    "defects_detail": "7 scanner defects, 1 scanner robustness crash, 1 incorrect test assertion and 1 secret-hygiene defect in this unit's own read-back verifier, all found by this unit's own execution and enumerated in tests.json as D-01 through D-10",
+    "rework": 10,
     "provider_block": false,
     "collision": false,
     "recovery_events": 1,

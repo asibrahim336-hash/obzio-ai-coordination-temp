@@ -62,9 +62,10 @@
       "expectations_frozen_before_first_clean_clone_run": true,
       "evidence": "workstreams/po03/wave-a/units/wa-013/result/recurrence-evidence.json",
       "runs": [
-        { "run_label": "PRODUCER_WORKTREE", "outcome": "PASS", "failures": 0 },
-        { "run_label": "FRESH_NO_HARDLINK_CLONE_AT_RESULT_COMMIT", "outcome": "PASS", "failures": 0, "evidence": "workstreams/po03/wave-a/units/wa-013/result/recurrence-evidence-clean-clone.json" }
-      ]
+        { "run_label": "PRE_READBACK_RESULT_COMMIT", "environment": "producer worktree", "outcome": "PASS", "failures": 0, "checks": 151, "evidence": "workstreams/po03/wave-a/units/wa-013/result/recurrence-evidence.json" },
+        { "run_label": "CLEAN_CLONE_READBACK_RERUN", "environment": "fresh no-hardlink clone checked out at the immutable result commit", "outcome": "PASS", "failures": 0, "checks": 151, "evidence": "workstreams/po03/wave-a/units/wa-013/result/recurrence-evidence-clean-clone.json", "committed_in": "return commit, because this evidence can only be produced after the result commit exists on the remote" }
+      ],
+      "cross_environment_agreement": "All 151 checks are identical between the producer worktree and the clean clone once measured timings are normalised. The only differing fields are elapsed seconds and the run label."
     },
     {
       "suite_id": "TS-05",
@@ -112,7 +113,8 @@
     { "id": "D-06", "found_by": "adversarial test", "defect": "The scan raised ValueError and crashed when every event naming a task was refused.", "repair": "MC-PO03-WA-013-05" },
     { "id": "D-07", "found_by": "adversarial test", "defect": "parse_instant accepted invalid calendar dates such as month 13, fabricating an epoch value from a malformed lease expiry.", "repair": "MC-PO03-WA-013-06" },
     { "id": "D-08", "found_by": "adversarial test", "defect": "A false-completion assertion at a structurally legal lifecycle position would have been admitted, because the guard was subordinate to the transition table.", "repair": "MC-PO03-WA-013-03" },
-    { "id": "D-09", "found_by": "adversarial test", "defect": "Test defect, not a scanner defect: the key-order determinism test compared whole-report digests, which legitimately include the ledger's own digest, so it asserted something false.", "repair": "Test corrected to compare the reconstruction and to assert that only the ledger digest differs." }
+    { "id": "D-09", "found_by": "adversarial test", "defect": "Test defect, not a scanner defect: the key-order determinism test compared whole-report digests, which legitimately include the ledger's own digest, so it asserted something false.", "repair": "Test corrected to compare the reconstruction and to assert that only the ledger digest differs." },
+    { "id": "D-10", "found_by": "return-phase review of the verifier's own output", "defect": "Tooling secret-hygiene defect, not a scanner defect: verify_readback.py recorded its --remote argument verbatim, and this repository's origin URL embeds an access token, so the read-back report would have committed a credential into permanent evidence.", "repair": "MC-PO03-WA-013-09" }
   ],
   "final_outcome": "PASS",
   "critical_correctness_assertions_passing": "100_PERCENT",
