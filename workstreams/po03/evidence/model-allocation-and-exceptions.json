@@ -1,0 +1,87 @@
+{
+  "allocation_id": "EV-PO03-MODEL-ALLOCATION-AND-EXCEPTIONS-20260822-b2e7",
+  "controller_run_id": "bc-2bb75c2e-66fe-4eee-b456-e1d5e22db2e7",
+  "recorded_at": "2026-08-22T07:30:00Z",
+  "decision_changed": [],
+  "policy_source": "workstreams/po03/COMMISSION.md, section 'Strongest-model policy'",
+  "observation_discipline": "Exposure was observed in this run before delegation and recorded append-only. The write-once register authored by controller bc-13b664e4 was left byte-identical; this run's differing observation is recorded alongside it at workstreams/po03/control/model-exposure-observations.jsonl rather than overwriting it.",
+  "observed_exposure": {
+    "parent_model_exact": "claude-opus-5-thinking-max",
+    "parent_model_source": "cursor-cloud/run-info originalModelName",
+    "delegation_exposed_exact_configurations": [
+      "claude-opus-5-thinking-high",
+      "claude-opus-5-thinking-high-fast",
+      "claude-sonnet-5-thinking-high",
+      "claude-sonnet-5-thinking-xhigh",
+      "gpt-5.6-luna-high",
+      "gpt-5.6-sol-high",
+      "gpt-5.6-sol-high-fast",
+      "gpt-5.6-sol-xhigh",
+      "gpt-5.6-sol-xhigh-fast"
+    ],
+    "families_exposed": ["claude-opus-5", "claude-sonnet-5", "gpt-5.6-sol", "gpt-5.6-luna"],
+    "family_count": 4,
+    "vendor_count": 2
+  },
+  "policy_compliance": {
+    "lead_integrator": {
+      "required": "claude-opus-5 with high thinking",
+      "actual": "claude-opus-5-thinking-max as the controller; claude-opus-5-thinking-high for delegated lead engineering",
+      "state": "PASS",
+      "note": "the controller runs a strictly stronger reasoning encoding than the required high setting"
+    },
+    "independent_chief_challenger": {
+      "required": "gpt-5.6-sol at the highest exposed reasoning setting",
+      "actual": "gpt-5.6-sol-xhigh",
+      "state": "PASS"
+    },
+    "independent_long_context_and_alternative_generation": {
+      "required": "gemini-3.1-pro at its highest exposed setting",
+      "actual": null,
+      "state": "NOT_SUPPORTED",
+      "observed_boundary": "gemini-3.1-pro is absent from the delegation model enumeration exposed to this run; no exact configuration is selectable",
+      "handling": "The role was distributed across gpt-5.6-luna-high and claude-sonnet-5-thinking-xhigh, which are distinct exposed families. No gemini availability, gemini output or gemini-derived diversity is claimed anywhere in this wave.",
+      "manufactured_availability": false,
+      "manufactured_diversity": false
+    },
+    "composer_2_5": {
+      "required": "used only as a distinct harness hypothesis or on preregistered matched evidence; never as a cheaper substitute",
+      "actual": null,
+      "state": "NOT_SUPPORTED",
+      "observed_boundary": "composer-2.5 is absent from the delegation model enumeration exposed to this run"
+    },
+    "auto_model_selection_used": false,
+    "auto_model_basis": "every subordinate was dispatched with an exact logged configuration; Auto was never selected",
+    "downward_cost_optimisation_applied": false,
+    "cost_treatment": "cost is measured as an operating property, not used as a downgrade rule; no unit was moved to a weaker configuration to reduce spend"
+  },
+  "wave_a_allocation": [
+    {"cohort": "c1", "function": "portable-runtime-and-clean-clone-reproduction", "exact_model": "gpt-5.6-sol-xhigh", "reasoning": "xhigh", "units": 8},
+    {"cohort": "c2", "function": "current-source-and-supersession-compilation", "exact_model": "claude-sonnet-5-thinking-xhigh", "reasoning": "xhigh", "units": 8},
+    {"cohort": "c3", "function": "operator-pack-qualification-and-po01-reproduction", "exact_model": "gpt-5.6-sol-xhigh", "reasoning": "xhigh", "units": 8},
+    {"cohort": "c4", "function": "manifest-provenance-and-changed-path-enforcement", "exact_model": "claude-opus-5-thinking-high", "reasoning": "high", "units": 8},
+    {"cohort": "c5", "function": "repository-disposition-and-transport-debris", "exact_model": "gpt-5.6-luna-high", "reasoning": "high", "units": 8},
+    {"cohort": "c6", "function": "transactional-recovery-and-fault-injection", "exact_model": "claude-opus-5-thinking-high", "reasoning": "high", "units": 8},
+    {"cohort": "c7", "function": "frontier-research-reproduction-and-mechanism-change", "exact_model": "gpt-5.6-sol-xhigh", "reasoning": "xhigh", "units": 8},
+    {"cohort": "c8", "function": "operating-measurement-evaluation-and-successor", "exact_model": "claude-opus-5-thinking-high", "reasoning": "high", "units": 8}
+  ],
+  "heterogeneity": {
+    "distinct_families_used_across_wave_a": ["gpt-5.6-sol", "claude-sonnet-5", "claude-opus-5", "gpt-5.6-luna"],
+    "distinct_family_count": 4,
+    "distinct_vendor_count": 2,
+    "units_by_vendor": {"anthropic": 32, "openai": 32},
+    "adversarial_review_requirement": "blind adversarial review from at least two different frontier families when exposed",
+    "adversarial_review_state": "IN_PROGRESS",
+    "adversarial_review_note": "cohort c8 units 059 and 060 own hidden-case generation and the blind-review harness, and were instructed to prefer a reviewer family different from their own producing family and to record any cross-family spawn refusal verbatim"
+  },
+  "route_canary_exception": {
+    "unit": "po03-canary-001",
+    "exact_model_used": "claude-opus-5-thinking-high-fast",
+    "reason": "the configuration was frozen in an immutable capsule authored by a prior controller run; honouring frozen immutable input was preferred over substituting this run's preferred configuration",
+    "is_a_downgrade": false,
+    "downgrade_basis": "a -fast suffix is a provider throughput encoding at the same reasoning tier, not a lower reasoning setting"
+  },
+  "weaker_configuration_exceptions": [],
+  "weaker_configuration_policy": "A weaker configuration is admissible only after a frozen paired evaluation demonstrates a functional advantage for that work class. No such evaluation was run and no weaker configuration was substituted, so this list is empty by fact rather than by omission.",
+  "self_observation_limitation": "A subordinate generally cannot verify the model actually serving it. Dispatched configurations are recorded exactly; where a producer could not observe its own served identity it was instructed to record that as NOT_SUPPORTED rather than assert the dispatched value as observed."
+}

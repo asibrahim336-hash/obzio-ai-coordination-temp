@@ -1,0 +1,89 @@
+{
+  "ladder_id": "EV-PO03-SCALE-LADDER-20260822-b2e7",
+  "controller_run_id": "bc-2bb75c2e-66fe-4eee-b456-e1d5e22db2e7",
+  "recorded_at": "2026-08-22T07:30:00Z",
+  "decision_changed": [],
+  "counted_unit_definition_source": "workstreams/po03/evidence/criteria-freeze.json",
+  "counted_unit_requires": [
+    "a distinct falsifiable hypothesis owned by exactly one unit",
+    "an executable component, reproduction, test, adversarial case or acceptance decision",
+    "an artifact manifest with SHA-256 hashes and exact byte counts",
+    "a durable commit read back by a different process from an immutable object id",
+    "a terminal durable disposition and an immutable locator"
+  ],
+  "counted_unit_excludes": [
+    "renamed clones",
+    "inventories",
+    "plans",
+    "idle sessions",
+    "duplicated summaries",
+    "provider completion without a durable result commit"
+  ],
+  "wave_a": {
+    "commissioned_minimum_attempts": 64,
+    "capsules_created": 64,
+    "capsules_immutable": true,
+    "exclusive_remote_ownership_claimed": 64,
+    "contended_slots": 0,
+    "attempts_dispatched": 64,
+    "cohorts": 8,
+    "units_per_cohort": 8,
+    "functions_covered": [
+      "portable-runtime-and-clean-clone-reproduction",
+      "current-source-and-supersession-compilation",
+      "operator-pack-qualification-and-po01-reproduction",
+      "manifest-provenance-and-changed-path-enforcement",
+      "repository-disposition-and-transport-debris",
+      "transactional-recovery-and-fault-injection",
+      "frontier-research-reproduction-and-mechanism-change",
+      "operating-measurement-evaluation-and-successor"
+    ],
+    "distinct_result_slots": 64,
+    "distinct_result_branches": 8,
+    "path_collision_check": "PO03_PATH_COLLISION_PASS",
+    "state_at_this_revision": {
+      "coordinator_completed_after_verified_ingestion": 33,
+      "still_executing": 31,
+      "false_completions": 0,
+      "orphans": 0,
+      "units_with_ingestion_errors": 0,
+      "independent_disposition_recorded": 0,
+      "note": "Completion here means the coordinator verified a durable result and read every artifact back by immutable object id. It is not acceptance. Independent disposition by a non-producer remains outstanding and is NOT_YET."
+    }
+  },
+  "wave_b": {
+    "commissioned_minimum_attempts": 128,
+    "state": "NOT_YET",
+    "preconditions_required": [
+      "Wave A demonstrates zero false completion",
+      "Wave A demonstrates zero result loss",
+      "Wave A demonstrates zero path collision"
+    ],
+    "precondition_status": {
+      "zero_false_completion": "PASS at this revision, 0 observed across 65 tracked units",
+      "zero_result_loss": "NOT_YET, 31 of 64 units are still executing",
+      "zero_path_collision": "NOT_YET",
+      "zero_path_collision_basis": "A cross-controller collision was observed on po03-canary-001 and repaired with atomic remote-ref ownership. The repaired mechanism holds for all 64 Wave A slots with 0 contention, but the precondition must be re-demonstrated against a completed Wave A before Wave B may open."
+    },
+    "opening_authority": "PO-03 may open Wave B on its own evidence once all three preconditions read PASS; it may not open it on partial evidence"
+  },
+  "concurrency": {
+    "top_level_concurrent_subordinates": 9,
+    "provider_refusals": 0,
+    "provider_throttles": 0,
+    "queueing_observed": 0,
+    "observed_ceiling": "NOT_REACHED_AT_9_CONCURRENT",
+    "cohort_internal_concurrency_cap": 3,
+    "theoretical_peak_in_flight": 32,
+    "honest_limitation": "No provider ceiling can be reported as a number because no refusal, throttle or queueing occurred at the concurrency driven. This is an observed lower bound on capacity, not a measured maximum."
+  },
+  "isolation_mechanism": {
+    "per_subordinate": "dedicated git worktree plus a dedicated result branch",
+    "per_unit": "one disjoint owned subtree under workstreams/po03/attempts/<task_id>/",
+    "shared_path_writer": "integration controller only",
+    "cross_controller_exclusivity": "atomic compare-and-swap on refs/heads/po03/lease/<task_id>",
+    "identifier_namespacing": "every identifier carries the controller run suffix b2e7 so a concurrent sibling controller cannot contend"
+  },
+  "reduction_to_a_conventional_small_fleet": false,
+  "reduction_justification": "The full commissioned breadth was created, claimed and dispatched; no unit was dropped, merged or renamed to reduce the count."
+}
