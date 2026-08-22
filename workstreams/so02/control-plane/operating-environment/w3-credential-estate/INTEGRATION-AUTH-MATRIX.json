@@ -1,0 +1,135 @@
+{
+  "record_id": "OE-W3-INTEGRATION-AUTH-MATRIX-20260822",
+  "lane": "OE-W3-CREDENTIAL-ESTATE",
+  "commission": "COM-CUR-ENV-01-20260822-v001",
+  "authority_basis": "FOUNDER-AUTHORITY-DERESTRICTION-20260822T2225Z",
+  "observed_at": "2026-08-22T22:31:00Z",
+  "observed_by": "GetDynamicTools, no arguments, then per-namespace, in cloud agent run bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+  "evidence_label": "DIRECTLY_REPRODUCED",
+
+  "re_verification_of_the_dispatch_statement": {
+    "dispatch_asserted_at": "2026-08-22T22:26Z",
+    "this_lane_observed_at": "2026-08-22T22:31:00Z",
+    "result": "UNCHANGED. Every namespace held the state the dispatch recorded.",
+    "additional_namespace_found": "`cursor` (native Cursor tools, GenerateImage only). Not an MCP server and carries no namespaceStatus, which is why a status-oriented census can miss it."
+  },
+
+  "how_needsauth_actually_behaves": {
+    "evidence_label": "DIRECTLY_REPRODUCED",
+    "finding": "A namespace in needsAuth is not merely unauthenticated — its tools are not registered at all. GetDynamicTools returns an empty tools array, and an attempt to invoke a known tool name in that namespace fails at resolution rather than at authorisation.",
+    "probe": "CallDynamicTool namespace=Supabase toolName=list_projects arguments={}",
+    "response": "Error: MCP server does not exist: Supabase. Use GetDynamicTools to discover available servers.",
+    "why_it_matters": "There is no partial or degraded access to a needsAuth namespace, and no agent-side workaround. It is a hard boundary until a human authenticates. Any plan that routes through an unauthenticated namespace is not a plan."
+  },
+
+  "namespaces": [
+    {
+      "namespace": "cursor-cloud",
+      "status": "ready",
+      "transport": "Cursor-internal, authenticated by the run's own principal",
+      "unlocks": "Run identity and metadata; environment configuration and effective egress policy; the run's event log; the pending follow-up queue; enumeration of sibling and prior cloud agents; retrieval of another run's transcript, diff metadata, setup logs and environment info; environment build listing, log retrieval and draft build triggering; disk snapshotting; automation lookup by id.",
+      "worth_to_this_operation": "HIGH, and already load-bearing. This is the observation-and-retrieval half of multi-lane orchestration — the route by which a controller sees what its lanes did without a human relaying it. batch-fetch-details in particular is how one lane's produced evidence reaches an independent acceptor. It does not create runs, which is the gap the Cursor API key closes.",
+      "founder_action_to_authenticate": "None. Already authenticated as the run principal.",
+      "authorise_now_or_later": "N/A — active",
+      "caveat": "Read and diagnostic only. It cannot create an agent run, so it cannot remove the founder from the dispatch path on its own."
+    },
+    {
+      "namespace": "cursor-subscriptions",
+      "status": "ready",
+      "transport": "Cursor-internal, authenticated by the run's own principal",
+      "unlocks": "Event-driven waiting instead of polling: terminal GitHub CI results on a branch, future GitHub pull request events, and timer-triggered follow-ups by cron or delay. Subscription listing and cancellation.",
+      "worth_to_this_operation": "HIGH for the coordination loop specifically. A lane that subscribes and ends its turn costs nothing while waiting, where a lane that polls burns budget and wall-clock. subscribe_timer also gives the programme a scheduler it does not otherwise have.",
+      "founder_action_to_authenticate": "None for GitHub CI, GitHub PR and timer subscriptions. Slack and Linear returns are documented in the bundled subscribe skill but require an account-level integration that is not present.",
+      "authorise_now_or_later": "N/A — active for the GitHub and timer surfaces",
+      "caveat": "This lane did not exercise a subscription. Its readiness is established by tool registration, not by a completed round trip. Labelled DOCUMENTED for behaviour, DIRECTLY_REPRODUCED for availability."
+    },
+    {
+      "namespace": "Cloudflare-docs",
+      "status": "ready",
+      "transport": "Remote MCP, no account binding required",
+      "unlocks": "Cloudflare documentation search and a Pages-to-Workers migration guide.",
+      "worth_to_this_operation": "LOW. It reads public documentation. It touches no Obzio resource, holds no credential, and grants no estate access. Its readiness while three credentialed Cloudflare namespaces sit unauthenticated is a useful reminder that 'ready' describes a connection, not a capability.",
+      "founder_action_to_authenticate": "None.",
+      "authorise_now_or_later": "N/A — active"
+    },
+    {
+      "namespace": "cursor",
+      "status": "ready (native, not an MCP server)",
+      "transport": "First-party Cursor tool, runs natively in-session",
+      "unlocks": "GenerateImage — text-to-image file generation.",
+      "worth_to_this_operation": "NIL. No credential, no estate surface, no coordination value. Recorded for completeness of the census, not because it is worth activating anything for.",
+      "founder_action_to_authenticate": "None.",
+      "authorise_now_or_later": "N/A — active"
+    },
+    {
+      "namespace": "Supabase",
+      "status": "needsAuth",
+      "transport": "Remote MCP at mcp.supabase.com, OAuth to a Supabase account",
+      "unlocks": "Per the official tool list at https://supabase.com/docs/guides/getting-started/mcp.md: list_organizations, get_organization, list_projects, get_project, create_project, get_cost, get_project_url, get_publishable_keys, list_tables, list_extensions, list_migrations, apply_migration, execute_sql, get_advisors, list_edge_functions, get_edge_function, deploy_edge_function, list_branches, create_branch, list_storage_buckets, get_storage_config, search_docs.",
+      "worth_to_this_operation": {
+        "general": "MEDIUM-HIGH. The estate's own intelligence records Supabase migrations and functions in obzio-platform, Obzio-Control and Obzio-Luxury, and names an unresolved Supabase security boundary. get_advisors against those projects is a real security instrument, and execute_sql plus list_migrations would let a lane reconcile schema state without founder relay.",
+        "for_the_cursor_api_key_specifically": "ZERO. This is the finding that matters. The published tool surface contains no tool that reads Edge Function secrets — the only occurrences of the word 'secret' in the documentation refer to OAuth client secrets for MCP client registration. Authenticating this namespace would not move the Cursor API key one step closer to being usable.",
+        "evidence_label": "DOCUMENTED",
+        "source": "https://supabase.com/docs/guides/getting-started/mcp.md, fetched HTTP 200, 19041 bytes, 2026-08-22"
+      },
+      "founder_action_to_authenticate": "In Cursor, open Customize in the sidebar, locate the Supabase MCP server, and complete the OAuth sign-in to the Supabase account that owns the Obzio projects. This can be done from the web at https://cursor.com/agents as well as from the desktop app: Cursor registers callbacks for both surfaces (https://www.cursor.com/agents/mcp/oauth/callback for web and Cursor Agents, http://localhost:8787/callback for desktop).",
+      "authorise_now_or_later": "LATER, and deliberately so. It is worth having, but it is not on the critical path of anything this programme is currently blocked on, and it must not be mistaken for the route to the Cursor API key.",
+      "correction_to_the_dispatch_premise": "The dispatch stated that MCP integrations are authenticated in the Cursor desktop IDE. The documentation shows two supported surfaces, web included, which makes this a lighter founder action than assumed."
+    },
+    {
+      "namespace": "Vercel",
+      "status": "needsAuth",
+      "transport": "Remote MCP, OAuth to a Vercel account",
+      "unlocks": "Vercel project, deployment and log surfaces (exact tool list unobtainable while the namespace is unregistered — GetDynamicTools returns an empty tools array for it).",
+      "worth_to_this_operation": {
+        "general": "CONDITIONAL-MEDIUM. The estate intelligence records Vercel configuration in obzio-platform and an unprotected public preview whose apex domain does not serve the product. If that preview is still live, deployment and log visibility is how a lane would establish current state without asking the founder. If Obzio has moved off Vercel, this is worth nothing.",
+        "for_the_cursor_api_key_specifically": "ZERO. No relationship.",
+        "evidence_label": "HYPOTHESIS for current usage; DOCUMENTED for historical usage",
+        "discriminating_test": "Once authenticated, list projects and compare against the repositories named in state/REPOSITORY_ESTATE_INTELLIGENCE_20260818_v001.md. A single call settles whether this namespace is worth keeping."
+      },
+      "founder_action_to_authenticate": "Same mechanism as Supabase: Customize > Vercel > OAuth sign-in, from web or desktop.",
+      "authorise_now_or_later": "LATER. Authorise it when a lane has an actual Vercel question. Authenticating it speculatively adds an account binding that nothing currently consumes."
+    },
+    {
+      "namespace": "Cloudflare-bindings",
+      "status": "needsAuth",
+      "transport": "Remote MCP, OAuth to a Cloudflare account",
+      "unlocks": "Workers, KV, R2, D1 and related binding management (tool list unobtainable while unregistered).",
+      "worth_to_this_operation": {
+        "general": "CONDITIONAL-LOW to MEDIUM. The estate intelligence lists Cloudflare, R2, Pages and DNS among deployment bindings whose current state is explicitly unverified, and records R2 dependencies in Obzio-Luxury. R2 is the one concrete hook.",
+        "for_the_cursor_api_key_specifically": "ZERO.",
+        "evidence_label": "HYPOTHESIS",
+        "discriminating_test": "Once authenticated, enumerate R2 buckets and Workers and compare against the repositories that reference them."
+      },
+      "founder_action_to_authenticate": "Customize > Cloudflare Bindings > OAuth sign-in.",
+      "authorise_now_or_later": "LATER. One Cloudflare sign-in plausibly satisfies all three Cloudflare namespaces at once, so treat them as a single decision rather than three."
+    },
+    {
+      "namespace": "Cloudflare-builds",
+      "status": "needsAuth",
+      "transport": "Remote MCP, OAuth to a Cloudflare account",
+      "unlocks": "Workers build status and history.",
+      "worth_to_this_operation": "LOW. Useful only if Workers builds exist and matter. Nothing in this programme currently depends on one.",
+      "founder_action_to_authenticate": "Customize > Cloudflare Builds > OAuth sign-in.",
+      "authorise_now_or_later": "LATER, bundled with the Cloudflare decision."
+    },
+    {
+      "namespace": "Cloudflare-observability",
+      "status": "needsAuth",
+      "transport": "Remote MCP, OAuth to a Cloudflare account",
+      "unlocks": "Workers logs and analytics.",
+      "worth_to_this_operation": "LOW-MEDIUM, and the most defensible of the three Cloudflare namespaces: if anything Obzio-owned is serving traffic on Cloudflare, this is what would show it, and the estate intelligence flags an unprotected public preview as an open security question.",
+      "founder_action_to_authenticate": "Customize > Cloudflare Observability > OAuth sign-in.",
+      "authorise_now_or_later": "LATER, bundled with the Cloudflare decision."
+    }
+  ],
+
+  "summary": {
+    "ready": ["cursor-cloud", "cursor-subscriptions", "Cloudflare-docs", "cursor (native)"],
+    "needs_auth": ["Supabase", "Vercel", "Cloudflare-bindings", "Cloudflare-builds", "Cloudflare-observability"],
+    "ready_and_carrying_real_estate_capability": ["cursor-cloud", "cursor-subscriptions"],
+    "ready_but_carrying_none": ["Cloudflare-docs", "cursor (native)"],
+    "single_most_valuable_to_authenticate": "Supabase — but for schema, migration and security-advisor work on the Obzio projects, NOT for the Cursor API key, which it cannot reach.",
+    "authenticating_all_five_would_not_unblock": "the Cursor API key, agent-run creation, or anything else this programme is currently waiting on."
+  }
+}

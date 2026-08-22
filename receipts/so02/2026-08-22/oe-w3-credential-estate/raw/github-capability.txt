@@ -1,0 +1,35 @@
+# GitHub credential — actual capability
+# captured: 2026-08-22T22:47:00Z
+
+NOTE: 'gh auth status' is deliberately NOT run here. It prints a large
+      prefix of the live token to stdout even without --show-token.
+      That is a real hazard for any receipt-producing pipeline.
+
+--- GET /repos/asibrahim336-hash/obzio-ai-coordination-temp (the misleading projection) ---
+{"default_branch":"main","full_name":"asibrahim336-hash/obzio-ai-coordination-temp","permissions":{"admin":false,"maintain":false,"pull":false,"push":false,"triage":false},"private":true}
+
+--- GET /user (App installation tokens have no user identity) ---
+{"message":"Resource not accessible by integration","documentation_url":"https://docs.github.com/rest/users/users#get-the-authenticated-user","status":"403"}gh: Resource not accessible by integration (HTTP 403)
+
+--- GET /installation/repositories (proves App installation token, and its scope) ---
+{"repos":["asibrahim336-hash/obzio-ai-coordination-temp"],"total":1}
+
+--- response headers: absence of X-OAuth-Scopes confirms it is not an OAuth/PAT token ---
+HTTP/2.0 200 OK
+X-Ratelimit-Limit: 5000
+
+--- capability probe by endpoint class (read attempts only) ---
+  repos/asibrahim336-hash/obzio-ai-coordination-temp/contents/README.md -> 200
+  repos/asibrahim336-hash/obzio-ai-coordination-temp/pulls?per_page=1 -> 200
+  repos/asibrahim336-hash/obzio-ai-coordination-temp/branches?per_page=1 -> 200
+  repos/asibrahim336-hash/obzio-ai-coordination-temp/issues?per_page=1 -> 403
+  repos/asibrahim336-hash/obzio-ai-coordination-temp/actions/secrets -> 403
+  repos/asibrahim336-hash/obzio-ai-coordination-temp/actions/variables -> 403
+  repos/asibrahim336-hash/obzio-ai-coordination-temp/hooks -> 403
+  repos/asibrahim336-hash/obzio-ai-coordination-temp/deployments -> 403
+  repos/asibrahim336-hash/obzio-ai-coordination-temp/collaborators -> 200
+
+--- git write capability, proven WITHOUT mutating the remote ---
+To https://github.com/asibrahim336-hash/obzio-ai-coordination-temp
+ * [new branch]        HEAD -> oew3-capability-probe-do-not-create
+  (dry-run: git negotiates and authenticates but writes nothing)

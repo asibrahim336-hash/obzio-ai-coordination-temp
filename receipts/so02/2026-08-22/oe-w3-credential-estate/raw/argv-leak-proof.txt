@@ -1,0 +1,14 @@
+# Argument-vector leak experiment
+# captured: 2026-08-22T22:49:07Z
+
+--- SAFE arm: header delivered to curl on stdin (-H @-) ---
+  [SAFE] processes with the canary in cmdline: 0
+      curl argv as the process list sees it: curl -s -o /dev/null --max-time 12 -H @- http://127.0.0.1:8791/ 
+
+--- UNSAFE control: header passed as a command-line argument ---
+  [UNSAFE] processes with the canary in cmdline: 1
+      pid=1553835 is_scanner_or_parent=False argv=curl -s -o /dev/null --max-time 12 -H Authorization: Bearer <CANARY> http://127.0.0.1:8791/
+
+--- why the SAFE arm forks nothing that could carry the value ---
+  'type -t printf' => builtin
+  a bash builtin performs no execve, so no argv containing the key ever exists.

@@ -1,0 +1,84 @@
+# Hermetic bundle verification — method, finding, and how to reproduce
+# captured: 2026-08-22T23:05:00Z
+
+WHY THIS RECEIPT CONTAINS A METHOD RATHER THAN A RUN
+----------------------------------------------------
+A verification that checks the bundle cannot live inside the bundle without
+recursing: writing its output changes the file set, which changes
+bundle_sha256, which invalidates the output just written. This was not
+theoretical here — the first attempt produced exactly that, and the tool's own
+closure check caught it and refused, reporting 23 files on disk against 22
+manifest entries.
+
+So this receipt records the method and a genuine environmental finding. The
+verification run itself is the terminating step, performed after the manifest
+is final and reproducible by anyone with the shipped tool:
+
+    ./workstreams/so02/control-plane/operating-environment/w3-credential-estate/tools/verify-bundle-hermetic.sh <repo-root>
+
+Expected output on a sound bundle:
+
+    network check: ISOLATED
+    inherited env vars: 6
+    per-file digest+size failures: 0
+    recomputed bundle_sha256: <equal to the value declared in MANIFEST.json>
+    files on disk (excluding the manifest): <equal to entry_count>
+    HERMETIC VERIFY: PASS
+
+METHOD
+------
+The two lane namespaces are tarred on the agent side and uploaded into a
+container with PUT /containers/{id}/archive. The container runs with
+HostConfig.NetworkMode=none. Inside, a POSIX shell checker re-hashes every file
+listed in MANIFEST.json with sha256sum, compares sizes, independently
+reconstructs the canonical entries string that defines bundle_sha256 —
+json.dumps(entries, sort_keys=True, separators=(",",":")) — re-derives the
+digest, and asserts that the on-disk file count equals entry_count and that the
+read-back record is present in the manifest.
+
+The checker is POSIX shell plus awk and sha256sum because the only locally
+available image has no python3 and no jq, and there is no network to fetch
+them. Reconstruction is exact rather than approximate: every path in this
+bundle is plain ASCII containing no JSON-escapable character.
+
+WHY IT IS WORTH DOING
+---------------------
+Recomputing digests on the producer's own host proves the bytes are
+self-consistent. It does not exclude the checker having reached the producer,
+reused the producer's credentials, or consulted something outside the supplied
+inputs. NetworkMode=none excludes all three at once, and the container inherits
+six environment variables, none of them a credential. This is the concrete
+first use of the container primitive recorded as IA-01 in
+FOUNDER-ALIGNMENT-PLAN.json.
+
+FINDING — THE DAEMON DOES NOT SHARE THIS FILESYSTEM
+---------------------------------------------------
+Evidence label: DIRECTLY_REPRODUCED.
+
+The Docker daemon reachable on 127.0.0.1:2375 runs in a DIFFERENT mount
+namespace from the agent VM. Binding an agent path into a container does not
+fail. Docker creates the missing source directory on the daemon host and mounts
+it EMPTY, so the container starts normally and sees nothing.
+
+Reproduced by binding both /tmp/oe-w3 and /tmp into one container:
+
+    /bundle contents:
+    .
+    ..
+    /tmp on daemon host (via bind of /tmp):
+    oe-w3
+    systemd-private-...-systemd-logind.service-3mvqBC
+    systemd-private-...-systemd-timesyncd.service-0zNkeC
+
+The agent's own /tmp holds many unrelated files (agent-store-fuse.log,
+anyos-xstartup, append_events.py, ca.json, capture-vnc-user-env, and more).
+The daemon's /tmp holds only systemd-private directories plus the empty oe-w3
+directory Docker had just created for the failed bind.
+
+Why this matters beyond this lane: the natural way to use a container runtime
+for acceptance is `-v $PWD:/work`, and here that silently yields an empty
+mount. The failure then presents as a bad manifest rather than a bad mount,
+which is the most expensive kind of wrong. Any lane adopting the container
+primitive must transfer bytes explicitly by archive upload. That is also the
+better property for acceptance: what the container verifies is exactly what
+was sent, and nothing else.

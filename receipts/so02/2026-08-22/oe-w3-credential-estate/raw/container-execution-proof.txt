@@ -1,0 +1,21 @@
+# Container runtime — hermetic execution proof
+# captured: 2026-08-22T22:49:20Z
+
+Claim under test: the Docker engine on 127.0.0.1:2375 can execute a
+workload with no network and no inherited credential. That is what
+makes it usable for independent replay of a producer's evidence.
+
+  image under test: 946207870883.dkr.ecr.us-east-1.amazonaws.com/anyrun-utils:util-61d85ff19df0
+  container id prefix: 5f3435661012
+  start -> HTTP 204
+  exit code: 0
+  container stdout:
+    OEW3-CONTAINER-OK
+    uid=0
+    kernel=Linux
+    NET=ISOLATED
+    ENVCOUNT=5
+  cleanup (container removed) -> HTTP 204
+
+  NET=ISOLATED with NetworkMode=none is the load-bearing line: the workload
+  could not have reached a network service, so its result is its own.
