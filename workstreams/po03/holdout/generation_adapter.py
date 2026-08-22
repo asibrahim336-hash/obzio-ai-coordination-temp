@@ -59,7 +59,7 @@ class NativeRun:
         if outcome.reason_code == "NOT_SUPPORTED":
             missing = outcome.detail.get("missing_capability", operation)
             raise UnsupportedCase(
-                f"{self.generation.upper()} has no executable {missing!r} capability "
+                f"candidate has no executable {missing!r} capability "
                 f"required by step {label}"
             )
         return outcome
@@ -590,7 +590,7 @@ def case_h32(run: NativeRun) -> dict[str, Any]:
     ledger = getattr(run.controller, "ledger", None)
     if ledger is None:
         raise UnsupportedCase(
-            f"{run.generation.upper()} has no append-only ledger required by synthetic history scan"
+            "candidate has no append-only ledger required by synthetic history scan"
         )
     for event, commit in [
         ("PARENT_INGESTED", "commit-a"),
