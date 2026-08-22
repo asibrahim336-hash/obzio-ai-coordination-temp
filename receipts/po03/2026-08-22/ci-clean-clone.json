@@ -4,11 +4,48 @@
   "actor": "PO-03 integration controller",
   "wave": "WAVE-A",
   "subject": "clean-clone reproduction of the PO-03 gates in GitHub Actions",
-  "state": "PENDING_PUSH",
-  "state_detail": "The actual clean-clone CI result can only be known once this branch is pushed and GitHub Actions runs. At the time of this receipt no workflow run existed for this branch. No run id, run URL, conclusion or duration is recorded, because inventing any of them would be fabricated evidence.",
+  "state": "PASS",
+  "state_detail": "This receipt was first written as PENDING_PUSH, because no workflow run existed. The branch was then pushed, GitHub Actions ran the workflow on a clean clone, and all five gates succeeded. The observed run is recorded below; the earlier PENDING_PUSH wording is retained in the amended_from field rather than erased.",
+  "amended_from": {
+    "state": "PENDING_PUSH",
+    "reason": "No run existed when the receipt was written. Amended once the real run completed, with the observed run id, URL and per-step conclusions.",
+    "amended_at": "2026-08-22T08:04:00Z"
+  },
   "workflow_path": ".github/workflows/po03-contracts.yml",
-  "workflow_run_url": "PENDING_PUSH",
-  "workflow_run_conclusion": "PENDING_PUSH",
+  "observed_run": {
+    "run_id": 32561173259,
+    "run_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32561173259",
+    "workflow_name": "PO-03 result custody and compounding contracts",
+    "event": "push",
+    "attempt": 1,
+    "head_sha": "5f93a3db8b1077ebc1369a73d5113848f61cea12",
+    "status": "completed",
+    "conclusion": "success",
+    "created_at": "2026-08-22T08:01:24Z",
+    "updated_at": "2026-08-22T08:01:36Z",
+    "python_version": "3.12.14",
+    "step_conclusions": [
+      { "step": "Run actions/checkout@v4", "conclusion": "success" },
+      { "step": "Run actions/setup-python@v5", "conclusion": "success" },
+      { "step": "Enforce the PO-03 changed-path allowlist", "conclusion": "success" },
+      { "step": "Run dependency-free contract tests", "conclusion": "success" },
+      { "step": "Verify the PO-03 subtree manifest", "conclusion": "success" },
+      { "step": "Validate every emitted result document", "conclusion": "success" },
+      { "step": "Validate the wave compounding receipt", "conclusion": "success" }
+    ],
+    "observed_gate_output": {
+      "changed_path_base": "552b12eacee637716451492a98980fb0da19ff3e",
+      "changed_path_base_significance": "The base resolved to the exact branch point, which is what the repaired resolution order was supposed to produce. The defect this Wave found in its own workflow would have resolved a wider base and failed the guard on files this Wave never authored, so this line is the field confirmation of that repair.",
+      "changed_path_guard": "PATH-SCOPE GUARD: PASS 57 paths in scope",
+      "unittest": "Ran 178 tests in 0.978s / OK",
+      "manifest_verify": "MANIFEST VERIFY: PASS 54 entries",
+      "validate_dir_result": "VALIDATE-DIR result workstreams/po03/contracts/instances/results: scanned=9 valid=9 invalid=0",
+      "validate_wave": "VALID wave sha256=52571abb87a81bb01caa8d8ef52cd14e9191a4c0344f736a15a8314de7efe7de"
+    },
+    "agreement_with_local_run": "EXACT",
+    "agreement_detail": "Every gate produced the same counts and the same wave digest in the clean clone as in the warm local checkout: 57 paths, 178 tests, 54 manifest entries, 9 of 9 result documents, and byte-identical sha256 52571abb87a81bb01caa8d8ef52cd14e9191a4c0344f736a15a8314de7efe7de. No hidden local state affected any result.",
+    "observation_method": "gh run view 32561173259 --json conclusion,status,url,headSha,attempt,event and gh run view 32561173259 --log, read from this session. No value here is inferred."
+  },
   "triggers": {
     "pull_request": ["workstreams/po03/**", "receipts/po03/**", ".github/workflows/po03-*.yml"],
     "push_branches": ["po03/**", "cursor/po03-**"],
@@ -35,7 +72,8 @@
     "third_party_packages_required": 0,
     "third_party_packages_note": "Every tool and test imports only the Python standard library. The suite and all gates run under `python -I`, which ignores the environment and user site directories.",
     "python_version_local": "3.12.3",
-    "python_version_ci": "3.12",
+    "python_version_ci": "3.12.14",
+    "python_version_note": "The workflow requests 3.12 and the runner resolved 3.12.14, a different patch release from the local 3.12.3. The suite passed identically on both, which is a small piece of real portability evidence rather than an assumption.",
     "provider_memory_dependency": false,
     "tmp_dependency": false,
     "tmp_note": "Tests create throwaway git repositories under the system temporary directory and delete them. No committed artifact and no gate result depends on /tmp persisting between runs.",
@@ -45,7 +83,13 @@
     "git_dependency": true,
     "git_dependency_note": "The changed-path guard, the manifest and the result emitter all require git. In CI this is satisfied by actions/checkout with fetch-depth 0. Tests that need git skip cleanly when it is absent rather than failing."
   },
-  "fresh_checkout_reproduces_the_complete_suite": "NOT_YET",
-  "fresh_checkout_reproduces_the_complete_suite_reason": "Not yet demonstrated. It becomes checkable as soon as the branch is pushed and the workflow runs; until an actual run exists this stays NOT_YET.",
-  "independent_acceptance": "NOT_TESTED"
+  "fresh_checkout_reproduces_the_complete_suite": "PASS",
+  "fresh_checkout_reproduces_the_complete_suite_evidence": "Run 32561173259 checked out this branch fresh with actions/checkout@v4 at fetch-depth 0, on a runner with no prior state, and reproduced all 178 tests and all five gates with identical counts and an identical wave digest.",
+  "residual_limits": [
+    "One clean-clone run at one head is not a portability guarantee across operating systems, Python versions outside 3.12, or future changes to the runner image.",
+    "The run executed the producer's own gates. A clean clone reproducing the producer's suite says the suite is portable; it does not say the suite is sufficient.",
+    "The workflow runs on push to po03/** and cursor/po03-** and on pull_request. A clone checked out at a commit that CI never saw is not covered by this evidence."
+  ],
+  "independent_acceptance": "NOT_TESTED",
+  "independent_acceptance_note": "A green CI run is not acceptance. It confirms the gates the producer wrote pass in a clean environment."
 }

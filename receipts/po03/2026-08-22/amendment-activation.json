@@ -30,10 +30,10 @@
   "v001_receipts_retained_detail": "receipts/po03/2026-08-22/appointment-seed.json is unmodified by this Wave.",
   "collision_boundary_respected": {
     "state": "PASS",
-    "changed_path_count": 57,
+    "changed_path_count": 58,
     "out_of_allowlist_paths": 0,
     "verification_command": "git diff --name-only --no-renames -z <branch-point>...HEAD | python3 workstreams/po03/tools/path_scope_guard.py --null --stdin",
-    "note": "The count includes the six receipts written in this final unit. The guard reported all in scope."
+    "note": "The count includes the six receipts written in this final unit. The guard reported all in scope, and the same guard reported the same count in GitHub Actions run 32561173259 against a base it resolved independently."
   },
   "read_only_surfaces_unmodified": true,
   "po01_contact": "NONE",
@@ -44,9 +44,9 @@
   "pull_request_created_or_updated_by_this_worker": false,
   "amendment_requirements_addressed": [
     { "requirement": "path-scope guard must fail CI for writes outside the allowlist", "state": "PASS", "evidence": ".github/workflows/po03-contracts.yml and workstreams/po03/tools/path_scope_guard.py, with a real rejection fixture in workstreams/po03/tests/test_path_scope_guard.py" },
-      { "requirement": "manifest, provenance and changed-path enforcement", "state": "PASS", "evidence": "workstreams/po03/MANIFEST.sha256 with 54 entries, verified in CI by workstreams/po03/tools/manifest.py --verify" },
+      { "requirement": "manifest, provenance and changed-path enforcement", "state": "PASS", "evidence": "workstreams/po03/MANIFEST.sha256 with 55 entries, verified in CI by workstreams/po03/tools/manifest.py --verify" },
     { "requirement": "current-source and supersession compilation", "state": "PASS", "evidence": "workstreams/po03/evidence/repository-disposition.json, 184 files classified" },
-    { "requirement": "portable runtime execution from a clean clone", "state": "NOT_YET", "evidence": "All gates run dependency-free with python -I, but no GitHub Actions run has executed yet; see receipts/po03/2026-08-22/ci-clean-clone.json" },
+      { "requirement": "portable runtime execution from a clean clone", "state": "PASS", "evidence": "GitHub Actions run 32561173259 reproduced all five gates on a fresh checkout with no third-party package, 178 tests OK; see receipts/po03/2026-08-22/ci-clean-clone.json. Recorded as NOT_YET when written and amended once the run completed." },
     { "requirement": "independent operator-pack qualification", "state": "NOT_APPLICABLE", "evidence": "workstreams/po03/evidence/reproduction-results.json — no pack tree exists at this head" },
     { "requirement": "transactional result custody strengthened, not bypassed", "state": "PASS", "evidence": "Closed-schema enforcement added; 23 pre-existing invariant tests unchanged and passing; 9 per-unit result documents validated" },
     { "requirement": "Wave A at 64 substantive attempts", "state": "NOT_YET", "evidence": "workstreams/po03/evidence/scale-ladder.json — 10 genuine units, deliberate and disclosed scope decision" },

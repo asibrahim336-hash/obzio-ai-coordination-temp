@@ -27,14 +27,15 @@
   "self_acceptance_claimed": false,
   "independent_acceptance": "NOT_TESTED",
   "summary_of_verdicts": {
-    "PASS": 5,
-    "NOT_YET": 7,
+    "PASS": 6,
+    "NOT_YET": 6,
     "NOT_SUPPORTED": 0,
     "FAIL": 0,
     "OWNER_BLOCKED": 0,
     "total_controls": 12,
     "not_supported_note": "No whole control is NOT_SUPPORTED. Heterogeneous model allocation is NOT_SUPPORTED as one part of the model control, which is recorded as NOT_YET overall because another part of it does hold.",
-    "honest_reading": "Five of twelve acceptance controls are met. The producer does not consider this Wave an acceptance candidate. The largest genuine gaps are scale, fault injection, the third generation and every form of independence."
+    "honest_reading": "Six of twelve acceptance controls are met. The producer does not consider this Wave an acceptance candidate. The largest genuine gaps are scale, fault injection, the third generation and every form of independence.",
+    "tally_amended": "The clean-checkout control moved from NOT_YET to PASS after the push produced a real green CI run. That is the only verdict that changed, and it changed because evidence arrived, not because the standard moved."
   },
   "controls": [
     {
@@ -125,7 +126,7 @@
     {
       "control": "G0/G1/G2 and holdout evidence establish or refuse the claimed lift",
       "verdict": "NOT_YET",
-      "evidence": "G0 and G1 are both real, executable and measured: G0 at 552b12eacee637716451492a98980fb0da19ff3e with 23 passing tests, G1 at this head with 178. G2 is NOT_YET and was deliberately withheld rather than fabricated, because G1's CI gates had not run once on GitHub, so G1 has produced no field failures to learn from.",
+      "evidence": "G0 and G1 are both real, executable and measured: G0 at 552b12eacee637716451492a98980fb0da19ff3e with 23 passing tests, G1 at this head with 178. G2 is NOT_YET and was deliberately withheld rather than fabricated: G1's gates have now run once in CI and passed, which produces no field failures for a successor to learn from.",
       "evidence_uri": "workstreams/po03/metrics/generation-comparison.json",
       "claimed_lift": "NOT_YET",
       "claimed_lift_detail": "Only a capability delta is claimed: G0 had no changed-path, manifest, disposition or directory-validation control, and G1 has all four with tests and CI enforcement. No preregistered metric was measured on both generations against a common holdout, and no holdout written by an independent evaluator exists.",
@@ -135,11 +136,14 @@
     },
     {
       "control": "a fresh checkout reproduces the complete suite",
-      "verdict": "NOT_YET",
-      "evidence": "Every tool and test imports only the Python standard library and all five gates run under `python -I`, which ignores environment and user site directories. But no GitHub Actions run existed for this branch when this request was written, so clean-clone reproduction is asserted by construction and not yet observed.",
+      "verdict": "PASS",
+      "verdict_history": "NOT_YET when this request was first written, because no workflow run existed. Upgraded to PASS after the branch was pushed and run 32561173259 completed successfully.",
+      "evidence": "GitHub Actions run 32561173259 checked out this branch fresh at fetch-depth 0 on a runner with no prior state and reproduced every gate: 57 paths in scope, 178 tests OK, 54 manifest entries, 9 of 9 result documents valid, and the wave digest 52571abb87a81bb01caa8d8ef52cd14e9191a4c0344f736a15a8314de7efe7de byte-identical to the local run. The runner used Python 3.12.14 against a local 3.12.3, and no third-party package was installed.",
       "evidence_uri": "receipts/po03/2026-08-22/ci-clean-clone.json",
-      "becomes_checkable": "As soon as this branch is pushed and the workflow runs.",
-      "reviewer_check": "Clone the repository fresh, check out this branch, and run the five gate commands listed in the CI receipt. Any failure is a real defect in this Wave."
+      "run_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32561173259",
+      "notable_field_confirmation": "The run's changed-path base resolved to 552b12eacee637716451492a98980fb0da19ff3e, the exact branch point. That is the field confirmation of the base-resolution defect this Wave found and repaired in its own workflow.",
+      "residual_limit": "One run at one head on one runner image. It shows the suite is portable, not that the suite is sufficient, and a green run is not acceptance.",
+      "reviewer_check": "Open the run and read the five gate steps, or clone the repository fresh and run the same commands. Any disagreement is a real defect in this Wave."
     },
     {
       "control": "all changed paths remain inside the original allowlist",
