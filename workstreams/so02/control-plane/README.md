@@ -7,10 +7,11 @@ This is a continuation of the active programme. It does not restart `PO-01`, `PO
 ## Current authority and state
 
 - `SO-02` remains the active strategic operator until the cutover gates in `state/control-plane.json` are independently passed.
-- `SCF-01/CUR-01` is the primary machine-orchestration candidate and candidate coordination-kernel principal. It is not promoted until a route-agnostic live qualification proves the strongest practical combination; native ChatGPT Projects visibility is optional.
-- `SCF-01/SW-01` is the parallel SW strategy-discovery, coworker/workspace, HTML/presentation and capability-synthesis specialist. It is not the required central coordinator.
+- `SCF-01/CUR-01` is the primary machine-orchestration candidate and candidate coordination-kernel principal. Founder-reported agent `bc-7137a066-3242-43a2-a30e-9a352047b759` is running the qualification; it is not promoted until immutable route evidence proves the strongest practical combination. Native ChatGPT Projects visibility is optional.
+- `SCF-01/SW-01` remains the capable parallel strategy-discovery, coworker/workspace, HTML/presentation and capability-synthesis specialist, but is paused before commission and before its first message pending an accepted open-weight controller plus SW adapter. Do not contact it now.
 - `SCF-01/CGPT-01` is the active ChatGPT founder-interface, strategy-interlock, independent-synthesis and continuity principal.
 - `SCF-01/OSS-01` is the future Obzio-controlled open-source successor binding; it is not yet qualified.
+- `BROWSER-CTRL-QUAL-01` uses Microsoft's open-source Playwright Extension plus a local Goose/open-weight MCP client as the first isolated Chromebook canary. Installation is not acceptance. HARPA GRID is only an optional proprietary cloud-bridge comparator; Nanobrowser is an autonomous open-weight comparator, not the primary orchestration bridge.
 - Founder strategy decisions remain founder-bound. `decision_changed: []`.
 
 Provider identity is a runtime binding, not a role identity. Replacing a provider must not replace the strategic function, its ledger or its evidence.

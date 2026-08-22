@@ -30,7 +30,7 @@ class ControlPlaneTests(unittest.TestCase):
 
     def test_project_rebuilds_from_event_head(self) -> None:
         projection = scctl.project(self.root)
-        self.assertEqual(19, projection["event_count"])
+        self.assertEqual(20, projection["event_count"])
         self.assertEqual("ACTIVE_INTERIM", projection["subjects"]["SCF-01/CGPT-01"]["state"])
 
     def test_event_chain_is_valid(self) -> None:
@@ -92,6 +92,7 @@ class ControlPlaneTests(unittest.TestCase):
         changed = copy.deepcopy(self.control)
         cursor = next(item for item in changed["runtime_bindings"] if item["binding_id"] == "SCF-01/CUR-01")
         cursor["state"] = "EXECUTING"
+        cursor["provider_locator"] = None
         self.assertTrue(any("operational state without locator" in item for item in self.errors_for(changed)))
 
     def test_execution_claim_without_launch_receipt_is_rejected(self) -> None:
@@ -99,6 +100,7 @@ class ControlPlaneTests(unittest.TestCase):
         cursor = next(item for item in changed["runtime_bindings"] if item["binding_id"] == "SCF-01/CUR-01")
         cursor["state"] = "EXECUTING"
         cursor["provider_locator"] = "agent/test"
+        cursor["launch_receipt"] = None
         self.assertTrue(any("without launch receipt" in item for item in self.errors_for(changed)))
 
     def test_durable_claim_without_commit_is_rejected(self) -> None:
@@ -206,11 +208,44 @@ class ControlPlaneTests(unittest.TestCase):
 
     def test_pending_surface_cannot_contain_invented_locator(self) -> None:
         locators = scctl.read_json(self.root / "state/runtime-surface-locators.json")
-        cursor = next(item for item in locators["records"] if item["locator_id"] == "LOC-CURSOR-CUR01-AGENT")
-        cursor["stable_locator"] = "https://cursor.com/agents/invented"
+        browser = next(item for item in locators["records"] if item["locator_id"] == "LOC-BROWSER-PLAYWRIGHT-CANARY")
+        browser["stable_locator"] = "https://example.invalid/invented"
         errors: list[str] = []
         scctl.validate_locators(locators, errors)
         self.assertTrue(any("pending surface contains invented locator" in item for item in errors))
+
+    def test_cursor_launch_is_observed_but_not_promoted(self) -> None:
+        cursor = next(item for item in self.control["runtime_bindings"] if item["binding_id"] == "SCF-01/CUR-01")
+        qualification = self.control["orchestration_assignment"]["cursor_control_surface_qualification"]
+        self.assertEqual("FOUNDER_REPORTED_LAUNCHED_RUNNING_QUALIFICATION_PENDING", cursor["state"])
+        self.assertEqual("https://cursor.com/t/meta-ai4p/agents/bc-7137a066-3242-43a2-a30e-9a352047b759", cursor["provider_locator"])
+        self.assertEqual(0, qualification["qualified_route_count"])
+        self.assertFalse(any(qualification["required_end_to_end_evidence"].values()))
+
+    def test_sw_pause_is_fail_closed_before_message(self) -> None:
+        sw = next(item for item in self.control["runtime_bindings"] if item["binding_id"] == "SCF-01/SW-01")
+        launch = (self.root / "launch/SW-LAUNCH-NOW.md").read_text(encoding="utf-8")
+        self.assertEqual("FOUNDER_PAUSED_BEFORE_COMMISSION_PENDING_OPEN_WEIGHT_CONTROL", sw["state"])
+        self.assertIn("SW is paused — do not send a message", launch)
+        self.assertIn("not active; do not paste", launch)
+
+    def test_browser_selection_cannot_be_called_acceptance(self) -> None:
+        changed = copy.deepcopy(self.control)
+        browser = changed["orchestration_assignment"]["browser_control_replacement"]
+        browser["selection_is_acceptance"] = True
+        self.assertTrue(any("selection or installation treated as acceptance" in item for item in self.errors_for(changed)))
+
+    def test_browser_first_canary_is_owned_deterministic_route(self) -> None:
+        browser = self.control["orchestration_assignment"]["browser_control_replacement"]
+        self.assertEqual("MICROSOFT_PLAYWRIGHT_EXTENSION_PLUS_LOCAL_GOOSE_OPEN_WEIGHT_MCP_CLIENT", browser["first_canary"])
+        self.assertIn("PROPRIETARY_CLOUD_RELAY", browser["cloud_route_tradeoff"])
+        self.assertFalse(browser["selection_is_acceptance"])
+
+    def test_claude_capacity_is_not_quality_evidence(self) -> None:
+        observation = self.control["provider_capacity_observations"][0]
+        self.assertEqual("TOKEN_CAPACITY_EXHAUSTED_ROUTE_UNAVAILABLE", observation["state"])
+        self.assertFalse(observation["quality_inference_allowed"])
+        self.assertFalse(observation["retry_or_refill_required_now"])
 
     def test_known_error_controls_have_mechanisms_and_checks(self) -> None:
         controls = scctl.read_json(self.root / "errors/recurrence-controls.json")

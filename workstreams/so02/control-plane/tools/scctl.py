@@ -62,7 +62,7 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
             "migration_state", "active_primary", "canonical_store", "runtime_bindings",
             "protected_workstreams", "cutover_gates", "cutover_evidence",
             "current_founder_actions", "global_pointer_state", "multi_parent_execution_contract",
-            "orchestration_assignment"
+            "orchestration_assignment", "provider_capacity_observations"
         ],
         "control-plane"
     )
@@ -77,7 +77,7 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
             "programme_coordinator", "cursor_binding", "cursor_role_state",
             "sw_binding", "sw_role_state", "chatgpt_binding", "chatgpt_role_state",
             "repository_remains_provider_independent", "chatgpt_project_api_equivalence_assumed",
-            "cursor_control_surface_qualification"
+            "cursor_control_surface_qualification", "browser_control_replacement"
         ],
         "orchestration-assignment"
     )
@@ -108,6 +108,31 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
         required = qualification.get("required_end_to_end_evidence", {})
         add(errors, qualification.get("qualified_route_count", 0) >= 2, "orchestration: Cursor promoted without two qualified routes")
         add(errors, bool(required) and all(value is True for value in required.values()), "orchestration: Cursor promoted without complete end-to-end evidence")
+
+    browser = orchestration.get("browser_control_replacement", {})
+    require_keys(
+        errors,
+        browser,
+        [
+            "qualification_id", "state", "objective", "first_canary",
+            "first_canary_reason", "cloud_cursor_route", "cloud_route_tradeoff",
+            "comparators", "cursor_cloud_constraint", "required_evidence",
+            "sw_reactivation_gate", "selection_is_acceptance"
+        ],
+        "browser-control-qualification"
+    )
+    add(errors, browser.get("first_canary") == "MICROSOFT_PLAYWRIGHT_EXTENSION_PLUS_LOCAL_GOOSE_OPEN_WEIGHT_MCP_CLIENT", "browser-control: deterministic owned first canary changed")
+    add(errors, browser.get("selection_is_acceptance") is False, "browser-control: selection or installation treated as acceptance")
+    add(errors, "PROPRIETARY_CLOUD_RELAY" in browser.get("cloud_route_tradeoff", ""), "browser-control: HARPA trust-boundary cost hidden")
+    add(errors, "NANOBROWSER_OPEN_WEIGHT_SELF_CONTAINED_NO_EXTERNAL_MCP_API" in browser.get("comparators", ""), "browser-control: Nanobrowser external-control limitation hidden")
+    add(errors, "CURSOR_CLOUD_AGENT_LOCATOR_ALONE_DOES_NOT_PROVE" in browser.get("cursor_cloud_constraint", ""), "browser-control: local MCP reachability assumed")
+    add(errors, "LOCATE_LAUNCH_RETRIEVE_RECONCILE_STOP_AND_RESUME" in browser.get("sw_reactivation_gate", ""), "browser-control: SW reactivation lacks control-and-custody proof")
+
+    capacity = data.get("provider_capacity_observations", [])
+    claude = next((item for item in capacity if item.get("provider_route") == "Claude browser-extension account"), {})
+    add(errors, claude.get("state") == "TOKEN_CAPACITY_EXHAUSTED_ROUTE_UNAVAILABLE", "provider-capacity: Claude exhaustion not recorded as route unavailability")
+    add(errors, claude.get("quality_inference_allowed") is False, "provider-capacity: quota exhaustion treated as quality evidence")
+    add(errors, claude.get("retry_or_refill_required_now") is False, "provider-capacity: quota refill incorrectly made immediate requirement")
 
     store = data.get("canonical_store", {})
     add(errors, store.get("kind") == "git_repository", "control-plane: canonical store must be Git")
@@ -160,7 +185,7 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
     add(errors, set(ids) == required_ids, "control-plane: runtime binding denominator mismatch")
     add(errors, len(ids) == len(set(ids)), "control-plane: duplicate runtime binding")
 
-    operational = {"EXECUTING", "OUTPUT_OBSERVED", "DURABLE", "INDEPENDENTLY_VALIDATED", "ACCEPTED", "ACTIVE_INTERIM"}
+    operational = {"EXECUTING", "OUTPUT_OBSERVED", "DURABLE", "INDEPENDENTLY_VALIDATED", "ACCEPTED", "ACTIVE_INTERIM", "FOUNDER_REPORTED_LAUNCHED_RUNNING_QUALIFICATION_PENDING"}
     durable = {"DURABLE", "INDEPENDENTLY_VALIDATED", "ACCEPTED"}
     for binding in bindings:
         if not isinstance(binding, dict):
@@ -195,6 +220,7 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
     valid_reasons = {
         "provider_ui_model_selection_and_instruction_submission",
         "provider_ui_agent_creation_model_selection_and_instruction_submission",
+        "provider_ui_browser_extension_install_model_configuration_and_connection_approval",
         "SW surface requires founder-authenticated client with TLS certificate",
         "founder_held_ops_gate_and_provider_action_approval",
         "provider_ui_stop_run"
@@ -245,7 +271,7 @@ def validate_locators(data: dict[str, Any], errors: list[str]) -> None:
     allowed_states = {
         "VERIFIED", "FOUNDER_REPORTED_CAPTURED", "AWAITING_PROVIDER_CREATION",
         "OWNER_CAPTURE_REQUIRED", "NOT_YET_CREATED", "ROUTE_QUALIFICATION_PENDING",
-        "OPTIONAL_PROBE_NOT_REQUIRED"
+        "OPTIONAL_PROBE_NOT_REQUIRED", "FOUNDER_PAUSED_BEFORE_CREATION"
     }
     captured_states = {"VERIFIED", "FOUNDER_REPORTED_CAPTURED"}
     for record in records:
@@ -342,16 +368,26 @@ def validate_instruction_contracts(root: Path, errors: list[str]) -> None:
     sw_launch = (root / "launch/SW-LAUNCH-NOW.md").read_text(encoding="utf-8")
     add(errors, "receipts/so02/**" in commission, "cursor commission: receipt allowlist missing")
     add(errors, "receipts/workstreams/so02/control-plane/**" not in commission, "cursor commission: obsolete receipt allowlist present")
-    add(errors, "Do **not** choose" in launch and "**Multiple Agents**" in launch, "cursor launch: unqualified second group not prohibited")
-    add(errors, "Native ChatGPT Projects UI visibility is an optional probe" in launch, "cursor launch: Projects UI incorrectly governs orchestration")
-    add(errors, "strongest two independent available routes" in launch, "cursor launch: multi-route qualification missing")
-    add(errors, "stable agent URL or exact provider ID" in launch, "cursor launch: stable agent locator capture missing")
+    add(errors, "https://cursor.com/t/meta-ai4p/agents/bc-7137a066-3242-43a2-a30e-9a352047b759" in launch, "cursor launch: live agent locator missing")
+    add(errors, "Do not start another Cursor top-level agent or agent group" in launch, "cursor launch: unqualified second group not prohibited")
+    add(errors, "native ChatGPT Projects visibility remains optional" in launch, "cursor launch: Projects UI incorrectly governs orchestration")
+    add(errors, "PASS_TWO_OR_MORE_ROUTES" in launch and "PASS_ONE_ROUTE_PARTIAL" in launch, "cursor launch: multi-route qualification missing")
+    add(errors, "agent ID `bc-7137a066-3242-43a2-a30e-9a352047b759`" in launch, "cursor launch: stable agent ID capture missing")
     add(errors, "Do not write PR #9" in launch, "cursor launch: PO-03 write prohibition missing")
+    add(errors, "Microsoft Playwright Extension" in launch and "Goose" in launch, "cursor launch: owned deterministic browser candidate missing")
+    add(errors, "HARPA GRID only as a separate" in launch, "cursor launch: cloud bridge not isolated as comparator")
     add(errors, "capability-factory/return-20260822-v001" in sw_launch, "SW launch: isolated return branch missing")
-    add(errors, "treat the selected source branch as read-only" in sw_launch, "SW launch: shared source branch write not rejected")
+    add(errors, "Treat the selected source branch as read-only" in sw_launch, "SW launch: shared source branch write not rejected")
     add(errors, "1054976614269477" in sw_launch, "SW launch: founder-verified space ID missing")
-    add(errors, "Capability Extraction Lab" in sw_launch, "SW launch: neutral provider-visible rename missing")
+    add(errors, "SW is paused — do not send a message" in sw_launch and "do not paste" in sw_launch, "SW launch: founder pause not fail-closed")
     add(errors, "every operation, thread, coworker, automation and return-branch URL or exact provider ID" in sw_launch, "SW launch: stable provider locator capture missing")
+
+    browser_launch = (root / "launch/BROWSER-CONTROL-CANARY-NOW.md").read_text(encoding="utf-8")
+    add(errors, "Microsoft's stable open-source Playwright Extension" in browser_launch, "browser launch: first canary missing")
+    add(errors, "npx -y @playwright/mcp@latest --extension" in browser_launch, "browser launch: local MCP command missing")
+    add(errors, "GOOSE_MODE=approve goose session" in browser_launch, "browser launch: approval mode missing")
+    add(errors, "SO2-BROWSER-QUAL" in browser_launch, "browser launch: dedicated profile missing")
+    add(errors, "Do not enable or call `browser_run_code_unsafe`" in browser_launch, "browser launch: unsafe JavaScript capability not prohibited")
 
     lanes = (root / "launch/CHATGPT-LANES-NOW.md").read_text(encoding="utf-8")
     add(errors, lanes.count("## CGPT-") >= 12, "chatgpt lanes: fewer than twelve launch sheets")

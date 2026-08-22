@@ -32,8 +32,12 @@ qualified new capability, or a measured topology/model/context/evaluation change
 - Cursor is an internal repository engineering and coordination factory. Use one
   integration contract, disjoint ownership and isolated branches; do not create
   duplicate whole-programme factories.
-- SW is the repository-connected discovery/synthesis factory. For the current
-  launch, direct GitHub repository access is founder-accepted.
+- SW remains a capable repository-connected discovery/synthesis factory, but the
+  founder paused it before its first message because the available operation was
+  not yet strategically controlled. Do not commission or contact it until an
+  Obzio-owned open-weight controller and authenticated SW adapter prove locate,
+  launch, retrieve, reconcile, stop and resume with durable custody. This is a
+  reversible routing pause, not a rejection of the platform.
 - Manus must receive full useful administrative enablement across multiple
   authorised accounts during the high-capacity window. OAuth, approval,
   installation, download or owner-only actions are surfaced immediately while
@@ -120,6 +124,44 @@ target. The provider-visible space must be renamed `Capability Extraction Lab`
 before its first message. This locator rule is an
 internal state and coordination requirement and does not widen what is disclosed to
 SW.
+
+The founder-reported Cursor qualification agent is
+`https://cursor.com/t/meta-ai4p/agents/bc-7137a066-3242-43a2-a30e-9a352047b759`
+(agent ID `bc-7137a066-3242-43a2-a30e-9a352047b759`). Continue that agent; do not
+start another top-level Cursor agent or group. Its launch is an execution
+observation, not route acceptance or orchestration promotion. Its immutable start
+SHA, exact model/settings, outputs, fallback evidence and PO-03 non-interference
+remain to be proved.
+
+## Current runtime routing and browser-control correction
+
+The Claude browser-extension account is founder-reported token-capacity exhausted.
+Classify that route as unavailable for the current run, without inferring that the
+Claude model or SW platform is low quality and without making a quota refill the
+default next action.
+
+The browser replacement objective is a provider-independent control stack for the
+future open-weight command layer, not merely another branded assistant. On the
+current Chromebook, first qualify Microsoft's open-source Playwright Extension in
+a dedicated non-secret Chrome profile, controlled through a local open-source Goose
+client and one exact open-weight model. This route provides explicit tab selection
+and deterministic accessibility/DOM, screenshot, console and network evidence.
+Nanobrowser remains an autonomous open-weight comparator because its external
+Developer API/MCP control is not yet documented as available. BrowserMCP and Chrome
+DevTools MCP remain local bridge/verifier comparators. HARPA GRID is an optional
+separate cloud-to-Chromebook canary only if remote control is needed before the
+owned controller exists; it introduces a proprietary relay and a bearer key that
+controls the node. The Cursor Cloud agent URL alone does not prove access to a
+server running locally on the Chromebook.
+
+No extension is accepted by selection or installation. The canary must record exact
+extension, Node and Goose versions and permissions; model/provider alias without
+credentials; explicit selected tab group; bounded navigation; visual plus
+structured-page operation; console and network evidence; result retrieval; stable
+session locator or transcript path; stop/recovery behavior; and owner gates. The
+unsafe arbitrary-JavaScript tool is not enabled or called. Run only one browser
+operator per profile and exclude email, banking, password-manager, identity,
+payment and other secret-bearing tabs.
 
 ## Deferred disclosure factory workstream
 
