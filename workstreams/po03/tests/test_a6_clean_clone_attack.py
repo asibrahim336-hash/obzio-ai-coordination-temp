@@ -12,12 +12,12 @@ SPEC.loader.exec_module(ATTACK)
 
 
 class CleanCloneAttackTests(unittest.TestCase):
-    def test_fetched_a3_commit_probe_records_missing_transcript(self):
-        result = ATTACK.probe("FETCH_HEAD")
+    def test_fetched_a3_commit_probe_records_tracked_debris(self):
+        result = ATTACK.probe("origin/cursor/po03-a3-portable-runtime-ed20")
         self.assertEqual("ESCAPE_FOUND", result["status"])
         self.assertTrue(result["objects"]["runner"]["present"])
         self.assertTrue(result["objects"]["tests"]["present"])
-        self.assertFalse(result["objects"]["transcript"]["present"])
+        self.assertTrue(result["objects"]["transcript"]["present"])
         self.assertIn(
             "workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
             result["tracked_generated_files"],

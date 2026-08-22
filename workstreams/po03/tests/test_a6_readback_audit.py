@@ -24,6 +24,18 @@ class ReadbackAuditTests(unittest.TestCase):
         self.assertFalse(result["record_present_at_declared_result_commit"])
         self.assertEqual(1, result["discrepancy_count"])
 
+    def test_newly_published_a3_result_is_read_back(self):
+        result = AUDIT.audit_target(
+            "origin/cursor/po03-a3-portable-runtime-ed20:"
+            "workstreams/po03/control/units/a3/a3-u01.json"
+        )
+        self.assertEqual("AUDITED", result["status"])
+        self.assertEqual(3, result["artifacts_checked"])
+        self.assertTrue(all(check["hash_match"] for check in result["checks"]))
+        self.assertTrue(all(check["bytes_match"] for check in result["checks"]))
+        self.assertFalse(result["record_present_at_declared_result_commit"])
+        self.assertEqual(1, result["discrepancy_count"])
+
     def test_missing_result_is_not_invented(self):
         result = AUDIT.audit_target(
             "origin/cursor/po03-a1-custody-engine-ed20:"

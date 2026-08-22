@@ -1,23 +1,24 @@
 # Independent clean-clone attack
 
 Target: `cursor/po03-a3-portable-runtime-ed20` at immutable commit
-`789991708ac49d5093fe6a452a91e4aba2cf1b40`, fetched into `FETCH_HEAD`.
+`7e11ee5c77aed0549be83e1444aa12d041a413f9`, read from the remote-tracking
+ref without checkout.
 
 The executable probe was:
 
 ```text
-python3 -I workstreams/po03/review/luna/clean_clone_attack.py --ref FETCH_HEAD
+python3 -I workstreams/po03/review/luna/clean_clone_attack.py --ref origin/cursor/po03-a3-portable-runtime-ed20
 ```
 
 Observed result:
 
 ```json
 {
-  "missing_required_objects": ["transcript"],
+  "missing_required_objects": [],
   "objects": {
     "runner": {"present": true},
     "tests": {"present": true},
-    "transcript": {"present": false}
+    "transcript": {"present": true}
   },
   "runner_checks": {
     "runner_clones_remote": true,
@@ -37,8 +38,8 @@ Observed result:
 
 The probe executed `sh -n` against the runner bytes read directly from the
 immutable commit and checked the required runner, test, and transcript objects
-with `git cat-file`. It did not check out, merge, mutate, or write to the a3
-branch.
+with `git cat-file`. It also enumerated tracked generated files. It did not
+check out, merge, mutate, or write to the a3 branch.
 
 The independent test command was:
 
@@ -46,7 +47,8 @@ The independent test command was:
 python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a6_clean_clone_attack.py'
 ```
 
-It ran one test and passed. The missing transcript and tracked bytecode are
-defects against the a3-u01 acceptance artifact and the clean-clone claim. A
-full remote clone execution was not scored because the required committed
-transcript was absent at this immutable revision.
+It ran one test and passed. The tracked bytecode is an escape against the
+clean-clone claim: a fresh clone contains generated interpreter artifacts, so
+the claim is not a clean source-only reproduction. The runner, transcript and
+test objects were present at this later revision; the earlier probe’s missing
+transcript finding was superseded by this new immutable snapshot.
