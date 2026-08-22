@@ -142,7 +142,9 @@ def main() -> int:
     artifacts: list[dict[str, Any]] = []
     payload_bytes = 0
     for index, artifact in enumerate(manifest["artifacts"]):
-        declared_path = artifact["path"]
+        declared_path = artifact.get("path", artifact.get("content_uri"))
+        if not isinstance(declared_path, str) or not declared_path:
+            raise ValueError(f"manifest artifact lacks path: {artifact}")
         content_path = (
             declared_path
             if declared_path.startswith("workstreams/")
@@ -438,7 +440,10 @@ def main() -> int:
             ],
             "queue_time": "NOT_SUPPORTED",
             "active_time": "NOT_SUPPORTED",
-            "wall_time": producer_metrics.get("wall_time", "NOT_SUPPORTED"),
+            "wall_time": producer_metrics.get(
+                "wall_time",
+                producer_metrics.get("wall_time_seconds", "NOT_SUPPORTED"),
+            ),
             "review_time": "NOT_SUPPORTED",
             "token_data": "NOT_SUPPORTED",
             "cost_data": "NOT_SUPPORTED",
