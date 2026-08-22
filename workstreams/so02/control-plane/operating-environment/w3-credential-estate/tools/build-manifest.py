@@ -90,8 +90,17 @@ def cmd_readback(ref: str, write: bool = True) -> int:
     print(f"  remote commit: {remote_sha}")
     print(f"  local  commit: {local_sha}")
 
+    # MANIFEST.json and this record are both written AFTER the content commit
+    # this read-back verifies, so in write mode they are necessarily out of
+    # step with the remote and would report a false failure. They are excluded
+    # here and covered instead by the final `readback-check`, which runs after
+    # the last push and checks everything. In check mode nothing is excluded.
+    deferred = {MANIFEST_PATH, READBACK_PATH} if write else set()
+
     entries, mismatches, missing = [], [], []
     for rel in bundle_files(include_manifest=True):
+        if rel in deferred:
+            continue
         local_path = REPO / rel
         if not local_path.exists():
             continue
@@ -137,12 +146,15 @@ def cmd_readback(ref: str, write: bool = True) -> int:
         "files_missing_on_remote": missing,
         "files_with_digest_mismatch": mismatches,
         "verified": verified,
+        "deferred_from_this_check": sorted(deferred),
         "scope_note": (
-            "This record covers every bundle file present on the remote at the commit named "
-            "above. MANIFEST.json and this record are themselves written afterwards and "
-            "published in the following commit; an acceptor confirms those two with "
-            "`build-manifest.py verify` plus `git ls-remote`, which is the terminating step "
-            "of the chain."
+            "This record covers every content file published at the commit named above. "
+            "MANIFEST.json and this record are deliberately deferred: both are written "
+            "AFTER that commit and published in the next one, so comparing them here would "
+            "report a false failure rather than a real one. They are covered by the "
+            "terminating step — `build-manifest.py readback-check`, run after the final "
+            "push, which excludes nothing and re-hashes every file including these two — "
+            "together with `git ls-remote` confirming the published ref."
         ),
         "entries": entries,
     }
