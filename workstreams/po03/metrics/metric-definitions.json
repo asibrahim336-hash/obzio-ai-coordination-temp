@@ -1,0 +1,184 @@
+{
+  "protocol_version": "OBZIO-METRIC-DEFINITIONS-v1",
+  "definitions_id": "DEF-PO03-A7-OS-METRICS-20260822-v001",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "commission_revision": "v002",
+  "unit_id": "a7-u01",
+  "owner": "po03-worker-a7",
+  "purpose": "Freeze every metric this commission requires, its exact formula, its source fields and its availability class before any value is computed. No later unit (a7-u02..a7-u06) may introduce a metric not named here, and no metric named here may be computed with an invented value.",
+  "note_on_ordering": "This document is committed before workstreams/po03/metrics/work-unit-runs.jsonl, any computed report, or any probe result exists in this worktree's history. Git history on cursor/po03-a7-os-metrics-ed20 is the proof: this file's first commit precedes the first commit of every other file under workstreams/po03/metrics/.",
+  "data_sources": {
+    "ledger": {
+      "path": "workstreams/po03/control/events/ledger.jsonl",
+      "role": "append-only source of truth for every custody event; sole source for timestamps, states, actors, fence tokens and payload observations",
+      "row_schema": ["seq", "ts", "unit_id", "event", "obzio_state", "provider_state", "actor", "fence_token", "payload", "prev_sha256", "row_sha256"]
+    },
+    "dispatch_records": {
+      "path": "workstreams/po03/control/dispatch/*.json",
+      "role": "immutable per-unit input: exact model slug, function_id, cohort_id, owner, hashes, hypothesis and acceptance contract text",
+      "immutable": true
+    },
+    "work_unit_registry": {
+      "path": "workstreams/po03/control/work-unit-registry.jsonl",
+      "role": "coordinator-maintained projection of the ledger; used only for cross-check, never as a primary source, because it is itself derived from the ledger"
+    },
+    "recovery_state": {
+      "path": "workstreams/po03/control/recovery-state.json",
+      "role": "coordinator-maintained projection exposing orphaned_units, provider_completed_uncommitted and false_completions; used for cross-check against ledger-derived recomputation"
+    },
+    "path_ownership": {
+      "path": "workstreams/po03/control/path-ownership.json",
+      "role": "source for the cross_family_review_matrix used to attribute disagreement between a producer's model family and its reviewer's model family"
+    },
+    "wave_a_spec": {
+      "path": "workstreams/po03/control/wave-a-spec.json",
+      "role": "source for function_id-to-description mapping and declared_units/minimum_required_units counts"
+    },
+    "runtime_probe": {
+      "path": "workstreams/po03/metrics/probe_telemetry.py (this cohort's own tool, unit a7-u04)",
+      "role": "the only permitted source for any token or cost figure; if the probe finds no exposed telemetry, the metric is NOT_SUPPORTED and no other source may substitute a value"
+    }
+  },
+  "availability_classes": {
+    "AVAILABLE": "The underlying raw fields exist in a committed data source right now and the metric can be computed exactly, including as an honest zero or a 0/0-safe explicit ratio.",
+    "NOT_SUPPORTED": "This Cursor Cloud runtime does not expose the underlying raw data to this process by any means found during an explicit probe. The metric is recorded with the exact observed boundary and never estimated.",
+    "NOT_YET": "The underlying raw data would be available in principle but has not been produced by the owning cohort as of the ledger head this cohort last fetched. Distinct from NOT_SUPPORTED: nothing about the runtime prevents the value from appearing once the owning cohort commits and pushes it."
+  },
+  "row_level_fields": {
+    "unit_id": {"formula": "ledger row unit_id, cross-checked against dispatch filename", "source": ["ledger", "dispatch_records"], "availability": "AVAILABLE"},
+    "commission_id_and_parents": {"formula": "dispatch.commission_id, dispatch.wave_id, dispatch.cohort_id", "source": ["dispatch_records"], "availability": "AVAILABLE"},
+    "function_id": {"formula": "dispatch.function_id, resolved to its description via wave_a_spec.functions", "source": ["dispatch_records", "wave_a_spec"], "availability": "AVAILABLE"},
+    "runtime": {"formula": "constant 'Cursor Cloud' plus the owning branch from path-ownership.json; per-attempt provider_run_id from the RESULT_COMMITTED/PROVIDER_COMPLETED_UNCOMMITTED/FAILED_TERMINAL result document's attempt.provider_run_id when a result document exists", "source": ["path_ownership", "result documents"], "availability": "AVAILABLE"},
+    "exact_model_and_reasoning": {"formula": "dispatch.model, an exact slug already encoding the reasoning setting (e.g. claude-sonnet-5-thinking-high); never Auto", "source": ["dispatch_records"], "availability": "AVAILABLE"},
+    "prompt_source_context_hashes": {"formula": "dispatch.immutable_input_manifest_sha256, dispatch.acceptance_contract_sha256, dispatch.source_hashes", "source": ["dispatch_records"], "availability": "AVAILABLE"},
+    "token_and_cost_data": {"formula": "per-attempt input_tokens, output_tokens, reasoning_tokens, usd_cost as exposed by the runtime to this process", "source": ["runtime_probe"], "availability": "NOT_SUPPORTED", "observed_boundary": "See workstreams/po03/metrics/telemetry-probe-result.json (unit a7-u04) for the exact probe performed and its exact negative result."},
+    "queue_time_seconds": {"formula": "ts(first LEASED event for unit_id) - ts(first CREATED event for unit_id), in seconds", "source": ["ledger"], "availability": "AVAILABLE"},
+    "active_time_seconds": {"formula": "ts(terminal custody event in {RESULT_COMMITTED, PARENT_INGESTED, COMPLETED, FAILED_TERMINAL, CANCELLED, PROVIDER_COMPLETED_UNCOMMITTED} for unit_id) - ts(most recent LEASED event before that terminal event), in seconds; null while no terminal event exists yet", "source": ["ledger"], "availability": "AVAILABLE"},
+    "wall_time_seconds": {"formula": "ts(terminal custody event) - ts(first CREATED event), in seconds; null while no terminal event exists yet", "source": ["ledger"], "availability": "AVAILABLE"},
+    "review_time_seconds": {"formula": "ts(ACCEPTED or REJECTED event) - ts(COMPLETED event), in seconds; null while no review event exists yet", "source": ["ledger"], "availability": "AVAILABLE"},
+    "tools_and_effects": {"formula": "artifact_count and total_bytes from the most recent PARENT_INGESTED/COMPLETED payload; result_locator from the same payload", "source": ["ledger"], "availability": "AVAILABLE"},
+    "checkpoints": {"formula": "max(payload.checkpoint_seq) across CHECKPOINTED events for unit_id, else 0", "source": ["ledger"], "availability": "AVAILABLE"},
+    "retries": {"formula": "count(RETRY_SCHEDULED events for unit_id)", "source": ["ledger"], "availability": "AVAILABLE"},
+    "result_commit_and_readback": {"formula": "result_commit_id and result_locator from the PARENT_INGESTED payload (set only after the coordinator's byte-for-byte hash read-back in control_plane.ingest_result); presence of a PARENT_INGESTED row is itself the read-back proof because ingest_result raises before appending that row if read-back fails", "source": ["ledger"], "availability": "AVAILABLE"},
+    "first_pass_outcome": {"formula": "PASS if the unit reaches RESULT_COMMITTED (or a later committed state) with attempt fence_token == 1 and zero RETRY_SCHEDULED/FENCE_REJECTED events before it; FAIL if it reaches a terminal state only after a retry or fence rejection; NOT_YET_TERMINAL if no terminal state has been reached", "source": ["ledger"], "availability": "AVAILABLE"},
+    "independent_disposition": {"formula": "most recent of ACCEPTED/REJECTED for unit_id, else NOT_TESTED", "source": ["ledger"], "availability": "AVAILABLE"},
+    "defects_and_rework": {"formula": "count(REJECTED events) + count(RETRY_SCHEDULED events) for unit_id", "source": ["ledger"], "availability": "AVAILABLE"},
+    "founder_action": {"formula": "count of ledger rows for unit_id whose actor field equals 'founder' or whose payload names a founder relay; NONE_OBSERVED if zero, listed verbatim otherwise", "source": ["ledger"], "availability": "AVAILABLE"},
+    "provider_block": {"formula": "list of FENCE_REJECTED and LEASE_EXPIRED events for unit_id with their payload", "source": ["ledger"], "availability": "AVAILABLE"},
+    "collision_events": {"formula": "count of ledger rows for unit_id whose event is FENCE_REJECTED, or whose payload.reason mentions a path-ownership or allowlist violation; this control plane records ownership/allowlist rejections as raised ControlPlaneErrors at ingestion time rather than as a ledger row when ingestion is refused outright, so a zero count here means none were ever admitted to the ledger, not that none were ever attempted", "source": ["ledger"], "availability": "AVAILABLE", "boundary_note": "A rejected ingest_result() call that raises before append_event() leaves no ledger trace; this metric can only see collisions that were at least partially admitted (e.g. FENCE_REJECTED). A fully out-of-band collision attempt that never reached the control plane is NOT_SUPPORTED by ledger inspection alone."},
+    "recovery_events": {"formula": "list of LEASE_EXPIRED, RECOVERY_REQUIRED, DUPLICATE_IGNORED and FAULT_INJECTED events for unit_id", "source": ["ledger"], "availability": "AVAILABLE"}
+  },
+  "report_level_metrics": {
+    "independently_accepted_throughput": {
+      "formula": "count(units with independent_disposition == ACCEPTED) / count(units in wave_a_spec.units)",
+      "numerator_definition": "units whose most recent disposition event is ACCEPTED",
+      "denominator_definition": "declared_units from wave-a-spec.json (74 as of the frozen spec read for this definition)",
+      "availability": "AVAILABLE",
+      "zero_value_handling": "A numerator of 0 is reported as 0/denominator, not as NOT_SUPPORTED or NOT_YET; it is a true observation of the current ledger."
+    },
+    "first_pass_acceptance_rate": {
+      "formula": "count(units with first_pass_outcome == PASS) / count(units with a terminal state)",
+      "numerator_definition": "units reaching a committed terminal state on fence_token 1 with no retries or fence rejections",
+      "denominator_definition": "units that have reached any terminal state (RESULT_COMMITTED, PARENT_INGESTED, COMPLETED, FAILED_TERMINAL, CANCELLED, PROVIDER_COMPLETED_UNCOMMITTED)",
+      "availability": "AVAILABLE",
+      "zero_denominator_handling": "If no unit has reached a terminal state, the rate is reported as UNDEFINED_0_OF_0 with the denominator stated explicitly; it is never reported as 0 or 100%."
+    },
+    "escaped_defect_rate": {
+      "formula": "count(units ACCEPTED and later found defective, i.e. a subsequent REJECTED or a recorded defect payload after ACCEPTED) / count(units ACCEPTED)",
+      "numerator_definition": "ACCEPTED units with any ledger event after their ACCEPTED row indicating a defect",
+      "denominator_definition": "units with independent_disposition == ACCEPTED",
+      "availability": "AVAILABLE",
+      "zero_denominator_handling": "UNDEFINED_0_OF_0 if no unit has been ACCEPTED yet."
+    },
+    "false_green_rate": {
+      "formula": "producer_attack_result.false_green_count / producer_attack_result.examined_count in workstreams/po03/review/luna/false-green-result.json (unit a6-u03), once that field is itself scored rather than NOT_YET",
+      "numerator_definition": "false_green_count against real producer output, not against a6's own retained self-test fixture",
+      "denominator_definition": "examined_count against real producer output, not against a6's own retained self-test fixture",
+      "availability": "NOT_YET",
+      "boundary": "As of this cohort's last fetch, workstreams/po03/review/luna/false-green-result.json exists and proves the detector against a retained fixture (mutation_count=2, false_green_count=1), but its own producer_attack_result field is \"NOT_YET\" because no a1 producer branch was available to attack at scoring time; reporting the fixture's numbers as the commission metric would misrepresent a detector self-test as a production measurement."
+    },
+    "cycle_time": {
+      "formula": "median and mean of wall_time_seconds across units with a non-null wall_time_seconds",
+      "numerator_definition": "sum of wall_time_seconds over units with a terminal state",
+      "denominator_definition": "count of units with a terminal state",
+      "availability": "AVAILABLE",
+      "zero_denominator_handling": "UNDEFINED_0_OF_0 if no unit has reached a terminal state."
+    },
+    "recovery_time": {
+      "formula": "for each LEASE_EXPIRED or RECOVERY_REQUIRED event, ts(next LEASED event for the same unit_id with a strictly greater fence_token) - ts(the expiry/recovery event); mean over all such pairs",
+      "numerator_definition": "sum of recovery gap seconds over all expiry/recovery events that were followed by a re-lease",
+      "denominator_definition": "count of expiry/recovery events followed by a re-lease",
+      "availability": "AVAILABLE",
+      "zero_denominator_handling": "UNDEFINED_0_OF_0 if no LEASE_EXPIRED or RECOVERY_REQUIRED event has occurred."
+    },
+    "coordination_overhead_ratio": {
+      "formula": "sum(queue_time_seconds + review_time_seconds) / sum(wall_time_seconds) across units with a non-null wall_time_seconds",
+      "numerator_definition": "total queue time plus total review time",
+      "denominator_definition": "total wall time",
+      "availability": "AVAILABLE",
+      "zero_denominator_handling": "UNDEFINED_0_OF_0 if no unit has a non-null wall_time_seconds."
+    },
+    "founder_interventions": {
+      "formula": "count(ledger rows with actor == 'founder') / count(all ledger rows)",
+      "numerator_definition": "ledger rows whose actor field is exactly 'founder'",
+      "denominator_definition": "total ledger row count at measurement time",
+      "availability": "AVAILABLE",
+      "zero_value_handling": "A numerator of 0 is a true observation, reported as 0/denominator."
+    },
+    "context_waste": {
+      "formula": "(context bytes admitted to a unit's working context) - (context bytes actually referenced in its committed artifacts), summed and divided by context bytes admitted",
+      "numerator_definition": "admitted-but-unreferenced context bytes",
+      "denominator_definition": "total admitted context bytes",
+      "availability": "NOT_SUPPORTED",
+      "observed_boundary": "Neither the ledger schema nor any dispatch/result document field records context admission size or per-file context reference counts; this process has no runtime API exposing prompt/context byte counts. No proxy or estimate is substituted."
+    },
+    "orphan_duplicate_collision_falsecomplete_counts": {
+      "formula": "orphan_count = len(recovery_state.orphaned_units); duplicate_count = count(ledger event == DUPLICATE_IGNORED); collision_count = count(ledger event == FENCE_REJECTED); false_complete_count = len(recovery_state.false_completions); all recomputed independently from the ledger rather than trusted from recovery-state.json, with recovery-state.json used only as a cross-check",
+      "numerator_definition": "see formula; each is an absolute count, not a rate",
+      "denominator_definition": "not applicable; these are reported as counts against the stated ledger row count and unit total",
+      "availability": "AVAILABLE"
+    },
+    "research_to_reproduction_conversion": {
+      "formula": "count(rows in research/reproduction-ledger.jsonl) / count(rows in research/hypotheses.jsonl)",
+      "numerator_definition": "reproduction rows",
+      "denominator_definition": "hypothesis rows",
+      "availability": "NOT_YET",
+      "boundary": "workstreams/po03/research/ (owned by po03-worker-a5) does not exist yet on the ledger head and branch state this cohort last fetched."
+    },
+    "lesson_to_live_change_conversion": {
+      "formula": "count(lessons with a live mechanism change disposition in {RETAIN, SUPERSEDE, RETEST} and a recurrence test) / count(lessons proposed)",
+      "numerator_definition": "lessons that produced a tested live change",
+      "denominator_definition": "lessons proposed, from a5/a8 evidence",
+      "availability": "NOT_YET",
+      "boundary": "The lesson lineage tables are owned by po03-worker-a5 (research conversion) and po03-worker-a8 (successor lessons); neither exists yet on the fetched ledger head."
+    },
+    "per_model_contribution": {
+      "formula": "for each exact model slug in dispatch records: count(units dispatched), count(units reaching RESULT_COMMITTED or later), count(units ACCEPTED), count(units REJECTED)",
+      "numerator_definition": "per-slug counts as listed",
+      "denominator_definition": "per-slug count of units dispatched to that slug",
+      "availability": "AVAILABLE",
+      "auto_exclusion": "Any dispatch record whose model field is 'inherit' or otherwise not an exact frontier slug is excluded from per-model attribution and listed separately as EXCLUDED_NOT_EXACT_SLUG; none of the 74 wave-a-spec units currently use such a value, so this exclusion is expected to be empty, and the tool asserts that explicitly rather than assuming it."
+    },
+    "per_model_disagreement": {
+      "formula": "for each (producer_model_family, reviewer_model_family) pair implied by path-ownership.cross_family_review_matrix: count(REJECTED dispositions) / count(all dispositions) issued by that reviewer against that producer's units",
+      "numerator_definition": "REJECTED dispositions for the pair",
+      "denominator_definition": "all dispositions (ACCEPTED + REJECTED) for the pair",
+      "availability": "AVAILABLE",
+      "zero_denominator_handling": "UNDEFINED_0_OF_0 per pair until that reviewer has issued at least one disposition against that producer's units."
+    },
+    "successor_lift": {
+      "formula": "pass_rate(G2) - pass_rate(G1) on the public and holdout suites, per generation-comparison.json",
+      "numerator_definition": "G2 pass_rate minus G1 pass_rate on identical suites",
+      "denominator_definition": "not a ratio; reported as an absolute pass_rate delta per preregistered metric, alongside PASS/NOT_YET per the wave-compounding no-regression rule",
+      "availability": "NOT_YET",
+      "boundary": "G0/G1/G2 measurements are owned by po03-worker-a8 (branch cursor/po03-a8-successor-generations-ed20). As of this cohort's last fetch that branch exists and G0 and G1 have reported public-suite scores (G0 pass_rate=0.0968, G1 pass_rate=0.6774); G2 has not reported and neither generation has a holdout-suite score yet, so the metric stays NOT_YET pending all three generations on both suites. Full detail in workstreams/po03/metrics/generation-comparison.json."
+    }
+  },
+  "byte_stability_contract": {
+    "rule": "Every tool under workstreams/po03/metrics/ that emits a committed artifact must produce byte-identical output on regeneration against an unchanged ledger, except for fields explicitly enumerated below.",
+    "enumerated_timestamp_fields": [
+      "generated_at (top-level generation timestamp on every emitted report)",
+      "probe_performed_at (in telemetry-probe-result.json)"
+    ]
+  }
+}
