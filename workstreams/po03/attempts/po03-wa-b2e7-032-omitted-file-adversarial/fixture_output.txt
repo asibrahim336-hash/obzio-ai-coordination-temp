@@ -1,0 +1,39 @@
+# command: python3 -I workstreams/po03/attempts/po03-wa-b2e7-032-omitted-file-adversarial/omission_fixture.py
+# python: Python 3.12.3 (main, Mar 23 2026, 19:04:32) [GCC 13.3.0]
+
+KNOWN_GAP: emitter-omits-payload-named-like-a-generated-document: committed 5 real files under the slot, manifest covered 3, omitted 2: nested/manifest.json, nested/result.json
+KNOWN_GAP: artifact-committed-after-the-manifest-escapes-per-manifest-audit: a real file added to the slot after the artifact commit is invisible to an auditor that enumerates the commit the manifest names
+OK       emitter-omits-payload-named-like-a-generated-document target=emit_result.py (generation) expected_exit=0 actual_exit=0 marker=omitted=manifest.json,result.json
+         committed 5 real files under the slot, manifest covered 3, omitted 2: nested/manifest.json, nested/result.json
+OK       auditor-catches-the-emitter-omission target=coverage_assert.py (verification) expected_exit=1 actual_exit=1 marker=UNCOVERED_FILE x2
+         the auditor reported 2 uncovered file(s) the emitter had reported success over
+OK       residual-check-catches-the-smuggled-payloads target=residual_coverage.py (verification) expected_exit=1 actual_exit=1 marker=RESIDUAL_FILE x2
+         the residual check reports the basename-collided payloads as bytes no manifest ever claimed
+OK       emitter-refuses-an-empty-artifact target=emit_result.py (generation) expected_exit=1 actual_exit=1 marker=refusing to count empty artifact
+         po03-omission-probe: refusing to count empty artifact workstreams/po03/attempts/po03-omission-probe/hollow.txt
+OK       emitter-refuses-a-slot-with-no-artifacts target=emit_result.py (generation) expected_exit=1 actual_exit=1 marker=contains no artifacts
+         po03-omission-probe: commit 7fcebe38fea3a958588f193e31e99230446aca3e contains no artifacts under workstreams/po03/attempts/po03-omission-probe; a counted unit must leave durable bytes
+OK       control-complete-manifest target=coverage_assert.py (verification) expected_exit=0 actual_exit=0 marker=no errors
+         the untouched manifest covers all 3 artifacts
+OK       entry-omitted-totals-left-stale target=coverage_assert.py (verification) expected_exit=1 actual_exit=1 marker=COUNT_DISAGREEMENT
+         dropped FINDINGS.md, left the totals untouched
+OK       entry-omitted-count-adjusted target=coverage_assert.py (verification) expected_exit=1 actual_exit=1 marker=TOTAL_BYTES_DISAGREEMENT
+         dropped FINDINGS.md and decremented artifact_count
+OK       entry-omitted-manifest-fully-self-consistent target=coverage_assert.py (verification) expected_exit=1 actual_exit=1 marker=UNCOVERED_FILE
+         dropped FINDINGS.md, decremented the count and subtracted its 23 bytes so the manifest agrees with itself
+OK       every-entry-omitted target=coverage_assert.py (verification) expected_exit=1 actual_exit=1 marker=NO_ARTIFACTS
+         a self-consistent manifest claiming the slot holds nothing
+OK       artifact-committed-after-the-manifest-escapes-per-manifest-audit target=coverage_assert.py (verification) expected_exit=0 actual_exit=0 marker=no errors
+         a real file added to the slot after the artifact commit is invisible to an auditor that enumerates the commit the manifest names
+OK       residual-check-catches-the-late-artifact target=residual_coverage.py (verification) expected_exit=1 actual_exit=1 marker=RESIDUAL_FILE
+         enumerating the slot at the branch tip and subtracting every manifest claim surfaces the late file the per-manifest audit could not see
+OK       control-generated-manifest-verifies target=manifest_tool.py verify expected_exit=0 actual_exit=0 marker=verified
+         the manifest as generated verifies against its source
+OK       line-omitted-trailer-left-stale target=manifest_tool.py verify expected_exit=1 actual_exit=1 marker=MANIFEST_VIOLATION
+         removed one entry and left TOTAL claiming three
+OK       line-omitted-trailer-adjusted-to-match target=manifest_tool.py verify expected_exit=1 actual_exit=1 marker=MANIFEST_VIOLATION
+         removed one entry and rewrote the trailer to 'TOTAL 2 35', so the manifest is internally consistent
+OK       every-line-omitted target=manifest_tool.py verify expected_exit=1 actual_exit=1 marker=MANIFEST_VIOLATION
+         a coherent manifest claiming the source is empty
+PO03_OMISSION_PASS scenarios=16 rejecting=12 controls=2 generation_gaps=2
+FIXTURE_EXIT=0
