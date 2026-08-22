@@ -1,0 +1,101 @@
+{
+  "findings_id": "FIND-PO03-A1-OUT-OF-SCOPE-20260822-v001",
+  "worker_id": "po03-worker-a1",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "commission_revision": "v002",
+  "branch": "cursor/po03-a1-custody-engine-ed20",
+  "rule": "Cohort a1 owns workstreams/po03/engine/, workstreams/po03/control/units/a1/ and the workstreams/po03/tests/test_a1_ prefix. Anything observed outside those prefixes is handed over here as an integration-ready description with a reproducing test, and is never repaired in place.",
+  "decision_changed": [],
+  "strategy_restarted": false,
+  "findings": [
+    {
+      "finding_id": "FIND-A1-01",
+      "subject": "workstreams/po03/tools/control_plane.py::project_units",
+      "owner": "coordinator",
+      "severity": "MEDIUM",
+      "state": "REPORTED_NOT_REPAIRED",
+      "discovered_by_unit": "a1-u05",
+      "reproducing_test": "workstreams/po03/tests/test_a1_projection.py::ControlPlaneAgreementTests::test_the_only_divergence_is_heartbeat_lease_renewal",
+      "observation": "project_units has no HEARTBEAT case, so a unit's projected lease keeps the expires_at recorded at grant time even after the holder has renewed the lease. The engine's projection applies the renewal. Across 40 randomised histories containing HEARTBEAT rows this is the only field on which the two readers disagree; every custody field agrees exactly.",
+      "consequence": "control_plane.scan_recovery decides expired_leases from lease.expires_at. A live worker renewing on schedule past its original TTL is therefore reported as an expired lease and RECOVERY_REQUIRED, which can evict a healthy holder and inflate recovery counts. It cannot cause false completion: fencing still refuses the evicted holder, and the re-granted holder resumes from checkpoint.",
+      "integration_ready_change": "In project_units, handle event == 'HEARTBEAT' by replacing unit['lease']['expires_at'] with payload['expires_at'] when a lease is held, and continue without advancing obzio_state. HEARTBEAT would also need adding to EVENT_KINDS for the plane to append such rows itself; it is not required for the plane to read them, since verify_chain and project_units do not filter on kind.",
+      "not_applied_because": "workstreams/po03/tools/control_plane.py is coordinator-owned. Rule 9 of the repository operator instructions and the commission collision boundary reserve shared PO-03 control paths to the integration controller.",
+      "engine_disposition": "RETAIN the renewing semantics in workstreams/po03/engine/projection.py; a1-u04 resume evidence depends on heartbeat renewal being visible to the lease projection."
+    },
+    {
+      "finding_id": "FIND-A1-02",
+      "subject": "workstreams/po03/tools/control_plane.py ledger durability",
+      "owner": "coordinator",
+      "severity": "LOW",
+      "state": "REPORTED_NOT_REPAIRED",
+      "discovered_by_unit": "a1-u01",
+      "reproducing_test": "workstreams/po03/tests/test_a1_ledger_chain.py::ControlPlaneInteropTests",
+      "observation": "control_plane.verify_chain checks seq monotonicity, prev linkage and per-row digests, which detects every tamper class that leaves a witness later in the file. It keeps no sealed head anchor, so tail truncation, suffix rewrite with recomputed digests, and a well-formed forged append all leave a chain that verifies. The engine campaign reproduces this: with the anchor rule removed, TRUNCATE_TAIL and REWRITE_SUFFIX go undetected while every other class is still caught.",
+      "consequence": "A ledger is the only source of truth for result custody. Without an anchor, a lost or trimmed tail is indistinguishable from a shorter history, so a committed result could disappear without any verifier objecting.",
+      "integration_ready_change": "Adopt the engine's sealed anchor: write <ledger>.anchor.json with committed_seq, committed_head, pending_seq and pending_head using a write-ahead intent before the append and a seal after it, then compare row count and head digest against it during verify. workstreams/po03/engine/ledger.py::HashChainedLedger is byte-compatible with the plane's row format, so the plane can adopt it without rewriting existing rows. Alternatively pass the head digest from an immutable git commit into verify as an external anchor.",
+      "not_applied_because": "workstreams/po03/tools/control_plane.py and workstreams/po03/tests/test_control_plane.py are coordinator-owned.",
+      "engine_disposition": "RETAIN. The engine verifier accepts plane-written ledgers with require_anchor=False, so adoption is optional and non-breaking."
+    },
+    {
+      "finding_id": "FIND-A1-03",
+      "subject": "workstreams/po03/tools/make_result.py attempt/checkpoint derivation",
+      "owner": "coordinator",
+      "severity": "LOW",
+      "state": "REPORTED_NOT_REPAIRED",
+      "discovered_by_unit": "a1-u04",
+      "reproducing_test": "NOT_YET — observed by reading the tool, not by a failing assertion",
+      "observation": "make_result derives attempt.checkpoint_seq as len(artifacts) and attempt.lease_id/fence_token from a command-line default rather than from the ledger. The emitted values are therefore well-formed and schema-valid but are not the unit's real lease, fence token or checkpoint progress.",
+      "consequence": "No false completion follows: the coordinator re-derives custody from its own ledger at ingestion and compares the fence token it issued. The cost is that a result document's attempt block is not usable as recovery evidence on its own.",
+      "integration_ready_change": "Derive attempt.fence_token, attempt.lease_id and attempt.checkpoint_seq from the ledger projection for the unit, using workstreams/po03/engine/lease.py::LeaseManager.resume_point and current_lease, and fail rather than default when the unit has no lease.",
+      "not_applied_because": "workstreams/po03/tools/make_result.py is coordinator-owned.",
+      "engine_disposition": "NOT_YET. The a1 results in this branch were emitted with the tool as it stands, so their attempt blocks carry the tool's derived values."
+    },
+    {
+      "finding_id": "FIND-A1-04",
+      "subject": "workstreams/po03/tools/make_result.py and validate_contracts.py — a pinned result can silently come to describe an ancestor",
+      "owner": "coordinator",
+      "severity": "MEDIUM",
+      "state": "REPORTED_NOT_REPAIRED",
+      "discovered_by_unit": "a1-u01",
+      "reproducing_test": "Reproduced by direct observation on this branch, not by a unit assertion: after commit 6fc8376 emitted a1-u01.json pinning engine/ledger.py at sha256 6e79c60c, commit 120dfed added set_fault_hook to that file. a1-u01.json remained VALID and its content_uri still resolved byte-identically, because the URI names the immutable commit 6fc8376 rather than the branch tip.",
+      "observation": "make_result pins each artifact as git:<branch>@<commit>:<path> and validate_contracts checks the document's internal consistency. Neither compares the pinned bytes against the branch tip. So a result stays VALID and reads back byte-identically forever while the code it makes a claim about has moved on. The staleness is invisible to every existing check.",
+      "consequence": "This is the false-green shape the commission cares about, arriving by a route no validator watches. An accepted a1-u01 would attest 100% tamper detection for bytes that are no longer the bytes the engine runs. Nothing is forged and no hash is wrong; the claim simply stops being about the shipped artefact. The same applies to any unit whose artefacts include a module a later unit extends, which on this branch is most of engine/.",
+      "integration_ready_change": "At ingestion, for every artifact in a result document, compare the pinned sha256 against the blob at the branch tip and refuse or re-request the unit when they differ. The check is three lines against git cat-file and needs no new state. A stricter variant belongs in validate_contracts as a repository-aware mode, kept separate from the schema check so offline validation still works.",
+      "not_applied_because": "Both tools are coordinator-owned.",
+      "engine_disposition": "APPLIED WITHIN OWNED PATHS. Every a1 result on this branch was audited against the branch tip and a1-u01 was re-emitted after re-running the tamper campaign on the current ledger.py, so all 8 documents now pin tip bytes. This was a manual audit; the durable fix is the coordinator-side check above."
+    },
+    {
+      "finding_id": "FIND-A1-05",
+      "subject": "workstreams/po03/tools/control_plane.py::cmd_complete — confirmation, not a defect",
+      "owner": "coordinator",
+      "severity": "NONE",
+      "state": "CONFIRMED_CORRECT",
+      "discovered_by_unit": "a1-u08",
+      "reproducing_test": "workstreams/po03/tests/test_a1_completion_authority.py::ControlPlaneCompletionTests",
+      "observation": "Driven over all fifteen states through a private module instance on scratch state, cmd_complete refused completion from all thirteen states other than PARENT_INGESTED, refused PARENT_INGESTED without a durable result commit, refused a PROVIDER_COMPLETED_UNCOMMITTED unit, admitted exactly one lawful completion with actor 'coordinator', and cmd_review refused a producer reviewing its own unit. scan_recovery reported no false completions in any case. validate_contracts.RESULT_STATES equals the engine's fifteen states exactly, and both equal the contract schema enum.",
+      "consequence": "The engine's state machine and the coordinator's live plane agree on where completion authority sits, so a1-u08's structural claim is not confined to engine-owned code. This finding is recorded so the agreement is evidenced rather than assumed.",
+      "integration_ready_change": "None required.",
+      "not_applied_because": "Nothing to apply.",
+      "engine_disposition": "RETAIN."
+    },
+    {
+      "finding_id": "FIND-A1-06",
+      "subject": "Compiled bytecode is tracked at workstreams/po03/tests/__pycache__/ and workstreams/po03/tools/__pycache__/",
+      "owner": "coordinator",
+      "severity": "LOW",
+      "state": "REPORTED_NOT_REPAIRED",
+      "discovered_by_unit": "a1-u08",
+      "reproducing_test": "git ls-files 'workstreams/po03/**/__pycache__/*' lists test_validate_contracts.cpython-312.pyc and validate_contracts.cpython-312.pyc. Running the gate suite once leaves both reported as modified by git status.",
+      "observation": "Two .pyc files are committed inside coordinator-owned directories. Any cohort that runs the gate suite recompiles them, so a clean checkout becomes dirty in paths that cohort does not own, without touching a single source file.",
+      "consequence": "A cohort using 'git add -A' or 'git commit -a' would commit compiled bytecode into coordinator-owned paths and trip the ownership check at ingestion, or worse, land a stale .pyc that shadows a later source change on a runner with a warm cache. It is a collision and portability hazard rather than a custody one.",
+      "integration_ready_change": "git rm --cached the two tracked .pyc files and add a __pycache__/ and *.pyc entry to the repository or workstreams/po03 .gitignore.",
+      "not_applied_because": "Both files and any workstreams/po03-level .gitignore sit outside cohort a1's owned prefixes.",
+      "engine_disposition": "AVOIDED WITHIN OWNED PATHS. Cohort a1 committed only explicit path lists, never 'git add -A', and restored both files with git checkout after the final gate run, so this branch carries no bytecode change. workstreams/po03/engine/.gitignore already excludes the engine's own __pycache__ and scratch space."
+    }
+  ],
+  "limitations": [
+    "These are observations about coordinator-owned code reached through private module instances pointed at scratch state. No coordinator-owned file was written, and no PO-01 branch, path or artefact was read or touched by any of them.",
+    "FIND-A1-03 is a reading of the tool rather than a reproduced failure, and is recorded as NOT_YET rather than as a demonstrated defect.",
+    "FIND-A1-04 was found by auditing this branch's own result documents rather than by a test, and the repair inside owned paths was a manual re-emission. Cohort a1 cannot add the durable check because it lives in coordinator-owned tooling."
+  ]
+}

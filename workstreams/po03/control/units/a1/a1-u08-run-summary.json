@@ -1,0 +1,42 @@
+{
+  "assertion": "Every attempt to reach COMPLETED without a prior verified PARENT_INGESTED event, or with a non-coordinator actor, is rejected; an exhaustive state-transition test covers all fifteen Obzio states.",
+  "command": [
+    "python3",
+    "-I",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "workstreams/po03/tests",
+    "-p",
+    "test_a1_completion_authority.py",
+    "-v"
+  ],
+  "command_string": "python3 -I -m unittest discover -s workstreams/po03/tests -p test_a1_completion_authority.py -v",
+  "cwd": "<repository root>",
+  "exit_code": 0,
+  "recorded_at": "2026-08-22T07:51:29Z",
+  "runtime_binding": {
+    "isolated_mode": true,
+    "platform": "Linux-6.12.94+-x86_64-with-glibc2.39",
+    "python_implementation": "CPython",
+    "python_version": "3.12.3",
+    "third_party_imports": []
+  },
+  "stderr": {
+    "bytes": 6898,
+    "sha256": "c2da296af913e5bc15736fd1cecc0b64d40884adbe8f1c6189d7b4d2361c2d2a",
+    "text": "test_a_reviewer_is_not_a_coordinator (test_a1_completion_authority.AuthorityTests.test_a_reviewer_is_not_a_coordinator) ... ok\ntest_a_worker_cannot_become_coordinator_by_naming_itself (test_a1_completion_authority.AuthorityTests.test_a_worker_cannot_become_coordinator_by_naming_itself) ... ok\ntest_the_coordinator_cannot_also_be_a_reviewer (test_a1_completion_authority.AuthorityTests.test_the_coordinator_cannot_also_be_a_reviewer) ... ok\ntest_a_lawful_completion_is_admitted (test_a1_completion_authority.ControlPlaneCompletionTests.test_a_lawful_completion_is_admitted) ... ok\ntest_completion_is_refused_from_every_state_but_parent_ingested (test_a1_completion_authority.ControlPlaneCompletionTests.test_completion_is_refused_from_every_state_but_parent_ingested) ... ok\ntest_parent_ingested_without_a_durable_commit_cannot_complete (test_a1_completion_authority.ControlPlaneCompletionTests.test_parent_ingested_without_a_durable_commit_cannot_complete) ... ok\ntest_provider_completion_without_a_commit_is_never_obzio_completion (test_a1_completion_authority.ControlPlaneCompletionTests.test_provider_completion_without_a_commit_is_never_obzio_completion) ... ok\ntest_the_producer_cannot_review_its_own_completed_unit (test_a1_completion_authority.ControlPlaneCompletionTests.test_the_producer_cannot_review_its_own_completed_unit) ... ok\ntest_every_completing_edge_comes_from_the_coordinator_after_ingestion (test_a1_completion_authority.ExhaustiveReachabilityTests.test_every_completing_edge_comes_from_the_coordinator_after_ingestion) ... ok\ntest_no_reachable_configuration_is_completed_without_ingestion (test_a1_completion_authority.ExhaustiveReachabilityTests.test_no_reachable_configuration_is_completed_without_ingestion) ... ok\ntest_one_planted_illegal_edge_is_not_enough_to_reach_completion (test_a1_completion_authority.ExhaustiveReachabilityTests.test_one_planted_illegal_edge_is_not_enough_to_reach_completion)\nDefence in depth: the predecessor guard refuses the edge on its own. ... ok\ntest_the_search_catches_an_illegal_edge_once_the_guard_goes_too (test_a1_completion_authority.ExhaustiveReachabilityTests.test_the_search_catches_an_illegal_edge_once_the_guard_goes_too)\nNegative control: with the relation and its guard both weakened the ... ok\ntest_the_search_catches_completion_without_ingestion_when_the_fact_guard_goes (test_a1_completion_authority.ExhaustiveReachabilityTests.test_the_search_catches_completion_without_ingestion_when_the_fact_guard_goes)\nNegative control for the custody-fact assertion, which is separate: ... ok\ntest_the_search_space_is_fully_explored (test_a1_completion_authority.ExhaustiveReachabilityTests.test_the_search_space_is_fully_explored) ... ok\ntest_the_substituted_evaluator_matches_the_real_one (test_a1_completion_authority.ExhaustiveReachabilityTests.test_the_substituted_evaluator_matches_the_real_one)\nThe controls below are only meaningful if the stand-in is faithful. ... ok\ntest_completed_has_exactly_one_predecessor_and_one_role (test_a1_completion_authority.ExhaustiveTransitionTableTests.test_completed_has_exactly_one_predecessor_and_one_role) ... ok\ntest_every_triple_agrees_with_the_declared_relation (test_a1_completion_authority.ExhaustiveTransitionTableTests.test_every_triple_agrees_with_the_declared_relation) ... ok\ntest_no_role_may_leave_a_terminal_state (test_a1_completion_authority.ExhaustiveTransitionTableTests.test_no_role_may_leave_a_terminal_state) ... ok\ntest_result_committed_is_the_strongest_state_a_worker_can_write (test_a1_completion_authority.ExhaustiveTransitionTableTests.test_result_committed_is_the_strongest_state_a_worker_can_write) ... ok\ntest_the_worker_role_has_no_edge_past_result_committed (test_a1_completion_authority.ExhaustiveTransitionTableTests.test_the_worker_role_has_no_edge_past_result_committed) ... ok\ntest_acceptance_is_not_a_custody_state (test_a1_completion_authority.GuardTests.test_acceptance_is_not_a_custody_state) ... ok\ntest_completion_requires_a_durable_commit (test_a1_completion_authority.GuardTests.test_completion_requires_a_durable_commit) ... ok\ntest_completion_requires_recorded_ingestion (test_a1_completion_authority.GuardTests.test_completion_requires_recorded_ingestion) ... ok\ntest_ingestion_requires_the_coordinators_own_readback (test_a1_completion_authority.GuardTests.test_ingestion_requires_the_coordinators_own_readback) ... ok\ntest_result_commit_requires_producer_verification (test_a1_completion_authority.GuardTests.test_result_commit_requires_producer_verification) ... ok\ntest_a_refused_transition_writes_nothing (test_a1_completion_authority.LiveMachineTests.test_a_refused_transition_writes_nothing) ... ok\ntest_no_actor_but_the_coordinator_can_complete (test_a1_completion_authority.LiveMachineTests.test_no_actor_but_the_coordinator_can_complete) ... ok\ntest_no_state_but_parent_ingested_can_transition_to_completed (test_a1_completion_authority.LiveMachineTests.test_no_state_but_parent_ingested_can_transition_to_completed) ... ok\ntest_the_coordinator_completes_only_after_recorded_ingestion (test_a1_completion_authority.LiveMachineTests.test_the_coordinator_completes_only_after_recorded_ingestion) ... ok\ntest_the_full_lawful_sequence_records_every_state (test_a1_completion_authority.LiveMachineTests.test_the_full_lawful_sequence_records_every_state) ... ok\ntest_every_path_to_completed_passes_through_the_whole_custody_chain (test_a1_completion_authority.SimplePathTests.test_every_path_to_completed_passes_through_the_whole_custody_chain) ... ok\ntest_no_path_reaches_completed_from_provider_completed_uncommitted (test_a1_completion_authority.SimplePathTests.test_no_path_reaches_completed_from_provider_completed_uncommitted) ... ok\ntest_every_state_appears_in_the_transition_relation (test_a1_completion_authority.StateInventoryTests.test_every_state_appears_in_the_transition_relation) ... ok\ntest_fifteen_states (test_a1_completion_authority.StateInventoryTests.test_fifteen_states) ... ok\ntest_states_match_the_coordinator_validator (test_a1_completion_authority.StateInventoryTests.test_states_match_the_coordinator_validator) ... ok\ntest_states_match_the_published_contract_schema (test_a1_completion_authority.StateInventoryTests.test_states_match_the_published_contract_schema) ... ok\ntest_a_producer_cannot_accept_its_own_completed_result (test_a1_completion_authority.WorkerAuthoredDocumentTests.test_a_producer_cannot_accept_its_own_completed_result) ... ok\ntest_a_worker_authored_completed_document_is_rejected (test_a1_completion_authority.WorkerAuthoredDocumentTests.test_a_worker_authored_completed_document_is_rejected) ... ok\ntest_the_strongest_state_a_worker_may_emit_is_result_committed (test_a1_completion_authority.WorkerAuthoredDocumentTests.test_the_strongest_state_a_worker_may_emit_is_result_committed) ... ok\n\n----------------------------------------------------------------------\nRan 39 tests in 0.116s\n\nOK\n",
+    "truncated": false
+  },
+  "stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "text": "",
+    "truncated": false
+  },
+  "unit_id": "a1-u08",
+  "verdict": "PASS",
+  "wall_seconds": 0.381,
+  "worker_id": "po03-worker-a1"
+}

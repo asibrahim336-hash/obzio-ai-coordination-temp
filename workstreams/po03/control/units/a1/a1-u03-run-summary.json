@@ -1,0 +1,42 @@
+{
+  "assertion": "after re-grant, the older fence token is refused and durably recorded as FENCE_REJECTED while the current holder commits; the coordinator's live ingest_result refuses the same stale commit",
+  "command": [
+    "python3",
+    "-I",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "workstreams/po03/tests",
+    "-p",
+    "test_a1_fencing.py",
+    "-v"
+  ],
+  "command_string": "python3 -I -m unittest discover -s workstreams/po03/tests -p test_a1_fencing.py -v",
+  "cwd": "<repository root>",
+  "exit_code": 0,
+  "recorded_at": "2026-08-22T07:29:31Z",
+  "runtime_binding": {
+    "isolated_mode": true,
+    "platform": "Linux-6.12.94+-x86_64-with-glibc2.39",
+    "python_implementation": "CPython",
+    "python_version": "3.12.3",
+    "third_party_imports": []
+  },
+  "stderr": {
+    "bytes": 1993,
+    "sha256": "6b5cc31898ec2b295b7a844452cd86e444e3bb10c7f9fca7814772e43a63314b",
+    "text": "test_coordinator_ingestion_refuses_a_stale_fence_token (test_a1_fencing.ControlPlaneFenceTests.test_coordinator_ingestion_refuses_a_stale_fence_token) ... ok\ntest_duplicate_ingestion_of_the_same_result_is_a_harmless_no_op (test_a1_fencing.ControlPlaneFenceTests.test_duplicate_ingestion_of_the_same_result_is_a_harmless_no_op) ... ok\ntest_engine_verifier_agrees_the_plane_ledger_is_intact (test_a1_fencing.ControlPlaneFenceTests.test_engine_verifier_agrees_the_plane_ledger_is_intact) ... ok\ntest_a_token_that_was_never_issued_is_refused (test_a1_fencing.FenceTokenTests.test_a_token_that_was_never_issued_is_refused) ... ok\ntest_checkpoints_are_monotonic (test_a1_fencing.FenceTokenTests.test_checkpoints_are_monotonic) ... ok\ntest_current_holder_commits_successfully (test_a1_fencing.FenceTokenTests.test_current_holder_commits_successfully) ... ok\ntest_every_fenced_operation_refuses_a_stale_holder (test_a1_fencing.FenceTokenTests.test_every_fenced_operation_refuses_a_stale_holder) ... ok\ntest_evicted_holder_cannot_commit_and_the_rejection_is_durable (test_a1_fencing.FenceTokenTests.test_evicted_holder_cannot_commit_and_the_rejection_is_durable) ... ok\ntest_expired_lease_is_reported_for_recovery (test_a1_fencing.FenceTokenTests.test_expired_lease_is_reported_for_recovery) ... ok\ntest_full_acceptance_sequence_in_one_history (test_a1_fencing.FenceTokenTests.test_full_acceptance_sequence_in_one_history)\nRe-grant, stale commit refused, current commit admitted. ... ok\ntest_heartbeat_extends_only_the_current_lease (test_a1_fencing.FenceTokenTests.test_heartbeat_extends_only_the_current_lease) ... ok\ntest_tokens_are_monotonic_across_grants (test_a1_fencing.FenceTokenTests.test_tokens_are_monotonic_across_grants) ... ok\ntest_without_the_fence_check_the_stale_commit_is_admitted (test_a1_fencing.NegativeControlTests.test_without_the_fence_check_the_stale_commit_is_admitted) ... ok\n\n----------------------------------------------------------------------\nRan 13 tests in 0.100s\n\nOK\n",
+    "truncated": false
+  },
+  "stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "text": "",
+    "truncated": false
+  },
+  "unit_id": "a1-u03",
+  "verdict": "PASS",
+  "wall_seconds": 0.361,
+  "worker_id": "po03-worker-a1"
+}
