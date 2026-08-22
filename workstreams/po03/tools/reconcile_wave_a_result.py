@@ -102,13 +102,21 @@ def _validate_producer_attempt(
         field: control_attempt.get(field)
         for field in ("attempt_id", "idempotency_key", "lease_id", "fence_token")
     }
-    for label, document in (
-        ("producer return", ready),
-        ("producer result", producer_result),
-    ):
-        observed = document.get("attempt")
-        if not isinstance(observed, dict):
-            raise ValueError(f"{label} lacks an attempt envelope")
+    fields = tuple(expected)
+    documents = (("producer return", ready, True), ("producer result", producer_result, False))
+    for label, document, required in documents:
+        nested = document.get("attempt")
+        if isinstance(nested, dict):
+            observed = nested
+        else:
+            present = [field for field in fields if field in document]
+            if present and len(present) != len(fields):
+                raise ValueError(f"{label} has a partial attempt envelope")
+            observed = {field: document[field] for field in fields} if present else None
+        if observed is None:
+            if required:
+                raise ValueError(f"{label} lacks an attempt envelope")
+            continue
         for field, value in expected.items():
             if observed.get(field) != value:
                 raise ValueError(
@@ -127,6 +135,8 @@ def _trusted_source_base(
     ready: dict[str, Any], return_commit: str, ingestion_commit: str
 ) -> str:
     source_base = ready.get("source_base_commit")
+    if source_base is None and isinstance(ready.get("source_base"), dict):
+        source_base = ready["source_base"].get("immutable_controller_base")
     if not isinstance(source_base, str) or not FULL_COMMIT_RE.fullmatch(source_base):
         raise ValueError("producer return lacks an exact source_base_commit")
     try:
