@@ -1,0 +1,41 @@
+{
+  "protocol_version": "OBZIO-WA-006-STRATEGY-PROPOSALS-v1",
+  "task_id": "PO03-WA-006",
+  "state": "UNBOUND_PROPOSAL",
+  "state_note": "Strategy findings remain proposals until the founder interlock binds them. Nothing here is applied, and none of it is a mechanism change or an acceptance decision.",
+  "proposals": [
+    {
+      "proposal_id": "SP-PO03-WA-006-01",
+      "title": "Make published manifests content-addressed with an explicit dependency section",
+      "observation": "Five of the nine real discrepancies are one defect repeated: a manifest that enumerates a dependency as if it were a member file. The bytes were never lost, only published once at a shared path.",
+      "proposal": "Require published pack manifests to separate members from dependencies, and to identify dependencies by digest plus a repository-relative publication path rather than by an assumed sibling path.",
+      "expected_effect": "Manifest currency stops depending on a copy step, and a consumer that materialises exactly what a manifest enumerates gets a runnable pack.",
+      "evidence_status": "SUPPORTED_BY_THIS_UNIT_ONLY",
+      "binding_status": "UNBOUND_PROPOSAL",
+      "owner_of_decision": "founder interlock; the pack namespace itself is PO-01's"
+    },
+    {
+      "proposal_id": "SP-PO03-WA-006-02",
+      "title": "Treat a build-host absolute path in a published claim as a portability failure in CI",
+      "observation": "packs/MANIFEST.json publishes /tmp/packs as the corpus root. Nothing in the current controls rejected that before publication.",
+      "proposal": "Add a portability assertion to the publication path so a manifest carrying a build-host absolute path in a resolvable field fails before it is published, with build-host provenance allowed only in a field consumers do not resolve.",
+      "expected_effect": "This class of defect is caught at publication rather than by a downstream reproducer.",
+      "evidence_status": "SUPPORTED_BY_THIS_UNIT_ONLY",
+      "binding_status": "UNBOUND_PROPOSAL",
+      "owner_of_decision": "founder interlock"
+    },
+    {
+      "proposal_id": "SP-PO03-WA-006-03",
+      "title": "Pin qualification evidence to commit ids rather than branch names",
+      "observation": "The same _spine.py claim fails at one commit and is satisfied at another. A verdict recorded against a branch name would have been ambiguous and would have silently changed as the tip moved.",
+      "proposal": "Require every qualification verdict to record the resolved commit id it was computed from, and treat a verdict without one as unusable evidence.",
+      "expected_effect": "Qualification evidence stops decaying as branches move, and disagreements between reviewers become traceable to a commit rather than to a reading.",
+      "evidence_status": "SUPPORTED_BY_THIS_UNIT_ONLY",
+      "binding_status": "UNBOUND_PROPOSAL",
+      "owner_of_decision": "founder interlock"
+    }
+  ],
+  "proposal_count": 3,
+  "applied_count": 0,
+  "decision_changed": []
+}

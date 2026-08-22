@@ -1,0 +1,87 @@
+{
+  "protocol_version": "OBZIO-WA-006-SOURCE-CLAIMS-v1",
+  "task_id": "PO03-WA-006",
+  "hypothesis_id": "H-PO03-WA-006",
+  "state": "CURRENT_SOURCE_CLAIMS",
+  "state_note": "These are claims read from current sources. They are not hypotheses, reproductions, mechanism changes or strategy proposals; those states are recorded in separate artifacts of this unit.",
+  "recorded_at": "2026-08-22T08:26:00Z",
+  "retrieval_boundary": {
+    "external_network_retrieval_attempted": false,
+    "external_documentation_claims": "NOT_SUPPORTED",
+    "external_documentation_reason": "This unit's assignment sets minimum_current_method_hypotheses to 0 and required_executable_output to a read-only reproduction harness over repository objects. Every claim below was read from an immutable repository object in the account-qualified repository, so no unverified external citation is introduced.",
+    "read_method": "git cat-file blob <immutable-commit>:<path> in an isolated clone; no checkout, no ref write, no PO-01 branch mutation"
+  },
+  "repository": "github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+  "claims": [
+    {
+      "claim_id": "SC-PO03-WA-006-01",
+      "source_kind": "OBZIO_COMMISSION",
+      "source_path": "workstreams/po03/COMMISSION.md",
+      "source_commit": "affc82b35e6205010fda90f9914a97e467294a44",
+      "source_sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+      "claim": "PO-03 must reproduce PO-01 pack claims from immutable commits without modifying its branches, and must detect missing files, non-portable paths, manifest gaps and process-boundary failures.",
+      "used_for": "Scoping the four discrepancy families this reproducer must be able to detect.",
+      "verification": "Read directly from the pinned commission blob; the sha256 matches the source_base.commission_sha256 recorded in the immutable task input."
+    },
+    {
+      "claim_id": "SC-PO03-WA-006-02",
+      "source_kind": "PO01_PACK_MANIFEST",
+      "source_path": "packs/MANIFEST.json",
+      "source_commit": "1e6f53c323f8326d12af213557082a3665991f19",
+      "claim": "Five packs (continuity-recovery, founder-intent-processing, independent-acceptance, repository-engineering, strategic-orchestration) each carry problems: [] and verifies: true, with totals of 37 pack files / 339837 pack bytes and 9 spine files / 47391 spine bytes, rooted at /tmp/packs.",
+      "used_for": "The aggregate coverage and portability claims checked as F-WA-006-03 and F-WA-006-04.",
+      "verification": "Checked against the immutable tree by the reproducer. The five named packs verify on content; the root value and the corpus coverage do not hold.",
+      "narrative_excluded": "The verifies: true and problems: [] fields are producer self-assertions and were not accepted as evidence; only digests, byte counts and tree membership were checked."
+    },
+    {
+      "claim_id": "SC-PO03-WA-006-03",
+      "source_kind": "PO01_PACK_MANIFEST",
+      "source_path": "packs/<pack>/MANIFEST.json for packs 06-10 and the five obzio.manifest.v2 packs",
+      "source_commit": "1e6f53c323f8326d12af213557082a3665991f19",
+      "claim": "Each per-pack manifest enumerates its member files with a sha256 and byte count, a file_count and a total_bytes; packs 06-10 additionally exclude MANIFEST.json from their own digest set.",
+      "used_for": "The 72 per-pack file claims the reproducer checked; 67 verified exactly.",
+      "verification": "Two distinct dialects were normalised and checked blob by blob against the immutable tree."
+    },
+    {
+      "claim_id": "SC-PO03-WA-006-04",
+      "source_kind": "PO01_PACK_MANIFEST",
+      "source_path": "packs/06-browser-execution/MANIFEST.json and the equivalent manifests for 07-10",
+      "source_commit": "1e6f53c323f8326d12af213557082a3665991f19",
+      "claim": "_spine.py at 43928 bytes / sha256 431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182 is a member file of each of the five pack directories.",
+      "used_for": "F-WA-006-01.",
+      "verification": "FALSIFIED at this commit. The path is absent from all five pack directories; bytes with the claimed digest exist once, at packs/_shared/_spine.py."
+    },
+    {
+      "claim_id": "SC-PO03-WA-006-05",
+      "source_kind": "PO01_PACK_MANIFEST",
+      "source_path": "packs/MANIFEST_ALL.json",
+      "source_commit": "1e6f53c323f8326d12af213557082a3665991f19",
+      "claim": "The shared spine was byte-identical in six source copies and published once at packs/_shared/_spine.py; packs 06-10 import _spine as a sibling module, so a copy must be restored into each pack directory to run them.",
+      "used_for": "Characterising the process-boundary effect of F-WA-006-01.",
+      "verification": "The digest and published path in this claim were checked and hold. The consequence for the per-pack manifests was established independently from bytes, not taken from this note.",
+      "narrative_status": "PRODUCER_NARRATIVE_NOT_USED_AS_EVIDENCE",
+      "narrative_note": "This document also carries an evidence_status field stating that its arXiv citations are cited but unverified. That self-assessment is recorded here as a source claim and was neither relied upon nor independently checked by this unit."
+    },
+    {
+      "claim_id": "SC-PO03-WA-006-06",
+      "source_kind": "PO01_PACK_MANIFEST",
+      "source_path": "modules/operators/07-capability-manufacture/MANIFEST.json",
+      "source_commit": "96adfe7d79257389318af10ee9c9e3a0c2138590",
+      "claim": "Pack 07 has seven member files including state_machine.py (24479 bytes, sha256 5b0ccae203f1139cae7446647a90143c43a023e71ecfd5a41c4e3a162be03060) and test_pack.py (17930 bytes, sha256 cb8f72ed471546fe21b0f3f7a4a003f032eeef2034de697bb5c3afe9f13d8839).",
+      "used_for": "F-WA-006-02.",
+      "verification": "PARTLY FALSIFIED. Five of seven members verify, including the _spine.py claim that fails on the other commit. state_machine.py and test_pack.py are absent from the pack directory and their claimed digests match no blob anywhere in the commit."
+    },
+    {
+      "claim_id": "SC-PO03-WA-006-07",
+      "source_kind": "OBZIO_ACCEPTANCE_CONTRACT",
+      "source_path": "workstreams/po03/control/acceptance/wave-a-material-v1.json",
+      "source_commit": "affc82b35e6205010fda90f9914a97e467294a44",
+      "source_sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a",
+      "claim": "A reproduction attempt must run on a sanitized repository-native Obzio workload and record enough detail for clean-clone recurrence; producer narrative is not independent evidence.",
+      "used_for": "The design of the sanitized fixture and the frozen recurrence test.",
+      "verification": "The frozen contract sha256 matches the value pinned in the immutable task input."
+    }
+  ],
+  "claim_count": 7,
+  "decision_changed": []
+}

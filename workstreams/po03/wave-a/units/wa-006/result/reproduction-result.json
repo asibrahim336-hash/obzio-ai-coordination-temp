@@ -1,0 +1,132 @@
+{
+  "protocol_version": "OBZIO-WA-006-REPRODUCTION-RESULT-v1",
+  "task_id": "PO03-WA-006",
+  "hypothesis_id": "H-PO03-WA-006",
+  "state": "REPRODUCTIONS",
+  "state_note": "Executed reproductions. Distinct from the source claims, the frozen hypotheses, the mechanism-change candidate and the strategy proposals.",
+  "reproductions": [
+    {
+      "reproduction_id": "R-PO03-WA-006-001",
+      "title": "Sanitized adversarial pack corpus qualifies the reproducer",
+      "workload": "repository-native sanitized synthetic pack corpus",
+      "sanitized": true,
+      "sanitization_evidence": "Content is deterministic synthetic UTF-8 generated from pack and file names. No PO-01 blob is copied, quoted or embedded; no secret is present; the corpus is built in a temporary directory and a throwaway local git repository with no remote.",
+      "builder": "workstreams/po03/wave-a/units/wa-006/result/build_sanitized_fixture.py",
+      "spec": "workstreams/po03/wave-a/units/wa-006/result/fixtures/adversarial-fixture-spec.json",
+      "design": "The generator is the adversary. It writes manifests that disagree with the blobs it commits, across seven packs covering both real manifest dialects: a clean control pack, a spine relocated to a shared path, a genuinely lost file, a wrong digest, bytes altered after the claim was written, an understated file_count, an overstated per-file byte claim with an inconsistent pack total, a build-host absolute path in a published claim, and a pack the aggregate manifest omits.",
+      "exact_falsifier": "The observed discrepancy-kind counts differ in any way from the counts declared in the fixture spec before the run, or the clean control pack reports any discrepancy.",
+      "observed": {
+        "expected_discrepancy_kind_counts": {
+          "AGGREGATE_COVERAGE_GAP": 1,
+          "BYTE_COUNT_MISMATCH": 2,
+          "DIGEST_MISMATCH": 2,
+          "FILE_COUNT_MISMATCH": 1,
+          "MISSING_AT_CLAIMED_PATH_CONTENT_ABSENT": 1,
+          "MISSING_AT_CLAIMED_PATH_CONTENT_RELOCATED": 1,
+          "NON_PORTABLE_ABSOLUTE_PATH_CLAIM": 2,
+          "TOTAL_BYTES_MISMATCH": 1
+        },
+        "observed_discrepancy_kind_counts": {
+          "AGGREGATE_COVERAGE_GAP": 1,
+          "BYTE_COUNT_MISMATCH": 2,
+          "DIGEST_MISMATCH": 2,
+          "FILE_COUNT_MISMATCH": 1,
+          "MISSING_AT_CLAIMED_PATH_CONTENT_ABSENT": 1,
+          "MISSING_AT_CLAIMED_PATH_CONTENT_RELOCATED": 1,
+          "NON_PORTABLE_ABSOLUTE_PATH_CLAIM": 2,
+          "TOTAL_BYTES_MISMATCH": 1
+        },
+        "counts_match": true,
+        "file_claims_checked": 18,
+        "file_claims_verified": 13,
+        "clean_control_pack": "alpha-clean",
+        "clean_control_discrepancies": 0,
+        "expect_clean_exit_code": 1,
+        "deterministic_across_runs": true
+      },
+      "outcome": "PASS",
+      "commit_pinning": "The fixture commit id is generated per run and is not pinned across runs, because git commit ids embed timestamps. The claim checked is the discrepancy set, which is deterministic; a test asserts run-to-run equality of the discrepancy list."
+    },
+    {
+      "reproduction_id": "R-PO03-WA-006-002",
+      "title": "PO-01 operator-pack corpus checked at an immutable commit",
+      "workload": "PO-01 pack claims at commit 1e6f53c323f8326d12af213557082a3665991f19, pack root packs",
+      "po01_access_mode": "IMMUTABLE_GIT_OBJECT_READ_ONLY",
+      "po01_writes": 0,
+      "po01_branch_mutations": 0,
+      "po01_signals_or_contact": 0,
+      "exact_falsifier": "A claim cannot be evaluated from objects alone, or a ref or HEAD differs before and after the scan.",
+      "observed": {
+        "resolved_commit": "1e6f53c323f8326d12af213557082a3665991f19",
+        "manifest_count": 11,
+        "file_claims_checked": 72,
+        "file_claims_verified": 67,
+        "file_claims_falsified": 5,
+        "discrepancy_count": 7,
+        "discrepancy_kind_counts": {
+          "AGGREGATE_COVERAGE_GAP": 1,
+          "MISSING_AT_CLAIMED_PATH_CONTENT_RELOCATED": 5,
+          "NON_PORTABLE_ABSOLUTE_PATH_CLAIM": 1
+        },
+        "refs_unchanged": true,
+        "head_unchanged": true,
+        "checkout_performed": false,
+        "read_only_git_calls": 184
+      },
+      "report": "workstreams/po03/wave-a/units/wa-006/result/reproduction-po01-packs.json",
+      "outcome": "PASS"
+    },
+    {
+      "reproduction_id": "R-PO03-WA-006-003",
+      "title": "PO-01 operator-fleet corpus checked at a second immutable commit",
+      "workload": "PO-01 pack claims at commit 96adfe7d79257389318af10ee9c9e3a0c2138590, pack root modules/operators",
+      "po01_access_mode": "IMMUTABLE_GIT_OBJECT_READ_ONLY",
+      "po01_writes": 0,
+      "po01_branch_mutations": 0,
+      "po01_signals_or_contact": 0,
+      "exact_falsifier": "The _spine.py claim that fails at the other commit also fails here, which would make the relocation diagnosis unsupported.",
+      "observed": {
+        "resolved_commit": "96adfe7d79257389318af10ee9c9e3a0c2138590",
+        "manifest_count": 2,
+        "file_claims_checked": 14,
+        "file_claims_verified": 12,
+        "file_claims_falsified": 2,
+        "discrepancy_count": 2,
+        "discrepancy_kind_counts": {
+          "MISSING_AT_CLAIMED_PATH_CONTENT_ABSENT": 2
+        },
+        "spine_claim_satisfied_here": true,
+        "refs_unchanged": true,
+        "head_unchanged": true
+      },
+      "report": "workstreams/po03/wave-a/units/wa-006/result/reproduction-po01-fleet.json",
+      "outcome": "PASS"
+    },
+    {
+      "reproduction_id": "R-PO03-WA-006-004",
+      "title": "A commit with no pack corpus is refused, not silently passed",
+      "workload": "commit 37943ec2ff9f6702d72e127a3c8e56c81b0c3812, pack root packs",
+      "po01_access_mode": "IMMUTABLE_GIT_OBJECT_READ_ONLY",
+      "exact_falsifier": "The reproducer reports a clean corpus, or exit code 0 under --expect-clean, for a commit that contains no packs at all.",
+      "observed": {
+        "raised": "ClaimReadError",
+        "message": "commit 37943ec2ff9f6702d72e127a3c8e56c81b0c3812 has no paths under 'packs'",
+        "cli_exit_code": 2
+      },
+      "outcome": "PASS",
+      "significance": "A false-green path is closed: an empty or wrongly-rooted target cannot be mistaken for a verified corpus."
+    }
+  ],
+  "reproduction_count": 4,
+  "sanitized_reproduction_count": 1,
+  "immutable_po01_reproduction_count": 3,
+  "clean_clone_recurrence": {
+    "requirement": "Recurrence must be possible from a fresh clone with no provider memory, no hidden local state and no /tmp dependency in the committed artifacts.",
+    "dependencies": "Python 3 standard library and git only; no third-party package, no network call inside the reproducer.",
+    "invocation": "python3 -m unittest test_pack_claim_reproducer from workstreams/po03/wave-a/units/wa-006/result/",
+    "committed_artifact_runtime_path_leaks": 0,
+    "runtime_path_leak_check": "The committed reproduction reports contain no producer runtime path; the only /tmp string in them is /tmp/packs, which is PO-01's own claimed value and therefore the finding itself.",
+    "object_availability_requirement": "The three pinned commits must be present in the local object store. A fresh clone reaches them with git fetch origin 'refs/heads/packs/*:refs/remotes/origin/packs/*', which is a read of the remote and writes only the cloning repository's own remote-tracking refs. The recurrence test skips with an explicit reason when an object is absent rather than reporting an unearned pass."
+  },
+  "decision_changed": []
+}
