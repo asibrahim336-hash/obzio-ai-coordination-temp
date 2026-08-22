@@ -13,6 +13,7 @@ from typing import Any
 
 
 def load_fixture(path: Path) -> Any:
+    sys.dont_write_bytecode = True
     spec = importlib.util.spec_from_file_location("synthetic_qualifier", path)
     if spec is None or spec.loader is None:
         raise RuntimeError(f"cannot load fixture {path}")
