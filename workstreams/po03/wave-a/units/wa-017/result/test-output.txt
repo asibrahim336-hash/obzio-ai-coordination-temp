@@ -1,0 +1,52 @@
+PO03-WA-017-A02 TEST EVIDENCE
+
+INITIAL FOCUSED RUN
+command: PYTHONDONTWRITEBYTECODE=1 python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-017/tests -p 'test_*.py' -v
+result:
+  Ran 24 tests in 0.013s
+  FAILED (failures=1)
+failure:
+  test_all_architectures_recover_each_fault_class required the literal
+  substring "PROVIDER" from all traces. event-log represented the same fault
+  as WORKER_LOST / MISSING_RESULT_EVENT. The test specification was corrected
+  to assert each architecture's preregistered independent vocabulary.
+
+FOCUSED RERUN AFTER TEST-SPECIFICATION CORRECTION
+command: PYTHONDONTWRITEBYTECODE=1 python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-017/tests -p 'test_*.py' -v
+result:
+  Ran 24 tests in 0.013s
+  OK
+
+FINAL FOCUSED RUN INCLUDING ARTIFACT-CUSTODY TESTS
+command: TIMEFORMAT='real %R'; time env PYTHONDONTWRITEBYTECODE=1 python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-017/tests -p 'test_*.py' -v
+result:
+  Ran 29 tests in 0.046s
+  OK
+  real 0.318
+
+FINAL UNMODIFIED SEEDED PO-03 CONTRACT SUITE
+command: TIMEFORMAT='real %R'; time env PYTHONDONTWRITEBYTECODE=1 python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v
+result:
+  Ran 60 tests in 0.865s
+  OK
+  real 1.246
+
+DETERMINISTIC SIMULATOR REEXECUTION
+command: PYTHONDONTWRITEBYTECODE=1 python3 -I workstreams/po03/wave-a/units/wa-017/simulator.py | sha256sum
+result:
+  94cf8326bc723a150e50b5d16aecaa173fcac01294db3d724d5e44f1bda84fda  -
+expected committed simulation result:
+  94cf8326bc723a150e50b5d16aecaa173fcac01294db3d724d5e44f1bda84fda
+
+OPERATOR TAXONOMY CHECK
+command: python3 scripts/check_operator_taxonomy.py
+result:
+  OPERATOR TAXONOMY CHECK: PASS
+  active function: obzio.function.strategic-operations-orchestration
+  active appointment: obzio.appointment.strategic-operations-orchestration.20260819.001
+  classified aliases: 9
+
+TIMING COMMAND FALLBACK
+The first timing wrapper used /usr/bin/time, which is absent in this runtime;
+both invocations exited 127 before running tests. Bash TIMEFORMAT was then used
+for the two final successful suites shown above.
