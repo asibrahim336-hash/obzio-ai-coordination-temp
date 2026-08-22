@@ -109,5 +109,13 @@
       "fix": "Commit b6d388c regenerated a3-u08.json. The staleness was real and the gate was right to fail: a result document that outlives its own artifacts is exactly the failure mode that lost the PO-02 Code-2 return."
     }
   ],
-  "recorded_honestly": "Two of this workflow's three runs failed and both failures are recorded above with their causes. The passing run is the third."
+  "later_run_that_validated_this_receipt": {
+    "id": 32562938448,
+    "url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32562938448",
+    "head_sha": "7e919558f5891fc7230417a237fd6cbfef49e47e",
+    "conclusion": "success",
+    "why_it_matters": "In run 32562707415 the six Receipt tests in test_a3_ci_clean_clone.py skipped, because the receipt they check did not exist yet at that commit. Run 32562938448 is the first in which this document was committed, so those checks ran on a clean runner rather than only here.",
+    "recursion_note": "This field cannot be self-referential. Recording a run inside the receipt changes the receipt, which produces a new run that the receipt does not mention. The chain is cut deliberately here: the last run of this workflow is never the one named in the receipt, and a reader should expect exactly one unrecorded run after the newest recorded one."
+  },
+  "recorded_honestly": "Two of this workflow's four runs failed and both failures are recorded above with their causes, along with the passing run this receipt is about and the later run that validated the receipt itself."
 }

@@ -294,6 +294,13 @@ class Receipt(unittest.TestCase):
         for step in self.receipt["run"]["steps"]:
             self.assertIn(step["name"], declared, step["name"])
 
+    def test_the_later_validating_run_is_identified_consistently(self) -> None:
+        later = self.receipt["later_run_that_validated_this_receipt"]
+        self.assertTrue(later["url"].endswith(str(later["id"])))
+        self.assertEqual(later["conclusion"], "success")
+        self.assertNotEqual(later["id"], self.receipt["run"]["id"])
+        self.assertTrue(later["recursion_note"].strip())
+
     def test_failed_earlier_runs_are_recorded_with_causes(self) -> None:
         """Two of the three runs failed; a receipt listing only the pass would mislead."""
         for earlier in self.receipt.get("earlier_runs_of_this_workflow", []):
