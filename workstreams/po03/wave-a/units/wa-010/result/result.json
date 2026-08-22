@@ -1,0 +1,264 @@
+{
+  "protocol_version": "OBZIO-WAVE-A-UNIT-RESULT-v1",
+  "task_id": "PO03-WA-010",
+  "attempt_id": "PO03-WA-010-A02",
+  "wave_id": "PO03-WAVE-A",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "hypothesis_id": "H-PO03-WA-010",
+  "hypothesis": "Ownership grants plus deny globs can prevent overlapping subordinate writes before commit.",
+  "hypothesis_outcome": "SUPPORTED",
+  "hypothesis_outcome_scope": "Supported for a writer that invokes the gate. The reproduction refuses an overlapping write before any commit object exists, and its own negative control shows the same write succeeding when the gate is bypassed, so the claim is conditional on invocation rather than unconditional. See limitation L1.",
+  "started_at": "2026-08-22T08:28:26Z",
+  "finished_at": "2026-08-22T09:12:40Z",
+  "title": "Changed-path enforcement engine",
+  "standing_function": "current-plan-engineering",
+  "group": "engineering",
+  "method": {
+    "summary": "Build a dependency-free changed-path ownership engine, decide grant overlap from the patterns alone rather than from a directory listing, and prove prevention by installing the engine as a real git pre-commit hook on a sanitized two-writer workload.",
+    "steps": [
+      "Resolved operations/README.md and the active operator routing, then read AGENTS.md, the commission, the frozen acceptance contract, the seeded schemas, validator, tests and workflow.",
+      "Verified the immutable task input SHA-256 096d8f69e099ee0abc87d65ed6012720ec16aa7b2bf685b4366d3735ec0fc809 and all nine pinned source hashes byte-for-byte before writing anything.",
+      "Queried origin for cursor/po03-wa-010-b195-a02-1a9f and cursor/po03-wa-010-b195-a02-r02-1a9f; neither existed among 146 heads, so this is a genuine replay rather than a duplicate route.",
+      "Implemented engine/gitglob.py: anchored ':(glob)' pathspec matching, and a decision procedure for whether two patterns can ever match the same path, returning a witness path.",
+      "Implemented engine/ownership.py: registry and task-input loading, static overlap audit, per-change admission with deny precedence, two-sided rename handling, fence and write-mode rules, 'git --name-status -z' parsing and a non-zero-exiting CLI.",
+      "Wrote disjoint and deliberately overlapping registry fixtures, admitted, prohibited, rename/delete and adversarial change fixtures, each carrying its preregistered reason code before the engine was run against it.",
+      "Validated the glob dialect differentially against git's own pathspec engine, and cross-checked the overlap decision procedure against brute-force enumeration.",
+      "Reproduced prevention on a sanitized workload by installing the engine as a git pre-commit hook, with a negative control that bypasses the hook.",
+      "Ran the focused suite, the seeded PO-03 contract tests read-only, the operator taxonomy check, and the engine against its own changed paths from the immutable base.",
+      "Committed and pushed only the unique retry branch, then read every artifact back by immutable remote SHA."
+    ],
+    "falsification_design": "The hypothesis would have been refuted if an overlapping write had reached a commit, if a deny glob had been overridden by an ownership grant, if a rename or delete had escaped the grant, if a stale fence had been admitted, or if a collision between two grants had gone undetected until a file existed. Each of these is an executed test rather than a review comment.",
+    "execution_environment": "dedicated isolated no-hardlink clone at /tmp/po03-wa-010-a02-r02, created from the immutable controller base f2bdb4908026f66e8450802bb15921be1f3c338d",
+    "shared_workspace_untouched": "/workspace/shared was never written and never made the working directory"
+  },
+  "executable_components": [
+    {
+      "path": "workstreams/po03/wave-a/units/wa-010/engine/gitglob.py",
+      "role": "Anchored git-style pathspec matcher plus glob intersection with witness generation.",
+      "notable": "Intersection is decided by a product-automaton emptiness search over path segments and then over characters, so two grants are compared as languages rather than as strings."
+    },
+    {
+      "path": "workstreams/po03/wave-a/units/wa-010/engine/ownership.py",
+      "role": "Ownership registry, static overlap audit, per-change admission and CLI gate.",
+      "notable": "Exits non-zero on refusal, so the same entry point serves as a pre-commit hook and as a CI gate."
+    },
+    {
+      "path": "workstreams/po03/wave-a/units/wa-010/engine/reproduce_overlap_prevention.py",
+      "role": "Sanitized nine-step reproduction that lets git itself enforce the decision, including a negative control.",
+      "notable": "Records that HEAD does not move and the owner's committed bytes survive a refused overwrite."
+    },
+    {
+      "path": "workstreams/po03/wave-a/units/wa-010/result/build_evidence.py",
+      "role": "Regenerates every evidence artifact from the engine and the fixtures.",
+      "notable": "No hash, count or decision in the evidence is transcribed by hand."
+    }
+  ],
+  "findings": [
+    {
+      "id": "F1",
+      "finding": "Grant overlap is decidable from the patterns alone, so a collision is detectable before any subordinate writes a byte.",
+      "evidence": "result/overlap-detection.json reports 8 colliding glob pairs across exactly the 8 preregistered owner pairs, every witness verified against both grants and none present on disk. Reproduction step R1 detects the collision while the repository contains zero files."
+    },
+    {
+      "id": "F2",
+      "finding": "A prefix-string comparison is not a safe implementation of a subtree grant.",
+      "evidence": "The grant 'workstreams/po03/wave-a/units/wa-010/**' must not admit 'wa-0100', 'wa-010x', 'WA-010' or a file named 'wa-010'. git's own pathspec engine agrees on all four, asserted by tests/test_gitglob.py::GitDifferentialTest."
+    },
+    {
+      "id": "F3",
+      "finding": "Deny globs outrank ownership grants, so a writer granted '**' still cannot reach shared state.",
+      "evidence": "tests/test_adversarial.py::DenyPrecedenceTest and reproduction step R8, where a deny glob refuses a state write from a writer whose own grant does not cover it."
+    },
+    {
+      "id": "F4",
+      "finding": "A rename is two writes and must be checked on both sides, or a writer can carry a sibling's committed result out of its owner's subtree.",
+      "evidence": "Reproduction step R7 refuses 'git mv' of the owner's file into the mover's own subtree and confirms the owner's bytes remain intact at HEAD."
+    },
+    {
+      "id": "F5",
+      "finding": "A superseded fence token must be refused even inside the writer's own subtree, otherwise a replaced attempt can still commit.",
+      "evidence": "Reproduction step R6 and tests/test_adversarial.py::FenceEvasionTest. This attempt is itself a fence-2 replay of a route that failed before producing a durable branch."
+    },
+    {
+      "id": "F6",
+      "finding": "Anchoring the dialect is fail-safe for a grant and fail-dangerous for a deny.",
+      "evidence": "A bare 'secrets.json' deny protects only the repository root and admits 'units/a/secrets.json', executed in tests/test_ownership_engine.py::StaticOverlapTest::test_the_narrow_deny_reading_is_the_one_that_is_flagged. Mechanism change MC-PO03-WA-010-03 surfaces it."
+    },
+    {
+      "id": "F7",
+      "finding": "The real seeded PO-03 registry is provably disjoint, and it agrees with this attempt's immutable task input.",
+      "evidence": "result/registry-audit.json: 67 owners, 0 grant overlaps, 0 grant divergences, 0 blocking findings, 0 advisories. Read-only."
+    },
+    {
+      "id": "F8",
+      "finding": "An audit dominated by unavoidable findings is a correctness problem, not a cosmetic one.",
+      "evidence": "Auditing the real registry first produced 144 deny-shadow advisories and a 75753-byte artifact, all from the implicit '**/.git/**' deny intersecting every recursive grant. Mechanism change MC-PO03-WA-010-02 reduced it to 0 advisories and 1013 bytes with no admission decision changed."
+    }
+  ],
+  "artifacts": {
+    "note": "SHA-256 and byte counts for every artifact are in artifact-manifest.json, which is hashed in ready-to-commit.json. They are not duplicated here, because this file is itself one of the hashed artifacts.",
+    "manifest_path": "workstreams/po03/wave-a/units/wa-010/result/artifact-manifest.json",
+    "result_slot": "workstreams/po03/wave-a/units/wa-010/result/",
+    "logical_names": [
+      "README.md",
+      "engine/gitglob.py",
+      "engine/ownership.py",
+      "engine/reproduce_overlap_prevention.py",
+      "fixtures/changes-admitted.json",
+      "fixtures/changes-adversarial.json",
+      "fixtures/changes-prohibited.json",
+      "fixtures/changes-rename-and-delete.json",
+      "fixtures/registry-disjoint.json",
+      "fixtures/registry-overlapping.json",
+      "result/build_evidence.py",
+      "result/build_manifest.py",
+      "result/changed-path-validation.json",
+      "result/denial-matrix.json",
+      "result/immutable_readback.py",
+      "result/limitations.json",
+      "result/mechanism-change.json",
+      "result/overlap-detection.json",
+      "result/registry-audit.json",
+      "result/reproduction-result.json",
+      "result/result.json",
+      "result/source-claims.json",
+      "result/test-output.txt",
+      "result/tests.json",
+      "tests/test_adversarial.py",
+      "tests/test_gitglob.py",
+      "tests/test_ownership_engine.py",
+      "tests/test_prevention_reproduction.py"
+    ]
+  },
+  "tests": {
+    "outcome": "PASS",
+    "first_pass_outcome": "FAIL",
+    "focused_tests": 118,
+    "seeded_contract_tests": 37,
+    "taxonomy_check": "PASS",
+    "sanitized_reproductions": 1,
+    "adversarial_cases": 28,
+    "deliberately_prohibited_write_fixtures": 16,
+    "details_path": "workstreams/po03/wave-a/units/wa-010/result/tests.json"
+  },
+  "source_claims": {
+    "details_path": "workstreams/po03/wave-a/units/wa-010/result/source-claims.json",
+    "repository_sources_read": 15,
+    "all_pinned_hashes_match": true,
+    "external_source_retrieval": "NOT_ATTEMPTED",
+    "external_source_retrieval_reason": "The immutable task input sets minimum_current_method_hypotheses and minimum_sanitized_reproductions to 0 and first_substantive_return_seed to false, so this engineering unit owes no external research quota and asserts no external claim.",
+    "differential_oracle": "git version 2.43.0 as present in this runtime, queried with 'git ls-files -- :(glob)PATTERN'"
+  },
+  "mechanism_changes": {
+    "details_path": "workstreams/po03/wave-a/units/wa-010/result/mechanism-change.json",
+    "count": 3,
+    "all_verified_by_recurrence_tests": true,
+    "dispositions": ["RETAIN", "RETAIN", "RETAIN"],
+    "producer_defects_recorded": 3
+  },
+  "limitations": {
+    "details_path": "workstreams/po03/wave-a/units/wa-010/result/limitations.json",
+    "count": 12,
+    "material": 3,
+    "most_important": "L1: client-side hook enforcement is advisory and can be bypassed; server-side enforcement is OWNER_BLOCKED and was not attempted.",
+    "content_enforcement": "NOT_SUPPORTED",
+    "symlink_target_enforcement": "NOT_SUPPORTED",
+    "reasoning_observed": "NOT_SUPPORTED",
+    "independent_acceptance": "NOT_TESTED"
+  },
+  "preregistered_metrics": {
+    "wall_time_seconds": 2654,
+    "test_count": 155,
+    "first_pass_outcome": "FAIL",
+    "artifact_count": 28,
+    "artifact_bytes": "recorded in artifact-manifest.json",
+    "source_claim_count": 15,
+    "reproduction_count": 1,
+    "mechanism_change_count": 3,
+    "defects": 3,
+    "rework": 2,
+    "provider_block": 1,
+    "provider_block_detail": "Route 4a79e13d-a5f5-4a49-a5b1-02a5b6caf94e failed with 'Workflow execution already started' before producing a durable branch. This attempt is the fenced replay of the same idempotency key po03:100bc2079ced:wa-010:a02 at fence token 2.",
+    "collision": 0,
+    "recovery_events": 1,
+    "recovery_event_detail": "One replay of a lost provider route, resolved by re-executing from the immutable task input against a unique retry branch after confirming no durable result existed."
+  },
+  "model_observed": {
+    "requested_model_slug": "claude-opus-5-thinking-high",
+    "requested_reasoning": "high",
+    "auto_model_selection": false,
+    "model_observed": "claude-opus-5",
+    "model_observation_source": "The executing subagent's own system prompt identifies it as Claude Opus 5. This is a self-report, not an independent attestation.",
+    "provider_reported_model_for_parent_run": "gpt-5.6-sol-max-fast",
+    "provider_reported_model_note": "The Cursor run-info API reports the model bound to the parent controller run bc-b1956656-b897-4889-aeab-82c4556c1a9f, not the model executing this subagent. The two differ and are recorded separately rather than reconciled.",
+    "separately_attested_model": "NOT_SUPPORTED",
+    "separately_attested_reasoning": "NOT_SUPPORTED",
+    "reasoning_observed": "NOT_SUPPORTED"
+  },
+  "reasoning_observed": "NOT_SUPPORTED",
+  "runtime_binding": {
+    "note": "Runtime details are execution evidence only and grant no authority.",
+    "provider": "cursor-cloud-agent",
+    "provider_run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+    "provider_run_url": "https://cursor.com/agents/bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+    "subagent_type": "best-of-n-runner",
+    "execution_environment": "isolated-no-hardlink-clone",
+    "clone_root": "/tmp/po03-wa-010-a02-r02",
+    "python": "3.12.3",
+    "git": "2.43.0"
+  },
+  "attempt": {
+    "attempt_id": "PO03-WA-010-A02",
+    "idempotency_key": "po03:100bc2079ced:wa-010:a02",
+    "lease_id": "lease-po03-wa-010-a02",
+    "fence_token": 2,
+    "checkpoint_seq": 1,
+    "supersedes_attempt_id": "PO03-WA-010-A01",
+    "supersedes_defect": "UNRESOLVABLE_MINIMUM_PROTOCOL_ANCESTOR",
+    "replay_of_failed_route": "4a79e13d-a5f5-4a49-a5b1-02a5b6caf94e",
+    "replay_reason": "Provider route failed with 'Workflow execution already started' before producing a durable branch. Same transactional attempt, same idempotency key, same fence token; not a new substantive hypothesis.",
+    "duplicate_route_check": {
+      "queried_refs": [
+        "refs/heads/cursor/po03-wa-010-b195-a02-1a9f",
+        "refs/heads/cursor/po03-wa-010-b195-a02-r02-1a9f"
+      ],
+      "observed": "neither ref existed on origin at the start of this attempt",
+      "remote_heads_enumerated": 146,
+      "conclusion": "NO_PRIOR_DURABLE_RETURN"
+    }
+  },
+  "source_base": {
+    "repository": "github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+    "immutable_controller_base": "f2bdb4908026f66e8450802bb15921be1f3c338d",
+    "commission_commit": "552b12eacee637716451492a98980fb0da19ff3e",
+    "minimum_protocol_ancestor": "100bc2079cedc193af3524234ab833cc9f9f4669",
+    "both_pinned_commits_are_ancestors_of_base": true,
+    "immutable_input_sha256": "096d8f69e099ee0abc87d65ed6012720ec16aa7b2bf685b4366d3735ec0fc809",
+    "acceptance_contract_sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a"
+  },
+  "boundary_compliance": {
+    "owned_subtree": "workstreams/po03/wave-a/units/wa-010/**",
+    "changed_paths_from_immutable_base": 23,
+    "out_of_scope_changed_paths": 0,
+    "validated_by": "the engine under test, recorded in result/changed-path-validation.json",
+    "state_and_dispatch_untouched": true,
+    "po01_contact_or_mutation": 0,
+    "pr_8_touched": false,
+    "secrets_read_or_written": 0,
+    "deployment_or_external_effects": 0,
+    "pull_request_opened": false,
+    "merge_or_promotion": false,
+    "seeded_controls_modified": 0
+  },
+  "obzio_state": "RESULT_COMMITTED",
+  "provider_state": "RUNNING",
+  "completion_actor": null,
+  "independent_acceptance": {
+    "state": "NOT_TESTED",
+    "reviewer_id": null,
+    "receipt_uri": null,
+    "note": "The producer does not accept its own result. Only the coordinator may record COMPLETED."
+  },
+  "terminal_report": "READY_TO_COMMIT",
+  "decision_changed": []
+}

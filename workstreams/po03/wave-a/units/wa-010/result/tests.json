@@ -1,0 +1,156 @@
+{
+  "artifact": "tests.json",
+  "task_id": "PO03-WA-010",
+  "attempt_id": "PO03-WA-010-A02",
+  "hypothesis_id": "H-PO03-WA-010",
+  "outcome": "PASS",
+  "first_pass_outcome": "FAIL",
+  "first_pass_note": "The first full run of the adversarial suite failed two cases. One was a wrong producer expectation about per-glob-pair counting; the other was a real reason-code defect, recorded as MC-PO03-WA-010-01. Both are in result/mechanism-change.json.",
+  "runtime": {
+    "python": "3.12.3",
+    "git": "2.43.0",
+    "third_party_packages": "none; unittest only, invoked with -I to ignore user site-packages",
+    "bytecode": "runs use -B so no __pycache__ is written into the tree"
+  },
+  "commands": [
+    {
+      "purpose": "focused suite for this unit",
+      "command": "python3 -I -B -m unittest discover -s workstreams/po03/wave-a/units/wa-010/tests -p 'test_*.py'",
+      "cwd": "repository root",
+      "tests_run": 118,
+      "result": "OK",
+      "exit_code": 0,
+      "captured_output": "workstreams/po03/wave-a/units/wa-010/result/test-output.txt"
+    },
+    {
+      "purpose": "seeded PO-03 contract tests, read-only, to prove the seeded controls were strengthened rather than bypassed",
+      "command": "python3 -I -B -m unittest discover -s workstreams/po03/tests -p 'test_*.py'",
+      "cwd": "repository root",
+      "tests_run": 37,
+      "result": "OK",
+      "exit_code": 0,
+      "note": "This is the exact discovery command .github/workflows/po03-contracts.yml runs. No seeded file was modified; workstreams/po03/tools and workstreams/po03/tests keep their pinned SHA-256 values, recorded in result/source-claims.json."
+    },
+    {
+      "purpose": "operator taxonomy currentness check required by AGENTS.md before commit",
+      "command": "python3 -I -B scripts/check_operator_taxonomy.py",
+      "cwd": "repository root",
+      "result": "OPERATOR TAXONOMY CHECK: PASS",
+      "exit_code": 0,
+      "observed": "active function obzio.function.strategic-operations-orchestration, active appointment obzio.appointment.strategic-operations-orchestration.20260819.001, 9 classified aliases"
+    },
+    {
+      "purpose": "changed-path ownership validation of this attempt's own writes, using the engine under test",
+      "command": "python3 -I -B workstreams/po03/wave-a/units/wa-010/engine/ownership.py check workstreams/po03/control/path-ownership.json --task-input workstreams/po03/control/inputs/wave-a/wa-010-a02.json --owner lease-po03-wa-010-a02 --fence 2 --diff f2bdb4908026f66e8450802bb15921be1f3c338d..HEAD --repo .",
+      "result": "ADMITTED",
+      "exit_code": 0,
+      "captured_output": "workstreams/po03/wave-a/units/wa-010/result/changed-path-validation.json",
+      "note": "The engine gates its own producer. It was also run against the staged index before each commit in this attempt."
+    },
+    {
+      "purpose": "regenerate every evidence artifact from the engine and the fixtures",
+      "command": "python3 -I -B workstreams/po03/wave-a/units/wa-010/result/build_evidence.py",
+      "result": "all artifacts written, focused suite passed",
+      "exit_code": 0
+    }
+  ],
+  "focused_test_modules": [
+    {
+      "module": "tests/test_gitglob.py",
+      "tests_run": 33,
+      "result": "OK",
+      "covers": "anchored pathspec matching, character classes and escapes, path normalisation refusals, glob intersection with witness verification, a brute-force property cross-check, and a differential comparison against git's own ':(glob)' engine"
+    },
+    {
+      "module": "tests/test_ownership_engine.py",
+      "tests_run": 46,
+      "result": "OK",
+      "covers": "static overlap against preregistered pairs, registry/task-input divergence, advisory findings, admission of the fixture change sets, rename and delete sides, fence and writer rules, 'git --name-status -z' parsing, document validation and CLI exit codes"
+    },
+    {
+      "module": "tests/test_adversarial.py",
+      "tests_run": 28,
+      "result": "OK",
+      "covers": "traversal, absolute and drive-letter paths, doubled and backslash separators, quoted and control-character paths, case variants, decomposed Unicode, glob metacharacters appearing in data, deny precedence over a grant of '**', implicit deny survival, fence evasion, owner-id case evasion, unrecognised statuses, report serialisation and scale"
+    },
+    {
+      "module": "tests/test_prevention_reproduction.py",
+      "tests_run": 11,
+      "result": "OK",
+      "covers": "each step of the sanitized pre-commit reproduction, including that HEAD does not move and the owner's committed bytes survive a refused overwrite, and that the negative control commits when the gate is bypassed"
+    }
+  ],
+  "test_counts": {
+    "focused_tests": 118,
+    "seeded_contract_tests": 37,
+    "taxonomy_checks": 1,
+    "sanitized_reproductions": 1,
+    "differential_oracle_comparisons": 19,
+    "property_cross_checked_pattern_pairs": 100000,
+    "adversarial_cases": 28,
+    "deliberately_prohibited_write_fixtures": 16,
+    "preregistered_reason_code_assertions": 41
+  },
+  "fixture_coverage": [
+    {
+      "fixture": "fixtures/registry-disjoint.json",
+      "expected": "DISJOINT",
+      "observed": "DISJOINT",
+      "match": true
+    },
+    {
+      "fixture": "fixtures/registry-overlapping.json",
+      "expected": "OVERLAP_DETECTED",
+      "observed": "OVERLAP_DETECTED",
+      "match": true,
+      "detail": "8 colliding glob pairs across exactly the 8 preregistered owner pairs; every witness verified against both grants"
+    },
+    {
+      "fixture": "fixtures/changes-admitted.json",
+      "expected": "ADMITTED",
+      "observed": "ADMITTED",
+      "match": true,
+      "detail": "7 checked sides, all ALLOWED"
+    },
+    {
+      "fixture": "fixtures/changes-prohibited.json",
+      "expected": "BLOCKED",
+      "observed": "BLOCKED",
+      "match": true,
+      "detail": "16 deliberately prohibited writes, each denied for its preregistered reason code"
+    },
+    {
+      "fixture": "fixtures/changes-rename-and-delete.json",
+      "expected": "BLOCKED",
+      "observed": "BLOCKED",
+      "match": true,
+      "detail": "10 cases with preregistered per-side reason codes, mixing admitted and refused sides"
+    },
+    {
+      "fixture": "fixtures/changes-adversarial.json",
+      "expected": "BLOCKED",
+      "observed": "BLOCKED",
+      "match": true,
+      "detail": "15 crafted paths, each denied for its preregistered reason, none silently rewritten into an admitted path"
+    }
+  ],
+  "reproduction": {
+    "reproduction_id": "R-PO03-WA-010-001",
+    "record": "workstreams/po03/wave-a/units/wa-010/result/reproduction-result.json",
+    "enforcement_point": "git pre-commit hook invoking the engine on the staged index",
+    "steps": 9,
+    "prevented_before_commit": true,
+    "owner_writes_admitted": true,
+    "negative_control_confirms_attribution": true,
+    "static_overlap_detected_before_any_write": true,
+    "external_effects": "none: temporary local repository, no network, no secrets"
+  },
+  "clean_runtime_reproducibility": {
+    "third_party_dependencies": "none",
+    "tmp_dependencies": "none at run time; tests create their own temporary directories and delete them",
+    "provider_memory_dependencies": "none",
+    "uncommitted_file_dependencies": "none; every path the tests read is committed on this branch or already in the immutable base",
+    "note": "tests/test_gitglob.py and tests/test_prevention_reproduction.py skip if git is absent rather than failing; both ran here."
+  },
+  "decision_changed": []
+}

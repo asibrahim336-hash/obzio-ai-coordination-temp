@@ -1063,12 +1063,20 @@ def _cmd_check(args: argparse.Namespace) -> int:
     engine = _build_engine(args)
     if args.changes is not None:
         changes = changes_from_document(_load_json(args.changes))
+        changes_source = f"document:{args.changes}"
+    elif args.staged and args.diff is not None:
+        # The gate a pre-commit hook wants: what the index would add to a base.
+        changes = git_changes(args.repo, "--cached", args.diff)
+        changes_source = f"git diff --cached {args.diff}"
     elif args.staged:
         changes = git_changes(args.repo, "--cached")
+        changes_source = "git diff --cached"
     elif args.diff is not None:
         changes = git_changes(args.repo, args.diff)
+        changes_source = f"git diff {args.diff}"
     else:
         changes = changes_from_document(json.loads(sys.stdin.read()))
+        changes_source = "stdin"
     report = engine.check_changes(
         args.owner,
         changes,
@@ -1078,7 +1086,9 @@ def _cmd_check(args: argparse.Namespace) -> int:
     payload = {
         "command": "check",
         "registry_source": engine.source_document,
+        "changes_source": changes_source,
         "change_count": len(changes),
+        "out_of_scope_change_count": len(report.denials),
         "report": report.to_dict(),
     }
     _emit(payload, args.out)
