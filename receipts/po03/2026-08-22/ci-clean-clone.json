@@ -1,0 +1,121 @@
+{
+  "schema": "po03-ci-receipt-v1",
+  "unit_id": "a3-u04",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "worker": "po03-worker-a3",
+  "branch": "cursor/po03-a3-portable-runtime-ed20",
+  "observation": {
+    "observed_by": "po03-worker-a3, read-only gh CLI from inside the execution runtime",
+    "command": "gh run view 32562707415 --json databaseId,conclusion,startedAt,updatedAt,url,headSha,attempt,jobs",
+    "observed_at": "2026-08-22T08:39Z",
+    "note": "Every field below was read from the GitHub API for a run that actually happened. Nothing here is derived from a local execution or from an expected value."
+  },
+  "run": {
+    "id": 32562707415,
+    "url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32562707415",
+    "workflow_name": "PO-03 clean-runner reproduction",
+    "workflow_file": "po03-clean-clone.yml",
+    "event": "push",
+    "attempt": 1,
+    "head_branch": "cursor/po03-a3-portable-runtime-ed20",
+    "head_sha": "b6d388cf3cc44b0d17796de6e54f3b16d1b4b528",
+    "conclusion": "success",
+    "started_at": "2026-08-22T08:35:52Z",
+    "updated_at": "2026-08-22T08:37:03Z",
+    "duration_seconds": 71,
+    "job": {
+      "name": "clean-runner",
+      "url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32562707415/job/97006664379",
+      "conclusion": "success",
+      "started_at": "2026-08-22T08:35:55Z",
+      "completed_at": "2026-08-22T08:37:02Z",
+      "duration_seconds": 67,
+      "runner": "ubuntu-latest",
+      "python": "3.12.14 from actions/setup-python@v5"
+    },
+    "steps": [
+      {"number": 2, "name": "Run actions/checkout@v4", "conclusion": "success"},
+      {"number": 3, "name": "Run actions/setup-python@v5", "conclusion": "success"},
+      {"number": 4, "name": "Record the runner's starting state", "conclusion": "success"},
+      {"number": 5, "name": "Prove the surface carries no cache, install or secret", "conclusion": "success"},
+      {"number": 6, "name": "Run the full suite with site-packages removed", "conclusion": "success"},
+      {"number": 7, "name": "Run the canonical gate command", "conclusion": "success"},
+      {"number": 8, "name": "Static hermeticity prober", "conclusion": "success"},
+      {"number": 9, "name": "Byte-determinism of generated artifacts", "conclusion": "success"},
+      {"number": 10, "name": "Uncommitted-file and untracked-manifest gate", "conclusion": "success"},
+      {"number": 11, "name": "Subprocess-boundary harness", "conclusion": "success"},
+      {"number": 12, "name": "Path-scope rejection selftest", "conclusion": "success"},
+      {"number": 13, "name": "Full suite from a fresh clone of the real remote", "conclusion": "success"},
+      {"number": 14, "name": "Full suite with outbound network disabled", "conclusion": "success"},
+      {"number": 15, "name": "Summarise for the CI receipt", "conclusion": "success"}
+    ]
+  },
+  "observed_step_output": {
+    "suite_without_site_packages": "Ran 175 tests in 27.437s, OK (skipped=10)",
+    "canonical_gate": "Ran 175 tests in 26.707s, OK (skipped=10)",
+    "hermeticity": "PASS 0 hermeticity findings across 18 file(s)",
+    "determinism": "PASS 4 artifact class(es) byte-identical across 2 runs with 5 enumerated timestamp field(s)",
+    "committed_only": "PASS committed-only gate",
+    "process_boundary": "PASS 28 invocation(s) across 11 entry point(s) in separate processes with 0 inherited variables",
+    "path_scope_selftest": "PASS 4 path-scope fixture(s) produced their recorded verdicts"
+  },
+  "no_dependency_evidence": {
+    "claim": "The suite needs no third-party package.",
+    "how_observed": "The suite ran once under python3 -I -S, which removes site-packages from sys.path entirely, so a third-party import cannot resolve. It passed 175 tests. This is stronger than the absence of a pip install step, which only shows that nothing was installed during the run.",
+    "step": 6
+  },
+  "no_warm_cache_evidence": {
+    "claim": "The run depends on no warm cache.",
+    "how_observed": "No actions/cache step and no cache: input on setup-python; ci_surface.py asserts both from outside the workflow text and additionally verifies that the checkout contains no bytecode beyond the two caches this commission inherited. It runs at step 5, before anything imports, because the first suite pass creates caches of its own.",
+    "step": 5
+  },
+  "boundaries": [
+    {
+      "id": "PO03-CI-001-anonymous-clone-refused",
+      "statement": "The clean-clone runner could not clone the remote on the hosted runner. git reported 'fatal: could not read Username for https://github.com: No such device or address', so the repository is not anonymously readable and clean_clone.sh exited 70.",
+      "observed_in": "run 32562707415, step 13",
+      "consequence": "The fresh-clone-from-the-real-remote claim is proved from inside this execution runtime, where credentials are available, and recorded in workstreams/po03/runtime/transcripts/clean-clone.json. It is not proved on GitHub Actions. Making it work there would need a token in the clone URL, which is a credential this commission forbids the workflow from requiring.",
+      "disposition": "RECORDED_AS_BOUNDARY",
+      "step_outcome": "clean_clone=NOT_SUPPORTED_clone_refused",
+      "why_not_a_failure": "The step distinguishes exit 70, a refused clone, from a suite failure inside a successful clone. Treating a missing runner capability as a red build would train readers to ignore the signal."
+    },
+    {
+      "id": "PO03-CI-002-no-network-namespace-on-hosted-runner",
+      "statement": "unshare -rn does not work on the ubuntu-latest hosted runner, so offline_check.sh reported NOT_SUPPORTED with 'sandbox command failed: unshare -rn' and exited 3. Both baseline probes succeeded there, confirming the runner does have egress; what it lacks is the ability to remove it.",
+      "observed_in": "run 32562707415, step 14",
+      "consequence": "The network-disabled claim for unit a3-u06 is proved inside this execution runtime, where the namespace is available, and recorded in workstreams/po03/runtime/transcripts/offline-suite.json with 145 tests passing and both probes failing inside the sandbox. On GitHub Actions it is unproven rather than false.",
+      "disposition": "RECORDED_AS_BOUNDARY",
+      "step_outcome": "offline=NOT_SUPPORTED_no_namespace",
+      "why_not_a_failure": "The script refuses to report a pass for a sandbox it never entered. A workflow that downgraded NOT_SUPPORTED to success would be claiming an offline run that did not happen."
+    }
+  ],
+  "earlier_runs_of_this_workflow": [
+    {
+      "id": 32562323177,
+      "url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32562323177",
+      "head_sha": "f6d23ddf043bda2206a0c14c93b224fa85ae8dfe",
+      "conclusion": "failure",
+      "failed_step": "Run the full suite with site-packages removed",
+      "cause": "test_a3_process_boundary's declaration check found ci_surface.py committed but absent from entry-points.json. The check fired on the commit that introduced the gap, which is what it exists for.",
+      "fix": "Commit 5002f8a declared ci_surface.py, and widening the check to shell scripts also caught clean_clone.sh and offline_check.sh, which a Python-only scan could not see."
+    },
+    {
+      "id": 32562567125,
+      "url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32562567125",
+      "head_sha": "5002f8aa5cdea753c89bcdc077efce93f4af646e",
+      "conclusion": "failure",
+      "failed_step": "Run the full suite with site-packages removed",
+      "cause": "The a3-u08 result document pinned the bytes of the three files that fix amended, so the committed-only gate from unit a3-u07 reported MANIFEST_UNVERIFIABLE against HEAD. Seven tests failed, all downstream of that one gate.",
+      "fix": "Commit b6d388c regenerated a3-u08.json. The staleness was real and the gate was right to fail: a result document that outlives its own artifacts is exactly the failure mode that lost the PO-02 Code-2 return."
+    }
+  ],
+  "later_run_that_validated_this_receipt": {
+    "id": 32562938448,
+    "url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32562938448",
+    "head_sha": "7e919558f5891fc7230417a237fd6cbfef49e47e",
+    "conclusion": "success",
+    "why_it_matters": "In run 32562707415 the six Receipt tests in test_a3_ci_clean_clone.py skipped, because the receipt they check did not exist yet at that commit. Run 32562938448 is the first in which this document was committed, so those checks ran on a clean runner rather than only here.",
+    "recursion_note": "This field cannot be self-referential. Recording a run inside the receipt changes the receipt, which produces a new run that the receipt does not mention. The chain is cut deliberately here: the last run of this workflow is never the one named in the receipt, and a reader should expect exactly one unrecorded run after the newest recorded one."
+  },
+  "recorded_honestly": "Two of this workflow's four runs failed and both failures are recorded above with their causes, along with the passing run this receipt is about and the later run that validated the receipt itself."
+}

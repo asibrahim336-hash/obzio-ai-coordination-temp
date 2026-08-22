@@ -1,0 +1,141 @@
+name: PO-03 clean-runner reproduction
+
+# Reproduces the entire PO-03 suite on a runner that has nothing of ours on it.
+#
+# The claim this workflow has to earn is narrow: the suite needs no preinstalled
+# dependency and no warm cache. Asserting that in prose is worthless, so the
+# absence of each is checked rather than assumed. Nothing is cached, nothing is
+# installed, and the suite is run once with site-packages removed entirely --
+# under `-S` a third-party import cannot resolve, so a pass is evidence rather
+# than a claim.
+#
+# Uses only actions/checkout and actions/setup-python: no secrets, no
+# self-hosted runner, and no network beyond those two actions and the clone the
+# clean-clone runner performs from the public remote.
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "po03/**"
+      - "cursor/po03-**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  clean-runner:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # No `cache:` input on purpose. A cached pip directory would make the
+      # no-dependency claim untestable, because a dependency could be satisfied
+      # from the cache and nobody would see the install.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Record the runner's starting state
+        run: |
+          set -eu
+          python3 -VV
+          echo "runner: ${{ runner.os }} ${{ runner.arch }}"
+          echo "--- nothing of ours is installed ---"
+          python3 -I -c 'import sys; print("\n".join(sys.path))'
+
+      # Checks that no workflow here declares a cache, an install, a secret or a
+      # self-hosted runner, that the seeded contracts gate is still present and
+      # unweakened, and that the checkout carries no bytecode beyond the two
+      # committed caches this commission inherited. The patterns live in
+      # ci-surface-rules.json rather than in this file, because a grep written
+      # into a workflow matches its own pattern line and fails always.
+      - name: Prove the surface carries no cache, install or secret
+        run: python3 -I workstreams/po03/runtime/ci_surface.py
+
+      # The load-bearing step. -S removes site-packages from sys.path, so any
+      # third-party import fails outright. Running before the canonical gate
+      # means a dependency that crept in cannot be masked by an earlier pass.
+      - name: Run the full suite with site-packages removed
+        run: python3 -I -S -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v
+
+      - name: Run the canonical gate command
+        run: python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v
+
+      - name: Static hermeticity prober
+        run: python3 -I workstreams/po03/runtime/hermeticity.py
+
+      - name: Byte-determinism of generated artifacts
+        run: python3 -I workstreams/po03/runtime/determinism.py
+
+      - name: Uncommitted-file and untracked-manifest gate
+        run: python3 -I workstreams/po03/runtime/committed_only.py
+
+      - name: Subprocess-boundary harness
+        run: python3 -I workstreams/po03/runtime/process_boundary.py
+
+      - name: Path-scope rejection selftest
+        run: python3 -I workstreams/po03/runtime/path_scope.py selftest
+
+      # Clones from the real remote into a scratch tree outside the checkout and
+      # runs the suite there, which is the clean-clone claim exercised on
+      # infrastructure that never held a warm checkout. Exit 70 means the clone
+      # itself was refused; that is a runner capability boundary, recorded as
+      # such rather than reported as a suite failure.
+      - name: Full suite from a fresh clone of the real remote
+        id: clean-clone
+        run: |
+          set -eu
+          status=0
+          sh workstreams/po03/runtime/clean_clone.sh \
+            --ref "${{ github.ref_name }}" \
+            --expect-commit "${{ github.sha }}" \
+            --scratch "$RUNNER_TEMP/po03-clean-clone" \
+            --out "$RUNNER_TEMP/clean-clone.json" || status=$?
+          if [ "$status" -eq 70 ]; then
+            echo "clean_clone=NOT_SUPPORTED_clone_refused" >> "$GITHUB_OUTPUT"
+            echo "The runner could not clone the remote anonymously; recorded as a boundary." >&2
+            exit 0
+          fi
+          if [ "$status" -ne 0 ]; then
+            echo "clean_clone=FAIL" >> "$GITHUB_OUTPUT"
+            exit "$status"
+          fi
+          echo "clean_clone=PASS" >> "$GITHUB_OUTPUT"
+
+      # Outbound network is removed with an unprivileged network namespace. If
+      # the runner does not permit one, the script reports NOT_SUPPORTED with the
+      # observed failure and exits 3, which is recorded rather than smoothed over
+      # into a pass the runner never demonstrated.
+      - name: Full suite with outbound network disabled
+        id: offline
+        run: |
+          set -eu
+          status=0
+          sh workstreams/po03/runtime/offline_check.sh --out "$RUNNER_TEMP/offline.json" || status=$?
+          case "$status" in
+          0) echo "offline=PASS" >> "$GITHUB_OUTPUT" ;;
+          3) echo "offline=NOT_SUPPORTED_no_namespace" >> "$GITHUB_OUTPUT" ;;
+          4) echo "offline=INCONCLUSIVE_NO_BASELINE" >> "$GITHUB_OUTPUT" ;;
+          *) echo "offline=FAIL" >> "$GITHUB_OUTPUT"; exit "$status" ;;
+          esac
+
+      - name: Summarise for the CI receipt
+        if: always()
+        run: |
+          {
+            echo "### PO-03 clean-runner reproduction"
+            echo
+            echo "| field | value |"
+            echo "| --- | --- |"
+            echo "| run_url | ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }} |"
+            echo "| run_id | ${{ github.run_id }} |"
+            echo "| run_attempt | ${{ github.run_attempt }} |"
+            echo "| commit | ${{ github.sha }} |"
+            echo "| runner | ${{ runner.os }}/${{ runner.arch }} |"
+            echo "| clean_clone | ${{ steps.clean-clone.outputs.clean_clone }} |"
+            echo "| offline | ${{ steps.offline.outputs.offline }} |"
+          } >> "$GITHUB_STEP_SUMMARY"

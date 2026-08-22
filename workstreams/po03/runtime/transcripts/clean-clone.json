@@ -1,0 +1,74 @@
+{
+  "schema": "po03-clean-clone-transcript-v1",
+  "unit_id": "a3-u01",
+  "status": "PASS",
+  "remote": "https://***@github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+  "ref": "cursor/po03-a3-portable-runtime-ed20",
+  "cloned_commit": "61f1d8df6ca19607521112737d36045f33422416",
+  "tracked_files": 311,
+  "tests_run": 30,
+  "wall_ms": 10344,
+  "scratch_inside_repository": false,
+  "leftovers": {
+    "after_no_bytecode_run": 0,
+    "bytecode_caches_after_canonical_run": 3,
+    "unexpected_after_canonical_run": 0
+  },
+  "environment": {
+    "mode": "env -i",
+    "path": "/usr/bin:/bin",
+    "home": "scratch/home",
+    "tmpdir": "scratch/tmp",
+    "inherited_variables": 0
+  },
+  "steps": [
+  {
+    "argv": "git clone --depth 1 --single-branch --branch cursor/po03-a3-portable-runtime-ed20 https://***@github.com/asibrahim336-hash/obzio-ai-coordination-temp /tmp/tmp.Lw1Yy0N1mD/clone",
+    "duration_ms": 380,
+    "exit_code": 0,
+    "log_lines": 1,
+    "log_sha256": "195d7db8bf0182af1fdcae1ab9a97f88a8c753e441911fc0b288c8c25f0c4e01",
+    "name": "clone"
+  },
+  {
+    "argv": "git -C /tmp/tmp.Lw1Yy0N1mD/clone status --porcelain",
+    "duration_ms": 20,
+    "exit_code": 0,
+    "log_lines": 0,
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "name": "tree_clean_before"
+  },
+  {
+    "argv": "clean_env python3 -I -B -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+    "duration_ms": 4683,
+    "exit_code": 0,
+    "log_lines": 36,
+    "log_sha256": "b3ef16ee0be87a4dfbc965d5e0d61d811e0dfe40ec755b244e1837dd97a6e2c5",
+    "name": "suite_no_bytecode"
+  },
+  {
+    "argv": "git -C /tmp/tmp.Lw1Yy0N1mD/clone status --porcelain",
+    "duration_ms": 20,
+    "exit_code": 0,
+    "log_lines": 0,
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "name": "tree_after_no_bytecode"
+  },
+  {
+    "argv": "clean_env python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+    "duration_ms": 4695,
+    "exit_code": 0,
+    "log_lines": 36,
+    "log_sha256": "80905b64fe16ef2ef124dbb7374c6b49c7f893e819e2704d2a22c92a0fb4aa99",
+    "name": "suite"
+  },
+  {
+    "argv": "git -C /tmp/tmp.Lw1Yy0N1mD/clone status --porcelain",
+    "duration_ms": 14,
+    "exit_code": 0,
+    "log_lines": 3,
+    "log_sha256": "e34b18dcd3e640a1e547a5a5df7c4d81db27b578845dc1f304196683e5fc9d9c",
+    "name": "tree_clean_after"
+  }
+]
+}

@@ -1,0 +1,173 @@
+{
+  "schema": "po03-entry-points-v1",
+  "rationale": "Every PO-03 command-line entry point, enumerated so the subprocess-boundary harness runs all of them rather than a convenient subset. A harness that discovers its own targets can quietly stop covering one; a declared list makes an omission visible as a diff.",
+  "clean_environment": {
+    "policy": "The child inherits nothing. PATH is rebuilt from os.defpath plus the interpreter's own directory, LC_ALL is pinned, and HOME and TMPDIR are redirected into a per-run scratch tree outside the repository.",
+    "why_not_a_filtered_copy": "Filtering the parent environment leaves whatever the filter's author did not think of. Constructing the environment from nothing means a new inherited dependency shows up as a failure instead of as a pass that happens to work on this machine."
+  },
+  "entry_points": [
+    {
+      "id": "control_plane",
+      "path": "workstreams/po03/tools/control_plane.py",
+      "owner": "coordinator",
+      "invocations": [
+        {"name": "help", "args": ["--help"], "expected_exit_code": 0, "expect_stdout_contains": "transactional control plane"},
+        {"name": "no-args", "args": [], "expected_exit_code": 2, "expect_stderr_contains": "arguments are required"},
+        {"name": "canary", "args": ["canary", "--worker", "boundary-probe", "--root", "{scratch}"], "expected_exit_code": 0, "expect_stdout_contains": "\"roundtrip_ok\":true"},
+        {"name": "check-paths", "args": ["check-paths", "{scratch}/in-allowlist.txt"], "expected_exit_code": 0, "writes_input": "in-allowlist.txt"}
+      ]
+    },
+    {
+      "id": "validate_contracts",
+      "path": "workstreams/po03/tools/validate_contracts.py",
+      "owner": "coordinator",
+      "invocations": [
+        {"name": "help", "args": ["--help"], "expected_exit_code": 0},
+        {"name": "validate-a3-u01", "args": ["result", "workstreams/po03/control/units/a3/a3-u01.json"], "expected_exit_code": 0, "expect_stdout_contains": "VALID result"},
+        {"name": "missing-document", "args": ["result", "workstreams/po03/control/units/a3/does-not-exist.json"], "expected_exit_code": 2}
+      ]
+    },
+    {
+      "id": "make_result",
+      "path": "workstreams/po03/tools/make_result.py",
+      "owner": "coordinator",
+      "invocations": [
+        {"name": "help", "args": ["--help"], "expected_exit_code": 0},
+        {
+          "name": "emit",
+          "args": [
+            "a3-u01",
+            "--root",
+            "{repo}",
+            "--provider-run-id",
+            "po03-a3-boundary-probe",
+            "--artifact",
+            "workstreams/po03/runtime/clean_clone.sh",
+            "--out",
+            "{scratch}/result.json"
+          ],
+          "expected_exit_code": 0,
+          "expect_stdout_contains": "1 artifacts"
+        }
+      ]
+    },
+    {
+      "id": "hermeticity",
+      "path": "workstreams/po03/runtime/hermeticity.py",
+      "owner": "po03-worker-a3",
+      "invocations": [
+        {"name": "help", "args": ["--help"], "expected_exit_code": 0},
+        {"name": "scan-tree", "args": [], "expected_exit_code": 0, "expect_stdout_contains": "PASS 0 hermeticity findings"},
+        {"name": "scan-fixture", "args": ["workstreams/po03/runtime/fixtures/non_portable/temp_state.py"], "expected_exit_code": 1, "expect_stdout_contains": "TEMP_PATH_LITERAL"}
+      ]
+    },
+    {
+      "id": "path_scope",
+      "path": "workstreams/po03/runtime/path_scope.py",
+      "owner": "po03-worker-a3",
+      "invocations": [
+        {"name": "help", "args": ["--help"], "expected_exit_code": 0},
+        {"name": "selftest", "args": ["selftest"], "expected_exit_code": 0, "expect_stdout_contains": "recorded verdicts"},
+        {"name": "reject-fixture", "args": ["paths", "workstreams/po03/runtime/fixtures/path_scope/out-of-allowlist-changed-paths.txt"], "expected_exit_code": 1, "expect_stdout_contains": "OUT_OF_ALLOWLIST"}
+      ]
+    },
+    {
+      "id": "determinism",
+      "path": "workstreams/po03/runtime/determinism.py",
+      "owner": "po03-worker-a3",
+      "invocations": [
+        {"name": "help", "args": ["--help"], "expected_exit_code": 0},
+        {"name": "check", "args": [], "expected_exit_code": 0, "expect_stdout_contains": "byte-identical across 2 runs"},
+        {"name": "fixtures", "args": ["--fixtures"], "expected_exit_code": 1, "expect_stdout_contains": "UNDECLARED_VARIANCE"}
+      ]
+    },
+    {
+      "id": "committed_only",
+      "path": "workstreams/po03/runtime/committed_only.py",
+      "owner": "po03-worker-a3",
+      "invocations": [
+        {"name": "help", "args": ["--help"], "expected_exit_code": 0},
+        {
+          "name": "manifests",
+          "args": ["--skip-tree", "--manifest-dir", "workstreams/po03/control/units/a3", "--root", "{repo}"],
+          "expected_exit_code": 0,
+          "expect_stdout_contains": "PASS committed-only gate"
+        }
+      ]
+    },
+    {
+      "id": "ci_surface",
+      "path": "workstreams/po03/runtime/ci_surface.py",
+      "owner": "po03-worker-a3",
+      "invocations": [
+        {"name": "help", "args": ["--help"], "expected_exit_code": 0},
+        {"name": "check-workflows", "args": ["--skip-bytecode"], "expected_exit_code": 0, "expect_stdout_contains": "no cache, no install and no secret"},
+        {"name": "bad-rules", "args": ["--rules", "workstreams/po03/runtime/entry-points.json"], "expected_exit_code": 2, "expect_stderr_contains": "CI_SURFACE_ERROR"}
+      ],
+      "bytecode_note": "The default mode also checks the checkout for warm bytecode. It is not exercised here because the harness runs from a tree in which the suite has already run, so caches exist by then; the workflow runs that mode before anything imports."
+    },
+    {
+      "id": "clean_clone",
+      "path": "workstreams/po03/runtime/clean_clone.sh",
+      "owner": "po03-worker-a3",
+      "interpreter": "sh",
+      "invocations": [
+        {"name": "help", "args": ["--help"], "expected_exit_code": 0, "expect_stdout_contains": "clone from"},
+        {"name": "unknown-argument", "args": ["--po03-not-an-option"], "expected_exit_code": 64, "expect_stderr_contains": "unknown argument"}
+      ],
+      "network_note": "Only the argument surface is exercised. A real invocation clones from the remote, which would make this harness network-dependent and slow; the clone is covered by unit a3-u01's committed transcript and by the clean-runner workflow."
+    },
+    {
+      "id": "offline_check",
+      "path": "workstreams/po03/runtime/offline_check.sh",
+      "owner": "po03-worker-a3",
+      "interpreter": "sh",
+      "invocations": [
+        {"name": "help", "args": ["--help"], "expected_exit_code": 0, "expect_stdout_contains": "override the sandbox command"},
+        {"name": "foreign-policy", "args": ["--policy", "workstreams/po03/runtime/entry-points.json"], "expected_exit_code": 66, "expect_stderr_contains": "unexpected policy schema"}
+      ],
+      "network_note": "Same reason as clean_clone: the substantive modes need baseline reachability and a network namespace, both covered by unit a3-u06."
+    },
+    {
+      "id": "process_boundary",
+      "path": "workstreams/po03/runtime/process_boundary.py",
+      "owner": "po03-worker-a3",
+      "invocations": [
+        {"name": "help", "args": ["--help"], "expected_exit_code": 0}
+      ],
+      "recursion_note": "Only --help is exercised. Running the harness inside itself would nest indefinitely, and the harness's substantive behaviour is covered by test_a3_process_boundary.py."
+    }
+  ],
+  "recorded_boundaries": [
+    {
+      "id": "PO03-BOUNDARY-001-isolated-mode-ignores-python-env",
+      "statement": "python3 -I implies -E, so every PYTHON* variable is ignored, including PYTHONDONTWRITEBYTECODE. Suppressing __pycache__ in an isolated child requires the -B flag; setting the environment variable has no effect.",
+      "observed_in": "a3-u01 clean-clone runner, first execution",
+      "consequence": "A clean-clone run that set PYTHONDONTWRITEBYTECODE and asserted a pristine tree failed, because the suite wrote bytecode caches anyway.",
+      "disposition": "RECORDED_AND_FIXED",
+      "fix": "clean_clone.sh passes -B for its pristine-tree pass and classifies bytecode separately for the canonical pass."
+    },
+    {
+      "id": "PO03-BOUNDARY-003-make-result-main-takes-no-argv",
+      "statement": "make_result.main() takes no parameters and reads sys.argv directly, unlike every other PO-03 entry point whose main() accepts an argv list. It can only be driven as a command; calling main(args) in-process raises TypeError.",
+      "observed_in": "a3-u08 harness with --compare: make_result:help and make_result:emit are subprocess_only_successes",
+      "consequence": "Any future in-process orchestration of PO-03 tools must special-case make_result or invoke it as a subprocess. The harness reports this as a boundary rather than a defect, because the subprocess form is the form CI and reviewers use.",
+      "disposition": "RECORDED_AS_BOUNDARY",
+      "owning_writer": "coordinator"
+    },
+    {
+      "id": "PO03-BOUNDARY-002-not-an-importable-package",
+      "statement": "workstreams/po03 has no __init__.py and is not on sys.path, so no entry point can be reached by import in a clean clone. python3 -I -m unittest workstreams.po03.tests.test_a3_clean_clone fails with ModuleNotFoundError; only discovery by directory works.",
+      "observed_in": "a3-u01, first attempt to run a single test module by dotted name",
+      "consequence": "Any harness that reached these modules by import would be testing something a clean runtime cannot do. Every module here is loaded by file path with importlib instead.",
+      "disposition": "RECORDED_AS_BOUNDARY"
+    },
+    {
+      "id": "PO03-BOUNDARY-004-isolated-mode-drops-the-script-directory",
+      "statement": "python3 -I also implies -P, so the script's own directory is not prepended to sys.path. A script run as `python3 -I script.py` cannot import a module sitting beside it: `import probe_module` raises ModuleNotFoundError even with probe_module.py in the same directory.",
+      "observed_in": "a3-u08, while building the PO03-BOUNDARY-001 reproduction: the probe script failed on its sibling import before it ever got as far as testing bytecode suppression",
+      "consequence": "Sibling imports are unavailable under the mandated -I interpreter flag. Loading by explicit importlib spec is the only portable route, which is what every PO-03 test does. It also means the PO03-BOUNDARY-001 reproduction had to load its probe module by path rather than by name.",
+      "disposition": "RECORDED_AS_BOUNDARY"
+    }
+  ]
+}

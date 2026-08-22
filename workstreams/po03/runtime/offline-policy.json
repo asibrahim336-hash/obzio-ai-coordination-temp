@@ -1,0 +1,53 @@
+{
+  "schema": "po03-offline-policy-v1",
+  "unit_id": "a3-u06",
+  "rationale": "Running a suite on a machine that happens to have no route out proves nothing: the same transcript is produced by a suite with a hidden remote dependency and by one without. This policy names the three things that have to be true simultaneously for an offline pass to mean anything, and offline_check.sh refuses to report PASS unless it has observed all three.",
+  "preconditions": {
+    "baseline_reachable": "The host must be able to reach the remote before the sandbox is entered. Without this the run is reported INCONCLUSIVE_NO_BASELINE rather than PASS, because an unreachable remote outside the sandbox makes the inside-the-sandbox result unattributable.",
+    "sandbox_available": "A sandbox that removes outbound network must exist. If it does not, the run is reported NOT_SUPPORTED with the exact observed failure rather than being downgraded to a claim about a network that was never disabled.",
+    "enforcement_observed": "Every declared probe must fail inside the sandbox. A probe that succeeds means the sandbox did not disable anything, which is reported as OFFLINE_NOT_ENFORCED and exits non-zero."
+  },
+  "sandbox": {
+    "command": ["unshare", "-rn"],
+    "mechanism": "Unprivileged user namespace plus a fresh network namespace. The new namespace has no interface other than loopback and no route, so every outbound connection fails with ENETUNREACH at the kernel rather than at a proxy or a name server.",
+    "why_not_a_proxy_variable": "http_proxy and friends are advisory: they are read by some clients and ignored by others, and python's socket module never consults them. A namespace with no route cannot be opted out of by a library that does its own connecting.",
+    "why_not_a_socket_monkeypatch": "A sitecustomize that replaced socket.socket would have to arrive through PYTHONPATH, and the mandated python3 -I flag implies -E, which discards it. It would also only bind Python callers, leaving git's own transport unaffected."
+  },
+  "probes": [
+    {
+      "id": "dns_resolve",
+      "description": "Name resolution for the remote host. Fails inside the sandbox because no resolver is reachable.",
+      "command": ["python3", "-I", "-c", "import socket,sys; socket.getaddrinfo(sys.argv[1], 443)", "{host}"],
+      "must_fail_inside_sandbox": true
+    },
+    {
+      "id": "git_ls_remote",
+      "description": "The exact transport the clean-clone runner depends on. Fails inside the sandbox with exit 128.",
+      "command": ["git", "ls-remote", "--exit-code", "{remote}", "HEAD"],
+      "must_fail_inside_sandbox": true
+    }
+  ],
+  "probe_placement_note": "The probes are written in shell and in python -c strings inside offline_check.sh, not in any scanned module, so the hermeticity prober's NETWORK_IMPORT and NETWORK_CALL rules stay meaningful for the tree they govern. A probe that lived in a .py file under workstreams/po03 would have forced a self-exemption in the very rule that keeps the suite offline-safe.",
+  "marker": {
+    "constant": "PO03_REQUIRES_NETWORK",
+    "convention": "A test module that genuinely needs the remote sets PO03_REQUIRES_NETWORK = True at module scope and guards itself so that it skips, rather than fails, when the remote is unreachable. offline_check.sh reports every marked module as separated and requires that the marked modules produce skips and the unmarked modules produce passes.",
+    "why_a_module_constant": "A decorator or a naming convention can be applied to one test and forgotten on its neighbour in the same file. A module-scope constant is visible to a static scan, so the separated set can be recomputed from the tree instead of maintained by hand in this file."
+  },
+  "network_requiring_components": [
+    {
+      "path": "workstreams/po03/runtime/clean_clone.sh",
+      "requires": "git clone from the real remote",
+      "separation": "Not a test module and not reachable by unittest discovery. It is invoked explicitly, and its committed transcript at workstreams/po03/runtime/transcripts/clean-clone.json is what the offline suite reads instead of re-cloning.",
+      "unit_id": "a3-u01"
+    },
+    {
+      "path": "workstreams/po03/runtime/offline_check.sh",
+      "requires": "one baseline reachability probe before the sandbox is entered",
+      "separation": "Also not a test module. The probe exists to establish that the sandbox changed something; the suite it then runs is entirely offline.",
+      "unit_id": "a3-u06"
+    }
+  ],
+  "expected_marked_test_modules": ["test_a3_offline.py"],
+  "expected_marked_test_modules_note": "Exactly one entry, and it is this unit's own test module. Its enforcement tests have to observe that egress existed before the sandbox removed it, so they cannot run inside an already-offline environment; they skip there instead. The requirement was discovered rather than designed: the first full-suite run inside the sandbox reported INCONCLUSIVE_NO_BASELINE from this module's nested probes, which is the runner refusing to make an unattributable claim. No other PO-03 test needs the remote -- test_a3_clean_clone.py exercises the clone path against a bare repository it builds on local disk, and path_scope's git mode reads remote-tracking refs already in the object store. This list is asserted against a scan of the committed tree, so a test that reaches the network without marking itself fails the offline gate, and one that marks itself without being listed fails the registry check.",
+  "separated_modules_are_skipped_not_excluded": "Marked modules still run in the offline suite; their guards turn the unreachable remote into skips. Excluding them from discovery would hide a marked module that had started failing for an unrelated reason."
+}

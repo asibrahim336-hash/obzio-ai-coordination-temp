@@ -1,0 +1,62 @@
+{
+  "schema": "po03-path-scope-expectations-v1",
+  "rationale": "Frozen verdicts for the path-scope fixtures. The guard's selftest replays these through the same evaluate() call CI runs on real changed paths, so a guard that stops rejecting an out-of-allowlist mutation fails the build instead of reporting a clean scope.",
+  "cases": [
+    {
+      "fixture": "workstreams/po03/runtime/fixtures/path_scope/out-of-allowlist-changed-paths.txt",
+      "kind": "path-list",
+      "purpose": "Deliberate out-of-allowlist mutation, expressed as data. Must be rejected.",
+      "expected_verdict": "FAIL",
+      "expected_allowlist_violations": [
+        "/workstreams/po03/runtime/injected.py",
+        ".cursor/environment.json",
+        ".github/workflows/ci.yml",
+        ".github/workflows/nested/po03-path-scope.yml",
+        ".github/workflows/po03-.yml.bak",
+        ".github/workflows/po03-path-scope.yaml",
+        "_transport/outbound/claude-v010-launch.json",
+        "dispatch/current-pointer.json",
+        "modules/operators/operator-directory.md",
+        "my-workstreams/po03/runtime/x.py",
+        "operations/README.md",
+        "packs/operator/pack-manifest.json",
+        "receipts/po02/2026-08-22/code-2-packaging.json",
+        "scripts/check_operator_taxonomy.py",
+        "state/operator-system/ACTIVE_INSTRUCTION_STACK.json",
+        "workstreams/po01/COMMISSION.md",
+        "workstreams/po03/../../packs/operator/pack-manifest.json"
+      ]
+    },
+    {
+      "fixture": "workstreams/po03/runtime/fixtures/path_scope/in-allowlist-changed-paths.txt",
+      "kind": "path-list",
+      "owner": "po03-worker-a3",
+      "purpose": "Selectivity control: a legitimate wave-one change by its rightful owner must pass.",
+      "expected_verdict": "PASS"
+    },
+    {
+      "fixture": "workstreams/po03/runtime/fixtures/path_scope/foreign-owned-changed-paths.txt",
+      "kind": "path-list",
+      "owner": "po03-worker-a3",
+      "purpose": "Inside the allowlist but outside this writer's subtree; the ownership check is what prevents two subordinates contending for one file.",
+      "expected_verdict": "FAIL",
+      "expected_ownership_violations": [
+        "workstreams/po03/engine/custody.py",
+        "workstreams/po03/faults/injector.py",
+        "workstreams/po03/tools/control_plane.py"
+      ]
+    },
+    {
+      "fixture": "workstreams/po03/runtime/fixtures/path_scope/out-of-allowlist.diff",
+      "kind": "diff",
+      "purpose": "Same rejection proved against the unified-diff shape CI receives from git, including the rename form where only the diff header names the path.",
+      "expected_verdict": "FAIL",
+      "expected_allowlist_violations": [
+        "modules/operators/directory.md",
+        "modules/operators/renamed-directory.md",
+        "packs/operator/pack-manifest.json",
+        "state/operator-system/ACTIVE_INSTRUCTION_STACK.json"
+      ]
+    }
+  ]
+}

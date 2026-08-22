@@ -1,0 +1,48 @@
+{
+  "schema": "po03-ci-surface-rules-v1",
+  "rationale": "The clean-runner claim is falsified by a preinstalled dependency or a warm cache, so the workflow that makes the claim has to be checked for both. Doing that with a grep inside the workflow itself does not work: the grep pattern is a line of the file it scans, so the check matches itself and fails always. The patterns therefore live here, out of the YAML they govern, and are applied by ci_surface.py.",
+  "required_substrings": [
+    "permissions:\n  contents: read\n"
+  ],
+  "forbidden_patterns": {
+    "DEPENDENCY_CACHE": {
+      "description": "A restored dependency cache would let an install be satisfied invisibly, making the no-dependency claim untestable.",
+      "regex": "actions/cache|cache-dependency-path|^[ \\t]+cache:[ \\t]*[^ \\t\\n]"
+    },
+    "PACKAGE_INSTALL": {
+      "description": "Any package installation contradicts the dependency-free standard.",
+      "regex": "\\b(pip[0-9.]*|python[0-9.]* -m pip) install\\b|\\bapt-get +install\\b|\\bnpm +(install|ci)\\b|\\bpoetry +install\\b"
+    },
+    "SECRET_REFERENCE": {
+      "description": "Workflows added under this commission must not require secrets.",
+      "regex": "secrets\\.[A-Za-z_]"
+    },
+    "SELF_HOSTED_RUNNER": {
+      "description": "Workflows added under this commission must run on the standard hosted runners.",
+      "regex": "runs-on:[ \\t]*(self-hosted|\\[)"
+    }
+  },
+  "allowed_actions": ["actions/checkout@v4", "actions/setup-python@v5"],
+  "allowed_runners": ["ubuntu-latest"],
+  "owned_workflows": [
+    ".github/workflows/po03-clean-clone.yml",
+    ".github/workflows/po03-path-scope.yml"
+  ],
+  "seeded_control": {
+    "path": ".github/workflows/po03-contracts.yml",
+    "must_remain": true,
+    "required_substrings": [
+      "unittest discover -s workstreams/po03/tests -p 'test_*.py'",
+      "permissions:\n  contents: read\n"
+    ],
+    "why": "po03-contracts.yml is an active seeded control, not scaffolding. This unit strengthens the surface around it and must not be able to weaken or remove it, so its presence and its canonical gate command are asserted from outside it."
+  },
+  "bytecode_policy": {
+    "tracked_exceptions": [
+      "workstreams/po03/tests/__pycache__/test_validate_contracts.cpython-312.pyc",
+      "workstreams/po03/tools/__pycache__/validate_contracts.cpython-312.pyc"
+    ],
+    "why": "Two committed .pyc files predate this commission and sit outside this writer's owned paths, so they are recorded as a known exception rather than deleted. Any other bytecode in a checkout is a warm cache, which is what the clean-runner claim excludes.",
+    "repair_candidate": "workstreams/po03/runtime/repair-candidates/tracked-bytecode.json"
+  }
+}

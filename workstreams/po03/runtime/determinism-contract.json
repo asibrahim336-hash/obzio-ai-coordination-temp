@@ -1,0 +1,143 @@
+{
+  "schema": "po03-determinism-contract-v1",
+  "rationale": "Every field that may legitimately differ between two runs is enumerated here with its kind and its reason. Anything else that varies is a defect. Declaring volatility explicitly is the whole point: a checker that diffs artifacts and ignores 'timestamp-looking' fields by pattern will also ignore a genuinely non-deterministic field that happens to be named like a date.",
+  "placeholders": {
+    "{python}": "the interpreter running the checker, so the child is the same runtime",
+    "{repo}": "repository root",
+    "{scratch}": "a per-run temporary directory outside the repository"
+  },
+  "generators": [
+    {
+      "artifact_class": "hermeticity-report",
+      "description": "Static analysis output. Contains no time and no entropy, so it must be byte-identical across runs with nothing declared volatile.",
+      "argv": ["{python}", "-I", "-B", "{repo}/workstreams/po03/runtime/hermeticity.py", "--json"],
+      "capture": "stdout",
+      "volatile_fields": []
+    },
+    {
+      "artifact_class": "path-scope-report",
+      "description": "Allowlist verdict over a fixed fixture. Also fully determined by its input.",
+      "argv": [
+        "{python}",
+        "-I",
+        "-B",
+        "{repo}/workstreams/po03/runtime/path_scope.py",
+        "--json",
+        "paths",
+        "{repo}/workstreams/po03/runtime/fixtures/path_scope/out-of-allowlist-changed-paths.txt"
+      ],
+      "capture": "stdout",
+      "expected_exit_code": 1,
+      "expected_exit_code_reason": "The guard is a gate and exits 1 on the out-of-allowlist fixture. Its report must still be byte-identical across runs.",
+      "volatile_fields": []
+    },
+    {
+      "artifact_class": "control-plane-canary",
+      "description": "Durable-sink round-trip proof written by the coordinator's control plane.",
+      "argv": [
+        "{python}",
+        "-I",
+        "-B",
+        "{repo}/workstreams/po03/tools/control_plane.py",
+        "canary",
+        "--worker",
+        "determinism-probe",
+        "--root",
+        "{scratch}"
+      ],
+      "capture": "file",
+      "output_file": "{scratch}/canary-determinism-probe.json",
+      "volatile_fields": [
+        {
+          "path": "written_at",
+          "kind": "timestamp",
+          "reason": "UTC second at which the canary was written."
+        },
+        {
+          "path": "nonce",
+          "kind": "entropy",
+          "reason": "SHA-256 over worker id, current time and process id. Deliberately unique per attempt so a replayed canary cannot be mistaken for a fresh round-trip."
+        }
+      ]
+    },
+    {
+      "artifact_class": "transactional-result",
+      "description": "The result document every PO-03 unit commits. The class whose determinism matters most, because a reviewer must be able to regenerate it and get the same custody claims.",
+      "argv": [
+        "{python}",
+        "-I",
+        "-B",
+        "{repo}/workstreams/po03/tools/make_result.py",
+        "a3-u01",
+        "--root",
+        "{repo}",
+        "--provider-run-id",
+        "po03-a3-determinism-probe",
+        "--artifact",
+        "workstreams/po03/runtime/clean_clone.sh",
+        "--out",
+        "{scratch}/result.json"
+      ],
+      "capture": "file",
+      "output_file": "{scratch}/result.json",
+      "volatile_fields": [
+        {
+          "path": "attempt.heartbeat_at",
+          "kind": "timestamp",
+          "reason": "UTC second the attempt last reported liveness."
+        },
+        {
+          "path": "result_transaction.committed_at",
+          "kind": "timestamp",
+          "reason": "UTC second the result transaction was committed."
+        },
+        {
+          "path": "result_transaction.verified_at",
+          "kind": "timestamp",
+          "reason": "UTC second the artifacts were verified by hash."
+        },
+        {
+          "path": "artifacts[].readback_verified_at",
+          "kind": "timestamp",
+          "reason": "UTC second each artifact was read back and hashed."
+        }
+      ]
+    }
+  ],
+  "fixture_generators": [
+    {
+      "artifact_class": "planted-nondeterministic",
+      "description": "Planted defect: emits an undeclared varying field. The checker must report it. A determinism checker that has never caught a non-deterministic generator is not evidence.",
+      "argv": [
+        "{python}",
+        "-I",
+        "-B",
+        "{repo}/workstreams/po03/runtime/fixtures/determinism/nondeterministic_generator.py"
+      ],
+      "capture": "stdout",
+      "volatile_fields": [
+        {
+          "path": "generated_at",
+          "kind": "timestamp",
+          "reason": "Declared volatile so the test proves detection of the undeclared field beside it, not merely of any variance at all."
+        }
+      ],
+      "expected_verdict": "FAIL",
+      "expected_undeclared_variance": ["run_id", "nested.attempt_token", "items[].salt"]
+    },
+    {
+      "artifact_class": "planted-deterministic",
+      "description": "Control fixture: same shape, no variance at all. Proves the checker does not simply fail everything.",
+      "argv": [
+        "{python}",
+        "-I",
+        "-B",
+        "{repo}/workstreams/po03/runtime/fixtures/determinism/deterministic_generator.py"
+      ],
+      "capture": "stdout",
+      "volatile_fields": [],
+      "expected_verdict": "PASS",
+      "expected_undeclared_variance": []
+    }
+  ]
+}

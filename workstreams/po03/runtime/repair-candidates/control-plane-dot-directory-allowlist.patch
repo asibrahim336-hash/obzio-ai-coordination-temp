@@ -1,0 +1,35 @@
+--- a/workstreams/po03/tools/control_plane.py
++++ b/workstreams/po03/tools/control_plane.py
+@@ -138,8 +138,22 @@
+ # ---------------------------------------------------------------------------
+ 
+ 
++def strip_leading_current_dir(path: str) -> str:
++    """Remove leading "./" segments without eating a leading dot.
++
++    ``str.lstrip("./")`` strips characters, not a prefix, so it also removes the
++    dot from a dot directory: ``.github/workflows/po03-x.yml`` became
++    ``github/workflows/po03-x.yml`` and was judged outside an allowlist that
++    explicitly contains it.
++    """
++    normalised = path.strip()
++    while normalised.startswith("./"):
++        normalised = normalised[2:]
++    return normalised
++
++
+ def path_in_allowlist(path: str) -> bool:
+-    normalised = path.strip().lstrip("./")
++    normalised = strip_leading_current_dir(path)
+     if not normalised or ".." in normalised.split("/"):
+         return False
+     if normalised.startswith(ALLOWLIST_PREFIXES):
+@@ -179,7 +193,7 @@
+     prefixes = tuple(entry.get("owned_prefixes", []))
+     violations: list[str] = []
+     for path in paths:
+-        normalised = path.strip().lstrip("./")
++        normalised = strip_leading_current_dir(path)
+         if not normalised.startswith(prefixes):
+             violations.append(normalised)
+     return sorted(set(violations))

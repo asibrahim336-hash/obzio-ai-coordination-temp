@@ -1,0 +1,15 @@
+name: Planted defect - a workflow filename outside the wave-one allowlist
+
+# The commission forbids creating a workflow whose filename does not start with
+# po03-, because the allowlist is keyed on that prefix. This fixture carries the
+# forbidden shape so OUT_OF_SCOPE_FILENAME is observed firing. It is inert: it
+# lives under runtime/fixtures, not under .github/workflows.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  out-of-scope:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
