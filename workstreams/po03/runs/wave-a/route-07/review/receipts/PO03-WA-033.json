@@ -1,0 +1,533 @@
+{
+  "acceptance_authority_note": "Consequential acceptance requires a second frontier-family challenger. This receipt is a recommendation only and never sets ACCEPTED.",
+  "decision_changed": [],
+  "defects": [],
+  "dimensions": [
+    {
+      "critical": true,
+      "detail": "2 parseable module(s)",
+      "dimension": "R1_EXECUTABLE_UNIT",
+      "evidence": [
+        "changed_path_guard.py",
+        "test_changed_path_guard.py"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "critical": true,
+      "detail": "23 test(s) rerun green by reviewer",
+      "dimension": "R2_TESTS_RERUN",
+      "evidence": [
+        {
+          "argv": "python3 /tmp/po03/route-07/workstreams/po03/runs/wave-a/route-05/PO03-WA-033/tests/test_changed_path_guard.py -v",
+          "invocation": "direct-module-run",
+          "ran": 23,
+          "returncode": 0,
+          "summary": "OK",
+          "test": "tests/test_changed_path_guard.py"
+        }
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "critical": true,
+      "detail": "4 artifact(s) reconciled by sha256 and bytes via manifest.json",
+      "dimension": "R4_MANIFEST_COMPLETE",
+      "evidence": [
+        "result.json exempt: binds manifest by sha256 03673275782b..."
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "critical": true,
+      "detail": "disposition(s) ['FAIL', 'PASS'] within frozen enum",
+      "dimension": "R5_DISPOSITION_LEGAL",
+      "evidence": [],
+      "verdict": "PASS"
+    },
+    {
+      "critical": true,
+      "detail": "6 artifact(s) inside workstreams/po03/runs/wave-a/route-05/PO03-WA-033",
+      "dimension": "R7_PATH_CONFINEMENT",
+      "evidence": [],
+      "verdict": "PASS"
+    },
+    {
+      "critical": true,
+      "detail": "no producer self-acceptance (independent_acceptance=NOT_TESTED)",
+      "dimension": "R8_NO_SELF_ACCEPTANCE",
+      "evidence": [],
+      "verdict": "PASS"
+    },
+    {
+      "critical": true,
+      "detail": "frozen contract hashes echoed",
+      "dimension": "R9_CONTRACT_ECHO",
+      "evidence": [
+        "result.json"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "critical": false,
+      "detail": "command + observed output recorded",
+      "dimension": "R3_COMMANDS_AND_OBSERVED",
+      "evidence": [
+        "run-log.txt"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "critical": false,
+      "detail": "limitations recorded",
+      "dimension": "R6_LIMITATIONS_PRESENT",
+      "evidence": [
+        "README.md"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "critical": false,
+      "detail": "37 assertions across 23 tests, coverage 1.00",
+      "dimension": "R10_HYPOTHESIS_EXERCISED",
+      "evidence": [],
+      "verdict": "PASS"
+    },
+    {
+      "critical": false,
+      "detail": "2 module(s) structurally distinct",
+      "dimension": "R11_NOT_DUPLICATED",
+      "evidence": [],
+      "verdict": "PASS"
+    }
+  ],
+  "frozen_criteria": {
+    "acceptance_contract_sha256": "a95fde86df2ca4d21e2fb89b07b43d8f0c207e5ee84b914d42c18e268d32e64c",
+    "acceptance_contract_uri": "workstreams/po03/control/tasks/PO03-WA-033/acceptance.json",
+    "criteria_freeze_sha256": "901ecbffc27ecb2149c5a50c9c137618c8b6f568228e19f817cbdecc7d53cc31",
+    "criteria_freeze_uri": "workstreams/po03/evidence/criteria-freeze.json",
+    "immutable_input_manifest_sha256": "f66ba25343ceb8ce7810a7b241dd80b042b3b888ba498dcd61e48a29863c2f66",
+    "source_lock_sha256": "f66ba25343ceb8ce7810a7b241dd80b042b3b888ba498dcd61e48a29863c2f66",
+    "source_lock_uri": "workstreams/po03/evidence/source-lock.json"
+  },
+  "frozen_hypothesis": "A changed-path guard rejects one deliberate out-of-allowlist mutation.",
+  "function": "provenance-and-paths",
+  "hidden_cases": [
+    {
+      "case": "golden",
+      "expected_failed_dimensions": [],
+      "expected_recommendation": "RECOMMEND_ACCEPT",
+      "slot": "slots/golden"
+    },
+    {
+      "case": "prose_only",
+      "expected_failed_dimensions": [
+        "R1_EXECUTABLE_UNIT",
+        "R2_TESTS_RERUN"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/prose_only"
+    },
+    {
+      "case": "manifest_omission",
+      "expected_failed_dimensions": [
+        "R4_MANIFEST_COMPLETE"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/manifest_omission"
+    },
+    {
+      "case": "manifest_hash_corrupt",
+      "expected_failed_dimensions": [
+        "R4_MANIFEST_COMPLETE"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/manifest_hash_corrupt"
+    },
+    {
+      "case": "manifest_bytes_corrupt",
+      "expected_failed_dimensions": [
+        "R4_MANIFEST_COMPLETE"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/manifest_bytes_corrupt"
+    },
+    {
+      "case": "failing_test",
+      "expected_failed_dimensions": [
+        "R2_TESTS_RERUN"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/failing_test"
+    },
+    {
+      "case": "illegal_disposition",
+      "expected_failed_dimensions": [
+        "R5_DISPOSITION_LEGAL"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/illegal_disposition"
+    },
+    {
+      "case": "self_acceptance",
+      "expected_failed_dimensions": [
+        "R8_NO_SELF_ACCEPTANCE"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/self_acceptance"
+    },
+    {
+      "case": "terminal_overreach",
+      "expected_failed_dimensions": [
+        "R8_NO_SELF_ACCEPTANCE"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/terminal_overreach"
+    },
+    {
+      "case": "wrong_contract_hash",
+      "expected_failed_dimensions": [
+        "R9_CONTRACT_ECHO"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/wrong_contract_hash"
+    },
+    {
+      "case": "escaping_symlink",
+      "expected_failed_dimensions": [
+        "R7_PATH_CONFINEMENT"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/escaping_symlink"
+    },
+    {
+      "case": "missing_limitations",
+      "expected_failed_dimensions": [
+        "R6_LIMITATIONS_PRESENT"
+      ],
+      "expected_recommendation": "RETEST",
+      "slot": "slots/missing_limitations"
+    },
+    {
+      "case": "thin_tests",
+      "expected_failed_dimensions": [
+        "R10_HYPOTHESIS_EXERCISED"
+      ],
+      "expected_recommendation": "RETEST",
+      "slot": "slots/thin_tests"
+    },
+    {
+      "case": "no_observed_output",
+      "expected_failed_dimensions": [
+        "R3_COMMANDS_AND_OBSERVED"
+      ],
+      "expected_recommendation": "RETEST",
+      "slot": "slots/no_observed_output"
+    },
+    {
+      "case": "duplicate_unit",
+      "expected_failed_dimensions": [
+        "R11_NOT_DUPLICATED"
+      ],
+      "expected_recommendation": "RETEST",
+      "slot": "slots/duplicate_unit"
+    },
+    {
+      "case": "unmanifested_extra",
+      "expected_failed_dimensions": [
+        "R4_MANIFEST_COMPLETE"
+      ],
+      "expected_recommendation": "RECOMMEND_REJECT",
+      "slot": "slots/unmanifested_extra"
+    }
+  ],
+  "immutable_artifact_readback": [
+    {
+      "bytes": 4061,
+      "immutable_commit_sha256": "dd2e9f21f3bf2730a02b67aac4a61dc5950cc7e1332c7e5439a8968443d72b04",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-05/PO03-WA-033/README.md",
+      "sha256": "dd2e9f21f3bf2730a02b67aac4a61dc5950cc7e1332c7e5439a8968443d72b04"
+    },
+    {
+      "bytes": 4668,
+      "immutable_commit_sha256": "cd8ce3f066f3c2da9ad7b378aff7cf5dde4091da77542f8f60cfc055571a1952",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-05/PO03-WA-033/evidence/run-log.txt",
+      "sha256": "cd8ce3f066f3c2da9ad7b378aff7cf5dde4091da77542f8f60cfc055571a1952"
+    },
+    {
+      "bytes": 2181,
+      "immutable_commit_sha256": "03673275782be830f5b1cc12602d291a73fcb4c60d58ff1e1ea8a34d98058d8d",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-05/PO03-WA-033/manifest.json",
+      "sha256": "03673275782be830f5b1cc12602d291a73fcb4c60d58ff1e1ea8a34d98058d8d"
+    },
+    {
+      "bytes": 3461,
+      "immutable_commit_sha256": "3da53b40b7d933a10197446c5d096df88662a76e5578d498ed2256d1cc820839",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-05/PO03-WA-033/result.json",
+      "sha256": "3da53b40b7d933a10197446c5d096df88662a76e5578d498ed2256d1cc820839"
+    },
+    {
+      "bytes": 7860,
+      "immutable_commit_sha256": "0dbde0adf45407c1a0a449bfc629e9e2a6067ccfcca514c27bf6c3db5a0e334b",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-05/PO03-WA-033/src/changed_path_guard.py",
+      "sha256": "0dbde0adf45407c1a0a449bfc629e9e2a6067ccfcca514c27bf6c3db5a0e334b"
+    },
+    {
+      "bytes": 7637,
+      "immutable_commit_sha256": "53054a5afd10633e78345f75d3aa180cb7e35ba9af8e3aab52c891b4fd2249c7",
+      "immutable_readback_match": true,
+      "path": "workstreams/po03/runs/wave-a/route-05/PO03-WA-033/tests/test_changed_path_guard.py",
+      "sha256": "53054a5afd10633e78345f75d3aa180cb7e35ba9af8e3aab52c891b4fd2249c7"
+    }
+  ],
+  "limitations": [],
+  "receipt_version": "PO03-ROUTE07-INDEPENDENT-REVIEW-RECEIPT-v1",
+  "recommendation": "RECOMMEND_ACCEPT",
+  "review_order": "BLIND_CRITERIA_ONLY_NO_PRODUCER_CONCLUSION_READ",
+  "reviewed_at": "2026-08-22T07:45:41Z",
+  "reviewer_function": "evaluation-and-semantics",
+  "reviewer_id": "po03-route-07-independent-reviewer",
+  "reviewer_model_family": "claude-opus-5",
+  "route_id": "route-05",
+  "rubric_freeze": {
+    "components": [
+      {
+        "bytes": 24024,
+        "path": "workstreams/po03/runs/wave-a/route-07/review/rubric_v1.py",
+        "sha256": "51fbef424eb31ad0b5706921a30c583950386b8c8c6de704a929dc51b6bd3904"
+      },
+      {
+        "bytes": 12371,
+        "path": "workstreams/po03/runs/wave-a/route-07/review/hidden_cases_v1.py",
+        "sha256": "62cfdac26f63246aab538c36e87f02d77035aef11d8012abd9e61fb7eb8afbde"
+      },
+      {
+        "bytes": 4161,
+        "path": "workstreams/po03/runs/wave-a/route-07/review/test_rubric_v1.py",
+        "sha256": "6a560d73c3aee69829978420a684381ec3ca1e87a36bce78821e4645cfbfc950"
+      },
+      {
+        "bytes": 10154,
+        "path": "workstreams/po03/runs/wave-a/route-07/review/run_review.py",
+        "sha256": "208bf292265aa2be6bcf1b70a6dc638997b13586da7316f312fe6a069a85070c"
+      }
+    ],
+    "composite_rubric_sha256": "c237b24c7242b80dddb29e62e6cf63ce284c6fc66fea1c722e31de7aa5fc05ad",
+    "criteria_freeze_sha256": "901ecbffc27ecb2149c5a50c9c137618c8b6f568228e19f817cbdecc7d53cc31",
+    "decision_changed": [],
+    "dimensions": {
+      "advisory": [
+        "R3_COMMANDS_AND_OBSERVED",
+        "R6_LIMITATIONS_PRESENT",
+        "R10_HYPOTHESIS_EXERCISED",
+        "R11_NOT_DUPLICATED"
+      ],
+      "critical": [
+        "R1_EXECUTABLE_UNIT",
+        "R2_TESTS_RERUN",
+        "R4_MANIFEST_COMPLETE",
+        "R5_DISPOSITION_LEGAL",
+        "R7_PATH_CONFINEMENT",
+        "R8_NO_SELF_ACCEPTANCE",
+        "R9_CONTRACT_ECHO"
+      ]
+    },
+    "exact_model_configuration": "claude-opus-5-thinking-high",
+    "freeze_id": "PO03-ROUTE07-RUBRIC-FREEZE-v1",
+    "frozen_at": "2026-08-22T07:41:16Z",
+    "frozen_at_base_commit": "1a93d690c81433913803fe370406e3da1700bb21",
+    "hidden_case_count": 16,
+    "hidden_cases": [
+      {
+        "case": "golden",
+        "expected_failed_dimensions": [],
+        "expected_recommendation": "RECOMMEND_ACCEPT",
+        "slot": "slots/golden"
+      },
+      {
+        "case": "prose_only",
+        "expected_failed_dimensions": [
+          "R1_EXECUTABLE_UNIT",
+          "R2_TESTS_RERUN"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/prose_only"
+      },
+      {
+        "case": "manifest_omission",
+        "expected_failed_dimensions": [
+          "R4_MANIFEST_COMPLETE"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/manifest_omission"
+      },
+      {
+        "case": "manifest_hash_corrupt",
+        "expected_failed_dimensions": [
+          "R4_MANIFEST_COMPLETE"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/manifest_hash_corrupt"
+      },
+      {
+        "case": "manifest_bytes_corrupt",
+        "expected_failed_dimensions": [
+          "R4_MANIFEST_COMPLETE"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/manifest_bytes_corrupt"
+      },
+      {
+        "case": "failing_test",
+        "expected_failed_dimensions": [
+          "R2_TESTS_RERUN"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/failing_test"
+      },
+      {
+        "case": "illegal_disposition",
+        "expected_failed_dimensions": [
+          "R5_DISPOSITION_LEGAL"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/illegal_disposition"
+      },
+      {
+        "case": "self_acceptance",
+        "expected_failed_dimensions": [
+          "R8_NO_SELF_ACCEPTANCE"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/self_acceptance"
+      },
+      {
+        "case": "terminal_overreach",
+        "expected_failed_dimensions": [
+          "R8_NO_SELF_ACCEPTANCE"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/terminal_overreach"
+      },
+      {
+        "case": "wrong_contract_hash",
+        "expected_failed_dimensions": [
+          "R9_CONTRACT_ECHO"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/wrong_contract_hash"
+      },
+      {
+        "case": "escaping_symlink",
+        "expected_failed_dimensions": [
+          "R7_PATH_CONFINEMENT"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/escaping_symlink"
+      },
+      {
+        "case": "missing_limitations",
+        "expected_failed_dimensions": [
+          "R6_LIMITATIONS_PRESENT"
+        ],
+        "expected_recommendation": "RETEST",
+        "slot": "slots/missing_limitations"
+      },
+      {
+        "case": "thin_tests",
+        "expected_failed_dimensions": [
+          "R10_HYPOTHESIS_EXERCISED"
+        ],
+        "expected_recommendation": "RETEST",
+        "slot": "slots/thin_tests"
+      },
+      {
+        "case": "no_observed_output",
+        "expected_failed_dimensions": [
+          "R3_COMMANDS_AND_OBSERVED"
+        ],
+        "expected_recommendation": "RETEST",
+        "slot": "slots/no_observed_output"
+      },
+      {
+        "case": "duplicate_unit",
+        "expected_failed_dimensions": [
+          "R11_NOT_DUPLICATED"
+        ],
+        "expected_recommendation": "RETEST",
+        "slot": "slots/duplicate_unit"
+      },
+      {
+        "case": "unmanifested_extra",
+        "expected_failed_dimensions": [
+          "R4_MANIFEST_COMPLETE"
+        ],
+        "expected_recommendation": "RECOMMEND_REJECT",
+        "slot": "slots/unmanifested_extra"
+      }
+    ],
+    "inputs_admitted_before_freeze": [
+      "workstreams/po03/evidence/criteria-freeze.json",
+      "workstreams/po03/evidence/source-lock.json",
+      "workstreams/po03/contracts/transactional-result.schema.json",
+      "workstreams/po03/contracts/wave-compounding.schema.json",
+      "workstreams/po03/metrics/metric-definitions.json",
+      "workstreams/po03/COMMISSION.md",
+      "workstreams/po03/control/path-ownership.json",
+      "workstreams/po03/control/protocol-activation.json",
+      "workstreams/po03/control/recovery-state.json",
+      "workstreams/po03/control/leases/route-07.json",
+      "workstreams/po03/control/canaries/route-07/challenge.json",
+      "workstreams/po03/control/canaries/route-07/response.json",
+      "workstreams/po03/control/tasks/PO03-WA-0{01-08,33-56}/input.json",
+      "workstreams/po03/control/tasks/PO03-WA-0{01-08,33-56}/acceptance.json",
+      "workstreams/po03/control/completions/route-01.json",
+      "workstreams/po03/control/completions/route-05.json",
+      "workstreams/po03/control/completions/route-06.json"
+    ],
+    "inputs_withheld_until_after_freeze": [
+      "workstreams/po03/runs/wave-a/route-01/**",
+      "workstreams/po03/runs/wave-a/route-05/**",
+      "workstreams/po03/runs/wave-a/route-06/**",
+      "workstreams/po03/control/results/**"
+    ],
+    "recommendation_enum": [
+      "RECOMMEND_ACCEPT",
+      "RECOMMEND_REJECT",
+      "RETEST"
+    ],
+    "review_order_declaration": "Rubric, hidden-case generators and stage-1 driver were compiled and hashed from frozen criteria only, before reading any producer conclusion, FINDING narrative, observed-result prose, per-task producer result receipt or route execution receipt.",
+    "reviewer_function": "evaluation-and-semantics",
+    "reviewer_id": "po03-route-07-independent-reviewer",
+    "self_test_command": "python3 -m unittest test_rubric_v1 -v",
+    "source_lock_sha256": "f66ba25343ceb8ce7810a7b241dd80b042b3b888ba498dcd61e48a29863c2f66",
+    "terminal_acceptance_permitted": false
+  },
+  "rubric_version": "v1.1",
+  "target": {
+    "completed_receipt_sha256": "da0a77423eca3fef26b3566f7ad19b6e2606a9b097b3efedd9efd86842b0ef2b",
+    "coordinator_state": "COMPLETED_PENDING_INDEPENDENT_ACCEPTANCE",
+    "parent_ingested_receipt_sha256": "845e2301dc7c46a6ffb8c656776019e3c74a56527c900837ba0a06cbe8e3eb16",
+    "result_commit_id": "5ea78e40cd46b11cd33266fe861a9ec29d2491de",
+    "result_slot": "workstreams/po03/runs/wave-a/route-05/PO03-WA-033",
+    "result_uri": "workstreams/po03/control/results/PO03-WA-033.json",
+    "reviewed_at_base_commit": "1a93d690c81433913803fe370406e3da1700bb21"
+  },
+  "task_id": "PO03-WA-033",
+  "terminal_acceptance_claimed": false,
+  "tests_rerun_by_reviewer": [
+    {
+      "argv": "python3 /tmp/po03/route-07/workstreams/po03/runs/wave-a/route-05/PO03-WA-033/tests/test_changed_path_guard.py -v",
+      "invocation": "direct-module-run",
+      "ran": 23,
+      "returncode": 0,
+      "summary": "OK",
+      "test": "tests/test_changed_path_guard.py"
+    }
+  ]
+}
