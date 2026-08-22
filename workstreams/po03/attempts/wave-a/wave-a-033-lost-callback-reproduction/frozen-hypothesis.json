@@ -1,0 +1,114 @@
+{
+  "attempt_id": "wave-a-033-lost-callback-reproduction-attempt-1",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "decision_changed": [],
+  "frozen_before_execution": true,
+  "function": "controlled-reproduction",
+  "falsifiable_hypothesis": "A lost provider callback leaves the task recoverable from immutable input and ledger state.",
+  "refinement": "The hypothesis is decomposed into a classification claim and an escalation claim. Classification: for every lost-callback fault class the controller can rebuild the correct provider state, Obzio state and recovery action purely from the immutable task capsule and the hash-chained event ledger, with provider state never collapsed into Obzio state. Escalation: for every lost-callback fault class the controller additionally exposes an automatic, time-bounded route back to execution without operator intervention. Either half may be refuted independently.",
+  "mechanism_under_test": {
+    "path": "workstreams/po03/tools/transactional_factory.py",
+    "pinned_commit": "e63fbae079774b151fd24a4132e4a5e571f75298",
+    "blob_sha": "read_at_runtime",
+    "modification_policy": "The mechanism is consumed byte-for-byte from immutable Git object bytes. The reproduction never edits, patches or monkey-patches it."
+  },
+  "predictions": [
+    {
+      "prediction_id": "P1",
+      "fault_class": "pre-provider reservation loss",
+      "description": "Dispatch callback lost after the controller leased a reservation and before any provider worker ran.",
+      "expected_provider_state": "NOT_DISPATCHED",
+      "expected_obzio_state": "LEASED",
+      "expected_recovery_action": "AWAIT_PROVIDER_ADMISSION_OR_LEASE_EXPIRY",
+      "expected_visible_in_recovery_scan": true
+    },
+    {
+      "prediction_id": "P2",
+      "fault_class": "pre-provider reservation loss, lease still valid",
+      "description": "Undispatched recovery is attempted while the frozen reservation lease has not expired.",
+      "expected_outcome": "REJECTED",
+      "expected_reason_substring": "still-valid reservation lease"
+    },
+    {
+      "prediction_id": "P3",
+      "fault_class": "pre-provider reservation loss, lease expired",
+      "description": "Undispatched recovery is attempted after the frozen reservation lease expired.",
+      "expected_outcome": "RETRY_SCHEDULED",
+      "expected_provider_state": "NOT_DISPATCHED",
+      "expected_recovery_action": "RERUN_OR_RECONCILE"
+    },
+    {
+      "prediction_id": "P4",
+      "fault_class": "duplicate recovery callback",
+      "description": "Undispatched recovery is replayed after it already scheduled a retry.",
+      "expected_outcome": "ALREADY_RETRY_SCHEDULED",
+      "expected_new_events": 0
+    },
+    {
+      "prediction_id": "P5",
+      "fault_class": "running-provider callback loss",
+      "description": "A provider worker genuinely ran and emitted a RUNNING event carrying provider_task_id and worker_agent_id, then its return message was lost.",
+      "expected_provider_state": "RUNNING",
+      "expected_obzio_state": "RUNNING",
+      "expected_recovery_action": "MONITOR",
+      "expected_provider_execution_evidence": true,
+      "expected_visible_in_recovery_scan": true
+    },
+    {
+      "prediction_id": "P6",
+      "fault_class": "running-provider callback loss with expired lease",
+      "description": "Undispatched recovery is attempted against a genuinely running provider whose lease has already expired. The guard must key on provider execution evidence, not on lease time, so a live worker is never preempted as a reservation.",
+      "expected_outcome": "REJECTED",
+      "expected_reason_substring": "provider execution evidence"
+    },
+    {
+      "prediction_id": "P7",
+      "fault_class": "provider reports completion, nothing committed",
+      "description": "Provider transport says COMPLETED but no verified durable result commit exists.",
+      "expected_obzio_state": "PROVIDER_COMPLETED_UNCOMMITTED",
+      "expected_provider_state": "COMPLETED",
+      "expected_recovery_action": "RERUN_OR_RECONCILE"
+    },
+    {
+      "prediction_id": "P8",
+      "fault_class": "false completion - illegal shortcut",
+      "description": "A direct RUNNING to COMPLETED transition and a PROVIDER_COMPLETED_UNCOMMITTED to COMPLETED transition are attempted.",
+      "expected_outcome": "REJECTED",
+      "expected_reason_substring": "invalid transition"
+    },
+    {
+      "prediction_id": "P9",
+      "fault_class": "false completion - forged result commit",
+      "description": "A RESULT_COMMITTED event naming a well-formed but nonexistent Git commit is submitted, then PARENT_INGESTED is attempted.",
+      "expected_outcome": "REJECTED"
+    },
+    {
+      "prediction_id": "P10",
+      "fault_class": "stale worker after ownership transfer",
+      "description": "After recovery refences the task and re-leases it at a higher fence token, the lost original worker attempts to advance custody with its old fence token.",
+      "expected_outcome": "REJECTED",
+      "expected_reason_substring": "stale fence token"
+    },
+    {
+      "prediction_id": "P11",
+      "fault_class": "duplicate callback replay of an identical event",
+      "description": "The identical RUNNING event bytes are replayed into the immutable ledger, and separately a conflicting payload is replayed at the same sequence.",
+      "expected_identical_replay": "HARMLESS_IDEMPOTENT",
+      "expected_conflicting_replay": "REJECTED"
+    },
+    {
+      "prediction_id": "P12",
+      "fault_class": "escalation claim",
+      "description": "The escalation half of the hypothesis: a permanently lost running-provider callback acquires an automatic time-bounded recovery route without operator intervention.",
+      "expected_outcome": "PASS",
+      "note": "This prediction is stated so that it can be refuted. It is the weakest half of the hypothesis."
+    }
+  ],
+  "refutation_conditions": [
+    "Any fault class where the controller cannot reconstruct provider state, Obzio state and recovery action from immutable input plus ledger alone refutes the classification claim.",
+    "Any fault class reaching Obzio COMPLETED without a verified durable result commit refutes the whole hypothesis and is a false completion.",
+    "Any fault class where provider state is collapsed into Obzio state, so that a reservation is indistinguishable from a running provider, refutes the classification claim.",
+    "Any lost-callback class with no automatic time-bounded route back to execution refutes the escalation claim."
+  ],
+  "task_id": "wave-a-033-lost-callback-reproduction"
+}
