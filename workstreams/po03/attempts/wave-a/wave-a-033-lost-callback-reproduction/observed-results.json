@@ -1,0 +1,497 @@
+{
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "decision_changed": [],
+  "environment": {
+    "attempt_base_commit": "e63fbae079774b151fd24a4132e4a5e571f75298",
+    "attempt_branch": "po03/wave-a-033-lost-callback-reproduction",
+    "platform": "Linux-6.12.94+-x86_64-with-glibc2.39",
+    "python_version": "3.12.3"
+  },
+  "mechanism_under_test": {
+    "blob_sha": "adc42ec619eadd517d92acceb1e076fa0cd67876",
+    "modified_by_reproduction": false,
+    "path": "workstreams/po03/tools/transactional_factory.py",
+    "pinned_commit": "e63fbae079774b151fd24a4132e4a5e571f75298",
+    "sha256": "59dafb317031ec32e525868348a729ca2a9b2978fc7ed4600e0b917c83524bbb"
+  },
+  "recorded_at": "2026-08-22T08:19:20Z",
+  "result_version": "PO03-WAVE-A-033-OBSERVED-RESULTS-v1",
+  "scenarios": [
+    {
+      "classification_after_expiry_before_recovery": {
+        "chain_errors": [],
+        "event_count": 2,
+        "fence_token": 1,
+        "latest_event_sequence": 2,
+        "obzio_state": "LEASED",
+        "provider_execution_evidence": false,
+        "provider_state": "NOT_DISPATCHED",
+        "recovery_action": "AWAIT_PROVIDER_ADMISSION_OR_LEASE_EXPIRY",
+        "result_commit_id": null,
+        "visible_in_recovery_scan": true
+      },
+      "classification_after_recovery": {
+        "chain_errors": [],
+        "event_count": 4,
+        "fence_token": 1,
+        "latest_event_sequence": 4,
+        "obzio_state": "RETRY_SCHEDULED",
+        "provider_execution_evidence": false,
+        "provider_state": "NOT_DISPATCHED",
+        "recovery_action": "RERUN_OR_RECONCILE",
+        "result_commit_id": null,
+        "visible_in_recovery_scan": true
+      },
+      "classification_after_release": {
+        "chain_errors": [],
+        "event_count": 5,
+        "fence_token": 2,
+        "latest_event_sequence": 5,
+        "obzio_state": "LEASED",
+        "provider_execution_evidence": false,
+        "provider_state": "NOT_DISPATCHED",
+        "recovery_action": "AWAIT_PROVIDER_ADMISSION_OR_LEASE_EXPIRY",
+        "result_commit_id": null,
+        "visible_in_recovery_scan": true
+      },
+      "classification_before_expiry": {
+        "chain_errors": [],
+        "event_count": 2,
+        "fence_token": 1,
+        "latest_event_sequence": 2,
+        "obzio_state": "LEASED",
+        "provider_execution_evidence": false,
+        "provider_state": "NOT_DISPATCHED",
+        "recovery_action": "AWAIT_PROVIDER_ADMISSION_OR_LEASE_EXPIRY",
+        "result_commit_id": null,
+        "visible_in_recovery_scan": true
+      },
+      "classification_lease_valid": {
+        "chain_errors": [],
+        "event_count": 2,
+        "fence_token": 1,
+        "latest_event_sequence": 2,
+        "obzio_state": "LEASED",
+        "provider_execution_evidence": false,
+        "provider_state": "NOT_DISPATCHED",
+        "recovery_action": "AWAIT_PROVIDER_ADMISSION_OR_LEASE_EXPIRY",
+        "result_commit_id": null,
+        "visible_in_recovery_scan": true
+      },
+      "duplicate_recovery_callback": {
+        "outcome": "ACCEPTED",
+        "value": {
+          "status": "ALREADY_RETRY_SCHEDULED",
+          "task_id": "s1-reservation-lease-expired"
+        }
+      },
+      "duplicate_recovery_new_events": 0,
+      "events_after_rejected_recovery": 2,
+      "fault_injected": "dispatch callback dropped after LEASED; no RUNNING event ever arrives",
+      "lease_expiry_wait_seconds": 1.052,
+      "recover_after_lease_expiry": {
+        "outcome": "ACCEPTED",
+        "value": {
+          "recovery_event": "workstreams/po03/control/events/s1-reservation-lease-expired/000003-recovery_required.json",
+          "retry_event": "workstreams/po03/control/events/s1-reservation-lease-expired/000004-retry_scheduled.json",
+          "status": "RETRY_SCHEDULED",
+          "task_id": "s1-reservation-lease-expired"
+        }
+      },
+      "recover_while_lease_valid": {
+        "error_message": "undispatched recovery cannot preempt a still-valid reservation lease",
+        "error_type": "FactoryError",
+        "outcome": "REJECTED"
+      },
+      "release_after_recovery": {
+        "outcome": "ACCEPTED",
+        "value": "000005-leased.json"
+      },
+      "sandbox_root": "/tmp/po03-033-s1-drjjrawx",
+      "scenario_id": "S1",
+      "stale_worker_after_transfer": {
+        "error_message": "stale fence token 1; current is 2",
+        "error_type": "FactoryError",
+        "outcome": "REJECTED"
+      },
+      "steps": [],
+      "title": "pre-provider reservation loss",
+      "wall_seconds": 1.143
+    },
+    {
+      "classification_after_lease_expiry": {
+        "chain_errors": [],
+        "event_count": 3,
+        "fence_token": 1,
+        "latest_event_sequence": 3,
+        "obzio_state": "RUNNING",
+        "provider_execution_evidence": true,
+        "provider_state": "RUNNING",
+        "recovery_action": "MONITOR",
+        "result_commit_id": null,
+        "visible_in_recovery_scan": true
+      },
+      "classification_after_ownership_transfer": {
+        "chain_errors": [],
+        "event_count": 7,
+        "fence_token": 2,
+        "latest_event_sequence": 7,
+        "obzio_state": "LEASED",
+        "provider_execution_evidence": true,
+        "provider_state": "COMPLETED",
+        "recovery_action": "MONITOR",
+        "result_commit_id": null,
+        "visible_in_recovery_scan": true
+      },
+      "classification_callback_lost": {
+        "chain_errors": [],
+        "event_count": 3,
+        "fence_token": 1,
+        "latest_event_sequence": 3,
+        "obzio_state": "RUNNING",
+        "provider_execution_evidence": true,
+        "provider_state": "RUNNING",
+        "recovery_action": "MONITOR",
+        "result_commit_id": null,
+        "visible_in_recovery_scan": true
+      },
+      "classification_final": {
+        "chain_errors": [],
+        "event_count": 7,
+        "fence_token": 2,
+        "latest_event_sequence": 7,
+        "obzio_state": "LEASED",
+        "provider_execution_evidence": true,
+        "provider_state": "COMPLETED",
+        "recovery_action": "MONITOR",
+        "result_commit_id": null,
+        "visible_in_recovery_scan": true
+      },
+      "classification_provider_completed_uncommitted": {
+        "chain_errors": [],
+        "event_count": 4,
+        "fence_token": 1,
+        "latest_event_sequence": 4,
+        "obzio_state": "PROVIDER_COMPLETED_UNCOMMITTED",
+        "provider_execution_evidence": true,
+        "provider_state": "COMPLETED",
+        "recovery_action": "RERUN_OR_RECONCILE",
+        "result_commit_id": null,
+        "visible_in_recovery_scan": true
+      },
+      "classification_recovery_required": {
+        "chain_errors": [],
+        "event_count": 5,
+        "fence_token": 1,
+        "latest_event_sequence": 5,
+        "obzio_state": "RECOVERY_REQUIRED",
+        "provider_execution_evidence": true,
+        "provider_state": "COMPLETED",
+        "recovery_action": "RERUN_OR_RECONCILE",
+        "result_commit_id": null,
+        "visible_in_recovery_scan": true
+      },
+      "events_after_rejected_recovery": 3,
+      "false_completion_from_uncommitted": {
+        "error_message": "invalid transition: PROVIDER_COMPLETED_UNCOMMITTED -> COMPLETED",
+        "error_type": "FactoryError",
+        "outcome": "REJECTED"
+      },
+      "fault_injected": "return message dropped after a real RUNNING event carrying provider_task_id and worker_agent_id",
+      "lease_expiry_wait_seconds": 0.902,
+      "non_owner_at_current_fence": {
+        "error_message": "invalid transition: LEASED -> RESULT_STAGING",
+        "error_type": "FactoryError",
+        "outcome": "REJECTED"
+      },
+      "provider_completed_uncommitted": {
+        "outcome": "ACCEPTED",
+        "value": "000004-provider_completed_uncommitted.json"
+      },
+      "reconcile_to_recovery_required": {
+        "outcome": "ACCEPTED",
+        "value": "000005-recovery_required.json"
+      },
+      "recover_as_undispatched_after_provider_ran": {
+        "error_message": "cannot recover as undispatched after provider execution evidence",
+        "error_type": "FactoryError",
+        "outcome": "REJECTED"
+      },
+      "release_at_higher_fence": {
+        "outcome": "ACCEPTED",
+        "value": "000007-leased.json"
+      },
+      "retry_scheduled": {
+        "outcome": "ACCEPTED",
+        "value": "000006-retry_scheduled.json"
+      },
+      "sandbox_root": "/tmp/po03-033-s2-665j9_wj",
+      "scenario_id": "S2",
+      "stale_worker_commit_after_transfer": {
+        "error_message": "invalid transition: LEASED -> RESULT_STAGING",
+        "error_type": "FactoryError",
+        "outcome": "REJECTED"
+      },
+      "title": "running-provider callback loss",
+      "wall_seconds": 1.007
+    },
+    {
+      "classification_after_forged_commit": {
+        "chain_errors": [],
+        "event_count": 7,
+        "fence_token": 1,
+        "latest_event_sequence": 7,
+        "obzio_state": "RESULT_COMMITTED",
+        "provider_execution_evidence": true,
+        "provider_state": "COMPLETED",
+        "recovery_action": "MONITOR",
+        "result_commit_id": "0000000000000000000000000000000000000001",
+        "visible_in_recovery_scan": true
+      },
+      "classification_after_strand_recovery": {
+        "chain_errors": [],
+        "event_count": 10,
+        "fence_token": 2,
+        "latest_event_sequence": 10,
+        "obzio_state": "LEASED",
+        "provider_execution_evidence": true,
+        "provider_state": "COMPLETED",
+        "recovery_action": "MONITOR",
+        "result_commit_id": "0000000000000000000000000000000000000001",
+        "visible_in_recovery_scan": true
+      },
+      "classification_final": {
+        "chain_errors": [],
+        "event_count": 7,
+        "fence_token": 1,
+        "latest_event_sequence": 7,
+        "obzio_state": "RESULT_COMMITTED",
+        "provider_execution_evidence": true,
+        "provider_state": "COMPLETED",
+        "recovery_action": "MONITOR",
+        "result_commit_id": "0000000000000000000000000000000000000001",
+        "visible_in_recovery_scan": true
+      },
+      "fault_injected": "illegal shortcuts and a forged result commit after a lost callback",
+      "ingest_forged_commit_through_controller": {
+        "error_message": "result ingestion requires RUNNING custody, found RESULT_COMMITTED",
+        "error_type": "FactoryError",
+        "outcome": "REJECTED"
+      },
+      "parent_ingested_on_forged_commit": {
+        "error_message": "missing workstreams/po03/control/tasks/s3-false-completion-ladder/transaction-ingested.json",
+        "error_type": "FactoryError",
+        "outcome": "REJECTED"
+      },
+      "producer_self_completion": {
+        "error_message": "invalid transition: RESULT_COMMITTED -> COMPLETED",
+        "error_type": "FactoryError",
+        "outcome": "REJECTED"
+      },
+      "reached_completed": false,
+      "result_committed_with_forged_commit": {
+        "outcome": "ACCEPTED",
+        "value": "000007-result_committed.json"
+      },
+      "result_staged_missing_manifest_hash": {
+        "error_message": "manifest_sha256 must be a lowercase SHA-256",
+        "error_type": "FactoryError",
+        "outcome": "REJECTED"
+      },
+      "result_staged_with_hashes": {
+        "outcome": "ACCEPTED",
+        "value": "000005-result_staged.json"
+      },
+      "result_staged_without_hashes": {
+        "outcome": "ACCEPTED",
+        "value": "000004-result_staging.json"
+      },
+      "result_verified_with_readback": {
+        "outcome": "ACCEPTED",
+        "value": "000006-result_verified.json"
+      },
+      "result_verified_without_readback": {
+        "error_message": "RESULT_VERIFIED requires parent_remote_readback=PASS",
+        "error_type": "FactoryError",
+        "outcome": "REJECTED"
+      },
+      "running_to_completed_shortcut": {
+        "error_message": "invalid transition: RUNNING -> COMPLETED",
+        "error_type": "FactoryError",
+        "outcome": "REJECTED"
+      },
+      "running_to_parent_ingested_shortcut": {
+        "error_message": "invalid transition: RUNNING -> PARENT_INGESTED",
+        "error_type": "FactoryError",
+        "outcome": "REJECTED"
+      },
+      "sandbox_root": "/tmp/po03-033-s3-6qi9gt3k",
+      "scenario_id": "S3",
+      "strand_recovery_required": {
+        "outcome": "ACCEPTED",
+        "value": "000008-recovery_required.json"
+      },
+      "strand_released_at_higher_fence": {
+        "outcome": "ACCEPTED",
+        "value": "000010-leased.json"
+      },
+      "strand_retry_scheduled": {
+        "outcome": "ACCEPTED",
+        "value": "000009-retry_scheduled.json"
+      },
+      "title": "false completion refutation ladder",
+      "wall_seconds": 0.085
+    },
+    {
+      "capsule_replay": {
+        "outcome": "ACCEPTED",
+        "value": {
+          "acceptance_path": "workstreams/po03/control/tasks/s4-duplicate-callback-replay/acceptance.json",
+          "acceptance_sha256": "2cc37eebb644638b4fba6fc6327ab8f477b8c0b73157584304902629ef5f8779",
+          "created_event_path": "workstreams/po03/control/events/s4-duplicate-callback-replay/000001-created.json",
+          "created_event_sha256": "1b3e8ac3675ab90aac04f51a9177c69073766e79cb6c066fb8db534dcb0e4f62",
+          "created_transaction_path": "workstreams/po03/control/tasks/s4-duplicate-callback-replay/transaction-created.json",
+          "input_path": "workstreams/po03/control/tasks/s4-duplicate-callback-replay/input.json",
+          "input_sha256": "e1c06e704516e3ecd1ea44bfb61d835cc6ac1ee5da2a5936be76c64342f72045",
+          "result_slot": "workstreams/po03/attempts/wave-a/s4-duplicate-callback-replay",
+          "task_id": "s4-duplicate-callback-replay"
+        }
+      },
+      "classification_after_repeated_callback": {
+        "chain_errors": [],
+        "event_count": 3,
+        "fence_token": 1,
+        "latest_event_sequence": 3,
+        "obzio_state": "RUNNING",
+        "provider_execution_evidence": true,
+        "provider_state": "RUNNING",
+        "recovery_action": "MONITOR",
+        "result_commit_id": null,
+        "visible_in_recovery_scan": true
+      },
+      "classification_after_replays": {
+        "chain_errors": [],
+        "event_count": 3,
+        "fence_token": 1,
+        "latest_event_sequence": 3,
+        "obzio_state": "RUNNING",
+        "provider_execution_evidence": true,
+        "provider_state": "RUNNING",
+        "recovery_action": "MONITOR",
+        "result_commit_id": null,
+        "visible_in_recovery_scan": true
+      },
+      "conflicting_replay": {
+        "error_message": "immutable file differs: workstreams/po03/control/events/s4-duplicate-callback-replay/000003-running.json",
+        "error_type": "FileExistsError",
+        "outcome": "REJECTED"
+      },
+      "conflicting_replay_bytes_unchanged": true,
+      "fault_injected": "identical and conflicting replays of an already-recorded event",
+      "idempotency_key_consulted_in_transition": false,
+      "identical_replay": {
+        "outcome": "ACCEPTED",
+        "value": null
+      },
+      "identical_replay_bytes_unchanged": true,
+      "identical_replay_new_events": 0,
+      "repeated_running_callback": {
+        "error_message": "invalid transition: RUNNING -> RUNNING",
+        "error_type": "FactoryError",
+        "outcome": "REJECTED"
+      },
+      "result_commit_verified_at_transition": false,
+      "sandbox_root": "/tmp/po03-033-s4-39o3isyv",
+      "scenario_id": "S4",
+      "title": "duplicate callback replay",
+      "wall_seconds": 0.082
+    },
+    {
+      "classification_after_lease_expiry": {
+        "chain_errors": [],
+        "event_count": 3,
+        "fence_token": 1,
+        "latest_event_sequence": 3,
+        "obzio_state": "RUNNING",
+        "provider_execution_evidence": true,
+        "provider_state": "RUNNING",
+        "recovery_action": "MONITOR",
+        "result_commit_id": null,
+        "visible_in_recovery_scan": true
+      },
+      "classification_before_lease_expiry": {
+        "chain_errors": [],
+        "event_count": 3,
+        "fence_token": 1,
+        "latest_event_sequence": 3,
+        "obzio_state": "RUNNING",
+        "provider_execution_evidence": true,
+        "provider_state": "RUNNING",
+        "recovery_action": "MONITOR",
+        "result_commit_id": null,
+        "visible_in_recovery_scan": true
+      },
+      "classification_changed_on_lease_expiry": false,
+      "escalation_route_available": false,
+      "events_after_all_automatic_routes": 3,
+      "exposed_subcommands": [
+        "activate",
+        "advance",
+        "complete-after-review",
+        "ingest-result",
+        "reactivate-route",
+        "rebuild-recovery",
+        "record-collision",
+        "recover-undispatched",
+        "scan-recovery",
+        "verify",
+        "verify-recovery",
+        "verify-route-reactivation"
+      ],
+      "fault_injected": "running-provider callback lost permanently; no operator action taken",
+      "heartbeat_written_nonnull_anywhere": false,
+      "lease_expiry_consulted_outside_undispatched_recovery": [
+        "_task_capsule_locked",
+        "activate",
+        "recover_undispatched_task",
+        "task_capsule"
+      ],
+      "lease_expiry_wait_seconds": 0.751,
+      "projection_verification_errors": [],
+      "rebuilt_projection_unit": {
+        "fence_token": 1,
+        "independent_acceptance": "PENDING",
+        "latest_event_sequence": 3,
+        "latest_event_sha256": "b32300ad68300bb0a9917e0dcb3c11505ea2635f7c7b9fc6bfa1b6154df137a8",
+        "obzio_state": "RUNNING",
+        "provider_state": "RUNNING",
+        "recovery_action": "MONITOR",
+        "result_commit_id": null
+      },
+      "recover_undispatched_available": {
+        "error_message": "cannot recover as undispatched after provider execution evidence",
+        "error_type": "FactoryError",
+        "outcome": "REJECTED"
+      },
+      "recovery_scan_after_expiry": [
+        {
+          "fence_token": 1,
+          "independent_acceptance": "PENDING",
+          "latest_event_sequence": 3,
+          "latest_event_sha256": "b32300ad68300bb0a9917e0dcb3c11505ea2635f7c7b9fc6bfa1b6154df137a8",
+          "obzio_state": "RUNNING",
+          "provider_state": "RUNNING",
+          "recovery_action": "MONITOR",
+          "result_commit_id": null,
+          "task_id": "s5-escalation-probe"
+        }
+      ],
+      "sandbox_root": "/tmp/po03-033-s5-5kp_21qt",
+      "scenario_id": "S5",
+      "title": "automatic escalation probe for a permanently lost callback",
+      "wall_seconds": 0.864
+    }
+  ],
+  "task_id": "wave-a-033-lost-callback-reproduction",
+  "total_wall_seconds": 3.184
+}

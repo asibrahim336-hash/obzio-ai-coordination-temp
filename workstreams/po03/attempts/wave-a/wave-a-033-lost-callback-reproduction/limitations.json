@@ -1,0 +1,99 @@
+{
+  "limitations_version": "PO03-WAVE-A-033-LIMITATIONS-v1",
+  "task_id": "wave-a-033-lost-callback-reproduction",
+  "decision_changed": [],
+  "material_limitations": [
+    {
+      "id": "L1",
+      "limitation": "Faults are injected against the controller's classification logic inside sandboxed single-process repositories, not across a live multi-machine dispatch.",
+      "consequence": "Genuine network partition, whole-provider-runtime loss and concurrent controller restart are modelled through their ledger consequences rather than physically induced.",
+      "affects": ["all scenarios"],
+      "status": "NOT_SUPPORTED_IN_THIS_ATTEMPT"
+    },
+    {
+      "id": "L2",
+      "limitation": "The 'genuinely running provider' in S2 and S5 is genuine only in the sense the mechanism can detect: a real worker-actor event carrying provider_task_id and worker_agent_id. No second provider process was spawned.",
+      "consequence": "The distinction between reservation and running provider is exercised exactly as the controller evaluates it, but a live worker racing the controller is not reproduced.",
+      "affects": ["S2", "S5"],
+      "status": "PARTIAL"
+    },
+    {
+      "id": "L3",
+      "limitation": "Lease-expiry determinism relies on the mechanism truncating event timestamps to whole seconds, so the harness can compute the exact deadline it will compare against.",
+      "consequence": "If the mechanism later records sub-second timestamps, the expiry wait must be recomputed rather than assumed.",
+      "affects": ["S1", "S2", "S5"],
+      "status": "PASS_WITH_DEPENDENCY"
+    },
+    {
+      "id": "L4",
+      "limitation": "Finding F1 asserts the absence of an automatic escalation route. Evidence is exhaustion of the exposed argparse subcommands plus an AST scan of the pinned source for lease-deadline and heartbeat use.",
+      "consequence": "Strong evidence of absence, not a formal proof. A route reachable only through an unexposed internal helper would not be detected.",
+      "affects": ["S5", "F1"],
+      "status": "EVIDENCE_OF_ABSENCE_NOT_PROOF"
+    },
+    {
+      "id": "L5",
+      "limitation": "Finding F2 was reached by advancing custody manually through the staging ladder, which is a legitimate controller path but not the primary ingestion path.",
+      "consequence": "The defect is real for any caller using advance_task, but ingest_committed_result does verify the commit in Git, so a caller using only the primary path is unaffected.",
+      "affects": ["S3", "F2"],
+      "status": "SCOPED"
+    },
+    {
+      "id": "L6",
+      "limitation": "Two capsule digests (input_sha256, created_event_sha256) are excluded from the determinism comparison because they hash a creation timestamp and the sandbox's own commit SHA.",
+      "consequence": "Determinism is asserted over fault behaviour, not over those two digests. Ledger self-consistency is still asserted separately: chain_errors was empty in every scenario and every run.",
+      "affects": ["determinism check"],
+      "status": "SCOPED"
+    },
+    {
+      "id": "L7",
+      "limitation": "The exact model configuration that executed this attempt is not machine-observable.",
+      "consequence": "Requested claude-opus-5 high is recorded as requested; the parent run reports gpt-5.6-sol-max-fast; the subagent's own model identifier is NOT_SUPPORTED. No value was invented.",
+      "affects": ["runtime binding"],
+      "status": "NOT_SUPPORTED"
+    },
+    {
+      "id": "L8",
+      "limitation": "This attempt evaluates its own hypothesis. It performs no independent acceptance.",
+      "consequence": "Disposition remains producer-staged. Independent acceptance by a different producer is pending and required.",
+      "affects": ["disposition"],
+      "status": "PENDING"
+    }
+  ],
+  "negative_and_refuting_outcomes": [
+    {
+      "id": "F1",
+      "prediction": "P12",
+      "outcome": "REFUTED",
+      "summary": "A permanently lost callback from a genuinely running provider acquires no automatic time-bounded escalation. Classification is byte-identical before and after lease expiry; no exposed command escalates it; the lease deadline is never consulted on the dispatched path; heartbeat_at is never written non-null. Recovery is possible but requires a controller decision."
+    },
+    {
+      "id": "F2",
+      "prediction": "P9",
+      "outcome": "PARTIALLY_REFUTED",
+      "summary": "RESULT_COMMITTED validates only the shape of result_commit_id, so a well-formed nonexistent commit was accepted into the ledger and surfaced by the recovery projection. Terminal completion still failed closed, so this is a misleading intermediate record rather than a false completion."
+    },
+    {
+      "id": "F3",
+      "prediction": "P11",
+      "outcome": "DOCUMENTATION_DIVERGENCE",
+      "summary": "_advance_task_locked documents idempotency-key replay tolerance but never reads an idempotency key. A redelivered RUNNING callback is rejected as an invalid transition rather than absorbed. Safe, but the documented guarantee overstates the implementation."
+    },
+    {
+      "id": "F4",
+      "prediction": "P10",
+      "outcome": "CONFIRMED_WITH_QUALIFICATION",
+      "summary": "Fence validation is ordered after transition validation, so on one tested path the stale worker was rejected for an illegal transition and the fence guard was never reached. Both paths fail closed."
+    },
+    {
+      "id": "F5",
+      "prediction": "custody verification",
+      "outcome": "DRIFT_DISCLOSED",
+      "summary": "transaction_schema_sha256 matches no blob at the dispatch base. It matches the original seed schema revision ad154348, superseded three times since. The capsule also names a path (contracts/...) that does not exist at either revision, and declares a controller head that predates its own input.json and acceptance.json by 49 commits."
+    }
+  ],
+  "unresolved_constraints": [
+    "F1, F2 and F3 are producer-side findings against shared controller code. This attempt's writable scope is its own result slot only, so no repair was applied to workstreams/po03/tools/transactional_factory.py. Repairs are proposals for the controller, not changes made here.",
+    "No PO-01 path, PR #8, shared control file, receipt, workflow, production surface, secret, permission or external account was read-mutably or written."
+  ]
+}

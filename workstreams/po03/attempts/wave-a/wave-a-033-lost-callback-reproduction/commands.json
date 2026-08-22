@@ -1,0 +1,150 @@
+{
+  "commands_version": "PO03-WAVE-A-033-COMMANDS-v1",
+  "task_id": "wave-a-033-lost-callback-reproduction",
+  "decision_changed": [],
+  "notes": [
+    "Exit codes are as observed. Commands are listed in execution order.",
+    "The attempt directory is workstreams/po03/attempts/wave-a/wave-a-033-lost-callback-reproduction inside the isolated clone; 'cwd: attempt' below means that directory.",
+    "Admission polling used read-only GitHub API calls before any repository mutation."
+  ],
+  "commands": [
+    {
+      "step": 1,
+      "phase": "admission",
+      "cwd": "any",
+      "command": "gh api repos/asibrahim336-hash/obzio-ai-coordination-temp/contents/workstreams/po03/control/events/wave-a-033-lost-callback-reproduction?ref=po03/repository-engineering-portable-runtime-20260822-v001 --jq '.[].name'",
+      "exit_code": 0,
+      "result": "000001-created.json, 000002-leased.json, 000003-running.json present; admission granted"
+    },
+    {
+      "step": 2,
+      "phase": "admission",
+      "cwd": "any",
+      "command": "gh api repos/asibrahim336-hash/obzio-ai-coordination-temp/git/ref/heads/po03/wave-a-033-lost-callback-reproduction",
+      "exit_code": 1,
+      "result": "HTTP 404 Not Found; target branch did not pre-exist, so the attempt did not fail closed"
+    },
+    {
+      "step": 3,
+      "phase": "isolation",
+      "cwd": "/home/ubuntu",
+      "command": "git clone --no-local https://github.com/asibrahim336-hash/obzio-ai-coordination-temp.git /home/ubuntu/po03-wave-a-033-lost-callback-reproduction-isolated",
+      "exit_code": 0,
+      "result": "first repository mutation; fresh clone with its own .git, index and object store"
+    },
+    {
+      "step": 4,
+      "phase": "isolation",
+      "cwd": "clone root",
+      "command": "git checkout -q e63fbae079774b151fd24a4132e4a5e571f75298 && git checkout -b po03/wave-a-033-lost-callback-reproduction",
+      "exit_code": 0,
+      "result": "branch created from the immutable dispatch base"
+    },
+    {
+      "step": 5,
+      "phase": "isolation",
+      "cwd": "clone root",
+      "command": "git rev-parse --absolute-git-dir; git rev-parse --path-format=absolute --git-common-dir; git worktree list; cat .git/objects/info/alternates",
+      "exit_code": 0,
+      "result": "git dir equals common dir, single worktree, no alternates, no linked-worktree relationship to /workspace"
+    },
+    {
+      "step": 6,
+      "phase": "custody",
+      "cwd": "attempt",
+      "command": "python3 tools/verify_capsule.py --out capsule-verification.json",
+      "exit_code": 0,
+      "result": "3 of 4 declared source hashes MATCH_AT_DISPATCH_BASE; transaction_schema_sha256 MISMATCH_AT_DISPATCH_BASE (finding F5)"
+    },
+    {
+      "step": 7,
+      "phase": "test",
+      "cwd": "attempt",
+      "command": "python3 -m pytest tests/test_lost_callback_recovery.py -v",
+      "exit_code": 0,
+      "result": "26 passed, 5 subtests passed",
+      "log": "logs/pytest.log"
+    },
+    {
+      "step": 8,
+      "phase": "test",
+      "cwd": "attempt",
+      "command": "python3 tests/test_lost_callback_recovery.py",
+      "exit_code": 0,
+      "result": "Ran 26 tests, OK; suite runs under the stdlib runner with no pytest dependency"
+    },
+    {
+      "step": 9,
+      "phase": "reproduction",
+      "cwd": "attempt",
+      "command": "python3 run_reproduction.py --out observed-results.json",
+      "exit_code": 0,
+      "result": "5 scenarios executed; observed-results.json written",
+      "log": "logs/run_reproduction.log"
+    },
+    {
+      "step": 10,
+      "phase": "determinism",
+      "cwd": "attempt",
+      "command": "python3 run_reproduction.py --out /tmp/po03-033-read/rerun2.json && python3 tools/check_determinism.py observed-results.json /tmp/po03-033-read/rerun2.json",
+      "exit_code": 0,
+      "result": "compared_claims=84, differing_claims=0, DETERMINISTIC",
+      "log": "logs/determinism.log"
+    },
+    {
+      "step": 11,
+      "phase": "determinism",
+      "cwd": "attempt",
+      "command": "python3 run_reproduction.py --out /tmp/po03-033-read/rerun3.json && python3 tools/check_determinism.py observed-results.json /tmp/po03-033-read/rerun3.json",
+      "exit_code": 0,
+      "result": "compared_claims=84, differing_claims=0, DETERMINISTIC across a third run"
+    },
+    {
+      "step": 12,
+      "phase": "manifest",
+      "cwd": "attempt",
+      "command": "python3 tools/build_manifest.py --out manifest.json",
+      "exit_code": 0,
+      "result": "manifest declares every durable artifact except itself, with SHA-256, byte count and Git blob SHA"
+    },
+    {
+      "step": 13,
+      "phase": "commit",
+      "cwd": "clone root",
+      "command": "git add workstreams/po03/attempts/wave-a/wave-a-033-lost-callback-reproduction && git commit && git push -u origin po03/wave-a-033-lost-callback-reproduction",
+      "exit_code": 0,
+      "result": "result committed and pushed to the deterministic attempt branch"
+    },
+    {
+      "step": 14,
+      "phase": "readback",
+      "cwd": "/home/ubuntu",
+      "command": "git clone --no-local --branch po03/wave-a-033-lost-callback-reproduction https://github.com/asibrahim336-hash/obzio-ai-coordination-temp.git /home/ubuntu/po03-033-readback && python3 tools/readback_verify.py",
+      "exit_code": 0,
+      "result": "every manifested artifact re-verified from immutable bytes in a separate fresh read-only clone; remote tip equals the final commit",
+      "log": "readback-evidence.json"
+    }
+  ],
+  "failures_and_repairs": [
+    {
+      "item": "First draft of tests/scenarios.py imported a nonexistent helper (provider_task_ids) and contained an unreachable comprehension.",
+      "repair": "Removed the bad import and the dead code before any recorded run.",
+      "impact_on_results": "none; no result was recorded from the broken draft"
+    },
+    {
+      "item": "The first determinism comparison was an ad-hoc shell heredoc that crashed on a boolean observation.",
+      "repair": "Replaced with the durable tool tools/check_determinism.py, which strips run-varying fields explicitly and returns a nonzero exit code on divergence.",
+      "impact_on_results": "none; the crash produced no recorded result"
+    },
+    {
+      "item": "tools/check_determinism.py initially reported NONDETERMINISTIC on two capsule digests.",
+      "repair": "Investigated rather than suppressed: the digests hash a creation timestamp and the sandbox's own commit SHA, so they vary by construction. They are now excluded with a recorded rationale, and ledger self-consistency is asserted separately through chain_errors.",
+      "impact_on_results": "determinism is asserted over fault behaviour, not over those two digests; recorded as limitation L6"
+    },
+    {
+      "item": "tools/verify_capsule.py first reported declared_schema_superseded_times=0.",
+      "repair": "Off-by-direction bug: the Git log lineage is newest-first, so revisions after the declared one precede it in the list. Corrected to 3, which matches the four-revision lineage.",
+      "impact_on_results": "corrected before the artifact was committed"
+    }
+  ]
+}
