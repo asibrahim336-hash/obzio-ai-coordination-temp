@@ -308,6 +308,59 @@ class DeclaredProbeSetTests(unittest.TestCase):
                 with self.subTest(probe=probe["probe_id"], hypothesis=hypothesis_id):
                     self.assertIn(hypothesis_id, known)
 
+    def test_every_hypothesis_names_declared_probes_and_every_probe_is_claimed(self):
+        register = json.loads(
+            (
+                REPO_ROOT / "workstreams/po03/wave-a/units/wa-024/hypotheses/hypotheses.json"
+            ).read_text(encoding="utf-8")
+        )
+        declared = {probe["probe_id"] for probe in self.probes}
+        claimed: set[str] = set()
+        for row in register["hypotheses"]:
+            for probe_id in row["measured_by"]:
+                with self.subTest(hypothesis=row["hypothesis_id"], probe=probe_id):
+                    self.assertIn(probe_id, declared)
+                claimed.add(probe_id)
+        self.assertEqual(set(), declared - claimed)
+
+    def test_hypothesis_count_matches_its_own_tally(self):
+        register = json.loads(
+            (
+                REPO_ROOT / "workstreams/po03/wave-a/units/wa-024/hypotheses/hypotheses.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertEqual(register["counted_current_method_hypotheses"], len(register["hypotheses"]))
+        self.assertGreaterEqual(len(register["hypotheses"]), register["minimum_required_by_input"])
+        for row in register["hypotheses"]:
+            with self.subTest(hypothesis=row["hypothesis_id"]):
+                self.assertTrue(row["refutation_condition"].strip())
+                self.assertTrue(row["derived_from_source_claims"])
+
+    def test_declared_hypotheses_cite_recorded_source_claims(self):
+        unit = REPO_ROOT / "workstreams/po03/wave-a/units/wa-024"
+        claims = json.loads((unit / "sources/source-claims.json").read_text(encoding="utf-8"))
+        known = {row["claim_id"] for row in claims["external_claims"]} | {
+            row["claim_id"] for row in claims["repository_claims"]
+        }
+        register = json.loads((unit / "hypotheses/hypotheses.json").read_text(encoding="utf-8"))
+        for row in register["hypotheses"]:
+            for claim_id in row["derived_from_source_claims"]:
+                with self.subTest(hypothesis=row["hypothesis_id"], claim=claim_id):
+                    self.assertIn(claim_id, known)
+
+    def test_every_source_capsule_referenced_by_a_claim_exists(self):
+        unit = REPO_ROOT / "workstreams/po03/wave-a/units/wa-024"
+        claims = json.loads((unit / "sources/source-claims.json").read_text(encoding="utf-8"))
+        for row in claims["external_claims"]:
+            capsule = unit / row["capsule"]
+            with self.subTest(claim=row["claim_id"]):
+                self.assertTrue(capsule.is_file(), capsule)
+                text = capsule.read_text(encoding="utf-8")
+                self.assertIn(row["immutable_commit"], text)
+                self.assertIn(row["url"], text)
+                if "retrieved_sha256" in row:
+                    self.assertIn(row["retrieved_sha256"], text)
+
     def test_duplicate_probe_ids_are_refused(self):
         with tempfile.TemporaryDirectory(prefix="wa024-dupe-") as tmp:
             path = Path(tmp) / "probes.json"

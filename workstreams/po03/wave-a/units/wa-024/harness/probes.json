@@ -248,7 +248,36 @@
       "expectation_binding_reason": "Depends on the invoking host's PATH, not on repository content."
     },
     {
-      "probe_id": "p21-cleanliness-gate-final",
+      "probe_id": "p21-canary-result-commit-readable",
+      "workload": "PO-03 transactional custody read-back: the result commit 371e8da6ab306c2948e0fe1f47c884ae46b2e81f recorded for the accepted isolation canary must be readable so its artifacts can be verified by immutable SHA.",
+      "hypothesis_ids": ["H-WA024-07"],
+      "role": "protocol_required_check",
+      "argv": ["git", "cat-file", "-e", "371e8da6ab306c2948e0fe1f47c884ae46b2e81f^{commit}"],
+      "cwd": ".",
+      "expected_outcomes": {"clean_full": "FAIL", "clean_shallow": "FAIL"},
+      "expected_outcomes_note": "The warm outcome is deliberately unconstrained: it depends on whether the caller's checkout happens to be a multi-branch clone. The clean outcomes are binding because a single-ref checkout never carries objects reachable only from another branch."
+    },
+    {
+      "probe_id": "p22-earlier-canary-result-commit-readable",
+      "workload": "The same custody read-back for the earlier canary result commit a702a5a053d384377f63690a814233e27904233b.",
+      "hypothesis_ids": ["H-WA024-07"],
+      "role": "protocol_required_check",
+      "argv": ["git", "cat-file", "-e", "a702a5a053d384377f63690a814233e27904233b^{commit}"],
+      "cwd": ".",
+      "expected_outcomes": {"clean_full": "FAIL", "clean_shallow": "FAIL"}
+    },
+    {
+      "probe_id": "p23-wave-branch-tip-readable",
+      "workload": "Discriminating control for H-WA024-07: the Wave A controller commit e56eda6e8e4a4e958795f7157839926d93272b30 is an ancestor of this unit's branch, so it is present with full history and absent at depth 1. This separates 'recorded commit is reachable from no fetched ref' from 'recorded commit is reachable but trimmed by depth'.",
+      "hypothesis_ids": ["H-WA024-07", "H-WA024-01"],
+      "role": "discriminating_control",
+      "argv": ["git", "cat-file", "-e", "e56eda6e8e4a4e958795f7157839926d93272b30^{commit}"],
+      "cwd": ".",
+      "expected_classification": "DEPTH_SENSITIVE",
+      "expected_outcomes": {"warm": "PASS", "clean_full": "PASS", "clean_shallow": "FAIL"}
+    },
+    {
+      "probe_id": "p24-cleanliness-gate-final",
       "workload": "Final ownership gate. The harness returns the tree to its start state before this gate, so a passing result shows the harness itself leaves no residue in the caller's checkout.",
       "hypothesis_ids": ["H-WA024-02"],
       "role": "gate",
