@@ -1138,25 +1138,10 @@ def ingest_result(
         ingest_event = "RECOVERY_REQUIRED"
 
     result_sha = sha256_text(canonical(result_doc))
-    already = [
-        row
-        for row in ledger_rows()
-        if row["unit_id"] == unit_id
-        and row["event"] in INGESTION_EVENTS
-        and (row.get("payload") or {}).get("result_sha256") == result_sha
-    ]
-    if already:
-        append_event(
-            unit_id,
-            "DUPLICATE_IGNORED",
-            actor="coordinator",
-            fence_token=incoming_fence,
-            payload={"result_sha256": result_sha, "reason": "idempotent replay of an already ingested result"},
-        )
-        materialize()
-        return {"unit_id": unit_id, "duplicate": True, "verified_artifacts": len(verified)}
-
-    append_event(
+    # The idempotency check must happen inside the same critical section as the
+    # append.  Checking first and appending afterwards is a race: two concurrent
+    # callbacks can both observe "not yet ingested" and both append.
+    row = append_event(
         unit_id,
         ingest_event,
         actor="coordinator",
@@ -1171,8 +1156,12 @@ def ingest_result(
             "total_bytes": sum(item["bytes"] for item in verified),
             "verified_artifacts": verified,
         },
+        dedupe_key=result_sha,
+        dedupe_events=INGESTION_EVENTS,
     )
     materialize()
+    if row["event"] == "DUPLICATE_IGNORED":
+        return {"unit_id": unit_id, "duplicate": True, "verified_artifacts": len(verified)}
     return {
         "unit_id": unit_id,
         "duplicate": False,

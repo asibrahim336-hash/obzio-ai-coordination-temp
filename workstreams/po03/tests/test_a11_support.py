@@ -25,7 +25,12 @@ from pathlib import Path
 from typing import Any
 
 PO03_ROOT = Path(__file__).resolve().parents[1]
-CONTROL_PLANE_PATH = PO03_ROOT / "tools" / "control_plane.py"
+# ``PO03_A11_CONTROL_PLANE`` exists so a recurrence test can be re-run against a
+# pre-fix copy of the module to demonstrate that the failure it guards was real.
+# It is never set in normal runs, where the live module is always the target.
+CONTROL_PLANE_PATH = Path(
+    os.environ.get("PO03_A11_CONTROL_PLANE") or (PO03_ROOT / "tools" / "control_plane.py")
+)
 MAKE_RESULT_PATH = PO03_ROOT / "tools" / "make_result.py"
 INGEST_WAVE_PATH = PO03_ROOT / "tools" / "ingest_wave.py"
 
@@ -35,6 +40,21 @@ REVIEWER = "po03-worker-a6"
 OWNED_PREFIX = "workstreams/po03/harness/"
 
 GIT_AVAILABLE = shutil.which("git") is not None
+
+#: The advisory-locking mechanism this platform can actually provide, or None.
+#: Recorded rather than assumed, so a platform without advisory locking is
+#: reported as NOT_SUPPORTED instead of quietly passing a concurrency test.
+try:
+    import fcntl as _fcntl  # noqa: F401
+
+    LOCK_MECHANISM_EXPECTED: str | None = "fcntl.flock"
+except ImportError:  # pragma: no cover - non-POSIX platforms only
+    try:
+        import msvcrt as _msvcrt  # noqa: F401
+
+        LOCK_MECHANISM_EXPECTED = "msvcrt.locking"
+    except ImportError:
+        LOCK_MECHANISM_EXPECTED = None
 
 
 def load_module(path: Path, name_hint: str):
