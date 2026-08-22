@@ -1,0 +1,31 @@
+{
+  "protocol_version": "OBZIO-ACCEPTANCE-CONTRACT-v1",
+  "contract_id": "PO03-WAVE-A-CANARY-20260822-v1",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "frozen_at": "2026-08-22T06:50:01Z",
+  "purpose": "Prove that an isolated child can write, commit, push, and independently read back a synthetic durable result before any material delegation.",
+  "producer_terminal_report": "READY_TO_COMMIT",
+  "required_assertions": [
+    "The child starts from controller commit containing this acceptance contract and its immutable task input.",
+    "The child writes only its declared owned subtree.",
+    "The canary payload exactly matches the nonce and content declared by the immutable task input.",
+    "The child emits a complete artifact manifest with SHA-256 and byte counts.",
+    "The child commits and pushes the result to its unique remote branch.",
+    "The controller or a distinct verifier reads every artifact back from the immutable result commit and independently verifies bytes and hashes.",
+    "Provider completion without a durable result commit is classified PROVIDER_COMPLETED_UNCOMMITTED.",
+    "Only the controller may record COMPLETED and the producer may not independently accept its own result."
+  ],
+  "required_artifacts": [
+    "canary.txt",
+    "artifact-manifest.json",
+    "ready-to-commit.json"
+  ],
+  "allowed_dispositions": [
+    "PASS",
+    "FAIL",
+    "NOT_YET",
+    "NOT_SUPPORTED",
+    "OWNER_BLOCKED"
+  ],
+  "decision_changed": []
+}
