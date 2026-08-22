@@ -318,8 +318,19 @@
         "leaf_count": 15,
         "no_credential_material_present": true
       },
+      "turn_subtree_is_transient": {
+        "evidence_label": "DIRECTLY_REPRODUCED",
+        "correction_to_this_same_record": "An earlier statement in this lane called turn/id a durable identifier. That is wrong and is corrected here.",
+        "observed_present_at": "2026-08-22T20:14:5xZ — the root listing returned agent/, owner/, turn/, workspace/ and all five turn/ leaves resolved",
+        "observed_absent_at": "2026-08-22T20:36Z — the root listing returned only agent/, owner/, workspace/. turn/, turn/id and turn/model each returned the service's 404 error body. agent/id and owner/team-id continued to resolve normally in the same probe.",
+        "instrument": "repeated GET of /v1/meta-data/ and /v1/meta-data/turn/* over the same socket, from both a shell and a nested Python subprocess",
+        "consistent_with_the_service_contract": "The service states that values which do not exist for this agent are omitted from listings and return 404, and that paths under turn/ are always served fresh. Both observations are consistent with turn/ existing only while the platform holds an active turn context.",
+        "cause": {"evidence_label": "HYPOTHESIS", "statement": "turn/ is bound to an in-flight turn and is withdrawn once that turn context closes or rotates. Whether a subagent's execution counts as an in-flight turn was not determined."},
+        "engineering_consequence": "Any consumer must treat turn/* as read-once-at-the-moment-you-need-it and must distinguish a 404 error body from a value. Because the service answers a missing leaf with a JSON error body rather than with empty output, naive code records the error text as the identifier — which is exactly what the first version of the staged subagent ledger did before it was corrected.",
+        "how_the_staged_config_handles_it": "proposed-cursor-config/dot-cursor/start.sh snapshots the binding once at boot into .cursor/.run/runtime-binding.json, and the subagent ledger prefers the live value, falls back to that snapshot, and records turn_source as live, boot_snapshot or unavailable so a stale value is never presented as current."
+      },
       "significance": [
-        "turn/id is the finest-grained durable execution identifier available in this runtime and it is NOT exposed by any MCP tool. It is the only identifier that distinguishes one turn of a long-running orchestrator from another, and it is exactly what a launch or receipt record needs to be addressable.",
+        "turn/id is the finest-grained execution identifier available in this runtime and it is NOT exposed by any MCP tool. It is the only identifier that distinguishes one turn of a long-running orchestrator from another. It is transient, so it must be captured when observed rather than looked up when needed.",
         "workspace/branch-name reports the RUN's branch, not the branch actually checked out. It reported cursor/so02-cur-orch-qual-01 while the working tree was on cursor/oe-l1-cursor-baseline-696d. Any provenance record that trusts this field to describe the work will misattribute it.",
         "turn/model is a first-party statement of the exact model configuration and requires no MCP call, so a hook or install script can record it deterministically.",
         "The service requires no credential. It is available to every shell command in the VM, which makes it usable from hooks and from install/start scripts."
