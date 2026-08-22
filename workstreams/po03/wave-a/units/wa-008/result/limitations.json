@@ -88,11 +88,23 @@
     },
     {
       "limitation_id": "LIM-PO03-WA-008-15",
-      "limitation": "The differential runner was applied to the seeded PO-03 workloads and to a fast subset of this unit's own tests, not to the unit's full 28-test suite as a differential workload, because the suite itself spawns the fixture matrix and the nested cost was judged not worth the evidence.",
+      "limitation": "The differential runner was applied to the seeded PO-03 workloads and to a fast subset of this unit's own committed tests, not to the unit's full 30-test suite as a differential workload, because that suite itself spawns the fixture matrix and the nested cost was judged not worth the evidence.",
       "status": "PARTIAL",
-      "evidence": "tests.json self_application records the subset actually run under differential comparison."
+      "evidence": "self-application-result.json covers the four ClassificationUnitTests cases at commit 2aa412ed83d76c468a4b94afe6729b8644d63405; tests.json self_application records the subset actually run under differential comparison."
+    },
+    {
+      "limitation_id": "LIM-PO03-WA-008-16",
+      "limitation": "Output normalisation scrubs durations and ISO-8601 timestamps, so a workload whose meaningful result is a duration or a wall-clock time is masked and a genuine difference there would be missed.",
+      "status": "DESIGN_TRADE_OFF",
+      "evidence": "MC-PO03-WA-008-04. The scrubbing is narrow by design: digests, commit ids and other identifiers are not scrubbed, and test_scrubbing_does_not_mask_a_real_content_difference asserts a content difference still diverges. --keep-volatile-output disables scrubbing for a caller who needs exact output."
+    },
+    {
+      "limitation_id": "LIM-PO03-WA-008-17",
+      "limitation": "The within-side determinism control can be defeated by low-variance volatile output: a value that happens to repeat within a side looks deterministic. This produced the misattribution recorded in MC-PO03-WA-008-04 before scrubbing was added, and scrubbing narrows but does not eliminate the class.",
+      "status": "MEASURED_BOUND",
+      "evidence": "Self-application at commit 891a5e6df0776272c9391bcf48db53fff6993121 reported ENVIRONMENT_LEAKAGE for a timing difference; both sides had reported deterministic=true. Raising repeats reduces but does not remove the exposure; the residual rate is NOT_MEASURED."
     }
   ],
-  "limitation_count": 15,
+  "limitation_count": 17,
   "decision_changed": []
 }

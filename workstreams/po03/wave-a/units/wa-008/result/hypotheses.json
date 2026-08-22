@@ -58,7 +58,17 @@
       "evidence": "unattributed-git-ref-state carries a decoy untracked file and still returns HIDDEN_STATE_DEPENDENCY_UNATTRIBUTED with an empty attribution and a failed closure probe; unattributed-modified-tracked-file returns the same verdict and names MODIFIED_TRACKED_CONTENT as an out-of-scope candidate."
     }
   ],
-  "derived_count": 6,
+    {
+      "hypothesis_id": "HD-PO03-WA-008-07",
+      "statement": "Comparing raw command output is insufficient, because volatile text a command emits about itself diverges without any hidden state being involved.",
+      "exact_falsifier": "A workload that emits only a fresh duration and wall-clock timestamp alongside a fixed result produces identical raw outcomes on both sides.",
+      "frozen_after_first_execution": true,
+      "frozen_after_first_execution_note": "This hypothesis was not frozen before the first matrix run. It was raised by self-application after the matrix already passed, and it is recorded as a later addition rather than backdated.",
+      "outcome": "SUPPORTED",
+      "evidence": "Self-application at commit 891a5e6df0776272c9391bcf48db53fff6993121 misattributed a unittest timing difference to ENVIRONMENT_LEAKAGE; the clean-control-volatile-output fixture is CLEAN with scrubbing and not CLEAN with scrubbing disabled."
+    }
+  ],
+  "derived_count": 7,
   "current_method_hypothesis_count": 0,
   "current_method_hypothesis_note": "The immutable input sets minimum_current_method_hypotheses to 0 for this attempt and no external retrieval route was exposed, so no current-frontier external-method hypothesis is claimed. Fabricating external sources to satisfy a portfolio count is refused.",
   "decision_changed": []

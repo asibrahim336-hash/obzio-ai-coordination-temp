@@ -43,8 +43,28 @@
       "disposition": "RETAIN",
       "verified_on_artifacts": "grep for the temporary-directory prefix in reproduction-result.json, fixture-matrix-result.json and test-output.txt returns zero matches."
     }
+    {
+      "change_id": "MC-PO03-WA-008-04",
+      "trigger": "SELF_APPLICATION_TO_THIS_UNIT_OWN_COMMITTED_TESTS",
+      "observation": "The runner was pointed at a subset of this unit's own committed test suite at commit 891a5e6df0776272c9391bcf48db53fff6993121. Both sides passed with exit code 0 and four tests, yet the verdict was HIDDEN_STATE_DEPENDENCY_ATTRIBUTED to ENVIRONMENT_LEAKAGE. The cause was unittest's own summary line: the warm side printed 'Ran 4 tests in 0.011s' and the clean side '0.010s'. Path normalisation did not touch volatile text, the within-side repetition control happened to see a stable duration on each side, and the environment probe reproduced the warm digest by timing coincidence. This is a false positive that could have been attributed to the wrong cause with high confidence.",
+      "defect_class": "FALSE_POSITIVE_AND_MISATTRIBUTION_FROM_VOLATILE_OUTPUT",
+      "change": "Normalisation now scrubs a narrow set of volatile patterns after path tokenisation: durations matching a numeric-plus-s token, and ISO-8601 wall-clock timestamps. The pattern list is a constructor argument, is recorded in the report and is part of the classification digest, and the CLI exposes --keep-volatile-output to disable it. Digests, commit ids and other identifiers are deliberately not scrubbed.",
+      "implemented_in": "differential_run.py DEFAULT_VOLATILE_PATTERNS, normalise_output, execute, run_side, DifferentialRun, classification_digest and build_parser",
+      "recurrence_test": "test_differential_run.CleanControlTests.test_volatile_output_control_is_clean_only_because_it_is_scrubbed and test_scrubbing_does_not_mask_a_real_content_difference, plus fixture clean-control-volatile-output in the matrix",
+      "recurrence_assertion": "A workload emitting a fresh duration and timestamp must be CLEAN with scrubbing and must not be CLEAN with volatile_patterns disabled; and with scrubbing enabled a genuine content difference must still diverge.",
+      "independently_reexecuted": true,
+      "disposition": "RETAIN",
+      "post_change_self_application": {
+        "commit": "2aa412ed83d76c468a4b94afe6729b8644d63405",
+        "verdict": "NO_HIDDEN_STATE_DEPENDENCY_DETECTED",
+        "exit_code": 0,
+        "note": "ENVIRONMENT_LEAKAGE was still present in the inventory because the CLI inherited the ambient runtime environment; it was correctly not attributed.",
+        "artifact": "self-application-result.json"
+      },
+      "cost": "A workload whose result is itself a duration or a timestamp is masked; recorded as limitation LIM-PO03-WA-008-16."
+    }
   ],
-  "change_count": 3,
+  "change_count": 4,
   "rejections": [
     {
       "rejection_id": "RJ-PO03-WA-008-01",
