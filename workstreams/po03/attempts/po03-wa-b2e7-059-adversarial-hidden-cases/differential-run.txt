@@ -1,0 +1,349 @@
+$ python3 -I seeded_defects.py --repo-root . --hidden-cases hidden/hidden_result_cases.py --out detection-differential.json
+{
+  "baseline": {
+    "false_positive_free": true,
+    "hidden_arm_on_unmutated_tool": {
+      "arm": "evaluator_held_hidden_cases",
+      "case_count": 12,
+      "control_failures": [],
+      "detection_count": 0,
+      "detections": [],
+      "killed": false
+    },
+    "producer_arm_on_unmutated_tool": {
+      "arm": "producer_visible_suite",
+      "exit_code": 0,
+      "killed": false,
+      "summary": "OK"
+    }
+  },
+  "decision_changed": [],
+  "defects_applied": 12,
+  "defects_not_applied": [],
+  "defects_seeded": 12,
+  "differential_version": "PO03-SEEDED-DEFECTS-v1",
+  "hidden_kill_count": 12,
+  "hidden_only_kills": [
+    "D02-uppercase-hash-accepted",
+    "D04-zero-byte-artifact-accepted",
+    "D10-wave-baseline-hash-unchecked"
+  ],
+  "hypothesis": {
+    "basis": "The hypothesis holds only if at least one applied seeded defect is killed by the hidden arm and survives the producer-visible suite. A defect killed by both arms is not evidence for the hypothesis.",
+    "hidden_kill_rate": 1.0,
+    "hidden_only_kill_count": 3,
+    "hidden_only_kills": [
+      "D02-uppercase-hash-accepted",
+      "D04-zero-byte-artifact-accepted",
+      "D10-wave-baseline-hash-unchecked"
+    ],
+    "hypothesis": "Hidden evaluator-held cases detect defects that producer-authored tests miss.",
+    "producer_kill_rate": 0.75,
+    "verdict": "PASS"
+  },
+  "producer_kill_count": 9,
+  "producer_only_kills": [],
+  "producer_suite": "workstreams/po03/tests/test_validate_contracts.py",
+  "records": [
+    {
+      "defect_id": "D01-worker-may-set-completed",
+      "hazard": "a subordinate can turn provider completion into Obzio completion",
+      "hidden_arm": {
+        "arm": "evaluator_held_hidden_cases",
+        "case_count": 12,
+        "control_failures": [],
+        "detection_count": 1,
+        "detections": [
+          "H-R06-worker-set-completed-rejected"
+        ],
+        "killed": true
+      },
+      "killed_by": [
+        "evaluator_held_hidden_cases",
+        "producer_visible_suite"
+      ],
+      "mutation_state": "APPLIED",
+      "producer_arm": {
+        "arm": "producer_visible_suite",
+        "exit_code": 1,
+        "killed": true,
+        "summary": "FAILED (failures=1)"
+      }
+    },
+    {
+      "defect_id": "D02-uppercase-hash-accepted",
+      "hazard": "hash comparison becomes case-insensitive, so two spellings of one digest diverge",
+      "hidden_arm": {
+        "arm": "evaluator_held_hidden_cases",
+        "case_count": 12,
+        "control_failures": [],
+        "detection_count": 1,
+        "detections": [
+          "H-R01-uppercase-sha256-rejected"
+        ],
+        "killed": true
+      },
+      "killed_by": [
+        "evaluator_held_hidden_cases"
+      ],
+      "mutation_state": "APPLIED",
+      "producer_arm": {
+        "arm": "producer_visible_suite",
+        "exit_code": 0,
+        "killed": false,
+        "summary": "OK"
+      }
+    },
+    {
+      "defect_id": "D03-total-bytes-unchecked",
+      "hazard": "a manifest can claim byte counts that its artifacts do not add up to",
+      "hidden_arm": {
+        "arm": "evaluator_held_hidden_cases",
+        "case_count": 12,
+        "control_failures": [],
+        "detection_count": 1,
+        "detections": [
+          "H-R04-total-bytes-mismatch-rejected"
+        ],
+        "killed": true
+      },
+      "killed_by": [
+        "evaluator_held_hidden_cases",
+        "producer_visible_suite"
+      ],
+      "mutation_state": "APPLIED",
+      "producer_arm": {
+        "arm": "producer_visible_suite",
+        "exit_code": 1,
+        "killed": true,
+        "summary": "FAILED (failures=1)"
+      }
+    },
+    {
+      "defect_id": "D04-zero-byte-artifact-accepted",
+      "hazard": "an empty file counts as a durable artifact",
+      "hidden_arm": {
+        "arm": "evaluator_held_hidden_cases",
+        "case_count": 12,
+        "control_failures": [],
+        "detection_count": 1,
+        "detections": [
+          "H-R02-zero-byte-artifact-rejected"
+        ],
+        "killed": true
+      },
+      "killed_by": [
+        "evaluator_held_hidden_cases"
+      ],
+      "mutation_state": "APPLIED",
+      "producer_arm": {
+        "arm": "producer_visible_suite",
+        "exit_code": 0,
+        "killed": false,
+        "summary": "OK"
+      }
+    },
+    {
+      "defect_id": "D05-duplicate-artifact-ids-accepted",
+      "hazard": "one artifact counted twice inflates the artifact count",
+      "hidden_arm": {
+        "arm": "evaluator_held_hidden_cases",
+        "case_count": 12,
+        "control_failures": [],
+        "detection_count": 1,
+        "detections": [
+          "H-R03-duplicate-artifact-id-rejected"
+        ],
+        "killed": true
+      },
+      "killed_by": [
+        "evaluator_held_hidden_cases",
+        "producer_visible_suite"
+      ],
+      "mutation_state": "APPLIED",
+      "producer_arm": {
+        "arm": "producer_visible_suite",
+        "exit_code": 1,
+        "killed": true,
+        "summary": "FAILED (failures=1)"
+      }
+    },
+    {
+      "defect_id": "D06-self-acceptance-allowed",
+      "hazard": "the producer accepts its own work as the independent reviewer",
+      "hidden_arm": {
+        "arm": "evaluator_held_hidden_cases",
+        "case_count": 12,
+        "control_failures": [],
+        "detection_count": 1,
+        "detections": [
+          "H-R07-self-acceptance-rejected"
+        ],
+        "killed": true
+      },
+      "killed_by": [
+        "evaluator_held_hidden_cases",
+        "producer_visible_suite"
+      ],
+      "mutation_state": "APPLIED",
+      "producer_arm": {
+        "arm": "producer_visible_suite",
+        "exit_code": 1,
+        "killed": true,
+        "summary": "FAILED (failures=1)"
+      }
+    },
+    {
+      "defect_id": "D07-provider-completion-ungated",
+      "hazard": "provider completion without a durable commit is accepted as a real outcome",
+      "hidden_arm": {
+        "arm": "evaluator_held_hidden_cases",
+        "case_count": 12,
+        "control_failures": [],
+        "detection_count": 1,
+        "detections": [
+          "H-R08-provider-completed-without-commit-rejected"
+        ],
+        "killed": true
+      },
+      "killed_by": [
+        "evaluator_held_hidden_cases",
+        "producer_visible_suite"
+      ],
+      "mutation_state": "APPLIED",
+      "producer_arm": {
+        "arm": "producer_visible_suite",
+        "exit_code": 1,
+        "killed": true,
+        "summary": "FAILED (failures=1)"
+      }
+    },
+    {
+      "defect_id": "D08-wave-decision-changed-unchecked",
+      "hazard": "a compounding receipt can silently record a founder decision reversal",
+      "hidden_arm": {
+        "arm": "evaluator_held_hidden_cases",
+        "case_count": 12,
+        "control_failures": [],
+        "detection_count": 1,
+        "detections": [
+          "H-R10-wave-nonempty-decision-changed-rejected"
+        ],
+        "killed": true
+      },
+      "killed_by": [
+        "evaluator_held_hidden_cases",
+        "producer_visible_suite"
+      ],
+      "mutation_state": "APPLIED",
+      "producer_arm": {
+        "arm": "producer_visible_suite",
+        "exit_code": 1,
+        "killed": true,
+        "summary": "FAILED (failures=1)"
+      }
+    },
+    {
+      "defect_id": "D09-wave-empty-arrays-accepted",
+      "hazard": "a compounding receipt with no observations or reproductions passes",
+      "hidden_arm": {
+        "arm": "evaluator_held_hidden_cases",
+        "case_count": 12,
+        "control_failures": [],
+        "detection_count": 1,
+        "detections": [
+          "H-R11-wave-empty-observations-rejected"
+        ],
+        "killed": true
+      },
+      "killed_by": [
+        "evaluator_held_hidden_cases",
+        "producer_visible_suite"
+      ],
+      "mutation_state": "APPLIED",
+      "producer_arm": {
+        "arm": "producer_visible_suite",
+        "exit_code": 1,
+        "killed": true,
+        "summary": "FAILED (failures=2)"
+      }
+    },
+    {
+      "defect_id": "D10-wave-baseline-hash-unchecked",
+      "hazard": "the baseline a lift claim rests on is not pinned to a digest",
+      "hidden_arm": {
+        "arm": "evaluator_held_hidden_cases",
+        "case_count": 12,
+        "control_failures": [],
+        "detection_count": 1,
+        "detections": [
+          "H-R12-wave-bad-baseline-hash-rejected"
+        ],
+        "killed": true
+      },
+      "killed_by": [
+        "evaluator_held_hidden_cases"
+      ],
+      "mutation_state": "APPLIED",
+      "producer_arm": {
+        "arm": "producer_visible_suite",
+        "exit_code": 0,
+        "killed": false,
+        "summary": "OK"
+      }
+    },
+    {
+      "defect_id": "D11-artifact-count-unchecked",
+      "hazard": "a result can claim more artifacts than it carries",
+      "hidden_arm": {
+        "arm": "evaluator_held_hidden_cases",
+        "case_count": 12,
+        "control_failures": [],
+        "detection_count": 1,
+        "detections": [
+          "H-R05-artifact-count-mismatch-rejected"
+        ],
+        "killed": true
+      },
+      "killed_by": [
+        "evaluator_held_hidden_cases",
+        "producer_visible_suite"
+      ],
+      "mutation_state": "APPLIED",
+      "producer_arm": {
+        "arm": "producer_visible_suite",
+        "exit_code": 1,
+        "killed": true,
+        "summary": "FAILED (failures=1)"
+      }
+    },
+    {
+      "defect_id": "D12-terminal-review-without-completion",
+      "hazard": "an acceptance is recorded against a result that was never completed",
+      "hidden_arm": {
+        "arm": "evaluator_held_hidden_cases",
+        "case_count": 12,
+        "control_failures": [],
+        "detection_count": 1,
+        "detections": [
+          "H-R09-terminal-review-on-uncompleted-result-rejected"
+        ],
+        "killed": true
+      },
+      "killed_by": [
+        "evaluator_held_hidden_cases",
+        "producer_visible_suite"
+      ],
+      "mutation_state": "APPLIED",
+      "producer_arm": {
+        "arm": "producer_visible_suite",
+        "exit_code": 1,
+        "killed": true,
+        "summary": "FAILED (failures=1)"
+      }
+    }
+  ],
+  "survivors": [],
+  "target": "workstreams/po03/tools/validate_contracts.py"
+}
+exit=0
