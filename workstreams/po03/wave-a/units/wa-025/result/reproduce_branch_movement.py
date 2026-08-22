@@ -14,6 +14,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Sequence
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 from immutable_readback import VerificationError, verify_readback
 
 
