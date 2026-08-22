@@ -1,12 +1,12 @@
 {
   "aggregate": {
-    "artifact_claims_audited": 50,
+    "artifact_claims_audited": 52,
     "artifact_verification_failures": 0,
-    "artifacts_verified": 50,
-    "records_absent_at_declared_commit": 5,
+    "artifacts_verified": 52,
+    "records_absent_at_declared_commit": 4,
     "records_audited": 6,
     "records_resolving_to_themselves": 0,
-    "records_stale_at_declared_commit": 1,
+    "records_stale_at_declared_commit": 2,
     "result": "DISCREPANCY_FOUND"
   },
   "document_id": "po03-a8-self-readback-audit-v001",
@@ -15,11 +15,11 @@
       "a8-u01",
       "a8-u02",
       "a8-u03",
-      "a8-u04",
-      "a8-u06"
+      "a8-u04"
     ],
     "STALE_AT_DECLARED_COMMIT": [
-      "a8-u05"
+      "a8-u05",
+      "a8-u06"
     ]
   },
   "generated_by": "workstreams/po03/successor/audit_own_records.py",
@@ -27,7 +27,7 @@
   "lesson": "L-08",
   "mechanism_that_would_refuse_this": "C-09",
   "method": "For each of this cohort's result records: resolve every artifact at the commit its own content_uri names and compare digest and byte count, then test whether the record itself is readable at its declared result_commit_id and whether the bytes there are the current record. This is the check cohort a6 applied to other cohorts, turned inward.",
-  "observed_at_commit": "bb7c24e947eabfdea8761e4d2dfdd6c8966185a4",
+  "observed_at_commit": "cc40a8453f74bc3f9d47303b2b54834447aeb707",
   "owner": "po03-worker-a8",
   "proposed_repair": "Either declare the locator after committing the record - write the record, commit, then rewrite result_commit_id to the new HEAD and amend, which is a two-phase commit - or declare the locator as branch-relative and require the parent to resolve the record at the branch head rather than at a fixed commit. C-09 in G2 takes the second form: the locator is a name that must resolve to the submitted bytes, and admission fails if it does not.",
   "root_cause": "workstreams/po03/tools/make_result.py resolves result_commit_id to HEAD at the moment it writes the record (line 127, `commit if committed else None`), which is necessarily before that record is committed. No sequence of correct operator behaviour can make the declared commit contain the record, so this is a property of the tool and not of how it was used.",
@@ -293,160 +293,174 @@
       "artifacts": [
         {
           "bytes_match": true,
-          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "receipts/po03/2026-08-22/successor-generation.json",
           "present": true,
           "sha256_matches": true
         },
         {
           "bytes_match": true,
-          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "workstreams/po03/successor/score_generations.py",
           "present": true,
           "sha256_matches": true
         },
         {
           "bytes_match": true,
-          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "workstreams/po03/successor/scores/generation-comparison.json",
           "present": true,
           "sha256_matches": true
         },
         {
           "bytes_match": true,
-          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "workstreams/po03/successor/transcripts/g0-holdout.txt",
           "present": true,
           "sha256_matches": true
         },
         {
           "bytes_match": true,
-          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "workstreams/po03/successor/transcripts/g0-public.txt",
           "present": true,
           "sha256_matches": true
         },
         {
           "bytes_match": true,
-          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "workstreams/po03/successor/transcripts/g1-holdout.txt",
           "present": true,
           "sha256_matches": true
         },
         {
           "bytes_match": true,
-          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "workstreams/po03/successor/transcripts/g1-public.txt",
           "present": true,
           "sha256_matches": true
         },
         {
           "bytes_match": true,
-          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "workstreams/po03/successor/transcripts/g2-holdout.txt",
           "present": true,
           "sha256_matches": true
         },
         {
           "bytes_match": true,
-          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "workstreams/po03/successor/transcripts/g2-public.txt",
           "present": true,
           "sha256_matches": true
         },
         {
           "bytes_match": true,
-          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "workstreams/po03/successor/write_receipt.py",
           "present": true,
           "sha256_matches": true
         },
         {
           "bytes_match": true,
-          "declared_commit": "feef275261eb55d8549bdbab24077dcfe788d714",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "workstreams/po03/tests/test_a8_scores.py",
           "present": true,
           "sha256_matches": true
         }
       ],
       "artifacts_verified": 11,
-      "declared_result_commit_id": "feef275261eb55d8549bdbab24077dcfe788d714",
+      "declared_result_commit_id": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
       "obzio_state": "RESULT_COMMITTED",
       "record_finding": "STALE_AT_DECLARED_COMMIT",
       "record_path": "workstreams/po03/control/units/a8/a8-u05.json",
       "unit_id": "a8-u05"
     },
     {
-      "artifact_count": 9,
+      "artifact_count": 11,
       "artifacts": [
         {
           "bytes_match": true,
-          "declared_commit": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
+          "path": "workstreams/po03/successor/audit_own_records.py",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "workstreams/po03/successor/check_custody_hygiene.py",
           "present": true,
           "sha256_matches": true
         },
         {
           "bytes_match": true,
-          "declared_commit": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "workstreams/po03/successor/g2/lineage.json",
           "present": true,
           "sha256_matches": true
         },
         {
           "bytes_match": true,
-          "declared_commit": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "workstreams/po03/successor/g2/successor.py",
           "present": true,
           "sha256_matches": true
         },
         {
           "bytes_match": true,
-          "declared_commit": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "workstreams/po03/successor/lessons/build_lessons.py",
           "present": true,
           "sha256_matches": true
         },
         {
           "bytes_match": true,
-          "declared_commit": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "workstreams/po03/successor/lessons/lessons.json",
           "present": true,
           "sha256_matches": true
         },
         {
           "bytes_match": true,
-          "declared_commit": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "workstreams/po03/successor/lessons/lessons.py",
           "present": true,
           "sha256_matches": true
         },
         {
           "bytes_match": true,
-          "declared_commit": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
+          "path": "workstreams/po03/successor/self-readback-audit.json",
+          "present": true,
+          "sha256_matches": true
+        },
+        {
+          "bytes_match": true,
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "workstreams/po03/tests/test_a8_g2_changes.py",
           "present": true,
           "sha256_matches": true
         },
         {
           "bytes_match": true,
-          "declared_commit": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "workstreams/po03/tests/test_a8_g2_lineage.py",
           "present": true,
           "sha256_matches": true
         },
         {
           "bytes_match": true,
-          "declared_commit": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+          "declared_commit": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
           "path": "workstreams/po03/tests/test_a8_lessons.py",
           "present": true,
           "sha256_matches": true
         }
       ],
-      "artifacts_verified": 9,
-      "declared_result_commit_id": "6e615935b6fb4d494eba63693d8e7a58684cbb9b",
+      "artifacts_verified": 11,
+      "declared_result_commit_id": "28420bfe02d76f2438dc0a41fb8ae67ae37c903e",
       "obzio_state": "RESULT_COMMITTED",
-      "record_finding": "ABSENT_AT_DECLARED_COMMIT",
+      "record_finding": "STALE_AT_DECLARED_COMMIT",
       "record_path": "workstreams/po03/control/units/a8/a8-u06.json",
       "unit_id": "a8-u06"
     }
