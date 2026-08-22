@@ -1,0 +1,96 @@
+{
+  "cases": [
+    {
+      "case_id": "baseline-unmodified",
+      "expected_kinds": [],
+      "expected_mismatched_paths": [],
+      "expected_status": "PASS",
+      "intent": "An untouched tree must reproduce the receipt exactly.",
+      "mutations": []
+    },
+    {
+      "case_id": "single-byte-flip",
+      "expected_kinds": ["GIT_BLOB_SHA_MISMATCH", "SHA256_MISMATCH"],
+      "expected_mismatched_paths": ["alpha.txt"],
+      "expected_status": "FAIL",
+      "intent": "One flipped byte is detected even though the byte count is unchanged.",
+      "mutations": [{"hex": "41", "offset": 0, "path": "alpha.txt", "type": "replace_bytes"}]
+    },
+    {
+      "case_id": "length-preserving-transposition",
+      "expected_kinds": ["GIT_BLOB_SHA_MISMATCH", "SHA256_MISMATCH"],
+      "expected_mismatched_paths": ["alpha.txt"],
+      "expected_status": "FAIL",
+      "intent": "Reordering existing bytes is detected, so detection is not length-based.",
+      "mutations": [{"offset_a": 0, "offset_b": 1, "path": "alpha.txt", "type": "swap_bytes"}]
+    },
+    {
+      "case_id": "truncation",
+      "expected_kinds": ["BYTES_MISMATCH", "GIT_BLOB_SHA_MISMATCH", "SHA256_MISMATCH"],
+      "expected_mismatched_paths": ["alpha.txt"],
+      "expected_status": "FAIL",
+      "intent": "A truncated source fails on byte count and both digests.",
+      "mutations": [{"length": 20, "path": "alpha.txt", "type": "truncate"}]
+    },
+    {
+      "case_id": "trailing-newline-appended",
+      "expected_kinds": ["BYTES_MISMATCH", "GIT_BLOB_SHA_MISMATCH", "SHA256_MISMATCH"],
+      "expected_mismatched_paths": ["gamma.yml"],
+      "expected_status": "FAIL",
+      "intent": "Whitespace-only drift at end of file is still a source change.",
+      "mutations": [{"hex": "0a", "path": "gamma.yml", "type": "append"}]
+    },
+    {
+      "case_id": "empty-source-gains-content",
+      "expected_kinds": ["BYTES_MISMATCH", "GIT_BLOB_SHA_MISMATCH", "SHA256_MISMATCH"],
+      "expected_mismatched_paths": ["empty.txt"],
+      "expected_status": "FAIL",
+      "intent": "A zero-byte source that gains content is detected.",
+      "mutations": [{"hex": "78", "path": "empty.txt", "type": "append"}]
+    },
+    {
+      "case_id": "line-ending-conversion",
+      "expected_kinds": ["BYTES_MISMATCH", "GIT_BLOB_SHA_MISMATCH", "SHA256_MISMATCH"],
+      "expected_mismatched_paths": ["alpha.txt"],
+      "expected_status": "FAIL",
+      "intent": "CRLF rewriting by a non-portable checkout is detected.",
+      "mutations": [{"path": "alpha.txt", "type": "crlf"}]
+    },
+    {
+      "case_id": "source-deleted",
+      "expected_kinds": ["MISSING"],
+      "expected_mismatched_paths": ["nested/beta.json"],
+      "expected_status": "FAIL",
+      "intent": "A removed source is reported as missing rather than skipped.",
+      "mutations": [{"path": "nested/beta.json", "type": "delete"}]
+    },
+    {
+      "case_id": "source-replaced-by-directory",
+      "expected_kinds": ["NOT_A_FILE"],
+      "expected_mismatched_paths": ["gamma.yml"],
+      "expected_status": "FAIL",
+      "intent": "A path whose type changed is reported instead of raising.",
+      "mutations": [{"path": "gamma.yml", "type": "replace_with_directory"}]
+    },
+    {
+      "case_id": "two-sources-changed",
+      "expected_kinds": ["BYTES_MISMATCH", "GIT_BLOB_SHA_MISMATCH", "SHA256_MISMATCH"],
+      "expected_mismatched_paths": ["alpha.txt", "gamma.yml"],
+      "expected_status": "FAIL",
+      "intent": "Verification reports every changed source, not just the first.",
+      "mutations": [
+        {"hex": "41", "offset": 0, "path": "alpha.txt", "type": "replace_bytes"},
+        {"length": 2, "path": "gamma.yml", "type": "truncate"}
+      ]
+    },
+    {
+      "case_id": "undeclared-file-added",
+      "expected_kinds": [],
+      "expected_mismatched_paths": [],
+      "expected_status": "PASS",
+      "intent": "Known negative outcome: the receipt covers declared paths only, so an added undeclared file is invisible to it.",
+      "mutations": [{"hex": "6e6f697365", "path": "delta.txt", "type": "create"}]
+    }
+  ],
+  "fixture_version": "PO03-SOURCE-LOCK-FIXTURE-v1"
+}
