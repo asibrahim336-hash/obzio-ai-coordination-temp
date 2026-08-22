@@ -1,0 +1,139 @@
+{
+  "schema_version": "po03-pack-qualification-criteria-v1",
+  "unit_id": "a4-u02",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "commission_revision": "v002",
+  "worker_id": "po03-worker-a4",
+  "freeze_basis": {
+    "branch": "cursor/po03-a4-pack-qualification-ed20",
+    "base_commit": "dd2fcc63694bea365153a5930472816037b6e4ff",
+    "acceptance_contract_sha256": "807348d53cfdbe8bf92211c2ff9e6a14ff5743e84fc572d6e87ad4b4c3811bc8",
+    "immutable_input_manifest_sha256": "b494e8baf81332976ce1a0493923b36c1c23497e5e429bd02dd44bc9ef9be263",
+    "sources_read_before_freeze": [
+      "AGENTS.md",
+      "operations/README.md",
+      "workstreams/po03/COMMISSION.md",
+      "workstreams/po03/evidence/so02-operating-correction.json",
+      "workstreams/po03/control/dispatch/a4-u01.json",
+      "workstreams/po03/control/dispatch/a4-u02.json",
+      "workstreams/po03/control/dispatch/a4-u03.json",
+      "workstreams/po03/control/dispatch/a4-u04.json",
+      "workstreams/po03/control/dispatch/a4-u05.json",
+      "workstreams/po03/control/dispatch/a4-u06.json",
+      "workstreams/po03/control/dispatch/a4-u07.json",
+      "workstreams/po03/control/dispatch/a4-u08.json"
+    ],
+    "producer_material_excluded_before_freeze": [
+      "contents of candidate PO-01 refs",
+      "PO-01 result narratives",
+      "PO-01 pull-request descriptions or comments"
+    ],
+    "ordering_proof": "The commit that first adds this file must precede every commit that records inspection or qualification of candidate PO-01 tree bytes."
+  },
+  "adjudication": {
+    "allowed_outcomes": [
+      "PASS",
+      "FAIL",
+      "NOT_YET",
+      "NOT_SUPPORTED"
+    ],
+    "rules": [
+      "Only bytes read from an exact immutable commit SHA are evidence about a candidate pack.",
+      "Branch names, commit messages, producer reports, and producer narratives are not evidence that a pack claim holds.",
+      "A detector is not used on candidate data until its required planted fixture passes.",
+      "An unavailable runner, fixture, entry point, expected result, or source tree is recorded as absent and yields NOT_YET or NOT_SUPPORTED; it is never reconstructed from narrative.",
+      "A discovered PO-01 defect is retained as a frozen PO-03 test and isolated repair-candidate data and is never repaired in a PO-01 namespace.",
+      "No qualification step may write, update, delete, branch from, or push to a PO-01 ref."
+    ]
+  },
+  "criteria": [
+    {
+      "criterion_id": "SOURCE_PIN",
+      "pass_condition": "Every candidate source actually used is identified by full commit SHA and ref, its commit object is locally readable, and the read-only observation command is recorded.",
+      "required_evidence": [
+        "git ls-remote output or fetched remote-tracking ref resolution",
+        "git cat-file -e <sha>^{commit}",
+        "explicit zero-write declaration"
+      ],
+      "failure_condition": "Any used source is identified only by a mutable ref or any PO-01 ref is written."
+    },
+    {
+      "criterion_id": "MISSING_BLOB",
+      "pass_condition": "A dependency-free qualifier reports every manifest path whose corresponding object is absent from the pinned commit tree.",
+      "required_evidence": [
+        "synthetic manifest with a planted absent path",
+        "passing test asserting the exact absent path",
+        "machine-readable result for each real pinned candidate"
+      ],
+      "failure_condition": "The planted absent path is not reported or a real manifest entry is silently skipped."
+    },
+    {
+      "criterion_id": "PORTABILITY",
+      "pass_condition": "The detector reports absolute POSIX paths, Windows drive or UNC paths, machine-specific roots, and relative file references that cannot resolve within the candidate tree.",
+      "required_evidence": [
+        "planted fixture covering each path class",
+        "passing assertions for all planted findings",
+        "machine-readable findings with source path and matched value"
+      ],
+      "failure_condition": "Any planted non-portable path class is missed."
+    },
+    {
+      "criterion_id": "MANIFEST_CLOSED_SET",
+      "pass_condition": "For the manifest-declared pack scope, the enforcer separately reports unlisted regular files, entries without a SHA-256, and content hash mismatches.",
+      "required_evidence": [
+        "one planted fixture per gap class",
+        "passing exact assertions for all three classes",
+        "machine-readable real-tree findings"
+      ],
+      "failure_condition": "Any gap class lacks a proving fixture or is merged into an indistinguishable generic error."
+    },
+    {
+      "criterion_id": "PROCESS_BOUNDARY",
+      "pass_condition": "An entry point present in candidate bytes executes in a separate Python process from a clean detached checkout with an isolated working directory, sanitized Python environment, captured bytes, exit status, and timeout.",
+      "required_evidence": [
+        "fixture proving process isolation and captured output",
+        "exact subprocess command and environment policy",
+        "candidate outcome tied to pinned SHA"
+      ],
+      "failure_condition": "A process-boundary claim relies on import into the evaluator process, warm-worktree state, hidden files, producer narrative, or unavailable expected bytes.",
+      "absence_outcome": "NOT_YET"
+    },
+    {
+      "criterion_id": "TRANSPORT_DEBRIS",
+      "pass_condition": "Read-only classification reports tracked regular files under a path segment named _transport, transport, staging, stage, tmp, or temp as transport-debris candidates, with location, reason, and a non-destructive proposed disposition.",
+      "required_evidence": [
+        "planted classified and non-classified paths",
+        "passing deterministic classification test",
+        "counts and paths from the real repository tree"
+      ],
+      "failure_condition": "Classification depends on manual judgement, omits its rule, or mutates a classified path."
+    },
+    {
+      "criterion_id": "CURRENTNESS_DISPOSITION",
+      "pass_condition": "A dependency-free compiler starts from operations/README.md, resolves every named current pointer through state/operator-system/ACTIVE_INSTRUCTION_STACK.json, verifies referenced paths exist, and emits deterministic dispositions for current and explicitly superseded launch surfaces.",
+      "required_evidence": [
+        "fixture proving pointer resolution and superseded disposition",
+        "byte-identical output from two clean runs",
+        "repository-disposition.json containing source hashes and resolution chain"
+      ],
+      "failure_condition": "A launch surface is selected by filename, manual input is required, a referenced current source is absent without a finding, or clean runs differ."
+    }
+  ],
+  "expected_evidence": {
+    "test_command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a4_*.py'",
+    "taxonomy_command": "python3 scripts/check_operator_taxonomy.py (the required python executable is NOT_SUPPORTED in this runtime; observed shell exit 127)",
+    "real_source_results": "workstreams/po03/evidence/reproduction-results.json",
+    "repository_disposition": "workstreams/po03/evidence/repository-disposition.json",
+    "source_lock": "workstreams/po03/evidence/source-lock.json",
+    "result_records": "workstreams/po03/control/units/a4/a4-u01.json through a4-u08.json",
+    "required_result_properties": [
+      "exact command",
+      "exit status",
+      "captured output",
+      "artifact SHA-256 and byte count",
+      "pinned source SHA",
+      "limitations",
+      "hypothesis disposition"
+    ]
+  }
+}
