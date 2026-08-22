@@ -1,0 +1,58 @@
+{
+  "findings_id": "FIND-PO03-A1-OUT-OF-SCOPE-20260822-v001",
+  "worker_id": "po03-worker-a1",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "commission_revision": "v002",
+  "branch": "cursor/po03-a1-custody-engine-ed20",
+  "rule": "Cohort a1 owns workstreams/po03/engine/, workstreams/po03/control/units/a1/ and the workstreams/po03/tests/test_a1_ prefix. Anything observed outside those prefixes is handed over here as an integration-ready description with a reproducing test, and is never repaired in place.",
+  "decision_changed": [],
+  "strategy_restarted": false,
+  "findings": [
+    {
+      "finding_id": "FIND-A1-01",
+      "subject": "workstreams/po03/tools/control_plane.py::project_units",
+      "owner": "coordinator",
+      "severity": "MEDIUM",
+      "state": "REPORTED_NOT_REPAIRED",
+      "discovered_by_unit": "a1-u05",
+      "reproducing_test": "workstreams/po03/tests/test_a1_projection.py::ControlPlaneAgreementTests::test_the_only_divergence_is_heartbeat_lease_renewal",
+      "observation": "project_units has no HEARTBEAT case, so a unit's projected lease keeps the expires_at recorded at grant time even after the holder has renewed the lease. The engine's projection applies the renewal. Across 40 randomised histories containing HEARTBEAT rows this is the only field on which the two readers disagree; every custody field agrees exactly.",
+      "consequence": "control_plane.scan_recovery decides expired_leases from lease.expires_at. A live worker renewing on schedule past its original TTL is therefore reported as an expired lease and RECOVERY_REQUIRED, which can evict a healthy holder and inflate recovery counts. It cannot cause false completion: fencing still refuses the evicted holder, and the re-granted holder resumes from checkpoint.",
+      "integration_ready_change": "In project_units, handle event == 'HEARTBEAT' by replacing unit['lease']['expires_at'] with payload['expires_at'] when a lease is held, and continue without advancing obzio_state. HEARTBEAT would also need adding to EVENT_KINDS for the plane to append such rows itself; it is not required for the plane to read them, since verify_chain and project_units do not filter on kind.",
+      "not_applied_because": "workstreams/po03/tools/control_plane.py is coordinator-owned. Rule 9 of the repository operator instructions and the commission collision boundary reserve shared PO-03 control paths to the integration controller.",
+      "engine_disposition": "RETAIN the renewing semantics in workstreams/po03/engine/projection.py; a1-u04 resume evidence depends on heartbeat renewal being visible to the lease projection."
+    },
+    {
+      "finding_id": "FIND-A1-02",
+      "subject": "workstreams/po03/tools/control_plane.py ledger durability",
+      "owner": "coordinator",
+      "severity": "LOW",
+      "state": "REPORTED_NOT_REPAIRED",
+      "discovered_by_unit": "a1-u01",
+      "reproducing_test": "workstreams/po03/tests/test_a1_ledger_chain.py::ControlPlaneInteropTests",
+      "observation": "control_plane.verify_chain checks seq monotonicity, prev linkage and per-row digests, which detects every tamper class that leaves a witness later in the file. It keeps no sealed head anchor, so tail truncation, suffix rewrite with recomputed digests, and a well-formed forged append all leave a chain that verifies. The engine campaign reproduces this: with the anchor rule removed, TRUNCATE_TAIL and REWRITE_SUFFIX go undetected while every other class is still caught.",
+      "consequence": "A ledger is the only source of truth for result custody. Without an anchor, a lost or trimmed tail is indistinguishable from a shorter history, so a committed result could disappear without any verifier objecting.",
+      "integration_ready_change": "Adopt the engine's sealed anchor: write <ledger>.anchor.json with committed_seq, committed_head, pending_seq and pending_head using a write-ahead intent before the append and a seal after it, then compare row count and head digest against it during verify. workstreams/po03/engine/ledger.py::HashChainedLedger is byte-compatible with the plane's row format, so the plane can adopt it without rewriting existing rows. Alternatively pass the head digest from an immutable git commit into verify as an external anchor.",
+      "not_applied_because": "workstreams/po03/tools/control_plane.py and workstreams/po03/tests/test_control_plane.py are coordinator-owned.",
+      "engine_disposition": "RETAIN. The engine verifier accepts plane-written ledgers with require_anchor=False, so adoption is optional and non-breaking."
+    },
+    {
+      "finding_id": "FIND-A1-03",
+      "subject": "workstreams/po03/tools/make_result.py attempt/checkpoint derivation",
+      "owner": "coordinator",
+      "severity": "LOW",
+      "state": "REPORTED_NOT_REPAIRED",
+      "discovered_by_unit": "a1-u04",
+      "reproducing_test": "NOT_YET — observed by reading the tool, not by a failing assertion",
+      "observation": "make_result derives attempt.checkpoint_seq as len(artifacts) and attempt.lease_id/fence_token from a command-line default rather than from the ledger. The emitted values are therefore well-formed and schema-valid but are not the unit's real lease, fence token or checkpoint progress.",
+      "consequence": "No false completion follows: the coordinator re-derives custody from its own ledger at ingestion and compares the fence token it issued. The cost is that a result document's attempt block is not usable as recovery evidence on its own.",
+      "integration_ready_change": "Derive attempt.fence_token, attempt.lease_id and attempt.checkpoint_seq from the ledger projection for the unit, using workstreams/po03/engine/lease.py::LeaseManager.resume_point and current_lease, and fail rather than default when the unit has no lease.",
+      "not_applied_because": "workstreams/po03/tools/make_result.py is coordinator-owned.",
+      "engine_disposition": "NOT_YET. The a1 results in this branch were emitted with the tool as it stands, so their attempt blocks carry the tool's derived values."
+    }
+  ],
+  "limitations": [
+    "These are observations about coordinator-owned code reached through private module instances pointed at scratch state. No coordinator-owned file was written, and no PO-01 branch, path or artefact was read or touched by any of them.",
+    "FIND-A1-03 is a reading of the tool rather than a reproduced failure, and is recorded as NOT_YET rather than as a demonstrated defect."
+  ]
+}
