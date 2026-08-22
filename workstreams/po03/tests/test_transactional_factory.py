@@ -378,6 +378,20 @@ class TransactionalFactoryTests(unittest.TestCase):
         self.assertEqual(2, health["safe_new_dispatch_ceiling"])
         self.assertEqual(MODULE.ROUTE_REACTIVATED_STATE, projection["dispatch_route_state"])
 
+    def test_route_reactivation_reads_historical_capsule_result_slot(self):
+        self.assertEqual(
+            "workstreams/po03/attempts/canary/example",
+            MODULE._input_result_slot(
+                {
+                    "ownership": {
+                        "result_slot": "workstreams/po03/attempts/canary/example",
+                    }
+                }
+            ),
+        )
+        with self.assertRaises(MODULE.FactoryError):
+            MODULE._input_result_slot({"ownership": {}})
+
     def test_write_once_is_idempotent_but_immutable(self):
         destination = MODULE.PO03_ROOT / "control" / "immutable.json"
         MODULE.write_once(destination, b"{}\n")

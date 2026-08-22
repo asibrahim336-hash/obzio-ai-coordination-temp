@@ -889,6 +889,18 @@ def _canonical_receipt_path(receipt_relative: str) -> Path:
     return path
 
 
+def _input_result_slot(input_document: dict[str, Any]) -> str:
+    """Accept both current and historical task-capsule result-slot placements."""
+    result_slot = input_document.get("result_slot")
+    if not isinstance(result_slot, str):
+        ownership = input_document.get("ownership")
+        if isinstance(ownership, dict):
+            result_slot = ownership.get("result_slot")
+    if not isinstance(result_slot, str):
+        raise FactoryError("task input has no valid immutable result locator")
+    return result_slot
+
+
 def _read_ingested_route_canary(task_id: str) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     """Read one parent-ingested canary from exact immutable Git bytes."""
     errors = verify_chain(task_id)
@@ -910,8 +922,9 @@ def _read_ingested_route_canary(task_id: str) -> tuple[dict[str, Any], dict[str,
 
     result_transaction = transaction.get("result_transaction")
     input_document = read_json(CONTROL_ROOT / "tasks" / task_id / "input.json")
-    if not isinstance(result_transaction, dict) or not isinstance(input_document.get("result_slot"), str):
+    if not isinstance(result_transaction, dict):
         raise FactoryError(f"{task_id} has no valid immutable result locator")
+    result_slot = _input_result_slot(input_document)
     result_commit_id = result_transaction.get("result_commit_id")
     if not isinstance(result_commit_id, str):
         raise FactoryError(f"{task_id} result commit is missing")
@@ -932,7 +945,6 @@ def _read_ingested_route_canary(task_id: str) -> tuple[dict[str, Any], dict[str,
     if not isinstance(expected_sha256, str) or not isinstance(expected_bytes, int):
         raise FactoryError(f"{task_id} canary artifact declaration is invalid")
 
-    result_slot = input_document["result_slot"]
     raw = git_bytes("show", f"{result_commit_id}:{result_slot}/canary.json")
     if sha256_bytes(raw) != expected_sha256 or len(raw) != expected_bytes:
         raise FactoryError(f"{task_id} canary bytes diverge from parent ingestion")
