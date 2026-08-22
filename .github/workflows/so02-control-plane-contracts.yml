@@ -1,0 +1,29 @@
+name: SO-02 strategic control-plane contracts
+
+on:
+  pull_request:
+    paths:
+      - "workstreams/so02/control-plane/**"
+      - "receipts/so02/**"
+      - ".github/workflows/so02-control-plane-*.yml"
+  push:
+    branches:
+      - "so02/strategic-control-plane-migration-20260822-v001"
+    paths:
+      - "workstreams/so02/control-plane/**"
+      - "receipts/so02/**"
+      - ".github/workflows/so02-control-plane-*.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate the control-plane seed
+        run: python -I workstreams/so02/control-plane/tools/scctl.py validate
+      - name: Run recurrence tests
+        run: python -I -m unittest discover -s workstreams/so02/control-plane/tests -p "test_*.py" -v
+
