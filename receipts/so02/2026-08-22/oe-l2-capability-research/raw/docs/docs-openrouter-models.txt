@@ -1,0 +1,521 @@
+Documentation Index
+Fetch the complete documentation index at: /docs/llms.txt
+Use this file to discover all available pages before exploring further.
+Skip to main content
+OpenRouter | Documentation home page
+
+Search...
+
+⌘ K Ask Assistant
+Models
+Benchmarks
+Chat
+Rankings
+Apps
+Docs
+
+Search...
+
+Navigation
+Overview
+Models
+
+Docs
+API Reference
+Client SDKs
+Agent SDK
+Cookbook
+
+Overview
+
+Quickstart
+
+Batch Beta
+
+Principles
+
+Models
+
+MCP
+
+Multimodal
+
+Authentication
+
+Stripe Projects
+
+FAQ
+
+Report Feedback
+
+Models & Routing
+
+Model Fallbacks
+
+Provider Selection
+
+Auto Exacto
+
+Private Models
+
+Model Variants
+
+Routers
+
+Features
+
+Workspaces
+
+Workspace Budgets
+
+Switching Workspaces
+
+Notifications
+
+Single Sign-On (SSO)
+
+SCIM Group Mappings
+
+Presets
+
+Custom Classifiers
+
+Response Caching
+
+Tool Calling
+
+Server Tools
+
+Plugins
+
+Structured Outputs
+
+Message Transforms
+
+Zero Completion Insurance
+
+ZDR
+
+App Attribution
+
+Guardrails
+
+Service Tiers
+
+Sovereign AI
+
+Router Metadata
+
+Input & Output Logging
+
+Broadcast
+
+Ori
+
+Ori Eval
+
+Ori Harness
+
+Where Ori writes files
+
+Privacy
+
+Data Collection
+
+Provider Logging
+
+Best Practices
+
+Latency and Performance
+
+Prompt Caching
+
+Uptime Optimization
+
+Reasoning Tokens
+
+Community
+
+For Providers
+
+Frameworks and Integrations Overview
+
+Awesome OpenRouter
+
+Effect AI SDK
+
+Arize AX
+
+LangChain
+
+LiveKit
+
+Langfuse
+
+Mastra
+
+OpenAI SDK
+
+Anthropic Agent SDK
+
+PydanticAI
+
+Render
+
+Replit
+
+TanStack AI
+
+Vercel AI SDK
+
+Xcode
+
+Zapier
+
+Infisical
+
+On this page
+Query Parameters output_modalities
+supported_parameters
+sort
+
+Single Model Lookup
+Models API Standard API Response Schema
+Root Response Object
+Model Object Schema
+Architecture Object
+Pricing Object
+Top Provider Object
+Benchmarks Object
+Supported Parameters
+
+For Providers
+
+Overview
+Models
+Copy page Copy page
+
+One API for hundreds of models
+
+Copy page Copy page
+
+Explore and browse 400+ models and providers on our website , or with our API . You can also subscribe to our RSS feed to stay updated on new models.
+​
+
+Query Parameters
+
+The Models API supports query parameters to filter the list of models returned.
+​
+
+output_modalities
+
+Filter models by their output capabilities. Accepts a comma-separated list of modalities or "all" to include every model regardless of output type.
+Value Description
+text Models that produce text output (default)
+image Models that generate images
+audio Models that produce audio output
+embeddings Embedding models
+all Include all models, skip modality filtering
+
+Examples:
+
+# Default (text models only)
+curl "https://openrouter.ai/api/v1/models"
+
+# Image generation models only
+curl "https://openrouter.ai/api/v1/models?output_modalities=image"
+
+# Text and image models
+curl "https://openrouter.ai/api/v1/models?output_modalities=text,image"
+
+# All models regardless of modality
+curl "https://openrouter.ai/api/v1/models?output_modalities=all"
+
+The same parameter is available on the /v1/models/count endpoint so that counts stay consistent with list results.
+​
+
+supported_parameters
+
+Filter models by the API parameters they support. For example, to find models that support tool calling:
+
+curl "https://openrouter.ai/api/v1/models?supported_parameters=tools"
+
+​
+
+sort
+
+Sort models server-side before they’re returned. Accepts one of the following values:
+Value Description
+pricing-low-to-high Cheapest models first (weighted average of prompt, completion, request, and web_search pricing)
+pricing-high-to-low Most expensive models first
+context-high-to-low Largest context window first
+throughput-high-to-low Highest tokens/second first (p50 throughput from routing heuristics)
+latency-low-to-high Lowest time-to-first-token first (p50 latency)
+most-popular Most tokens processed in the last week
+top-weekly Same as most-popular
+newest Most recently added to OpenRouter
+
+Models without data for the requested sort dimension (e.g. no pricing, no throughput heuristics) sort last. Omitting sort preserves the default ordering (backward compatible).
+
+# Cheapest models first
+curl "https://openrouter.ai/api/v1/models?sort=pricing-low-to-high"
+
+# Newest models
+curl "https://openrouter.ai/api/v1/models?sort=newest"
+
+# Combine with filters
+curl "https://openrouter.ai/api/v1/models?sort=throughput-high-to-low&supported_parameters=tools"
+
+​
+
+Single Model Lookup
+
+Look up a single model’s full details without fetching the entire list:
+
+GET /api/v1/model/{author}/{slug}
+
+The endpoint resolves aliases automatically. For example, anthropic/claude-3-5-sonnet redirects to the canonical anthropic/claude-3.5-sonnet and returns its data.
+Variant suffixes are also supported. Append :free , :thinking , etc. to the slug:
+
+# Look up a specific model
+curl "https://openrouter.ai/api/v1/model/openai/gpt-4o"
+
+# Aliases resolve automatically
+curl "https://openrouter.ai/api/v1/model/anthropic/claude-3-5-sonnet"
+
+# Variant suffixes
+curl "https://openrouter.ai/api/v1/model/openai/gpt-4:free"
+
+Returns 404 if the model doesn’t exist and isn’t an alias for another model. The response shape wraps the same Model object used in the list endpoint:
+
+{
+"data" : {
+"id" : "openai/gpt-4o" ,
+"name" : "GPT-4o" ,
+"pricing" : { "prompt" : "0.0000025" , "completion" : "0.00001" , ... },
+...
+}
+}
+
+​
+
+Models API Standard
+
+Our Models API makes the most important information about all LLMs freely available as soon as we confirm it.
+​
+
+API Response Schema
+
+The Models API returns a standardized JSON response format that provides comprehensive metadata for each available model. This schema is cached at the edge and designed for reliable integration with production applications.
+​
+
+Root Response Object
+
+{
+"data" : [
+/* Array of Model objects */
+],
+"total_count" : 150 , // Total number of models matching the query
+"links" : {
+"next" : "/api/v1/models?offset=500&limit=500" // Next page URL, or null on the last page
+}
+}
+
+Pagination
+
+The list endpoint supports optional offset and limit query parameters. Pagination is opt-in: when both are omitted, the full list is returned and links.next is null . When you paginate, limit defaults to 500 (max 1000), and links.next contains the ready-to-use URL for the next page (or null on the last page):
+
+curl "https://openrouter.ai/api/v1/models?offset=0&limit=500"
+
+​
+
+Model Object Schema
+
+Each model in the data array contains the following standardized fields:
+Field Type Description
+id string Unique model identifier used in API requests (e.g., "google/gemini-2.5-pro-preview" )
+canonical_slug string Permanent slug for the model that never changes
+name string Human-readable display name for the model
+created number Unix timestamp of when the model was added to OpenRouter
+description string Detailed description of the model’s capabilities and characteristics
+context_length number Maximum context window size in tokens
+architecture Architecture Object describing the model’s technical capabilities
+pricing Pricing Pricing from the top provider for this model
+top_provider TopProvider Configuration details for the primary provider
+per_request_limits Rate limiting information (null if no limits)
+supported_parameters string[] Array of supported API parameters for this model
+default_parameters object | null Default parameter values for this model (null if none)
+expiration_date string | null Deprecation date for the model endpoint (null if not deprecated)
+benchmarks Benchmarks | undefined Third-party benchmark rankings (omitted when no data is available)
+
+​
+
+Architecture Object
+
+{
+"input_modalities" : string [], // Supported input types: ["file", "image", "text"]
+"output_modalities" : string [], // Supported output types: ["text"]
+"tokenizer" : string , // Tokenization method used
+"instruct_type" : string | null // Instruction format type (null if not applicable)
+}
+
+​
+
+Pricing Object
+
+All pricing values are in USD per token/request/unit. A value of "0" indicates the feature is free.
+
+{
+"prompt" : string , // Cost per input token
+"completion" : string , // Cost per output token
+"request" : string , // Fixed cost per API request
+"image" : string , // Cost per image input
+"web_search" : string , // Cost per web search operation
+"internal_reasoning" : string , // Cost for internal reasoning tokens
+"input_cache_read" : string , // Cost per cached input token read
+"input_cache_write" : string , // Cost per cached input token write
+"overrides" : PricingOverride [] // Optional conditional pricing overrides (see below)
+}
+
+Pricing Overrides
+
+Some endpoints charge different rates under certain conditions. Examples include long-context pricing above a token threshold, or time-based pricing where peak hours cost more. These appear in the optional pricing.overrides array:
+
+{
+// Condition: applies when total prompt tokens are strictly greater than this threshold
+"min_prompt_tokens" : 200000 ,
+
+// Condition: applies when current UTC time is within this daily window
+"utc_start" : 1630 , // Inclusive start as HHMM clock (16:30 UTC)
+"utc_end" : 30 , // Exclusive end as HHMM clock (00:30 UTC; the window may wrap past midnight)
+
+// Overridden prices, same keys and units as the base pricing object
+"prompt" : "0.000005" ,
+"completion" : "0.00002" ,
+"input_cache_read" : "0.0000005" ,
+"input_cache_write" : "0.00000625"
+}
+
+An entry applies when all of its condition fields match the request. When multiple entries apply, later entries win per key. Price keys absent from an entry inherit the base price. The top-level pricing keys always reflect the price that applies to a request under default conditions; overrides carries the conditional exceptions.
+For example, a model that charges $2.50/M input tokens normally and $5/M beyond 200K prompt tokens:
+
+"pricing" : {
+"prompt" : "0.0000025" ,
+"completion" : "0.00001" ,
+"overrides" : [
+{
+"min_prompt_tokens" : 200000 ,
+"prompt" : "0.000005" ,
+"completion" : "0.00002"
+}
+]
+}
+
+Time-window conditions express peak/off-peak pricing. The overrides array always lists every window (peak and off-peak), tiling the full 24-hour day. That means the complete schedule is recoverable regardless of when the response was generated. For example, a model that charges half price between 16:30 and 00:30 UTC:
+
+"pricing" : {
+// Top-level prices always reflect the window that applies right now
+// (here: the current UTC time is between 00:30 and 16:30)
+"prompt" : "0.00000028" ,
+"completion" : "0.00000042" ,
+"overrides" : [
+{
+"utc_start" : 30 ,
+"utc_end" : 1630 ,
+"prompt" : "0.00000028" ,
+"completion" : "0.00000042"
+},
+{
+"utc_start" : 1630 ,
+"utc_end" : 30 ,
+"prompt" : "0.00000014" ,
+"completion" : "0.00000021"
+}
+]
+}
+
+​
+
+Top Provider Object
+
+{
+"context_length" : number , // Provider-specific context limit
+"max_completion_tokens" : number , // Maximum tokens in response
+"is_moderated" : boolean // Whether content moderation is applied
+}
+
+​
+
+Benchmarks Object
+
+Present only on models that have been evaluated in third-party benchmarks. Currently includes Design Arena rankings.
+
+{
+"design_arena" : [
+{
+"arena" : string , // Arena type (e.g. "models", "builders", "agents")
+"category" : string , // Category within the arena (e.g. "website", "gamedev")
+"elo" : number , // ELO rating from head-to-head arena battles
+"win_rate" : number , // Win rate percentage
+"rank" : number // Rank within this arena+category (1 = highest ELO)
+}
+]
+}
+
+Rankings are computed among models listed on OpenRouter, not the full external leaderboard. Models without benchmark data omit the benchmarks field entirely.
+
+# Find models with benchmark data
+curl -s "https://openrouter.ai/api/v1/models" | jq '.data[] | select(.benchmarks) | {id, benchmarks}'
+
+​
+
+Supported Parameters
+
+The supported_parameters array indicates which OpenAI-compatible parameters work with each model:
+
+tools - Function calling capabilities
+
+tool_choice - Tool selection control
+
+max_tokens - Response length limiting
+
+temperature - Randomness control
+
+top_p - Nucleus sampling
+
+reasoning - Internal reasoning mode
+
+include_reasoning - Include reasoning in response
+
+structured_outputs - JSON schema enforcement
+
+response_format - Output format specification
+
+stop - Custom stop sequences
+
+frequency_penalty - Repetition reduction
+
+presence_penalty - Topic diversity
+
+seed - Deterministic outputs
+
+Different models tokenize text in different ways Some models break up text into chunks of multiple characters (GPT, Claude,
+Llama, etc), while others tokenize by character (PaLM). This means that token
+counts (and therefore costs) will vary between models, even when inputs and
+outputs are the same. Costs are displayed and billed according to the
+tokenizer for the model in use. You can use the usage field in the response
+to get the token counts for the input and output.
+
+If there are models or providers you are interested in that OpenRouter doesn’t have, please tell us about them in our Discord channel .
+​
+
+For Providers
+
+If you’re interested in working with OpenRouter, you can learn more on our providers page .
+Principles
+MCP
+⌘ I
+
+Assistant
+
+Responses are generated using AI and may contain mistakes.

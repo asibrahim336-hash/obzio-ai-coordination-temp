@@ -1,0 +1,500 @@
+Skip to main content
+
+Skip to search
+
+HTML
+
+HTML: Markup language
+
+HTML reference
+
+Elements
+
+Global attributes
+
+Attributes
+
+See all…
+
+HTML guides
+
+Responsive images
+
+HTML cheatsheet
+
+Date & time formats
+
+See all…
+
+Markup languages
+
+SVG
+
+MathML
+
+XML
+
+CSS
+
+CSS: Styling language
+
+CSS reference
+
+Properties
+
+Selectors
+
+At-rules
+
+Values
+
+See all…
+
+CSS guides
+
+Box model
+
+Animations
+
+Flexbox
+
+Colors
+
+See all…
+
+Layout cookbook
+
+Column layouts
+
+Centering an element
+
+Card component
+
+See all…
+
+JavaScript JS
+
+JavaScript: Scripting language
+
+JS reference
+
+Standard built-in objects
+
+Expressions & operators
+
+Statements & declarations
+
+Functions
+
+See all…
+
+JS guides
+
+Control flow & error handing
+
+Loops and iteration
+
+Working with objects
+
+Using classes
+
+See all…
+
+Web APIs
+
+Web APIs: Programming interfaces
+
+Web API reference
+
+File system API
+
+Fetch API
+
+Geolocation API
+
+HTML DOM API
+
+Push API
+
+Service worker API
+
+See all…
+
+Web API guides
+
+Using the Web animation API
+
+Using the Fetch API
+
+Working with the History API
+
+Using the Web speech API
+
+Using web workers
+
+All
+
+All web technology
+
+Technologies
+
+Accessibility
+
+HTTP
+
+URI
+
+Web extensions
+
+WebAssembly
+
+WebDriver
+
+See all…
+
+Topics
+
+Media
+
+Performance
+
+Privacy
+
+Security
+
+Progressive web apps
+
+Learn
+
+Learn web development
+
+Frontend developer course
+
+Getting started modules
+
+Core modules
+
+MDN Curriculum
+
+Check out the video course from Scrimba, our partner
+
+Learn HTML
+
+Structuring content with HTML module
+
+Learn CSS
+
+CSS styling basics module
+
+CSS layout module
+
+Learn JavaScript
+
+Dynamic scripting with JavaScript module
+
+Tools
+
+Discover our tools
+
+Playground
+
+HTTP Observatory
+
+Border-image generator
+
+Border-radius generator
+
+Box-shadow generator
+
+Color format converter
+
+Color mixer
+
+Shape generator
+
+About
+
+Get to know MDN better
+
+About MDN
+
+Advertise with us
+
+Community
+
+MDN on GitHub
+
+Blog
+
+Toggle sidebar
+
+Web
+
+Web APIs
+
+Web Speech API
+
+Theme
+
+OS default
+
+Light
+
+Dark
+
+English (US)
+
+Remember language
+
+Learn more
+
+Deutsch
+
+English (US)
+
+Español
+
+Français
+
+日本語
+
+한국어
+
+Русский
+
+中文 (简体)
+
+Web Speech API
+
+The Web Speech API enables you to incorporate voice data into web apps.
+The Web Speech API has two parts: SpeechSynthesis (Text-to-Speech), and SpeechRecognition (Asynchronous Speech Recognition.)
+
+In this article
+
+Web speech concepts and usage
+
+Web Speech API Interfaces
+
+Errors
+
+Security considerations
+
+Examples
+
+Specifications
+
+Browser compatibility
+
+See also
+
+Web speech concepts and usage
+
+The Web Speech API enables web apps to handle voice data. It has two components:
+
+Speech recognition is accessed via the SpeechRecognition interface, which provides the ability to recognize voice context from an audio source and allows your app to respond appropriately.
+Generally, you use the interface's constructor to create a new SpeechRecognition object. This object provides a number of event handlers to detect when speech is incoming from the device's microphone (or from an audio track).
+You can specify whether you want the speech recognition to use a service provided by the user's platform (the default) or be performed locally in the browser .
+
+Speech synthesis is accessed via the SpeechSynthesis interface, a text-to-speech component that allows programs to read out their text content (normally via the device's default speech synthesizer.) Different voice types are represented by SpeechSynthesisVoice objects, and different parts of text that you want to be spoken are represented by SpeechSynthesisUtterance objects.
+You can get these spoken by passing them to the SpeechSynthesis.speak() method.
+
+For more details on using these features, see Using the Web Speech API .
+
+Web Speech API Interfaces
+
+Speech recognition
+
+SpeechRecognition
+
+The controller interface for the recognition service; this also handles the SpeechRecognitionEvent sent from the recognition service.
+
+SpeechRecognitionAlternative
+
+Represents a single word that has been recognized by the speech recognition service.
+
+SpeechRecognitionErrorEvent
+
+Represents error messages from the recognition service.
+
+SpeechRecognitionEvent
+
+The event object for the result and nomatch events, and contains all the data associated with an interim or final speech recognition result.
+
+SpeechRecognitionPhrase
+
+Represents a phrase that can be passed into the speech recognition engine to be used for contextual biasing .
+
+SpeechRecognitionResult
+
+Represents a single recognition match, which may contain multiple SpeechRecognitionAlternative objects.
+
+SpeechRecognitionResultList
+
+Represents a list of SpeechRecognitionResult objects, or a single one if results are being captured in continuous mode.
+
+Speech synthesis
+
+SpeechSynthesis
+
+The controller interface for the speech service; this can be used to retrieve information about the synthesis voices available on the device, start and pause speech, and other commands besides.
+
+SpeechSynthesisErrorEvent
+
+Contains information about any errors that occur while processing SpeechSynthesisUtterance objects in the speech service.
+
+SpeechSynthesisEvent
+
+Contains information about the current state of SpeechSynthesisUtterance objects that have been processed in the speech service.
+
+SpeechSynthesisUtterance
+
+Represents a speech request.
+It contains the content the speech service should read and information about how to read it (e.g., language, pitch and volume.)
+
+SpeechSynthesisVoice
+
+Represents a voice that the system supports.
+Every SpeechSynthesisVoice has its own relative speech service including information about language, name and URI.
+
+Window.speechSynthesis
+
+Specified out as part of a [NoInterfaceObject] interface called SpeechSynthesisGetter , and Implemented by the Window object, the speechSynthesis property provides access to the SpeechSynthesis controller, and therefore the entry point to speech synthesis functionality.
+
+Deprecated interfaces
+
+The concept of grammar has been removed from the Web Speech API. Related features remain in the specification and are still recognized by supporting browsers for backwards compatibility, but they have no effect on speech recognition services.
+
+SpeechGrammar
+
+Represents words or patterns of words for the recognition service to recognize.
+
+SpeechGrammarList
+
+Represents a list of SpeechGrammar objects.
+
+Errors
+
+For information on errors reported by the Speech API (for example, "language-not-supported" and "language-unavailable" ), see the following documentation:
+
+error property of the SpeechRecognitionErrorEvent object
+
+error property of the SpeechSynthesisErrorEvent object
+
+Security considerations
+
+Access to the on-device speech recognition functionality of the Web Speech API is controlled by the on-device-speech-recognition Permissions-Policy directive.
+
+Specifically, where a defined policy blocks usage, any attempts to call the API's SpeechRecognition.available() or SpeechRecognition.install() methods will fail.
+
+Examples
+
+Our Web Speech API examples illustrate speech recognition and synthesis.
+
+Also see the Web Speech API Playground .
+
+Specifications
+
+Specification
+
+Web Speech API
+# speechreco-section
+
+Web Speech API
+# tts-section
+
+Browser compatibility
+
+api.SpeechRecognition
+
+api.SpeechSynthesis
+
+See also
+
+Using the Web Speech API
+
+Help improve MDN
+
+Was this page helpful to you?
+
+Yes
+
+No
+
+Learn how to contribute
+This page was last modified on Aug 19, 2026 by MDN contributors .
+
+View this page on GitHub • Report a problem with this content
+
+Filter sidebar
+
+Clear filter input
+
+Web Speech API
+Guides Using the Web Speech API
+
+Interfaces SpeechGrammar
+SpeechGrammarList
+SpeechRecognition
+SpeechRecognitionAlternative
+SpeechRecognitionErrorEvent
+SpeechRecognitionEvent
+SpeechRecognitionPhrase
+SpeechRecognitionResult
+SpeechRecognitionResultList
+SpeechSynthesis
+SpeechSynthesisErrorEvent
+SpeechSynthesisEvent
+SpeechSynthesisUtterance
+SpeechSynthesisVoice
+
+Your blueprint for a better internet.
+
+MDN
+
+About
+
+Blog
+
+Mozilla careers
+
+Advertise with us
+
+MDN Plus
+
+Product help
+
+Contribute
+
+MDN Community
+
+Community resources
+
+Writing guidelines
+
+MDN Discord
+
+MDN on GitHub
+
+Developers
+
+Web technologies
+
+Learn web development
+
+Guides
+
+Tutorials
+
+Glossary
+
+Hacks blog
+
+Website Privacy Notice
+
+Telemetry Settings
+
+Legal
+
+Community Participation Guidelines
+
+Portions of this content are ©1998–2026 by individual mozilla.org contributors. Content available under a Creative Commons license .

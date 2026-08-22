@@ -1,0 +1,2704 @@
+{
+  "artifact_id": "OE-L2-CANDIDATE-REGISTER-20260822-v001",
+  "lane": "OE-L2-CAPABILITY-RESEARCH",
+  "commission_id": "COM-CUR-ENV-01-20260822-v001",
+  "parent_fence_token": "d5e76252f0ea259d",
+  "built_at_utc": "2026-08-22T20:27:35Z",
+  "binding_status": "NON_BINDING_RESEARCH_NO_TOOL_MODEL_OR_ARCHITECTURE_SELECTED",
+  "how_to_read": "Each entry pairs a hand-authored assessment with signals harvested live from the GitHub REST API on 2026-08-22. The assessment is judgement; the live_signals block is evidence and is joined in mechanically by build_register.py rather than transcribed. maintenance_flags are computed from the signals, not asserted. No entry constitutes a selection: the commission forbids binding any named tool without a founder decision.",
+  "verdict_definitions": {
+    "RETAIN_STRONG": "Evidence supports this as a primary candidate in its capability area.",
+    "RETAIN_CONDITIONAL": "Viable, but only under a stated condition that must be satisfied first.",
+    "COMPARATOR_ONLY": "Useful for comparison or as a fallback, not for the daily operating path.",
+    "REJECT_MAINTENANCE": "Rejected on maintenance risk: archived, abandoned or materially stale.",
+    "REJECT_BOUNDARY": "Rejected because it conflicts with a stated constraint on disclosure, lock-in, licence or sovereignty.",
+    "UNRESOLVED": "The referent could not be identified from live sources."
+  },
+  "stale_threshold_last_push_before": "2026-05-01",
+  "counts": {
+    "candidates": 73,
+    "with_harvested_github_signals": 65,
+    "by_verdict": {
+      "COMPARATOR_ONLY": 19,
+      "REJECT_BOUNDARY": 2,
+      "REJECT_MAINTENANCE": 5,
+      "RETAIN_CONDITIONAL": 22,
+      "RETAIN_STRONG": 24,
+      "UNRESOLVED": 1
+    }
+  },
+  "candidates": [
+    {
+      "candidate_id": "SEED-PLAYWRIGHT",
+      "name": "Playwright and Playwright MCP / Playwright CLI / Playwright Extension",
+      "seed": true,
+      "github_slug": "microsoft/playwright-mcp",
+      "related_slugs": [
+        "microsoft/playwright",
+        "microsoft/playwright-cli"
+      ],
+      "non_github_sources": [
+        "https://chromewebstore.google.com/detail/playwright-extension/mmlmfjhmonkocbjadbfplnigmagldckm",
+        "https://registry.npmjs.org/@playwright/mcp"
+      ],
+      "capability_areas": [
+        "C1",
+        "C2",
+        "C5",
+        "C9"
+      ],
+      "role": "deterministic browser control over structured accessibility state, with an extension route into the founder's already-authenticated profile",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: microsoft/playwright 94,965 stars pushed 2026-08-22; playwright-mcp 36,364 stars, release v0.0.79 on 2026-08-06, only 3 open issues; playwright-cli 12,744 stars pushed 2026-08-19; npm @playwright/mcp 0.0.79 published 2026-08-06. DOCUMENTED: the extension attaches to the existing profile with per-client tab groups and a per-connection approval dialog; the Chrome Web Store listing reports 90,000 users and states the developer discloses it will not collect or use your data.",
+      "material_caveat": "DOCUMENTED: the playwright-mcp README now recommends Playwright CLI plus Skills over MCP for coding agents on token-efficiency grounds, reserving MCP for long-running loops that need persistent browser state. Treat the interface as an open question rather than assuming MCP. DOCUMENTED: PLAYWRIGHT_MCP_EXTENSION_TOKEN exists to bypass the approval dialog; adopting it removes the owner gate that makes this candidate acceptable.",
+      "licence_note": "Apache-2.0 across playwright, playwright-mcp and playwright-cli.",
+      "live_signals": {
+        "full_name": "microsoft/playwright-mcp",
+        "html_url": "https://github.com/microsoft/playwright-mcp",
+        "stars": 36364,
+        "forks": 3047,
+        "open_issues": 3,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2025-03-21T17:48:36Z",
+        "pushed_at": "2026-08-21T22:46:04Z",
+        "latest_release_tag": "v0.0.79",
+        "latest_release_published_at": "2026-08-06T00:15:56Z",
+        "last_commit_sha": "16cf228d7b02c07f800ec3423f471ec2a42d22a9",
+        "last_commit_date": "2026-08-19T19:38:08Z",
+        "homepage": "https://www.npmjs.com/package/@playwright/mcp",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/microsoft/playwright-mcp"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "SEED-CHROME-DEVTOOLS-MCP",
+      "name": "Chrome DevTools MCP",
+      "seed": true,
+      "github_slug": "ChromeDevTools/chrome-devtools-mcp",
+      "non_github_sources": [
+        "https://registry.npmjs.org/chrome-devtools-mcp",
+        "https://raw.githubusercontent.com/ChromeDevTools/chrome-devtools-mcp/main/docs/tool-reference.md"
+      ],
+      "capability_areas": [
+        "C1",
+        "C2",
+        "C5"
+      ],
+      "role": "richest runtime evidence surface: network requests, console with source-mapped stacks, performance traces, heap snapshots, extension management, PWA install and WebMCP tool invocation",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 49,583 stars, first-party ChromeDevTools org, pushed 2026-08-21, release chrome-devtools-mcp-v1.7.0 on 2026-08-10, npm 1.7.0 published 2026-08-10, Apache-2.0. DIRECTLY_REPRODUCED: the shipped tool reference documents eleven tool groups including Network, Debugging, Memory, Extensions, WebMCP and Progressive Web Apps.",
+      "material_caveat": "DOCUMENTED: Google usage-statistics collection is enabled by default, disabled with --no-usage-statistics or CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS; performance tools may send trace URLs to the Google CrUX API unless --no-performance-crux is set. The README also warns the server exposes browser content to MCP clients. This is a deliberate telemetry decision, not a defect, but it must be set rather than inherited.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "ChromeDevTools/chrome-devtools-mcp",
+        "html_url": "https://github.com/ChromeDevTools/chrome-devtools-mcp",
+        "stars": 49583,
+        "forks": 3468,
+        "open_issues": 89,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2025-09-11T10:39:55Z",
+        "pushed_at": "2026-08-21T19:24:18Z",
+        "latest_release_tag": "chrome-devtools-mcp-v1.7.0",
+        "latest_release_published_at": "2026-08-10T08:14:18Z",
+        "last_commit_sha": "ebf58f2f4aa8f1dfbbae38e440fde4e5fef7deef",
+        "last_commit_date": "2026-08-21T19:12:22Z",
+        "homepage": "https://npmjs.org/package/chrome-devtools-mcp",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/ChromeDevTools/chrome-devtools-mcp"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "SEED-GOOSE",
+      "name": "goose",
+      "seed": true,
+      "github_slug": "aaif-goose/goose",
+      "non_github_sources": [
+        "https://goose-docs.ai/",
+        "https://aaif.io/"
+      ],
+      "capability_areas": [
+        "C1",
+        "C5",
+        "C6"
+      ],
+      "role": "provider-agnostic local agent runtime: desktop app, CLI and API, connecting models to MCP tools",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 53,249 stars, Apache-2.0, pushed 2026-08-22, release v1.47.0 published 2026-08-21, written mostly in Rust. DIRECTLY_REPRODUCED: github.com/block/goose returns HTTP 301 and the API resolves it to aaif-goose/goose, so the project moved out of Block. DOCUMENTED: the README states goose is part of the Agentic AI Foundation at the Linux Foundation, works with 15+ providers including Ollama and OpenRouter, supports subscription-backed providers over ACP, and connects to 70+ MCP extensions.",
+      "material_caveat": "The governance move to a Linux Foundation body strengthens rather than weakens the portability case, but it is recent and the prior lane's URL for it was correct only by accident of the redirect. Pin the current org explicitly.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "aaif-goose/goose",
+        "html_url": "https://github.com/aaif-goose/goose",
+        "stars": 53249,
+        "forks": 6069,
+        "open_issues": 251,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2024-08-23T19:03:36Z",
+        "pushed_at": "2026-08-22T00:11:06Z",
+        "latest_release_tag": "v1.47.0",
+        "latest_release_published_at": "2026-08-21T18:14:59Z",
+        "last_commit_sha": "8d844eecbdfd65626a881c9e8784ae8dc6093f1d",
+        "last_commit_date": "2026-08-21T21:23:59Z",
+        "homepage": "https://goose-docs.ai/",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/aaif-goose/goose"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "SEED-BROWSERMCP",
+      "name": "Browser MCP",
+      "seed": true,
+      "github_slug": "BrowserMCP/mcp",
+      "non_github_sources": [
+        "https://browsermcp.io",
+        "https://registry.npmjs.org/@browsermcp/mcp"
+      ],
+      "capability_areas": [
+        "C1"
+      ],
+      "role": "extension-plus-server bridge for controlling the local browser",
+      "verdict": "REJECT_MAINTENANCE",
+      "verdict_basis": "DIRECTLY_REPRODUCED: last push 2025-04-24, no published GitHub release at all, 146 open issues against 7,008 stars, and npm @browsermcp/mcp latest 0.1.3 published 2025-04-11 with no licence field. That is roughly sixteen months with no code movement in a component that must track Chrome's release cadence.",
+      "material_caveat": "Star count reflects a 2025 moment, not current maintenance. For a founder's daily operating path this is an outage waiting for a Chrome change.",
+      "licence_note": "Apache-2.0 on GitHub; npm package publishes no licence field.",
+      "live_signals": {
+        "full_name": "BrowserMCP/mcp",
+        "html_url": "https://github.com/BrowserMCP/mcp",
+        "stars": 7008,
+        "forks": 555,
+        "open_issues": 146,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2025-03-28T02:01:22Z",
+        "pushed_at": "2025-04-24T21:49:44Z",
+        "latest_release_tag": null,
+        "latest_release_published_at": null,
+        "last_commit_sha": "9db12f2b4f61294f0bc11708986abc47db539d6c",
+        "last_commit_date": "2025-04-24T21:49:35Z",
+        "homepage": "https://browsermcp.io",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/BrowserMCP/mcp"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "STALE_LAST_PUSH_2025-04-24",
+        "NO_PUBLISHED_RELEASE"
+      ]
+    },
+    {
+      "candidate_id": "SEED-NANOBROWSER",
+      "name": "Nanobrowser",
+      "seed": true,
+      "github_slug": "nanobrowser/nanobrowser",
+      "related_slugs": [
+        "nanobrowser/nanobrowser-mcp-host"
+      ],
+      "non_github_sources": [
+        "https://nanobrowser.ai"
+      ],
+      "capability_areas": [
+        "C1"
+      ],
+      "role": "open-source Chrome extension running multi-agent web automation with the user's own model keys",
+      "verdict": "COMPARATOR_ONLY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 13,628 stars, Apache-2.0, pushed 2026-08-18, but the latest release is v0.1.13 from 2025-11-22, nine months before this assessment. DIRECTLY_REPRODUCED: its external interface repo nanobrowser/nanobrowser-mcp-host has 19 stars and was last pushed 2025-05-19, so there is no maintained programmatic integration point.",
+      "material_caveat": "Useful as an autonomous open-weight comparator, as the prior lane also concluded, but it cannot be an integration point for an evidence-producing environment while its MCP host is abandoned.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "nanobrowser/nanobrowser",
+        "html_url": "https://github.com/nanobrowser/nanobrowser",
+        "stars": 13628,
+        "forks": 1439,
+        "open_issues": 75,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "master",
+        "created_at": "2024-12-31T08:11:27Z",
+        "pushed_at": "2026-08-18T00:42:48Z",
+        "latest_release_tag": "v0.1.13",
+        "latest_release_published_at": "2025-11-22T13:52:50Z",
+        "last_commit_sha": "24a14b76e14a9c30fd84878ca7985049d1e7d064",
+        "last_commit_date": "2026-08-18T00:41:54Z",
+        "homepage": "https://nanobrowser.ai",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/nanobrowser/nanobrowser"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "SEED-HARPA",
+      "name": "HARPA AI and HARPA GRID",
+      "seed": true,
+      "github_slug": null,
+      "non_github_sources": [
+        "https://harpa.ai/",
+        "https://harpa.ai/grid/web-automation",
+        "https://chromewebstore.google.com/detail/harpa-ai-web-automation-w/eanggfilgoajaocelnaflolkadkeghjp"
+      ],
+      "capability_areas": [
+        "C1",
+        "C2"
+      ],
+      "role": "proprietary Chrome extension combining a browser-automation engine with a bring-your-own-model sidebar, plus GRID, a cloud API that drives the local browser",
+      "verdict": "COMPARATOR_ONLY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: Chrome Web Store listing reports 300,000 users, 4.7 from 3.2K ratings, EU trader identified, and states the developer has disclosed it will not collect or use your data. DOCUMENTED: the GRID documentation states GRID orchestrates your machine to run the tasks for you, thus handling data behind logins.",
+      "material_caveat": "GRID is the only seed that solves cloud-to-Chromebook remote control of an authenticated session, and it solves it by giving a third-party cloud standing authority over the founder's logged-in browser. That is a trust-boundary decision for the founder (FQ-02), not a technical default. The engine is closed, so its evidence cannot be independently audited, which conflicts with the evidence-quality requirement.",
+      "licence_note": "Proprietary.",
+      "live_signals": null,
+      "signal_status": "NO_GITHUB_HOME"
+    },
+    {
+      "candidate_id": "SEED-SIDER",
+      "name": "Sider / Sidebar",
+      "seed": true,
+      "github_slug": null,
+      "non_github_sources": [
+        "https://chromewebstore.google.com/detail/sider-chat-with-all-ai-gp/difoiogjjojoaoomphldepapgpbgkhkb"
+      ],
+      "capability_areas": [
+        "C2"
+      ],
+      "role": "proprietary multi-model browser sidebar assistant for reading, translating and chatting over page content",
+      "verdict": "REJECT_BOUNDARY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: the Chrome Web Store listing reports 5,000,000 users and 4.9 from 114.2K ratings, and states that the extension handles personally identifiable information and website content. DIRECTLY_REPRODUCED: sider.ai returns HTTP 403 to a plain fetch, so its own terms could not be independently retrieved by this lane.",
+      "material_caveat": "This is a consumer reading assistant, not an evidence-producing controller: it does not deliver structured read-back, runtime capture, approval gates or replayable artifacts. Combined with a declared data-handling posture covering PII and website content, it fails the disclosure-boundary invariant for a founder handling strategy. Rejecting it for the operating environment says nothing about its quality as a consumer product.",
+      "licence_note": "Proprietary.",
+      "live_signals": null,
+      "signal_status": "NO_GITHUB_HOME"
+    },
+    {
+      "candidate_id": "SEED-AIRCRIFT",
+      "name": "Aircrift / Aircraft",
+      "seed": true,
+      "github_slug": null,
+      "non_github_sources": [
+        "https://aircraft.ai/",
+        "https://chromewebstore.google.com/search/aircraft",
+        "https://registry.npmjs.org/-/v1/search?text=aircraft",
+        "https://pypi.org/pypi/aircrift/json"
+      ],
+      "capability_areas": [],
+      "role": "unknown",
+      "verdict": "UNRESOLVED",
+      "verdict_basis": "DIRECTLY_REPRODUCED, all on 2026-08-22: GitHub repository search for 'aircrift' returns only two unrelated Chinese pixi.js aeroplane games; GitHub user and org search for 'aircraft' returns only aviation accounts; Chrome Web Store search for 'aircraft' returns only aviation themes, a flight-filter tool and an aircraft-parts search extension, and 'aircrift' returns nothing relevant; npm search for 'aircraft' returns only aviation packages and for 'aircrift' returns nothing; PyPI returns HTTP 404 for 'aircrift'; aircrift.com, aircrift.ai and aircrift.io do not resolve in DNS; aircraft.ai returns a 114-byte parked lander that redirects to /lander with no product content.",
+      "material_caveat": "Negative-existence is bounded by the surfaces probed. No web search engine was reachable: DuckDuckGo lite and html returned HTTP 202 bot challenges, Brave 429, Mojeek 403 and searx.be a verification interstitial. Candidates considered and their disposition are recorded in NAME-RESOLUTION.json. The closest live in-category product is Airtop, which is real and verified, but the name match is weak and this lane will not assert it.",
+      "licence_note": "n/a",
+      "live_signals": null,
+      "signal_status": "NO_GITHUB_HOME"
+    },
+    {
+      "candidate_id": "SEED-KIMI",
+      "name": "Kimi (Moonshot AI)",
+      "seed": true,
+      "github_slug": "MoonshotAI/Kimi-K2",
+      "non_github_sources": [
+        "https://platform.moonshot.ai/docs/introduction",
+        "https://huggingface.co/api/models/moonshotai/Kimi-K3",
+        "https://openrouter.ai/api/v1/models"
+      ],
+      "capability_areas": [
+        "C6"
+      ],
+      "role": "frontier open-weight model family for long-horizon coding and agentic work",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DOCUMENTED: the Kimi API platform documents kimi-k3 as the flagship, built for long-horizon coding and end-to-end knowledge work with native visual understanding, alongside kimi-k2.6. DIRECTLY_REPRODUCED: the OpenRouter catalogue lists moonshotai/kimi-k3 with canonical slug moonshotai/kimi-k3-20260715, 1,048,576-token context, tool support, and pricing of 3.00 USD per million input and 15.00 USD per million output tokens; nine Moonshot routes are live.",
+      "material_caveat": "DIRECTLY_REPRODUCED and decisive: the Hugging Face API reports Kimi-K3 at 2,779,931,837,184 parameters, about 2.78 trillion. The weights are published and the model cannot run on any laptop. Retaining Kimi therefore commits to an API route, not to model sovereignty. Separately, the GitHub repo MoonshotAI/Kimi-K2 was last pushed 2026-01-21 and describes a superseded generation; it is a release-artifact repo, not the live product surface.",
+      "licence_note": "GitHub licence resolves as NOASSERTION; the Hugging Face card reports 'other'. Verify the exact model licence before any redistribution.",
+      "live_signals": {
+        "full_name": "MoonshotAI/Kimi-K2",
+        "html_url": "https://github.com/MoonshotAI/Kimi-K2",
+        "stars": 11103,
+        "forks": 908,
+        "open_issues": 70,
+        "archived": false,
+        "license": "NOASSERTION",
+        "default_branch": "main",
+        "created_at": "2025-07-03T12:28:22Z",
+        "pushed_at": "2026-01-21T05:33:12Z",
+        "latest_release_tag": null,
+        "latest_release_published_at": null,
+        "last_commit_sha": "1b4022bbb7187cf4011a8bdf0b4cd10e2daa26c4",
+        "last_commit_date": "2025-10-31T03:23:46Z",
+        "homepage": "",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/MoonshotAI/Kimi-K2"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "STALE_LAST_PUSH_2026-01-21",
+        "NO_PUBLISHED_RELEASE",
+        "LICENSE_NOT_MACHINE_RESOLVED"
+      ]
+    },
+    {
+      "candidate_id": "SEED-QWEN",
+      "name": "Qwen (Alibaba)",
+      "seed": true,
+      "github_slug": "QwenLM/Qwen3",
+      "non_github_sources": [
+        "https://openrouter.ai/api/v1/models",
+        "https://huggingface.co/api/models/Qwen/Qwen3.8-27B",
+        "https://huggingface.co/api/models/mlx-community/Qwen3.8-27B-4bit"
+      ],
+      "capability_areas": [
+        "C6"
+      ],
+      "role": "open-weight model family with the widest continuous size ladder, from laptop-scale to frontier-scale",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 51 Qwen routes live in the OpenRouter catalogue on 2026-08-22, spanning qwen3.5-9b through qwen3.8-27b, qwen3.6-35b-a3b, qwen3.5-122b-a10b, qwen3.5-397b-a17b and qwen3.8-2.4t-a95b, most with published weights and tool support. DIRECTLY_REPRODUCED: Qwen/Qwen3.8-27B is 27,781,427,952 parameters under apache-2.0, and mlx-community/Qwen3.8-27B-4bit exists with library mlx, so an Apple-silicon build is already published. DIRECTLY_REPRODUCED: Qwen/Qwen3.6-35B-A3B is 35,951,822,704 parameters with roughly 3B active, the favourable shape for laptop inference.",
+      "material_caveat": "This is the only named family where the same vendor covers both the Chromebook-era API rung and the MacBook-era local rung under a permissive licence, which is exactly what the prior founder directive naming Qwen as coordinating open-weight base would need in order to hold. The GitHub repo QwenLM/Qwen3 was last pushed 2026-01-09 and reports no licence; the live evidence is the model cards and the gateway, not that repo.",
+      "licence_note": "apache-2.0 on the Hugging Face cards checked; the QwenLM/Qwen3 GitHub repo reports no machine-readable licence.",
+      "live_signals": {
+        "full_name": "QwenLM/Qwen3",
+        "html_url": "https://github.com/QwenLM/Qwen3",
+        "stars": 27547,
+        "forks": 2043,
+        "open_issues": 64,
+        "archived": false,
+        "license": null,
+        "default_branch": "main",
+        "created_at": "2024-02-05T05:45:08Z",
+        "pushed_at": "2026-01-09T03:05:47Z",
+        "latest_release_tag": null,
+        "latest_release_published_at": null,
+        "last_commit_sha": "7a2f61ffc7a20d47efcd2bf97f6f2bf52729042e",
+        "last_commit_date": "2026-01-09T03:05:46Z",
+        "homepage": "",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/QwenLM/Qwen3"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "STALE_LAST_PUSH_2026-01-09",
+        "NO_PUBLISHED_RELEASE",
+        "LICENSE_NOT_MACHINE_RESOLVED"
+      ]
+    },
+    {
+      "candidate_id": "SEED-DEEPSEEK",
+      "name": "DeepSeek",
+      "seed": true,
+      "github_slug": "deepseek-ai/DeepSeek-V3",
+      "non_github_sources": [
+        "https://api-docs.deepseek.com/",
+        "https://openrouter.ai/api/v1/models"
+      ],
+      "capability_areas": [
+        "C6"
+      ],
+      "role": "low-cost long-context open-weight family with dual-shape API compatibility",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DOCUMENTED: the DeepSeek API exposes both an OpenAI-compatible base URL and an Anthropic-compatible base URL, with current models deepseek-v4-flash, deepseek-v4-pro and deepseek-v4-flash-vision-exp. DIRECTLY_REPRODUCED: 15 DeepSeek routes live on OpenRouter, with deepseek-v4-flash at 0.0601 USD per million input and 0.1201 USD per million output tokens at 1,048,576-token context, weights published.",
+      "material_caveat": "Dual OpenAI-and-Anthropic compatibility makes DeepSeek the cheapest substitution target behind either SDK shape, which is a substitutability property, not just a price property. The GitHub repos DeepSeek-V3 and DeepSeek-R1 were last pushed 2025-08-28 and 2025-06-27 and describe superseded generations.",
+      "licence_note": "MIT on the V3 and R1 repos.",
+      "live_signals": {
+        "full_name": "deepseek-ai/DeepSeek-V3",
+        "html_url": "https://github.com/deepseek-ai/DeepSeek-V3",
+        "stars": 104391,
+        "forks": 16727,
+        "open_issues": 210,
+        "archived": false,
+        "license": "MIT",
+        "default_branch": "main",
+        "created_at": "2024-12-26T09:52:40Z",
+        "pushed_at": "2025-08-28T03:24:37Z",
+        "latest_release_tag": "v1.0.0",
+        "latest_release_published_at": "2025-06-27T08:46:37Z",
+        "last_commit_sha": "9b4e9788e4a3a731f7567338ed15d3ec549ce03b",
+        "last_commit_date": "2025-08-28T03:24:26Z",
+        "homepage": null,
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/deepseek-ai/DeepSeek-V3"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "STALE_LAST_PUSH_2025-08-28"
+      ]
+    },
+    {
+      "candidate_id": "GLM-ZAI",
+      "name": "GLM (Z.ai / Zhipu)",
+      "seed": false,
+      "github_slug": "zai-org/GLM-4.5",
+      "non_github_sources": [
+        "https://docs.z.ai/guides/llm/glm-4.6",
+        "https://openrouter.ai/api/v1/models",
+        "https://huggingface.co/api/models/zai-org/GLM-4.7-Flash"
+      ],
+      "capability_areas": [
+        "C6",
+        "C7"
+      ],
+      "role": "open-weight family with a genuinely laptop-scale flagship-adjacent tier and its own ASR model",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 16 GLM routes live on OpenRouter including z-ai/glm-5.3 at 1,048,576-token context and z-ai/glm-4.7-flash at 0.06 USD per million input tokens with published weights. DIRECTLY_REPRODUCED: zai-org/GLM-4.7-Flash is 31,221,488,576 parameters under an MIT licence, which is unusually permissive for a model at that scale. DOCUMENTED: Z.ai also documents GLM-ASR-2512 for speech.",
+      "material_caveat": "GLM was not in the founder's named seeds and the evidence argues it should have been: MIT-licensed weights at 31B is the most permissive laptop-scale rung found in this review.",
+      "licence_note": "MIT on GLM-4.7-Flash; Apache-2.0 on the GLM-4.5 repo.",
+      "live_signals": {
+        "full_name": "zai-org/GLM-4.5",
+        "html_url": "https://github.com/zai-org/GLM-4.5",
+        "stars": 4413,
+        "forks": 469,
+        "open_issues": 29,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2025-07-20T09:24:09Z",
+        "pushed_at": "2026-02-01T08:28:10Z",
+        "latest_release_tag": null,
+        "latest_release_published_at": null,
+        "last_commit_sha": "170f20b2c10659008fdbc909d478bc2a75bc3627",
+        "last_commit_date": "2026-02-01T08:28:10Z",
+        "homepage": "https://z.ai/blog/glm-4.5",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/zai-org/GLM-4.5"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "STALE_LAST_PUSH_2026-02-01",
+        "NO_PUBLISHED_RELEASE"
+      ]
+    },
+    {
+      "candidate_id": "GPT-OSS",
+      "name": "gpt-oss (OpenAI open-weight models)",
+      "seed": false,
+      "github_slug": "openai/gpt-oss",
+      "non_github_sources": [
+        "https://huggingface.co/api/models/openai/gpt-oss-20b",
+        "https://huggingface.co/api/models/openai/gpt-oss-120b"
+      ],
+      "capability_areas": [
+        "C6"
+      ],
+      "role": "the most accessible local rung and its larger sibling",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: openai/gpt-oss-20b is 21,511,953,984 parameters, apache-2.0, ungated, with 7,376,531 recent downloads; openai/gpt-oss-120b is 116,829,156,672 parameters, apache-2.0. DIRECTLY_REPRODUCED: both are also available as hosted routes on OpenRouter at 0.03 and 0.037 USD per million input tokens, so the same weights can be run locally or called remotely behind one adapter.",
+      "material_caveat": "The 20b model is the realistic first local rung on a mid-memory MacBook; the 120b model is the reason unified memory is a procurement decision rather than a preference.",
+      "licence_note": "apache-2.0.",
+      "live_signals": {
+        "full_name": "openai/gpt-oss",
+        "html_url": "https://github.com/openai/gpt-oss",
+        "stars": 20330,
+        "forks": 2140,
+        "open_issues": 138,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2025-06-23T16:43:33Z",
+        "pushed_at": "2026-07-24T18:56:01Z",
+        "latest_release_tag": "v0.0.9",
+        "latest_release_published_at": "2026-01-13T19:03:30Z",
+        "last_commit_sha": "7b583341fe16729127f6d5b94a7b09ccae97e1a1",
+        "last_commit_date": "2026-07-24T18:56:00Z",
+        "homepage": "https://openai.com/open-models",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/openai/gpt-oss"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "BROWSER-USE",
+      "name": "browser-use",
+      "seed": false,
+      "github_slug": "browser-use/browser-use",
+      "non_github_sources": [
+        "https://browser-use.com"
+      ],
+      "capability_areas": [
+        "C1"
+      ],
+      "role": "Python-first agentic browser control library",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 110,126 stars, MIT, pushed 2026-08-22, release 0.13.8 on 2026-08-16, 371 open issues.",
+      "material_caveat": "Very high velocity and a pre-1.0 version line; the open-issue count is proportionate to adoption rather than neglect. Condition: pin an exact version and re-qualify on upgrade, because the API surface is still moving.",
+      "licence_note": "MIT.",
+      "live_signals": {
+        "full_name": "browser-use/browser-use",
+        "html_url": "https://github.com/browser-use/browser-use",
+        "stars": 110126,
+        "forks": 12104,
+        "open_issues": 371,
+        "archived": false,
+        "license": "MIT",
+        "default_branch": "main",
+        "created_at": "2024-10-31T16:00:56Z",
+        "pushed_at": "2026-08-22T17:54:57Z",
+        "latest_release_tag": "0.13.8",
+        "latest_release_published_at": "2026-08-16T18:48:54Z",
+        "last_commit_sha": "85ddbfedf609166b2d2c76c3d80506649fee82a9",
+        "last_commit_date": "2026-08-19T17:35:20Z",
+        "homepage": "https://browser-use.com",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/browser-use/browser-use"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "STAGEHAND",
+      "name": "Stagehand",
+      "seed": false,
+      "github_slug": "browserbase/stagehand",
+      "non_github_sources": [
+        "https://stagehand.dev"
+      ],
+      "capability_areas": [
+        "C1"
+      ],
+      "role": "SDK blending deterministic Playwright code with natural-language acts",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 24,021 stars, MIT, pushed 2026-08-22, release stagehand-server-v3/v3.7.5 on 2026-08-20.",
+      "material_caveat": "Maintained by Browserbase, whose commercial product is a hosted browser. The library is open and can run locally, but the maintainer's incentive points at the hosted path; verify local-only operation before relying on it.",
+      "licence_note": "MIT.",
+      "live_signals": {
+        "full_name": "browserbase/stagehand",
+        "html_url": "https://github.com/browserbase/stagehand",
+        "stars": 24021,
+        "forks": 1653,
+        "open_issues": 331,
+        "archived": false,
+        "license": "MIT",
+        "default_branch": "main",
+        "created_at": "2024-03-24T19:19:44Z",
+        "pushed_at": "2026-08-22T19:06:54Z",
+        "latest_release_tag": "stagehand-server-v3/v3.7.5",
+        "latest_release_published_at": "2026-08-20T00:44:02Z",
+        "last_commit_sha": "a21633d53930abc5d62b8dbd6b608995f2ccb4b1",
+        "last_commit_date": "2026-08-21T21:48:26Z",
+        "homepage": "https://stagehand.dev",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/browserbase/stagehand"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "SKYVERN",
+      "name": "Skyvern",
+      "seed": false,
+      "github_slug": "Skyvern-AI/skyvern",
+      "non_github_sources": [
+        "https://www.skyvern.com"
+      ],
+      "capability_areas": [
+        "C1"
+      ],
+      "role": "vision-plus-DOM workflow automation over browsers",
+      "verdict": "COMPARATOR_ONLY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 22,832 stars, pushed 2026-08-22, release v1.0.50 on 2026-08-18, licence AGPL-3.0.",
+      "material_caveat": "AGPL-3.0 is the deciding factor for a company that intends to package and redistribute portable capability IP; see FQ-08. Technically current and active.",
+      "licence_note": "AGPL-3.0.",
+      "live_signals": {
+        "full_name": "Skyvern-AI/skyvern",
+        "html_url": "https://github.com/Skyvern-AI/skyvern",
+        "stars": 22832,
+        "forks": 2141,
+        "open_issues": 215,
+        "archived": false,
+        "license": "AGPL-3.0",
+        "default_branch": "main",
+        "created_at": "2024-02-28T15:45:19Z",
+        "pushed_at": "2026-08-22T20:04:44Z",
+        "latest_release_tag": "v1.0.50",
+        "latest_release_published_at": "2026-08-18T07:35:35Z",
+        "last_commit_sha": "cbc11aefcb46b95a95fd1b651cedac4ec9d050fb",
+        "last_commit_date": "2026-08-22T20:04:41Z",
+        "homepage": "https://www.skyvern.com",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/Skyvern-AI/skyvern"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "MIDSCENE",
+      "name": "Midscene",
+      "seed": false,
+      "github_slug": "web-infra-dev/midscene",
+      "non_github_sources": [
+        "https://midscenejs.com"
+      ],
+      "capability_areas": [
+        "C1",
+        "C2"
+      ],
+      "role": "GUI agent for end-to-end testing with visual grounding and reporting",
+      "verdict": "COMPARATOR_ONLY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 14,653 stars, MIT, pushed 2026-08-21, release v1.11.0 on 2026-08-18.",
+      "material_caveat": "Its reporting artifacts are a genuinely good model for what browser-action evidence should look like; worth studying even if not adopted.",
+      "licence_note": "MIT.",
+      "live_signals": {
+        "full_name": "web-infra-dev/midscene",
+        "html_url": "https://github.com/web-infra-dev/midscene",
+        "stars": 14653,
+        "forks": 1127,
+        "open_issues": 99,
+        "archived": false,
+        "license": "MIT",
+        "default_branch": "main",
+        "created_at": "2024-07-23T04:03:50Z",
+        "pushed_at": "2026-08-21T12:48:12Z",
+        "latest_release_tag": "v1.11.0",
+        "latest_release_published_at": "2026-08-18T12:11:29Z",
+        "last_commit_sha": "dfc5a5f6ce41abb4f01d4be8c4d998ffa2b5a8c1",
+        "last_commit_date": "2026-08-21T06:30:42Z",
+        "homepage": "https://midscenejs.com",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/web-infra-dev/midscene"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "TRYCUA",
+      "name": "cua (computer-use agents and sandboxes)",
+      "seed": false,
+      "github_slug": "trycua/cua",
+      "non_github_sources": [
+        "https://cua.ai"
+      ],
+      "capability_areas": [
+        "C1"
+      ],
+      "role": "cross-OS computer-use drivers, fleets and benchmarks",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 21,797 stars, MIT, pushed 2026-08-22, release sandbox-v0.4.3 on 2026-08-22, 695 open issues.",
+      "material_caveat": "Relevant only after the MacBook arrives; desktop control is not a Chromebook capability. The open-issue count is high and should be sampled before adoption.",
+      "licence_note": "MIT.",
+      "live_signals": {
+        "full_name": "trycua/cua",
+        "html_url": "https://github.com/trycua/cua",
+        "stars": 21797,
+        "forks": 1495,
+        "open_issues": 695,
+        "archived": false,
+        "license": "MIT",
+        "default_branch": "main",
+        "created_at": "2025-01-31T15:02:49Z",
+        "pushed_at": "2026-08-22T05:02:48Z",
+        "latest_release_tag": "sandbox-v0.4.3",
+        "latest_release_published_at": "2026-08-22T03:40:52Z",
+        "last_commit_sha": "b296ec9cbf460f360cf8ea2e203c26bcc92614b0",
+        "last_commit_date": "2026-08-22T03:37:51Z",
+        "homepage": "https://cua.ai",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/trycua/cua"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "UI-TARS-DESKTOP",
+      "name": "UI-TARS Desktop / Agent TARS",
+      "seed": false,
+      "github_slug": "bytedance/UI-TARS-desktop",
+      "non_github_sources": [
+        "https://agent-tars.com"
+      ],
+      "capability_areas": [
+        "C1"
+      ],
+      "role": "multimodal GUI agent stack",
+      "verdict": "COMPARATOR_ONLY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 38,683 stars but last commit 2026-07-01 and latest release v0.3.0 on 2025-11-04, with 424 open issues.",
+      "material_caveat": "Star count materially overstates current momentum; the release line is nine months old. Watch rather than adopt.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "bytedance/UI-TARS-desktop",
+        "html_url": "https://github.com/bytedance/UI-TARS-desktop",
+        "stars": 38683,
+        "forks": 3905,
+        "open_issues": 424,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2025-01-19T09:04:43Z",
+        "pushed_at": "2026-08-05T02:48:59Z",
+        "latest_release_tag": "v0.3.0",
+        "latest_release_published_at": "2025-11-04T16:10:39Z",
+        "last_commit_sha": "c2ad42e3eb9b27830db41a3e6f51ca7179d9b168",
+        "last_commit_date": "2026-07-01T03:03:17Z",
+        "homepage": "https://agent-tars.com",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/bytedance/UI-TARS-desktop"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "STEEL-BROWSER",
+      "name": "Steel Browser",
+      "seed": false,
+      "github_slug": "steel-dev/steel-browser",
+      "non_github_sources": [
+        "https://steel.dev"
+      ],
+      "capability_areas": [
+        "C1"
+      ],
+      "role": "self-hostable browser sandbox with an API for agents",
+      "verdict": "COMPARATOR_ONLY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 7,524 stars, Apache-2.0, repository pushed 2026-08-19 but last commit on the default branch 2026-07-20 and no published GitHub release.",
+      "material_caveat": "A self-hostable alternative to commercial cloud-browser services, which matters because it keeps the option open without a vendor. Not needed while sessions stay on the founder's device.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "steel-dev/steel-browser",
+        "html_url": "https://github.com/steel-dev/steel-browser",
+        "stars": 7524,
+        "forks": 968,
+        "open_issues": 59,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2024-11-01T18:15:29Z",
+        "pushed_at": "2026-08-19T21:49:36Z",
+        "latest_release_tag": null,
+        "latest_release_published_at": null,
+        "last_commit_sha": "5880b48c1af107219ff3d904edbb8f6b76bea9b6",
+        "last_commit_date": "2026-07-20T20:07:52Z",
+        "homepage": "https://steel.dev",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/steel-dev/steel-browser"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "NO_PUBLISHED_RELEASE"
+      ]
+    },
+    {
+      "candidate_id": "AIRTOP",
+      "name": "Airtop",
+      "seed": false,
+      "github_slug": null,
+      "non_github_sources": [
+        "https://www.airtop.ai/",
+        "https://registry.npmjs.org/-/v1/search?text=airtop"
+      ],
+      "capability_areas": [
+        "C1"
+      ],
+      "role": "commercial cloud browsers that log in, browse and act, with a password vault and compiled deterministic agents",
+      "verdict": "COMPARATOR_ONLY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: airtop.ai serves a live product site describing authenticated cloud browsing, built-in proxies, CAPTCHA solving, a password vault and up to 100 sessions, with SOC 2 Type II and HIPAA claims; npm publishes @airtop/sdk, @airtop/core and adapter packages.",
+      "material_caveat": "This is the closest live in-category product to the unresolved Aircrift/Aircraft seed, and it is recorded here for that reason as well as on its merits. Adopting it means the founder's credentials live in a vendor's vault and sessions run on a vendor's machines, which is the opposite of the local-session posture; that is FQ-02 again, in a stronger form than HARPA GRID.",
+      "licence_note": "Proprietary service; SDKs published to npm.",
+      "live_signals": null,
+      "signal_status": "NO_GITHUB_HOME"
+    },
+    {
+      "candidate_id": "WEBMCP",
+      "name": "WebMCP",
+      "seed": false,
+      "github_slug": "webmachinelearning/webmcp",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C1",
+        "C5"
+      ],
+      "role": "emerging web standard letting pages declare agent-callable tools instead of being scraped",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 3,084 stars in the W3C Web Machine Learning incubation org, pushed 2026-08-19. DOCUMENTED: WebMCP exposes JavaScript functions or HTML forms as tools with natural-language descriptions for in-browser agents, as a client-side alternative to backend integrations. DIRECTLY_REPRODUCED: chrome-devtools-mcp already ships list_webmcp_tools and execute_webmcp_tool.",
+      "material_caveat": "Condition: browser support. This is the direction of travel for browser control and reduces long-term coupling to other people's markup, but it cannot be depended on yet.",
+      "licence_note": "W3C document licence; GitHub licence resolves as NOASSERTION.",
+      "live_signals": {
+        "full_name": "webmachinelearning/webmcp",
+        "html_url": "https://github.com/webmachinelearning/webmcp",
+        "stars": 3084,
+        "forks": 203,
+        "open_issues": 107,
+        "archived": false,
+        "license": "NOASSERTION",
+        "default_branch": "main",
+        "created_at": "2025-08-05T13:10:14Z",
+        "pushed_at": "2026-08-19T18:07:04Z",
+        "latest_release_tag": null,
+        "latest_release_published_at": null,
+        "last_commit_sha": "fca7462d703c628f4cf110ddadd51e8e5b52a579",
+        "last_commit_date": "2026-08-19T18:05:47Z",
+        "homepage": "https://webmachinelearning.github.io/webmcp/",
+        "fetched_at_utc": "2026-08-22T20:22:30Z",
+        "instrument": "gh api /repos/webmachinelearning/webmcp"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "NO_PUBLISHED_RELEASE",
+        "LICENSE_NOT_MACHINE_RESOLVED"
+      ]
+    },
+    {
+      "candidate_id": "MCP-SPEC",
+      "name": "Model Context Protocol",
+      "seed": false,
+      "github_slug": "modelcontextprotocol/modelcontextprotocol",
+      "non_github_sources": [
+        "https://modelcontextprotocol.io/specification/versioning"
+      ],
+      "capability_areas": [
+        "C5"
+      ],
+      "role": "the open tool interface that makes servers and clients independently replaceable",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 9,026 stars, pushed 2026-08-22, spec release tagged 2026-07-28. DOCUMENTED: current protocol version 2026-07-28, date-based revisions marked draft, current or final, per-request version negotiation, and a deprecation policy giving features at least twelve months before removal.",
+      "material_caveat": "A twelve-month deprecation floor is a real portability guarantee and should be written into the adapter contract. Do not make MCP the only permitted interface: see the Playwright maintainer's CLI-plus-Skills guidance.",
+      "licence_note": "GitHub licence resolves as NOASSERTION; the specification is openly published.",
+      "live_signals": {
+        "full_name": "modelcontextprotocol/modelcontextprotocol",
+        "html_url": "https://github.com/modelcontextprotocol/modelcontextprotocol",
+        "stars": 9026,
+        "forks": 1747,
+        "open_issues": 178,
+        "archived": false,
+        "license": "NOASSERTION",
+        "default_branch": "main",
+        "created_at": "2024-09-24T20:26:52Z",
+        "pushed_at": "2026-08-22T18:39:27Z",
+        "latest_release_tag": "2026-07-28",
+        "latest_release_published_at": "2026-07-28T16:47:49Z",
+        "last_commit_sha": "b0f60ba5409db7a6582440a7b473cc0398890f15",
+        "last_commit_date": "2026-08-22T10:01:07Z",
+        "homepage": "https://modelcontextprotocol.io",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/modelcontextprotocol/modelcontextprotocol"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "LICENSE_NOT_MACHINE_RESOLVED"
+      ]
+    },
+    {
+      "candidate_id": "AGENT-SKILLS",
+      "name": "Agent Skills",
+      "seed": false,
+      "github_slug": "agentskills/agentskills",
+      "related_slugs": [
+        "anthropics/skills"
+      ],
+      "non_github_sources": [
+        "https://agentskills.io/specification"
+      ],
+      "capability_areas": [
+        "C5"
+      ],
+      "role": "portable, versioned capability packages that move between clients",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: agentskills/agentskills has 24,590 stars, Apache-2.0, pushed 2026-08-09; anthropics/skills has 171,010 stars and its README explicitly defers to agentskills.io for the standard. DOCUMENTED: the specification defines a SKILL.md directory format with name, description, licence, compatibility, metadata and allowed-tools frontmatter, optional scripts, references and assets directories, progressive disclosure and validation.",
+      "material_caveat": "The allowed-tools frontmatter field is the hook for permissioning, and the compatibility field is the hook for qualification. Extending this with Obzio hashes and provenance, as the existing research register already proposed, remains the right shape.",
+      "licence_note": "Apache-2.0 on the specification repo.",
+      "live_signals": {
+        "full_name": "agentskills/agentskills",
+        "html_url": "https://github.com/agentskills/agentskills",
+        "stars": 24590,
+        "forks": 1813,
+        "open_issues": 61,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2025-12-16T15:47:19Z",
+        "pushed_at": "2026-08-09T20:36:04Z",
+        "latest_release_tag": null,
+        "latest_release_published_at": null,
+        "last_commit_sha": "69ef37e9424c0a7ea9dd2293b559e43ec8176379",
+        "last_commit_date": "2026-08-09T20:36:04Z",
+        "homepage": "https://agentskills.io",
+        "fetched_at_utc": "2026-08-22T20:22:30Z",
+        "instrument": "gh api /repos/agentskills/agentskills"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "NO_PUBLISHED_RELEASE"
+      ]
+    },
+    {
+      "candidate_id": "ACP",
+      "name": "Agent Client Protocol",
+      "seed": false,
+      "github_slug": "agentclientprotocol/agent-client-protocol",
+      "non_github_sources": [
+        "https://agentclientprotocol.com/protocol/overview",
+        "https://cursor.com/docs/cli/acp"
+      ],
+      "capability_areas": [
+        "C5"
+      ],
+      "role": "editor-to-agent interchange, letting one agent be driven by many front ends",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 4,045 stars, Apache-2.0, pushed 2026-08-22, schema-v1.21.0 released 2026-08-20; the project has moved out of the zed-industries org into its own. DOCUMENTED: v1 is current with a v2 draft, and Cursor documents an ACP surface for its CLI, as does goose for subscription-backed providers.",
+      "material_caveat": "ACP is the concrete escape hatch from any single agent front end and is the cheapest lock-in insurance available, because it is already implemented on both sides of the current setup.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "agentclientprotocol/agent-client-protocol",
+        "html_url": "https://github.com/agentclientprotocol/agent-client-protocol",
+        "stars": 4045,
+        "forks": 349,
+        "open_issues": 37,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2025-06-23T17:39:36Z",
+        "pushed_at": "2026-08-22T15:39:50Z",
+        "latest_release_tag": "schema-v1.21.0",
+        "latest_release_published_at": "2026-08-20T19:43:13Z",
+        "last_commit_sha": "b7f0005493b98de32fabee3e9540e2b64da68535",
+        "last_commit_date": "2026-08-22T15:38:24Z",
+        "homepage": "https://agentclientprotocol.com",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/agentclientprotocol/agent-client-protocol"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "A2A",
+      "name": "A2A",
+      "seed": false,
+      "github_slug": "a2aproject/A2A",
+      "non_github_sources": [
+        "https://a2a-protocol.org/latest/specification/"
+      ],
+      "capability_areas": [
+        "C5",
+        "C8"
+      ],
+      "role": "agent-to-agent task, capability and artifact interoperation",
+      "verdict": "COMPARATOR_ONLY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 25,455 stars, Apache-2.0, pushed 2026-08-21, v1.0.1 released 2026-05-28.",
+      "material_caveat": "Its artifact concept is optional and does not solve result custody, which the existing PROVIDER-NEUTRAL-CANDIDATES note already recorded. Useful when there is more than one autonomous counterparty; premature for a one-founder estate.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "a2aproject/A2A",
+        "html_url": "https://github.com/a2aproject/A2A",
+        "stars": 25455,
+        "forks": 2579,
+        "open_issues": 240,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2025-03-25T18:44:21Z",
+        "pushed_at": "2026-08-21T19:46:58Z",
+        "latest_release_tag": "v1.0.1",
+        "latest_release_published_at": "2026-05-28T11:34:36Z",
+        "last_commit_sha": "16ba52690519bf55b9388e34d4db356efa88aa51",
+        "last_commit_date": "2026-08-18T17:09:55Z",
+        "homepage": "https://a2a-protocol.org/",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/a2aproject/A2A"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "MCP-REGISTRY",
+      "name": "MCP Registry",
+      "seed": false,
+      "github_slug": "modelcontextprotocol/registry",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C5"
+      ],
+      "role": "capability discovery for MCP servers",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 7,183 stars, pushed 2026-08-21, v1.8.1 released 2026-08-06. DOCUMENTED: the README records an API freeze at v0.1 while v1 general availability is developed.",
+      "material_caveat": "Discovery must not become automatic admission; pair with a policy grant and a scan.",
+      "licence_note": "Licence resolves as NOASSERTION on the GitHub API.",
+      "live_signals": {
+        "full_name": "modelcontextprotocol/registry",
+        "html_url": "https://github.com/modelcontextprotocol/registry",
+        "stars": 7183,
+        "forks": 958,
+        "open_issues": 139,
+        "archived": false,
+        "license": "NOASSERTION",
+        "default_branch": "main",
+        "created_at": "2025-02-05T17:58:01Z",
+        "pushed_at": "2026-08-21T23:26:16Z",
+        "latest_release_tag": "v1.8.1",
+        "latest_release_published_at": "2026-08-06T23:35:18Z",
+        "last_commit_sha": "6036804f1c62633b5e7d2927f411a6f4127f148a",
+        "last_commit_date": "2026-08-20T22:48:19Z",
+        "homepage": "https://github.com/modelcontextprotocol/registry/tree/main/docs",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/modelcontextprotocol/registry"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "LICENSE_NOT_MACHINE_RESOLVED"
+      ]
+    },
+    {
+      "candidate_id": "AGENT-SCAN",
+      "name": "agent-scan (formerly mcp-scan)",
+      "seed": false,
+      "github_slug": "snyk/agent-scan",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C5",
+        "C10"
+      ],
+      "role": "static scanning of agent and MCP server configurations for prompt-injection and tool-poisoning risk",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 2,945 stars, Apache-2.0, pushed 2026-08-21, v0.6.0 released 2026-08-19; invariantlabs-ai/mcp-scan now redirects here.",
+      "material_caveat": "The project passed into a commercial security vendor. That improves resourcing and adds a future-direction risk; the current licence is permissive, so a fork remains possible.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "snyk/agent-scan",
+        "html_url": "https://github.com/snyk/agent-scan",
+        "stars": 2945,
+        "forks": 259,
+        "open_issues": 11,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2025-04-07T14:31:26Z",
+        "pushed_at": "2026-08-21T20:21:43Z",
+        "latest_release_tag": "v0.6.0",
+        "latest_release_published_at": "2026-08-19T15:10:59Z",
+        "last_commit_sha": "a59b55af25196cefbad754cf1281b6cc6a11a722",
+        "last_commit_date": "2026-08-19T14:32:42Z",
+        "homepage": "",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/invariantlabs-ai/mcp-scan"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "MOVED_FROM_invariantlabs-ai/mcp-scan"
+      ]
+    },
+    {
+      "candidate_id": "OPA",
+      "name": "Open Policy Agent",
+      "seed": false,
+      "github_slug": "open-policy-agent/opa",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C1",
+        "C5",
+        "C10"
+      ],
+      "role": "general policy engine for tool and action authorisation",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 12,136 stars, Apache-2.0, pushed 2026-08-21, v1.19.1 released 2026-08-17, CNCF-governed.",
+      "material_caveat": "Correct shape, but heavier than a one-founder estate needs on day one. Adopt when the number of tools makes ad-hoc gating unsafe.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "open-policy-agent/opa",
+        "html_url": "https://github.com/open-policy-agent/opa",
+        "stars": 12136,
+        "forks": 1655,
+        "open_issues": 339,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2015-12-28T22:08:25Z",
+        "pushed_at": "2026-08-21T19:32:50Z",
+        "latest_release_tag": "v1.19.1",
+        "latest_release_published_at": "2026-08-17T16:38:32Z",
+        "last_commit_sha": "551581feeceafa3129be543f0394fcf43beafde7",
+        "last_commit_date": "2026-08-21T18:05:14Z",
+        "homepage": "https://www.openpolicyagent.org",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/open-policy-agent/opa"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "CEDAR",
+      "name": "Cedar",
+      "seed": false,
+      "github_slug": "cedar-policy/cedar",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C5",
+        "C10"
+      ],
+      "role": "authorisation policy language with formal verification",
+      "verdict": "COMPARATOR_ONLY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 1,680 stars, Apache-2.0, pushed 2026-08-21, v4.12.0 released 2026-07-28.",
+      "material_caveat": "Smaller ecosystem than OPA but analysable policies; relevant if authority decisions ever need to be proved rather than tested.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "cedar-policy/cedar",
+        "html_url": "https://github.com/cedar-policy/cedar",
+        "stars": 1680,
+        "forks": 169,
+        "open_issues": 175,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2023-04-25T15:13:59Z",
+        "pushed_at": "2026-08-21T21:18:21Z",
+        "latest_release_tag": "v4.12.0",
+        "latest_release_published_at": "2026-07-28T20:16:16Z",
+        "last_commit_sha": "ba579ee7e9d63afa73a5b59be0d338a404c6108b",
+        "last_commit_date": "2026-08-21T21:18:20Z",
+        "homepage": "https://www.cedarpolicy.com",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/cedar-policy/cedar"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "LITELLM",
+      "name": "LiteLLM",
+      "seed": false,
+      "github_slug": "BerriAI/litellm",
+      "non_github_sources": [
+        "https://docs.litellm.ai/docs/"
+      ],
+      "capability_areas": [
+        "C6"
+      ],
+      "role": "self-hostable model gateway normalising many providers behind one API",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 57,016 stars, pushed 2026-08-22, v1.97.0 released 2026-08-16.",
+      "material_caveat": "Self-hosting keeps every prompt inside Obzio, which a hosted gateway cannot offer. Licence resolves as NOASSERTION on the GitHub API, so the exact terms and any enterprise-only directories must be read before adoption.",
+      "licence_note": "NOASSERTION on the GitHub API; verify directly.",
+      "live_signals": {
+        "full_name": "BerriAI/litellm",
+        "html_url": "https://github.com/BerriAI/litellm",
+        "stars": 57016,
+        "forks": 10817,
+        "open_issues": 4914,
+        "archived": false,
+        "license": "NOASSERTION",
+        "default_branch": "litellm_internal_staging",
+        "created_at": "2023-07-27T00:09:52Z",
+        "pushed_at": "2026-08-22T20:11:38Z",
+        "latest_release_tag": "v1.97.0",
+        "latest_release_published_at": "2026-08-16T02:51:04Z",
+        "last_commit_sha": "490c9f9f3faa0ba88b600f57abfb73f9f83b48ff",
+        "last_commit_date": "2026-08-22T18:45:39Z",
+        "homepage": "https://docs.litellm.ai/docs/",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/BerriAI/litellm"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "LICENSE_NOT_MACHINE_RESOLVED"
+      ]
+    },
+    {
+      "candidate_id": "OPENROUTER",
+      "name": "OpenRouter",
+      "seed": false,
+      "github_slug": null,
+      "non_github_sources": [
+        "https://openrouter.ai/api/v1/models",
+        "https://openrouter.ai/docs/overview/models"
+      ],
+      "capability_areas": [
+        "C6"
+      ],
+      "role": "hosted multi-provider gateway with one OpenAI-compatible surface",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: the unauthenticated catalogue endpoint returned 421 models on 2026-08-22, including every named open family, with dated canonical slugs, per-model pricing, context length and tool-support flags. DOCUMENTED: the documentation navigation lists model fallbacks, provider selection, zero data retention, input and output logging controls and guardrails.",
+      "material_caveat": "It is the fastest route to breadth and exact-model pinning, and it is also a single commercial intermediary that sees every prompt. Condition: use it behind Obzio's own adapter so it can be replaced by direct provider calls or a self-hosted gateway without code change, and set the retention posture explicitly.",
+      "licence_note": "Proprietary service.",
+      "live_signals": null,
+      "signal_status": "NO_GITHUB_HOME"
+    },
+    {
+      "candidate_id": "OLLAMA",
+      "name": "Ollama",
+      "seed": false,
+      "github_slug": "ollama/ollama",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C6"
+      ],
+      "role": "local model manager with an OpenAI-compatible server",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 179,195 stars, MIT, pushed 2026-08-22, v0.32.15 released 2026-08-19.",
+      "material_caveat": "MacBook-era. Its OpenAI-compatible endpoint is what makes it substitutable for a hosted route behind the same adapter.",
+      "licence_note": "MIT.",
+      "live_signals": {
+        "full_name": "ollama/ollama",
+        "html_url": "https://github.com/ollama/ollama",
+        "stars": 179195,
+        "forks": 17519,
+        "open_issues": 3781,
+        "archived": false,
+        "license": "MIT",
+        "default_branch": "main",
+        "created_at": "2023-06-26T19:39:32Z",
+        "pushed_at": "2026-08-22T18:42:04Z",
+        "latest_release_tag": "v0.32.15",
+        "latest_release_published_at": "2026-08-19T17:25:16Z",
+        "last_commit_sha": "fb30760996871fa9460115c753afd2c60d4ab0f7",
+        "last_commit_date": "2026-08-22T01:48:22Z",
+        "homepage": "https://ollama.com",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/ollama/ollama"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "LLAMACPP",
+      "name": "llama.cpp",
+      "seed": false,
+      "github_slug": "ggml-org/llama.cpp",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C6"
+      ],
+      "role": "dependency-light C/C++ inference engine and server",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 125,167 stars, MIT, pushed 2026-08-22, release v0.2.0 on 2026-08-21 alongside a nightly b-tag line.",
+      "material_caveat": "The lowest-dependency local route and the one most likely to still build in five years, which matters for a system that must be reconstructable.",
+      "licence_note": "MIT.",
+      "live_signals": {
+        "full_name": "ggml-org/llama.cpp",
+        "html_url": "https://github.com/ggml-org/llama.cpp",
+        "stars": 125167,
+        "forks": 22028,
+        "open_issues": 2162,
+        "archived": false,
+        "license": "MIT",
+        "default_branch": "master",
+        "created_at": "2023-03-10T18:58:00Z",
+        "pushed_at": "2026-08-22T20:11:38Z",
+        "latest_release_tag": "v0.2.0",
+        "latest_release_published_at": "2026-08-21T18:32:48Z",
+        "last_commit_sha": "3f545beccee69d9975f466ec7e45fd9aacd8ba90",
+        "last_commit_date": "2026-08-22T19:42:20Z",
+        "homepage": "https://llama.app",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/ggml-org/llama.cpp"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "MLX",
+      "name": "MLX and mlx-lm",
+      "seed": false,
+      "github_slug": "ml-explore/mlx",
+      "related_slugs": [
+        "ml-explore/mlx-lm"
+      ],
+      "non_github_sources": [
+        "https://ml-explore.github.io/mlx/build/html/index.html"
+      ],
+      "capability_areas": [
+        "C6",
+        "C9"
+      ],
+      "role": "Apple-silicon array framework and language-model tooling",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: ml-explore/mlx 28,105 stars, MIT, pushed 2026-08-22, v0.32.1 released 2026-08-18; ml-explore/mlx-lm 6,742 stars, MIT, pushed 2026-08-22. DOCUMENTED: MLX is from Apple machine learning research and uses a unified-memory model where arrays live in shared memory.",
+      "material_caveat": "Directly ties the MacBook decision to capability: unified memory is the constraint MLX exposes rather than hides. mlx-community publishes ready 4-bit builds of the laptop-scale Qwen tier.",
+      "licence_note": "MIT.",
+      "live_signals": {
+        "full_name": "ml-explore/mlx",
+        "html_url": "https://github.com/ml-explore/mlx",
+        "stars": 28105,
+        "forks": 2166,
+        "open_issues": 144,
+        "archived": false,
+        "license": "MIT",
+        "default_branch": "main",
+        "created_at": "2023-11-28T23:33:45Z",
+        "pushed_at": "2026-08-22T08:00:42Z",
+        "latest_release_tag": "v0.32.1",
+        "latest_release_published_at": "2026-08-18T03:45:01Z",
+        "last_commit_sha": "846d176227a0ac13d2667e58d2bb68b322109ab0",
+        "last_commit_date": "2026-08-22T08:00:42Z",
+        "homepage": "https://ml-explore.github.io/mlx/",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/ml-explore/mlx"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "LMSTUDIO",
+      "name": "LM Studio",
+      "seed": false,
+      "github_slug": "lmstudio-ai/lms",
+      "non_github_sources": [
+        "https://lmstudio.ai/"
+      ],
+      "capability_areas": [
+        "C6"
+      ],
+      "role": "desktop local-model application with a headless daemon, MLX support and an OpenAI-compatibility API",
+      "verdict": "COMPARATOR_ONLY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: lmstudio-ai/lms CLI 5,215 stars, MIT, pushed 2026-08-18; lmstudio-js 1,757 stars, MIT. DOCUMENTED: the site states LM Studio is free for home and work use, offers a headless daemon for servers and CI, supports Apple MLX models, and acts as an MCP client; the company is Element Labs, Inc.",
+      "material_caveat": "Free is not open. The CLI and SDKs are MIT but the application itself is proprietary, so it is a convenience layer over substitutable runtimes rather than a substitutable component. Fine for exploration, weak as a dependency.",
+      "licence_note": "MIT CLI and SDKs; proprietary application.",
+      "live_signals": {
+        "full_name": "lmstudio-ai/lms",
+        "html_url": "https://github.com/lmstudio-ai/lms",
+        "stars": 5215,
+        "forks": 441,
+        "open_issues": 330,
+        "archived": false,
+        "license": "MIT",
+        "default_branch": "main",
+        "created_at": "2024-04-15T15:04:41Z",
+        "pushed_at": "2026-08-18T20:41:52Z",
+        "latest_release_tag": null,
+        "latest_release_published_at": null,
+        "last_commit_sha": "07b7252d6de26a3a58c1bb80ed7e75a2b17f5eb6",
+        "last_commit_date": "2026-08-13T21:51:56Z",
+        "homepage": "https://lms.dev",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/lmstudio-ai/lms"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "NO_PUBLISHED_RELEASE"
+      ]
+    },
+    {
+      "candidate_id": "VLLM",
+      "name": "vLLM",
+      "seed": false,
+      "github_slug": "vllm-project/vllm",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C6"
+      ],
+      "role": "high-throughput server-class inference engine",
+      "verdict": "COMPARATOR_ONLY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 89,718 stars, Apache-2.0, pushed 2026-08-22, v0.27.1 released 2026-08-11.",
+      "material_caveat": "Not a laptop runtime. Relevant only if Obzio ever rents or owns GPUs; recorded so the option is not lost.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "vllm-project/vllm",
+        "html_url": "https://github.com/vllm-project/vllm",
+        "stars": 89718,
+        "forks": 21050,
+        "open_issues": 6907,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2023-02-09T11:23:20Z",
+        "pushed_at": "2026-08-22T19:52:01Z",
+        "latest_release_tag": "v0.27.1",
+        "latest_release_published_at": "2026-08-11T10:47:49Z",
+        "last_commit_sha": "a014e35f38c80fb0652387740193ad2147fed6a3",
+        "last_commit_date": "2026-08-22T19:45:09Z",
+        "homepage": "https://vllm.ai",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/vllm-project/vllm"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "TGI",
+      "name": "Text Generation Inference",
+      "seed": false,
+      "github_slug": "huggingface/text-generation-inference",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C6"
+      ],
+      "role": "server-class inference engine",
+      "verdict": "REJECT_MAINTENANCE",
+      "verdict_basis": "DIRECTLY_REPRODUCED: the repository is ARCHIVED on GitHub, last push 2026-03-21, last release v3.3.7 on 2025-12-19.",
+      "material_caveat": "Recorded because it is still widely referenced in older material.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "huggingface/text-generation-inference",
+        "html_url": "https://github.com/huggingface/text-generation-inference",
+        "stars": 10887,
+        "forks": 1279,
+        "open_issues": 324,
+        "archived": true,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2022-10-08T10:26:28Z",
+        "pushed_at": "2026-03-21T11:34:22Z",
+        "latest_release_tag": "v3.3.7",
+        "latest_release_published_at": "2025-12-19T14:35:25Z",
+        "last_commit_sha": "b4adbf2f6e2e721280bd0ea5f91d70f7d033f5ed",
+        "last_commit_date": "2026-03-21T11:34:22Z",
+        "homepage": "http://hf.co/docs/text-generation-inference",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/huggingface/text-generation-inference"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "ARCHIVED",
+        "STALE_LAST_PUSH_2026-03-21"
+      ]
+    },
+    {
+      "candidate_id": "ROUTELLM",
+      "name": "RouteLLM",
+      "seed": false,
+      "github_slug": "lm-sys/RouteLLM",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C6"
+      ],
+      "role": "cost-aware routing between a strong and a weak model",
+      "verdict": "REJECT_MAINTENANCE",
+      "verdict_basis": "DIRECTLY_REPRODUCED: last push 2024-08-10, no published release, 5,382 stars.",
+      "material_caveat": "The idea is sound and now appears inside gateways instead; do not adopt the abandoned implementation.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "lm-sys/RouteLLM",
+        "html_url": "https://github.com/lm-sys/RouteLLM",
+        "stars": 5382,
+        "forks": 424,
+        "open_issues": 40,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2024-06-03T02:16:57Z",
+        "pushed_at": "2024-08-10T19:10:15Z",
+        "latest_release_tag": null,
+        "latest_release_published_at": null,
+        "last_commit_sha": "0b64fdafe049e596a3f5657c219329f24af24198",
+        "last_commit_date": "2024-08-10T19:10:15Z",
+        "homepage": "",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/lm-sys/RouteLLM"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "STALE_LAST_PUSH_2024-08-10",
+        "NO_PUBLISHED_RELEASE"
+      ]
+    },
+    {
+      "candidate_id": "INSPECT-AI",
+      "name": "Inspect AI",
+      "seed": false,
+      "github_slug": "UKGovernmentBEIS/inspect_ai",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C6"
+      ],
+      "role": "evaluation framework for model and agent qualification",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 2,604 stars, MIT, pushed 2026-08-22.",
+      "material_caveat": "Built by a national AI safety institute for exactly the job of qualifying a model before trusting it, which is closer to Obzio's admission problem than a developer-experience evaluation tool.",
+      "licence_note": "MIT.",
+      "live_signals": {
+        "full_name": "UKGovernmentBEIS/inspect_ai",
+        "html_url": "https://github.com/UKGovernmentBEIS/inspect_ai",
+        "stars": 2604,
+        "forks": 670,
+        "open_issues": 276,
+        "archived": false,
+        "license": "MIT",
+        "default_branch": "main",
+        "created_at": "2023-11-14T14:53:11Z",
+        "pushed_at": "2026-08-22T16:01:20Z",
+        "latest_release_tag": null,
+        "latest_release_published_at": null,
+        "last_commit_sha": "499e6152e7b8fc8cbd8ac5283536572aa6e4ab17",
+        "last_commit_date": "2026-08-22T16:01:19Z",
+        "homepage": "https://inspect.aisi.org.uk/",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/UKGovernmentBEIS/inspect_ai"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "NO_PUBLISHED_RELEASE"
+      ]
+    },
+    {
+      "candidate_id": "PROMPTFOO",
+      "name": "promptfoo",
+      "seed": false,
+      "github_slug": "promptfoo/promptfoo",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C6"
+      ],
+      "role": "declarative evaluation and red-teaming across providers",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 24,467 stars, MIT, pushed 2026-08-22, 0.122.0 released 2026-08-04.",
+      "material_caveat": "Lower ceremony than Inspect and configuration-first, which suits a substitution regression suite that must be cheap to run on every route change.",
+      "licence_note": "MIT.",
+      "live_signals": {
+        "full_name": "promptfoo/promptfoo",
+        "html_url": "https://github.com/promptfoo/promptfoo",
+        "stars": 24467,
+        "forks": 2221,
+        "open_issues": 515,
+        "archived": false,
+        "license": "MIT",
+        "default_branch": "main",
+        "created_at": "2023-04-28T15:48:49Z",
+        "pushed_at": "2026-08-22T18:05:08Z",
+        "latest_release_tag": "0.122.0",
+        "latest_release_published_at": "2026-08-04T17:45:40Z",
+        "last_commit_sha": "831ec6239a9c594053231523b88b8e398f27cf1b",
+        "last_commit_date": "2026-08-22T15:03:59Z",
+        "homepage": "https://promptfoo.dev",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/promptfoo/promptfoo"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "LANGFUSE",
+      "name": "Langfuse",
+      "seed": false,
+      "github_slug": "langfuse/langfuse",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C6",
+        "C8"
+      ],
+      "role": "self-hostable tracing, evaluation and cost observability",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 33,560 stars, pushed 2026-08-22, v4.16.0 released 2026-08-21.",
+      "material_caveat": "Licence resolves as NOASSERTION; these products commonly split an open core from commercial features, so read the terms before depending on a specific feature.",
+      "licence_note": "NOASSERTION on the GitHub API; verify directly.",
+      "live_signals": {
+        "full_name": "langfuse/langfuse",
+        "html_url": "https://github.com/langfuse/langfuse",
+        "stars": 33560,
+        "forks": 3621,
+        "open_issues": 811,
+        "archived": false,
+        "license": "NOASSERTION",
+        "default_branch": "main",
+        "created_at": "2023-05-18T17:47:09Z",
+        "pushed_at": "2026-08-22T20:00:02Z",
+        "latest_release_tag": "v4.16.0",
+        "latest_release_published_at": "2026-08-21T05:59:55Z",
+        "last_commit_sha": "62751446149b702b419a9292ddfc2280cdf74b8c",
+        "last_commit_date": "2026-08-22T08:21:47Z",
+        "homepage": "https://langfuse.com",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/langfuse/langfuse"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "LICENSE_NOT_MACHINE_RESOLVED"
+      ]
+    },
+    {
+      "candidate_id": "OTEL-SEMCONV",
+      "name": "OpenTelemetry semantic conventions (GenAI)",
+      "seed": false,
+      "github_slug": "open-telemetry/semantic-conventions",
+      "non_github_sources": [
+        "https://opentelemetry.io/docs/specs/semconv/gen-ai/"
+      ],
+      "capability_areas": [
+        "C6",
+        "C8"
+      ],
+      "role": "vendor-neutral trace attribute vocabulary",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 639 stars, Apache-2.0, pushed 2026-08-20, v1.44.0 released 2026-08-04.",
+      "material_caveat": "The GenAI conventions are still evolving, so use them for export compatibility while keeping Obzio-owned stable attributes as the storage schema, exactly as the existing research note already concluded.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "open-telemetry/semantic-conventions",
+        "html_url": "https://github.com/open-telemetry/semantic-conventions",
+        "stars": 639,
+        "forks": 385,
+        "open_issues": 729,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2023-05-09T17:15:53Z",
+        "pushed_at": "2026-08-20T04:52:56Z",
+        "latest_release_tag": "v1.44.0",
+        "latest_release_published_at": "2026-08-04T20:00:58Z",
+        "last_commit_sha": "384d66161cb18704c729645fa8136a148df9571c",
+        "last_commit_date": "2026-08-20T04:52:02Z",
+        "homepage": "",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/open-telemetry/semantic-conventions"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "BASIC-MEMORY",
+      "name": "Basic Memory",
+      "seed": false,
+      "github_slug": "basicmachines-co/basic-memory",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C4"
+      ],
+      "role": "memory that lives as Markdown files readable by both the founder and the agents",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 3,718 stars, pushed 2026-08-21, v0.22.1 released 2026-06-13, licence AGPL-3.0. DOCUMENTED: the README states memory lives as Markdown files, local-first plain text, no lock-in, with export to local Markdown at any time; cross-device sync in the open version is manual via Git or Syncthing while the hosted version provides it.",
+      "material_caveat": "This is the only memory candidate whose storage format is already the canonical format Obzio uses, which makes it the least risky and the easiest to abandon. Condition: AGPL-3.0 must be acceptable, see FQ-08.",
+      "licence_note": "AGPL-3.0.",
+      "live_signals": {
+        "full_name": "basicmachines-co/basic-memory",
+        "html_url": "https://github.com/basicmachines-co/basic-memory",
+        "stars": 3718,
+        "forks": 261,
+        "open_issues": 74,
+        "archived": false,
+        "license": "AGPL-3.0",
+        "default_branch": "main",
+        "created_at": "2024-12-02T22:40:43Z",
+        "pushed_at": "2026-08-21T07:46:18Z",
+        "latest_release_tag": "v0.22.1",
+        "latest_release_published_at": "2026-06-13T03:35:06Z",
+        "last_commit_sha": "4d1dfdb7e2cf9bfaff83c75daa8f02ce45ccc552",
+        "last_commit_date": "2026-08-21T07:46:16Z",
+        "homepage": "https://basicmemory.com",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/basicmachines-co/basic-memory"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "MEM0",
+      "name": "Mem0",
+      "seed": false,
+      "github_slug": "mem0ai/mem0",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C4"
+      ],
+      "role": "memory extraction and retrieval layer for agents",
+      "verdict": "COMPARATOR_ONLY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 63,830 stars, Apache-2.0, pushed 2026-08-22. DOCUMENTED: its own README states the headline LoCoMo, LongMemEval and BEAM figures reflect the managed platform, which includes proprietary optimisations not available in the open-source SDK, and that open-source users should expect directionally similar but not identical results.",
+      "material_caveat": "That disclosure is creditable and also disqualifying for a sovereignty-first choice: the benchmarked artifact is not the open artifact. Compare on Obzio's own suite or not at all.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "mem0ai/mem0",
+        "html_url": "https://github.com/mem0ai/mem0",
+        "stars": 63830,
+        "forks": 7466,
+        "open_issues": 674,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2023-06-20T08:58:36Z",
+        "pushed_at": "2026-08-22T13:34:28Z",
+        "latest_release_tag": "ts-v3.1.6",
+        "latest_release_published_at": "2026-08-11T18:58:44Z",
+        "last_commit_sha": "8d5b7865bd0521e75fe9ab1b260eeccc83f8a378",
+        "last_commit_date": "2026-08-22T13:34:24Z",
+        "homepage": "https://mem0.ai",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/mem0ai/mem0"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "LETTA",
+      "name": "Letta (formerly MemGPT)",
+      "seed": false,
+      "github_slug": "letta-ai/letta",
+      "related_slugs": [
+        "letta-ai/letta-code"
+      ],
+      "non_github_sources": [],
+      "capability_areas": [
+        "C4"
+      ],
+      "role": "stateful agents with managed memory",
+      "verdict": "COMPARATOR_ONLY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: letta-ai/letta has 24,351 stars but its README states the repository is now a landing page, the current source lives in letta-ai/letta-code, and the retired V1 server is preserved on an archive branch. letta-ai/letta-code has 3,087 stars, Apache-2.0, pushed 2026-08-22.",
+      "material_caveat": "A pinned dependency on the historic repository now points at a landing page. The real project is active but far smaller than the star count implies.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "letta-ai/letta",
+        "html_url": "https://github.com/letta-ai/letta",
+        "stars": 24351,
+        "forks": 2586,
+        "open_issues": 42,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2023-10-11T07:38:37Z",
+        "pushed_at": "2026-08-16T03:56:11Z",
+        "latest_release_tag": "0.16.8",
+        "latest_release_published_at": "2026-05-14T17:14:24Z",
+        "last_commit_sha": "87fd37aab68c7bdd0d66fe63751553756f6af3e5",
+        "last_commit_date": "2026-08-16T03:56:10Z",
+        "homepage": "https://docs.letta.com/",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/letta-ai/letta"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "GRAPHITI",
+      "name": "Graphiti",
+      "seed": false,
+      "github_slug": "getzep/graphiti",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C3",
+        "C4"
+      ],
+      "role": "temporal context graphs for agents",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 30,196 stars, Apache-2.0, pushed 2026-08-21, v0.29.3 released 2026-07-27. DOCUMENTED: the open component requires a third-party graph backend among Neo4j, FalkorDB or Amazon Neptune, and the Kuzu backend is marked deprecated; the Zep product's own graph engine is proprietary.",
+      "material_caveat": "Bringing a graph server is a real operating burden on a one-founder estate, and the deprecated embedded option was the one that avoided it. Condition: only adopt with a specific backend whose operation someone owns.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "getzep/graphiti",
+        "html_url": "https://github.com/getzep/graphiti",
+        "stars": 30196,
+        "forks": 3058,
+        "open_issues": 488,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2024-08-08T22:08:30Z",
+        "pushed_at": "2026-08-21T01:52:20Z",
+        "latest_release_tag": "v0.29.3",
+        "latest_release_published_at": "2026-07-27T20:57:23Z",
+        "last_commit_sha": "993e081a6d7948a0d8851c12a5fbdbeb49fed862",
+        "last_commit_date": "2026-08-21T01:52:19Z",
+        "homepage": "https://help.getzep.com/graphiti",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/getzep/graphiti"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "COGNEE",
+      "name": "cognee",
+      "seed": false,
+      "github_slug": "topoteretes/cognee",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C3",
+        "C4"
+      ],
+      "role": "self-hosted knowledge graph plus vector memory for agents",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 30,186 stars, Apache-2.0, pushed 2026-08-22, v1.5.2 released 2026-08-22. DOCUMENTED: from cognee 1.0 the entire memory layer can run on a single Postgres instance rather than a graph plus vector plus cache plus relational stack.",
+      "material_caveat": "The single-Postgres path is the operationally honest one and materially changes the burden calculation against Graphiti.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "topoteretes/cognee",
+        "html_url": "https://github.com/topoteretes/cognee",
+        "stars": 30186,
+        "forks": 2950,
+        "open_issues": 355,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2023-08-16T16:16:33Z",
+        "pushed_at": "2026-08-22T16:06:10Z",
+        "latest_release_tag": "v1.5.2",
+        "latest_release_published_at": "2026-08-22T13:21:33Z",
+        "last_commit_sha": "a8f9760bb6da90a9956b3be77c0d0534134f533a",
+        "last_commit_date": "2026-08-22T14:54:45Z",
+        "homepage": "https://www.cognee.ai",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/topoteretes/cognee"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "KUZU",
+      "name": "K\u00f9zu",
+      "seed": false,
+      "github_slug": "kuzudb/kuzu",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C3"
+      ],
+      "role": "embeddable property graph database",
+      "verdict": "REJECT_MAINTENANCE",
+      "verdict_basis": "DIRECTLY_REPRODUCED: ARCHIVED on GitHub, last push 2025-10-10, final release v0.11.3.",
+      "material_caveat": "Recorded because it is still recommended in current third-party material and is the deprecated Graphiti backend; an embedded graph store chosen from recall would land here.",
+      "licence_note": "MIT.",
+      "live_signals": {
+        "full_name": "kuzudb/kuzu",
+        "html_url": "https://github.com/kuzudb/kuzu",
+        "stars": 4026,
+        "forks": 517,
+        "open_issues": 329,
+        "archived": true,
+        "license": "MIT",
+        "default_branch": "master",
+        "created_at": "2020-09-26T07:43:06Z",
+        "pushed_at": "2025-10-10T15:34:00Z",
+        "latest_release_tag": "v0.11.3",
+        "latest_release_published_at": "2025-10-10T14:32:42Z",
+        "last_commit_sha": "89f0263cc7a1fd9c396d2c4953747a013556a7f9",
+        "last_commit_date": "2025-10-10T13:09:14Z",
+        "homepage": "https://kuzudb.com/",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/kuzudb/kuzu"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "ARCHIVED",
+        "STALE_LAST_PUSH_2025-10-10"
+      ]
+    },
+    {
+      "candidate_id": "OXIGRAPH",
+      "name": "Oxigraph",
+      "seed": false,
+      "github_slug": "oxigraph/oxigraph",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C3"
+      ],
+      "role": "embeddable RDF store with SPARQL, usable without operating a server",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 1,832 stars, Apache-2.0, pushed 2026-08-22, v0.5.9 released 2026-06-18.",
+      "material_caveat": "Small project, but it is the combination that matters: standard query language, standard provenance vocabulary, and nothing to operate. Rebuildable from primary files, so the bus factor is survivable.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "oxigraph/oxigraph",
+        "html_url": "https://github.com/oxigraph/oxigraph",
+        "stars": 1832,
+        "forks": 163,
+        "open_issues": 148,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2018-05-16T15:29:28Z",
+        "pushed_at": "2026-08-22T19:12:42Z",
+        "latest_release_tag": "v0.5.9",
+        "latest_release_published_at": "2026-06-18T16:14:33Z",
+        "last_commit_sha": "7396ddfd35f7d3680a396bab07fc9e1202fe0ddb",
+        "last_commit_date": "2026-08-22T16:46:49Z",
+        "homepage": "",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/oxigraph/oxigraph"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "PROV-O",
+      "name": "W3C PROV-O",
+      "seed": false,
+      "github_slug": null,
+      "non_github_sources": [
+        "https://www.w3.org/TR/prov-o/"
+      ],
+      "capability_areas": [
+        "C3"
+      ],
+      "role": "standard vocabulary for entity, activity, agent and derivation",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DOCUMENTED: W3C Recommendation dated 30 April 2013 and still the latest published version.",
+      "material_caveat": "Its age is the argument for it. A provenance vocabulary that has not moved in thirteen years will still parse when today's tools are gone, which is precisely the requirement.",
+      "licence_note": "W3C document licence.",
+      "live_signals": null,
+      "signal_status": "NO_GITHUB_HOME"
+    },
+    {
+      "candidate_id": "IN-TOTO",
+      "name": "in-toto Attestation Framework",
+      "seed": false,
+      "github_slug": "in-toto/attestation",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C3",
+        "C8"
+      ],
+      "role": "authenticated metadata about artifacts, consumable by policy engines",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: pushed 2026-08-21, v1.2.0 released 2026-03-18. DOCUMENTED: four independent layers, predicate, statement, envelope and bundle.",
+      "material_caveat": "The predicate layer is the right home for Obzio's own qualification verdicts, giving signed, independently verifiable acceptance rather than self-certified receipts.",
+      "licence_note": "NOASSERTION on the GitHub API; the specification is openly published.",
+      "live_signals": {
+        "full_name": "in-toto/attestation",
+        "html_url": "https://github.com/in-toto/attestation",
+        "stars": 371,
+        "forks": 125,
+        "open_issues": 72,
+        "archived": false,
+        "license": "NOASSERTION",
+        "default_branch": "main",
+        "created_at": "2021-04-01T14:58:27Z",
+        "pushed_at": "2026-08-21T00:52:33Z",
+        "latest_release_tag": "v1.2.0",
+        "latest_release_published_at": "2026-03-18T17:52:36Z",
+        "last_commit_sha": "051624ce466deaed4c5a66e66877f69b471fccbe",
+        "last_commit_date": "2026-08-18T01:18:57Z",
+        "homepage": "",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/in-toto/attestation"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "LICENSE_NOT_MACHINE_RESOLVED"
+      ]
+    },
+    {
+      "candidate_id": "SIGSTORE",
+      "name": "Sigstore cosign",
+      "seed": false,
+      "github_slug": "sigstore/cosign",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C3",
+        "C8",
+        "C10"
+      ],
+      "role": "signing and verification of artifacts and attestations",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 6,227 stars, Apache-2.0, pushed 2026-08-19, v3.1.3 released 2026-08-06.",
+      "material_caveat": "Turns 'we recorded a hash' into 'a third party can verify who recorded it'. Condition: keyless signing binds to an identity provider, so choose the identity route deliberately.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "sigstore/cosign",
+        "html_url": "https://github.com/sigstore/cosign",
+        "stars": 6227,
+        "forks": 793,
+        "open_issues": 162,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2021-02-04T12:49:39Z",
+        "pushed_at": "2026-08-19T15:42:49Z",
+        "latest_release_tag": "v3.1.3",
+        "latest_release_published_at": "2026-08-06T01:09:23Z",
+        "last_commit_sha": "58aae9e112fa1de80594eed34667e920ac4d4a3b",
+        "last_commit_date": "2026-08-19T15:42:49Z",
+        "homepage": "",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/sigstore/cosign"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "TEMPORAL",
+      "name": "Temporal",
+      "seed": false,
+      "github_slug": "temporalio/temporal",
+      "non_github_sources": [
+        "https://docs.temporal.io/evaluate/understanding-temporal"
+      ],
+      "capability_areas": [
+        "C8"
+      ],
+      "role": "durable execution engine with replay, retries and signals",
+      "verdict": "COMPARATOR_ONLY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 22,460 stars, MIT, pushed 2026-08-22, v1.31.2 released 2026-07-08.",
+      "material_caveat": "Correct semantics, wrong weight class for a one-founder estate operating from a Chromebook. The existing reproduction queue already framed this as Temporal versus a simpler append-only state machine; the evidence here supports the simpler side for now.",
+      "licence_note": "MIT.",
+      "live_signals": {
+        "full_name": "temporalio/temporal",
+        "html_url": "https://github.com/temporalio/temporal",
+        "stars": 22460,
+        "forks": 1830,
+        "open_issues": 915,
+        "archived": false,
+        "license": "MIT",
+        "default_branch": "main",
+        "created_at": "2019-10-16T22:15:35Z",
+        "pushed_at": "2026-08-22T19:46:32Z",
+        "latest_release_tag": "v1.31.2",
+        "latest_release_published_at": "2026-07-08T17:10:11Z",
+        "last_commit_sha": "6805caea59e35d0611ed96be69641b8d86bff11c",
+        "last_commit_date": "2026-08-21T21:12:38Z",
+        "homepage": "https://docs.temporal.io",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/temporalio/temporal"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "DBOS",
+      "name": "DBOS Transact",
+      "seed": false,
+      "github_slug": "dbos-inc/dbos-transact-py",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C8"
+      ],
+      "role": "library-level durable workflows over Postgres, with no separate engine to run",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 1,543 stars, MIT, pushed 2026-08-21, 2.30.0 released 2026-08-18.",
+      "material_caveat": "The lightest credible answer to exactly-once resumption. Small project, but MIT and library-shaped, so abandonment is survivable in a way that an abandoned engine is not.",
+      "licence_note": "MIT.",
+      "live_signals": {
+        "full_name": "dbos-inc/dbos-transact-py",
+        "html_url": "https://github.com/dbos-inc/dbos-transact-py",
+        "stars": 1543,
+        "forks": 89,
+        "open_issues": 4,
+        "archived": false,
+        "license": "MIT",
+        "default_branch": "main",
+        "created_at": "2024-07-19T15:53:44Z",
+        "pushed_at": "2026-08-21T18:42:30Z",
+        "latest_release_tag": "2.30.0",
+        "latest_release_published_at": "2026-08-18T15:12:01Z",
+        "last_commit_sha": "6bc3032f8bd381718aa7ca7a986fcd2542637c08",
+        "last_commit_date": "2026-08-21T18:42:28Z",
+        "homepage": "https://docs.dbos.dev",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/dbos-inc/dbos-transact-py"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "RESTATE",
+      "name": "Restate",
+      "seed": false,
+      "github_slug": "restatedev/restate",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C8"
+      ],
+      "role": "distributed durable execution runtime",
+      "verdict": "COMPARATOR_ONLY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 4,326 stars, pushed 2026-08-22, v1.7.6 released 2026-08-21, licence NOASSERTION.",
+      "material_caveat": "Actively developed, but an unresolved licence on a component that would hold operating state is a stop condition until read directly.",
+      "licence_note": "NOASSERTION on the GitHub API; verify directly.",
+      "live_signals": {
+        "full_name": "restatedev/restate",
+        "html_url": "https://github.com/restatedev/restate",
+        "stars": 4326,
+        "forks": 199,
+        "open_issues": 417,
+        "archived": false,
+        "license": "NOASSERTION",
+        "default_branch": "main",
+        "created_at": "2023-01-04T15:03:32Z",
+        "pushed_at": "2026-08-22T09:30:15Z",
+        "latest_release_tag": "v1.7.6",
+        "latest_release_published_at": "2026-08-21T20:36:31Z",
+        "last_commit_sha": "0c6df0fccf197846ecac682d81111d8264c6cbc0",
+        "last_commit_date": "2026-08-22T09:30:01Z",
+        "homepage": "https://docs.restate.dev",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/restatedev/restate"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "LICENSE_NOT_MACHINE_RESOLVED"
+      ]
+    },
+    {
+      "candidate_id": "LITESTREAM",
+      "name": "Litestream",
+      "seed": false,
+      "github_slug": "benbjohnson/litestream",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C8"
+      ],
+      "role": "incremental replication of SQLite for disaster recovery",
+      "verdict": "COMPARATOR_ONLY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 14,285 stars, Apache-2.0, pushed 2026-08-21, v0.5.16 released 2026-08-05. DOCUMENTED: its own README carries a beta status badge.",
+      "material_caveat": "Only relevant if a local SQLite store becomes load-bearing; with Git as canonical it is redundant.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "benbjohnson/litestream",
+        "html_url": "https://github.com/benbjohnson/litestream",
+        "stars": 14285,
+        "forks": 399,
+        "open_issues": 126,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "main",
+        "created_at": "2020-10-06T19:16:01Z",
+        "pushed_at": "2026-08-21T20:59:02Z",
+        "latest_release_tag": "v0.5.16",
+        "latest_release_published_at": "2026-08-05T13:07:32Z",
+        "last_commit_sha": "63225f17ccbb8dedfb26d03f7d3d07e74c6cf69f",
+        "last_commit_date": "2026-08-19T14:53:14Z",
+        "homepage": "https://litestream.io",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/benbjohnson/litestream"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "HANDY",
+      "name": "Handy",
+      "seed": false,
+      "github_slug": "cjpais/Handy",
+      "non_github_sources": [
+        "https://handy.computer"
+      ],
+      "capability_areas": [
+        "C7"
+      ],
+      "role": "offline press-to-talk transcription into any text field",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 30,109 stars, MIT, pushed 2026-08-19, v0.9.5 released 2026-08-08. DOCUMENTED: cross-platform desktop transcription that runs entirely on the user's computer without sending information to the cloud.",
+      "material_caveat": "MacBook-era for full value. On the Chromebook it would run inside Crostini, which requires explicitly enabling microphone sharing to the Linux container, because that permission is not shared by default.",
+      "licence_note": "MIT.",
+      "live_signals": {
+        "full_name": "cjpais/Handy",
+        "html_url": "https://github.com/cjpais/Handy",
+        "stars": 30109,
+        "forks": 2690,
+        "open_issues": 154,
+        "archived": false,
+        "license": "MIT",
+        "default_branch": "main",
+        "created_at": "2025-02-13T02:42:29Z",
+        "pushed_at": "2026-08-19T06:56:48Z",
+        "latest_release_tag": "v0.9.5",
+        "latest_release_published_at": "2026-08-08T01:29:48Z",
+        "last_commit_sha": "0e5036721ef6f26c3b89ab31bc10cd2ffd6096fb",
+        "last_commit_date": "2026-08-19T06:52:43Z",
+        "homepage": "https://handy.computer",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/cjpais/Handy"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "WHISPERCPP",
+      "name": "whisper.cpp",
+      "seed": false,
+      "github_slug": "ggml-org/whisper.cpp",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C7"
+      ],
+      "role": "dependency-light local speech recognition",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 53,103 stars, MIT, pushed 2026-08-22, release b4938 on 2026-08-20. DOCUMENTED: plain C/C++ with no dependencies and Apple-silicon first-class support.",
+      "material_caveat": "The transcription engine most likely to still build unchanged years from now; the right thing to depend on underneath whatever front end is chosen.",
+      "licence_note": "MIT.",
+      "live_signals": {
+        "full_name": "ggml-org/whisper.cpp",
+        "html_url": "https://github.com/ggml-org/whisper.cpp",
+        "stars": 53103,
+        "forks": 6087,
+        "open_issues": 1240,
+        "archived": false,
+        "license": "MIT",
+        "default_branch": "master",
+        "created_at": "2022-09-25T18:26:37Z",
+        "pushed_at": "2026-08-22T05:14:12Z",
+        "latest_release_tag": "b4938",
+        "latest_release_published_at": "2026-08-20T11:33:19Z",
+        "last_commit_sha": "233fe1fc9b48a09e361d3594520838ca266537fe",
+        "last_commit_date": "2026-08-22T05:14:11Z",
+        "homepage": "",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/ggml-org/whisper.cpp"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "SPEACHES",
+      "name": "Speaches",
+      "seed": false,
+      "github_slug": "speaches-ai/speaches",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C7"
+      ],
+      "role": "self-hosted OpenAI-API-compatible speech-to-text and text-to-speech server",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 3,607 stars, MIT, pushed 2026-08-20, latest release v0.9.0-rc.3 on 2025-12-27, so the release line is a release candidate eight months old while the code moves.",
+      "material_caveat": "Its value is the interface, not the implementation: an OpenAI-compatible speech endpoint makes the voice backend swappable the same way the model backend is. Condition: pin a commit rather than the stale release tag.",
+      "licence_note": "MIT.",
+      "live_signals": {
+        "full_name": "speaches-ai/speaches",
+        "html_url": "https://github.com/speaches-ai/speaches",
+        "stars": 3607,
+        "forks": 443,
+        "open_issues": 141,
+        "archived": false,
+        "license": "MIT",
+        "default_branch": "master",
+        "created_at": "2024-05-18T02:26:20Z",
+        "pushed_at": "2026-08-20T18:40:25Z",
+        "latest_release_tag": "v0.9.0-rc.3",
+        "latest_release_published_at": "2025-12-27T18:55:06Z",
+        "last_commit_sha": "993994f7984bf3fe9655b267448328cf66fccb42",
+        "last_commit_date": "2026-04-18T00:30:34Z",
+        "homepage": "https://speaches.ai/",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/speaches-ai/speaches"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "PIPER",
+      "name": "Piper text-to-speech",
+      "seed": false,
+      "github_slug": "rhasspy/piper",
+      "related_slugs": [
+        "OHF-Voice/piper1-gpl"
+      ],
+      "non_github_sources": [],
+      "capability_areas": [
+        "C7"
+      ],
+      "role": "local neural speech synthesis for read-back",
+      "verdict": "REJECT_MAINTENANCE",
+      "verdict_basis": "DIRECTLY_REPRODUCED: rhasspy/piper is ARCHIVED, last push 2025-08-26, last release 2023-11-14. The maintained successor OHF-Voice/piper1-gpl has 5,231 stars, was pushed 2026-08-22 and released v1.7.0 on 2026-08-15, but is GPL-3.0 where the original was MIT.",
+      "material_caveat": "The rejection is of the archived repository, not of Piper. The successor is healthy, and the licence change from MIT to GPL-3.0 is the thing to notice before embedding read-back in a distributable product.",
+      "licence_note": "MIT (archived original); GPL-3.0 (maintained successor).",
+      "live_signals": {
+        "full_name": "rhasspy/piper",
+        "html_url": "https://github.com/rhasspy/piper",
+        "stars": 11278,
+        "forks": 1063,
+        "open_issues": 419,
+        "archived": true,
+        "license": "MIT",
+        "default_branch": "master",
+        "created_at": "2023-01-10T22:25:40Z",
+        "pushed_at": "2025-08-26T15:01:29Z",
+        "latest_release_tag": "2023.11.14-2",
+        "latest_release_published_at": "2023-11-14T19:05:55Z",
+        "last_commit_sha": "73c04d81d5590ecc46e522de3601ce7fb29fc2be",
+        "last_commit_date": "2025-08-26T15:01:25Z",
+        "homepage": "https://rhasspy.github.io/piper-samples/",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/rhasspy/piper"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "ARCHIVED",
+        "STALE_LAST_PUSH_2025-08-26"
+      ]
+    },
+    {
+      "candidate_id": "WEBSPEECH",
+      "name": "Web Speech API",
+      "seed": false,
+      "github_slug": null,
+      "non_github_sources": [
+        "https://developer.mozilla.org/en-US/docs/Web/API/Web_Speech_API"
+      ],
+      "capability_areas": [
+        "C7",
+        "C9"
+      ],
+      "role": "browser-native speech recognition and synthesis, available on a Chromebook with no installation",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DOCUMENTED: MDN documents SpeechRecognition and SpeechSynthesis, and an on-device-speech-recognition permissions-policy directive that gates SpeechRecognition.available() and SpeechRecognition.install().",
+      "material_caveat": "The only zero-install voice route on the Chromebook today. Condition: confirm on the founder's actual device whether on-device recognition is available, because the alternative sends audio off-device, which is the most sensitive artifact in the system.",
+      "licence_note": "Web standard.",
+      "live_signals": null,
+      "signal_status": "NO_GITHUB_HOME"
+    },
+    {
+      "candidate_id": "AGE",
+      "name": "age",
+      "seed": false,
+      "github_slug": "FiloSottile/age",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C10"
+      ],
+      "role": "simple file encryption with small explicit keys",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 23,293 stars, BSD-3-Clause, v1.3.1 released 2025-12-28, last push 2026-03-20. DOCUMENTED: small explicit keys, no config options, post-quantum support, UNIX-style composability.",
+      "material_caveat": "A slower push cadence here is a feature, not a warning: a finished, frozen encryption tool with no configuration surface is the correct dependency for secrets that must still open in ten years.",
+      "licence_note": "BSD-3-Clause.",
+      "live_signals": {
+        "full_name": "FiloSottile/age",
+        "html_url": "https://github.com/FiloSottile/age",
+        "stars": 23293,
+        "forks": 662,
+        "open_issues": 33,
+        "archived": false,
+        "license": "BSD-3-Clause",
+        "default_branch": "main",
+        "created_at": "2019-05-18T20:44:54Z",
+        "pushed_at": "2026-03-20T21:12:32Z",
+        "latest_release_tag": "v1.3.1",
+        "latest_release_published_at": "2025-12-28T12:03:04Z",
+        "last_commit_sha": "706dfc1e799a03443ae46023502bd88d4e9e324f",
+        "last_commit_date": "2026-03-20T21:12:32Z",
+        "homepage": "https://age-encryption.org",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/FiloSottile/age"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "STALE_LAST_PUSH_2026-03-20"
+      ]
+    },
+    {
+      "candidate_id": "SOPS",
+      "name": "SOPS",
+      "seed": false,
+      "github_slug": "getsops/sops",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C10"
+      ],
+      "role": "encrypted structured configuration that can be safely committed",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 22,893 stars, MPL-2.0, pushed 2026-08-17, v3.13.3 released 2026-07-23; a CNCF project.",
+      "material_caveat": "Lets encrypted configuration live in the versioned canonical store without a secret manager to operate, which fits the estate size.",
+      "licence_note": "MPL-2.0.",
+      "live_signals": {
+        "full_name": "getsops/sops",
+        "html_url": "https://github.com/getsops/sops",
+        "stars": 22893,
+        "forks": 1077,
+        "open_issues": 441,
+        "archived": false,
+        "license": "MPL-2.0",
+        "default_branch": "main",
+        "created_at": "2015-08-13T22:11:00Z",
+        "pushed_at": "2026-08-17T17:56:38Z",
+        "latest_release_tag": "v3.13.3",
+        "latest_release_published_at": "2026-07-23T05:27:57Z",
+        "last_commit_sha": "e3f6086dc63f983979adc0a486c2ccab9c46f01f",
+        "last_commit_date": "2026-08-17T17:56:35Z",
+        "homepage": "https://getsops.io",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/getsops/sops"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "OPENBAO",
+      "name": "OpenBao",
+      "seed": false,
+      "github_slug": "openbao/openbao",
+      "related_slugs": [
+        "hashicorp/vault"
+      ],
+      "non_github_sources": [],
+      "capability_areas": [
+        "C10"
+      ],
+      "role": "open-licensed secret manager",
+      "verdict": "COMPARATOR_ONLY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 7,120 stars, MPL-2.0, pushed 2026-08-21, v2.6.2 released 2026-08-18. By contrast hashicorp/vault reports NOASSERTION on the GitHub API.",
+      "material_caveat": "The substitutable answer if a secret manager ever becomes necessary. Not necessary yet: age plus SOPS covers a one-founder estate with far less to operate.",
+      "licence_note": "MPL-2.0.",
+      "live_signals": {
+        "full_name": "openbao/openbao",
+        "html_url": "https://github.com/openbao/openbao",
+        "stars": 7120,
+        "forks": 545,
+        "open_issues": 315,
+        "archived": false,
+        "license": "MPL-2.0",
+        "default_branch": "main",
+        "created_at": "2023-11-09T18:17:33Z",
+        "pushed_at": "2026-08-21T18:58:14Z",
+        "latest_release_tag": "v2.6.2",
+        "latest_release_published_at": "2026-08-18T16:21:00Z",
+        "last_commit_sha": "df6ce2cebaa823979215c116a16820aa913fe3b1",
+        "last_commit_date": "2026-08-21T18:58:13Z",
+        "homepage": "https://openbao.org/",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/openbao/openbao"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "GITLEAKS",
+      "name": "gitleaks",
+      "seed": false,
+      "github_slug": "gitleaks/gitleaks",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C10"
+      ],
+      "role": "secret detection across the repository and its history",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 28,902 stars, MIT, pushed 2026-08-19, v8.30.1 released 2026-03-21.",
+      "material_caveat": "With Git as canonical state, a history-aware scanner is the enforcement mechanism for the never-commit-a-secret rule rather than an optional extra.",
+      "licence_note": "MIT.",
+      "live_signals": {
+        "full_name": "gitleaks/gitleaks",
+        "html_url": "https://github.com/gitleaks/gitleaks",
+        "stars": 28902,
+        "forks": 2207,
+        "open_issues": 461,
+        "archived": false,
+        "license": "MIT",
+        "default_branch": "master",
+        "created_at": "2018-01-27T18:19:31Z",
+        "pushed_at": "2026-08-19T04:15:06Z",
+        "latest_release_tag": "v8.30.1",
+        "latest_release_published_at": "2026-03-21T02:17:58Z",
+        "last_commit_sha": "b58d3f102cf3a2c84cb7f923d05c25c9b1aed84b",
+        "last_commit_date": "2026-07-22T16:50:33Z",
+        "homepage": "https://gitleaks.io",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/gitleaks/gitleaks"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "PRESIDIO",
+      "name": "Presidio",
+      "seed": false,
+      "github_slug": "microsoft/presidio",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C2",
+        "C10"
+      ],
+      "role": "PII detection and redaction before capture becomes durable evidence",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: resolves to data-privacy-stack/presidio, 10,579 stars, MIT, pushed 2026-08-11, 2.2.364 released 2026-07-22.",
+      "material_caveat": "The project moved out of the microsoft org, which changes the maintenance assumption people make from its name. Relevant when network capture starts being stored, since request headers carry bearer tokens.",
+      "licence_note": "MIT.",
+      "live_signals": {
+        "full_name": "data-privacy-stack/presidio",
+        "html_url": "https://github.com/data-privacy-stack/presidio",
+        "stars": 10579,
+        "forks": 1256,
+        "open_issues": 107,
+        "archived": false,
+        "license": "MIT",
+        "default_branch": "main",
+        "created_at": "2018-05-04T11:08:58Z",
+        "pushed_at": "2026-08-11T15:20:50Z",
+        "latest_release_tag": "2.2.364",
+        "latest_release_published_at": "2026-07-22T08:30:12Z",
+        "last_commit_sha": "760d6c83ae89274a268e01aef3e6da7910664a83",
+        "last_commit_date": "2026-08-09T06:51:19Z",
+        "homepage": "https://presidio.dataprivacystack.org",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/microsoft/presidio"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "MOVED_FROM_microsoft/presidio"
+      ]
+    },
+    {
+      "candidate_id": "SCREENPIPE",
+      "name": "screenpipe",
+      "seed": false,
+      "github_slug": "screenpipe/screenpipe",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C2"
+      ],
+      "role": "continuous local screen and audio capture as agent context",
+      "verdict": "REJECT_BOUNDARY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 21,174 stars, pushed 2026-08-22, app-v2.6.77 released 2026-08-21, licence NOASSERTION; resolves from mediar-ai/screenpipe.",
+      "material_caveat": "Always-on capture of everything on screen is the maximal disclosure surface in this entire review, and it is inseparable from the product's value. It conflicts directly with the invariant that disclosure is deliberate rather than ambient. Recorded so the rejection is on the record with a reason rather than by omission.",
+      "licence_note": "NOASSERTION on the GitHub API.",
+      "live_signals": {
+        "full_name": "screenpipe/screenpipe",
+        "html_url": "https://github.com/screenpipe/screenpipe",
+        "stars": 21174,
+        "forks": 2125,
+        "open_issues": 93,
+        "archived": false,
+        "license": "NOASSERTION",
+        "default_branch": "main",
+        "created_at": "2024-06-19T13:23:56Z",
+        "pushed_at": "2026-08-22T19:49:37Z",
+        "latest_release_tag": "app-v2.6.77",
+        "latest_release_published_at": "2026-08-21T23:51:46Z",
+        "last_commit_sha": "abc8c2d7120700727741cd514ce9cae63350373b",
+        "last_commit_date": "2026-08-22T19:49:37Z",
+        "homepage": "https://screenpipe.com",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/mediar-ai/screenpipe"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": [
+        "LICENSE_NOT_MACHINE_RESOLVED",
+        "MOVED_FROM_mediar-ai/screenpipe"
+      ]
+    },
+    {
+      "candidate_id": "FIRECRAWL",
+      "name": "Firecrawl",
+      "seed": false,
+      "github_slug": "firecrawl/firecrawl",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C2"
+      ],
+      "role": "web content extraction to model-ready formats",
+      "verdict": "COMPARATOR_ONLY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 170,895 stars, AGPL-3.0, pushed 2026-08-22, v2.11.0 released 2026-06-19; resolves from mendableai/firecrawl.",
+      "material_caveat": "AGPL-3.0 and oriented at unauthenticated crawling; trafilatura, readability, markitdown and docling cover the extraction need under permissive licences.",
+      "licence_note": "AGPL-3.0.",
+      "live_signals": {
+        "full_name": "firecrawl/firecrawl",
+        "html_url": "https://github.com/firecrawl/firecrawl",
+        "stars": 170895,
+        "forks": 9492,
+        "open_issues": 550,
+        "archived": false,
+        "license": "AGPL-3.0",
+        "default_branch": "main",
+        "created_at": "2024-04-15T21:02:29Z",
+        "pushed_at": "2026-08-22T17:29:38Z",
+        "latest_release_tag": "v2.11.0",
+        "latest_release_published_at": "2026-06-19T15:09:30Z",
+        "last_commit_sha": "ca0be9b7d91eb9b48d3430f5678211f0d47e1d90",
+        "last_commit_date": "2026-08-21T21:40:03Z",
+        "homepage": "https://firecrawl.dev",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/firecrawl/firecrawl"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "MARKITDOWN",
+      "name": "MarkItDown",
+      "seed": false,
+      "github_slug": "microsoft/markitdown",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C2"
+      ],
+      "role": "convert documents and pages to Markdown for durable, diffable evidence",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 175,490 stars, MIT, pushed 2026-08-19, v0.1.7 released 2026-07-29.",
+      "material_caveat": "Markdown output is the format the canonical store already versions, so extraction lands directly in a diffable form rather than an opaque blob.",
+      "licence_note": "MIT.",
+      "live_signals": {
+        "full_name": "microsoft/markitdown",
+        "html_url": "https://github.com/microsoft/markitdown",
+        "stars": 175490,
+        "forks": 12831,
+        "open_issues": 883,
+        "archived": false,
+        "license": "MIT",
+        "default_branch": "main",
+        "created_at": "2024-11-13T19:56:40Z",
+        "pushed_at": "2026-08-19T19:36:22Z",
+        "latest_release_tag": "v0.1.7",
+        "latest_release_published_at": "2026-07-29T18:19:15Z",
+        "last_commit_sha": "9dc0d6579b8739c9d0671ff205e071e3053c7df1",
+        "last_commit_date": "2026-08-19T19:34:00Z",
+        "homepage": "",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/microsoft/markitdown"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "TRAFILATURA",
+      "name": "trafilatura",
+      "seed": false,
+      "github_slug": "adbar/trafilatura",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C2"
+      ],
+      "role": "main-content extraction with metadata from HTML",
+      "verdict": "RETAIN_CONDITIONAL",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 6,683 stars, Apache-2.0, pushed 2026-08-21, v2.2.0 released 2026-07-31.",
+      "material_caveat": "Academic-lineage extraction with metadata, which suits provenance capture better than a plain readability port.",
+      "licence_note": "Apache-2.0.",
+      "live_signals": {
+        "full_name": "adbar/trafilatura",
+        "html_url": "https://github.com/adbar/trafilatura",
+        "stars": 6683,
+        "forks": 418,
+        "open_issues": 60,
+        "archived": false,
+        "license": "Apache-2.0",
+        "default_branch": "master",
+        "created_at": "2019-04-08T11:38:48Z",
+        "pushed_at": "2026-08-21T16:08:46Z",
+        "latest_release_tag": "v2.2.0",
+        "latest_release_published_at": "2026-07-31T16:07:10Z",
+        "last_commit_sha": "e90b0ef51ab026fdb905fb6c5b3c84dd3d784fd5",
+        "last_commit_date": "2026-08-21T16:08:43Z",
+        "homepage": "https://trafilatura.readthedocs.io",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/adbar/trafilatura"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "AXE-CORE",
+      "name": "axe-core",
+      "seed": false,
+      "github_slug": "dequelabs/axe-core",
+      "non_github_sources": [],
+      "capability_areas": [
+        "C2"
+      ],
+      "role": "accessibility-tree analysis, usable as a structural evidence source",
+      "verdict": "COMPARATOR_ONLY",
+      "verdict_basis": "DIRECTLY_REPRODUCED: 7,428 stars, MPL-2.0, pushed 2026-08-21, v4.13.0 released 2026-08-05.",
+      "material_caveat": "Not an agent tool, but the reference implementation for reasoning about accessibility structure, which is what deterministic control depends on.",
+      "licence_note": "MPL-2.0.",
+      "live_signals": {
+        "full_name": "dequelabs/axe-core",
+        "html_url": "https://github.com/dequelabs/axe-core",
+        "stars": 7428,
+        "forks": 919,
+        "open_issues": 437,
+        "archived": false,
+        "license": "MPL-2.0",
+        "default_branch": "develop",
+        "created_at": "2015-06-10T15:26:45Z",
+        "pushed_at": "2026-08-21T15:30:02Z",
+        "latest_release_tag": "v4.13.0",
+        "latest_release_published_at": "2026-08-05T16:52:19Z",
+        "last_commit_sha": "b9abdfb9c095c5081cfa3763023bf43f068913c6",
+        "last_commit_date": "2026-08-21T15:29:59Z",
+        "homepage": "https://www.deque.com/axe/",
+        "fetched_at_utc": "2026-08-22T20:14:46Z",
+        "instrument": "gh api /repos/dequelabs/axe-core"
+      },
+      "signal_status": "HARVESTED",
+      "maintenance_flags": []
+    },
+    {
+      "candidate_id": "GIT-CANONICAL",
+      "name": "Git plus sha256 manifests as canonical state",
+      "seed": false,
+      "github_slug": null,
+      "non_github_sources": [],
+      "capability_areas": [
+        "C3",
+        "C4",
+        "C8"
+      ],
+      "role": "the incumbent canonical store: open, inspectable, versioned, and already in use",
+      "verdict": "RETAIN_STRONG",
+      "verdict_basis": "DIRECTLY_REPRODUCED: this lane's own outputs are produced, hashed and verified this way, and the repository already contains a receipts and manifest discipline that predates this lane.",
+      "material_caveat": "The dependency to name honestly is GitHub, not Git. Git is portable; the hosting, the API and the permissions are one vendor. Mirroring to a second remote is cheap insurance and is FQ-05.",
+      "licence_note": "n/a",
+      "live_signals": null,
+      "signal_status": "NO_GITHUB_HOME"
+    }
+  ]
+}
