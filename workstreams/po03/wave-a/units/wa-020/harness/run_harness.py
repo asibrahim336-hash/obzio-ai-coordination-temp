@@ -23,7 +23,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from . import research
+from . import dispatched_hypothesis, research
 from .bias_experiment import identity_permutations, run_experiment
 from .blinding import (
     ArrivalOrderBlinder,
@@ -321,9 +321,12 @@ def _evaluate_hypotheses(experiment: dict[str, Any], reproductions: list[dict[st
     return evaluated
 
 
-def _mechanism_changes(reproductions: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def _mechanism_changes(
+    reproductions: list[dict[str, Any]], dispatched: dict[str, Any]
+) -> list[dict[str, Any]]:
     """What this unit did about each outcome, kept separate from the outcomes."""
     by_id = {item["reproduction_id"]: item for item in reproductions}
+    conjunct_b = next(item for item in dispatched["conjuncts"] if item["conjunct_id"] == "B")
     return [
         {
             "change": (
@@ -477,6 +480,56 @@ def _mechanism_changes(reproductions: list[dict[str, Any]]) -> list[dict[str, An
             ),
             "target": "the design of the review session; no code change follows from the rejection",
         },
+        {
+            "change": (
+                "A blind review gate must carry an execution step. Freezing a criterion that demands "
+                "verification does not produce verification, so a review procedure built from an "
+                "ordering gate and anonymization alone should not be credited with catching false "
+                "claims."
+            ),
+            "disposition": "EVIDENCE_BACKED_REJECTION",
+            "found_by": (
+                "holding both factors of the dispatched mechanism on and varying only the adjudicator, "
+                "which is the comparison the factorial design was built to make"
+            ),
+            "hypothesis_ids": ["H-PO03-WA-020", "CM-H3", "CM-H4"],
+            "mechanism_id": "M8",
+            "prediction_as_written": (
+                "Criteria frozen before anonymized candidate ingestion catch one seeded attractive "
+                "false claim."
+            ),
+            "rationale": (
+                "With the ordering gate enforced and every identity withheld, a credulous adjudicator "
+                f"catches the seeded claim in {conjunct_b['measurement']['mechanism_with_a_credulous_adjudicator']} "
+                "permutations, while the same mechanism with a probing adjudicator catches it in "
+                f"{conjunct_b['measurement']['mechanism_with_a_probing_adjudicator']}. The mechanism is "
+                "fully present in both arms, so it is not what separates them. The claim was built to be "
+                "true of the contract and false only of the code that enforces it, which is precisely "
+                "the kind of falsity that reading cannot reach and execution can. Anonymization keeps "
+                "the narrower credit the evidence supports: it prevents a biased reviewer discounting a "
+                "refutation the probe already obtained, worth one permutation in the single cell where "
+                "standing is visible and the control is run."
+            ),
+            "recurrence_test": (
+                "tests/test_dispatched_hypothesis.py::ConjunctBTests::"
+                "test_the_mechanism_alone_catches_nothing_without_execution"
+            ),
+            "rejected_claim": "the second conjunct of the dispatched hypothesis H-PO03-WA-020, as dispatched",
+            "scope": "REJECTION",
+            "target": (
+                "the dispatched hypothesis itself; this unit's harness already executes controls, so the "
+                "rejection is a correction to the claimed causal mechanism rather than a code change"
+            ),
+            "verdict_evidence": {
+                "marginal_effect_of_executing_the_control": conjunct_b[
+                    "marginal_effect_of_executing_the_control"
+                ],
+                "marginal_effect_of_the_freeze": conjunct_b["marginal_effect_of_the_freeze"],
+                "mechanism_with_a_credulous_adjudicator": conjunct_b["measurement"][
+                    "mechanism_with_a_credulous_adjudicator"
+                ],
+            },
+        },
     ]
 
 
@@ -508,7 +561,8 @@ def main(argv: list[str] | None = None) -> int:
     experiment = run_experiment(pool, probes, identities)
     reproductions = _reproductions(root, probes, pool, identities, experiment)
     hypotheses = _evaluate_hypotheses(experiment, reproductions)
-    mechanisms = _mechanism_changes(reproductions)
+    dispatched = dispatched_hypothesis.evaluate(experiment)
+    mechanisms = _mechanism_changes(reproductions, dispatched)
 
     external = [] if args.offline else research.fetch_external_claims()
     if args.offline:
@@ -594,8 +648,14 @@ def main(argv: list[str] | None = None) -> int:
     written["hypotheses.json"] = write_json(
         EVIDENCE / "hypotheses.json",
         {
+            "dispatched_hypothesis": dispatched,
             "hypotheses": hypotheses,
             "hypothesis_count": len(hypotheses),
+            "note": (
+                "The dispatched hypothesis is the one this unit was sent to test. The CM-H series are "
+                "this unit's own preregistered current-method hypotheses, recorded separately because "
+                "they are its claims and not its assignment."
+            ),
             "outcome_histogram": _histogram([item["outcome"] for item in hypotheses]),
         },
     )
@@ -653,6 +713,12 @@ def main(argv: list[str] | None = None) -> int:
     print(
         f"  unblinded max swing      {experiment['blinding_effect']['max_identity_swing_in_unblinded_cells']}"
     )
+    print(f"  H-PO03-WA-020            {dispatched['outcome']} (failed conjuncts: {dispatched['failed_conjunct_ids'] or 'none'})")
+    for conjunct in dispatched["conjuncts"]:
+        print(
+            f"    conjunct {conjunct['conjunct_id']}            {conjunct['outcome']:9s} "
+            f"carried by {conjunct['load_bearing_factor']}"
+        )
     print(f"  seeded claim             {SEEDED_FALSE_CLAIM_ID}")
     print(f"  adversarially represented {adversarial['adversarially_represented']}")
     print(f"  reproductions            {len(reproductions)}")

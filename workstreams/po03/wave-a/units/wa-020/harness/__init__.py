@@ -17,6 +17,7 @@ __all__ = [
     "canonical",
     "claims",
     "criteria",
+    "dispatched_hypothesis",
     "emit_result",
     "logical_clock",
     "probes",
