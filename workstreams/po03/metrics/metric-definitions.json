@@ -91,11 +91,11 @@
       "zero_denominator_handling": "UNDEFINED_0_OF_0 if no unit has been ACCEPTED yet."
     },
     "false_green_rate": {
-      "formula": "count(tests flagged by a false-green/mutation detector as passing without asserting the claimed property) / count(tests examined by that detector)",
-      "numerator_definition": "rows in a6's false_green.py results (unit a6-u03) with a positive finding",
-      "denominator_definition": "rows in the same results file",
+      "formula": "producer_attack_result.false_green_count / producer_attack_result.examined_count in workstreams/po03/review/luna/false-green-result.json (unit a6-u03), once that field is itself scored rather than NOT_YET",
+      "numerator_definition": "false_green_count against real producer output, not against a6's own retained self-test fixture",
+      "denominator_definition": "examined_count against real producer output, not against a6's own retained self-test fixture",
       "availability": "NOT_YET",
-      "boundary": "workstreams/po03/review/luna/ (owned by po03-worker-a6) does not exist yet on the ledger head and branch state this cohort last fetched; the detector and its results are a6's deliverable, not a7's."
+      "boundary": "As of this cohort's last fetch, workstreams/po03/review/luna/false-green-result.json exists and proves the detector against a retained fixture (mutation_count=2, false_green_count=1), but its own producer_attack_result field is \"NOT_YET\" because no a1 producer branch was available to attack at scoring time; reporting the fixture's numbers as the commission metric would misrepresent a detector self-test as a production measurement."
     },
     "cycle_time": {
       "formula": "median and mean of wall_time_seconds across units with a non-null wall_time_seconds",
@@ -167,11 +167,11 @@
       "zero_denominator_handling": "UNDEFINED_0_OF_0 per pair until that reviewer has issued at least one disposition against that producer's units."
     },
     "successor_lift": {
-      "formula": "score(G2) - score(G1) on the frozen public suite plus holdout, per generation-comparison.json",
-      "numerator_definition": "G2 score minus G1 score on identical inputs",
-      "denominator_definition": "not a ratio; reported as an absolute score delta per preregistered metric, alongside PASS/NOT_YET per the wave-compounding no-regression rule",
+      "formula": "pass_rate(G2) - pass_rate(G1) on the public and holdout suites, per generation-comparison.json",
+      "numerator_definition": "G2 pass_rate minus G1 pass_rate on identical suites",
+      "denominator_definition": "not a ratio; reported as an absolute pass_rate delta per preregistered metric, alongside PASS/NOT_YET per the wave-compounding no-regression rule",
       "availability": "NOT_YET",
-      "boundary": "G0/G1/G2 measurements are owned by po03-worker-a8 (branch cursor/po03-a8-successor-generations-ed20); that branch does not exist on the remote as of this cohort's last fetch, recorded in workstreams/po03/metrics/generation-comparison.json."
+      "boundary": "G0/G1/G2 measurements are owned by po03-worker-a8 (branch cursor/po03-a8-successor-generations-ed20). As of this cohort's last fetch that branch exists and G0 and G1 have reported public-suite scores (G0 pass_rate=0.0968, G1 pass_rate=0.6774); G2 has not reported and neither generation has a holdout-suite score yet, so the metric stays NOT_YET pending all three generations on both suites. Full detail in workstreams/po03/metrics/generation-comparison.json."
     }
   },
   "byte_stability_contract": {

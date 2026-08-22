@@ -23,13 +23,18 @@ SPEC.loader.exec_module(MODULE)
 
 REPORT_PATH = REPO_ROOT / "workstreams/po03/metrics/generation-comparison.json"
 
-REPORTED_GEN = {
-    "generation": "G1",
+REPORTED_SUITE = {
     "status": "REPORTED",
-    "frozen_suite": {"total_cases": 10, "passed_cases": 8},
-    "holdout": {"total_cases": 10, "passed_cases": 6},
+    "scores": {
+        "cases_passed": 8,
+        "cases_total": 10,
+        "pass_rate": 0.8,
+        "critical_pass_rate": 0.5,
+        "false_completion_count": 2,
+        "unsupported_case_count": 0,
+    },
 }
-NOT_YET_GEN = {"generation": "G2", "status": "NOT_YET", "boundary": "not reported"}
+NOT_YET_SUITE = {"status": "NOT_YET", "scores": None, "boundary": "not reported"}
 
 
 class TestGenerationComparison(unittest.TestCase):
@@ -40,38 +45,42 @@ class TestGenerationComparison(unittest.TestCase):
         recomputed = MODULE.compute(REPO_ROOT)
         self.assertEqual(recomputed, self.report)
 
-    def test_schema_declares_the_expected_path_pattern_and_fields(self):
+    def test_schema_declares_the_expected_path_pattern(self):
         schema = self.report["schema"]
-        self.assertEqual(schema["expected_path_pattern"], "workstreams/po03/successor/<g0|g1|g2>/generation-result.json")
-        for field in ("generation", "executable", "frozen_suite.total_cases", "holdout.total_cases"):
-            self.assertIn(field, schema["expected_fields"])
+        self.assertEqual(
+            schema["expected_path_pattern"],
+            "workstreams/po03/successor/transcripts/<g0|g1|g2>-<public|holdout>.txt",
+        )
 
-    def test_all_three_generations_present_with_a_status_and_expected_path(self):
+    def test_all_three_generations_present_with_public_and_holdout_suites(self):
         for gen in ("G0", "G1", "G2"):
             entry = self.report["generations"][gen]
             self.assertEqual(entry["generation"], gen)
             self.assertIn(entry["status"], ("REPORTED", "NOT_YET"))
-            self.assertTrue(entry["expected_path"].startswith("workstreams/po03/successor/"))
+            for suite in ("public", "holdout"):
+                suite_entry = entry["suites"][suite]
+                self.assertIn(suite_entry["status"], ("REPORTED", "NOT_YET"))
+                self.assertTrue(suite_entry["expected_path"].endswith(f"{suite}.txt"))
 
-    def test_branch_absence_is_recorded_honestly_for_the_current_runtime(self):
-        """Cross-check against a direct, independent git ls-remote call: this
-        assertion is about the runtime observed when this cohort last measured,
-        not an assumption about the future. If po03-worker-a8 has since pushed
-        cursor/po03-a8-successor-generations-ed20, this test's premise -- and
-        the committed report -- must be regenerated, not silently reinterpreted."""
-        proc = subprocess.run(
-            ["git", "ls-remote", "--exit-code", "origin", "refs/heads/cursor/po03-a8-successor-generations-ed20"],
-            cwd=str(REPO_ROOT),
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        branch_exists_on_origin = proc.returncode == 0 and bool(proc.stdout.strip())
-        if not branch_exists_on_origin:
-            for gen in ("G0", "G1", "G2"):
-                self.assertEqual(self.report["generations"][gen]["status"], "NOT_YET")
-                self.assertTrue(self.report["generations"][gen]["boundary"])
-            self.assertEqual(self.report["overall_result"], "NOT_YET")
+    def test_summary_line_regex_extracts_the_observed_g0_public_transcript_fields(self):
+        """Regression guard against the real, committed transcript shape: this
+        is not a synthetic fixture, it is copied from
+        workstreams/po03/successor/transcripts/g0-public.txt as landed by a8-u01."""
+        line = "[public] 3/31 passed rate=0.0968 critical=0.0 false_completions=3 unsupported_cases=24"
+        scores, boundary = MODULE.parse_summary(line, "public")
+        self.assertEqual(boundary, "")
+        self.assertEqual(scores["cases_passed"], 3)
+        self.assertEqual(scores["cases_total"], 31)
+        self.assertEqual(scores["pass_rate"], 0.0968)
+        self.assertEqual(scores["critical_pass_rate"], 0.0)
+        self.assertEqual(scores["false_completion_count"], 3)
+        self.assertEqual(scores["unsupported_case_count"], 24)
+
+    def test_summary_line_regex_ignores_the_wrong_suite_tag(self):
+        line = "[holdout] 5/5 passed rate=1.0 critical=1.0 false_completions=0 unsupported_cases=0"
+        scores, boundary = MODULE.parse_summary(line, "public")
+        self.assertIsNone(scores)
+        self.assertTrue(boundary)
 
     def test_never_reports_overall_pass_without_all_three_generations_reported(self):
         for gen_key, gen in self.report["generations"].items():
@@ -79,62 +88,69 @@ class TestGenerationComparison(unittest.TestCase):
                 self.assertNotEqual(self.report["overall_result"], "PASS")
                 break
 
-    def test_score_of_requires_well_formed_integer_counts(self):
-        self.assertEqual(MODULE.score_of({"total_cases": 10, "passed_cases": 5}), 0.5)
-        self.assertIsNone(MODULE.score_of(None))
-        self.assertIsNone(MODULE.score_of({}))
-        self.assertIsNone(MODULE.score_of({"total_cases": 0, "passed_cases": 0}))
-        self.assertIsNone(MODULE.score_of({"total_cases": "10", "passed_cases": 5}))
-
-    def test_compare_pair_is_not_yet_when_either_side_unreported(self):
-        result = MODULE.compare_pair(NOT_YET_GEN, REPORTED_GEN)
+    def test_compare_suite_is_not_yet_when_either_side_unreported(self):
+        result = MODULE.compare_suite(NOT_YET_SUITE, REPORTED_SUITE)
         self.assertEqual(result["value"], "NOT_YET")
-        self.assertIn("boundary", result)
-        result2 = MODULE.compare_pair(REPORTED_GEN, NOT_YET_GEN)
+        result2 = MODULE.compare_suite(REPORTED_SUITE, NOT_YET_SUITE)
         self.assertEqual(result2["value"], "NOT_YET")
 
-    def test_compare_pair_flags_any_regression_as_fail_never_pass(self):
+    def test_compare_suite_flags_increased_false_completions_as_regression(self):
         later = {
-            "generation": "G2",
             "status": "REPORTED",
-            "frozen_suite": {"total_cases": 10, "passed_cases": 7},  # worse than earlier's 8
-            "holdout": {"total_cases": 10, "passed_cases": 7},  # better than earlier's 6
+            "scores": dict(REPORTED_SUITE["scores"], pass_rate=0.9, false_completion_count=3),
         }
-        result = MODULE.compare_pair(later, REPORTED_GEN)
+        result = MODULE.compare_suite(later, REPORTED_SUITE)
         self.assertEqual(result["value"], "FAIL")
         self.assertTrue(result["regression_detected"])
 
-    def test_compare_pair_pass_requires_a_strictly_positive_delta_on_both_axes(self):
-        later_flat_holdout = {
-            "generation": "G2",
+    def test_compare_suite_flags_decreased_critical_pass_rate_as_regression(self):
+        later = {
             "status": "REPORTED",
-            "frozen_suite": {"total_cases": 10, "passed_cases": 9},  # improves
-            "holdout": {"total_cases": 10, "passed_cases": 6},  # unchanged, not an improvement
+            "scores": dict(REPORTED_SUITE["scores"], pass_rate=0.9, critical_pass_rate=0.4),
         }
-        result = MODULE.compare_pair(later_flat_holdout, REPORTED_GEN)
+        result = MODULE.compare_suite(later, REPORTED_SUITE)
         self.assertEqual(result["value"], "FAIL")
-        self.assertFalse(result["regression_detected"])
+        self.assertTrue(result["regression_detected"])
 
-        later_improves_both = {
-            "generation": "G2",
+    def test_compare_suite_passes_only_with_strict_pass_rate_improvement_and_no_regression(self):
+        later = {
             "status": "REPORTED",
-            "frozen_suite": {"total_cases": 10, "passed_cases": 9},
-            "holdout": {"total_cases": 10, "passed_cases": 7},
+            "scores": dict(REPORTED_SUITE["scores"], pass_rate=0.9, critical_pass_rate=0.5, false_completion_count=2),
         }
-        result2 = MODULE.compare_pair(later_improves_both, REPORTED_GEN)
-        self.assertEqual(result2["value"], "PASS")
-        self.assertFalse(result2["regression_detected"])
+        result = MODULE.compare_suite(later, REPORTED_SUITE)
+        self.assertEqual(result["value"], "PASS")
+        self.assertFalse(result["regression_detected"])
+        self.assertIn("L1-minimum-lift (no preregistration document with lift_rule.minimum_lift has landed)", result["not_evaluated"])
 
-    def test_lift_metric_is_preregistered_in_the_output_before_any_value(self):
-        formula = self.report["preregistered_lift_metric"]["formula"]
-        self.assertIn("score(later) - score(earlier)", formula)
-        self.assertIn("no_regression_rule", self.report["preregistered_lift_metric"])
+    def test_compare_suite_never_hides_that_it_checks_less_than_a8s_full_rule(self):
+        later = {
+            "status": "REPORTED",
+            "scores": dict(REPORTED_SUITE["scores"], pass_rate=0.9),
+        }
+        result = MODULE.compare_suite(later, REPORTED_SUITE)
+        self.assertEqual(len(result["not_evaluated"]), 2)
+
+    def test_g1_vs_g0_public_lift_matches_the_landed_transcripts_when_both_report(self):
+        """Cross-check against the real committed data as of this measurement:
+        this assertion documents the runtime observation, not a fixed truth
+        that must hold if a8 amends its transcripts later."""
+        g0_public = self.report["generations"]["G0"]["suites"]["public"]
+        g1_public = self.report["generations"]["G1"]["suites"]["public"]
+        if g0_public["status"] == "REPORTED" and g1_public["status"] == "REPORTED":
+            lift = self.report["lift"]["g1_vs_g0"]["public"]
+            expected_delta = g1_public["scores"]["pass_rate"] - g0_public["scores"]["pass_rate"]
+            self.assertAlmostEqual(lift["pass_rate_delta"], expected_delta)
 
     def test_measured_against_records_the_exact_resolution_attempt(self):
         measured = self.report["measured_against"]
         self.assertEqual(measured["successor_remote_ref"], "origin/cursor/po03-a8-successor-generations-ed20")
         if measured["successor_commit_sha"] is None:
             self.assertTrue(measured["resolution_boundary"])
+
+    def test_lift_metric_names_its_authoritative_source_and_its_own_narrower_check(self):
+        prereg = self.report["preregistered_lift_metric"]
+        self.assertIn("harness/score.py:compare()", prereg["authoritative_source"])
+        self.assertIn("pass_rate_delta > 0", prereg["this_tool_checks"])
 
 
 if __name__ == "__main__":

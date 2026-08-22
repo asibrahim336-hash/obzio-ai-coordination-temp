@@ -178,16 +178,36 @@ def compute(root: Path) -> dict[str, Any]:
         }
 
     # --- false_green_rate (NOT_YET check) ---
-    false_green_path = root / "workstreams/po03/review/luna/false_green_results.json"
+    # a6-u03's actual artifact is workstreams/po03/review/luna/false-green-result.json
+    # (singular, hyphenated), scoring a detector against a retained fixture, not yet
+    # against real producer output: its own "producer_attack_result" field states
+    # "NOT_YET" until an a1 producer branch exists to attack. Reporting
+    # mutation_count/false_green_count from that fixture as the commission's
+    # false-green rate would misrepresent a detector self-test as a production
+    # measurement, so this stays NOT_YET until producer_attack_result itself reports.
+    false_green_path = root / "workstreams/po03/review/luna/false-green-result.json"
     if false_green_path.exists():
-        results = json.loads(false_green_path.read_text(encoding="utf-8"))
-        examined = results.get("examined", [])
-        flagged = [item for item in examined if item.get("false_green")]
-        false_green_rate = rate(len(flagged), len(examined))
+        result_doc = json.loads(false_green_path.read_text(encoding="utf-8"))
+        producer_attack_result = result_doc.get("producer_attack_result")
+        if isinstance(producer_attack_result, dict):
+            false_green_rate = rate(
+                producer_attack_result.get("false_green_count", 0),
+                producer_attack_result.get("examined_count", 0),
+            )
+        else:
+            false_green_rate = {
+                "value": "NOT_YET",
+                "boundary": (
+                    "workstreams/po03/review/luna/false-green-result.json exists but its "
+                    f"producer_attack_result field is {producer_attack_result!r}, not yet a "
+                    "scored result against real producer output (see its own 'limitation' field: "
+                    f"{result_doc.get('limitation')!r})."
+                ),
+            }
     else:
         false_green_rate = {
             "value": "NOT_YET",
-            "boundary": "workstreams/po03/review/luna/false_green_results.json (owned by po03-worker-a6, unit a6-u03) is absent from the tree at measurement time.",
+            "boundary": "workstreams/po03/review/luna/false-green-result.json (owned by po03-worker-a6, unit a6-u03) is absent from the tree at measurement time.",
         }
 
     # --- successor_lift (deferred) ---
