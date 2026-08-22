@@ -1,0 +1,99 @@
+{
+  "preregistration_version": "PO03-COMPOUNDING-PREREGISTRATION-v1",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "wave_id": "PO03-WAVE-A-b2e7",
+  "cohort": "c8",
+  "task_id": "po03-wa-b2e7-064-generation-comparison",
+  "registered_before": {
+    "statement": "This document is committed before any generation is executed or measured. No G0, G1 or G2 measurement existed in this cohort subtree at the time of this commit, and no suite outcome was known.",
+    "branch": "po03/wa-b2e7-c8",
+    "cohort_base_commit": "5ef49cb",
+    "head_at_registration": "a75292f0adc06b3cb01bbb344d30567c6fc1b90a",
+    "units_already_committed_at_registration": [
+      "po03-wa-b2e7-057-metric-collection-harness",
+      "po03-wa-b2e7-058-derived-metrics"
+    ],
+    "units_not_yet_started_at_registration": [
+      "po03-wa-b2e7-059-adversarial-hidden-cases",
+      "po03-wa-b2e7-060-blind-review-harness",
+      "po03-wa-b2e7-061-g0-reconstruction",
+      "po03-wa-b2e7-062-g1-packaging",
+      "po03-wa-b2e7-063-g2-successor"
+    ]
+  },
+  "generations_under_test": {
+    "G0": "The pre-amendment transactional factory reconstructed byte-exactly from immutable Git history at commit 2b48869 (blob 2d34ae8c7f63e1c25d12f16096eec52effdeb73f), before the fencing, ingestion, completion-gating and recovery-scanner extensions were added.",
+    "G1": "The transactional factory at the cohort checkout, packaged and executed from a clean extraction of committed bytes.",
+    "G2": "A successor compiled only from G1 failures that were measured on the frozen suites, with explicit lineage from each change to the specific measured failure that motivated it."
+  },
+  "suites": {
+    "public_suite": {
+      "identity": "One frozen public suite of executable custody cases, authored in unit 061 and hashed before any G2 source exists. Every generation is measured on the identical suite bytes.",
+      "visibility": "producer-visible",
+      "freeze_rule": "The suite sha256 is recorded with every generation run. A run whose suite sha256 differs from the G1 run is not comparable and must be reported as such rather than compared."
+    },
+    "holdout_suite": {
+      "identity": "Evaluator-held novel cases generated in unit 059 and sealed by sha256 before G2 exists.",
+      "visibility": "evaluator-held; not part of the producer-visible public suite",
+      "freeze_rule": "Holdout cases may not be edited, reordered or removed after G1 is measured. Any change invalidates the comparison."
+    }
+  },
+  "primary_metrics": [
+    {
+      "metric": "public_suite_pass_rate",
+      "definition": "cases with outcome PASS divided by total cases in the frozen public suite. A case that the generation cannot support (UNSUPPORTED) counts as not passed.",
+      "direction": "higher is better"
+    },
+    {
+      "metric": "holdout_pass_rate",
+      "definition": "cases with outcome PASS divided by total cases in the sealed holdout suite, scored identically.",
+      "direction": "higher is better"
+    },
+    {
+      "metric": "combined_pass_rate",
+      "definition": "(public PASS + holdout PASS) divided by (public total + holdout total).",
+      "direction": "higher is better"
+    },
+    {
+      "metric": "successor_lift",
+      "definition": "combined_pass_rate(G2) minus combined_pass_rate(G1), as an absolute difference in rate.",
+      "direction": "higher is better"
+    },
+    {
+      "metric": "false_green_rate",
+      "definition": "cases in which the generation reports a successful custody outcome while independent durable verification inside the case shows the invariant was violated, divided by cases in which the generation reports success.",
+      "direction": "lower is better"
+    },
+    {
+      "metric": "quality_regression_count",
+      "definition": "count of cases, over both suites, that G1 passes and G2 does not pass.",
+      "direction": "must be zero"
+    }
+  ],
+  "lift_threshold": {
+    "successor_lift_minimum": 0.05,
+    "expressed_as": "absolute difference in combined_pass_rate",
+    "rationale": "A one-case difference on a suite of roughly twenty cases is about 0.05, so the threshold requires at least one whole case of genuine improvement and cannot be met by rounding or by scoring noise."
+  },
+  "decision_rule": {
+    "PASS": "combined_pass_rate(G2) - combined_pass_rate(G1) >= 0.05 AND quality_regression_count == 0 AND false_green_rate(G2) <= false_green_rate(G1) AND public_suite_pass_rate(G2) >= public_suite_pass_rate(G1) AND holdout_pass_rate(G2) >= holdout_pass_rate(G1).",
+    "NOT_YET": "Any conjunct above is unmet. NOT_YET is the required output when the evidence does not show lift, and it is a successful unit outcome.",
+    "no_other_outcome": "There is no partial-credit outcome. Compounding is either demonstrated against this rule or recorded as NOT_YET with exact evidence."
+  },
+  "anti_tuning_commitments": [
+    "No case may be added to, removed from, reweighted in, or reordered within either suite after G1 has been measured.",
+    "The lift threshold in this document may not be lowered, raised or restated after any generation is measured.",
+    "A metric may not be redefined, replaced or dropped after measurement; a definition defect must be reported as a limitation with the original definition retained.",
+    "UNSUPPORTED counts as not passed for every generation, including G0, so an older generation is never advantaged by lacking a capability.",
+    "G2 may only contain changes whose lineage points at a specific measured G1 failure case id; a change without such lineage must be recorded as REJECTED rather than shipped.",
+    "If G2 does not beat G1 the recorded verdict is NOT_YET, stated plainly, with the measured numbers unchanged."
+  ],
+  "verdict_command": "python3 -I workstreams/po03/attempts/po03-wa-b2e7-064-generation-comparison/compare_generations.py --repo-root . --out-dir workstreams/po03/attempts/po03-wa-b2e7-064-generation-comparison",
+  "receipt_contract": {
+    "schema": "workstreams/po03/contracts/wave-compounding.schema.json",
+    "validation_command": "python3 -I workstreams/po03/tools/validate_contracts.py wave <receipt>",
+    "decision_changed": "must be the empty array"
+  },
+  "known_independence_limitation": "One producer authors the suite, the holdout generator and the successor. Independence of the suite from the successor therefore rests on commit chronology and on sha256 freezing, not on a separate author. This limitation is recorded rather than hidden, and no claim of independent authorship is made.",
+  "decision_changed": []
+}
