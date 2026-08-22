@@ -645,6 +645,14 @@ def _provider_projection(state: str) -> str:
 
 def provider_state_from_events(events: list[dict[str, Any]]) -> str:
     """Preserve completed provider evidence when custody later needs recovery."""
+    latest = events[-1] if events else {}
+    latest_details = latest.get("details") if isinstance(latest, dict) else None
+    if (
+        latest.get("state") in {"RECOVERY_REQUIRED", "RETRY_SCHEDULED"}
+        and isinstance(latest_details, dict)
+        and latest_details.get("provider_dispatched") is False
+    ):
+        return "NOT_DISPATCHED"
     states = {event["state"] for event in events}
     if states & {
         "RESULT_STAGING",

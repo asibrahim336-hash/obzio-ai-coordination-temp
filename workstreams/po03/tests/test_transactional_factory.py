@@ -141,6 +141,18 @@ class TransactionalFactoryTests(unittest.TestCase):
                 [{"state": "CREATED"}, {"state": "RESULT_STAGED"}, {"state": "RECOVERY_REQUIRED"}]
             ),
         )
+        self.assertEqual(
+            "NOT_DISPATCHED",
+            MODULE.provider_state_from_events(
+                [
+                    {"state": "CREATED"},
+                    {
+                        "state": "RECOVERY_REQUIRED",
+                        "details": {"provider_dispatched": False},
+                    },
+                ]
+            ),
+        )
 
     def test_write_once_is_idempotent_but_immutable(self):
         destination = MODULE.PO03_ROOT / "control" / "immutable.json"
