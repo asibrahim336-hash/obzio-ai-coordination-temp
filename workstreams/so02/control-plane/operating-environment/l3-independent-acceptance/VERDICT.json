@@ -1,0 +1,147 @@
+{
+  "schema_version": "1.0",
+  "record_type": "INDEPENDENT_ACCEPTANCE_VERDICT",
+  "qualification_id": "CUR-ORCH-QUAL-01",
+  "commission_context": "COM-CUR-ENV-01-20260822-v001",
+  "lane_id": "OE-L3-INDEPENDENT-ACCEPTANCE",
+  "lane_state": "READY_TO_COMMIT",
+  "evidence_commit": "11a60dcf6dbc2eac4e6d975efab5d985ebbabd62",
+  "producer_start_sha": "a5adfdff6921b34b05c1ea6eed0c1752bb4ebbbb",
+  "acceptance_base_sha": "fe0a595206e5986de7eaac6cabc619215a1eb81b",
+  "criteria_commit_sha": "9a390df3ebdd19e1403317be24c74e6abc249415",
+  "independent_verification_commit_sha": "7a7f5b20726bdf5dffd63be7a2512b2150c389f2",
+  "criteria_preceded_evidence_review": true,
+  "producer_transcript_or_run_events_read": false,
+  "producer_self_acceptance_relied_on": false,
+  "verdict": "REFUSED",
+  "decision_rule_applied": "An advertised independent/end-to-end route is materially misclassified, and mandatory manifest-closure and fail-closed phase-gate criteria are falsified.",
+  "strongest_genuine_weakness": "R1 and R2 are different transports but not independent trust or failure domains. One controller produced both records; R2 queried that same still-running producer, committed none of the two raw provider artifacts, and depends on R1/GitHub for durable custody. Fixing hashes would not create an independent second route.",
+  "producer_gate_reproduction": {
+    "python_binding_note": "The VM lacked a python command; a temporary /tmp shim bound the exact commands to installed Python 3.12.3.",
+    "scctl_validate": {
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    "orchqual_verify": {
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    "unittest_discover": {
+      "exit_code": 0,
+      "tests_run": 92,
+      "result": "OK"
+    }
+  },
+  "criterion_findings": [
+    {
+      "criterion_id": "AC-01",
+      "status": "PASS_WITH_LIMITATION",
+      "finding": "The three producer commits resolve, descend from the recorded start SHA, and all 23 changed paths are allowlisted. The evidence fork predates the governing fe0a5952 correction, so its SW owner action is superseded and cannot be routed as current."
+    },
+    {
+      "criterion_id": "AC-02",
+      "status": "PASS",
+      "finding": "All three producer gates reproduced at the stipulated evidence head and exited zero."
+    },
+    {
+      "criterion_id": "AC-03",
+      "status": "FAIL",
+      "finding": "Listed-entry hashes, sizes, count and bundle digest reproduce, but material closure does not.",
+      "exact_failing_check": "INDEPENDENT-VERIFICATION-REPORT.json manifest.passes_material_closure=false; REMOTE-READBACK.json is in the bundle but omitted, and the changed workflow, control-plane.json, events.jsonl and runtime-surface-locators.json are material unmanifested claim inputs."
+    },
+    {
+      "criterion_id": "AC-04",
+      "status": "PASS",
+      "finding": "A fresh clone fetched 11a60dcf6dbc2eac4e6d975efab5d985ebbabd62 and independently matched all 13 listed entries, totalling 126492 bytes."
+    },
+    {
+      "criterion_id": "AC-05",
+      "status": "FAIL",
+      "finding": "The phase/read-back gate is assertion-based and accepts fabricated proof.",
+      "exact_failing_check": "Replacing REMOTE-READBACK.json with a no-network synthetic record naming an all-zero commit, invented transports and a non-manifest path still makes unmodified producer orchqual.py verify exit 0."
+    },
+    {
+      "criterion_id": "AC-06",
+      "status": "FAIL",
+      "finding": "R1 provides real Git custody, but R2 does not prove the advertised end-to-end orchestration/result route. It queried the producing run while RUNNING, returned zero events, omitted both raw provider artifacts from custody, and proved no run creation or follow-up. The SW OWNER_REQUIRED action is also stale under fe0a5952.",
+      "exact_failing_check": "route_operational_and_independence.r2_retrieved_run_is_the_producing_run=true, r2_retrieved_event_count=0, and r2_raw_provider_artifacts_replayable_from_manifest=false."
+    },
+    {
+      "criterion_id": "AC-07",
+      "status": "FAIL",
+      "finding": "The routes have distinct transports but share the producer controller, VM, assertions and final GitHub custody dependency.",
+      "exact_failing_check": "A single compromised producer can manufacture both records, and R2's own ephemerality note makes the R1 GitHub bundle canonical."
+    },
+    {
+      "criterion_id": "AC-08",
+      "status": "FAIL",
+      "finding": "The supplied snapshots independently recompute to zero observed interference, and a QUEUED regression is detected, but a synthetic IDLE-to-ERROR regression silently passes the producer detector.",
+      "exact_failing_check": "capacity_producer_detector_adversarial_only.ERROR.verdict=ZERO_PO03_CAPACITY_INTERFERENCE while independent strict recomputation returns CAPACITY_INTERFERENCE_FAIL."
+    },
+    {
+      "criterion_id": "AC-09",
+      "status": "PASS",
+      "finding": "All 22 event hashes, predecessor links, sequences, IDs and idempotency keys verify; alteration, deletion, reorder and one-event rehash/splice probes are detected."
+    },
+    {
+      "criterion_id": "AC-10",
+      "status": "PARTIAL_NOT_HISTORICALLY_PROVABLE",
+      "finding": "Current ref, ancestry and changed-path checks found no protected write and the strategic base remains exactly fe0a5952. No retained push/audit event was available to exclude a transient historical protected-ref write later removed by force-push.",
+      "exact_unverified_check": "The absolute historical no-write claim cannot be derived from current refs alone."
+    },
+    {
+      "criterion_id": "AC-11",
+      "status": "PASS",
+      "finding": "No credential-bearing locator was found; all decision_changed fields in 16 producer-changed machine records and all 22 event payloads are empty; no strategy decision, spend, outreach, merge or cutover was introduced."
+    },
+    {
+      "criterion_id": "AC-12",
+      "status": "FAIL",
+      "finding": "GitHub Actions independently executed the bytes on another machine, but the producer authored the workflow addition, verifier, tests, manifest scope and success assertions. The cited run checked a PR merge ref rather than directly checking out the receipt's claimed immutable head.",
+      "exact_failing_check": "The same producer commit added the orchqual.py verify CI step; the forged read-back accepted locally would also pass that CI. This is reproducibility, not independent corroboration of truth."
+    },
+    {
+      "criterion_id": "AC-13",
+      "status": "PASS",
+      "finding": "SL-CUSTODY and SL-OPERATIONAL applied different emphases and both rejected acceptance. Custody sees remediable integrity defects; operational review finds substantive route misclassification. The stricter operational reasoning controls."
+    }
+  ],
+  "internal_acceptance_sub_lanes": [
+    {
+      "sub_lane_id": "SL-CUSTODY",
+      "emphasis": "cryptographic integrity, immutable custody, event chaining, phase gates and protected refs",
+      "recommendation": "DO_NOT_ACCEPT",
+      "strongest_reason": "The manifest omits material proof and the verifier accepts a forged read-back."
+    },
+    {
+      "sub_lane_id": "SL-OPERATIONAL",
+      "emphasis": "operational capability, route independence, capacity sensitivity, authority currentness and CI circularity",
+      "recommendation": "DO_NOT_ACCEPT",
+      "strongest_reason": "R2 is self-observation without raw artifact custody and is not independent of R1's controller or GitHub custody path."
+    }
+  ],
+  "could_not_verify": [
+    {
+      "claim": "No transient protected-branch write occurred during the historical qualification window.",
+      "reason": "Current refs and reachable history are clean, but no retained repository push/audit event was available; force-pushed-away history cannot be excluded."
+    },
+    {
+      "claim": "The two VM-local R2 provider artifacts contain the summarized content.",
+      "reason": "Their bytes are not committed; only producer-recorded hashes and a summary remain. Producer run transcripts/events were deliberately prohibited."
+    },
+    {
+      "claim": "The historical unauthenticated external probes returned exactly the recorded bodies at the recorded timestamps.",
+      "reason": "No raw network capture is committed. The classifications were assessed from immutable records and capability boundaries, not treated as independently reproduced historical responses."
+    }
+  ],
+  "remediation_required_before_reconsideration": [
+    "Commit the raw R2 artifacts or replace R2 with a genuinely separate launched work unit whose result is addressable and independently replayable.",
+    "Use a second route with a separate controller and durable failure domain, or downgrade the aggregate claim from independent routes to transport-diverse observations.",
+    "Manifest every material artifact, including the read-back proof and state/workflow records relied on by terminal claims.",
+    "Bind phase transition to a remotely existing immutable commit, exact manifest digest, exact entry set and independently generated read-back; reject synthetic booleans.",
+    "Treat ERROR and every other material degraded transition as capacity interference, then rerun synthetic tests.",
+    "Remove the superseded SW launch action from the current owner queue and apply current fe0a5952 routing.",
+    "Use independently fixed acceptance assertions if CI is to count as more than reproducibility."
+  ],
+  "post_commit_mutation_rule": "This verdict must not be rewritten after commit. Any changed assessment must be an additive superseding record preserving this one."
+}
