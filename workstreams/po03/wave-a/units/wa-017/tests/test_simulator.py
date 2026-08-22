@@ -189,9 +189,14 @@ class ExecutedComparisonTests(unittest.TestCase):
         self.assertTrue(all(row["passes"] for row in rows))
 
     def test_all_architectures_recover_each_fault_class(self):
-        for candidate in self.by_id.values():
+        loss_markers = {
+            "central-gate": "PROVIDER_LOSS",
+            "lease-shards": "LEASED_WORKER_LOST",
+            "event-log": "WORKER_LOST",
+        }
+        for candidate_id, candidate in self.by_id.items():
             trace_text = json.dumps(candidate["trace"], sort_keys=True)
-            self.assertIn("PROVIDER", trace_text.upper())
+            self.assertIn(loss_markers[candidate_id], trace_text)
             self.assertIn("STALE", trace_text.upper())
             self.assertIn("ARTIFACT", trace_text.upper())
             self.assertIn("DUPLICATE", trace_text.upper())
