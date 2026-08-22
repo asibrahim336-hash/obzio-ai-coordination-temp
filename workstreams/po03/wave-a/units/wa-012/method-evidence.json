@@ -1,0 +1,105 @@
+{
+  "current_method_hypotheses": [
+    {
+      "falsifier": "Any skipped or regressive edge, or PARENT_INGESTED -> COMPLETED event from a worker, is accepted by the executable engine.",
+      "hypothesis": "An explicit edge allowlist with per-edge actor roles rejects skipped, regressive, and worker-completed transitions while permitting the valid producer path.",
+      "hypothesis_id": "CMH-PO03-WA-012-001",
+      "outcome": "SUPPORTED",
+      "reproduction_cases": [
+        "valid-producer-return",
+        "reject-skipped-transition",
+        "reject-regressive-transition",
+        "reject-worker-completed"
+      ],
+      "state": "HYPOTHESIS"
+    },
+    {
+      "falsifier": "An event carrying fence token 1 advances a snapshot whose current granted fence is 2.",
+      "hypothesis": "Exact equality between an event fence and the current granted fence rejects a stale worker after ownership transfer.",
+      "hypothesis_id": "CMH-PO03-WA-012-002",
+      "outcome": "SUPPORTED",
+      "reproduction_cases": [
+        "valid-producer-return",
+        "reject-stale-fence-after-transfer"
+      ],
+      "state": "HYPOTHESIS"
+    }
+  ],
+  "external_method_evidence": {
+    "boundary": "The immutable input supplied repository-native frozen sources but no external method locator. No external method claim or current publication date is invented.",
+    "status": "NOT_SUPPORTED"
+  },
+  "mechanism_changes": [
+    {
+      "change_id": "MC-PO03-WA-012-001",
+      "changed_objects": [
+        "state_machine.py",
+        "transition-matrix.json",
+        "test_state_machine.py",
+        "fixtures/sanitized-obzio-reproduction.json"
+      ],
+      "description": "Adds a dependency-free, fail-closed transition engine with explicit edges, role-bound actors, producer identity checks, exact fencing, monotonic checkpoints, atomic rejection, and commit/readback/ingestion evidence gates.",
+      "independent_disposition": "NOT_YET",
+      "independent_test_command": "python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-012 -p 'test_*.py' -v",
+      "producer_recommendation": "RETAIN",
+      "reproduction_command": "python3 workstreams/po03/wave-a/units/wa-012/state_machine.py reproduce workstreams/po03/wave-a/units/wa-012/fixtures/sanitized-obzio-reproduction.json",
+      "state": "MECHANISM_CHANGE",
+      "test_evidence": {
+        "focused_tests": 17,
+        "focused_tests_passed": 17,
+        "reproduction_cases": 5,
+        "reproduction_cases_matched": 5
+      }
+    }
+  ],
+  "protocol_version": "OBZIO-METHOD-EVIDENCE-v1",
+  "reproductions": [
+    {
+      "fixture": "fixtures/sanitized-obzio-reproduction.json",
+      "independent_disposition": "NOT_YET",
+      "outcome": "SUPPORTED",
+      "reproduction_id": "REPRO-PO03-WA-012-001",
+      "result": "reproduction-result.json",
+      "sanitized": true,
+      "state": "REPRODUCTION"
+    }
+  ],
+  "source_claims": [
+    {
+      "claim": "The active commission specifies the monotonic custody path, distinguishes provider completion from Obzio completion, requires fencing, and reserves COMPLETED for the coordinator.",
+      "claim_id": "SC-PO03-WA-012-001",
+      "source": {
+        "path": "workstreams/po03/COMMISSION.md",
+        "read_commit": "e56eda6e8e4a4e958795f7157839926d93272b30",
+        "sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d"
+      },
+      "state": "SOURCE_CLAIM",
+      "support": "SUPPORTED_BY_FROZEN_REPOSITORY_SOURCE"
+    },
+    {
+      "claim": "The seeded dependency-free validator checks result snapshots and coordinator completion but exposes no event-sequence transition function or comparison against a current granted fence.",
+      "claim_id": "SC-PO03-WA-012-002",
+      "source": {
+        "path": "workstreams/po03/tools/validate_contracts.py",
+        "read_commit": "e56eda6e8e4a4e958795f7157839926d93272b30",
+        "sha256": "ead7d6c78c1f60aaf5440db7fc00fc2ae57d773647ed3b24c279d1a59b43da03"
+      },
+      "state": "SOURCE_CLAIM",
+      "support": "SUPPORTED_BY_FROZEN_EXECUTABLE_SOURCE"
+    },
+    {
+      "claim": "The immutable WA-012 task requires an executable state machine that rejects skipped, regressive, worker-completed, and stale-fence transitions.",
+      "claim_id": "SC-PO03-WA-012-003",
+      "source": {
+        "path": "workstreams/po03/control/inputs/wave-a/wa-012.json",
+        "read_commit": "e56eda6e8e4a4e958795f7157839926d93272b30",
+        "sha256": "be5b7e87e9284b5960468b65f7bdde4192763972231e28afb772f17a98e41fe3"
+      },
+      "state": "SOURCE_CLAIM",
+      "support": "SUPPORTED_BY_IMMUTABLE_TASK_INPUT"
+    }
+  ],
+  "state_separation_invariant": "SOURCE_CLAIM, HYPOTHESIS, REPRODUCTION, MECHANISM_CHANGE, and STRATEGY_PROPOSAL records are not interchangeable.",
+  "strategy_proposals": [],
+  "task_id": "PO03-WA-012"
+}

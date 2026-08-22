@@ -1,0 +1,57 @@
+{
+  "aggregate": {
+    "automated_test_count": 40,
+    "automated_tests_failed": 0,
+    "automated_tests_passed": 40,
+    "first_pass_outcome": "PASS",
+    "reproduction_cases": 5,
+    "reproduction_cases_matched": 5
+  },
+  "ownership_validation": {
+    "allowed_prefix": "workstreams/po03/wave-a/units/wa-012/",
+    "out_of_scope_paths": [],
+    "status": "PASS"
+  },
+  "protocol_version": "OBZIO-TEST-EVIDENCE-v1",
+  "runtime": {
+    "available_interpreter": "python3",
+    "python_alias": "NOT_SUPPORTED"
+  },
+  "task_id": "PO03-WA-012",
+  "test_runs": [
+    {
+      "command": "python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-012 -p 'test_*.py' -v",
+      "exit_code": 0,
+      "failed": 0,
+      "name": "focused-state-machine-suite-initial",
+      "output_summary": "Ran 17 tests in 0.003s; OK",
+      "passed": 17,
+      "status": "PASS"
+    },
+    {
+      "command": "python3 workstreams/po03/wave-a/units/wa-012/state_machine.py reproduce workstreams/po03/wave-a/units/wa-012/fixtures/sanitized-obzio-reproduction.json",
+      "exit_code": 0,
+      "failed": 0,
+      "name": "sanitized-obzio-reproduction",
+      "output_summary": "5 of 5 frozen case expectations matched; hypothesis outcome SUPPORTED",
+      "passed": 5,
+      "status": "PASS"
+    },
+    {
+      "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+      "exit_code": 0,
+      "failed": 0,
+      "name": "seeded-contract-regression-suite",
+      "output_summary": "Ran 23 tests in 0.001s; OK",
+      "passed": 23,
+      "status": "PASS"
+    },
+    {
+      "command": "python3 scripts/check_operator_taxonomy.py",
+      "exit_code": 0,
+      "name": "operator-taxonomy-currentness",
+      "output_summary": "OPERATOR TAXONOMY CHECK: PASS; classified aliases: 9",
+      "status": "PASS"
+    }
+  ]
+}
