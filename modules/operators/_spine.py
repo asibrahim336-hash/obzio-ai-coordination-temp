@@ -777,6 +777,7 @@ class Run:
                 f"{self.phase.name if self.phase is not None else 'START'}, "
                 f"next must be {expected.name}, got {target.name}"
             )
+
         if target >= Phase.INDEPENDENT_ACCEPTANCE and self._acceptance is None:
             if token is None:
                 raise SelfAcceptanceRefused(
