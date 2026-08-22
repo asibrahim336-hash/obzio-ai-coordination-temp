@@ -1,0 +1,129 @@
+{
+  "suite_version": "PO03-GENERATION-SUITE-v1",
+  "suite_id": "po03-g0-public-local-v1",
+  "generation": "G0",
+  "decision_changed": [],
+  "public_source": {
+    "repository": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+    "immutable_commit": "1bb843b2a81fd8d73617caf2f1db81909266bb6e",
+    "network_required_at_execution": false
+  },
+  "determinism": {
+    "clock": "2026-08-22T09:00:00Z",
+    "randomness": "NONE",
+    "external_services": "NONE",
+    "temporary_state": "NEW_LOCAL_DIRECTORY_PER_CASE"
+  },
+  "cases": [
+    {
+      "id": "canonical-json-order",
+      "operation": "canonical_json",
+      "critical": false,
+      "expected_decision": "ALLOW",
+      "rationale": "Canonical serialization must be independent of mapping insertion order."
+    },
+    {
+      "id": "immutable-divergent-replay",
+      "operation": "immutable_divergent_replay",
+      "critical": true,
+      "expected_decision": "REJECT",
+      "rationale": "An immutable path may replay identical bytes but must reject different bytes."
+    },
+    {
+      "id": "scope-escape-write",
+      "operation": "scope_escape",
+      "critical": true,
+      "expected_decision": "REJECT",
+      "rationale": "A write outside the PO-03 allowlist must fail closed."
+    },
+    {
+      "id": "tampered-event-body",
+      "operation": "tampered_event",
+      "critical": true,
+      "expected_decision": "REJECT",
+      "rationale": "Changing an event without recomputing its hash must invalidate the chain."
+    },
+    {
+      "id": "hash-valid-wrong-task-event",
+      "operation": "spoofed_event_task",
+      "critical": true,
+      "expected_decision": "REJECT",
+      "rationale": "An event stored under one task must not name a different task even when internally rehashed."
+    },
+    {
+      "id": "stale-fence-after-release",
+      "operation": "stale_fence",
+      "critical": true,
+      "expected_decision": "REJECT",
+      "rationale": "A prior lease holder must not advance state after a higher fence is leased."
+    },
+    {
+      "id": "exact-duplicate-callback",
+      "operation": "duplicate_callback",
+      "critical": false,
+      "expected_decision": "ALLOW",
+      "rationale": "The controller contract says an exact callback replay is harmless."
+    },
+    {
+      "id": "commit-transition-without-artifacts",
+      "operation": "commit_without_artifacts",
+      "critical": true,
+      "expected_decision": "REJECT",
+      "rationale": "RESULT_COMMITTED requires a verified manifest, artifacts, hashes, and read-back evidence."
+    },
+    {
+      "id": "provider-completed-uncommitted",
+      "operation": "provider_completed_uncommitted",
+      "critical": true,
+      "expected_decision": "ALLOW",
+      "rationale": "Provider completion without a durable commit is valid only in its explicit recovery state."
+    },
+    {
+      "id": "short-result-commit-id",
+      "operation": "short_commit_id",
+      "critical": true,
+      "expected_decision": "REJECT",
+      "rationale": "A result commit locator must be a full lowercase Git object ID."
+    },
+    {
+      "id": "unexpected-result-property",
+      "operation": "unexpected_property",
+      "critical": true,
+      "expected_decision": "REJECT",
+      "rationale": "The frozen schema closes result objects to undeclared properties."
+    },
+    {
+      "id": "reversed-custody-timestamps",
+      "operation": "reversed_timestamps",
+      "critical": true,
+      "expected_decision": "REJECT",
+      "rationale": "Verification and ingestion timestamps must not precede commit."
+    },
+    {
+      "id": "zero-byte-artifact",
+      "operation": "zero_byte_artifact",
+      "critical": false,
+      "expected_decision": "ALLOW",
+      "rationale": "A durable zero-byte file is an artifact when its zero byte count and empty-content hash are explicit."
+    },
+    {
+      "id": "source-lock-worktree-drift",
+      "operation": "source_lock_worktree_drift",
+      "critical": true,
+      "expected_decision": "REJECT",
+      "rationale": "A source lock must not combine a historical Git blob ID with hash and size from changed working-tree bytes."
+    },
+    {
+      "id": "historical-generation-evidence-unavailable",
+      "operation": "baseline_evidence_gate",
+      "critical": true,
+      "expected_decision": "NOT_YET",
+      "input": {
+        "historical_public_suite": null,
+        "historical_observed_outputs": null,
+        "historical_generation_metrics": null
+      },
+      "rationale": "Source permits reconstruction, but missing historical run evidence cannot be converted into a baseline success claim."
+    }
+  ]
+}
