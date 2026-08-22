@@ -1,0 +1,74 @@
+{
+  "case_set_id": "po03-a6-a12-hidden-cases-v001",
+  "authored_by": "po03-worker-a6",
+  "authored_before_producer_read": true,
+  "producer_test_hashes_seen_at_authoring": [],
+  "cases": [
+    {
+      "id": "A12-H01-root-extra-property",
+      "attack": "add undeclared root property",
+      "expected": "validator rejects",
+      "criteria": ["A12-C1", "A12-C2"]
+    },
+    {
+      "id": "A12-H02-nested-extra-properties",
+      "attack": "add undeclared properties under attempt, result_transaction, artifact, and independent_acceptance",
+      "expected": "validator rejects every nested location",
+      "criteria": ["A12-C1"]
+    },
+    {
+      "id": "A12-H03-provider-enum-drift",
+      "attack": "set provider_state to an unknown value",
+      "expected": "validator rejects",
+      "criteria": ["A12-C1"]
+    },
+    {
+      "id": "A12-H04-transaction-enum-drift",
+      "attack": "set result_transaction.state to an unknown value",
+      "expected": "validator rejects",
+      "criteria": ["A12-C1"]
+    },
+    {
+      "id": "A12-H05-seeded-assertion-mutation",
+      "attack": "mutate a seeded test assertion or replace it with an unconditional pass",
+      "expected": "mutation is detected and the original 23-test count remains evidenced",
+      "criteria": ["A12-C2"]
+    },
+    {
+      "id": "A12-H06-existing-result-compatibility",
+      "attack": "run strengthened validator on immutable result records emitted by a3, a6, and a7",
+      "expected": "all rejection reasons and affected unit IDs are reported",
+      "criteria": ["A12-C3", "A12-C7"]
+    },
+    {
+      "id": "A12-H07-working-tree-capsule-drift",
+      "attack": "change a working-tree source after capsule creation while retaining the pinned commit",
+      "expected": "read-only commit resolution remains byte-identical and ignores working-tree bytes",
+      "criteria": ["A12-C4"]
+    },
+    {
+      "id": "A12-H08-four-drift-preflight",
+      "attack": "run each of the four real drift fixtures independently",
+      "expected": "each is DRIFTED and exits non-zero",
+      "criteria": ["A12-C5"]
+    },
+    {
+      "id": "A12-H09-clean-preflight",
+      "attack": "run preflight against an unchanged capsule",
+      "expected": "CURRENT and exit zero",
+      "criteria": ["A12-C5"]
+    },
+    {
+      "id": "A12-H10-lineage-evidence-tamper",
+      "attack": "alter the evidence report while leaving git history unchanged",
+      "expected": "reconciler reports discrepancy and does not silently adopt altered evidence",
+      "criteria": ["A12-C6"]
+    },
+    {
+      "id": "A12-H11-source-version-lineage",
+      "attack": "legitimately change a pinned source",
+      "expected": "new capsule version with predecessor lineage; frozen capsule unchanged",
+      "criteria": ["A12-C4", "A12-C6"]
+    }
+  ]
+}
