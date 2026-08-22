@@ -165,6 +165,24 @@ CLAIMS: list[tuple[str, str, str, int, int, str]] = [
     ("C-SPEND-LOCATION", "guide-spend-limits", "platform.openai.com/settings/organization/limits", -1, 3,
      "Organization spend limits are configured at Organization limits in "
      "platform settings."),
+    # ---------------- exact settings locations ----------------
+    # Cited rather than recalled: an activation programme that sends the owner
+    # to a remembered URL is an activation programme that wastes owner time.
+    ("C-LOC-API-KEYS", "guide-production-best-practices", "page to retrieve the API key you'll use", -1, 0,
+     "API keys are retrieved and created at "
+     "https://platform.openai.com/settings/organization/api-keys"),
+    ("C-LOC-ADMIN-KEYS", "guide-admin-apis", "create an Admin API key", 0, 0,
+     "Admin API keys are created at "
+     "https://platform.openai.com/settings/organization/admin-keys and cannot "
+     "be used for non-administration endpoints."),
+    ("C-LOC-WEBHOOKS", "guide-webhooks", "open the webhook settings page", 0, 2,
+     "Webhook endpoints are created at "
+     "https://platform.openai.com/settings/project/webhooks and are configured "
+     "per project."),
+    ("C-LOC-IP-ALLOWLIST", "guide-ip-allowlist", "Settings > Security > IP allowlist", 0, 2,
+     "An IP allowlist is configured at "
+     "https://platform.openai.com/settings/organization/security/ip-allowlist "
+     "and accepts addresses or CIDR ranges."),
     # ---------------- workspace agents ----------------
     ("C-WA-TRIGGER-ROUTE", "wa-trigger-runs", "POST https://api.chatgpt.com/v1/workspace_agents/{id}/trigger", 0, 1,
      "A published ChatGPT workspace agent can be triggered from outside the UI "

@@ -1,0 +1,18 @@
+=== ACTIVATION COMMAND TESTS ===
+-- run at: 2026-08-22T20:44:55Z
+-- keys used: SYNTHETIC AND INVALID. No real credential exists in this runtime.
+
+--- OA-3 command, synthetic invalid key ---
+http_status=401
+result: FAILED  error_type: invalid_request_error  code: invalid_api_key
+
+--- OA-3 guard, variable unset (curl must not run) ---
+bash: line 1: OPENAI_API_KEY: OPENAI_API_KEY is not set in this environment
+exit=127
+
+--- OA-8 probe, synthetic invalid token ---
+http_status=401
+error_code: invalid_api_key | type: invalid_request_error
+
+--- credential-shaped strings present in this receipt? ---
+matches_in_receipt=0

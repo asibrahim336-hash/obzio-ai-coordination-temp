@@ -2,7 +2,7 @@
   "artifact_id": "OE-L5-OPENAI-SURFACE-EVIDENCE-20260822-v001",
   "lane": "OE-L5-CHATGPT-SCALE",
   "commission": "COM-CUR-ENV-01-20260822-v001",
-  "built_at_utc": "2026-08-22T20:39:50Z",
+  "built_at_utc": "2026-08-22T20:42:59Z",
   "how_to_reproduce": [
     "python3 scripts/harvest_openai_docs.py --out DOCS --log LOG",
     "python3 scripts/build_surface_evidence.py --docs DOCS --log LOG --out THIS_FILE"
@@ -28,9 +28,12 @@
     "conversations-create",
     "conversations-delete",
     "conversations-retrieve",
+    "guide-admin-apis",
     "guide-background",
     "guide-batch",
     "guide-function-calling",
+    "guide-ip-allowlist",
+    "guide-production-best-practices",
     "guide-rbac",
     "guide-spend-limits",
     "guide-structured-outputs",
@@ -43,7 +46,7 @@
     "webhooks-overview",
     "webhooks-unwrap"
   ],
-  "claim_count": 58,
+  "claim_count": 62,
   "sources": {
     "batches-create": {
       "url": "https://developers.openai.com/api/reference/resources/batches/methods/create.md",
@@ -1013,6 +1016,50 @@
       "fetched_at_utc": "2026-08-22T20:36:46Z",
       "matched_at_line": 35,
       "verbatim_excerpt": "1. Go to [Organization limits](https://platform.openai.com/settings/organization/limits).\n2. In **Spend**, select **Edit spend limit**.\n3. Enter the **Monthly spend limit**.\n4. To make API responses fail after the organization reaches the limit, turn on **Enforce a hard limit**."
+    },
+    {
+      "claim_id": "C-LOC-API-KEYS",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "claim": "API keys are retrieved and created at https://platform.openai.com/settings/organization/api-keys",
+      "source_id": "guide-production-best-practices",
+      "source_url": "https://developers.openai.com/api/docs/guides/production-best-practices.md",
+      "source_sha256": "c895ef69135f86eb4ba1d10533338827776cf743c6f07499d6c96917c40a48d6",
+      "fetched_at_utc": "2026-08-22T20:36:46Z",
+      "matched_at_line": 47,
+      "verbatim_excerpt": "The OpenAI API uses API keys for authentication. Visit your [API keys](https://platform.openai.com/settings/organization/api-keys) page to retrieve the API key you'll use in your requests."
+    },
+    {
+      "claim_id": "C-LOC-ADMIN-KEYS",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "claim": "Admin API keys are created at https://platform.openai.com/settings/organization/admin-keys and cannot be used for non-administration endpoints.",
+      "source_id": "guide-admin-apis",
+      "source_url": "https://developers.openai.com/api/docs/guides/admin-apis.md",
+      "source_sha256": "8abf6a2065d6ebebcdc1a995c0770e44fa4e608cc99d86307e59858923811dd8",
+      "fetched_at_utc": "2026-08-22T20:36:45Z",
+      "matched_at_line": 11,
+      "verbatim_excerpt": "To access these endpoints, [create an Admin API key](https://platform.openai.com/settings/organization/admin-keys). Admin API keys cannot be used for non-administration endpoints."
+    },
+    {
+      "claim_id": "C-LOC-WEBHOOKS",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "claim": "Webhook endpoints are created at https://platform.openai.com/settings/project/webhooks and are configured per project.",
+      "source_id": "guide-webhooks",
+      "source_url": "https://developers.openai.com/api/docs/guides/webhooks.md",
+      "source_sha256": "c647843e21c03cd1db2ae64aa08325781df71148e48ac9e2e2212c93a7a549ab",
+      "fetched_at_utc": "2026-08-22T20:36:46Z",
+      "matched_at_line": 197,
+      "verbatim_excerpt": "To start receiving webhook requests on your server, log in to the dashboard and [open the webhook settings page](https://platform.openai.com/settings/project/webhooks). Webhooks are configured per-project.\n\nClick the \"Create\" button to create a new webhook endpoint. You will configure three things:"
+    },
+    {
+      "claim_id": "C-LOC-IP-ALLOWLIST",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "claim": "An IP allowlist is configured at https://platform.openai.com/settings/organization/security/ip-allowlist and accepts addresses or CIDR ranges.",
+      "source_id": "guide-ip-allowlist",
+      "source_url": "https://developers.openai.com/api/docs/guides/ip-allowlist.md",
+      "source_sha256": "c7b103aeb5f61b9cda8667e19907e8eef53e33dc7a1a487a34986dec84302def",
+      "fetched_at_utc": "2026-08-22T20:36:46Z",
+      "matched_at_line": 25,
+      "verbatim_excerpt": "1. Open [Settings > Security > IP allowlist](https://platform.openai.com/settings/organization/security/ip-allowlist).\n2. Add the individual IP addresses or CIDR ranges that you want to allow. For example, use `203.0.113.10` for one address or `203.0.113.0/24` for a range.\n3. Optionally, use the **Check** tool to confirm that the allowlist includes a specific IP address."
     },
     {
       "claim_id": "C-WA-TRIGGER-ROUTE",
