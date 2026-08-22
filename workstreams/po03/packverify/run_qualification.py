@@ -217,7 +217,7 @@ def run(
             "producer_narrative_used_as_evidence": False,
         },
         "generation_command": (
-            "python3 -I -m workstreams.po03.packverify.run_qualification "
+            "python3 -I workstreams/po03/packverify/run_qualification.py "
             "--repository . "
             "--source-lock workstreams/po03/evidence/source-lock.json "
             "--criteria workstreams/po03/evidence/criteria-freeze.json "

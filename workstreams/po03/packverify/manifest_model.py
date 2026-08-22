@@ -7,7 +7,10 @@ from dataclasses import dataclass
 from pathlib import PurePosixPath
 from typing import Iterable, Mapping
 
-from .git_tree import GitTree
+try:
+    from .git_tree import GitTree
+except ImportError:  # pragma: no cover - direct command entry point
+    from git_tree import GitTree
 
 
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
