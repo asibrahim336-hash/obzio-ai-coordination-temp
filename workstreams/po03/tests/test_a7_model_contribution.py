@@ -34,7 +34,9 @@ REPORT_PATH = REPO_ROOT / "workstreams/po03/metrics/model-contribution-report.js
 RUNS_PATH = REPO_ROOT / "workstreams/po03/metrics/work-unit-runs.jsonl"
 REGISTER_PATH = REPO_ROOT / "workstreams/po03/control/model-capability-register.json"
 
-PIN_COMMIT = "79453a7033d34cf7cfbbe3e64f4fab6ed1bbd34e"
+# Superseded 79453a7033d34cf7cfbbe3e64f4fab6ed1bbd34e (345-row ledger) once
+# the coordinator's ledger grew again, to 418 rows, between sessions.
+PIN_COMMIT = "e92e6a78d086628ceedda67b43e07ee33bdc0abf"
 REQUIRED_RELATIVE_PATHS = [
     "workstreams/po03/metrics/work-unit-runs.jsonl",
     "workstreams/po03/control/model-capability-register.json",

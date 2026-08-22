@@ -35,13 +35,14 @@ REPORT_PATH = REPO_ROOT / "workstreams/po03/metrics/metrics-report.json"
 
 # The commit at which this cohort's own tools last regenerated
 # metrics-report.json in lock-step with work-unit-runs.jsonl and the ledger.
-# Its ledger state (345 rows, ledger_head_sha256 c89f8b9f...) is exactly what
+# Its ledger state (418 rows, ledger_head_sha256 d2f6e3eb...) is exactly what
 # the currently committed report's own "measured_against" field records; see
 # test_pin_commit_ledger_state_matches_the_committed_measured_against below.
-# Superseded an earlier pin, dae059819d845c25dfc22ea7031c0988b07db23d (319
-# rows), once the coordinator's ledger grew to 345 rows between sessions --
-# the exact class of live-state drift this pinning scheme exists to survive.
-PIN_COMMIT = "79453a7033d34cf7cfbbe3e64f4fab6ed1bbd34e"
+# Superseded two earlier pins -- dae059819d845c25dfc22ea7031c0988b07db23d
+# (319 rows) and 79453a7033d34cf7cfbbe3e64f4fab6ed1bbd34e (345 rows) -- as
+# the coordinator's ledger kept growing between sessions, the exact class of
+# live-state drift this pinning scheme exists to survive.
+PIN_COMMIT = "e92e6a78d086628ceedda67b43e07ee33bdc0abf"
 
 # Every relative path compute_metrics.compute() reads, so the materialised
 # snapshot is a faithful, self-contained reproduction of the pin -- including
@@ -141,10 +142,10 @@ class TestComputeMetrics(unittest.TestCase):
         thing without anyone noticing."""
         pinned = _compute_at_pin()
         self.assertEqual(pinned["measured_against"], self.report["measured_against"])
-        self.assertEqual(self.report["measured_against"]["ledger_rows"], 345)
+        self.assertEqual(self.report["measured_against"]["ledger_rows"], 418)
         self.assertEqual(
             self.report["measured_against"]["ledger_head_sha256"],
-            "c89f8b9f4ee6f223efe299287d9549773b5d1735963bed47a211d67cb89bbf09",
+            "d2f6e3ebe25ca8c14d56eb9a8f48143e17c3d9ba3a5feedf306d9bdea11ef898",
         )
 
     def test_recomputation_matches_committed_report_at_the_recorded_pin(self):
