@@ -26,11 +26,17 @@ import hashlib
 import json
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+
+_ATTACKS_DIR = REPO_ROOT / "workstreams" / "po03" / "review" / "sonnet" / "attacks"
+sys.path.insert(0, str(_ATTACKS_DIR))
+
+from scratch_control_plane import ScratchControlPlane, sha256_bytes  # noqa: E402
 
 # cursor/po03-a9-strategy-discovery-ed20 head at a10-u04 scoring time (2026-08-22).
 # Pinned by SHA, not branch name, so this case stays reproducible even after a9's
@@ -260,6 +266,149 @@ class A9IndependentReproductionTests(unittest.TestCase):
             )
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertIn("OPERATOR TAXONOMY CHECK: PASS", result.stdout)
+
+
+class A6HiddenCasesH03ToH05CliLevelRetest(unittest.TestCase):
+    """Re-tests a6's H03-H05 hidden cases (workstreams/po03/review/luna/hidden-
+    cases/cases.json, exercised by workstreams/po03/tests/test_a6_hidden_cases.py)
+    at the real control_plane.py CLI / `ingest` subprocess level, rather than by
+    calling `validate_result()` directly on a hand-built document as a6's own
+    fixture does. This reviewer's original a10-u03/a10-u04 work
+    (defect-profile-comparison-a6.json) recorded these three as
+    "NOT_YET/out-of-scope for this comparison, not as confirmed or refuted" --
+    the coordinator asked for a re-tested verdict, which each case below now
+    gives against a real, isolated scratch repository (ScratchControlPlane),
+    with a real committed artifact on disk for every case, exactly mirroring
+    each hidden case's `input_mutation`.
+
+    Verdict for all three: HELD at the CLI level too, and for a traceable
+    reason -- `ingest_result`'s very first step, before any git/filesystem
+    I/O, is calling the identical `validate_result()` schema check a6's own
+    hidden cases call directly (see control_plane.py's `ingest_result`,
+    `validator.validate_result(result_doc)`). A rejection a6 observed at the
+    schema layer is therefore necessarily also a rejection at the real
+    ingestion boundary, because nothing downstream of schema validation in
+    `ingest_result` ever re-derives or overrides artifact_count, total_bytes,
+    duplicate-artifact-id, or readback_verified_at. This is a genuine,
+    narrower finding than H01/H02/H06 (where this reviewer found a real or
+    boundary-level CLI-reachable gap adjacent to what the schema enforces):
+    for H03-H05 specifically, a6's schema-only methodology and the real CLI
+    give the same answer.
+    """
+
+    def _scratch(self, tmp: Path) -> ScratchControlPlane:
+        scp = ScratchControlPlane(tmp)
+        scp.write_ownership(
+            {"attacker": {"owned_prefixes": ["workstreams/po03/control/units/attacker/"]}}
+        )
+        return scp
+
+    def test_h03_terminal_without_readback_held_at_cli_level(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="a10-h03-") as tmp:
+            scp = self._scratch(Path(tmp))
+            dispatch = scp.create_unit("h03-u1", "attacker", ["workstreams/po03/control/units/attacker/"])
+            lease = scp.lease("h03-u1", "attacker")
+            content = b'{"h03": "readback-missing"}'
+            scp.write_file_at("workstreams/po03/control/units/attacker/h03.json", content)
+            doc = scp.build_result_doc(
+                dispatch,
+                fence_token=lease["fence_token"],
+                artifacts=[
+                    {
+                        "artifact_id": "a1",
+                        "logical_name": "h03",
+                        "content_uri": "workstreams/po03/control/units/attacker/h03.json",
+                        "sha256": sha256_bytes(content),
+                        "bytes": len(content),
+                    }
+                ],
+                obzio_state="RESULT_COMMITTED",
+            )
+            # a6's H03 input_mutation: artifacts[0].readback_verified_at -> null
+            # on an otherwise-committed result.
+            doc["artifacts"][0]["readback_verified_at"] = None
+            outcome = scp.ingest(doc, tag="h03")
+            self.assertNotEqual(
+                outcome.returncode,
+                0,
+                "H03 must also be rejected at the real ingest_result CLI boundary; "
+                f"got: {outcome.stdout} {outcome.stderr}",
+            )
+            self.assertIn("readback_verified_at", outcome.stdout + outcome.stderr)
+
+    def test_h04_accounting_drift_held_at_cli_level(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="a10-h04-") as tmp:
+            scp = self._scratch(Path(tmp))
+            dispatch = scp.create_unit("h04-u1", "attacker", ["workstreams/po03/control/units/attacker/"])
+            lease = scp.lease("h04-u1", "attacker")
+            content = b'{"h04": "accounting-drift"}'
+            scp.write_file_at("workstreams/po03/control/units/attacker/h04.json", content)
+            doc = scp.build_result_doc(
+                dispatch,
+                fence_token=lease["fence_token"],
+                artifacts=[
+                    {
+                        "artifact_id": "a1",
+                        "logical_name": "h04",
+                        "content_uri": "workstreams/po03/control/units/attacker/h04.json",
+                        "sha256": sha256_bytes(content),
+                        "bytes": len(content),
+                    }
+                ],
+                obzio_state="RESULT_COMMITTED",
+            )
+            # a6's H04 input_mutation: result_transaction.total_bytes no longer
+            # matches the artifacts actually declared.
+            doc["result_transaction"]["total_bytes"] = 999
+            outcome = scp.ingest(doc, tag="h04")
+            self.assertNotEqual(
+                outcome.returncode,
+                0,
+                "H04 must also be rejected at the real ingest_result CLI boundary; "
+                f"got: {outcome.stdout} {outcome.stderr}",
+            )
+            self.assertIn("total_bytes", outcome.stdout + outcome.stderr)
+
+    def test_h05_duplicate_artifact_id_held_at_cli_level(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="a10-h05-") as tmp:
+            scp = self._scratch(Path(tmp))
+            dispatch = scp.create_unit("h05-u1", "attacker", ["workstreams/po03/control/units/attacker/"])
+            lease = scp.lease("h05-u1", "attacker")
+            content_a = b'{"h05": "first"}'
+            content_b = b'{"h05": "second, shares artifact_id with first"}'
+            scp.write_file_at("workstreams/po03/control/units/attacker/h05-a.json", content_a)
+            scp.write_file_at("workstreams/po03/control/units/attacker/h05-b.json", content_b)
+            doc = scp.build_result_doc(
+                dispatch,
+                fence_token=lease["fence_token"],
+                artifacts=[
+                    {
+                        "artifact_id": "art-1",
+                        "logical_name": "h05-a",
+                        "content_uri": "workstreams/po03/control/units/attacker/h05-a.json",
+                        "sha256": sha256_bytes(content_a),
+                        "bytes": len(content_a),
+                    },
+                    {
+                        # a6's H05 input_mutation: artifacts[1].artifact_id set to
+                        # the same value as artifacts[0].artifact_id.
+                        "artifact_id": "art-1",
+                        "logical_name": "h05-b",
+                        "content_uri": "workstreams/po03/control/units/attacker/h05-b.json",
+                        "sha256": sha256_bytes(content_b),
+                        "bytes": len(content_b),
+                    },
+                ],
+                obzio_state="RESULT_COMMITTED",
+            )
+            outcome = scp.ingest(doc, tag="h05")
+            self.assertNotEqual(
+                outcome.returncode,
+                0,
+                "H05 must also be rejected at the real ingest_result CLI boundary; "
+                f"got: {outcome.stdout} {outcome.stderr}",
+            )
+            self.assertIn("duplicate", outcome.stdout + outcome.stderr)
 
 
 class MakeResultSelfLocatorGapTests(unittest.TestCase):
