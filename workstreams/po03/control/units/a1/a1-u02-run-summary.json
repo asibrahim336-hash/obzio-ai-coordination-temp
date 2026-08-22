@@ -1,0 +1,42 @@
+{
+  "assertion": "3x replay incl. concurrent and crash-interleaved yields exactly one external effect and two DUPLICATE_IGNORED ledger observations",
+  "command": [
+    "python3",
+    "-I",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "workstreams/po03/tests",
+    "-p",
+    "test_a1_outbox.py",
+    "-v"
+  ],
+  "command_string": "python3 -I -m unittest discover -s workstreams/po03/tests -p test_a1_outbox.py -v",
+  "cwd": "<repository root>",
+  "exit_code": 0,
+  "recorded_at": "2026-08-22T07:24:59Z",
+  "runtime_binding": {
+    "isolated_mode": true,
+    "platform": "Linux-6.12.94+-x86_64-with-glibc2.39",
+    "python_implementation": "CPython",
+    "python_version": "3.12.3",
+    "third_party_imports": []
+  },
+  "stderr": {
+    "bytes": 1858,
+    "sha256": "f0b696139f42b8f4c4b84652d4da1b8b5b4b3bbcdb5fcd62fef0d0913d4ac9b1",
+    "text": "test_concurrent_replays_leave_a_verifiable_ledger (test_a1_outbox.ConcurrentReplayTests.test_concurrent_replays_leave_a_verifiable_ledger) ... ok\ntest_three_concurrent_replays_produce_one_effect (test_a1_outbox.ConcurrentReplayTests.test_three_concurrent_replays_produce_one_effect) ... ok\ntest_crash_after_claim_before_effect_is_resolved_by_redrive (test_a1_outbox.InterleavedCrashReplayTests.test_crash_after_claim_before_effect_is_resolved_by_redrive) ... ok\ntest_crash_after_effect_before_mark_does_not_duplicate_the_effect (test_a1_outbox.InterleavedCrashReplayTests.test_crash_after_effect_before_mark_does_not_duplicate_the_effect) ... ok\ntest_lost_return_message_is_recovered_by_the_scanner (test_a1_outbox.InterleavedCrashReplayTests.test_lost_return_message_is_recovered_by_the_scanner)\nA delivery that never reported back is still exactly-once. ... ok\ntest_sink_without_exclusive_create_overwrites (test_a1_outbox.NegativeControlTests.test_sink_without_exclusive_create_overwrites) ... ok\ntest_unguarded_delivery_produces_three_effects (test_a1_outbox.NegativeControlTests.test_unguarded_delivery_produces_three_effects) ... ok\ntest_duplicate_is_never_dropped_without_a_ledger_observation (test_a1_outbox.SequentialReplayTests.test_duplicate_is_never_dropped_without_a_ledger_observation) ... ok\ntest_effect_bytes_are_written_once_and_not_rewritten (test_a1_outbox.SequentialReplayTests.test_effect_bytes_are_written_once_and_not_rewritten) ... ok\ntest_record_id_cannot_be_reused_for_a_different_effect (test_a1_outbox.SequentialReplayTests.test_record_id_cannot_be_reused_for_a_different_effect) ... ok\ntest_three_sequential_replays_produce_one_effect (test_a1_outbox.SequentialReplayTests.test_three_sequential_replays_produce_one_effect) ... ok\n\n----------------------------------------------------------------------\nRan 11 tests in 0.133s\n\nOK\n",
+    "truncated": false
+  },
+  "stdout": {
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "text": "",
+    "truncated": false
+  },
+  "unit_id": "a1-u02",
+  "verdict": "PASS",
+  "wall_seconds": 0.353,
+  "worker_id": "po03-worker-a1"
+}
