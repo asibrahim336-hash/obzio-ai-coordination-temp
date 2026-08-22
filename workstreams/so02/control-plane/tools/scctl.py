@@ -61,7 +61,7 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
             "control_plane_id", "revision", "strategy_snapshot_id", "decision_changed",
             "migration_state", "active_primary", "canonical_store", "runtime_bindings",
             "protected_workstreams", "cutover_gates", "cutover_evidence",
-            "current_founder_actions", "global_pointer_state"
+            "current_founder_actions", "global_pointer_state", "multi_parent_execution_contract"
         ],
         "control-plane"
     )
@@ -72,6 +72,42 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
     add(errors, store.get("kind") == "git_repository", "control-plane: canonical store must be Git")
     add(errors, store.get("provider_memory_is_canonical") is False, "control-plane: provider memory cannot be canonical")
     add(errors, store.get("branch") == "so02/strategic-control-plane-migration-20260822-v001", "control-plane: unexpected branch")
+
+    multi_parent = data.get("multi_parent_execution_contract", {})
+    require_keys(
+        errors,
+        multi_parent,
+        [
+            "state", "topology", "root_shared_writer_count", "parent_registration_required",
+            "declared_parent_denominator_required", "isolated_parent_branch_and_namespace_required",
+            "nested_lineage_fields", "candidate_integration_requires_remote_readback",
+            "candidate_integration_requires_independent_criteria",
+            "founder_is_comparison_retrieval_or_merge_layer", "failure_mode_without_single_writer"
+        ],
+        "multi-parent-contract"
+    )
+    add(
+        errors,
+        multi_parent.get("state") in {"UNIT_TESTED_NOT_LIVE", "LIVE_CANARY", "OPERATIONAL", "INDEPENDENTLY_ACCEPTED"},
+        "multi-parent-contract: invalid maturity state"
+    )
+    add(errors, multi_parent.get("root_shared_writer_count") == 1, "multi-parent-contract: exactly one shared-state writer required")
+    add(errors, multi_parent.get("parent_registration_required") is True, "multi-parent-contract: parent registration must be required")
+    add(errors, multi_parent.get("declared_parent_denominator_required") is True, "multi-parent-contract: parent denominator must be declared")
+    add(errors, multi_parent.get("isolated_parent_branch_and_namespace_required") is True, "multi-parent-contract: isolated parent branches and namespaces required")
+    required_lineage = {
+        "group_run_id", "parent_id", "work_unit_id", "attempt_id",
+        "exact_model_configuration", "owned_paths", "result_transaction_id"
+    }
+    add(errors, set(multi_parent.get("nested_lineage_fields", [])) == required_lineage, "multi-parent-contract: nested lineage denominator mismatch")
+    add(errors, multi_parent.get("candidate_integration_requires_remote_readback") is True, "multi-parent-contract: integration requires remote read-back")
+    add(errors, multi_parent.get("candidate_integration_requires_independent_criteria") is True, "multi-parent-contract: integration requires independent criteria")
+    add(errors, multi_parent.get("founder_is_comparison_retrieval_or_merge_layer") is False, "multi-parent-contract: founder cannot be the candidate comparison, retrieval or merge layer")
+    add(
+        errors,
+        multi_parent.get("failure_mode_without_single_writer") == "ISOLATED_WORK_CONTINUES_SHARED_WRITES_FAIL_CLOSED",
+        "multi-parent-contract: unsafe no-writer failure mode"
+    )
 
     pointer = data.get("global_pointer_state", {})
     add(errors, pointer.get("state") == "RECONCILIATION_PENDING", "control-plane: global pointer conflict must remain explicit")
@@ -156,8 +192,23 @@ def validate_controls(data: dict[str, Any], errors: list[str]) -> None:
     add(errors, len(controls) >= 13, "controls: known error denominator incomplete")
     add(errors, len(ids) == len(set(ids)), "controls: duplicate error id")
     for control in controls:
-        for key in ("failure", "live_mechanism", "executable_check", "owner"):
+        for key in ("failure", "live_mechanism", "executable_check", "owner", "mechanism_maturity"):
             add(errors, bool(control.get(key)), f"control {control.get('error_id')}: missing {key}")
+        add(
+            errors,
+            control.get("mechanism_maturity") in {"SPECIFIED_NOT_OPERATIONAL", "UNIT_TESTED_NOT_LIVE", "LIVE_CANARY", "OPERATIONAL", "INDEPENDENTLY_ACCEPTED"},
+            f"control {control.get('error_id')}: invalid mechanism maturity"
+        )
+
+
+def validate_instruction_contracts(root: Path, errors: list[str]) -> None:
+    commission = (root / "commissions/CURSOR-SCP-01.md").read_text(encoding="utf-8")
+    launch = (root / "launch/CURSOR-LAUNCH-NOW.md").read_text(encoding="utf-8")
+    add(errors, "receipts/so02/**" in commission, "cursor commission: receipt allowlist missing")
+    add(errors, "receipts/workstreams/so02/control-plane/**" not in commission, "cursor commission: obsolete receipt allowlist present")
+    add(errors, "Multiple Agents" in launch, "cursor launch: multi-agent mode not explicit")
+    add(errors, "only writer of shared projections" in launch, "cursor launch: root single-writer rule missing")
+    add(errors, "group→parent→child→attempt" in launch, "cursor launch: nested lineage reconciliation missing")
 
 
 def validate_events(events: list[dict[str, Any]], errors: list[str]) -> None:
@@ -203,6 +254,7 @@ def validate(root: Path = ROOT) -> list[str]:
     validate_plan(plan, errors)
     validate_controls(controls, errors)
     validate_events(events, errors)
+    validate_instruction_contracts(root, errors)
     return errors
 
 
