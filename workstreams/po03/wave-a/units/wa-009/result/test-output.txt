@@ -1,0 +1,62 @@
+PO03-WA-009-A02 executed test output
+controller base: affc82b35e6205010fda90f9914a97e467294a44
+mechanism/clean-clone commit: 8914a4bb2ebe51324e4a8dabd9d36cabe890b4d9
+
+$ PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s workstreams/po03/wave-a/units/wa-009/tests -v
+test_build_admits_exact_sources_and_excludes_unrelated_file ... ok
+test_cli_rejection_is_machine_readable ... ok
+test_cli_success_is_machine_readable ... ok
+test_committed_reproduction_matches_fresh_build ... ok
+test_critical_flag_requires_required_source_declaration ... ok
+test_directory_cannot_be_admitted_as_source ... ok
+test_disallowed_relevance_tag_is_rejected ... ok
+test_duplicate_source_is_rejected ... ok
+test_each_source_requires_relevance_tags ... ok
+test_empty_relevance_rationale_is_rejected ... ok
+test_exact_byte_budget_is_admitted ... ok
+test_existing_output_is_never_overwritten ... ok
+test_explicit_omitted_critical_fixture_is_rejected ... ok
+test_explicit_over_byte_budget_fixture_is_rejected ... ok
+test_malformed_request_json_is_rejected ... ok
+test_manifest_accounts_hashes_bytes_critical_set_and_budgets ... ok
+test_missing_output_parent_is_rejected_without_creation ... ok
+test_missing_source_is_rejected ... ok
+test_noncanonical_and_escaping_paths_are_rejected ... ok
+test_repeated_builds_are_byte_identical ... ok
+test_repository_recurrence_entrypoint ... ok
+test_required_source_must_be_marked_critical ... ok
+test_semantically_equivalent_source_order_has_same_manifest ... ok
+test_source_claim_compiler_reads_immutable_base ... ok
+test_source_count_budget_is_enforced_before_output ... ok
+test_source_hash_mismatch_is_rejected ... ok
+test_source_snapshot_mismatch_is_rejected ... ok
+test_symlink_source_is_rejected ... ok
+test_unexpected_request_field_is_rejected ... ok
+Ran 29 tests in 0.770s
+OK
+
+$ PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s workstreams/po03/tests -p test_validate_contracts.py -v
+Ran 23 tests in 0.001s
+OK
+
+$ python3 workstreams/po03/wave-a/units/wa-009/verify_recurrence.py --repo-root .
+{"deterministic_rebuilds": 2, "manifest_sha256": "930559bf21abc8bbc387bada3f874b626741a59f248517007bdef2d7ea299bac", "negative_fixtures": [{"error_code": "BYTE_BUDGET_EXCEEDED", "fixture": "over-byte-budget.json"}, {"error_code": "MISSING_CRITICAL_SOURCE", "fixture": "omitted-critical-source.json"}], "protocol_version": "OBZIO-SOURCE-CAPSULE-RECURRENCE-v1", "source_bytes": 121, "source_count": 2, "status": "PASS", "task_id": "PO03-WA-009"}
+
+$ python3 scripts/check_operator_taxonomy.py
+OPERATOR TAXONOMY CHECK: PASS
+active function: obzio.function.strategic-operations-orchestration
+active appointment: obzio.appointment.strategic-operations-orchestration.20260819.001
+classified aliases: 9
+
+Fresh remote clone recurrence:
+- remote commit equals 8914a4bb2ebe51324e4a8dabd9d36cabe890b4d9
+- focused tests: 29 passed, 0 failed
+- seeded tests: 23 passed, 0 failed
+- deterministic rebuilds: 2 matched
+- negative fixtures: 2 rejected with expected codes
+- taxonomy: PASS
+
+Initial clean-clone harness invocation:
+- FAIL before tests because the manually entered expected commit was mistyped
+- repaired by immutable local/remote readback
+- all commands then reran from the already-fresh clone and passed
