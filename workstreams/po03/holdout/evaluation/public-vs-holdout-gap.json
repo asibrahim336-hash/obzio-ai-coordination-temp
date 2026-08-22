@@ -1,0 +1,118 @@
+{
+  "protocol_version": "OBZIO-PO03-PUBLIC-HOLDOUT-GAP-v1",
+  "suite_id": "PO03-A13-HOLDOUT-20260822-v001",
+  "hypothesis": "G2's perfect public-suite score reflects suite-specific optimisation rather than general capability, and the evaluator-held holdout will show a materially lower score.",
+  "gap_definition": "recorded public score minus executed frozen a13 holdout score; positive values mean public performance is higher",
+  "provenance": {
+    "public_scores": {
+      "commit": "bb7c24e947eabfdea8761e4d2dfdd6c8966185a4",
+      "path": "workstreams/po03/successor/scores/generation-comparison.json",
+      "git_blob": "cb06354621e5f71db791d52566923b471ab61320",
+      "sha256": "72d1b79b21e1c3cace823da242aeb00e704eee2facb1a45408b1daf673f46d35"
+    },
+    "public_suite": {
+      "commit": "bb7c24e947eabfdea8761e4d2dfdd6c8966185a4",
+      "path": "workstreams/po03/successor/suite/public/cases.json",
+      "git_blob": "78e2c4d02f48d44ddf2a57c43773376c8d395e2d",
+      "sha256": "a370e60300678e234cbfc7751ed0739a7a5ae82de7024f9027b5ccc451eeaa10"
+    },
+    "holdout_scores": {
+      "commit": "9af79080364be95c24d4884c8108d8d9f54755ce",
+      "path": "workstreams/po03/holdout/evaluation/holdout-scores.json",
+      "sha256": "a68f986e34ee597ad4ea1a7378d8028330a6afe690e7021d6ed0b53021e52980"
+    }
+  },
+  "generations": {
+    "G0": {
+      "public": {
+        "cases_passed": 3,
+        "cases_total": 31,
+        "pass_rate": 0.0968,
+        "critical_passed": 0,
+        "critical_total": 23,
+        "critical_pass_rate": 0.0,
+        "false_completion_count": 3,
+        "unsupported_case_count": 24
+      },
+      "holdout": {
+        "cases_passed": 2,
+        "cases_total": 32,
+        "pass_rate": 0.0625,
+        "critical_passed": 2,
+        "critical_total": 31,
+        "critical_pass_rate": 0.06451612903225806,
+        "observed_executed_false_completion_count": 0,
+        "global_false_completion_count": "NOT_SUPPORTED",
+        "unsupported_case_count": 28
+      },
+      "public_minus_holdout_pass_rate": 0.0343,
+      "public_minus_holdout_critical_pass_rate": -0.0645,
+      "holdout_to_public_pass_rate_ratio": 0.6457,
+      "interpretation": "No meaningful generalisation conclusion is available: only four holdout cases executed and 28 were NOT_SUPPORTED."
+    },
+    "G1": {
+      "public": {
+        "cases_passed": 21,
+        "cases_total": 31,
+        "pass_rate": 0.6774,
+        "critical_passed": 14,
+        "critical_total": 23,
+        "critical_pass_rate": 0.6087,
+        "false_completion_count": 1,
+        "unsupported_case_count": 0
+      },
+      "holdout": {
+        "cases_passed": 3,
+        "cases_total": 32,
+        "pass_rate": 0.09375,
+        "critical_passed": 3,
+        "critical_total": 31,
+        "critical_pass_rate": 0.0967741935483871,
+        "observed_executed_false_completion_count": 1,
+        "global_false_completion_count": "NOT_SUPPORTED",
+        "unsupported_case_count": 16
+      },
+      "public_minus_holdout_pass_rate": 0.5837,
+      "public_minus_holdout_critical_pass_rate": 0.5119,
+      "holdout_to_public_pass_rate_ratio": 0.1384,
+      "interpretation": "The large positive gaps and 16 unsupported cases show that public coverage substantially overstates behavior on evaluator-held combinations and boundaries."
+    },
+    "G2": {
+      "public": {
+        "cases_passed": 31,
+        "cases_total": 31,
+        "pass_rate": 1.0,
+        "critical_passed": 23,
+        "critical_total": 23,
+        "critical_pass_rate": 1.0,
+        "false_completion_count": 0,
+        "unsupported_case_count": 0
+      },
+      "holdout": {
+        "cases_passed": 10,
+        "cases_total": 32,
+        "pass_rate": 0.3125,
+        "critical_passed": 10,
+        "critical_total": 31,
+        "critical_pass_rate": 0.3225806451612903,
+        "observed_executed_false_completion_count": 0,
+        "global_false_completion_count": "NOT_SUPPORTED",
+        "unsupported_case_count": 16
+      },
+      "public_minus_holdout_pass_rate": 0.6875,
+      "public_minus_holdout_critical_pass_rate": 0.6774,
+      "holdout_to_public_pass_rate_ratio": 0.3125,
+      "interpretation": "G2 does not generalise close to its perfect public score: 22 of 32 cases are non-passes, including six executed failures and sixteen exact NOT_SUPPORTED boundaries. The suite-specific-optimisation hypothesis is supported, not falsified."
+    }
+  },
+  "positive_result": {
+    "finding": "G2 still shows real measured improvement on unseen cases.",
+    "G2_minus_G1_holdout_pass_rate": 0.21875,
+    "G2_minus_G1_holdout_critical_pass_rate": 0.2258064516129032,
+    "G1_passed_cases_lost_by_G2": [],
+    "interpretation": "The result is not merely public-suite memorisation: G2 gains seven holdout cases and preserves every G1 holdout pass. That positive lift coexists with, and does not erase, the much larger absolute public-to-holdout gap."
+  },
+  "hypothesis_disposition": "SUPPORTED",
+  "basis": "Executed scores, frozen request hashes and transcripts only. Source inspection was used to author evaluator adapters after freeze, not to decide case outcomes.",
+  "decision_changed": []
+}

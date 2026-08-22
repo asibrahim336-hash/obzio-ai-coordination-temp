@@ -27,6 +27,7 @@ class A13HoldoutEvaluationTests(unittest.TestCase):
         cls.scores = read_json(EVALUATION / "holdout-scores.json")
         cls.blinding = read_json(EVALUATION / "blinding-map.json")
         cls.novelty = read_json(EVALUATION / "novelty-audit.json")
+        cls.gaps = read_json(EVALUATION / "public-vs-holdout-gap.json")
         cls.transcripts = {
             generation: read_json(ROOT / record["transcript"])
             for generation, record in cls.scores["scores"].items()
@@ -142,6 +143,32 @@ class A13HoldoutEvaluationTests(unittest.TestCase):
             case = next(case for case in transcript["cases"] if case["case_id"] == "H26")
             with self.subTest(generation=generation):
                 self.assertEqual("PASS", case["status"])
+
+    def test_public_minus_holdout_gaps_recompute(self) -> None:
+        for generation, row in self.gaps["generations"].items():
+            public = row["public"]
+            holdout = row["holdout"]
+            with self.subTest(generation=generation):
+                self.assertAlmostEqual(
+                    row["public_minus_holdout_pass_rate"],
+                    public["pass_rate"] - holdout["pass_rate"],
+                    places=4,
+                )
+                self.assertAlmostEqual(
+                    row["public_minus_holdout_critical_pass_rate"],
+                    public["critical_pass_rate"] - holdout["critical_pass_rate"],
+                    places=4,
+                )
+        self.assertEqual(
+            0.6875,
+            self.gaps["generations"]["G2"]["public_minus_holdout_pass_rate"],
+        )
+        self.assertEqual("SUPPORTED", self.gaps["hypothesis_disposition"])
+
+    def test_gap_analysis_reports_positive_holdout_lift_too(self) -> None:
+        positive = self.gaps["positive_result"]
+        self.assertEqual(0.21875, positive["G2_minus_G1_holdout_pass_rate"])
+        self.assertEqual([], positive["G1_passed_cases_lost_by_G2"])
 
 
 if __name__ == "__main__":
