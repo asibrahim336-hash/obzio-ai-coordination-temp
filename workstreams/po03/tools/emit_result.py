@@ -121,12 +121,31 @@ def main(argv: list[str] | None = None) -> int:
     slot = capsule["ownership"]["result_slot"]
     transaction = capsule["transaction"]
 
+    # Measure the acceptance contract rather than transcribing the capsule's
+    # claim about it, so a divergence between the two is caught here instead of
+    # being carried forward as though it had been verified.
+    acceptance_path = capsule_path.parent / "acceptance.json"
+    recorded_acceptance = capsule["source_hashes"]["acceptance_contract_sha256"]
+    if acceptance_path.is_file():
+        measured_acceptance = sha256_bytes(acceptance_path.read_bytes())
+        if measured_acceptance != recorded_acceptance:
+            raise SystemExit(
+                f"{args.task_id}: acceptance contract hash mismatch; capsule records "
+                f"{recorded_acceptance}, file measures {measured_acceptance}"
+            )
+    else:
+        measured_acceptance = None
+
     all_committed = list_committed(repo, args.artifact_commit, slot)
     excluded_non_portable = sorted(path for path in all_committed if is_non_portable(path))
+    # Match the generated documents by their exact path, not by basename. A
+    # basename test skipped a real payload at <slot>/nested/manifest.json and
+    # left it uncounted while still exiting successfully.
+    generated_paths = {f"{slot}/{name}" for name in GENERATED}
     committed = [
         path
         for path in all_committed
-        if Path(path).name not in GENERATED and not is_non_portable(path)
+        if path not in generated_paths and not is_non_portable(path)
     ]
     if not committed:
         raise SystemExit(
@@ -186,7 +205,7 @@ def main(argv: list[str] | None = None) -> int:
         "task_id": args.task_id,
         "commission_id": COMMISSION_ID,
         "immutable_input_manifest_sha256": sha256_bytes(capsule_path.read_bytes()),
-        "acceptance_contract_sha256": capsule["source_hashes"]["acceptance_contract_sha256"],
+        "acceptance_contract_sha256": measured_acceptance or recorded_acceptance,
         "provider_state": "RUNNING",
         "obzio_state": "RESULT_COMMITTED",
         "attempt": {
