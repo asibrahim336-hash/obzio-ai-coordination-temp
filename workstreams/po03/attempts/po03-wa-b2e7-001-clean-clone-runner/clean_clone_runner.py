@@ -25,6 +25,7 @@ def clean_environment(runtime_directory: Path) -> dict[str, str]:
         "LANG": "C.UTF-8",
         "LC_ALL": "C.UTF-8",
         "PATH": os.environ.get("PATH", ""),
+        "PYTHONDONTWRITEBYTECODE": "1",
         "PYTHONHASHSEED": "0",
         "TMPDIR": str(runtime_directory),
     }
@@ -91,6 +92,7 @@ def run_clean_clone(
             outcome = command(
                 sys.executable,
                 "-I",
+                "-B",
                 relative,
                 cwd=destination,
                 env=environment,
