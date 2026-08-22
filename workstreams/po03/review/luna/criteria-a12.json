@@ -1,0 +1,52 @@
+{
+  "criteria_id": "po03-a6-a12-capsule-closure-v001",
+  "authored_by": "po03-worker-a6",
+  "authored_before_producer_read": true,
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "source_spec": "workstreams/po03/control/wave-a-capsule-spec.json",
+  "source_spec_sha256": "59d8578fd42c9a19e42e9ddc66215d3f67a3c49f8ae2719d0e7734d277fe04a0",
+  "producer_test_hashes_seen_at_authoring": [],
+  "criteria": [
+    {
+      "id": "A12-C1-validator-schema-parity",
+      "requirement": "The executable validator rejects every exercised schema violation, including undeclared properties at every relevant object level, provider_state outside its enum, and result_transaction.state outside its enum. The comparison is systematic against the schema, not limited to three hand-picked examples."
+    },
+    {
+      "id": "A12-C2-seeded-regression-preservation",
+      "requirement": "All 23 seeded assertions pass unchanged. No seeded test assertion, fixture, or expected failure may be weakened, deleted, skipped, or rewritten to make the strengthened validator appear successful."
+    },
+    {
+      "id": "A12-C3-cross-cohort-compatibility",
+      "requirement": "The strengthened validator is run against result documents already emitted by other cohorts. Any newly rejected document is reported with its immutable unit and reason; compatibility may not be silently assumed."
+    },
+    {
+      "id": "A12-C4-commit-pinned-capsule",
+      "requirement": "Each capsule entry binds path, blob SHA, and commit SHA and resolves bytes with read-only git plumbing. A fresh clone with no working tree produces byte-identical resolution, and a source change creates a new capsule version with explicit predecessor lineage."
+    },
+    {
+      "id": "A12-C5-preflight-four-drift-coverage",
+      "requirement": "The standalone preflight classifies CURRENT, DRIFTED, and MISSING; only CURRENT exits zero; all four real drift fixtures fail; a clean capsule passes; and the controller remains untouched."
+    },
+    {
+      "id": "A12-C6-history-only-lineage",
+      "requirement": "The lineage reconciler derives frozen blob, current blob, and ordered causal commits from git history alone. It compares to the independently written drift evidence and emits a discrepancy on disagreement without editing or trusting that evidence as input."
+    },
+    {
+      "id": "A12-C7-transactional-evidence",
+      "requirement": "Every claim has a committed executable artifact, complete result metadata, immutable read-back, and an independent reproducible command; unavailable units remain NOT_YET rather than being inferred."
+    }
+  ],
+  "decision_rule": "REJECT if any mandatory criterion has an executable counterexample, a weakened seeded assertion, an unreported cross-cohort rejection, or an artifact that cannot be independently resolved from its immutable commit. ACCEPT only when every exercised criterion passes and all unexercised boundaries are explicitly NOT_YET.",
+  "attack_classes": [
+    "schema/executable divergence beyond the three named cases",
+    "mutation that removes or weakens a seeded assertion",
+    "validator rejection of previously emitted result documents",
+    "working-tree capsule drift despite fixed commit",
+    "fresh-clone resolution dependence",
+    "each of four drift fixtures",
+    "clean capsule false rejection",
+    "lineage dependence on evidence input",
+    "silent discrepancy reconciliation",
+    "result locator and read-back loss"
+  ]
+}
