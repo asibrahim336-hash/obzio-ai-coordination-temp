@@ -140,7 +140,10 @@ def _trusted_source_base(
     if source_base is None and isinstance(ready.get("source_base"), dict):
         source_base = ready["source_base"].get(
             "immutable_controller_base",
-            ready["source_base"].get("producer_start_commit"),
+            ready["source_base"].get(
+                "producer_start_commit",
+                ready["source_base"].get("immutable_producer_base"),
+            ),
         )
     if source_base is None and isinstance(ready.get("changed_files"), dict):
         source_base = ready["changed_files"].get("compared_against")

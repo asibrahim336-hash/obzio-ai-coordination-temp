@@ -168,6 +168,19 @@ class TrustedSourceBaseTests(unittest.TestCase):
             )
         self.assertEqual(observed, self.source_base)
 
+    def test_nested_immutable_producer_base_is_trusted(self):
+        with mock.patch.object(TOOL, "_git", side_effect=self.git_result):
+            observed = TOOL._trusted_source_base(
+                {
+                    "source_base": {
+                        "immutable_producer_base": self.source_base,
+                    }
+                },
+                self.return_commit,
+                self.ingestion_commit,
+            )
+        self.assertEqual(observed, self.source_base)
+
     def test_changed_files_comparison_base_is_trusted(self):
         with mock.patch.object(TOOL, "_git", side_effect=self.git_result):
             observed = TOOL._trusted_source_base(
