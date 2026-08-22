@@ -1,0 +1,189 @@
+{
+  "cases": [
+    {
+      "case_id": "valid-producer-return",
+      "events": [
+        {
+          "actor": "worker:runner-sanitized",
+          "fence_token": 2,
+          "from_state": "LEASED",
+          "to_state": "RUNNING"
+        },
+        {
+          "actor": "worker:runner-sanitized",
+          "checkpoint_seq": 1,
+          "fence_token": 2,
+          "from_state": "RUNNING",
+          "to_state": "CHECKPOINTED"
+        },
+        {
+          "actor": "worker:runner-sanitized",
+          "fence_token": 2,
+          "from_state": "CHECKPOINTED",
+          "to_state": "RESULT_STAGING"
+        },
+        {
+          "actor": "worker:runner-sanitized",
+          "fence_token": 2,
+          "from_state": "RESULT_STAGING",
+          "to_state": "RESULT_STAGED"
+        },
+        {
+          "actor": "verifier:verification-lane-sanitized",
+          "artifact_count": 3,
+          "fence_token": 2,
+          "from_state": "RESULT_STAGED",
+          "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "to_state": "RESULT_VERIFIED",
+          "total_bytes": 42
+        },
+        {
+          "actor": "worker:runner-sanitized",
+          "fence_token": 2,
+          "from_state": "RESULT_VERIFIED",
+          "remote_branch": "cursor/sanitized-return",
+          "result_commit_id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "to_state": "RESULT_COMMITTED"
+        }
+      ],
+      "expected": {
+        "final_state": "RESULT_COMMITTED",
+        "status": "VALID"
+      },
+      "hypothesis_ids": [
+        "CMH-PO03-WA-012-001",
+        "CMH-PO03-WA-012-002"
+      ],
+      "initial_snapshot": {
+        "checkpoint_seq": 0,
+        "current_fence": 2,
+        "producer_id": "runner-sanitized",
+        "state": "LEASED"
+      }
+    },
+    {
+      "case_id": "reject-skipped-transition",
+      "events": [
+        {
+          "actor": "worker:runner-sanitized",
+          "fence_token": 2,
+          "from_state": "RUNNING",
+          "to_state": "RESULT_STAGED"
+        }
+      ],
+      "expected": {
+        "error_code": "ILLEGAL_TRANSITION",
+        "failing_event_index": 0,
+        "status": "REJECTED"
+      },
+      "hypothesis_ids": [
+        "CMH-PO03-WA-012-001"
+      ],
+      "initial_snapshot": {
+        "checkpoint_seq": 0,
+        "current_fence": 2,
+        "producer_id": "runner-sanitized",
+        "state": "RUNNING"
+      }
+    },
+    {
+      "case_id": "reject-regressive-transition",
+      "events": [
+        {
+          "actor": "worker:runner-sanitized",
+          "fence_token": 2,
+          "from_state": "RESULT_VERIFIED",
+          "to_state": "RESULT_STAGED"
+        }
+      ],
+      "expected": {
+        "error_code": "ILLEGAL_TRANSITION",
+        "failing_event_index": 0,
+        "status": "REJECTED"
+      },
+      "hypothesis_ids": [
+        "CMH-PO03-WA-012-001"
+      ],
+      "initial_snapshot": {
+        "checkpoint_seq": 1,
+        "current_fence": 2,
+        "evidence": {
+          "artifact_count": 3,
+          "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "manifest_verified": true,
+          "total_bytes": 42
+        },
+        "producer_id": "runner-sanitized",
+        "state": "RESULT_VERIFIED"
+      }
+    },
+    {
+      "case_id": "reject-worker-completed",
+      "events": [
+        {
+          "actor": "worker:runner-sanitized",
+          "fence_token": 2,
+          "from_state": "PARENT_INGESTED",
+          "to_state": "COMPLETED"
+        }
+      ],
+      "expected": {
+        "error_code": "ACTOR_NOT_AUTHORIZED",
+        "failing_event_index": 0,
+        "status": "REJECTED"
+      },
+      "hypothesis_ids": [
+        "CMH-PO03-WA-012-001"
+      ],
+      "initial_snapshot": {
+        "checkpoint_seq": 1,
+        "current_fence": 2,
+        "evidence": {
+          "artifact_count": 3,
+          "immutable_readback_verified": true,
+          "ingestion_receipt": "receipt:sanitized",
+          "manifest_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "manifest_verified": true,
+          "remote_branch": "cursor/sanitized-return",
+          "result_commit_id": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "total_bytes": 42
+        },
+        "producer_id": "runner-sanitized",
+        "state": "PARENT_INGESTED"
+      }
+    },
+    {
+      "case_id": "reject-stale-fence-after-transfer",
+      "events": [
+        {
+          "actor": "worker:runner-sanitized",
+          "fence_token": 1,
+          "from_state": "LEASED",
+          "to_state": "RUNNING"
+        }
+      ],
+      "expected": {
+        "error_code": "STALE_FENCE",
+        "failing_event_index": 0,
+        "status": "REJECTED"
+      },
+      "hypothesis_ids": [
+        "CMH-PO03-WA-012-002"
+      ],
+      "initial_snapshot": {
+        "checkpoint_seq": 0,
+        "current_fence": 2,
+        "producer_id": "runner-sanitized",
+        "state": "LEASED"
+      }
+    }
+  ],
+  "fixture_id": "OBZIO-SANITIZED-PO03-WA-012-001",
+  "protocol_version": "OBZIO-SANITIZED-WORKLOAD-v1",
+  "sanitization": {
+    "contains_credentials": false,
+    "contains_personal_data": false,
+    "contains_production_identifiers": false,
+    "description": "Synthetic Obzio custody lifecycle with non-production actors, branch, commit, receipt, and digest values."
+  }
+}
