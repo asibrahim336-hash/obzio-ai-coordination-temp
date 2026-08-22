@@ -1,0 +1,88 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-sol-xhigh",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-018-missing-file-detection",
+  "cohort": "c3",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c3",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "5dc50b1702687aba77bec8f75833325af005ad06d04707308069aa60c5959012",
+  "frozen_hypothesis": "A pack that declares files it does not contain is detected rather than accepted.",
+  "frozen_required_deliverable": "Missing-file detection over pinned pack commits with a synthetic pack fixture proving the detector fires.",
+
+  "po01_contact_check": "READ-ONLY CONFIRMED. Access to the pinned pack commit is via 'git cat-file' only. My own fixtures were built in scratch outside the repository.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -I (CPython 3.12.3)",
+    "producer_test_command": "python3 -I test_missing_file_detector.py",
+    "producer_test_output_verbatim": "test_missing_file_detector: PASS",
+    "producer_test_exit_code": 0
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-C",
+      "rationale": "The core claim of this unit is that the detector does not trust self-reported completeness. The producer's fixture declares one missing file out of two. I made the harder version: EVERY declared file absent, with two separate forged completeness fields.",
+      "construction": "Synthetic pack manifest with self_reported_status 'COMPLETE' and completeness 'VERIFIED', declaring gone_a.txt and gone_b.txt, neither of which exists at the commit.",
+      "observed_output_verbatim": "HC-C (self_reported COMPLETE, all files absent): {\"declared_count\": 2, \"missing_count\": 2, \"missing\": [\"packs/demo/gone_a.txt\", \"packs/demo/gone_b.txt\"], \"verdict\": \"FAIL\"}",
+      "component_survived": true,
+      "interpretation": "The central claim holds. Forged completeness fields are ignored entirely and both absent declarations are named. The detector reads bytes, not narrative."
+    },
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "Presence is tested with 'git cat-file -e <commit>:<path>', which succeeds for ANY object type - including a tree. So a declared FILE that is actually a directory would satisfy the existence check. This is directly within the frozen hypothesis's scope: the pack declares a file it does not contain.",
+      "construction": "Synthetic pack whose manifest['files'] declares 'looks_like_file.txt' with bytes 99 and a hash, where that path is committed as a DIRECTORY containing inner.txt.",
+      "observed_output_verbatim": "HC-B (declared file is actually a DIRECTORY): {\"declared_count\": 2, \"missing_count\": 0, \"missing\": [], \"verdict\": \"PASS\"}\n   git object type of that path: tree",
+      "component_survived": false,
+      "interpretation": "FALSE NEGATIVE inside the unit's own scope. The commit contains no file at the declared path - it contains a tree - and the detector returns verdict PASS with missing_count 0. I confirmed the object type is 'tree' with an independent 'git cat-file -t'. This is a direct counterexample to the frozen hypothesis: a pack declaring a file it does not contain is accepted rather than detected. The fix is one line: assert 'git cat-file -t' returns 'blob' rather than merely that the object exists."
+    },
+    {
+      "hidden_case_id": "HC-D",
+      "rationale": "declared_paths() reads only manifest['files'] and never manifest['requires']['files']. The producer's own test asserts declared_count == 8 on the real pack, which has 17 declarations in total, so the narrowing is visible - but is it a detection hole?",
+      "construction": "Synthetic pack declaring one present file plus requires.files listing two absent files WITH spine_dir correctly set.",
+      "observed_output_verbatim": "HC-D (requires.files with spine_dir, both absent): {\"declared_count\": 1, \"missing_count\": 0, \"missing\": [], \"verdict\": \"PASS\"}",
+      "component_survived": false,
+      "interpretation": "Required declarations are outside this unit's coverage entirely. On its own this is defensible division of labour, since unit 017 does check requires.files. But it compounds badly with what I found in unit 017: 017 checks requires.files ONLY when the optional 'spine_dir' key is present, and 018 never checks them at all. A pack with requires.files and no spine_dir therefore declares files it does not contain and passes BOTH units. Neither unit's evidence would show the gap."
+    }
+  ],
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "MET - reproduced independently; test_output.txt matches.",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET - 5 artifacts including the synthetic fixture files, all verified, and no unlisted files on disk.",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - acceptance_contract_sha256 equals my pre-disclosure hash 5dc50b17...",
+    "result is committed and read back by a different process from an immutable object id": "MET - artifact_commit 99b26fe59d19432b1aeeac2f3ef6de287bdcc385.",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - PASS recorded, but I judge the verdict itself premature.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "NOT MET IN SPIRIT - I hold a within-scope counterexample to the hypothesis (HC-B) that the unqualified PASS does not accommodate.",
+    "no value, hash, metric or provider capability is invented": "MET - all hashes and byte counts recomputed exactly; the '0 missing of 8 declarations' claim is accurate for the scope actually implemented."
+  },
+
+  "scope_honesty_assessment": {
+    "producer_declared_limitations": [
+      "The synthetic fixture proves missing-file refusal; hash mismatch handling is exercised by separate qualification units."
+    ],
+    "assessment": "The one declared limitation is accurate and correctly defers hash checking to unit 017. What is NOT declared is that presence is tested by object existence rather than blob existence (HC-B), and that requires.files declarations are entirely outside coverage (HC-D) even though the real pinned pack has 9 of them. The producer's own test asserting declared_count == 8 against a 17-declaration manifest shows it knew the scope, so stating it as a limitation would have cost nothing."
+  },
+
+  "verification_commands": {
+    "artifact_verification_verbatim": "  missing_file_detector.py 2972 OK\n  synthetic_pack/fixture_manifest.json 369 OK\n  synthetic_pack/present.txt 6 OK\n  test_missing_file_detector.py 1376 OK\n  test_output.txt 566 OK\nALL_VERIFY: True\non disk not listed: []"
+  },
+
+  "nonportable_artifacts_in_subtree": [],
+  "reproducibility_check": "Reproduced from a fresh clone detached at the c3 cohort SHA in fresh python3 -I processes; commit-pinned and stable on repeat.",
+
+  "reviewer_independent_verdict": "NOT_YET",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "DIVERGE",
+  "divergence_reason": "I hold a counterexample to the frozen hypothesis inside the unit's own declared scope. The hypothesis is 'A pack that declares files it does not contain is detected rather than accepted.' In HC-B a pack's manifest['files'] declares looks_like_file.txt with a byte count and a hash, the commit contains a DIRECTORY at that path and no file, and the detector returns verdict PASS with missing_count 0. Presence is tested with 'git cat-file -e', which succeeds for any object type, so the detector proves path existence rather than file existence. Separately, HC-D shows requires.files declarations are not covered at all, which compounds with the spine_dir bypass I found in unit 017 to leave a class of under-declaring packs passing both units. The detector's central and hardest claim - that self-reported completeness is ignored - does hold under my HC-C, so this is not a FAIL; the hypothesis is simply not yet established, which is NOT_YET.",
+  "disposition_recommendation": "REJECTED",
+  "disposition_reason": "REJECTED as an unqualified PASS, not as work product. The detector is genuinely non-vacuous on the claim that matters most: it ignored two forged completeness fields and named both absent files in my hardest fixture. But an aggregate PASS on 'a pack that declares files it does not contain is detected' cannot stand while I hold a within-scope case where exactly that pack is accepted. The remedy is small and mechanical - assert 'git cat-file -t' returns 'blob' instead of relying on 'git cat-file -e' - so I recommend re-verdict to NOT_YET, that one-line hardening, a regression fixture for the tree-declared-as-file case, and an explicit limitation stating that requires.files is out of scope.",
+  "followups_for_coordinator": [
+    "One-line hardening: replace the 'git cat-file -e <commit>:<path>' existence probe with a type check requiring 'blob'. Reviewer-observed: a declared file committed as a directory yields verdict PASS with missing_count 0.",
+    "Declare explicitly that manifest['requires']['files'] is outside this unit's coverage. The producer's own test asserts declared_count == 8 against a manifest with 17 declarations, so the narrowing is known but undocumented.",
+    "COMPOUND RISK across units 017 and 018: unit 017 checks requires.files only when the optional 'spine_dir' key is present, and unit 018 never checks them. A pack declaring required files it does not contain, with spine_dir omitted, passes both units with no gap visible in either evidence table. This should be treated as a chain-level gap rather than two independent unit defects."
+  ]
+}

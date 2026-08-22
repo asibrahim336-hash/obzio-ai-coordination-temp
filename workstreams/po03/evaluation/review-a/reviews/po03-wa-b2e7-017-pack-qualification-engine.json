@@ -1,0 +1,99 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-sol-xhigh",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-017-pack-qualification-engine",
+  "cohort": "c3",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c3",
+  "cohort_ref_sha": "8ce1b3f86277a035d952800596e78906152ec260",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "6e493513785b076f73c4c4d5b06a27e7a2b9a890271605fd9418ccd77c6d7c9e",
+  "frozen_hypothesis": "Operator-pack completeness claims can be independently qualified from an immutable commit without trusting producer narrative.",
+  "frozen_required_deliverable": "A qualification engine that reads a pack manifest at a pinned SHA and reports declared-versus-present files, hashes and byte counts as an evidence table.",
+
+  "po01_contact_check": "READ-ONLY CONFIRMED. The unit reads the pinned pack commit 1e6f53c323f8326d12af213557082a3665991f19 exclusively through 'git cat-file blob', which cannot mutate. I verified independently that this commit exists, is reachable only from remotes/origin/packs/operator-packs-v1-20260820, and carries the message 'packs: remove superseded transport scaffolding (.parts, .staging, operator-packs-01-05.zip)'. No PO-01 path is written by the component or by my review.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -I (CPython 3.12.3)",
+    "setup_note": "The test resolves the repository as HERE.parents[3], so it needs a real Git repository with the unit in position. I made a fresh clone into scratch and detached at the c3 cohort SHA rather than reusing any producer working tree.",
+    "producer_test_command": "python3 -I test_qualify_pack.py",
+    "producer_test_output_verbatim": "  \"manifest_sha256\": \"3b1d6f1433cddc61648b1b9a65d6b32503d0a3e97ac51db722e18ee78d8e2c2e\",\n  \"matched_count\": 17,\n  \"verdict\": \"PASS\"\n}\ntest_qualify_pack: PASS",
+    "producer_test_exit_code": 0
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-A",
+      "rationale": "The strongest possible check on a hash-verification engine is not to run it again but to reimplement it. I re-derived every declaration from the raw manifest with my own code and verified every hash and byte count myself, then compared my declaration set against the engine's evidence table.",
+      "construction": "Reviewer-written script: parse manifest['files'] under packs/repository-engineering/, parse manifest['requires']['files'] under packs/<spine_dir>/, then sha256 and byte-count each blob directly from the pinned commit.",
+      "observed_output_verbatim": "HC-A my independent declaration count: 17 | manifest file_count: 8 requires.file_count: 9\nHC-A my own verification failures: NONE (all 17 declarations verified by reviewer code)\nHC-A engine declaration_count: 17 | set equal to mine: True\nHC-A engine verdict: PASS matched_count: 17",
+      "component_survived": true,
+      "interpretation": "Fully independent corroboration. My own implementation derives exactly the same 17 declarations (8 pack files plus 9 shared-spine files, matching the manifest's own file_count 8 and requires.file_count 9) and every hash and byte count verifies against the pinned commit. The engine's declared-path/declared-value set is set-equal to mine. The engine is correct on the real pack, and the producer's '17 of 17' claim is a real measurement rather than a narrative."
+    },
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "Adversarial completeness bypass. declarations() only emits rows for manifest['requires']['files'] when manifest['requires']['spine_dir'] is truthy. That makes the SCOPE of qualification depend on a key inside the manifest under test - exactly the 'trusting producer narrative' the frozen hypothesis says it avoids. Nobody tested omitting that key.",
+      "construction": "Synthetic pack in a scratch repo declaring one present file plus requires.files listing two files that do NOT exist, with requires.file_count=2 and NO spine_dir key.",
+      "observed_output_verbatim": "HC-B exit: 0 verdict: PASS declaration_count: 1 (manifest declares 1 file + 2 REQUIRED files it does not contain)\nHC-B paths in evidence table: ['packs/demo/present.txt']",
+      "component_survived": false,
+      "interpretation": "REAL BYPASS. A pack that declares two required files it does not contain is qualified PASS. The two declarations are silently dropped - they do not appear in the evidence table as absent, they simply vanish, and declaration_count drops from 3 to 1 with no warning. The manifest even states requires.file_count = 2, so the engine has the information needed to notice that it processed zero of two required declarations, and does not reconcile it."
+    },
+    {
+      "hidden_case_id": "HC-C",
+      "rationale": "Control for HC-B, to prove the bypass is caused by the missing key rather than by my fixture being malformed.",
+      "construction": "Byte-identical manifest to HC-B except with spine_dir added.",
+      "observed_output_verbatim": "HC-C exit: 1 verdict: FAIL declaration_count: 3\nHC-C paths: ['packs/demo/present.txt', 'packs/spine/absent_one.py', 'packs/spine/absent_two.py']",
+      "component_survived": true,
+      "interpretation": "Confirms the diagnosis exactly. With spine_dir present the same pack correctly FAILS with all three declarations listed and the two absent files exposed. The only difference between PASS and FAIL is one optional key in the manifest under test."
+    },
+    {
+      "hidden_case_id": "HC-D",
+      "rationale": "Vacuous-PASS probe: a manifest declaring nothing at all must not qualify.",
+      "construction": "manifest with an empty files map.",
+      "observed_output_verbatim": "HC-D empty-manifest exit: 1 verdict: FAIL declaration_count: 0",
+      "component_survived": true,
+      "interpretation": "Correct. 'passed = bool(table) and all(...)' means an empty evidence table is a FAIL, not a vacuous PASS. The engine guards the obvious degenerate case."
+    }
+  ],
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "MET - I reproduced the pinned-pack qualification, and the committed test_output.txt matches what I observed (declaration_count 17, matched_count 17, verdict PASS).",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET - 3 artifacts, all verified, and I confirmed there are NO files on disk in the subtree that the manifest fails to list.",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - acceptance_contract_sha256 equals my pre-disclosure hash 6e493513...",
+    "result is committed and read back by a different process from an immutable object id": "MET - artifact_commit 9757738d64f46f2cee87a6b397de9096e7b852cf.",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - PASS.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "NOT_APPLICABLE.",
+    "no value, hash, metric or provider capability is invented": "MET, and this is the unit where it matters most. Every number in the producer's claim is real: the pinned commit exists, the manifest is 2584 bytes with SHA-256 3b1d6f1433cddc61648b1b9a65d6b32503d0a3e97ac51db722e18ee78d8e2c2e, and I recomputed all 17 declarations with my own independent code."
+  },
+
+  "scope_honesty_assessment": {
+    "producer_declared_limitations": [
+      "This unit qualifies declared bytes in one pinned pack manifest; runtime portability and aggregate undeclared-file gaps are evaluated separately."
+    ],
+    "assessment": "Well scoped. The producer correctly confines its claim to declared bytes in one pinned manifest and explicitly defers undeclared-file gaps to sibling units, which is accurate division of labour rather than evasion. The spine_dir bypass I found is not covered by that deferral, however: it is a DECLARED-but-unchecked gap, which sits inside this unit's own scope rather than in 018/019's. It is undeclared."
+  },
+
+  "verification_commands": {
+    "artifact_verification_verbatim": "  qualify_pack.py 4156 4156 OK\n  test_output.txt 7385 7385 OK\n  test_qualify_pack.py 1616 1616 OK\nALL_VERIFY: True\nfiles on disk not listed in manifest: []",
+    "pinned_commit_verification_verbatim": "commit\n1e6f53c packs: remove superseded transport scaffolding (.parts, .staging, operator-packs-01-05.zip)\n  remotes/origin/packs/operator-packs-v1-20260820\n2584\n3b1d6f1433cddc61648b1b9a65d6b32503d0a3e97ac51db722e18ee78d8e2c2e  -"
+    },
+
+  "nonportable_artifacts_in_subtree": [],
+  "reproducibility_check": "The qualification was run from a fresh clone detached at the cohort SHA, in fresh python3 -I processes, and reproduced verdict PASS with 17/17 on repeat. Results are commit-pinned and therefore stable by construction.",
+
+  "reviewer_independent_verdict": "PASS",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "AGREE",
+  "divergence_reason": null,
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "ACCEPTED because the frozen deliverable is genuinely delivered and I confirmed it the hard way: I reimplemented the qualification myself and independently verified all 17 declarations at the pinned commit, and my declaration set is set-equal to the engine's evidence table. Nothing in this unit is asserted rather than measured. The engine also guards the degenerate empty-manifest case rather than passing it vacuously. Accepted with one high-priority defect that I am escalating rather than treating as fatal, because detecting under-declaration is assigned to sibling units 018/019/024 and not to this frozen deliverable: a manifest that declares required files but omits the optional 'spine_dir' key has those declarations silently dropped and is qualified PASS (HC-B), while the identical manifest with the key present correctly FAILS (HC-C).",
+  "followups_for_coordinator": [
+    "HIGH PRIORITY, cross-unit: qualify_pack.declarations() emits manifest['requires']['files'] rows only when manifest['requires']['spine_dir'] is truthy. Omitting that one optional key makes required declarations vanish from the evidence table entirely - not reported absent, just absent - and the pack qualifies PASS. Reviewer-observed on a synthetic pack: PASS with declaration_count 1 against a manifest declaring 1 file plus 2 non-existent required files. The same manifest with spine_dir added yields FAIL with declaration_count 3. Because the scope of qualification is controlled by a key inside the artifact under test, this is the precise failure mode the frozen hypothesis ('without trusting producer narrative') is meant to exclude.",
+    "Cheap fix available with data already in the manifest: reconcile declaration_count against manifest['file_count'] + manifest['requires']['file_count'] and fail closed on any shortfall. On the real pack these are 8 + 9 = 17 = declaration_count; in my bypass fixture they were 1 + 2 = 3 versus declaration_count 1, so the discrepancy was fully visible and unused.",
+    "Recommend the coordinator check whether unit 024's forged-completeness adversarial covers this specific bypass; if not, it is an untested hole in the qualification chain."
+  ]
+}
