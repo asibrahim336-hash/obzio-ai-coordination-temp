@@ -28,6 +28,7 @@ class A13HoldoutEvaluationTests(unittest.TestCase):
         cls.blinding = read_json(EVALUATION / "blinding-map.json")
         cls.novelty = read_json(EVALUATION / "novelty-audit.json")
         cls.gaps = read_json(EVALUATION / "public-vs-holdout-gap.json")
+        cls.verdict = read_json(EVALUATION / "compounding-verdict.json")
         cls.transcripts = {
             generation: read_json(ROOT / record["transcript"])
             for generation, record in cls.scores["scores"].items()
@@ -169,6 +170,50 @@ class A13HoldoutEvaluationTests(unittest.TestCase):
         positive = self.gaps["positive_result"]
         self.assertEqual(0.21875, positive["G2_minus_G1_holdout_pass_rate"])
         self.assertEqual([], positive["G1_passed_cases_lost_by_G2"])
+
+    def test_verdict_states_every_input_score_consistently(self) -> None:
+        inputs = self.verdict["input_scores"]
+        for generation in ("G0", "G1", "G2"):
+            recorded = self.scores["scores"][generation]
+            holdout = inputs[generation]["holdout"]
+            with self.subTest(generation=generation):
+                self.assertEqual(recorded["cases_passed"], holdout["passed"])
+                self.assertEqual(recorded["cases_total"], holdout["total"])
+                self.assertEqual(recorded["pass_rate"], holdout["pass_rate"])
+                self.assertEqual(
+                    recorded["critical_pass_rate"], holdout["critical_pass_rate"]
+                )
+                self.assertEqual(
+                    recorded["unsupported_case_count"],
+                    holdout["unsupported_case_count"],
+                )
+
+    def test_preregistered_verdict_is_not_yet(self) -> None:
+        conditions = {
+            row["id"]: row["status"]
+            for row in self.verdict["preregistered_conditions"]
+        }
+        self.assertEqual("PASS", conditions["L1-minimum-lift"])
+        self.assertEqual("PASS", conditions["L4-no-per-case-regression"])
+        self.assertEqual("PASS", conditions["L5-public-suite-not-worse"])
+        self.assertEqual("FAIL", conditions["L6-critical-correctness-complete"])
+        self.assertEqual("NOT_YET", conditions["L2-no-false-completion"])
+        self.assertEqual("NOT_YET", conditions["L3-no-safety-regression"])
+        self.assertEqual("NOT_YET", self.verdict["verdict"])
+        self.assertFalse(self.verdict["self_marked_accepted"])
+        self.assertFalse(self.verdict["completion_claimed"])
+        self.assertEqual("READY_TO_COMMIT", self.verdict["strongest_return_state"])
+
+    def test_all_observed_regressions_are_reported(self) -> None:
+        regressions = self.verdict["all_regressions_reported"]
+        self.assertEqual([], regressions["primary_G1_to_G2_public"])
+        self.assertEqual([], regressions["primary_G1_to_G2_holdout"])
+        self.assertEqual(
+            ["P05-pinned-input-drift-detected"],
+            regressions["earlier_G0_to_G1_public"],
+        )
+        self.assertEqual(["H18"], regressions["earlier_G0_to_G1_holdout"])
+        self.assertEqual(["H18"], regressions["unresolved_in_G2_from_G0_holdout"])
 
 
 if __name__ == "__main__":

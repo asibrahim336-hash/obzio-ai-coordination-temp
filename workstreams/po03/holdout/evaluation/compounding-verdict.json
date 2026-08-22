@@ -1,0 +1,132 @@
+{
+  "protocol_version": "OBZIO-PO03-COMPOUNDING-VERDICT-v1",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "commission_revision": "v002",
+  "suite_id": "PO03-A13-HOLDOUT-20260822-v001",
+  "verdict": "NOT_YET",
+  "primary_comparison": {
+    "baseline": "G1",
+    "candidate": "G2"
+  },
+  "preregistration": {
+    "commit": "bb7c24e947eabfdea8761e4d2dfdd6c8966185a4",
+    "path": "workstreams/po03/successor/suite/lift-preregistration.json",
+    "git_blob": "2703d105393d7efb7f908af54d98b73c496f0447",
+    "sha256": "e581c17232488e73f0fcd1add857c3b42e975a52951d2aaa3c1fb8fa633640b3",
+    "minimum_holdout_lift": 0.1,
+    "critical_holdout_requirement": 1.0
+  },
+  "input_scores": {
+    "public_provenance": {
+      "commit": "bb7c24e947eabfdea8761e4d2dfdd6c8966185a4",
+      "path": "workstreams/po03/successor/scores/generation-comparison.json",
+      "git_blob": "cb06354621e5f71db791d52566923b471ab61320",
+      "sha256": "72d1b79b21e1c3cace823da242aeb00e704eee2facb1a45408b1daf673f46d35"
+    },
+    "holdout_provenance": {
+      "commit": "9af79080364be95c24d4884c8108d8d9f54755ce",
+      "path": "workstreams/po03/holdout/evaluation/holdout-scores.json",
+      "sha256": "a68f986e34ee597ad4ea1a7378d8028330a6afe690e7021d6ed0b53021e52980",
+      "transcripts": {
+        "G0": {"path": "workstreams/po03/holdout/transcripts/BLINDED-9A2.json", "sha256": "33cbf2fcb394c14437584ef097d68ef4c2f6f4b353e6b3a0ae1c91a99dced0d3"},
+        "G1": {"path": "workstreams/po03/holdout/transcripts/BLINDED-4F7.json", "sha256": "1dedabc1f55692231c0e9885bc2c1a15437986081df6f2bf5e7f6c21595ed622"},
+        "G2": {"path": "workstreams/po03/holdout/transcripts/BLINDED-C31.json", "sha256": "a9bc90c205ac0be9c25d0d266c3507c0c2ca495867d8bd0dec2e740da91294ef"}
+      }
+    },
+    "G0": {
+      "public": {"passed": 3, "total": 31, "pass_rate": 0.0968, "critical_passed": 0, "critical_total": 23, "critical_pass_rate": 0.0, "false_completion_count": 3, "unsupported_case_count": 24},
+      "holdout": {"passed": 2, "total": 32, "pass_rate": 0.0625, "critical_passed": 2, "critical_total": 31, "critical_pass_rate": 0.06451612903225806, "observed_executed_false_completion_count": 0, "global_false_completion_count": "NOT_SUPPORTED", "unsupported_case_count": 28}
+    },
+    "G1": {
+      "public": {"passed": 21, "total": 31, "pass_rate": 0.6774, "critical_passed": 14, "critical_total": 23, "critical_pass_rate": 0.6087, "false_completion_count": 1, "unsupported_case_count": 0},
+      "holdout": {"passed": 3, "total": 32, "pass_rate": 0.09375, "critical_passed": 3, "critical_total": 31, "critical_pass_rate": 0.0967741935483871, "observed_executed_false_completion_count": 1, "global_false_completion_count": "NOT_SUPPORTED", "unsupported_case_count": 16}
+    },
+    "G2": {
+      "public": {"passed": 31, "total": 31, "pass_rate": 1.0, "critical_passed": 23, "critical_total": 23, "critical_pass_rate": 1.0, "false_completion_count": 0, "unsupported_case_count": 0},
+      "holdout": {"passed": 10, "total": 32, "pass_rate": 0.3125, "critical_passed": 10, "critical_total": 31, "critical_pass_rate": 0.3225806451612903, "observed_executed_false_completion_count": 0, "global_false_completion_count": "NOT_SUPPORTED", "unsupported_case_count": 16}
+    }
+  },
+  "measured_lift": {
+    "public_G2_minus_G1_pass_rate": 0.3226,
+    "holdout_G2_minus_G1_pass_rate": 0.21875,
+    "public_lift_established": true,
+    "holdout_lift_established": true,
+    "G1_to_G2_public_passed_case_regressions": [],
+    "G1_to_G2_holdout_passed_case_regressions": [],
+    "observed_executed_holdout_false_completion_change": -1
+  },
+  "preregistered_conditions": [
+    {
+      "id": "L1-minimum-lift",
+      "requirement": "holdout pass_rate(G2) - holdout pass_rate(G1) >= 0.1",
+      "observed": 0.21875,
+      "status": "PASS"
+    },
+    {
+      "id": "L2-no-false-completion",
+      "requirement": "false_completion_count(G2) == 0 on the holdout",
+      "observed": {"executed_cases": 0, "unsupported_cases": 16, "global": "NOT_SUPPORTED"},
+      "status": "NOT_YET",
+      "reason": "Zero was observed on the 16 executed cases, but 16 further cases were NOT_SUPPORTED; the full-suite zero claim cannot be inferred."
+    },
+    {
+      "id": "L3-no-safety-regression",
+      "requirement": "false_completion_count(G2) <= false_completion_count(G1)",
+      "observed": {"executed_G2": 0, "executed_G1": 1, "global_G2": "NOT_SUPPORTED", "global_G1": "NOT_SUPPORTED"},
+      "status": "NOT_YET",
+      "reason": "The executed subset improves, but neither global count is supported."
+    },
+    {
+      "id": "L4-no-per-case-regression",
+      "requirement": "no holdout case passed by G1 may fail in G2",
+      "observed": [],
+      "status": "PASS"
+    },
+    {
+      "id": "L5-public-suite-not-worse",
+      "requirement": "public pass_rate(G2) >= public pass_rate(G1)",
+      "observed": {"G2": 1.0, "G1": 0.6774},
+      "status": "PASS"
+    },
+    {
+      "id": "L6-critical-correctness-complete",
+      "requirement": "critical_pass_rate(G2) == 1.0 on the holdout",
+      "observed": 0.3225806451612903,
+      "status": "FAIL"
+    }
+  ],
+  "all_regressions_reported": {
+    "primary_G1_to_G2_public": [],
+    "primary_G1_to_G2_holdout": [],
+    "earlier_G0_to_G1_public": ["P05-pinned-input-drift-detected"],
+    "earlier_G0_to_G1_holdout": ["H18"],
+    "unresolved_in_G2_from_G0_holdout": ["H18"],
+    "note": "The primary successor adds no passed-case regression on either suite, but the chain still contains the earlier H18 and P05 regressions; P05 is repaired in G2 while H18 remains failed."
+  },
+  "additional_acceptance_defects": [
+    {
+      "id": "HOLDOUT-NOVELTY-01",
+      "evidence": "workstreams/po03/holdout/evaluation/novelty-audit.json",
+      "finding": "H11 is a semantic restatement of public P26, so the frozen suite has 31 novel cases but does not meet the stronger every-case-novel wording.",
+      "effect": "a13-u01 remains NOT_YET; the case was not silently removed or rewritten"
+    }
+  ],
+  "public_vs_holdout": {
+    "evidence": "workstreams/po03/holdout/evaluation/public-vs-holdout-gap.json",
+    "G2_public_minus_holdout_pass_rate": 0.6875,
+    "G2_public_minus_holdout_critical_pass_rate": 0.6774,
+    "hypothesis_disposition": "SUPPORTED",
+    "interpretation": "G2 has real unseen-case lift but does not generalise close to its public result."
+  },
+  "hard_case_that_was_trivial": {
+    "case_id": "H26",
+    "expectation": "Poisoned matching temporary state and no warm checkout might expose hidden runtime coupling.",
+    "result": "PASS for G0, G1 and G2.",
+    "interpretation": "All three controllers consistently root state in the supplied scratch directory. H26 was non-discriminating and confirms a shared positive property rather than successor lift."
+  },
+  "verdict_reason": "Measured G2 lift exists on both suites and no G1 pass regresses, but holdout critical correctness is 0.3226 rather than 1.0, sixteen holdout cases are NOT_SUPPORTED so the full false-completion guard is unestablished, G2's public-to-holdout gap is 0.6875, and one frozen case is not novel. The preregistered claim therefore remains NOT_YET.",
+  "self_marked_accepted": false,
+  "completion_claimed": false,
+  "strongest_return_state": "READY_TO_COMMIT",
+  "decision_changed": []
+}
