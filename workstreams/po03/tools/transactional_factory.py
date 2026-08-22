@@ -457,6 +457,36 @@ def _lease_owner(events: list[dict[str, Any]]) -> str | None:
     return None
 
 
+def _provider_projection(state: str) -> str:
+    if state == "CREATED":
+        return "NOT_DISPATCHED"
+    if state in {
+        "RESULT_STAGING",
+        "RESULT_STAGED",
+        "RESULT_VERIFIED",
+        "RESULT_COMMITTED",
+        "PARENT_INGESTED",
+        "COMPLETED",
+        "PROVIDER_COMPLETED_UNCOMMITTED",
+    }:
+        return "COMPLETED"
+    if state == "FAILED_TERMINAL":
+        return "FAILED"
+    if state == "CANCELLED":
+        return "CANCELLED"
+    return "RUNNING"
+
+
+def _recovery_action(state: str) -> str:
+    if state in {"PROVIDER_COMPLETED_UNCOMMITTED", "RECOVERY_REQUIRED", "RETRY_SCHEDULED"}:
+        return "RERUN_OR_RECONCILE"
+    if state == "PARENT_INGESTED":
+        return "AWAIT_COORDINATOR_COMPLETION_AND_INDEPENDENT_REVIEW"
+    if state in TERMINAL_STATES:
+        return "NONE"
+    return "MONITOR"
+
+
 def _update_recovery_projection(
     task_id: str,
     *,
@@ -480,23 +510,14 @@ def _update_recovery_projection(
             "decision_changed": [],
         }
     units = projection.setdefault("units", {})
-    provider_state = (
-        "COMPLETED"
-        if state == "PROVIDER_COMPLETED_UNCOMMITTED"
-        else ("NOT_DISPATCHED" if state == "CREATED" else "RUNNING")
-    )
     units[task_id] = {
         "obzio_state": state,
-        "provider_state": provider_state,
+        "provider_state": _provider_projection(state),
         "latest_event_sequence": len(_event_files(task_id)),
         "latest_event_sha256": sha256_file(event_path),
         "fence_token": fence_token,
         "result_commit_id": details.get("result_commit_id"),
-        "recovery_action": (
-            "RERUN_OR_RECONCILE"
-            if state in {"PROVIDER_COMPLETED_UNCOMMITTED", "RECOVERY_REQUIRED", "RETRY_SCHEDULED"}
-            else "MONITOR"
-        ),
+        "recovery_action": _recovery_action(state),
     }
     replace_atomic(path, canonical_json(projection))
 

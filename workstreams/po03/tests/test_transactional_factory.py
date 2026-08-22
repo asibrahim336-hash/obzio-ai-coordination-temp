@@ -64,6 +64,17 @@ class TransactionalFactoryTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             MODULE.require_git_object_id("c" * 39, "head")
 
+    def test_recovery_projection_separates_provider_and_obzio_state(self):
+        self.assertEqual("NOT_DISPATCHED", MODULE._provider_projection("CREATED"))
+        self.assertEqual("RUNNING", MODULE._provider_projection("CHECKPOINTED"))
+        self.assertEqual("COMPLETED", MODULE._provider_projection("RESULT_STAGED"))
+        self.assertEqual("COMPLETED", MODULE._provider_projection("PARENT_INGESTED"))
+        self.assertEqual(
+            "AWAIT_COORDINATOR_COMPLETION_AND_INDEPENDENT_REVIEW",
+            MODULE._recovery_action("PARENT_INGESTED"),
+        )
+        self.assertEqual("NONE", MODULE._recovery_action("COMPLETED"))
+
     def test_write_once_is_idempotent_but_immutable(self):
         destination = MODULE.PO03_ROOT / "control" / "immutable.json"
         MODULE.write_once(destination, b"{}\n")
