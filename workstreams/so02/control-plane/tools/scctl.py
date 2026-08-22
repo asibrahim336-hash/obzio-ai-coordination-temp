@@ -61,12 +61,53 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
             "control_plane_id", "revision", "strategy_snapshot_id", "decision_changed",
             "migration_state", "active_primary", "canonical_store", "runtime_bindings",
             "protected_workstreams", "cutover_gates", "cutover_evidence",
-            "current_founder_actions", "global_pointer_state", "multi_parent_execution_contract"
+            "current_founder_actions", "global_pointer_state", "multi_parent_execution_contract",
+            "orchestration_assignment"
         ],
         "control-plane"
     )
     add(errors, data.get("control_plane_id") == "SCF-01", "control-plane: wrong identity")
     add(errors, data.get("decision_changed") == [], "control-plane: unbound strategy change")
+
+    orchestration = data.get("orchestration_assignment", {})
+    require_keys(
+        errors,
+        orchestration,
+        [
+            "programme_coordinator", "cursor_binding", "cursor_role_state",
+            "sw_binding", "sw_role_state", "chatgpt_binding", "chatgpt_role_state",
+            "repository_remains_provider_independent", "chatgpt_project_api_equivalence_assumed",
+            "cursor_control_surface_qualification"
+        ],
+        "orchestration-assignment"
+    )
+    add(errors, orchestration.get("programme_coordinator") == "SO-02", "orchestration: programme coordinator changed before cutover")
+    add(errors, orchestration.get("cursor_binding") == "SCF-01/CUR-01", "orchestration: unexpected Cursor binding")
+    add(errors, orchestration.get("sw_role_state") == "PARALLEL_SPECIALIST_FACTORY_NOT_PRIMARY", "orchestration: SW incorrectly made central")
+    add(errors, orchestration.get("repository_remains_provider_independent") is True, "orchestration: provider-independent canonical state lost")
+    add(errors, orchestration.get("chatgpt_project_api_equivalence_assumed") is False, "orchestration: ChatGPT Projects UI conflated with API conversation state")
+
+    qualification = orchestration.get("cursor_control_surface_qualification", {})
+    require_keys(
+        errors,
+        qualification,
+        [
+            "qualification_id", "state", "maximum_cursor_top_level_agents",
+            "initial_subagents_allowed", "qualified_route_count", "routes",
+            "required_end_to_end_evidence", "projects_ui_probe_required_for_promotion",
+            "pass_admits", "pass_does_not_admit", "promotion_rule"
+        ],
+        "cursor-orchestration-qualification"
+    )
+    add(errors, qualification.get("maximum_cursor_top_level_agents") == 1, "orchestration: unqualified second Cursor top-level agent")
+    add(errors, qualification.get("initial_subagents_allowed") is False, "orchestration: subagent fanout before capacity qualification")
+    add(errors, qualification.get("projects_ui_probe_required_for_promotion") is False, "orchestration: ChatGPT Projects UI made an artificial promotion gate")
+    add(errors, qualification.get("routes", {}).get("chatgpt_projects_ui_via_browser") == "OPTIONAL_PROBE_NOT_A_PROMOTION_GATE", "orchestration: ChatGPT Projects browser route not optional")
+    add(errors, "CHATGPT_PROJECTS_UI_VISIBILITY_IS_OPTIONAL" in qualification.get("promotion_rule", ""), "orchestration: promotion rule requires native ChatGPT Projects visibility")
+    if orchestration.get("cursor_role_state") == "MAJOR_ORCHESTRATION_LAYER_QUALIFIED":
+        required = qualification.get("required_end_to_end_evidence", {})
+        add(errors, qualification.get("qualified_route_count", 0) >= 2, "orchestration: Cursor promoted without two qualified routes")
+        add(errors, bool(required) and all(value is True for value in required.values()), "orchestration: Cursor promoted without complete end-to-end evidence")
 
     store = data.get("canonical_store", {})
     add(errors, store.get("kind") == "git_repository", "control-plane: canonical store must be Git")
@@ -127,6 +168,7 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
             continue
         state = binding.get("state")
         prefix = f"binding {binding.get('binding_id')}"
+        add(errors, bool(binding.get("surface_locator_ids")), f"{prefix}: surface locator denominator missing")
         if state in operational:
             add(errors, bool(binding.get("provider_locator")), f"{prefix}: operational state without locator")
             add(errors, bool(binding.get("launch_receipt")), f"{prefix}: operational state without launch receipt")
@@ -134,6 +176,12 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
             add(errors, bool(binding.get("result_commit")), f"{prefix}: durable state without result commit")
             add(errors, bool(binding.get("remote_readback_sha256")), f"{prefix}: durable state without read-back hash")
             add(errors, binding.get("parent_ingested") is True, f"{prefix}: durable state without parent ingestion")
+
+    locators = read_json(root / "state/runtime-surface-locators.json")
+    locator_ids = {item.get("locator_id") for item in locators.get("records", []) if isinstance(item, dict)}
+    for binding in bindings:
+        for locator_id in binding.get("surface_locator_ids", []):
+            add(errors, locator_id in locator_ids, f"binding {binding.get('binding_id')}: unknown surface locator {locator_id}")
 
     gates = data.get("cutover_gates", [])
     evidence = data.get("cutover_evidence", {})
@@ -185,6 +233,50 @@ def validate_plan(data: dict[str, Any], errors: list[str]) -> None:
     for item in items:
         for key in ("name", "state", "durable_owner", "next_executable"):
             add(errors, bool(item.get(key)), f"plan {item.get('item_id')}: missing {key}")
+
+
+def validate_locators(data: dict[str, Any], errors: list[str]) -> None:
+    add(errors, data.get("decision_changed") == [], "locators: unbound strategy change")
+    add(errors, data.get("canonical_store") == "git_repository", "locators: provider state made canonical")
+    records = data.get("records", [])
+    ids = [item.get("locator_id") for item in records if isinstance(item, dict)]
+    add(errors, len(records) >= 12, "locators: required surface denominator incomplete")
+    add(errors, len(ids) == len(set(ids)), "locators: duplicate locator id")
+    allowed_states = {
+        "VERIFIED", "FOUNDER_REPORTED_CAPTURED", "AWAITING_PROVIDER_CREATION",
+        "OWNER_CAPTURE_REQUIRED", "NOT_YET_CREATED", "ROUTE_QUALIFICATION_PENDING",
+        "OPTIONAL_PROBE_NOT_REQUIRED"
+    }
+    captured_states = {"VERIFIED", "FOUNDER_REPORTED_CAPTURED"}
+    for record in records:
+        prefix = f"locator {record.get('locator_id')}"
+        require_keys(
+            errors,
+            record,
+            [
+                "locator_id", "runtime_binding_id", "surface_kind",
+                "account_or_workspace_alias", "state", "stable_locator",
+                "resume_checkpoint", "return_path", "last_verified_at", "capture_trigger"
+            ],
+            prefix
+        )
+        state = record.get("state")
+        add(errors, state in allowed_states, f"{prefix}: invalid locator state")
+        stable = record.get("stable_locator")
+        if state in captured_states:
+            add(errors, bool(stable), f"{prefix}: captured surface without stable locator")
+            add(errors, bool(record.get("resume_checkpoint")), f"{prefix}: captured surface without resume checkpoint")
+            add(errors, bool(record.get("last_verified_at")), f"{prefix}: captured surface without observation time")
+        else:
+            add(errors, stable is None, f"{prefix}: pending surface contains invented locator")
+            add(errors, bool(record.get("capture_trigger")), f"{prefix}: pending surface lacks capture trigger")
+        if isinstance(stable, str):
+            lowered = stable.lower()
+            add(errors, "current_project_conversation" not in lowered, f"{prefix}: display/session alias used as stable locator")
+            add(errors, not any(secret in lowered for secret in ("token=", "api_key=", "bearer ", "x-ops-gate")), f"{prefix}: locator contains credential material")
+
+    sw = next((item for item in records if item.get("locator_id") == "LOC-SW-SPACE"), {})
+    add(errors, sw.get("stable_locator") == "sw:space:1054976614269477", "locators: founder-verified SW space ID not preserved")
 
 
 def validate_controls(data: dict[str, Any], errors: list[str]) -> None:
@@ -247,16 +339,24 @@ def validate_automation_receipt(data: dict[str, Any], errors: list[str]) -> None
 def validate_instruction_contracts(root: Path, errors: list[str]) -> None:
     commission = (root / "commissions/CURSOR-SCP-01.md").read_text(encoding="utf-8")
     launch = (root / "launch/CURSOR-LAUNCH-NOW.md").read_text(encoding="utf-8")
+    sw_launch = (root / "launch/SW-LAUNCH-NOW.md").read_text(encoding="utf-8")
     add(errors, "receipts/so02/**" in commission, "cursor commission: receipt allowlist missing")
     add(errors, "receipts/workstreams/so02/control-plane/**" not in commission, "cursor commission: obsolete receipt allowlist present")
-    add(errors, "Multiple Agents" in launch, "cursor launch: multi-agent mode not explicit")
-    add(errors, "only writer of shared projections" in launch, "cursor launch: root single-writer rule missing")
-    add(errors, "group→parent→child→attempt" in launch, "cursor launch: nested lineage reconciliation missing")
-    add(errors, "do not write PR #9" in launch, "cursor launch: PO-03 write prohibition missing")
+    add(errors, "Do **not** choose" in launch and "**Multiple Agents**" in launch, "cursor launch: unqualified second group not prohibited")
+    add(errors, "Native ChatGPT Projects UI visibility is an optional probe" in launch, "cursor launch: Projects UI incorrectly governs orchestration")
+    add(errors, "strongest two independent available routes" in launch, "cursor launch: multi-route qualification missing")
+    add(errors, "stable agent URL or exact provider ID" in launch, "cursor launch: stable agent locator capture missing")
+    add(errors, "Do not write PR #9" in launch, "cursor launch: PO-03 write prohibition missing")
+    add(errors, "capability-factory/return-20260822-v001" in sw_launch, "SW launch: isolated return branch missing")
+    add(errors, "do not write to the selected source branch" in sw_launch, "SW launch: shared source branch write not rejected")
+    add(errors, "1054976614269477" in sw_launch, "SW launch: founder-verified space ID missing")
+    add(errors, "Capability Extraction Lab" in sw_launch, "SW launch: neutral provider-visible rename missing")
+    add(errors, "operation/thread/coworker/automation URLs or exact provider IDs" in sw_launch, "SW launch: stable provider locator capture missing")
 
     lanes = (root / "launch/CHATGPT-LANES-NOW.md").read_text(encoding="utf-8")
     add(errors, lanes.count("## CGPT-") >= 12, "chatgpt lanes: fewer than twelve launch sheets")
     add(errors, "Project:" in lanes and "Model/effort:" in lanes and "Acceptance:" in lanes, "chatgpt lanes: launch contract incomplete")
+    add(errors, "stable project URL or ID" in lanes and "stable chat/Work-thread" in lanes, "chatgpt lanes: stable locator capture missing")
 
     evaluation = (root / "evaluations/INDEPENDENT-PO02-PO03-20260822.md").read_text(encoding="utf-8")
     add(errors, "eight kill positions PASS" in evaluation, "evaluation: PO-02 replay absent")
@@ -300,11 +400,13 @@ def validate(root: Path = ROOT) -> list[str]:
     sources = read_json(root / "sources/SOURCE-REGISTER.json")
     plan = read_json(root / "state/PLAN-DURABILITY-MANIFEST.json")
     controls = read_json(root / "errors/recurrence-controls.json")
+    locators = read_json(root / "state/runtime-surface-locators.json")
     events = read_jsonl(root / "state/events.jsonl")
     validate_control_plane(root, control, errors)
     validate_sources(sources, errors)
     validate_plan(plan, errors)
     validate_controls(controls, errors)
+    validate_locators(locators, errors)
     validate_durable_directives(root, errors)
     automation = read_json(root.parent.parent.parent / "receipts/so02/2026-08-22/po03-automation-reshape-20260822T0924Z.json")
     validate_automation_receipt(automation, errors)

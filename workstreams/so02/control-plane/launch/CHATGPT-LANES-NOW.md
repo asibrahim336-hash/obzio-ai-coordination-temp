@@ -7,6 +7,14 @@ GitHub write capability, attach its immutable bundle in the current command-laye
 project once and the command layer ingests it. The founder is never the comparison,
 monitoring or merge layer. `decision_changed: []`.
 
+For every launched lane, record the stable project URL or ID, stable chat/Work-thread
+URL or ID, exact titles, operation key, launch time and repository return path. A
+display name or “current conversation” does not count. Return `NOT_EXPOSED` when the
+provider does not expose a stable locator; never invent one. Cursor may initiate,
+route, retrieve or reconcile a lane through any individually qualified API, MCP,
+browser or repository route. Native ChatGPT Projects visibility inside Cursor is
+useful but is not required, and the founder is not the routine result relay.
+
 ## CGPT-01 — Frontier practitioner research
 
 - Project: `CGPT-01 Frontier Practice Lab`

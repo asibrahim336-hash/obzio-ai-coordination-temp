@@ -30,7 +30,7 @@ class ControlPlaneTests(unittest.TestCase):
 
     def test_project_rebuilds_from_event_head(self) -> None:
         projection = scctl.project(self.root)
-        self.assertEqual(18, projection["event_count"])
+        self.assertEqual(19, projection["event_count"])
         self.assertEqual("ACTIVE_INTERIM", projection["subjects"]["SCF-01/CGPT-01"]["state"])
 
     def test_event_chain_is_valid(self) -> None:
@@ -69,6 +69,24 @@ class ControlPlaneTests(unittest.TestCase):
         changed["active_primary"] = "SCF-01/CUR-01"
         changed["cutover_evidence"] = {gate: True for gate in changed["cutover_gates"]}
         self.assertFalse(any("primary changed before" in item for item in self.errors_for(changed)))
+
+    def test_cursor_cannot_be_promoted_without_two_route_evidence(self) -> None:
+        changed = copy.deepcopy(self.control)
+        changed["orchestration_assignment"]["cursor_role_state"] = "MAJOR_ORCHESTRATION_LAYER_QUALIFIED"
+        errors = self.errors_for(changed)
+        self.assertTrue(any("promoted without two qualified routes" in item for item in errors))
+        self.assertTrue(any("promoted without complete end-to-end evidence" in item for item in errors))
+
+    def test_chatgpt_projects_ui_cannot_be_made_promotion_gate(self) -> None:
+        changed = copy.deepcopy(self.control)
+        qualification = changed["orchestration_assignment"]["cursor_control_surface_qualification"]
+        qualification["projects_ui_probe_required_for_promotion"] = True
+        self.assertTrue(any("artificial promotion gate" in item for item in self.errors_for(changed)))
+
+    def test_unqualified_second_cursor_group_is_rejected(self) -> None:
+        changed = copy.deepcopy(self.control)
+        changed["orchestration_assignment"]["cursor_control_surface_qualification"]["maximum_cursor_top_level_agents"] = 8
+        self.assertTrue(any("second Cursor top-level agent" in item for item in self.errors_for(changed)))
 
     def test_execution_claim_without_locator_is_rejected(self) -> None:
         changed = copy.deepcopy(self.control)
@@ -110,6 +128,11 @@ class ControlPlaneTests(unittest.TestCase):
         changed = copy.deepcopy(self.control)
         changed["runtime_bindings"].pop()
         self.assertTrue(any("binding denominator" in item for item in self.errors_for(changed)))
+
+    def test_runtime_binding_unknown_surface_locator_is_rejected(self) -> None:
+        changed = copy.deepcopy(self.control)
+        changed["runtime_bindings"][0]["surface_locator_ids"] = ["LOC-NOT-REAL"]
+        self.assertTrue(any("unknown surface locator" in item for item in self.errors_for(changed)))
 
     def test_po01_non_interference_is_enforced(self) -> None:
         changed = copy.deepcopy(self.control)
@@ -164,6 +187,30 @@ class ControlPlaneTests(unittest.TestCase):
         errors: list[str] = []
         scctl.validate_plan(plan, errors)
         self.assertTrue(any("denominator" in item for item in errors))
+
+    def test_founder_reported_sw_space_locator_is_preserved(self) -> None:
+        locators = scctl.read_json(self.root / "state/runtime-surface-locators.json")
+        errors: list[str] = []
+        scctl.validate_locators(locators, errors)
+        self.assertEqual([], errors)
+        sw = next(item for item in locators["records"] if item["locator_id"] == "LOC-SW-SPACE")
+        self.assertEqual("sw:space:1054976614269477", sw["stable_locator"])
+
+    def test_captured_surface_without_locator_is_rejected(self) -> None:
+        locators = scctl.read_json(self.root / "state/runtime-surface-locators.json")
+        sw = next(item for item in locators["records"] if item["locator_id"] == "LOC-SW-SPACE")
+        sw["stable_locator"] = None
+        errors: list[str] = []
+        scctl.validate_locators(locators, errors)
+        self.assertTrue(any("captured surface without stable locator" in item for item in errors))
+
+    def test_pending_surface_cannot_contain_invented_locator(self) -> None:
+        locators = scctl.read_json(self.root / "state/runtime-surface-locators.json")
+        cursor = next(item for item in locators["records"] if item["locator_id"] == "LOC-CURSOR-CUR01-AGENT")
+        cursor["stable_locator"] = "https://cursor.com/agents/invented"
+        errors: list[str] = []
+        scctl.validate_locators(locators, errors)
+        self.assertTrue(any("pending surface contains invented locator" in item for item in errors))
 
     def test_known_error_controls_have_mechanisms_and_checks(self) -> None:
         controls = scctl.read_json(self.root / "errors/recurrence-controls.json")

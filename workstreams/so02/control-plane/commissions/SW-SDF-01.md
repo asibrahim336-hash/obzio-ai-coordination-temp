@@ -12,15 +12,21 @@ Operate SW as Obzio's continuous strategy-discovery and capability-synthesis fac
 
 Use the maximum useful SW capability available: strongest exact models, coworkers, agents, skills, tools, memory modes, automations, integrations, APIs, connectors and browser/operator mechanisms. Do not downgrade capability because a task is called subordinate or because conventional orchestration would optimise cost.
 
+SW is a parallel specialist factory, not the programme's required central
+orchestration layer. Use its strongest coworker coordination, workspace/co-creation,
+HTML and presentation generation, research, reproduction and synthesis functions in
+parallel. Return addressable artifacts through the repository so the programme does
+not depend on the continued availability of this surface.
+
 ## First action: capability and identity transaction
 
 Before large delegation:
 
-1. assign and persist the exact SW account/project/space/operation IDs;
+1. assign and persist the exact SW account/project/space/operation IDs and stable URLs; the founder-verified starting space ID is `1054976614269477` (shown with no chats before launch);
 2. inventory exact models, reasoning modes, context limits, coworker/agent mechanisms, skills, tools, memory modes, automation types and connectors visible now;
 3. distinguish `VISIBLE`, `CONFIGURED`, `VERIFIED`, `NOT_SUPPORTED` and `OWNER_BLOCKED`;
 4. test a non-sensitive write-and-read-back canary through the strongest durable route;
-5. prefer an authenticated GitHub route into the dedicated SCF-01 SW branch/path; otherwise use the authorised Shared Drive exchange and make Cursor ingest it directly;
+5. use the selected SO-02 branch only as an immutable read source; before any write create isolated return branch `capability-factory/return-20260822-v001` from the recorded source SHA, or fail repository writes closed and return the exact provider permission needed;
 6. if OAuth, connector installation, account-owner approval, download or file movement is the fastest route, surface the exact founder action immediately while unaffected work continues;
 7. never treat provider memory, a chat return or a task status as the sole copy of material work.
 
@@ -64,6 +70,7 @@ Persist work while it is produced. Before a worker can be counted complete, comm
 The first return must include:
 
 - exact SW stable identifiers and capability census;
+- stable space, operation/thread, coworker/agent and automation URLs or exact provider IDs, immutable source SHA and isolated return-branch URL;
 - child/work-unit denominator reconciled from an authoritative register;
 - durable repository commit or Shared Drive object URLs plus hashes and read-back receipts;
 - at least 12 current-method hypotheses, six Obzio reproductions and two tested live-mechanism changes or evidence-backed rejections;
@@ -79,4 +86,3 @@ The first return must include:
 - Do not contact or mutate `PO-01`.
 - Review another producer only from immutable artifacts and frozen criteria.
 - Never self-accept.
-

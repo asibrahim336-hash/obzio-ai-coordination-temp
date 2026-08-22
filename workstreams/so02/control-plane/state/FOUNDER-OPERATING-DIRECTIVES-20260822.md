@@ -90,6 +90,37 @@ knowledge packages. Provider memory is never constitutional authority.
   per-push Work-mode runs fail closed.
 - No merge, promotion or company-strategy binding follows from these directives.
 
+## Orchestration topology and resumable surfaces
+
+Treat Cursor as a strong candidate for the major or primary machine-orchestration
+layer, not merely as a coding surface. Evaluate its whole practical control surface:
+durable agent and follow-up runs, model or agent prompting, final-result and artifact
+retrieval, GitHub, MCP/OAuth, browser/computer operation, authorised API routes,
+cross-provider exchange, reconciliation and restartable state. Full authenticated
+visibility into native ChatGPT Projects would add a route but is not a governing
+requirement and must not become an artificial promotion gate.
+
+Admit each route separately from live end-to-end evidence. Cursor becomes the major
+orchestration layer when the strongest available combination proves launch,
+retrieval, reconciliation, stable locators, failure fallback, remote custody and no
+PO-03 capacity interference. Never create exclusive dependency on Cursor or SW:
+Git remains canonical, ChatGPT retains the founder command/interface and continuity
+function, and SW continues in parallel for coworker coordination, workspace and
+co-creation, HTML/presentation generation, research, reproduction and synthesis.
+
+Record stable provider URLs or exact IDs for every project, space, operation,
+thread, agent, run, automation and return branch that must be found again. A display
+name or “current conversation” is not a stable locator. A provider-created surface
+without an exposed URL or ID is recorded as `NOT_EXPOSED`; do not invent one. The SW
+space created for this operation has founder-reported provider ID
+`1054976614269477`; the provider UI showed it as `PO-02 — Capability Extraction
+and Qualification — COM-PO02-20260822` with no chats. The earlier reported ID
+`1018622194494744` was explicitly corrected by the founder and is not the launch
+target. The provider-visible space must be renamed `Capability Extraction Lab`
+before its first message. This locator rule is an
+internal state and coordination requirement and does not widen what is disclosed to
+SW.
+
 ## Deferred disclosure factory workstream
 
 The founder's standing role-specific identity, affiliation, intent and

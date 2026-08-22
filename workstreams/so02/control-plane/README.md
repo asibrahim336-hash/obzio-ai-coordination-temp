@@ -7,13 +7,18 @@ This is a continuation of the active programme. It does not restart `PO-01`, `PO
 ## Current authority and state
 
 - `SO-02` remains the active strategic operator until the cutover gates in `state/control-plane.json` are independently passed.
-- `SCF-01/CUR-01` is the candidate Cursor coordination-kernel principal and canonical repository controller.
-- `SCF-01/SW-01` is the candidate SW strategy-discovery and capability-synthesis principal.
+- `SCF-01/CUR-01` is the primary machine-orchestration candidate and candidate coordination-kernel principal. It is not promoted until a route-agnostic live qualification proves the strongest practical combination; native ChatGPT Projects visibility is optional.
+- `SCF-01/SW-01` is the parallel SW strategy-discovery, coworker/workspace, HTML/presentation and capability-synthesis specialist. It is not the required central coordinator.
 - `SCF-01/CGPT-01` is the active ChatGPT founder-interface, strategy-interlock, independent-synthesis and continuity principal.
 - `SCF-01/OSS-01` is the future Obzio-controlled open-source successor binding; it is not yet qualified.
 - Founder strategy decisions remain founder-bound. `decision_changed: []`.
 
 Provider identity is a runtime binding, not a role identity. Replacing a provider must not replace the strategic function, its ledger or its evidence.
+
+Stable runtime locations are tracked in `state/runtime-surface-locators.json`. Display
+names and provider memory are not locators. New provider surfaces record exact URLs
+or provider IDs, immutable resume checkpoints and return paths; unavailable IDs are
+reported as `NOT_EXPOSED`, never fabricated.
 
 Stable institutional IDs use object classes rather than provider names: `SS` strategy snapshot, `FN` function, `APT` appointment, `RTI` runtime instance, `OP` operation, `WV` wave, `WU` work unit, `ATT` attempt, `EVT` event, `CLM` claim, `HYP` hypothesis, `REP` reproduction, `MCH` mechanism change, `CAP` capability, `EVAL` evaluation, `PRP` proposal, `DEC` founder decision, `FACT` founder action, `ART` artifact, `RCPT` receipt and `SUC` successor. Provider project, space, agent, run and thread IDs are locators attached to those objects.
 
@@ -46,6 +51,7 @@ Every wave must leave a task result and a measured change to the system that gen
 
 1. Run `python -I workstreams/so02/control-plane/tools/scctl.py validate`.
 2. Read `state/control-plane.json` and `state/events.jsonl`.
-3. Execute the relevant commission in `commissions/`.
-4. Record runtime identity and every state transition before claiming execution.
-5. Use `launch/` for the exact founder-side provider actions.
+3. Read `state/runtime-surface-locators.json`, resolve a stable surface locator and verify the immutable resume checkpoint.
+4. Execute the relevant commission in `commissions/`.
+5. Record runtime identity and every state transition before claiming execution.
+6. Use `launch/` for the exact founder-side provider actions.

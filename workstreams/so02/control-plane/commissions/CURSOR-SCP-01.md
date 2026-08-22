@@ -28,6 +28,30 @@ Run current-plan execution and continuous strategic discovery concurrently. Main
 
 Do not merely inventory these lanes. Detect missing opportunities, competing routes, dependency errors, stale premises, underused capabilities and work the founder did not know to request.
 
+## Orchestration topology qualification
+
+Cursor is the primary orchestration candidate because its practical surface can
+include durable agents and follow-up runs, final-result and artifact retrieval,
+GitHub, MCP/OAuth, browser/computer control, external model/API routes and isolated
+provider exchanges. Do not reduce this question to native visibility of ChatGPT
+Projects. That browser route is useful if it works, but it is optional and is not a
+promotion gate.
+
+Before any broader scale launch, use one top-level Cursor agent to qualify the
+strongest two independent routes actually available. Each admitted route must prove
+bounded launch, addressable result retrieval, stable locator capture, reconciliation
+into immutable repository custody, remote byte-for-byte read-back, one failure or
+unavailable-route fallback, and no queue/pause/eviction/admission impact on an
+existing PO-03 top-level task. Record unsupported and owner-authentication-required
+routes without stopping unaffected work.
+
+A passing route set admits only one persistent Cursor orchestrator and only those
+routes. It does not admit a second Multiple Agents group, an unproved route,
+exclusive dependency on Cursor or SW, or control-plane cutover. The repository
+remains canonical; ChatGPT remains the founder command/interface and continuity
+surface; SW remains a parallel specialist for coworker coordination, workspace and
+co-creation, research, HTML/presentation production and capability synthesis.
+
 ## Permanent functions
 
 Maintain differentiated, independently evaluated functions for:
@@ -80,14 +104,14 @@ Provider completion without this sequence becomes `PROVIDER_COMPLETED_UNCOMMITTE
 Do not return a plan or acknowledgement. Begin by:
 
 1. running the seeded validator and tests;
-2. committing a launch receipt containing agent/run ID, exact model/reasoning configuration, start SHA and tool/capability census;
-3. committing the multi-parent group manifest and proving one shared-state writer before any parent can update shared projections;
+2. committing a launch receipt containing the stable agent URL or ID, run ID, exact model/reasoning configuration, start SHA and tool/capability census;
+3. executing `CUR-ORCH-QUAL-01` as one top-level agent, qualifying the strongest two independent available orchestration routes and proving a fallback plus zero PO-03 capacity interference;
 4. replacing every `COMMISSIONED_NOT_LAUNCHED` Cursor field with observed execution state only after those receipts exist;
 5. building an append-only strategic event/WAL implementation and projection command;
 6. running fault tests for lost callbacks, stale leases, parent restart, duplicate result, partial artifact, provider-completed/uncommitted and multi-parent shared-write collision;
-7. launching the permanent functions at maximum effective scale in isolated worktrees/VMs;
+7. after route qualification, launching permanent functions at measured safe scale in isolated worktrees/VMs without starting another Multiple Agents group until account-level non-interference is observed;
 8. generating current strategy alternatives and research hypotheses while current programme execution continues;
-9. sending the SW principal the bounded source capsule and testing a round-trip without founder relay;
+9. ingesting the SW isolated return branch and testing a round-trip without founder relay or a shared-branch writer collision;
 10. executing one full compounding generation and then an independently tested successor generation;
 11. requesting independent acceptance without self-accepting.
 
@@ -102,6 +126,7 @@ Do not return a plan or acknowledgement. Begin by:
 - operating-system metrics with raw denominators;
 - error recurrence matrix with executable tests;
 - cross-runtime SW round-trip evidence;
+- per-route orchestration qualification with stable provider/URL locators, result retrieval, fallback and remote custody;
 - G0/G1/G2 generation comparison and successor package;
 - current founder-action queue containing only genuine owner/provider actions;
 - clean-clone and substitute-runtime replay receipts.
