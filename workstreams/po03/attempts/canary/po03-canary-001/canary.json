@@ -1,61 +1,67 @@
 {
-  "acceptance_contract_sha256": "5a249909df8207bf8e6b552790fa5b532a045d6a8f851bedf75f52a47b0caa7c",
-  "artifact_kind": "PO03-TRANSACTIONAL-ROUTE-CANARY-v1",
-  "canary_nonce": "721166a718cd5dd8b9b2525cf5c6b32a5e4b6e2b1b3ebb94fa3aaafa4a53177e",
-  "canary_nonce_sha256": "a3c93e3ebebd9c2cb78133f32063792b9b21e57e991db1a74cd84144dda9668f",
-  "canary_nonce_utf8_byte_length": 64,
-  "controller_head_sha": "7b9ee3e29f2d364cff5cdf2383dd512a0a6603e0",
-  "controller_head_sha_provenance": {
-    "declared_in": "workstreams/po03/control/tasks/po03-canary-001/input.json",
-    "observed_base_commit_sha": "2b488695ffefa346abcf5d870ff103e6b221fe18",
-    "observed_base_commit_subject": "po03: freeze transactional activation state",
-    "observed_base_branch": "po03/repository-engineering-portable-runtime-20260822-v001",
-    "relationship": "declared controller_head_sha is an ancestor of the observed base commit; activation state at or after 2b48869 confirmed"
+  "canary_version": "PO03-TRANSACTIONAL-CUSTODY-CANARY-v2",
+  "canonical_json": {
+    "document_serialization": {
+      "encoding": "utf-8",
+      "ensure_ascii": false,
+      "indent": 2,
+      "key_order": "sorted",
+      "trailing_newline": true
+    },
+    "document_sha256_recorded_in": "workstreams/po03/attempts/canary/po03-canary-001/manifest.json",
+    "hash_algorithm": "sha256",
+    "payload_bytes": 860,
+    "payload_serialization": {
+      "encoding": "utf-8",
+      "ensure_ascii": false,
+      "key_order": "sorted",
+      "separators": [
+        ",",
+        ":"
+      ],
+      "trailing_newline": false
+    },
+    "payload_sha256": "3c4f0417bed7fc9a354a81767adee04b7434cfd4acb776f6d12239a26d749c23"
   },
   "decision_changed": [],
-  "executed_at": "2026-08-22T06:56:00Z",
-  "falsifiable_hypothesis": "The selected subordinate route can durably write, commit, push, and independently read back an exact canary without path collision.",
-  "hash_verification": {
-    "acceptance_json_recomputed_sha256": "5a249909df8207bf8e6b552790fa5b532a045d6a8f851bedf75f52a47b0caa7c",
-    "acceptance_json_matches_transaction_created": true,
-    "commission_md_recomputed_sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
-    "commission_md_matches_input_source_hashes": true,
-    "input_json_recomputed_sha256": "e7f4e98e98906cd8e8b8e7c35cc4174ba70f5cc6ab5dc06b4a8342b30040e81c",
-    "input_json_matches_transaction_created_immutable_input_manifest_sha256": true,
-    "transaction_schema_recomputed_sha256": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1",
-    "transaction_schema_matches_input_source_hashes": true
+  "derivation": {
+    "acceptance_contract": "workstreams/po03/control/tasks/po03-canary-001/acceptance.json",
+    "emitter": "workstreams/po03/attempts/canary/po03-canary-001/canary_tool.py",
+    "input_capsule": "workstreams/po03/control/tasks/po03-canary-001/input.json",
+    "reproduce": "python3 workstreams/po03/attempts/canary/po03-canary-001/canary_tool.py emit-canary --check"
   },
-  "immutable_input_manifest_sha256": "e7f4e98e98906cd8e8b8e7c35cc4174ba70f5cc6ab5dc06b4a8342b30040e81c",
+  "falsifiable_hypothesis": "The selected subordinate route can durably write, commit, push, and independently read back an exact canary without path collision.",
   "obzio_state_claim": {
-    "claimed": "READY_TO_COMMIT",
-    "not_claimed": ["COMPLETED", "ACCEPTED"],
+    "claimed_by_producer": "READY_TO_COMMIT",
+    "completion_actor": null,
     "independent_acceptance": "NOT_TESTED",
+    "not_claimed": [
+      "ACCEPTED",
+      "COMPLETED"
+    ],
     "self_acceptance_performed": false
   },
-  "ownership": {
-    "branch_requirement": "po03/po03-canary-001",
-    "owned_paths": ["workstreams/po03/attempts/canary/po03-canary-001/**"],
-    "result_slot": "workstreams/po03/attempts/canary/po03-canary-001",
-    "writes_outside_owned_paths": 0
-  },
-  "runtime": {
-    "provider": "Cursor",
-    "route": "isolated subagent executing inside a Cursor Cloud agent run against the immutable repository head",
-    "provider_run_id": "bc-13b664e4-a9eb-4a06-9b23-3283644e5b31",
-    "requested_exact_model": "claude-opus-5-thinking-high-fast",
-    "model_actually_used": "claude-opus-5 (extended thinking enabled)",
-    "model_identification_method": "runtime self-report of the executing subagent; the parent cloud-agent run reports originalModelName gpt-5.6-sol-max-fast for the controller, not for this subagent",
-    "reasoning_control_observed": "NOT_SUPPORTED — the subagent runtime does not expose an authoritative model/reasoning-tier identifier to the executing agent, so the exact suffixed configuration string cannot be independently verified from inside the route",
-    "context_policy": "bounded task capsule plus immutable repository head",
-    "tools_used": ["git", "python3", "repository file read/write tools"]
-  },
-  "task_id": "po03-canary-001",
-  "transaction": {
+  "payload": {
+    "acceptance_contract_sha256": "5a249909df8207bf8e6b552790fa5b532a045d6a8f851bedf75f52a47b0caa7c",
     "attempt_number": 1,
+    "canary_nonce": "721166a718cd5dd8b9b2525cf5c6b32a5e4b6e2b1b3ebb94fa3aaafa4a53177e",
+    "canary_nonce_sha256": "a3c93e3ebebd9c2cb78133f32063792b9b21e57e991db1a74cd84144dda9668f",
+    "canary_nonce_utf8_bytes": 64,
     "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
     "fence_token": 1,
     "idempotency_key": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001:po03-canary-001:attempt-1",
+    "immutable_input_manifest_sha256": "e7f4e98e98906cd8e8b8e7c35cc4174ba70f5cc6ab5dc06b4a8342b30040e81c",
     "lease_id": "lease-po03-canary-001-1",
-    "result_txn_id": "result-po03-canary-001-1"
+    "result_slot": "workstreams/po03/attempts/canary/po03-canary-001",
+    "result_txn_id": "result-po03-canary-001-1",
+    "task_id": "po03-canary-001",
+    "worker_id": "po03-canary-001-producer",
+    "worker_role": "producer"
+  },
+  "supersedes": {
+    "disposition": "SUPERSEDED_BY_CONTINUATION",
+    "note": "Attempt-1 canary bytes remain immutable evidence on commit 46080e21eec5766633b890c978fa5efdc53a3c94; this continuation adds the logical worker id and canonical byte/hash metadata required by the task contract.",
+    "prior_canary_sha256": "1da6899e982e0360580d6cefb4256a51b5b190bda5a1a42479dcc765b60a0831",
+    "prior_commit": "46080e21eec5766633b890c978fa5efdc53a3c94"
   }
 }
