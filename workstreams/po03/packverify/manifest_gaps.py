@@ -77,7 +77,11 @@ def audit_entries(
     exempt = set(manifest_paths) | set(excluded_paths)
 
     unlisted = [
-        {"class": "unlisted_file", "tree_path": path}
+        {
+            "class": "unlisted_file",
+            "tree_path": path,
+            "observed_sha256": hashlib.sha256(actual_blobs[path]).hexdigest(),
+        }
         for path in sorted(set(actual_blobs) - listed - exempt)
     ]
     unhashed = [

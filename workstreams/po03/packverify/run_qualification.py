@@ -144,6 +144,75 @@ def _repair_candidates(source_results: list[dict[str, object]]) -> list[dict[str
                         "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
                     }
                 )
+            portability_findings = root_result["portability"]["findings"]
+            if portability_findings:
+                candidates.append(
+                    {
+                        "candidate_id": f"REPAIR-PORTABILITY-{commit[:12]}",
+                        "defect": "nonportable_paths",
+                        "pinned_commit": commit,
+                        "target_namespace": root,
+                        "proposed_change": {
+                            "operation": "PARAMETERIZE_PATHS_AND_VALIDATE_REFERENCES",
+                            "affected_paths": sorted(
+                                {
+                                    finding["source_path"]
+                                    for finding in portability_findings
+                                }
+                            ),
+                            "finding_classes": sorted(
+                                {
+                                    finding["class"]
+                                    for finding in portability_findings
+                                }
+                            ),
+                            "rule": (
+                                "Replace machine roots with an explicit workspace "
+                                "argument and either add or remove every unresolved "
+                                "relative target."
+                            ),
+                        },
+                        "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+                    }
+                )
+            unlisted = root_result["manifest_gaps"]["gaps"]["unlisted_files"]
+            if unlisted:
+                candidates.append(
+                    {
+                        "candidate_id": f"REPAIR-PROVENANCE-{commit[:12]}",
+                        "defect": "unlisted_files",
+                        "pinned_commit": commit,
+                        "target_namespace": f"{root}/MANIFEST.json",
+                        "proposed_change": {
+                            "operation": "ADD_HASHED_MANIFEST_ENTRIES",
+                            "entries": [
+                                {
+                                    "path": finding["tree_path"],
+                                    "sha256": finding["observed_sha256"],
+                                }
+                                for finding in unlisted
+                            ],
+                        },
+                        "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+                    }
+                )
+        debris_findings = source["transport_debris"]["findings"]
+        if debris_findings:
+            candidates.append(
+                {
+                    "candidate_id": f"DISPOSITION-TRANSPORT-DEBRIS-{commit[:12]}",
+                    "defect": "transport_debris_candidates",
+                    "pinned_commit": commit,
+                    "target_namespace": "MULTIPLE_READ_ONLY_PATHS",
+                    "proposed_change": {
+                        "operation": "QUARANTINE_REVIEW_NO_DELETION",
+                        "paths": [
+                            finding["path"] for finding in debris_findings
+                        ],
+                    },
+                    "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+                }
+            )
     return sorted(candidates, key=lambda item: str(item["candidate_id"]))
 
 

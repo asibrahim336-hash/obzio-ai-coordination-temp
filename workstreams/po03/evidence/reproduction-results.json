@@ -1,0 +1,1517 @@
+{
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "evidence_inputs": {
+    "criteria_freeze": "workstreams/po03/evidence/criteria-freeze.json",
+    "criteria_freeze_sha256": "c7afeef10fecad68e016a5fc5e4cb4ce7b6f4bb0c377dcd194c8a363ba9ec6a9",
+    "producer_narrative_used_as_evidence": false,
+    "source_lock": "workstreams/po03/evidence/source-lock.json",
+    "source_lock_sha256": "e0f8dcf021b186f0fc40c0237ea1e283295beb38d9b61e7f6cb475a13314ce33"
+  },
+  "generation_command": "python3 -I workstreams/po03/packverify/run_qualification.py --repository . --source-lock workstreams/po03/evidence/source-lock.json --criteria workstreams/po03/evidence/criteria-freeze.json --scratch workstreams/po03/control/units/a4/scratch --output workstreams/po03/evidence/reproduction-results.json",
+  "hypothesis_dispositions": {
+    "a4-u01": "PASS: all used sources are immutable full SHAs and no PO-01 ref was written",
+    "a4-u02": "NOT_YET: criteria ordering is proven, but no admissible narrative-first baseline exists to establish changed outcome",
+    "a4-u03": "PASS: planted fixture gates the detector and immutable trees produce 10 missing-blob findings",
+    "a4-u04": "PASS: planted path classes are detected and immutable trees produce 68 portability findings",
+    "a4-u05": "PASS: all three closed-set gap classes have planted fixtures; real counts are {'unlisted_files': 4, 'unhashed_entries': 0, 'hash_mismatches': 0}",
+    "a4-u06": "NOT_YET: the immutable aggregate entry points fail across the process boundary, but an independent in-process pass was not established",
+    "a4-u07": "PASS: deterministic read-only classification found 16 transport-debris candidates"
+  },
+  "isolated_repair_candidates": [
+    {
+      "candidate_id": "DISPOSITION-TRANSPORT-DEBRIS-4612fee16a00",
+      "defect": "transport_debris_candidates",
+      "pinned_commit": "4612fee16a0027ae41ed17d3b16b7bb18212ba6a",
+      "proposed_change": {
+        "operation": "QUARANTINE_REVIEW_NO_DELETION",
+        "paths": [
+          ".tmp-container-probe.br",
+          ".tmp-upload/probe.bin"
+        ]
+      },
+      "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+      "target_namespace": "MULTIPLE_READ_ONLY_PATHS"
+    },
+    {
+      "candidate_id": "DISPOSITION-TRANSPORT-DEBRIS-62c29e1a6419",
+      "defect": "transport_debris_candidates",
+      "pinned_commit": "62c29e1a641932b817592ddc970df11f89b6c0f7",
+      "proposed_change": {
+        "operation": "QUARANTINE_REVIEW_NO_DELETION",
+        "paths": [
+          "_transport/p04_1.bin",
+          "_transport/p10_2.bin",
+          "_transport/p11_1.bin",
+          "_transport/p13_2.bin",
+          "_transport/p16_2.bin",
+          "_transport/part00.bin",
+          "_transport/part00b.bin",
+          "_transport/part04.bin",
+          "_transport/t003.bin",
+          "_transport/t009.bin",
+          "_transport/t010.bin",
+          "_transport/u001.bin",
+          "_transport/u001a.bin",
+          "_transport/u026.bin"
+        ]
+      },
+      "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+      "target_namespace": "MULTIPLE_READ_ONLY_PATHS"
+    },
+    {
+      "candidate_id": "REPAIR-MANIFEST-ROOT-1e6f53c323f8",
+      "defect": "machine_specific_root",
+      "pinned_commit": "1e6f53c323f8326d12af213557082a3665991f19",
+      "proposed_change": {
+        "operation": "JSON_PATCH_DATA",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/root",
+            "value": "."
+          }
+        ]
+      },
+      "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+      "target_namespace": "packs/MANIFEST.json"
+    },
+    {
+      "candidate_id": "REPAIR-MANIFEST-ROOT-62c29e1a6419",
+      "defect": "machine_specific_root",
+      "pinned_commit": "62c29e1a641932b817592ddc970df11f89b6c0f7",
+      "proposed_change": {
+        "operation": "JSON_PATCH_DATA",
+        "patch": [
+          {
+            "op": "replace",
+            "path": "/root",
+            "value": "."
+          }
+        ]
+      },
+      "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+      "target_namespace": "modules/operators/MANIFEST.json"
+    },
+    {
+      "candidate_id": "REPAIR-MISSING-SPINE-1e6f53c323f8-packs-06-browser-execution-_spine.py",
+      "defect": "manifest_entry_missing_blob",
+      "pinned_commit": "1e6f53c323f8326d12af213557082a3665991f19",
+      "proposed_change": {
+        "destination": "packs/06-browser-execution/_spine.py",
+        "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+        "operation": "COPY_HASH_MATCHING_SHARED_SPINE"
+      },
+      "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+      "target_namespace": "packs/06-browser-execution/_spine.py"
+    },
+    {
+      "candidate_id": "REPAIR-MISSING-SPINE-1e6f53c323f8-packs-07-capability-manufacture-_spine.py",
+      "defect": "manifest_entry_missing_blob",
+      "pinned_commit": "1e6f53c323f8326d12af213557082a3665991f19",
+      "proposed_change": {
+        "destination": "packs/07-capability-manufacture/_spine.py",
+        "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+        "operation": "COPY_HASH_MATCHING_SHARED_SPINE"
+      },
+      "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+      "target_namespace": "packs/07-capability-manufacture/_spine.py"
+    },
+    {
+      "candidate_id": "REPAIR-MISSING-SPINE-1e6f53c323f8-packs-08-knowledge-currentness-_spine.py",
+      "defect": "manifest_entry_missing_blob",
+      "pinned_commit": "1e6f53c323f8326d12af213557082a3665991f19",
+      "proposed_change": {
+        "destination": "packs/08-knowledge-currentness/_spine.py",
+        "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+        "operation": "COPY_HASH_MATCHING_SHARED_SPINE"
+      },
+      "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+      "target_namespace": "packs/08-knowledge-currentness/_spine.py"
+    },
+    {
+      "candidate_id": "REPAIR-MISSING-SPINE-1e6f53c323f8-packs-09-infrastructure-operation-_spine.py",
+      "defect": "manifest_entry_missing_blob",
+      "pinned_commit": "1e6f53c323f8326d12af213557082a3665991f19",
+      "proposed_change": {
+        "destination": "packs/09-infrastructure-operation/_spine.py",
+        "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+        "operation": "COPY_HASH_MATCHING_SHARED_SPINE"
+      },
+      "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+      "target_namespace": "packs/09-infrastructure-operation/_spine.py"
+    },
+    {
+      "candidate_id": "REPAIR-MISSING-SPINE-1e6f53c323f8-packs-10-economics-measurement-_spine.py",
+      "defect": "manifest_entry_missing_blob",
+      "pinned_commit": "1e6f53c323f8326d12af213557082a3665991f19",
+      "proposed_change": {
+        "destination": "packs/10-economics-measurement/_spine.py",
+        "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+        "operation": "COPY_HASH_MATCHING_SHARED_SPINE"
+      },
+      "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+      "target_namespace": "packs/10-economics-measurement/_spine.py"
+    },
+    {
+      "candidate_id": "REPAIR-MISSING-SPINE-62c29e1a6419-modules-operators-06-browser-execution-_spine.py",
+      "defect": "manifest_entry_missing_blob",
+      "pinned_commit": "62c29e1a641932b817592ddc970df11f89b6c0f7",
+      "proposed_change": {
+        "destination": "modules/operators/06-browser-execution/_spine.py",
+        "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+        "operation": "COPY_HASH_MATCHING_SHARED_SPINE"
+      },
+      "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+      "target_namespace": "modules/operators/06-browser-execution/_spine.py"
+    },
+    {
+      "candidate_id": "REPAIR-MISSING-SPINE-62c29e1a6419-modules-operators-07-capability-manufacture-_spine.py",
+      "defect": "manifest_entry_missing_blob",
+      "pinned_commit": "62c29e1a641932b817592ddc970df11f89b6c0f7",
+      "proposed_change": {
+        "destination": "modules/operators/07-capability-manufacture/_spine.py",
+        "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+        "operation": "COPY_HASH_MATCHING_SHARED_SPINE"
+      },
+      "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+      "target_namespace": "modules/operators/07-capability-manufacture/_spine.py"
+    },
+    {
+      "candidate_id": "REPAIR-MISSING-SPINE-62c29e1a6419-modules-operators-08-knowledge-currentness-_spine.py",
+      "defect": "manifest_entry_missing_blob",
+      "pinned_commit": "62c29e1a641932b817592ddc970df11f89b6c0f7",
+      "proposed_change": {
+        "destination": "modules/operators/08-knowledge-currentness/_spine.py",
+        "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+        "operation": "COPY_HASH_MATCHING_SHARED_SPINE"
+      },
+      "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+      "target_namespace": "modules/operators/08-knowledge-currentness/_spine.py"
+    },
+    {
+      "candidate_id": "REPAIR-MISSING-SPINE-62c29e1a6419-modules-operators-09-infrastructure-operation-_spine.py",
+      "defect": "manifest_entry_missing_blob",
+      "pinned_commit": "62c29e1a641932b817592ddc970df11f89b6c0f7",
+      "proposed_change": {
+        "destination": "modules/operators/09-infrastructure-operation/_spine.py",
+        "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+        "operation": "COPY_HASH_MATCHING_SHARED_SPINE"
+      },
+      "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+      "target_namespace": "modules/operators/09-infrastructure-operation/_spine.py"
+    },
+    {
+      "candidate_id": "REPAIR-MISSING-SPINE-62c29e1a6419-modules-operators-10-economics-measurement-_spine.py",
+      "defect": "manifest_entry_missing_blob",
+      "pinned_commit": "62c29e1a641932b817592ddc970df11f89b6c0f7",
+      "proposed_change": {
+        "destination": "modules/operators/10-economics-measurement/_spine.py",
+        "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+        "operation": "COPY_HASH_MATCHING_SHARED_SPINE"
+      },
+      "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+      "target_namespace": "modules/operators/10-economics-measurement/_spine.py"
+    },
+    {
+      "candidate_id": "REPAIR-PORTABILITY-1e6f53c323f8",
+      "defect": "nonportable_paths",
+      "pinned_commit": "1e6f53c323f8326d12af213557082a3665991f19",
+      "proposed_change": {
+        "affected_paths": [
+          "packs/06-browser-execution/LAUNCH.md",
+          "packs/07-capability-manufacture/LAUNCH.md",
+          "packs/07-capability-manufacture/state_machine.py",
+          "packs/07-capability-manufacture/test_pack.py",
+          "packs/08-knowledge-currentness/LAUNCH.md",
+          "packs/09-infrastructure-operation/LAUNCH.md",
+          "packs/10-economics-measurement/LAUNCH.md",
+          "packs/MANIFEST.json",
+          "packs/README.md",
+          "packs/build_manifests.py",
+          "packs/continuity-recovery/LAUNCH.md",
+          "packs/continuity-recovery/test_pack.py",
+          "packs/founder-intent-processing/LAUNCH.md",
+          "packs/founder-intent-processing/test_pack.py",
+          "packs/independent-acceptance/LAUNCH.md",
+          "packs/independent-acceptance/test_pack.py",
+          "packs/make_manifest.py",
+          "packs/repository-engineering/LAUNCH.md",
+          "packs/repository-engineering/test_pack.py",
+          "packs/run_all_tests.sh",
+          "packs/strategic-orchestration/LAUNCH.md",
+          "packs/strategic-orchestration/test_pack.py"
+        ],
+        "finding_classes": [
+          "absolute_posix_path",
+          "machine_specific_root",
+          "unresolvable_relative_reference"
+        ],
+        "operation": "PARAMETERIZE_PATHS_AND_VALIDATE_REFERENCES",
+        "rule": "Replace machine roots with an explicit workspace argument and either add or remove every unresolved relative target."
+      },
+      "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+      "target_namespace": "packs"
+    },
+    {
+      "candidate_id": "REPAIR-PORTABILITY-62c29e1a6419",
+      "defect": "nonportable_paths",
+      "pinned_commit": "62c29e1a641932b817592ddc970df11f89b6c0f7",
+      "proposed_change": {
+        "affected_paths": [
+          "modules/operators/06-browser-execution/LAUNCH.md",
+          "modules/operators/07-capability-manufacture/LAUNCH.md",
+          "modules/operators/07-capability-manufacture/state_machine.py",
+          "modules/operators/07-capability-manufacture/test_pack.py",
+          "modules/operators/08-knowledge-currentness/LAUNCH.md",
+          "modules/operators/09-infrastructure-operation/LAUNCH.md",
+          "modules/operators/10-economics-measurement/LAUNCH.md",
+          "modules/operators/MANIFEST.json",
+          "modules/operators/build_manifests.py",
+          "modules/operators/continuity-recovery/LAUNCH.md",
+          "modules/operators/continuity-recovery/test_pack.py",
+          "modules/operators/founder-intent-processing/LAUNCH.md",
+          "modules/operators/founder-intent-processing/test_pack.py",
+          "modules/operators/independent-acceptance/LAUNCH.md",
+          "modules/operators/independent-acceptance/test_pack.py",
+          "modules/operators/make_manifest.py",
+          "modules/operators/repository-engineering/LAUNCH.md",
+          "modules/operators/repository-engineering/test_pack.py",
+          "modules/operators/run_all_tests.sh",
+          "modules/operators/strategic-orchestration/LAUNCH.md",
+          "modules/operators/strategic-orchestration/test_pack.py"
+        ],
+        "finding_classes": [
+          "absolute_posix_path",
+          "machine_specific_root",
+          "unresolvable_relative_reference"
+        ],
+        "operation": "PARAMETERIZE_PATHS_AND_VALIDATE_REFERENCES",
+        "rule": "Replace machine roots with an explicit workspace argument and either add or remove every unresolved relative target."
+      },
+      "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+      "target_namespace": "modules/operators"
+    },
+    {
+      "candidate_id": "REPAIR-PORTABLE-RUNNER-1e6f53c323f8",
+      "defect": "absolute_checkout_dependency",
+      "pinned_commit": "1e6f53c323f8326d12af213557082a3665991f19",
+      "proposed_change": {
+        "operation": "UNIFIED_DIFF_DATA",
+        "patch": "--- a/packs/run_all_tests.sh\n+++ b/packs/run_all_tests.sh\n@@\n+ROOT=\"$(CDPATH= cd -- \"$(dirname -- \"$0\")\" && pwd)\"\n-  ( cd \"/tmp/packs/$p\" && python3 test_pack.py ) || rc=1\n+  ( cd \"$ROOT/$p\" && python3 test_pack.py ) || rc=1\n"
+      },
+      "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+      "target_namespace": "packs/run_all_tests.sh"
+    },
+    {
+      "candidate_id": "REPAIR-PORTABLE-RUNNER-62c29e1a6419",
+      "defect": "absolute_checkout_dependency",
+      "pinned_commit": "62c29e1a641932b817592ddc970df11f89b6c0f7",
+      "proposed_change": {
+        "operation": "UNIFIED_DIFF_DATA",
+        "patch": "--- a/modules/operators/run_all_tests.sh\n+++ b/modules/operators/run_all_tests.sh\n@@\n+ROOT=\"$(CDPATH= cd -- \"$(dirname -- \"$0\")\" && pwd)\"\n-  ( cd \"/tmp/packs/$p\" && python3 test_pack.py ) || rc=1\n+  ( cd \"$ROOT/$p\" && python3 test_pack.py ) || rc=1\n"
+      },
+      "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+      "target_namespace": "modules/operators/run_all_tests.sh"
+    },
+    {
+      "candidate_id": "REPAIR-PROVENANCE-62c29e1a6419",
+      "defect": "unlisted_files",
+      "pinned_commit": "62c29e1a641932b817592ddc970df11f89b6c0f7",
+      "proposed_change": {
+        "entries": [
+          {
+            "path": "modules/operators/PROVENANCE.md",
+            "sha256": "896d7f6ba47153f1d3d056db170fae93743e838f77e6dddd57dd07c7d6960391"
+          },
+          {
+            "path": "modules/operators/README.md",
+            "sha256": "923c682bd5ea73e73e515db9b5ba0eeb6041a356e1f0447bd1d819b6e456c40f"
+          },
+          {
+            "path": "modules/operators/_spine.py",
+            "sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182"
+          },
+          {
+            "path": "modules/operators/make_manifest.py",
+            "sha256": "cf78cc18221ba766a4c9f60565bdfdfed9a4e1ded57bd057286b0c0d2e8a1461"
+          }
+        ],
+        "operation": "ADD_HASHED_MANIFEST_ENTRIES"
+      },
+      "state": "ISOLATED_PO03_CANDIDATE_NOT_APPLIED",
+      "target_namespace": "modules/operators/MANIFEST.json"
+    }
+  ],
+  "limitations": [
+    "PO-02 runner identity, PO-02 fixtures, Code-2 result bytes, and producer packverify source are not present as identified artifacts in the pinned source set.",
+    "No producer report, branch name, commit message, or pull-request narrative was used to establish a pack result.",
+    "The process-boundary run evaluates aggregate entry points present in committed bytes; it does not infer unavailable expected output."
+  ],
+  "schema_version": "po03-pack-reproduction-v1",
+  "sources": [
+    {
+      "commit_sha": "1e6f53c323f8326d12af213557082a3665991f19",
+      "pack_roots": [
+        "packs"
+      ],
+      "pack_tree_outcome": "PRESENT",
+      "ref": "refs/heads/packs/operator-packs-v1-20260820",
+      "root_results": [
+        {
+          "manifest_gaps": {
+            "actual_file_count": 93,
+            "claimed_entry_count": 221,
+            "closed_set_rule": "Every regular file below the aggregate root must be hash-listed by a manifest or explicitly excluded; every listed entry must carry a valid SHA-256 matching immutable blob bytes.",
+            "commit_sha": "1e6f53c323f8326d12af213557082a3665991f19",
+            "counts": {
+              "hash_mismatches": 0,
+              "unhashed_entries": 0,
+              "unlisted_files": 0
+            },
+            "gaps": {
+              "hash_mismatches": [],
+              "unhashed_entries": [],
+              "unlisted_files": []
+            },
+            "manifest_count": 12,
+            "outcome": "PASS",
+            "root": "packs"
+          },
+          "missing_blobs": {
+            "claimed_entry_count": 221,
+            "commit_sha": "1e6f53c323f8326d12af213557082a3665991f19",
+            "findings": [
+              {
+                "class": "manifest_entry_missing_blob",
+                "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+                "logical_path": "_spine.py",
+                "manifest_path": "packs/06-browser-execution/MANIFEST.json",
+                "tree_path": "packs/06-browser-execution/_spine.py"
+              },
+              {
+                "class": "manifest_entry_missing_blob",
+                "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+                "logical_path": "_spine.py",
+                "manifest_path": "packs/07-capability-manufacture/MANIFEST.json",
+                "tree_path": "packs/07-capability-manufacture/_spine.py"
+              },
+              {
+                "class": "manifest_entry_missing_blob",
+                "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+                "logical_path": "_spine.py",
+                "manifest_path": "packs/08-knowledge-currentness/MANIFEST.json",
+                "tree_path": "packs/08-knowledge-currentness/_spine.py"
+              },
+              {
+                "class": "manifest_entry_missing_blob",
+                "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+                "logical_path": "_spine.py",
+                "manifest_path": "packs/09-infrastructure-operation/MANIFEST.json",
+                "tree_path": "packs/09-infrastructure-operation/_spine.py"
+              },
+              {
+                "class": "manifest_entry_missing_blob",
+                "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+                "logical_path": "_spine.py",
+                "manifest_path": "packs/10-economics-measurement/MANIFEST.json",
+                "tree_path": "packs/10-economics-measurement/_spine.py"
+              }
+            ],
+            "manifest_count": 12,
+            "missing_blob_count": 5,
+            "outcome": "FAIL",
+            "root": "packs"
+          },
+          "portability": {
+            "commit_sha": "1e6f53c323f8326d12af213557082a3665991f19",
+            "counts_by_class": {
+              "absolute_posix_path": 22,
+              "machine_specific_root": 11,
+              "unresolvable_relative_reference": 3
+            },
+            "files_scanned": 93,
+            "finding_count": 36,
+            "findings": [
+              {
+                "class": "absolute_posix_path",
+                "line": 17,
+                "source_path": "packs/06-browser-execution/LAUNCH.md",
+                "value": "/etc/obzio/acceptance.key"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 19,
+                "source_path": "packs/06-browser-execution/LAUNCH.md",
+                "value": "/var/obzio/runs"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 44,
+                "source_path": "packs/07-capability-manufacture/LAUNCH.md",
+                "value": "/opt/capabilities/solver"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 264,
+                "source_path": "packs/07-capability-manufacture/state_machine.py",
+                "value": "/usr/bin"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 301,
+                "source_path": "packs/07-capability-manufacture/test_pack.py",
+                "value": "/etc/passwd"
+              },
+              {
+                "class": "unresolvable_relative_reference",
+                "line": 301,
+                "resolved_path": "etc/passwd",
+                "source_path": "packs/07-capability-manufacture/test_pack.py",
+                "value": "../../etc/passwd"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 16,
+                "source_path": "packs/08-knowledge-currentness/LAUNCH.md",
+                "value": "/var/obzio/pins.json"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 20,
+                "source_path": "packs/08-knowledge-currentness/LAUNCH.md",
+                "value": "/var/obzio/currentness"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 23,
+                "source_path": "packs/08-knowledge-currentness/LAUNCH.md",
+                "value": "/var/obzio/pins.json"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 36,
+                "source_path": "packs/08-knowledge-currentness/LAUNCH.md",
+                "value": "/var/obzio/pins.json"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 22,
+                "source_path": "packs/09-infrastructure-operation/LAUNCH.md",
+                "value": "/var/obzio/infra"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 25,
+                "source_path": "packs/09-infrastructure-operation/LAUNCH.md",
+                "value": "/var/obzio/state.db"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 27,
+                "source_path": "packs/10-economics-measurement/LAUNCH.md",
+                "value": "/var/obzio/billing.json"
+              },
+              {
+                "class": "machine_specific_root",
+                "line": 45,
+                "source_path": "packs/MANIFEST.json",
+                "value": "/tmp/packs"
+              },
+              {
+                "class": "machine_specific_root",
+                "line": 113,
+                "source_path": "packs/README.md",
+                "value": "/tmp/packs"
+              },
+              {
+                "class": "machine_specific_root",
+                "line": 114,
+                "source_path": "packs/README.md",
+                "value": "/tmp/packs"
+              },
+              {
+                "class": "machine_specific_root",
+                "line": 182,
+                "source_path": "packs/README.md",
+                "value": "/tmp/packs"
+              },
+              {
+                "class": "machine_specific_root",
+                "line": 182,
+                "source_path": "packs/README.md",
+                "value": "/tmp/packs2"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 1,
+                "source_path": "packs/build_manifests.py",
+                "value": "/usr/bin/env"
+              },
+              {
+                "class": "machine_specific_root",
+                "line": 6,
+                "source_path": "packs/continuity-recovery/LAUNCH.md",
+                "value": "/tmp/packs/continuity-recovery"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 1,
+                "source_path": "packs/continuity-recovery/test_pack.py",
+                "value": "/usr/bin/env"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 347,
+                "source_path": "packs/continuity-recovery/test_pack.py",
+                "value": "/etc/hostname"
+              },
+              {
+                "class": "unresolvable_relative_reference",
+                "line": 347,
+                "resolved_path": "../etc/hostname",
+                "source_path": "packs/continuity-recovery/test_pack.py",
+                "value": "../../../etc/hostname"
+              },
+              {
+                "class": "machine_specific_root",
+                "line": 6,
+                "source_path": "packs/founder-intent-processing/LAUNCH.md",
+                "value": "/tmp/packs/founder-intent-processing"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 1,
+                "source_path": "packs/founder-intent-processing/test_pack.py",
+                "value": "/usr/bin/env"
+              },
+              {
+                "class": "machine_specific_root",
+                "line": 6,
+                "source_path": "packs/independent-acceptance/LAUNCH.md",
+                "value": "/tmp/packs/independent-acceptance"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 1,
+                "source_path": "packs/independent-acceptance/test_pack.py",
+                "value": "/usr/bin/env"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 1,
+                "source_path": "packs/make_manifest.py",
+                "value": "/usr/bin/env"
+              },
+              {
+                "class": "machine_specific_root",
+                "line": 6,
+                "source_path": "packs/repository-engineering/LAUNCH.md",
+                "value": "/tmp/packs/repository-engineering"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 1,
+                "source_path": "packs/repository-engineering/test_pack.py",
+                "value": "/usr/bin/env"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 289,
+                "source_path": "packs/repository-engineering/test_pack.py",
+                "value": "/etc/passwd"
+              },
+              {
+                "class": "unresolvable_relative_reference",
+                "line": 289,
+                "resolved_path": "etc/passwd",
+                "source_path": "packs/repository-engineering/test_pack.py",
+                "value": "../../etc/passwd"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 1,
+                "source_path": "packs/run_all_tests.sh",
+                "value": "/usr/bin/env"
+              },
+              {
+                "class": "machine_specific_root",
+                "line": 7,
+                "source_path": "packs/run_all_tests.sh",
+                "value": "/tmp/packs/$p"
+              },
+              {
+                "class": "machine_specific_root",
+                "line": 6,
+                "source_path": "packs/strategic-orchestration/LAUNCH.md",
+                "value": "/tmp/packs/strategic-orchestration"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 1,
+                "source_path": "packs/strategic-orchestration/test_pack.py",
+                "value": "/usr/bin/env"
+              }
+            ],
+            "outcome": "FAIL",
+            "root": "packs"
+          },
+          "process_boundary": {
+            "clean_export": true,
+            "commit_sha": "1e6f53c323f8326d12af213557082a3665991f19",
+            "entrypoint": "packs/run_all_tests.sh",
+            "environment_policy": {
+              "inherited": [
+                "PATH"
+              ],
+              "python_isolated_from_user_site": true,
+              "sanitized": [
+                "HOME",
+                "LANG",
+                "LC_ALL",
+                "PYTHONDONTWRITEBYTECODE",
+                "PYTHONNOUSERSITE",
+                "TMPDIR"
+              ],
+              "temporary_directory_inside_owned_scratch": true
+            },
+            "outcome": "FAIL",
+            "process": {
+              "command": [
+                "bash",
+                "run_all_tests.sh"
+              ],
+              "exit_code": 1,
+              "stderr": "run_all_tests.sh: line 7: cd: /tmp/packs/strategic-orchestration: No such file or directory\nrun_all_tests.sh: line 7: cd: /tmp/packs/founder-intent-processing: No such file or directory\nrun_all_tests.sh: line 7: cd: /tmp/packs/repository-engineering: No such file or directory\nrun_all_tests.sh: line 7: cd: /tmp/packs/independent-acceptance: No such file or directory\nrun_all_tests.sh: line 7: cd: /tmp/packs/continuity-recovery: No such file or directory\n",
+              "stdout": "\n\n\n\n\nAT LEAST ONE PACK FAILED\n",
+              "timed_out": false
+            },
+            "root": "packs"
+          },
+          "root": "packs"
+        }
+      ],
+      "supplied_artifact_boundary": {
+        "code2_result_bytes": "ABSENT: no Code-2-named path exists in the pinned tree",
+        "path_matches": {
+          "code-2": [],
+          "code2": [],
+          "fixtures": [],
+          "packverify": [],
+          "runner": []
+        },
+        "po02_fixtures": "ABSENT: no fixture-named path exists in the pinned tree",
+        "po02_runner": "ABSENT: no runner-named path exists in the pinned tree",
+        "producer_packverify_source": "ABSENT: no packverify-named path exists in the pinned tree"
+      },
+      "transport_debris": {
+        "classification_rule": {
+          "exact_segments": [
+            "_transport",
+            "stage",
+            "staging",
+            "temp",
+            "tmp",
+            "transport"
+          ],
+          "mutation": "NONE",
+          "scope": "tracked regular-file paths only",
+          "temporary_prefixes": [
+            ".tmp-",
+            ".upload-",
+            ".stage-"
+          ],
+          "temporary_suffixes": [
+            ".part",
+            ".upload",
+            ".tmp"
+          ]
+        },
+        "commit_sha": "1e6f53c323f8326d12af213557082a3665991f19",
+        "finding_count": 0,
+        "findings": [],
+        "outcome": "PASS"
+      }
+    },
+    {
+      "commit_sha": "37943ec2ff9f6702d72e127a3c8e56c81b0c3812",
+      "pack_roots": [],
+      "pack_tree_outcome": "ABSENT",
+      "ref": "refs/heads/packs/operator-packs-v1-source",
+      "root_results": [],
+      "supplied_artifact_boundary": {
+        "code2_result_bytes": "ABSENT: no Code-2-named path exists in the pinned tree",
+        "path_matches": {
+          "code-2": [],
+          "code2": [],
+          "fixtures": [],
+          "packverify": [],
+          "runner": []
+        },
+        "po02_fixtures": "ABSENT: no fixture-named path exists in the pinned tree",
+        "po02_runner": "ABSENT: no runner-named path exists in the pinned tree",
+        "producer_packverify_source": "ABSENT: no packverify-named path exists in the pinned tree"
+      },
+      "transport_debris": {
+        "classification_rule": {
+          "exact_segments": [
+            "_transport",
+            "stage",
+            "staging",
+            "temp",
+            "tmp",
+            "transport"
+          ],
+          "mutation": "NONE",
+          "scope": "tracked regular-file paths only",
+          "temporary_prefixes": [
+            ".tmp-",
+            ".upload-",
+            ".stage-"
+          ],
+          "temporary_suffixes": [
+            ".part",
+            ".upload",
+            ".tmp"
+          ]
+        },
+        "commit_sha": "37943ec2ff9f6702d72e127a3c8e56c81b0c3812",
+        "finding_count": 0,
+        "findings": [],
+        "outcome": "PASS"
+      }
+    },
+    {
+      "commit_sha": "4612fee16a0027ae41ed17d3b16b7bb18212ba6a",
+      "pack_roots": [],
+      "pack_tree_outcome": "ABSENT",
+      "ref": "refs/heads/soo/operator-packs-source-v1-20260820",
+      "root_results": [],
+      "supplied_artifact_boundary": {
+        "code2_result_bytes": "ABSENT: no Code-2-named path exists in the pinned tree",
+        "path_matches": {
+          "code-2": [],
+          "code2": [],
+          "fixtures": [],
+          "packverify": [],
+          "runner": []
+        },
+        "po02_fixtures": "ABSENT: no fixture-named path exists in the pinned tree",
+        "po02_runner": "ABSENT: no runner-named path exists in the pinned tree",
+        "producer_packverify_source": "ABSENT: no packverify-named path exists in the pinned tree"
+      },
+      "transport_debris": {
+        "classification_rule": {
+          "exact_segments": [
+            "_transport",
+            "stage",
+            "staging",
+            "temp",
+            "tmp",
+            "transport"
+          ],
+          "mutation": "NONE",
+          "scope": "tracked regular-file paths only",
+          "temporary_prefixes": [
+            ".tmp-",
+            ".upload-",
+            ".stage-"
+          ],
+          "temporary_suffixes": [
+            ".part",
+            ".upload",
+            ".tmp"
+          ]
+        },
+        "commit_sha": "4612fee16a0027ae41ed17d3b16b7bb18212ba6a",
+        "finding_count": 2,
+        "findings": [
+          {
+            "class": "transport_debris_candidate",
+            "path": ".tmp-container-probe.br",
+            "proposed_disposition": "QUARANTINE_REVIEW_THEN_RETAIN_OR_ARCHIVE; DO_NOT_DELETE",
+            "reason": "path segment '.tmp-container-probe.br' has a temporary-transfer marker"
+          },
+          {
+            "class": "transport_debris_candidate",
+            "path": ".tmp-upload/probe.bin",
+            "proposed_disposition": "QUARANTINE_REVIEW_THEN_RETAIN_OR_ARCHIVE; DO_NOT_DELETE",
+            "reason": "path segment '.tmp-upload' has a temporary-transfer marker"
+          }
+        ],
+        "outcome": "FAIL"
+      }
+    },
+    {
+      "commit_sha": "62c29e1a641932b817592ddc970df11f89b6c0f7",
+      "pack_roots": [
+        "modules/operators"
+      ],
+      "pack_tree_outcome": "PRESENT",
+      "ref": "refs/heads/soo/operator-packs-v1-source-20260820",
+      "root_results": [
+        {
+          "manifest_gaps": {
+            "actual_file_count": 93,
+            "claimed_entry_count": 128,
+            "closed_set_rule": "Every regular file below the aggregate root must be hash-listed by a manifest or explicitly excluded; every listed entry must carry a valid SHA-256 matching immutable blob bytes.",
+            "commit_sha": "62c29e1a641932b817592ddc970df11f89b6c0f7",
+            "counts": {
+              "hash_mismatches": 0,
+              "unhashed_entries": 0,
+              "unlisted_files": 4
+            },
+            "gaps": {
+              "hash_mismatches": [],
+              "unhashed_entries": [],
+              "unlisted_files": [
+                {
+                  "class": "unlisted_file",
+                  "observed_sha256": "896d7f6ba47153f1d3d056db170fae93743e838f77e6dddd57dd07c7d6960391",
+                  "tree_path": "modules/operators/PROVENANCE.md"
+                },
+                {
+                  "class": "unlisted_file",
+                  "observed_sha256": "923c682bd5ea73e73e515db9b5ba0eeb6041a356e1f0447bd1d819b6e456c40f",
+                  "tree_path": "modules/operators/README.md"
+                },
+                {
+                  "class": "unlisted_file",
+                  "observed_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+                  "tree_path": "modules/operators/_spine.py"
+                },
+                {
+                  "class": "unlisted_file",
+                  "observed_sha256": "cf78cc18221ba766a4c9f60565bdfdfed9a4e1ded57bd057286b0c0d2e8a1461",
+                  "tree_path": "modules/operators/make_manifest.py"
+                }
+              ]
+            },
+            "manifest_count": 11,
+            "outcome": "FAIL",
+            "root": "modules/operators"
+          },
+          "missing_blobs": {
+            "claimed_entry_count": 128,
+            "commit_sha": "62c29e1a641932b817592ddc970df11f89b6c0f7",
+            "findings": [
+              {
+                "class": "manifest_entry_missing_blob",
+                "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+                "logical_path": "_spine.py",
+                "manifest_path": "modules/operators/06-browser-execution/MANIFEST.json",
+                "tree_path": "modules/operators/06-browser-execution/_spine.py"
+              },
+              {
+                "class": "manifest_entry_missing_blob",
+                "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+                "logical_path": "_spine.py",
+                "manifest_path": "modules/operators/07-capability-manufacture/MANIFEST.json",
+                "tree_path": "modules/operators/07-capability-manufacture/_spine.py"
+              },
+              {
+                "class": "manifest_entry_missing_blob",
+                "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+                "logical_path": "_spine.py",
+                "manifest_path": "modules/operators/08-knowledge-currentness/MANIFEST.json",
+                "tree_path": "modules/operators/08-knowledge-currentness/_spine.py"
+              },
+              {
+                "class": "manifest_entry_missing_blob",
+                "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+                "logical_path": "_spine.py",
+                "manifest_path": "modules/operators/09-infrastructure-operation/MANIFEST.json",
+                "tree_path": "modules/operators/09-infrastructure-operation/_spine.py"
+              },
+              {
+                "class": "manifest_entry_missing_blob",
+                "expected_sha256": "431773539ced6556fdd9a631fc80d42404aa2f30846a1d127826dd099a01f182",
+                "logical_path": "_spine.py",
+                "manifest_path": "modules/operators/10-economics-measurement/MANIFEST.json",
+                "tree_path": "modules/operators/10-economics-measurement/_spine.py"
+              }
+            ],
+            "manifest_count": 11,
+            "missing_blob_count": 5,
+            "outcome": "FAIL",
+            "root": "modules/operators"
+          },
+          "portability": {
+            "commit_sha": "62c29e1a641932b817592ddc970df11f89b6c0f7",
+            "counts_by_class": {
+              "absolute_posix_path": 22,
+              "machine_specific_root": 7,
+              "unresolvable_relative_reference": 3
+            },
+            "files_scanned": 93,
+            "finding_count": 32,
+            "findings": [
+              {
+                "class": "absolute_posix_path",
+                "line": 17,
+                "source_path": "modules/operators/06-browser-execution/LAUNCH.md",
+                "value": "/etc/obzio/acceptance.key"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 19,
+                "source_path": "modules/operators/06-browser-execution/LAUNCH.md",
+                "value": "/var/obzio/runs"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 44,
+                "source_path": "modules/operators/07-capability-manufacture/LAUNCH.md",
+                "value": "/opt/capabilities/solver"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 264,
+                "source_path": "modules/operators/07-capability-manufacture/state_machine.py",
+                "value": "/usr/bin"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 301,
+                "source_path": "modules/operators/07-capability-manufacture/test_pack.py",
+                "value": "/etc/passwd"
+              },
+              {
+                "class": "unresolvable_relative_reference",
+                "line": 301,
+                "resolved_path": "modules/etc/passwd",
+                "source_path": "modules/operators/07-capability-manufacture/test_pack.py",
+                "value": "../../etc/passwd"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 16,
+                "source_path": "modules/operators/08-knowledge-currentness/LAUNCH.md",
+                "value": "/var/obzio/pins.json"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 20,
+                "source_path": "modules/operators/08-knowledge-currentness/LAUNCH.md",
+                "value": "/var/obzio/currentness"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 23,
+                "source_path": "modules/operators/08-knowledge-currentness/LAUNCH.md",
+                "value": "/var/obzio/pins.json"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 36,
+                "source_path": "modules/operators/08-knowledge-currentness/LAUNCH.md",
+                "value": "/var/obzio/pins.json"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 22,
+                "source_path": "modules/operators/09-infrastructure-operation/LAUNCH.md",
+                "value": "/var/obzio/infra"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 25,
+                "source_path": "modules/operators/09-infrastructure-operation/LAUNCH.md",
+                "value": "/var/obzio/state.db"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 27,
+                "source_path": "modules/operators/10-economics-measurement/LAUNCH.md",
+                "value": "/var/obzio/billing.json"
+              },
+              {
+                "class": "machine_specific_root",
+                "line": 45,
+                "source_path": "modules/operators/MANIFEST.json",
+                "value": "/tmp/packs"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 1,
+                "source_path": "modules/operators/build_manifests.py",
+                "value": "/usr/bin/env"
+              },
+              {
+                "class": "machine_specific_root",
+                "line": 6,
+                "source_path": "modules/operators/continuity-recovery/LAUNCH.md",
+                "value": "/tmp/packs/continuity-recovery"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 1,
+                "source_path": "modules/operators/continuity-recovery/test_pack.py",
+                "value": "/usr/bin/env"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 347,
+                "source_path": "modules/operators/continuity-recovery/test_pack.py",
+                "value": "/etc/hostname"
+              },
+              {
+                "class": "unresolvable_relative_reference",
+                "line": 347,
+                "resolved_path": "etc/hostname",
+                "source_path": "modules/operators/continuity-recovery/test_pack.py",
+                "value": "../../../etc/hostname"
+              },
+              {
+                "class": "machine_specific_root",
+                "line": 6,
+                "source_path": "modules/operators/founder-intent-processing/LAUNCH.md",
+                "value": "/tmp/packs/founder-intent-processing"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 1,
+                "source_path": "modules/operators/founder-intent-processing/test_pack.py",
+                "value": "/usr/bin/env"
+              },
+              {
+                "class": "machine_specific_root",
+                "line": 6,
+                "source_path": "modules/operators/independent-acceptance/LAUNCH.md",
+                "value": "/tmp/packs/independent-acceptance"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 1,
+                "source_path": "modules/operators/independent-acceptance/test_pack.py",
+                "value": "/usr/bin/env"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 1,
+                "source_path": "modules/operators/make_manifest.py",
+                "value": "/usr/bin/env"
+              },
+              {
+                "class": "machine_specific_root",
+                "line": 6,
+                "source_path": "modules/operators/repository-engineering/LAUNCH.md",
+                "value": "/tmp/packs/repository-engineering"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 1,
+                "source_path": "modules/operators/repository-engineering/test_pack.py",
+                "value": "/usr/bin/env"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 289,
+                "source_path": "modules/operators/repository-engineering/test_pack.py",
+                "value": "/etc/passwd"
+              },
+              {
+                "class": "unresolvable_relative_reference",
+                "line": 289,
+                "resolved_path": "modules/etc/passwd",
+                "source_path": "modules/operators/repository-engineering/test_pack.py",
+                "value": "../../etc/passwd"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 1,
+                "source_path": "modules/operators/run_all_tests.sh",
+                "value": "/usr/bin/env"
+              },
+              {
+                "class": "machine_specific_root",
+                "line": 7,
+                "source_path": "modules/operators/run_all_tests.sh",
+                "value": "/tmp/packs/$p"
+              },
+              {
+                "class": "machine_specific_root",
+                "line": 6,
+                "source_path": "modules/operators/strategic-orchestration/LAUNCH.md",
+                "value": "/tmp/packs/strategic-orchestration"
+              },
+              {
+                "class": "absolute_posix_path",
+                "line": 1,
+                "source_path": "modules/operators/strategic-orchestration/test_pack.py",
+                "value": "/usr/bin/env"
+              }
+            ],
+            "outcome": "FAIL",
+            "root": "modules/operators"
+          },
+          "process_boundary": {
+            "clean_export": true,
+            "commit_sha": "62c29e1a641932b817592ddc970df11f89b6c0f7",
+            "entrypoint": "modules/operators/run_all_tests.sh",
+            "environment_policy": {
+              "inherited": [
+                "PATH"
+              ],
+              "python_isolated_from_user_site": true,
+              "sanitized": [
+                "HOME",
+                "LANG",
+                "LC_ALL",
+                "PYTHONDONTWRITEBYTECODE",
+                "PYTHONNOUSERSITE",
+                "TMPDIR"
+              ],
+              "temporary_directory_inside_owned_scratch": true
+            },
+            "outcome": "FAIL",
+            "process": {
+              "command": [
+                "bash",
+                "run_all_tests.sh"
+              ],
+              "exit_code": 1,
+              "stderr": "run_all_tests.sh: line 7: cd: /tmp/packs/strategic-orchestration: No such file or directory\nrun_all_tests.sh: line 7: cd: /tmp/packs/founder-intent-processing: No such file or directory\nrun_all_tests.sh: line 7: cd: /tmp/packs/repository-engineering: No such file or directory\nrun_all_tests.sh: line 7: cd: /tmp/packs/independent-acceptance: No such file or directory\nrun_all_tests.sh: line 7: cd: /tmp/packs/continuity-recovery: No such file or directory\n",
+              "stdout": "\n\n\n\n\nAT LEAST ONE PACK FAILED\n",
+              "timed_out": false
+            },
+            "root": "modules/operators"
+          },
+          "root": "modules/operators"
+        }
+      ],
+      "supplied_artifact_boundary": {
+        "code2_result_bytes": "ABSENT: no Code-2-named path exists in the pinned tree",
+        "path_matches": {
+          "code-2": [],
+          "code2": [],
+          "fixtures": [],
+          "packverify": [],
+          "runner": []
+        },
+        "po02_fixtures": "ABSENT: no fixture-named path exists in the pinned tree",
+        "po02_runner": "ABSENT: no runner-named path exists in the pinned tree",
+        "producer_packverify_source": "ABSENT: no packverify-named path exists in the pinned tree"
+      },
+      "transport_debris": {
+        "classification_rule": {
+          "exact_segments": [
+            "_transport",
+            "stage",
+            "staging",
+            "temp",
+            "tmp",
+            "transport"
+          ],
+          "mutation": "NONE",
+          "scope": "tracked regular-file paths only",
+          "temporary_prefixes": [
+            ".tmp-",
+            ".upload-",
+            ".stage-"
+          ],
+          "temporary_suffixes": [
+            ".part",
+            ".upload",
+            ".tmp"
+          ]
+        },
+        "commit_sha": "62c29e1a641932b817592ddc970df11f89b6c0f7",
+        "finding_count": 14,
+        "findings": [
+          {
+            "class": "transport_debris_candidate",
+            "path": "_transport/p04_1.bin",
+            "proposed_disposition": "QUARANTINE_REVIEW_THEN_RETAIN_OR_ARCHIVE; DO_NOT_DELETE",
+            "reason": "path segment '_transport' is a staging/transport marker"
+          },
+          {
+            "class": "transport_debris_candidate",
+            "path": "_transport/p10_2.bin",
+            "proposed_disposition": "QUARANTINE_REVIEW_THEN_RETAIN_OR_ARCHIVE; DO_NOT_DELETE",
+            "reason": "path segment '_transport' is a staging/transport marker"
+          },
+          {
+            "class": "transport_debris_candidate",
+            "path": "_transport/p11_1.bin",
+            "proposed_disposition": "QUARANTINE_REVIEW_THEN_RETAIN_OR_ARCHIVE; DO_NOT_DELETE",
+            "reason": "path segment '_transport' is a staging/transport marker"
+          },
+          {
+            "class": "transport_debris_candidate",
+            "path": "_transport/p13_2.bin",
+            "proposed_disposition": "QUARANTINE_REVIEW_THEN_RETAIN_OR_ARCHIVE; DO_NOT_DELETE",
+            "reason": "path segment '_transport' is a staging/transport marker"
+          },
+          {
+            "class": "transport_debris_candidate",
+            "path": "_transport/p16_2.bin",
+            "proposed_disposition": "QUARANTINE_REVIEW_THEN_RETAIN_OR_ARCHIVE; DO_NOT_DELETE",
+            "reason": "path segment '_transport' is a staging/transport marker"
+          },
+          {
+            "class": "transport_debris_candidate",
+            "path": "_transport/part00.bin",
+            "proposed_disposition": "QUARANTINE_REVIEW_THEN_RETAIN_OR_ARCHIVE; DO_NOT_DELETE",
+            "reason": "path segment '_transport' is a staging/transport marker"
+          },
+          {
+            "class": "transport_debris_candidate",
+            "path": "_transport/part00b.bin",
+            "proposed_disposition": "QUARANTINE_REVIEW_THEN_RETAIN_OR_ARCHIVE; DO_NOT_DELETE",
+            "reason": "path segment '_transport' is a staging/transport marker"
+          },
+          {
+            "class": "transport_debris_candidate",
+            "path": "_transport/part04.bin",
+            "proposed_disposition": "QUARANTINE_REVIEW_THEN_RETAIN_OR_ARCHIVE; DO_NOT_DELETE",
+            "reason": "path segment '_transport' is a staging/transport marker"
+          },
+          {
+            "class": "transport_debris_candidate",
+            "path": "_transport/t003.bin",
+            "proposed_disposition": "QUARANTINE_REVIEW_THEN_RETAIN_OR_ARCHIVE; DO_NOT_DELETE",
+            "reason": "path segment '_transport' is a staging/transport marker"
+          },
+          {
+            "class": "transport_debris_candidate",
+            "path": "_transport/t009.bin",
+            "proposed_disposition": "QUARANTINE_REVIEW_THEN_RETAIN_OR_ARCHIVE; DO_NOT_DELETE",
+            "reason": "path segment '_transport' is a staging/transport marker"
+          },
+          {
+            "class": "transport_debris_candidate",
+            "path": "_transport/t010.bin",
+            "proposed_disposition": "QUARANTINE_REVIEW_THEN_RETAIN_OR_ARCHIVE; DO_NOT_DELETE",
+            "reason": "path segment '_transport' is a staging/transport marker"
+          },
+          {
+            "class": "transport_debris_candidate",
+            "path": "_transport/u001.bin",
+            "proposed_disposition": "QUARANTINE_REVIEW_THEN_RETAIN_OR_ARCHIVE; DO_NOT_DELETE",
+            "reason": "path segment '_transport' is a staging/transport marker"
+          },
+          {
+            "class": "transport_debris_candidate",
+            "path": "_transport/u001a.bin",
+            "proposed_disposition": "QUARANTINE_REVIEW_THEN_RETAIN_OR_ARCHIVE; DO_NOT_DELETE",
+            "reason": "path segment '_transport' is a staging/transport marker"
+          },
+          {
+            "class": "transport_debris_candidate",
+            "path": "_transport/u026.bin",
+            "proposed_disposition": "QUARANTINE_REVIEW_THEN_RETAIN_OR_ARCHIVE; DO_NOT_DELETE",
+            "reason": "path segment '_transport' is a staging/transport marker"
+          }
+        ],
+        "outcome": "FAIL"
+      }
+    },
+    {
+      "commit_sha": "8c52ef6d8f0d510cf1d2bfee48923a49ca19475d",
+      "pack_roots": [],
+      "pack_tree_outcome": "ABSENT",
+      "ref": "refs/heads/soo/v003-controlling-pointer-and-part-manifest-repair-20260820",
+      "root_results": [],
+      "supplied_artifact_boundary": {
+        "code2_result_bytes": "ABSENT: no Code-2-named path exists in the pinned tree",
+        "path_matches": {
+          "code-2": [],
+          "code2": [],
+          "fixtures": [],
+          "packverify": [],
+          "runner": []
+        },
+        "po02_fixtures": "ABSENT: no fixture-named path exists in the pinned tree",
+        "po02_runner": "ABSENT: no runner-named path exists in the pinned tree",
+        "producer_packverify_source": "ABSENT: no packverify-named path exists in the pinned tree"
+      },
+      "transport_debris": {
+        "classification_rule": {
+          "exact_segments": [
+            "_transport",
+            "stage",
+            "staging",
+            "temp",
+            "tmp",
+            "transport"
+          ],
+          "mutation": "NONE",
+          "scope": "tracked regular-file paths only",
+          "temporary_prefixes": [
+            ".tmp-",
+            ".upload-",
+            ".stage-"
+          ],
+          "temporary_suffixes": [
+            ".part",
+            ".upload",
+            ".tmp"
+          ]
+        },
+        "commit_sha": "8c52ef6d8f0d510cf1d2bfee48923a49ca19475d",
+        "finding_count": 0,
+        "findings": [],
+        "outcome": "PASS"
+      }
+    },
+    {
+      "commit_sha": "745f634ba76cedba05a1b5676811deaf5764643a",
+      "pack_roots": [],
+      "pack_tree_outcome": "ABSENT",
+      "ref": "refs/heads/soo/v003-currentness-repair-20260820",
+      "root_results": [],
+      "supplied_artifact_boundary": {
+        "code2_result_bytes": "ABSENT: no Code-2-named path exists in the pinned tree",
+        "path_matches": {
+          "code-2": [],
+          "code2": [],
+          "fixtures": [],
+          "packverify": [],
+          "runner": []
+        },
+        "po02_fixtures": "ABSENT: no fixture-named path exists in the pinned tree",
+        "po02_runner": "ABSENT: no runner-named path exists in the pinned tree",
+        "producer_packverify_source": "ABSENT: no packverify-named path exists in the pinned tree"
+      },
+      "transport_debris": {
+        "classification_rule": {
+          "exact_segments": [
+            "_transport",
+            "stage",
+            "staging",
+            "temp",
+            "tmp",
+            "transport"
+          ],
+          "mutation": "NONE",
+          "scope": "tracked regular-file paths only",
+          "temporary_prefixes": [
+            ".tmp-",
+            ".upload-",
+            ".stage-"
+          ],
+          "temporary_suffixes": [
+            ".part",
+            ".upload",
+            ".tmp"
+          ]
+        },
+        "commit_sha": "745f634ba76cedba05a1b5676811deaf5764643a",
+        "finding_count": 0,
+        "findings": [],
+        "outcome": "PASS"
+      }
+    },
+    {
+      "commit_sha": "9696c325f0897b7c9e7ff2cd9d57fc7c4bb19e27",
+      "pack_roots": [],
+      "pack_tree_outcome": "ABSENT",
+      "ref": "refs/heads/soo/work-unit-contract-and-run-ledger-20260819",
+      "root_results": [],
+      "supplied_artifact_boundary": {
+        "code2_result_bytes": "ABSENT: no Code-2-named path exists in the pinned tree",
+        "path_matches": {
+          "code-2": [],
+          "code2": [],
+          "fixtures": [],
+          "packverify": [],
+          "runner": [
+            "modules/work_unit_contract/runner.py"
+          ]
+        },
+        "po02_fixtures": "ABSENT: no fixture-named path exists in the pinned tree",
+        "po02_runner": "NOT_YET: no pinned path identifies a PO-02 runner; a modules/work_unit_contract/runner.py match is a different repository component",
+        "producer_packverify_source": "ABSENT: no packverify-named path exists in the pinned tree"
+      },
+      "transport_debris": {
+        "classification_rule": {
+          "exact_segments": [
+            "_transport",
+            "stage",
+            "staging",
+            "temp",
+            "tmp",
+            "transport"
+          ],
+          "mutation": "NONE",
+          "scope": "tracked regular-file paths only",
+          "temporary_prefixes": [
+            ".tmp-",
+            ".upload-",
+            ".stage-"
+          ],
+          "temporary_suffixes": [
+            ".part",
+            ".upload",
+            ".tmp"
+          ]
+        },
+        "commit_sha": "9696c325f0897b7c9e7ff2cd9d57fc7c4bb19e27",
+        "finding_count": 0,
+        "findings": [],
+        "outcome": "PASS"
+      }
+    },
+    {
+      "commit_sha": "ee0f74e55ac129ce7a1800228b613f640ef059ae",
+      "pack_roots": [],
+      "pack_tree_outcome": "ABSENT",
+      "ref": "refs/heads/agent/operator-function-taxonomy-continuity-repair",
+      "root_results": [],
+      "supplied_artifact_boundary": {
+        "code2_result_bytes": "ABSENT: no Code-2-named path exists in the pinned tree",
+        "path_matches": {
+          "code-2": [],
+          "code2": [],
+          "fixtures": [],
+          "packverify": [],
+          "runner": []
+        },
+        "po02_fixtures": "ABSENT: no fixture-named path exists in the pinned tree",
+        "po02_runner": "ABSENT: no runner-named path exists in the pinned tree",
+        "producer_packverify_source": "ABSENT: no packverify-named path exists in the pinned tree"
+      },
+      "transport_debris": {
+        "classification_rule": {
+          "exact_segments": [
+            "_transport",
+            "stage",
+            "staging",
+            "temp",
+            "tmp",
+            "transport"
+          ],
+          "mutation": "NONE",
+          "scope": "tracked regular-file paths only",
+          "temporary_prefixes": [
+            ".tmp-",
+            ".upload-",
+            ".stage-"
+          ],
+          "temporary_suffixes": [
+            ".part",
+            ".upload",
+            ".tmp"
+          ]
+        },
+        "commit_sha": "ee0f74e55ac129ce7a1800228b613f640ef059ae",
+        "finding_count": 0,
+        "findings": [],
+        "outcome": "PASS"
+      }
+    }
+  ],
+  "summary": {
+    "manifest_gap_findings": {
+      "hash_mismatches": 0,
+      "unhashed_entries": 0,
+      "unlisted_files": 4
+    },
+    "missing_blob_findings": 10,
+    "portability_findings": 68,
+    "process_boundary_failures": 2,
+    "source_count": 8,
+    "sources_with_pack_roots": 2,
+    "transport_debris_findings": 16
+  }
+}
