@@ -1,6 +1,7 @@
 import importlib.util
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).parents[3]
@@ -37,12 +38,18 @@ class ReadbackAuditTests(unittest.TestCase):
         self.assertEqual(1, result["discrepancy_count"])
 
     def test_missing_result_is_not_invented(self):
-        result = AUDIT.audit_target(
-            "origin/cursor/po03-a1-custody-engine-ed20:"
-            "workstreams/po03/control/units/a1/a1-u01.json"
-        )
+        missing_error = b"fatal: result object is absent"
+        with patch.object(
+            AUDIT,
+            "git",
+            return_value=(128, b"", missing_error),
+        ):
+            result = AUDIT.audit_target(
+                "immutable-score-ref:workstreams/po03/control/units/a1/a1-u01.json"
+            )
         self.assertEqual("UNAVAILABLE", result["status"])
         self.assertEqual(0, result["artifacts_checked"])
+        self.assertIn("result object is absent", result["reason"])
 
 
 if __name__ == "__main__":
