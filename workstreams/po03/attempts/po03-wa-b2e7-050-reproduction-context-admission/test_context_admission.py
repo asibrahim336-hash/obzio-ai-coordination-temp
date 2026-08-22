@@ -2,11 +2,18 @@
 """Tests for the context-admission reproduction."""
 
 import hashlib
+import importlib.util
 import json
 import unittest
 from pathlib import Path
 
-import experiment
+
+MODULE_PATH = Path(__file__).with_name("experiment.py")
+SPEC = importlib.util.spec_from_file_location("context_experiment", MODULE_PATH)
+if SPEC is None or SPEC.loader is None:
+    raise RuntimeError(f"cannot load {MODULE_PATH}")
+experiment = importlib.util.module_from_spec(SPEC)
+SPEC.loader.exec_module(experiment)
 
 
 class ContextAdmissionTests(unittest.TestCase):
