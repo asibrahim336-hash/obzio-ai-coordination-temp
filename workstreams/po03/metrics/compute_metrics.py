@@ -75,11 +75,20 @@ def compute(root: Path) -> dict[str, Any]:
     # a7-u01 froze this metric's denominator as wave_a_spec.declared_units
     # (74) before any value was computed; that frozen denominator is kept
     # as the primary reported value below rather than silently moved, even
-    # though the registered population has since grown to 87 units (74
-    # original + 9 cohort-a11 custody remediation + 4 cohort-a12 capsule
-    # closure -- see workstreams/po03/control/work-unit-registry.jsonl). The
-    # wider population is reported alongside it, not instead of it, so a
-    # reader sees both without either number overwriting the other.
+    # though the registered population has continued to grow past it (see
+    # workstreams/po03/control/work-unit-registry.jsonl). The wider, live
+    # population is reported alongside it, not instead of it, so a reader
+    # sees both without either number overwriting the other. The per-cohort
+    # breakdown below is computed from the registry itself on every run, so
+    # this provenance string can never go stale the way a hand-written
+    # "74 + 9 + 4 = 87" count did once more cohorts registered units.
+    cohort_counts: dict[str, int] = {}
+    for r in registry_rows:
+        unit_id = r.get("unit_id", "")
+        cohort = unit_id.split("-", 1)[0] if "-" in unit_id else "UNKNOWN"
+        cohort_counts[cohort] = cohort_counts.get(cohort, 0) + 1
+    cohort_breakdown = ", ".join(f"{cohort}={count}" for cohort, count in sorted(cohort_counts.items()))
+
     accepted_count = sum(1 for r in unit_rows if r["independent_disposition"] == "ACCEPTED")
     independently_accepted_throughput = rate(accepted_count, declared_units)
     independently_accepted_throughput["denominator_provenance"] = (
@@ -96,10 +105,9 @@ def compute(root: Path) -> dict[str, Any]:
     independently_accepted_throughput["alternate_denominator_registered_population"] = {
         **rate(accepted_count, registered_population),
         "denominator_provenance": (
-            "len(workstreams/po03/control/work-unit-registry.jsonl) at measurement time: 74 original "
-            "wave-a units + 9 cohort-a11 custody-remediation units + 4 cohort-a12 capsule-closure "
-            "units = 87. Reported side by side with the frozen wave_a_spec denominator above, not as "
-            "a replacement for it."
+            f"len(workstreams/po03/control/work-unit-registry.jsonl) at measurement time: "
+            f"{registered_population} units, by cohort: {cohort_breakdown}. Reported side by side "
+            "with the frozen wave_a_spec denominator above, not as a replacement for it."
         ),
     }
 
@@ -240,11 +248,55 @@ def compute(root: Path) -> dict[str, Any]:
             "boundary": "workstreams/po03/review/luna/false-green-result.json (owned by po03-worker-a6, unit a6-u03) is absent from the tree at measurement time.",
         }
 
-    # --- successor_lift (deferred) ---
-    successor_lift = {
-        "value": "NOT_YET",
-        "boundary": "Reported in full in workstreams/po03/metrics/generation-comparison.json (a8-u05 populates G0/G1/G2 scores); this report only cross-references it.",
-    }
+    # --- successor_lift ---
+    # Cross-references this cohort's own workstreams/po03/metrics/
+    # generation-comparison.json rather than recomputing anything: that tool
+    # already independently recomputes all six preregistered guard
+    # conditions from a8's raw per-suite/per-case data (never from a8's own
+    # conditions/verdict fields) and records both the single primary
+    # preregistered verdict and the separate, non-collapsed full-chain
+    # compounding claim.
+    gen_comparison_path = root / "workstreams/po03/metrics/generation-comparison.json"
+    if gen_comparison_path.exists():
+        gen_comparison = json.loads(gen_comparison_path.read_text(encoding="utf-8"))
+        primary = gen_comparison.get("primary_preregistered_verdict", {})
+        compounding = gen_comparison.get("compounding_claim_g0_through_g2", {})
+        primary_value = primary.get("value")
+        if primary_value in ("PASS", "NOT_YET") and "metric_id" in primary:
+            successor_lift = {
+                "value": primary_value,
+                "metric_id": primary.get("metric_id"),
+                "baseline": primary.get("baseline"),
+                "candidate": primary.get("candidate"),
+                "suite": primary.get("suite"),
+                "lift": primary.get("lift"),
+                "agrees_with_a8_headline": primary.get("agrees_with_a8_headline"),
+                "compounding_claim_g0_through_g2": compounding.get("value"),
+                "boundary": (
+                    "This value is decided on the single preregistered primary metric named in "
+                    "lift-preregistration.json (baseline=G1, candidate=G2, suite=holdout) and does "
+                    "not imply the full G0-through-G2 chain compounds cleanly: this cohort's own "
+                    "independent recomputation finds the G0-to-G1 comparison does not meet the same "
+                    "guards (compounding_claim_g0_through_g2 above), so the two verdicts are kept "
+                    "separate here exactly as in generation-comparison.json rather than collapsed "
+                    "into one number. Full per-condition arithmetic for both comparisons and both "
+                    "suites is in workstreams/po03/metrics/generation-comparison.json."
+                ),
+            }
+        else:
+            successor_lift = {
+                "value": "NOT_YET",
+                "boundary": primary.get(
+                    "boundary",
+                    "workstreams/po03/metrics/generation-comparison.json has not resolved a primary "
+                    "preregistered verdict yet; see that file's own overall_result_definition.",
+                ),
+            }
+    else:
+        successor_lift = {
+            "value": "NOT_YET",
+            "boundary": "workstreams/po03/metrics/generation-comparison.json is absent at measurement time.",
+        }
 
     return {
         "protocol_version": "OBZIO-METRICS-REPORT-v1",

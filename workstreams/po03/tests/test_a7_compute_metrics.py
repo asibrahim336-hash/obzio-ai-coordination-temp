@@ -58,6 +58,7 @@ REQUIRED_RELATIVE_PATHS = [
     "workstreams/po03/successor/lesson-lineage.json",
     "workstreams/po03/research/lesson-lineage.json",
     "workstreams/po03/review/luna/false-green-result.json",
+    "workstreams/po03/metrics/generation-comparison.json",
 ]
 
 
@@ -110,6 +111,24 @@ class TestComputeMetrics(unittest.TestCase):
             metric = self.report["metrics"][name]
             if metric["value"] == "NOT_YET":
                 self.assertIn("boundary", metric)
+
+    def test_successor_lift_cross_references_generation_comparison_without_recomputing(self):
+        """compute_metrics.py must not recompute the preregistered lift
+        conditions itself; it cross-references the value already decided by
+        workstreams/po03/metrics/generation-comparison.json (owned by this
+        same cohort), and must not collapse the primary metric's PASS with
+        the separate, NOT_SUSTAINED full-chain compounding claim."""
+        gen_comparison = json.loads(
+            (REPO_ROOT / "workstreams/po03/metrics/generation-comparison.json").read_text(encoding="utf-8")
+        )
+        successor_lift = self.report["metrics"]["successor_lift"]
+        self.assertEqual(successor_lift["value"], gen_comparison["primary_preregistered_verdict"]["value"])
+        self.assertEqual(successor_lift["lift"], gen_comparison["primary_preregistered_verdict"]["lift"])
+        self.assertEqual(
+            successor_lift["compounding_claim_g0_through_g2"],
+            gen_comparison["compounding_claim_g0_through_g2"]["value"],
+        )
+        self.assertTrue(successor_lift["agrees_with_a8_headline"])
 
     def test_context_waste_is_not_supported_with_boundary(self):
         metric = self.report["metrics"]["context_waste"]
