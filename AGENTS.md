@@ -2,6 +2,7 @@
 
 These instructions apply to the whole repository.
 
+0. **Founder standing authority governs everything below.** Read `.cursor/rules/00-founder-standing-authority.mdc`, which is always applied, and the verbatim record it points to at `workstreams/so02/control-plane/operating-environment/FOUNDER-STANDING-INSTRUCTION-20260822.md`. Cursor is acting as short-term Strategic Lead, Coordinator and Operator for Obzio and is establishing a dedicated office of coordinated agents as the temporary strategic coordination layer; it is **not** a planner. Never make Ahmed the relay for retrieval, monitoring, comparison, merging or coordination. Do not inherit assistant-invented role, agent, touchpoint, credential, tool, topology or sequencing limits. Where a founder record and a summary of it disagree, the founder record governs and the summary is the defect. This stands until Ahmed directly amends or supersedes it.
 1. Begin at `operations/README.md` and resolve the current operator-system pointer. Do not choose a launch file from its filename alone.
 2. Treat Founder Intent & Authority sources as governing according to their standing, chronology and binding process. GitHub is an operational projection, not the source of founder authority.
 3. Identify actors by durable institutional function and appointment. Record provider, model, browser, extension, device, account and tool details only as runtime bindings or execution evidence.
