@@ -1,0 +1,160 @@
+{
+  "ownership_id": "OWN-PO03-WAVE-A-20260822-v001",
+  "rule": "Exactly one owner per path prefix. The integration controller owns shared control state and the top-level receipts; every subordinate writer is confined to a disjoint subtree so two workers can never contend for one file. The controller re-checks ownership at ingestion, so a subordinate that writes outside its subtree cannot enter shared custody even if its own worktree accepted the write.",
+  "global_allowlist": [
+    "workstreams/po03/**",
+    "receipts/po03/**",
+    ".github/workflows/po03-*.yml"
+  ],
+  "read_only": [
+    "packs/**",
+    "modules/operators/**",
+    "_transport/**",
+    "modules/work_unit_contract/**",
+    "state/**",
+    "dispatch/**",
+    ".cursor/environment.json",
+    "every PO-01 branch and artefact",
+    "branch cursor/setup-dev-environment-b5ce and pull request 8"
+  ],
+  "owners": {
+    "coordinator": {
+      "role": "integration controller",
+      "model": "claude-opus-5-thinking-max",
+      "branch": "cursor/po03-wave-a-transactional-factory-ed20",
+      "owned_prefixes": [
+        "workstreams/po03/control/events/",
+        "workstreams/po03/control/dispatch/",
+        "workstreams/po03/control/work-unit-registry.jsonl",
+        "workstreams/po03/control/recovery-state.json",
+        "workstreams/po03/control/path-ownership.json",
+        "workstreams/po03/control/model-capability-register.json",
+        "workstreams/po03/control/wave-a-spec.json",
+        "workstreams/po03/tools/control_plane.py",
+        "workstreams/po03/tests/test_control_plane.py",
+        "workstreams/po03/evidence/scale-ladder.json",
+        "workstreams/po03/evidence/model-allocation-and-exceptions.json",
+        "workstreams/po03/evidence/compounding-results.json",
+        "workstreams/po03/MANIFEST.sha256",
+        "receipts/po03/2026-08-22/amendment-activation.json",
+        "receipts/po03/2026-08-22/producer-execution.json",
+        "receipts/po03/2026-08-22/independent-acceptance-request.json"
+      ]
+    },
+    "po03-worker-a1": {
+      "role": "transactional custody engine",
+      "model": "claude-opus-5-thinking-high",
+      "branch": "cursor/po03-a1-custody-engine-ed20",
+      "owned_prefixes": [
+        "workstreams/po03/control/units/a1/",
+        "workstreams/po03/engine/",
+        "workstreams/po03/tests/test_a1_"
+      ]
+    },
+    "po03-worker-a2": {
+      "role": "fault injection and recovery proof",
+      "model": "gpt-5.6-sol-xhigh",
+      "branch": "cursor/po03-a2-fault-recovery-ed20",
+      "owned_prefixes": [
+        "workstreams/po03/control/units/a2/",
+        "workstreams/po03/faults/",
+        "workstreams/po03/tests/test_a2_",
+        "workstreams/po03/evidence/recovery-fault-matrix.json",
+        "receipts/po03/2026-08-22/transactional-recovery.json"
+      ]
+    },
+    "po03-worker-a3": {
+      "role": "portable runtime, clean-clone reproduction and CI enforcement",
+      "model": "claude-opus-5-thinking-high",
+      "branch": "cursor/po03-a3-portable-runtime-ed20",
+      "owned_prefixes": [
+        "workstreams/po03/control/units/a3/",
+        "workstreams/po03/runtime/",
+        "workstreams/po03/tests/test_a3_",
+        ".github/workflows/po03-path-scope.yml",
+        ".github/workflows/po03-clean-clone.yml",
+        "receipts/po03/2026-08-22/ci-clean-clone.json"
+      ]
+    },
+    "po03-worker-a4": {
+      "role": "operator-pack qualification and repository disposition from immutable PO-01 commits",
+      "model": "gpt-5.6-sol-xhigh",
+      "branch": "cursor/po03-a4-pack-qualification-ed20",
+      "owned_prefixes": [
+        "workstreams/po03/control/units/a4/",
+        "workstreams/po03/packverify/",
+        "workstreams/po03/tests/test_a4_",
+        "workstreams/po03/evidence/source-lock.json",
+        "workstreams/po03/evidence/criteria-freeze.json",
+        "workstreams/po03/evidence/reproduction-results.json",
+        "workstreams/po03/evidence/repository-disposition.json"
+      ]
+    },
+    "po03-worker-a5": {
+      "role": "frontier research to reproduction to live mechanism change",
+      "model": "claude-sonnet-5-thinking-xhigh",
+      "branch": "cursor/po03-a5-research-conversion-ed20",
+      "owned_prefixes": [
+        "workstreams/po03/control/units/a5/",
+        "workstreams/po03/research/",
+        "workstreams/po03/tests/test_a5_"
+      ]
+    },
+    "po03-worker-a6": {
+      "role": "independent adversarial evaluation of Claude-produced work",
+      "model": "gpt-5.6-luna-high",
+      "branch": "cursor/po03-a6-independent-review-ed20",
+      "owned_prefixes": [
+        "workstreams/po03/control/units/a6/",
+        "workstreams/po03/review/luna/",
+        "workstreams/po03/tests/test_a6_"
+      ]
+    },
+    "po03-worker-a7": {
+      "role": "operating-system measurement",
+      "model": "claude-sonnet-5-thinking-high",
+      "branch": "cursor/po03-a7-os-metrics-ed20",
+      "owned_prefixes": [
+        "workstreams/po03/control/units/a7/",
+        "workstreams/po03/metrics/",
+        "workstreams/po03/tests/test_a7_"
+      ]
+    },
+    "po03-worker-a8": {
+      "role": "successor generation compilation and measured comparison",
+      "model": "claude-opus-5-thinking-high",
+      "branch": "cursor/po03-a8-successor-generations-ed20",
+      "owned_prefixes": [
+        "workstreams/po03/control/units/a8/",
+        "workstreams/po03/successor/",
+        "workstreams/po03/tests/test_a8_",
+        "receipts/po03/2026-08-22/successor-generation.json"
+      ]
+    },
+    "po03-worker-a9": {
+      "role": "zero-base strategy challenge, alternative generation and open discovery",
+      "model": "gpt-5.6-sol-xhigh",
+      "branch": "cursor/po03-a9-strategy-discovery-ed20",
+      "owned_prefixes": [
+        "workstreams/po03/control/units/a9/",
+        "workstreams/po03/strategy/",
+        "workstreams/po03/tests/test_a9_"
+      ]
+    },
+    "po03-worker-a10": {
+      "role": "independent adversarial evaluation of GPT-produced work",
+      "model": "claude-sonnet-5-thinking-xhigh",
+      "branch": "cursor/po03-a10-crossfamily-review-ed20",
+      "owned_prefixes": [
+        "workstreams/po03/control/units/a10/",
+        "workstreams/po03/review/sonnet/",
+        "workstreams/po03/tests/test_a10_"
+      ]
+    }
+  },
+  "cross_family_review_matrix": {
+    "rule": "A reviewer must not share a model family with the producer it judges, and must freeze its criteria before receiving producer conclusions.",
+    "po03-worker-a6": ["po03-worker-a1", "po03-worker-a3", "po03-worker-a5", "po03-worker-a7", "po03-worker-a8"],
+    "po03-worker-a10": ["po03-worker-a2", "po03-worker-a4", "po03-worker-a9", "coordinator"]
+  }
+}
