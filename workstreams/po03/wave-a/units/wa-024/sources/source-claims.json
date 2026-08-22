@@ -1,0 +1,172 @@
+{
+  "protocol_version": "PO03-WA-024-SOURCE-CLAIMS-v1",
+  "task_id": "PO03-WA-024",
+  "state": "SOURCE_CLAIM",
+  "state_note": "This file records only what a source says. It contains no hypothesis, no reproduction result, no mechanism change and no strategy proposal. Those states live in hypotheses/hypotheses.json, result/probe-report.json, proposals/mechanism-changes.json and proposals/strategy-proposals.json respectively.",
+  "read_at": "2026-08-22T07:19:00Z",
+  "retrieval_method": "HTTPS GET of raw content at an immutable commit id, resolved through the public GitHub API. Tag names were resolved to commit ids first so that no claim depends on a mutable ref. Rendered documentation pages were not used as evidence; the versioned source of those pages was.",
+  "external_claims": [
+    {
+      "claim_id": "SC-WA024-01",
+      "category": "official",
+      "publisher": "GitHub, Inc.",
+      "artefact": "actions/checkout action manifest",
+      "url": "https://raw.githubusercontent.com/actions/checkout/11bd71901bbe5b1630ceea73d27597364c9af683/action.yml",
+      "immutable_commit": "11bd71901bbe5b1630ceea73d27597364c9af683",
+      "tag_resolved_from": "v4.2.2",
+      "retrieved_bytes": 4593,
+      "retrieved_sha256": "5349b6eea0a1797a9a993c48db9d95b33d27ee1b6227ceced0c9cbf8e655c939",
+      "locator": "lines 74-76",
+      "verbatim_excerpt": "fetch-depth:\n    description: 'Number of commits to fetch. 0 indicates all history for all branches and tags.'\n    default: 1",
+      "claim": "The fetch-depth input of actions/checkout defaults to 1, so a workflow that does not set it receives a shallow checkout containing a single commit.",
+      "capsule": "sources/capsules/sc-wa024-01-checkout-fetch-depth.txt",
+      "capsule_locator": "lines 70-82"
+    },
+    {
+      "claim_id": "SC-WA024-02",
+      "category": "official",
+      "publisher": "GitHub, Inc.",
+      "artefact": "actions/checkout README",
+      "url": "https://raw.githubusercontent.com/actions/checkout/11bd71901bbe5b1630ceea73d27597364c9af683/README.md",
+      "immutable_commit": "11bd71901bbe5b1630ceea73d27597364c9af683",
+      "tag_resolved_from": "v4.2.2",
+      "retrieved_bytes": 9359,
+      "retrieved_sha256": "5b1198a8e20cbdd5c484f23d01755884f4d53da10b26f179599517bbe695f91b",
+      "locator": "line 7",
+      "verbatim_excerpt": "Only a single commit is fetched by default, for the ref/SHA that triggered the workflow. Set `fetch-depth: 0` to fetch all history for all branches and tags.",
+      "claim": "The default checkout carries only the triggering commit; complete history is available only when fetch-depth is set to 0.",
+      "capsule": "sources/capsules/sc-wa024-02-checkout-readme.txt",
+      "capsule_locator": "lines 5-9"
+    },
+    {
+      "claim_id": "SC-WA024-03",
+      "category": "official",
+      "publisher": "GitHub, Inc.",
+      "artefact": "GitHub Docs source, 'Use GitHub-hosted runners'",
+      "url": "https://raw.githubusercontent.com/github/docs/4f8c3170cea7f72cf41fc976f5dbf4e8a0b8567f/content/actions/how-tos/manage-runners/github-hosted-runners/use-github-hosted-runners.md",
+      "immutable_commit": "4f8c3170cea7f72cf41fc976f5dbf4e8a0b8567f",
+      "ref_resolved_from": "github/docs default branch head at read time",
+      "locator": "line 33",
+      "verbatim_excerpt": "When this workflow is triggered, {% data variables.product.prodname_dotcom %} provisions a new virtual machine for each job.",
+      "claim": "Each job on a GitHub-hosted runner receives a newly provisioned virtual machine, so no local state survives from a previous job or run.",
+      "capsule": "sources/capsules/sc-wa024-03-fresh-virtual-machine.txt",
+      "capsule_locator": "lines 31-35"
+    },
+    {
+      "claim_id": "SC-WA024-04",
+      "category": "official",
+      "publisher": "GitHub, Inc.",
+      "artefact": "GitHub Docs source, Actions variables reference",
+      "url": "https://raw.githubusercontent.com/github/docs/4f8c3170cea7f72cf41fc976f5dbf4e8a0b8567f/content/actions/reference/workflows-and-actions/variables.md",
+      "immutable_commit": "4f8c3170cea7f72cf41fc976f5dbf4e8a0b8567f",
+      "locator": "lines 72 and 78",
+      "verbatim_excerpt": "| `GITHUB_WORKSPACE` | The default working directory on the runner for steps, and the default location of your repository when using the [`checkout`](https://github.com/actions/checkout) action. For example, `/home/runner/work/my-repo-name/my-repo-name`. |",
+      "claim": "The repository lives at a runner-assigned absolute path exposed as GITHUB_WORKSPACE, and the runner supplies its own temporary directory as RUNNER_TEMP; neither path is stable across environments.",
+      "capsule": "sources/capsules/sc-wa024-04-workspace-variables.txt",
+      "capsule_locator": "lines 71-79"
+    },
+    {
+      "claim_id": "SC-WA024-05",
+      "category": "official",
+      "publisher": "GitHub, Inc.",
+      "artefact": "actions/setup-python action manifest",
+      "url": "https://raw.githubusercontent.com/actions/setup-python/a26af69be951a213d495a4c3e4e4022e16d87065/action.yml",
+      "immutable_commit": "a26af69be951a213d495a4c3e4e4022e16d87065",
+      "tag_resolved_from": "v5.6.0",
+      "retrieved_bytes": 2364,
+      "retrieved_sha256": "0acca40eee6f548ea8269ece66fd625fe9deb1f61f31f0b58562068fc083eb37",
+      "locator": "line 3",
+      "verbatim_excerpt": "description: \"Set up a specific version of Python and add the command-line tools to the PATH.\"",
+      "claim": "A bare 'python' command on a runner resolves because actions/setup-python placed it on PATH; the spelling is a property of the job, not of the repository.",
+      "capsule": "sources/capsules/sc-wa024-05-setup-python.txt",
+      "capsule_locator": "lines 1-5"
+    },
+    {
+      "claim_id": "SC-WA024-06",
+      "category": "official",
+      "publisher": "Python Software Foundation",
+      "artefact": "CPython command-line documentation source",
+      "url": "https://raw.githubusercontent.com/python/cpython/55fee9cf216abe4ec0d1139f94b1930fbd0c7644/Doc/using/cmdline.rst",
+      "immutable_commit": "55fee9cf216abe4ec0d1139f94b1930fbd0c7644",
+      "tag_resolved_from": "v3.12.11",
+      "retrieved_bytes": 38553,
+      "retrieved_sha256": "d13736a61946be39fa8f7bab1c1a6206815912890b3a5ab017ca8971c192e8fa",
+      "locator": "lines 253-256, 307-314 and 341-353",
+      "verbatim_excerpt": "-B\n\n   If given, Python won't try to write ``.pyc`` files on the import of source modules.  See also :envvar:`PYTHONDONTWRITEBYTECODE`.\n\n-I\n\n   Run Python in isolated mode. This also implies :option:`-E`, :option:`-P` and :option:`-s` options.\n\n   In isolated mode :data:`sys.path` contains neither the script's directory nor the user's site-packages directory. All ``PYTHON*`` environment variables are ignored, too.",
+      "claim": "Only -B suppresses bytecode writing on the command line. Isolated mode -I ignores every PYTHON* environment variable, and it implies -P, which stops CPython prepending the working directory to sys.path.",
+      "capsule": "sources/capsules/sc-wa024-06-cpython-cmdline.txt",
+      "capsule_locator": "lines 253-257, 307-315 and 341-354"
+    }
+  ],
+  "repository_claims": [
+    {
+      "claim_id": "SC-WA024-R1",
+      "category": "immutable_repository_sha",
+      "path": ".github/workflows/po03-contracts.yml",
+      "sha256": "427949c07d93fe69bea6485a91ca58c4297be21759e6b0b00a0e5cc9f450c7cb",
+      "matches_immutable_input_field": "source_base.workflow_sha256",
+      "locator": "lines 24-31",
+      "verbatim_excerpt": "- uses: actions/checkout@v4\n        with:\n          fetch-depth: 0\n      - uses: actions/setup-python@v5\n        with:\n          python-version: \"3.12\"\n      - name: Run dependency-free contract tests\n        run: python -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+      "claim": "The PO-03 contracts workflow does request complete history and does set up Python, and its test command uses isolated mode with a working-directory-relative start directory."
+    },
+    {
+      "claim_id": "SC-WA024-R2",
+      "category": "immutable_repository_sha",
+      "path": ".github/workflows/operator-taxonomy-currentness.yml",
+      "sha256": "4a8cdf6bb0f62b23127e2f28421be50301c6b23acaedf7dce9bf808b2649e6f5",
+      "sha256_note": "Measured by this unit at commit e56eda6e8e4a4e958795f7157839926d93272b30. The immutable task input does not pin this workflow, so the digest is this unit's own observation rather than a frozen input field.",
+      "locator": "lines 15-19",
+      "verbatim_excerpt": "- uses: actions/checkout@v4\n      - uses: actions/setup-python@v5\n        with:\n          python-version: \"3.12\"\n      - run: python scripts/check_operator_taxonomy.py",
+      "claim": "The repository-wide taxonomy workflow uses actions/checkout without fetch-depth, so it runs against a single-commit checkout."
+    },
+    {
+      "claim_id": "SC-WA024-R3",
+      "category": "immutable_repository_sha",
+      "path": "workstreams/po03/tools/prepare_wave_a.py",
+      "sha256": "17c06f16d66847771d4cb7790d51ca3185a044d5ccb4265aa24c7e51a994ded1",
+      "sha256_note": "Measured by this unit at commit e56eda6e8e4a4e958795f7157839926d93272b30; not pinned by the immutable input.",
+      "locator": "line 25",
+      "verbatim_excerpt": "PROTOCOL_ANCESTOR = \"100bc20ad5eec62a4f35b60921423135cc0b9d9a\"",
+      "claim": "The Wave A input generator carries the minimum protocol ancestor as a hardcoded literal. It verifies the acceptance-contract digest against EXPECTED_ACCEPTANCE_SHA but performs no equivalent check that the recorded commit id names a real object."
+    },
+    {
+      "claim_id": "SC-WA024-R4",
+      "category": "immutable_repository_sha",
+      "path": "workstreams/po03/control/inputs/wave-a/wa-024.json",
+      "sha256": "2aeadce77e14e21185ed0e633a3abb7540235a339670e23f5aba8f1d91350fd0",
+      "locator": "source_base.minimum_protocol_ancestor",
+      "verbatim_excerpt": "\"minimum_protocol_ancestor\": \"100bc20ad5eec62a4f35b60921423135cc0b9d9a\"",
+      "claim": "This unit's own immutable input records the minimum protocol ancestor as 100bc20ad5eec62a4f35b60921423135cc0b9d9a."
+    },
+    {
+      "claim_id": "SC-WA024-R5",
+      "category": "immutable_repository_sha",
+      "path": "workstreams/po03/COMMISSION.md",
+      "sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+      "matches_immutable_input_field": "source_base.commission_sha256",
+      "locator": "'Successor-generation test', hard guardrails paragraph",
+      "verbatim_excerpt": "clean-clone reproduction without provider memory, `/tmp`, uncommitted files or a warm checkout",
+      "claim": "The commission requires clean-clone reproduction without provider memory, /tmp dependence, uncommitted files or a warm checkout, which is the standard this unit tests against."
+    }
+  ],
+  "exclusions": [
+    "Rendered docs.github.com HTML pages were read only to locate content and were not used as evidence, because a rendered page carries no immutable identifier. The versioned Markdown source in github/docs was cited instead.",
+    "actions/runner-images was not consulted. Preinstalled-software inventories were outside this unit's hypotheses and would have added unverified breadth.",
+    "No practitioner blog, forum thread or social post was admitted. Every claim here has either an immutable upstream commit or an immutable repository path, so no claim rests on a mutable or unversioned surface.",
+    "GitHub Enterprise Server and self-hosted runner behaviour was not tested. Self-hosted runners can reuse a workspace between jobs, which would change the conclusions; recorded as out of scope rather than assumed equivalent.",
+    "Windows and macOS runners were not tested. All reproductions ran on Linux."
+  ],
+  "not_supported": [
+    {
+      "subject": "A live GitHub Actions workflow run for this unit",
+      "status": "NOT_SUPPORTED",
+      "boundary": "Dispatching a workflow run would be an external mutation of the repository's CI surface and would require creating or modifying a pull request, both of which this unit is forbidden to do. The harness therefore reconstructs the runner's checkout and environment shape locally from the pinned actions/checkout and setup-python manifests, and every conclusion is labelled CI-equivalent rather than CI-observed."
+    },
+    {
+      "subject": "Byte counts and digests for the two github/docs Markdown sources",
+      "status": "NOT_SUPPORTED",
+      "boundary": "Those two files were read for their verbatim claim text only and their transfer digests were not captured at read time. Rather than compute a value after the fact and present it as a read-time observation, the field is left NOT_SUPPORTED; the immutable commit id plus path is sufficient to re-derive both."
+    }
+  ],
+  "decision_changed": []
+}

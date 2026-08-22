@@ -1,0 +1,39 @@
+# PO03-WA-024 bounded source capsule
+# claim_id:  sc-wa024-06-cpython-cmdline.txt
+# url:       https://raw.githubusercontent.com/python/cpython/55fee9cf216abe4ec0d1139f94b1930fbd0c7644/Doc/using/cmdline.rst
+# commit:    55fee9cf216abe4ec0d1139f94b1930fbd0c7644
+# sha256:    d13736a61946be39fa8f7bab1c1a6206815912890b3a5ab017ca8971c192e8fa
+# bytes:     38553
+# locator:   lines 253-257, 307-315 and 341-354
+# excerpt:   verbatim, bounded; the full document is retrievable at the url above
+# ---
+.. option:: -B
+
+   If given, Python won't try to write ``.pyc`` files on the
+   import of source modules.  See also :envvar:`PYTHONDONTWRITEBYTECODE`.
+
+# --- lines 307-315 ---
+.. option:: -I
+
+   Run Python in isolated mode. This also implies :option:`-E`, :option:`-P`
+   and :option:`-s` options.
+
+   In isolated mode :data:`sys.path` contains neither the script's directory nor
+   the user's site-packages directory. All ``PYTHON*`` environment
+   variables are ignored, too. Further restrictions may be imposed to prevent
+   the user from injecting malicious code.
+# --- lines 341-354 ---
+.. option:: -P
+
+   Don't prepend a potentially unsafe path to :data:`sys.path`:
+
+   * ``python -m module`` command line: Don't prepend the current working
+     directory.
+   * ``python script.py`` command line: Don't prepend the script's directory.
+     If it's a symbolic link, resolve symbolic links.
+   * ``python -c code`` and ``python`` (REPL) command lines: Don't prepend an
+     empty string, which means the current working directory.
+
+   See also the :envvar:`PYTHONSAFEPATH` environment variable, and :option:`-E`
+   and :option:`-I` (isolated) options.
+
