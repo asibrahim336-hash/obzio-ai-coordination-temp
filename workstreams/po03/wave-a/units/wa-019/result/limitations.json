@@ -1,0 +1,64 @@
+{
+  "limitations": [
+    {
+      "id": "L-01",
+      "limitation": "The benchmark is a deterministic logical-clock simulation, not a deployment of three production coordinators.",
+      "residual_risk": "Real storage, scheduler, network, process, and persistence behavior can reverse the measured ordering."
+    },
+    {
+      "id": "L-02",
+      "limitation": "One 32-task sanitized fixture, one shard distribution, and one coordinator-loss tick were measured.",
+      "residual_risk": "Different load skew, fault timing, queue depth, or workload duration can produce different throughput and recovery vectors."
+    },
+    {
+      "id": "L-03",
+      "limitation": "Worker progress and coordination decisions are serialized by a deterministic simulator; true concurrent interleavings are not exercised.",
+      "residual_risk": "Races, lock contention, reorderings, and storage conflicts that require real concurrency are outside the evidence."
+    },
+    {
+      "id": "L-04",
+      "limitation": "Event replay cost is represented by a declared events-per-tick rate. Events written by workers during the modeled outage are durable but do not dynamically extend the frozen replay window.",
+      "residual_risk": "The event-sourced recovery duration may be understated for a real log that grows materially during replay."
+    },
+    {
+      "id": "L-05",
+      "limitation": "Accepted throughput is tasks per logical tick, not wall-clock tasks per second; cost, memory, I/O volume, and operator overhead are not measured.",
+      "residual_risk": "No operational cost or latency superiority follows from the logical-throughput ordering."
+    },
+    {
+      "id": "L-06",
+      "limitation": "The topology semantics intentionally differ: centralized state is globally volatile, sharded state is locally volatile, and event state is durable and replayed.",
+      "residual_risk": "The result distinguishes these executable candidates, not every possible implementation bearing the same topology label."
+    },
+    {
+      "id": "L-07",
+      "limitation": "The seeded workflow discovers only shared PO-03 tests; the unit-focused suite was run explicitly and is not automatically discovered by that workflow.",
+      "residual_risk": "A coordinator must integrate an appropriate test route before these focused tests become a shared CI gate."
+    },
+    {
+      "id": "L-08",
+      "limitation": "Remote readback is performed by this producer from immutable remote commits.",
+      "residual_risk": "Producer readback proves custody but is not independent acceptance."
+    }
+  ],
+  "not_supported": [
+    {
+      "disposition": "NOT_SUPPORTED",
+      "question": "Which topology is superior for the production PO-03 controller?",
+      "reason": "No production topology was deployed or instrumented, and one logical fixture cannot establish production superiority."
+    },
+    {
+      "disposition": "NOT_SUPPORTED",
+      "question": "Do external published systems exhibit these exact throughput and recovery values?",
+      "reason": "No external source or system was read or measured for this unit."
+    },
+    {
+      "disposition": "NOT_SUPPORTED",
+      "question": "Does the event-sourced candidate always recover without work loss under arbitrary faults?",
+      "reason": "Only one declared coordinator-process-loss event at one logical tick was executed."
+    }
+  ],
+  "not_supported_count": 3,
+  "scope_of_supported_claim": "Under the checked-in sanitized fixture, matched capacity, deterministic simulator, and declared coordinator-process-loss fault, the three executable candidates produce pairwise-distinct accepted-throughput values and recovery vectors while accepting every task without duplicates.",
+  "task_id": "PO03-WA-019"
+}

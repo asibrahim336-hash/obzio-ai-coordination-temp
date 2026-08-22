@@ -1,0 +1,64 @@
+{
+  "protocol_version": "PO03-REPRODUCTION-LEDGER-v1",
+  "reproductions": [
+    {
+      "command": "python3 -m benchmark.runner --topology all --output result/benchmark-results.json",
+      "evidence": "result/benchmark-results.json",
+      "fixture": "fixtures/sanitized-wave-workload.json",
+      "fixture_sha256": "65814c301713b20e348145b7a4cdd51000dc687ab75c48857b506417a847640d",
+      "observations": {
+        "centralized_faulted": {
+          "accepted_throughput_per_tick": 0.744186,
+          "lost_work_ticks": 12,
+          "makespan_ticks": 43,
+          "recovery_ticks": 4
+        },
+        "event_sourced_faulted": {
+          "accepted_throughput_per_tick": 0.761905,
+          "lost_work_ticks": 0,
+          "makespan_ticks": 42,
+          "recovery_ticks": 7,
+          "replayed_events": 51
+        },
+        "sharded_faulted": {
+          "accepted_during_outage": 3,
+          "accepted_throughput_per_tick": 0.864865,
+          "lost_work_ticks": 7,
+          "makespan_ticks": 37,
+          "recovery_ticks": 3
+        }
+      },
+      "reproduction_id": "R-01-MATCHED-TOPOLOGY-COMPARISON",
+      "result": "REPRODUCED",
+      "sanitized_repository_native_workload": true
+    },
+    {
+      "command": "python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-019/tests -p 'test_*.py' -v",
+      "evidence": "result/focused-tests-output.txt",
+      "observations": {
+        "deterministic_rerun_equal": true,
+        "failed": 0,
+        "passed": 27
+      },
+      "reproduction_id": "R-02-DETERMINISTIC-RECURRENCE",
+      "result": "REPRODUCED"
+    },
+    {
+      "commands": [
+        "python3 -I candidates/centralized.py",
+        "python3 -I candidates/sharded.py",
+        "python3 -I candidates/event_sourced.py"
+      ],
+      "evidence": "tests/test_topology_benchmark.py:ExecutableEntryPointTests",
+      "observations": {
+        "entrypoints_executed": 3,
+        "failed": 0
+      },
+      "reproduction_id": "R-03-THREE-EXECUTABLE-CANDIDATES",
+      "result": "REPRODUCED"
+    }
+  ],
+  "reproduction_count": 3,
+  "separation_note": "These executed reproductions are distinct from source claims, hypotheses, mechanism changes, and strategy proposals.",
+  "task_id": "PO03-WA-019"
+}

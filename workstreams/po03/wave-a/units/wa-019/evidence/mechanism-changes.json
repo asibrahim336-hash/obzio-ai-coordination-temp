@@ -1,0 +1,47 @@
+{
+  "mechanism_changes": [
+    {
+      "change": "Executable centralized candidate with a global queue, globally volatile in-flight coordination state, durable accepted records, and reconciliation after process loss.",
+      "disposition": "RETAIN_AS_BENCHMARK_CANDIDATE",
+      "mechanism_id": "MC-01",
+      "recurrence_test": "CandidateTests.test_centralized_candidate_loses_global_volatile_work",
+      "scope": "LIVE_IN_UNIT",
+      "target": "benchmark/topologies.py:CentralizedTopology"
+    },
+    {
+      "change": "Executable four-shard candidate that confines the injected process loss to one shard while unaffected shards continue using the matched shared worker budget.",
+      "disposition": "RETAIN_AS_BENCHMARK_CANDIDATE",
+      "mechanism_id": "MC-02",
+      "recurrence_test": "CandidateTests.test_sharded_candidate_isolates_fault_and_keeps_accepting",
+      "scope": "LIVE_IN_UNIT",
+      "target": "benchmark/topologies.py:ShardedTopology"
+    },
+    {
+      "change": "Executable event-sourced candidate that retains in-flight state in an append-only event count and pays replay cost after coordinator process loss rather than losing completed work.",
+      "disposition": "RETAIN_AS_BENCHMARK_CANDIDATE",
+      "mechanism_id": "MC-03",
+      "recurrence_test": "CandidateTests.test_event_sourced_candidate_replays_without_lost_work",
+      "scope": "LIVE_IN_UNIT",
+      "target": "benchmark/topologies.py:EventSourcedTopology"
+    },
+    {
+      "change": "The benchmark output writer creates missing destination parents and records the fixture with a clean-clone-portable relative path.",
+      "defects_closed": [
+        "The first --output run failed when result/ did not exist.",
+        "The first generated benchmark embedded the isolated /tmp worktree path."
+      ],
+      "disposition": "RETAIN",
+      "mechanism_id": "MC-04",
+      "recurrence_tests": [
+        "ExecutableEntryPointTests.test_output_option_creates_a_missing_parent_directory",
+        "CandidateTests.test_report_uses_a_clean_clone_portable_fixture_path"
+      ],
+      "scope": "LIVE_IN_UNIT",
+      "target": "benchmark/runner.py"
+    }
+  ],
+  "mechanism_change_count": 4,
+  "protocol_version": "PO03-MECHANISM-CHANGES-v1",
+  "separation_note": "These executable changes are not source claims or strategy bindings. Retention applies only inside this unit.",
+  "task_id": "PO03-WA-019"
+}
