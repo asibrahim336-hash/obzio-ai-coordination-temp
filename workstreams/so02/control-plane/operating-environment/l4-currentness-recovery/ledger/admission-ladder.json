@@ -1,0 +1,110 @@
+{
+  "contract_id": "L4-ADMISSION-LADDER-20260822-v001",
+  "commission_id": "COM-CUR-ENV-01-20260822-v001",
+  "parent_id": "OE-L4-CURRENTNESS-RECOVERY",
+  "decision_changed": [],
+  "purpose": "Define which evidence classes may advance a subject to which admission state, so that a pull request, a ZIP, a file count, an agent existing or an acknowledgement can never be recorded as completed capability.",
+  "ladder": [
+    "PROPOSED",
+    "LAUNCHED",
+    "OBSERVED",
+    "DURABLE",
+    "INDEPENDENTLY_VALIDATED",
+    "ACCEPTED"
+  ],
+  "monotonic": true,
+  "skip_states_allowed": false,
+  "state_requirements": {
+    "PROPOSED": {
+      "requires_all_of": [],
+      "requires_any_of": ["COMMISSION_DOCUMENT", "PROPOSAL_DOCUMENT"],
+      "meaning": "A scope has been written down and attributed. Nothing has been run."
+    },
+    "LAUNCHED": {
+      "requires_all_of": ["LAUNCH_RECEIPT_WITH_LOCATOR"],
+      "requires_any_of": [],
+      "meaning": "A named runtime was actually dispatched against a stable, resolvable locator. Sending a prompt is not a launch unless the locator is recorded."
+    },
+    "OBSERVED": {
+      "requires_all_of": ["LAUNCH_RECEIPT_WITH_LOCATOR", "OBSERVED_OUTPUT_WITH_LOCATOR"],
+      "requires_any_of": [],
+      "meaning": "Output was seen at the recorded locator. Provider 'completed' is a status, not an observation of output."
+    },
+    "DURABLE": {
+      "requires_all_of": [
+        "LAUNCH_RECEIPT_WITH_LOCATOR",
+        "OBSERVED_OUTPUT_WITH_LOCATOR",
+        "COMMITTED_ARTIFACT_HASH",
+        "REMOTE_READBACK_HASH"
+      ],
+      "requires_any_of": [],
+      "meaning": "The output exists in the canonical store at a named commit and has been read back from the remote by hash."
+    },
+    "INDEPENDENTLY_VALIDATED": {
+      "requires_all_of": [
+        "COMMITTED_ARTIFACT_HASH",
+        "REMOTE_READBACK_HASH",
+        "REPRODUCIBLE_COMMAND",
+        "INDEPENDENT_EVALUATION"
+      ],
+      "requires_any_of": [],
+      "meaning": "A separately-identified evaluator, not the producer, re-ran the claim and recorded a verdict against criteria fixed before reading the producer's result."
+    },
+    "ACCEPTED": {
+      "requires_all_of": [
+        "COMMITTED_ARTIFACT_HASH",
+        "REMOTE_READBACK_HASH",
+        "REPRODUCIBLE_COMMAND",
+        "INDEPENDENT_EVALUATION",
+        "FOUNDER_BOUND_ACCEPTANCE"
+      ],
+      "requires_any_of": [],
+      "meaning": "Acceptance is a founder-bound act on top of independent validation. A producer can never self-accept."
+    }
+  },
+  "admissible_evidence_classes": {
+    "COMMISSION_DOCUMENT": "A committed commission naming function, appointment, authority envelope, runtime binding and return route.",
+    "PROPOSAL_DOCUMENT": "A committed proposal that states scope and does not assert execution.",
+    "LAUNCH_RECEIPT_WITH_LOCATOR": "A committed receipt carrying a stable provider locator (URL or exact provider ID) and a dispatch timestamp.",
+    "OBSERVED_OUTPUT_WITH_LOCATOR": "A committed observation of output at that locator, with the observation time.",
+    "COMMITTED_ARTIFACT_HASH": "A path in the canonical Git store plus its sha256, both resolvable now.",
+    "REMOTE_READBACK_HASH": "A hash re-read from the remote ref after the write, proving the write survived the transport.",
+    "REPRODUCIBLE_COMMAND": "An argv plus an expected exit code that a third party can re-run without provider access.",
+    "INDEPENDENT_EVALUATION": "A verdict recorded by an evaluator identity distinct from the producer identity.",
+    "FOUNDER_BOUND_ACCEPTANCE": "A founder-bound decision record carrying the exact decision text."
+  },
+  "non_admissible_evidence_classes": {
+    "PULL_REQUEST_EXISTS": "A PR is a proposal for integration. An open PR is not merged work and merged work is not accepted capability.",
+    "BRANCH_EXISTS": "A ref is an address, not a result. Lease and canary refs are coordination primitives, not work.",
+    "ZIP_ARCHIVE": "An archive is a transport container. Its existence proves packaging, not capability.",
+    "FILE_COUNT": "A count of files measures volume, not function.",
+    "AGENT_EXISTS": "A registered, running or completed agent is a runtime binding. A runtime never grants standing.",
+    "PROMPT_SENT": "Transmission is not admission and admission is not execution.",
+    "ACKNOWLEDGEMENT": "A destination saying it received or understood something is not output.",
+    "PROVIDER_COMPLETED": "Provider 'completed' is a provider status, never an Obzio lifecycle state.",
+    "RECEIPT_COUNT": "A count of receipts measures bookkeeping, not the thing booked.",
+    "DOCUMENT_DESCRIBES_MECHANISM": "A mechanism described in a document is not an operating mechanism.",
+    "LESSON_DOCUMENTED": "A recorded lesson that changes no executable gate leaves the failure available."
+  },
+  "non_admissible_ceiling": "PROPOSED",
+  "reproducibility_rule": {
+    "rule": "Every evidence entry must name an artifact or a command that a third party can resolve now.",
+    "artifact_classes": ["COMMITTED_ARTIFACT_HASH", "REMOTE_READBACK_HASH"],
+    "command_classes": ["REPRODUCIBLE_COMMAND"],
+    "unbacked_is_error": true
+  },
+  "differentiation_rule": {
+    "rule": "Two active commissions may not both claim whole-operation authority over an overlapping namespace without a recorded supersession edge or disjoint scope keys.",
+    "whole_operation_markers": [
+      "whole operation",
+      "entire operation",
+      "the operation",
+      "cross-estate",
+      "coordination kernel",
+      "durable coordination kernel",
+      "all workstreams",
+      "the programme",
+      "global"
+    ]
+  }
+}
