@@ -1,0 +1,92 @@
+$ python3 reclassifier.py --demo
+{
+  "matrix": {
+    "completed_provider_without_commit": [
+      "PROVIDER_COMPLETED_UNCOMMITTED"
+    ],
+    "contract_violations": [],
+    "false_completions": [],
+    "rows": [
+      {
+        "commit_shape": "no_locator",
+        "contract_errors": [],
+        "durable_commit": false,
+        "obzio_state": "RUNNING",
+        "provider_state": "QUEUED",
+        "reason": "NO_RESULT_COMMIT_LOCATOR"
+      },
+      {
+        "commit_shape": "unresolvable_locator",
+        "contract_errors": [],
+        "durable_commit": false,
+        "obzio_state": "RUNNING",
+        "provider_state": "QUEUED",
+        "reason": "LOCATOR_UNRESOLVABLE"
+      },
+      {
+        "commit_shape": "unpinned_content",
+        "contract_errors": [],
+        "durable_commit": false,
+        "obzio_state": "RUNNING",
+        "provider_state": "QUEUED",
+        "reason": "NO_DECLARED_MANIFEST_HASH"
+      },
+      {
+        "commit_shape": "hash_mismatch",
+        "contract_errors": [],
+        "durable_commit": false,
+        "obzio_state": "RUNNING",
+        "provider_state": "QUEUED",
+        "reason": "MANIFEST_HASH_MISMATCH"
+      },
+      {
+        "commit_shape": "no_artifacts",
+        "contract_errors": [],
+        "durable_commit": false,
+        "obzio_state": "RUNNING",
+        "provider_state": "QUEUED",
+        "reason": "NO_ARTIFACTS"
+      },
+      {
+        "commit_shape": "verified",
+        "contract_errors": [],
+        "durable_commit": true,
+        "obzio_state": "RESULT_COMMITTED",
+        "provider_state": "QUEUED",
+        "reason": "COMMIT_VERIFIED"
+      },
+      {
+        "commit_shape": "no_locator",
+        "contract_errors": [],
+        "durable_commit": false,
+(matrix truncated in transcript; full rows exercised by the suite)
+
+$ python3 -m unittest -v test_reclassifier
+test_a_durable_commit_outranks_a_failed_provider_report (test_reclassifier.MatrixTests.test_a_durable_commit_outranks_a_failed_provider_report)
+A real committed result is not discarded because the provider errored. ... ok
+test_every_completed_provider_without_commit_maps_to_one_state (test_reclassifier.MatrixTests.test_every_completed_provider_without_commit_maps_to_one_state) ... ok
+test_every_derived_document_satisfies_the_seeded_contract (test_reclassifier.MatrixTests.test_every_derived_document_satisfies_the_seeded_contract) ... ok
+test_full_matrix_has_no_false_completion (test_reclassifier.MatrixTests.test_full_matrix_has_no_false_completion) ... ok
+test_non_completed_providers_are_classified_on_their_own_terms (test_reclassifier.MatrixTests.test_non_completed_providers_are_classified_on_their_own_terms) ... ok
+test_unknown_provider_state_is_refused (test_reclassifier.MatrixTests.test_unknown_provider_state_is_refused) ... ok
+test_a_commit_with_no_artifacts_is_not_durable (test_reclassifier.NonDurableCommitTests.test_a_commit_with_no_artifacts_is_not_durable) ... ok
+test_blank_locator_is_treated_as_absent (test_reclassifier.NonDurableCommitTests.test_blank_locator_is_treated_as_absent) ... ok
+test_hash_mismatch_is_reported_with_both_hashes (test_reclassifier.NonDurableCommitTests.test_hash_mismatch_is_reported_with_both_hashes) ... ok
+test_resolvable_but_unpinned_content (test_reclassifier.NonDurableCommitTests.test_resolvable_but_unpinned_content) ... ok
+test_unresolvable_locator (test_reclassifier.NonDurableCommitTests.test_unresolvable_locator) ... ok
+test_recorded_po02_code2_fixture_reclassifies (test_reclassifier.Po02FixtureTests.test_recorded_po02_code2_fixture_reclassifies) ... ok
+test_a_deliberately_false_completion_is_rejected_by_the_seeded_validator (test_reclassifier.SeededValidatorCrossCheckTests.test_a_deliberately_false_completion_is_rejected_by_the_seeded_validator)
+Confirm the cross-check can actually fail, not just pass. ... ok
+test_forged_coordinator_completion_is_rejected (test_reclassifier.SeededValidatorCrossCheckTests.test_forged_coordinator_completion_is_rejected) ... ok
+test_validator_is_reachable_in_this_clone (test_reclassifier.SeededValidatorCrossCheckTests.test_validator_is_reachable_in_this_clone) ... ok
+test_a_verified_commit_stops_at_result_committed (test_reclassifier.SeparationTests.test_a_verified_commit_stops_at_result_committed) ... ok
+test_classifier_can_never_derive_completed (test_reclassifier.SeparationTests.test_classifier_can_never_derive_completed) ... ok
+test_obzio_state_is_derived_not_accepted (test_reclassifier.SeparationTests.test_obzio_state_is_derived_not_accepted)
+There is no input field by which a caller can assert Obzio state. ... ok
+test_provider_completed_without_a_locator_is_reclassified (test_reclassifier.SeparationTests.test_provider_completed_without_a_locator_is_reclassified) ... ok
+
+----------------------------------------------------------------------
+Ran 19 tests in 0.014s
+
+OK
+exit=0
