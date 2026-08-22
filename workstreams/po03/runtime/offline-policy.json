@@ -47,6 +47,7 @@
       "unit_id": "a3-u06"
     }
   ],
-  "expected_marked_test_modules": [],
-  "expected_marked_test_modules_note": "Empty because no PO-03 test needs the remote: test_a3_clean_clone.py exercises the clone path against a bare repository it builds on local disk, and path_scope's git mode reads remote-tracking refs that are already in the object store. This list is asserted against a scan of the committed tree, so a future test that reaches the network without marking itself fails the offline gate, and one that marks itself without being listed fails the registry check."
+  "expected_marked_test_modules": ["test_a3_offline.py"],
+  "expected_marked_test_modules_note": "Exactly one entry, and it is this unit's own test module. Its enforcement tests have to observe that egress existed before the sandbox removed it, so they cannot run inside an already-offline environment; they skip there instead. The requirement was discovered rather than designed: the first full-suite run inside the sandbox reported INCONCLUSIVE_NO_BASELINE from this module's nested probes, which is the runner refusing to make an unattributable claim. No other PO-03 test needs the remote -- test_a3_clean_clone.py exercises the clone path against a bare repository it builds on local disk, and path_scope's git mode reads remote-tracking refs already in the object store. This list is asserted against a scan of the committed tree, so a test that reaches the network without marking itself fails the offline gate, and one that marks itself without being listed fails the registry check.",
+  "separated_modules_are_skipped_not_excluded": "Marked modules still run in the offline suite; their guards turn the unreachable remote into skips. Excluding them from discovery would hide a marked module that had started failing for an unrelated reason."
 }

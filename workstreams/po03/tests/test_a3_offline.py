@@ -12,16 +12,24 @@ disconnected host, and it is worth nothing. What is tested here is that
 * a sandbox that removes nothing, which must be reported as
   ``OFFLINE_NOT_ENFORCED`` rather than quietly passing.
 
-Every test that needs the network to be reachable states so and skips when it is
-not, following the same marker convention the runner enforces.
+This module is the one PO-03 test module that genuinely needs the remote, and it
+declares itself under the marker convention it enforces. The need is real and
+narrow: proving that a sandbox removed egress requires observing that egress
+existed first, so the enforcement tests cannot run inside an already-offline
+environment. They skip there rather than pretending, which is what surfaced the
+requirement in the first place -- running the whole suite inside the sandbox made
+this module's nested probes report INCONCLUSIVE_NO_BASELINE, correctly.
 """
 
 from __future__ import annotations
 
+import functools
 import json
 import subprocess
 import unittest
 from pathlib import Path
+
+PO03_REQUIRES_NETWORK = True
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 RUNTIME_DIR = REPO_ROOT / "workstreams" / "po03" / "runtime"
@@ -53,6 +61,7 @@ def sandbox_works() -> bool:
         return False
 
 
+@functools.lru_cache(maxsize=1)
 def baseline_reachable() -> bool:
     """Whether the host can reach the remote at all, using the runner's own probes."""
     code, transcript, _ = run_runner("--probe-only")
@@ -63,6 +72,22 @@ SANDBOX_WORKS = sandbox_works()
 requires_sandbox = unittest.skipUnless(
     SANDBOX_WORKS, "no unprivileged network namespace available on this host"
 )
+
+
+def requires_baseline(method):
+    """Skip when the remote is already unreachable, which makes the claim untestable.
+
+    Removing something that was never there proves nothing, so these tests are
+    declared network-dependent rather than silently reinterpreted.
+    """
+
+    @functools.wraps(method)
+    def wrapper(self, *args, **kwargs):
+        if not baseline_reachable():
+            self.skipTest("declared network dependence; remote unreachable from this host")
+        return method(self, *args, **kwargs)
+
+    return wrapper
 
 
 class PolicyIsWellFormed(unittest.TestCase):
@@ -97,9 +122,10 @@ class MarkerRegistryMatchesTheTree(unittest.TestCase):
                     break
         return found
 
-    def test_no_committed_test_module_claims_to_need_the_network(self) -> None:
+    def test_committed_marked_modules_are_exactly_the_registered_ones(self) -> None:
         actual = self.marked_modules(REPO_ROOT / "workstreams" / "po03" / "tests")
         self.assertEqual(actual, POLICY["expected_marked_test_modules"])
+        self.assertIn(Path(__file__).name, actual)
 
     def test_the_marker_is_detectable_where_it_is_used(self) -> None:
         """Guards against a scan that reports an empty set because it is broken."""
@@ -115,10 +141,9 @@ class MarkerRegistryMatchesTheTree(unittest.TestCase):
 
 class SandboxEnforcementIsObserved(unittest.TestCase):
     @requires_sandbox
+    @requires_baseline
     def test_probes_succeed_outside_and_fail_inside(self) -> None:
         code, transcript, _ = run_runner("--probe-only")
-        if transcript["baseline_probe_failures"]:
-            self.skipTest("remote unreachable from this host; enforcement is unattributable")
         self.assertEqual(code, 0)
         self.assertEqual(transcript["status"], "PROBES_ONLY")
         self.assertEqual(transcript["sandboxed_probe_successes"], 0)
@@ -127,10 +152,9 @@ class SandboxEnforcementIsObserved(unittest.TestCase):
             self.assertEqual(phases[(probe["id"], "baseline")], 0, probe["id"])
             self.assertNotEqual(phases[(probe["id"], "sandboxed")], 0, probe["id"])
 
+    @requires_baseline
     def test_a_sandbox_that_removes_nothing_is_reported_not_enforced(self) -> None:
         """The planted defect for this detector: env is a no-op wrapper."""
-        if not baseline_reachable():
-            self.skipTest("remote unreachable from this host; a no-op sandbox cannot be caught")
         code, transcript, _ = run_runner("--probe-only", "--sandbox", "env")
         self.assertEqual(code, 5)
         self.assertEqual(transcript["status"], "OFFLINE_NOT_ENFORCED")
@@ -145,6 +169,7 @@ class SandboxEnforcementIsObserved(unittest.TestCase):
 
 class PlantedDependenceIsCaught(unittest.TestCase):
     @requires_sandbox
+    @requires_baseline
     def test_unmarked_network_dependence_fails_offline(self) -> None:
         code, transcript, _ = run_runner(
             "--suite-dir", FIXTURE_DIR, "--suite-pattern", "test_unmarked_*.py"
@@ -159,6 +184,7 @@ class PlantedDependenceIsCaught(unittest.TestCase):
         self.assertNotIn("test_unmarked_network_dependence.py", transcript["separated_modules"])
 
     @requires_sandbox
+    @requires_baseline
     def test_marked_network_dependence_is_separated_and_skipped(self) -> None:
         code, transcript, _ = run_runner(
             "--suite-dir", FIXTURE_DIR, "--suite-pattern", "test_marked_*.py"
@@ -219,9 +245,19 @@ class CommittedTranscript(unittest.TestCase):
         self.assertGreaterEqual(len(recorded_modules), 8)
         self.assertGreater(self.transcript["suite"]["tests_run"], 100)
 
-    def test_recorded_run_separated_nothing_because_nothing_needs_the_remote(self) -> None:
-        self.assertEqual(self.transcript["separated_modules"], [])
+    def test_recorded_run_separated_exactly_the_marked_module(self) -> None:
+        self.assertEqual(
+            self.transcript["separated_modules"], POLICY["expected_marked_test_modules"]
+        )
         self.assertEqual(self.transcript["environment"]["inherited_variables"], 0)
+
+    def test_recorded_run_skipped_only_the_declared_dependence(self) -> None:
+        """Skips are bounded: an offline pass built on skipping everything is not one."""
+        self.assertGreater(self.transcript["suite"]["tests_skipped"], 0)
+        self.assertLess(
+            self.transcript["suite"]["tests_skipped"],
+            self.transcript["suite"]["tests_run"] // 10,
+        )
 
 
 if __name__ == "__main__":
