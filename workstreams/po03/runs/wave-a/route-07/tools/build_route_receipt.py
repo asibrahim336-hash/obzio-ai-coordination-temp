@@ -193,8 +193,37 @@ def main() -> int:
             "target_count": len(reviews),
             "terminal_acceptance_claimed": False,
         },
+        "limitations": [
+            "Recommendations are not acceptance. Consequential acceptance requires a second "
+            "frontier-family challenger; no receipt in this route sets ACCEPTED.",
+            "rubric_v1 produced 24 RECOMMEND_REJECT verdicts driven by four reviewer-side "
+            "defects, not producer defects. The v1.1 erratum corrects exactly those four "
+            "predicates and is guarded by all 16 original hidden cases plus 10 abuse cases; "
+            "the superseded v1 verdicts remain committed under review/stage1/ for audit.",
+            "The R10 hypothesis-coverage dimension is a lexical and structural heuristic. It "
+            "reports a false negative for suites that assert on a returned failure verdict "
+            "instead of raising, which is why this route's own PO03-WA-056 slot self-gates to "
+            "RETEST despite rejecting all 31 of its adversarial cases.",
+            "The five RETEST recommendations rest on that same advisory dimension: no critical "
+            "dimension failed on any of the 24 targets under rubric v1.1.",
+            "Review reruns execute each target's tests in this runtime. A clean-clone or "
+            "GitHub Actions rerun of the target suites was not performed by this route.",
+            "The verified canary commit b59b3f114f942cbeb7b5b3427449356dc6ffe838 is not an "
+            "ancestor of the base commit; its payload blob 17e1b0aae60c2418fc43639d070a816b72b05fbd "
+            "is byte-identical at the base under replayed commit 0d94212, which is what was "
+            "verified before material work began.",
+        ],
         "material_attempts": tasks,
         "owned_subtree": f"{OWNED}/",
+        "custody_events": {
+            "collision_events": [],
+            "recovery_events": [],
+            "isolated_worktree": "dedicated linked worktree outside the shared checkout; "
+            "the shared checkout was never mutated",
+            "lease_stale_before_work": False,
+            "canary_verified": "b59b3f114f942cbeb7b5b3427449356dc6ffe838",
+            "canary_blob_byte_identical_at_base": "17e1b0aae60c2418fc43639d070a816b72b05fbd",
+        },
         "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
         "receipt_version": "PO03-ROUTE07-EXECUTION-RECEIPT-v1",
         "route_id": ROUTE,
