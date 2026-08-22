@@ -1,0 +1,35 @@
+$ python3 -I workstreams/po03/successor/g0/run.py --suite public
+generation G0: pre-amendment receipt-file controller
+provenance: reconstructed from prior_observed_head d627119351a6dc0e90158705abf6aab96e26b3dd (workstreams/po03/COMMISSION.md v001 and receipts/po03/2026-08-22/appointment-seed.json); no executable controller code exists at that commit
+capabilities: create, submit, complete, review, state, restart, verify, tamper, advance_clock, write_artifact
+absent capabilities: ingest, lease, recover
+[public] 3/31 passed rate=0.0968 critical=0.0 false_completions=3 unsupported_cases=24
+  FAIL P02-acceptance-contract-hashed-at-dispatch: detail@create: detail.acceptance_contract_sha256 absent=True expected=False
+  FAIL P03-idempotency-key-issued-at-dispatch: detail@create: detail.idempotency_key absent=True expected=False
+  FAIL P04-acceptance-contract-tamper-detected: detail@verify: detail.input_tampered=<absent> expected=['u1']
+  FAIL P06-provider-completion-is-not-obzio-completion: admitted@submit: admitted=True expected=False; reason_code@submit: reason_code=OK expected=NO_RESULT_COMMIT; detail@observe: detail.obzio_state='COMPLETED' expected='PROVIDER_COMPLETED_UNCOMMITTED'
+  FAIL P07-completion-requires-parent-ingestion: admitted@complete: admitted=True expected=False; reason_code@complete: reason_code=OK expected=NOT_INGESTED; detail@observe: detail.obzio_state='COMPLETED' expected one of ['RESULT_COMMITTED', 'RESULT_VERIFIED']
+  FAIL P08-completion-authority-is-enforced-not-labelled: admitted@complete: admitted=True expected=False; reason_code@complete: reason_code=OK expected=NOT_COORDINATOR; detail@observe: detail.obzio_state='COMPLETED' expected='PARENT_INGESTED'
+  FAIL P09-producer-cannot-accept-its-own-work: admitted@review: admitted=True expected=False; reason_code@review: reason_code=OK expected=SELF_ACCEPTANCE
+  FAIL P11-lease-grants-a-fence-token: admitted@lease: admitted=False expected=True; detail@lease: detail.fence_token=<absent> expected=1
+  FAIL P12-stale-worker-cannot-commit-after-transfer: admitted@submit: admitted=True expected=False; reason_code@submit: reason_code=OK expected=STALE_FENCE
+  FAIL P13-forged-fence-token-refused: admitted@submit: admitted=True expected=False; reason_code@submit: reason_code=OK expected=FORGED_FENCE
+  FAIL P14-expired-lease-cannot-commit: admitted@submit: admitted=True expected=False; reason_code@submit: reason_code=OK expected=EXPIRED_LEASE
+  FAIL P15-expired-lease-surfaces-in-recovery: detail@recover: detail.expired_leases=<absent> expected=['u1']
+  FAIL P16-missing-artifact-refused-on-readback: admitted@submit: admitted=True expected=False; reason_code@submit: reason_code=OK expected=ARTIFACT_MISSING
+  FAIL P17-artifact-hash-mismatch-refused: admitted@submit: admitted=True expected=False; reason_code@submit: reason_code=OK expected=ARTIFACT_HASH_MISMATCH
+  FAIL P18-byte-accounting-mismatch-refused: admitted@submit: admitted=True expected=False; reason_code@submit: reason_code=OK expected=ACCOUNTING_MISMATCH
+  FAIL P19-duplicate-artifact-identity-refused: admitted@submit: admitted=True expected=False; reason_code@submit: reason_code=OK expected=DUPLICATE_ARTIFACT_ID
+  FAIL P20-readback-evidence-required-for-terminal-state: admitted@submit: admitted=True expected=False; reason_code@submit: reason_code=OK expected=READBACK_MISSING
+  FAIL P21-drift-after-admission-is-detected: detail@verify: detail.drift_detected=[] expected=['workstreams/po03/successor/scores/probe.json']; detail@verify: detail.artifacts_reverified=0 expected=1
+  FAIL P22-out-of-allowlist-artifact-refused: admitted@submit: admitted=True expected=False; reason_code@submit: reason_code=OK expected=OUT_OF_ALLOWLIST
+  FAIL P23-cross-owner-artifact-refused: admitted@submit: admitted=True expected=False; reason_code@submit: reason_code=OK expected=NOT_OWNED
+  FAIL P24-path-traversal-refused: admitted@submit: admitted=True expected=False; reason_code@submit: reason_code=OK expected one of ['OUT_OF_ALLOWLIST', 'NOT_OWNED']
+  FAIL P25-identical-replay-is-harmless: reason_code@ingest2: reason_code=NOT_SUPPORTED expected=DUPLICATE_IGNORED; detail@observe: detail.ingest_count=<absent> expected=1
+  FAIL P26-conflicting-replay-refused: reason_code@ingest2: reason_code=NOT_SUPPORTED expected one of ['CONFLICTING_REPLAY', 'DUPLICATE_IGNORED']; detail@observe: detail.ingest_count=<absent> expected=1
+  FAIL P27-in-place-log-edit-detected: reason_code@verify: reason_code=OK expected one of ['LEDGER_CORRUPT']; detail@verify: detail.ledger_chain_valid=None expected=False
+  FAIL P28-log-reordering-detected: reason_code@verify: reason_code=OK expected one of ['LEDGER_CORRUPT']; detail@verify: detail.ledger_chain_valid=None expected=False
+  FAIL P29-log-tail-truncation-detected: reason_code@verify: reason_code=OK expected one of ['LEDGER_TRUNCATED', 'LEDGER_CORRUPT']; detail@verify: detail.ledger_truncated=<absent> expected=True
+  FAIL P30-lost-callback-is-replayed-not-rerun: detail@recover: detail.replayed_ingestions=<absent> expected=1; detail@recover: detail.rerun_required=<absent> expected=[]; detail@observe: detail.obzio_state='RESULT_COMMITTED' expected='PARENT_INGESTED'
+  FAIL P31-declared-locator-must-resolve-before-ingestion: reason_code@ingest: reason_code=NOT_SUPPORTED expected=LOCATOR_UNRESOLVED; detail@observe: detail.ingest_count=<absent> expected=0
+exit_code=0
