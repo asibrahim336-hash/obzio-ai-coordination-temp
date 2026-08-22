@@ -39,7 +39,7 @@ PLATFORMS = [
              "claim": "It writes the canonical store directly and provably. R1 GitHub immutable-SHA custody is the one route that survived independent challenge: a fresh clone fetched the evidence commit and independently matched all 13 listed entries.",
              "evidence": "l3-independent-acceptance/VERDICT.json AC-04 PASS"},
             {"id": "CUR-A2", "label": R,
-             "claim": "It is already operating as a multi-agent platform: nine top-level cloud agents on this repository, five distinct exact model configurations and two model families, in one account.",
+             "claim": "It is already operating as a multi-agent platform: nine top-level cloud agents on this repository, four distinct exact model configurations and two model families, in one account. A fifth configuration, gpt-5.6-sol-xhigh, is documented below the top level as the L3 acceptor and is not counted in the reproduced figure.",
              "evidence": "receipts/so02/2026-08-22/oe-w4-platform-roles/raw/cursor-agent-inventory.json"},
             {"id": "CUR-A3", "label": R,
              "claim": "A single run can hold isolated subagents, each in its own git worktree on its own branch and namespace. This lane is one of them.",

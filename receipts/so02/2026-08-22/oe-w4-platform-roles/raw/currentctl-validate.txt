@@ -1,0 +1,55 @@
+# Reproduced by lane OE-W4-PLATFORM-ROLES at 2026-08-22T23:00:15Z
+# cmd: currentctl.py validate --repo-root .
+
+ERROR: [ALIAS_USED_AS_LOCATOR] urn:obzio:l4:workstream:WS-CGPT-01-SUPPORT
+    LAUNCH_RECEIPT_WITH_LOCATOR carries 'current_project_conversation', a display or session alias. An alias resolves to whatever the reader is looking at, so it cannot address the evidence later
+ERROR: [ALIAS_USED_AS_LOCATOR] urn:obzio:l4:workstream:WS-CGPT-01-SUPPORT
+    OBSERVED_OUTPUT_WITH_LOCATOR carries 'current_project_conversation', a display or session alias. An alias resolves to whatever the reader is looking at, so it cannot address the evidence later
+ERROR: [ADMISSION_OVERCLAIM] urn:obzio:l4:workstream:WS-SO02-CONTROL-PLANE
+    claimed DURABLE but the supplied evidence supports only OBSERVED
+WARNING: [EVIDENCE_DISQUALIFIED] urn:obzio:l4:workstream:WS-PO03-REPOSITORY-ENGINEERING
+    REMOTE_READBACK_HASH is of an admissible class but does not address anything a third party could reach now, so it does not count toward any rung
+WARNING: [NON_ADMISSIBLE_EVIDENCE_OFFERED] urn:obzio:l4:workstream:WS-PO03-REPOSITORY-ENGINEERING
+    BRANCH_EXISTS offered as support for OBSERVED: A ref is an address, not a result. Lease and canary refs are coordination primitives, not work.
+WARNING: [NON_ADMISSIBLE_EVIDENCE_OFFERED] urn:obzio:l4:workstream:WS-PO03-REPOSITORY-ENGINEERING
+    PULL_REQUEST_EXISTS offered as support for OBSERVED: A PR is a proposal for integration. An open PR is not merged work and merged work is not accepted capability.
+ERROR: [STALE_REMOTE_READBACK] urn:obzio:l4:workstream:WS-PO03-REPOSITORY-ENGINEERING
+    read-back pinned to 0e973ed3fb1c on po03/repository-engineering-portable-runtime-20260822-v001, which is now 53 commits behind head 4949d1a5ee8e; a read-back that no longer matches the ref records a moment, not current state
+ERROR: [ADMISSION_OVERCLAIM] urn:obzio:l4:workstream:WS-CUR-ORCH-QUAL-01
+    claimed INDEPENDENTLY_VALIDATED but the supplied evidence supports only PROPOSED; non-admissible evidence offered: AGENT_EXISTS, PULL_REQUEST_EXISTS
+WARNING: [NON_ADMISSIBLE_EVIDENCE_OFFERED] urn:obzio:l4:workstream:WS-CUR-ORCH-QUAL-01
+    PULL_REQUEST_EXISTS offered as support for INDEPENDENTLY_VALIDATED: A PR is a proposal for integration. An open PR is not merged work and merged work is not accepted capability.
+WARNING: [NON_ADMISSIBLE_EVIDENCE_OFFERED] urn:obzio:l4:workstream:WS-CUR-ORCH-QUAL-01
+    AGENT_EXISTS offered as support for INDEPENDENTLY_VALIDATED: A registered, running or completed agent is a runtime binding. A runtime never grants standing.
+WARNING: [NON_ADMISSIBLE_EVIDENCE_OFFERED] urn:obzio:l4:workstream:WS-V003-CURRENTNESS-REPAIR
+    PULL_REQUEST_EXISTS offered as support for PROPOSED: A PR is a proposal for integration. An open PR is not merged work and merged work is not accepted capability.
+WARNING: [NON_ADMISSIBLE_EVIDENCE_OFFERED] urn:obzio:l4:workstream:WS-V003-POINTER-REPAIR
+    PULL_REQUEST_EXISTS offered as support for PROPOSED: A PR is a proposal for integration. An open PR is not merged work and merged work is not accepted capability.
+WARNING: [EVIDENCE_DISQUALIFIED] urn:obzio:l4:workstream:WS-WORK-UNIT-CONTRACT
+    COMMITTED_ARTIFACT_HASH is of an admissible class but does not address anything a third party could reach now, so it does not count toward any rung
+ERROR: [ADMISSION_OVERCLAIM] urn:obzio:l4:workstream:WS-WORK-UNIT-CONTRACT
+    claimed DURABLE but the supplied evidence supports only PROPOSED; non-admissible evidence offered: PULL_REQUEST_EXISTS
+WARNING: [NON_ADMISSIBLE_EVIDENCE_OFFERED] urn:obzio:l4:workstream:WS-WORK-UNIT-CONTRACT
+    PULL_REQUEST_EXISTS offered as support for DURABLE: A PR is a proposal for integration. An open PR is not merged work and merged work is not accepted capability.
+ERROR: [UNBACKED_EVIDENCE_CLAIM] urn:obzio:l4:workstream:WS-WORK-UNIT-CONTRACT
+    COMMITTED_ARTIFACT_HASH names modules/work_unit_contract/contract.py which does not exist in the working tree
+ERROR: [ADMISSION_OVERCLAIM] urn:obzio:l4:workstream:WS-OPERATOR-PACKS
+    claimed OBSERVED but the supplied evidence supports only PROPOSED; non-admissible evidence offered: BRANCH_EXISTS, FILE_COUNT, ZIP_ARCHIVE
+WARNING: [NON_ADMISSIBLE_EVIDENCE_OFFERED] urn:obzio:l4:workstream:WS-OPERATOR-PACKS
+    BRANCH_EXISTS offered as support for OBSERVED: A ref is an address, not a result. Lease and canary refs are coordination primitives, not work.
+WARNING: [NON_ADMISSIBLE_EVIDENCE_OFFERED] urn:obzio:l4:workstream:WS-OPERATOR-PACKS
+    FILE_COUNT offered as support for OBSERVED: A count of files measures volume, not function.
+WARNING: [NON_ADMISSIBLE_EVIDENCE_OFFERED] urn:obzio:l4:workstream:WS-OPERATOR-PACKS
+    ZIP_ARCHIVE offered as support for OBSERVED: An archive is a transport container. Its existence proves packaging, not capability.
+WARNING: [NON_ADMISSIBLE_EVIDENCE_OFFERED] urn:obzio:l4:workstream:WS-OE-GROUP-FIVE-LANE
+    AGENT_EXISTS offered as support for LAUNCHED: A registered, running or completed agent is a runtime binding. A runtime never grants standing.
+
+findings  ADMISSION_OVERCLAIM=8  ALIAS_USED_AS_LOCATOR=2  COMMISSION_ID_COLLISION=1  COMMISSION_UNRESOLVED_IN_REGISTER=6  COMPETING_CURRENTNESS_CLAIM=4  COORDINATION_TOKENS_COUNTED_AS_SCALE=1  EVIDENCE_DISQUALIFIED=6  LINEAGE_FAMILY_DISCONTINUITY=2  LINEAGE_PHANTOM_VERSION=1  NON_ADMISSIBLE_EVIDENCE_OFFERED=21  ORPHANED_REF_POPULATION=1  PR_TREATED_AS_CAPABILITY=7  STACKED_UNLANDED_PR_CHAIN=1  STALE_REMOTE_READBACK=1  UNBACKED_EVIDENCE_CLAIM=3  UNDIFFERENTIATED_COMMISSION_OVERLAP=7
+projection_sha256 c61d0780f9529a0eaf90ceac9cdb94b69d95bb1adbab3d31c7cbf3161110032c
+
+# cmd: currentctl.py resolve --scope pointer.operator-system --repo-root .
+REFUSED: pointer.operator-system has 3 competing current claims
+  6763e6c1d3c5  state/operator-system/ACTIVE_OPERATOR_SYSTEM_POINTER_CURRENT.json  <- cursor/operating-environment-return-20260822-v001, cursor/setup-dev-environment-b5ce, cursor/so02-cur-orch-qual-01, main, po03/repository-engineering-portable-runtime-20260822-v001, so02/strategic-control-plane-migration-20260822-v001, soo/work-unit-contract-and-run-ledger-20260819
+  7110f3a8dfd3  state/operator-system/ACTIVE_OPERATOR_SYSTEM_POINTER_CURRENT.json  <- soo/v003-currentness-repair-20260820
+  ce2cb6fb5cd0  state/operator-system/ACTIVE_OPERATOR_SYSTEM_POINTER_CURRENT.json  <- soo/v003-controlling-pointer-and-part-manifest-repair-20260820
+Resolution is withheld until a supersession edge is declared.

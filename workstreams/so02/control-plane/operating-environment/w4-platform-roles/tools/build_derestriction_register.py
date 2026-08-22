@@ -687,7 +687,7 @@ REMOVED = [
         "agent",
         f"{CP}/state/control-plane.json#runtime_bindings[SCF-01/CUR-01] and #founder_operating_environment_assignment.delivery",
         "The founder states that Cursor is an agent platform, not one agent and not a narrow repository worker. The binding as written describes a single runtime with a single provider locator and a single delivery route, which is a description of an interface rather than of a platform.",
-        "The unit of dispatch becomes an agent group rather than an agent. This lane reproduced that the platform is already operating that way: nine top-level cloud agents on this repository, five distinct exact model configurations and two model families, with subagents and isolated worktrees beneath them.",
+        "The unit of dispatch becomes an agent group rather than an agent. This lane reproduced that the platform is already operating that way: nine top-level cloud agents on this repository, four distinct exact model configurations and two model families, with subagents and isolated worktrees beneath them.",
         "FB-22 is retained: platform-scale operation does not make Cursor the permanent brain or the canonical store, and every role in the architecture names its substitution route.",
         "DIRECTLY_REPRODUCED",
     ),
