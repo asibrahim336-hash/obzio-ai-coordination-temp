@@ -1,0 +1,90 @@
+$ python3 recovery_scan.py --demo
+{
+  "coverage_problems": [],
+  "determinism": {
+    "coverage_problems": [],
+    "distinct_plan_hashes": 1,
+    "false_completed": [],
+    "mismatched_permutations": [],
+    "orphan_events": [
+      "PO03-WA-999"
+    ],
+    "permutations": 25,
+    "plan_sha256": "59970acf21e375d7af0b00d153d3c25578d22df620ff6c5ebb3cfe559fa2f8dd",
+    "resume_count": 21,
+    "roster_size": 24,
+    "terminal_count": 3
+  },
+  "sample_resume_actions": [
+    {
+      "action": "PROBE_PROVIDER",
+      "last_seq": 1,
+      "next_fence_token": 3,
+      "position": "RUNNING",
+      "result_commit_id": null,
+      "task_id": "PO03-WA-001"
+    },
+    {
+      "action": "DISPATCH",
+      "last_seq": 0,
+      "next_fence_token": 1,
+      "position": "CREATED",
+      "result_commit_id": null,
+      "task_id": "PO03-WA-002"
+    },
+    {
+      "action": "VERIFY_AND_COMMIT",
+      "last_seq": 2,
+      "next_fence_token": 4,
+      "position": "RESULT_STAGED",
+      "result_commit_id": null,
+      "task_id": "PO03-WA-003"
+    },
+    {
+      "action": "DISPATCH",
+      "last_seq": 3,
+      "next_fence_token": 2,
+      "position": "CREATED",
+      "result_commit_id": null,
+      "task_id": "PO03-WA-004"
+    },
+    {
+      "action": "DISPATCH",
+      "last_seq": 0,
+      "next_fence_token": 1,
+      "position": "CREATED",
+      "result_commit_id": null,
+      "task_id": "PO03-WA-005"
+    }
+  ]
+}
+exit=0
+
+$ python3 -m unittest -v test_recovery_scan
+test_a_task_with_no_events_is_still_planned (test_recovery_scan.CompletenessTests.test_a_task_with_no_events_is_still_planned) ... ok
+test_an_undeclared_position_raises_rather_than_being_skipped (test_recovery_scan.CompletenessTests.test_an_undeclared_position_raises_rather_than_being_skipped) ... ok
+test_coverage_is_exactly_the_roster (test_recovery_scan.CompletenessTests.test_coverage_is_exactly_the_roster) ... ok
+test_every_nonterminal_position_yields_exactly_one_resume_action (test_recovery_scan.CompletenessTests.test_every_nonterminal_position_yields_exactly_one_resume_action) ... ok
+test_orphan_events_are_reported_not_planned (test_recovery_scan.CompletenessTests.test_orphan_events_are_reported_not_planned) ... ok
+test_resume_action_map_is_total_over_nonterminal_states (test_recovery_scan.CompletenessTests.test_resume_action_map_is_total_over_nonterminal_states) ... ok
+test_terminal_tasks_are_not_scheduled (test_recovery_scan.CompletenessTests.test_terminal_tasks_are_not_scheduled) ... ok
+test_a_different_ledger_produces_a_different_plan_hash (test_recovery_scan.DeterminismTests.test_a_different_ledger_produces_a_different_plan_hash)
+Determinism must not be achieved by ignoring the input. ... ok
+test_determinism_holds_across_many_seeds (test_recovery_scan.DeterminismTests.test_determinism_holds_across_many_seeds) ... ok
+test_duplicate_events_do_not_change_the_plan (test_recovery_scan.DeterminismTests.test_duplicate_events_do_not_change_the_plan) ... ok
+test_permutations_of_one_ledger_produce_one_plan (test_recovery_scan.DeterminismTests.test_permutations_of_one_ledger_produce_one_plan) ... ok
+test_plan_hash_is_stable_across_processes_by_construction (test_recovery_scan.DeterminismTests.test_plan_hash_is_stable_across_processes_by_construction)
+Canonical serialisation, no timestamps, no object identity. ... ok
+test_false_completion_is_detected (test_recovery_scan.FenceAndFalseCompletionTests.test_false_completion_is_detected) ... ok
+test_resume_always_advances_the_fence (test_recovery_scan.FenceAndFalseCompletionTests.test_resume_always_advances_the_fence) ... ok
+test_verify_plan_detects_a_tampered_plan (test_recovery_scan.FenceAndFalseCompletionTests.test_verify_plan_detects_a_tampered_plan)
+The verifier must be able to fail, not only to pass. ... ok
+test_an_order_sensitive_fold_really_does_diverge (test_recovery_scan.NegativeControlTests.test_an_order_sensitive_fold_really_does_diverge)
+Prove the shuffle is capable of exposing nondeterminism. ... ok
+test_the_guarded_fold_is_stable_under_the_identical_shuffles (test_recovery_scan.NegativeControlTests.test_the_guarded_fold_is_stable_under_the_identical_shuffles) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.030s
+
+OK
+exit=0
