@@ -1,0 +1,274 @@
+{
+  "$id": "https://obzio.internal/po03/repository-disposition-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "decision_changed": {
+      "maxItems": 0,
+      "type": "array"
+    },
+    "dispositions": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "classification": {
+            "enum": [
+              "CURRENT_MATERIAL",
+              "SUPERSEDED_TRANSPORT_REDUNDANT",
+              "REDUNDANT_DEBRIS",
+              "SUPERSEDED_MATERIAL",
+              "SUPERSEDED_UNIQUE_EVIDENCE",
+              "AMBIGUOUS_REVIEW"
+            ]
+          },
+          "content": {
+            "additionalProperties": false,
+            "properties": {
+              "duplicate_artifact_ids": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "unique_bytes": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "duplicate_artifact_ids",
+              "unique_bytes"
+            ],
+            "type": "object"
+          },
+          "disposition": {
+            "enum": [
+              "RETAIN",
+              "SUPERSEDE_RETAIN",
+              "REVIEW_FOR_REMOVAL",
+              "RETAIN_SUPERSEDED",
+              "RETAIN_AS_EVIDENCE",
+              "RETAIN_PENDING_REVIEW"
+            ]
+          },
+          "evidence": {
+            "additionalProperties": false,
+            "properties": {
+              "claims": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "has_unique_evidence": {
+                "type": "boolean"
+              },
+              "unique_claims": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "claims",
+              "unique_claims",
+              "has_unique_evidence"
+            ],
+            "type": "object"
+          },
+          "integrity": {
+            "additionalProperties": false,
+            "properties": {
+              "actual_bytes": {
+                "minimum": 0,
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "actual_sha256": {
+                "anyOf": [
+                  {
+                    "pattern": "^[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "expected_bytes": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "expected_sha256": {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "VERIFIED",
+                  "MISSING",
+                  "PARENT_ESCAPE_REFUSED",
+                  "SYMLINK_REFUSED",
+                  "NON_REGULAR_REFUSED",
+                  "READ_FAILED",
+                  "CLAIM_MISMATCH"
+                ]
+              }
+            },
+            "required": [
+              "status",
+              "expected_sha256",
+              "actual_sha256",
+              "expected_bytes",
+              "actual_bytes"
+            ],
+            "type": "object"
+          },
+          "path": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "protection_required": {
+            "type": "boolean"
+          },
+          "rationale": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "removal_eligible_after_review": {
+            "type": "boolean"
+          },
+          "role": {
+            "enum": [
+              "MATERIAL",
+              "TRANSPORT",
+              "GENERATED_DEBRIS",
+              "EVIDENCE"
+            ]
+          },
+          "standing": {
+            "enum": [
+              "CURRENT",
+              "SUPERSEDED",
+              "UNKNOWN"
+            ]
+          },
+          "supersession": {
+            "additionalProperties": false,
+            "properties": {
+              "relation_errors": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "superseded_by": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "superseded_by",
+              "relation_errors"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "path",
+          "role",
+          "standing",
+          "classification",
+          "disposition",
+          "integrity",
+          "content",
+          "evidence",
+          "supersession",
+          "protection_required",
+          "removal_eligible_after_review",
+          "rationale"
+        ],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "inventory_path": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "inventory_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "mutation_performed": {
+      "const": false
+    },
+    "protocol_version": {
+      "const": "OBZIO-REPOSITORY-DISPOSITION-v1"
+    },
+    "scan_mode": {
+      "const": "READ_ONLY"
+    },
+    "summary": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_count": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "classification_counts": {
+          "additionalProperties": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "type": "object"
+        },
+        "protected_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "removal_candidate_count": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_count",
+        "classification_counts",
+        "protected_count",
+        "removal_candidate_count"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "protocol_version",
+    "inventory_path",
+    "inventory_sha256",
+    "scan_mode",
+    "mutation_performed",
+    "summary",
+    "dispositions",
+    "decision_changed"
+  ],
+  "title": "PO03 Repository Debris Disposition v1",
+  "type": "object"
+}
