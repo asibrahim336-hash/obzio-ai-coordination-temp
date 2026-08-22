@@ -37,6 +37,7 @@ from harness.emit_result import (
     owned_file_total,
     owned_files,
     parse_unittest_output,
+    sanitized_remote,
 )
 from harness.seeded import repository_root
 
@@ -270,6 +271,50 @@ class BranchBaseTests(unittest.TestCase):
             "workstreams/po03/control/inputs/wave-a/wa-016.json",
             git_output("diff", "--name-only", f"{self.base}..HEAD").split(),
         )
+
+
+class RemoteSanitisationTests(unittest.TestCase):
+    """A return document is committed, so no credential may reach it."""
+
+    def test_an_embedded_token_is_stripped_from_the_recorded_remote(self):
+        self.assertEqual(
+            "https://github.com/owner/repo",
+            sanitized_remote("https://x-access-token:ghs_examplenotreal@github.com/owner/repo"),
+        )
+        self.assertEqual(
+            "https://github.com/owner/repo",
+            sanitized_remote("https://user:password@github.com/owner/repo"),
+        )
+
+    def test_a_remote_without_a_credential_is_unchanged(self):
+        for url in ("https://github.com/owner/repo", "file:///tmp/bare.git", "git@github.com:owner/repo.git"):
+            self.assertEqual(url, sanitized_remote(url))
+
+    # assertNotIn would print the whole document on failure, which is both
+    # unreadable and the last thing to put in a log when the finding is a leak.
+    MARKERS = ("x-access-token", "ghp_", "ghs_", "github_pat_", "@github.com")
+
+    def _scan(self, path: Path) -> None:
+        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            for marker in self.MARKERS:
+                self.assertTrue(marker not in line, f"{path.name}:{number} carries {marker}")
+
+    def test_no_result_document_carries_a_credential(self):
+        """Scans whatever is present, including the receipt once it exists.
+
+        Not conditioned on the receipt being there: the receipt is written after
+        this suite runs, and a test that skipped while waiting for it would report
+        a skip on every recorded run.
+        """
+        documents = sorted((UNIT_ROOT / "result").glob("*.json"))
+        self.assertTrue(documents, "no result documents to scan")
+        for path in documents:
+            self._scan(path)
+
+    def test_no_evidence_file_carries_a_credential(self):
+        for path in sorted((UNIT_ROOT / "evidence").iterdir()):
+            if path.is_file():
+                self._scan(path)
 
 
 class EmitterDisciplineTests(unittest.TestCase):

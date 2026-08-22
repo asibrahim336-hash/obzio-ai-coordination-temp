@@ -467,6 +467,31 @@ MECHANISM_CHANGES: tuple[dict[str, Any], ...] = (
         ),
     },
     {
+        "mechanism_id": "M10",
+        "hypothesis_ids": ["CM-H7"],
+        "scope": "LIVE_IN_THIS_UNIT",
+        "change": (
+            "The read-back record strips any credential from the remote URL before writing it. The push URL "
+            "embeds an access token, and the first implementation recorded it verbatim in a document that is "
+            "committed and read by others. Caught before the receipt was committed, by reading the emitted "
+            "bytes rather than trusting the field's description."
+        ),
+        "target": "harness/emit_result.py:sanitized_remote",
+        "recurrence_test": (
+            "tests/test_emit_result.py::RemoteSanitisationTests::"
+            "test_an_embedded_token_is_stripped_from_the_recorded_remote"
+        ),
+        "additional_recurrence_test": (
+            "tests/test_emit_result.py::RemoteSanitisationTests::test_no_result_document_carries_a_credential"
+        ),
+        "disposition": "RETAIN",
+        "rationale": (
+            "A custody document that proves where bytes came from must not also publish the key used to get "
+            "them. The standing test scans every emitted result document, not only the field that leaked, "
+            "because the next leak will be in a different field."
+        ),
+    },
+    {
         "mechanism_id": "M6",
         "hypothesis_ids": ["CM-H8"],
         "scope": "REJECTION",
