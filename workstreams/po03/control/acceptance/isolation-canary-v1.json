@@ -1,0 +1,33 @@
+{
+  "protocol_version": "OBZIO-ACCEPTANCE-CONTRACT-v1",
+  "contract_id": "PO03-WAVE-A-ISOLATION-CANARY-20260822-v1",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "frozen_at": "2026-08-22T07:02:43Z",
+  "purpose": "Prove durable result custody in an actually isolated worktree without mutating the controller checkout before concurrent material Wave A dispatch.",
+  "producer_terminal_report": "READY_TO_COMMIT",
+  "required_assertions": [
+    "The producer uses the best-of-n isolated-worktree runner and never checks out, rebases, resets, or otherwise changes the controller workspace.",
+    "The producer starts from a commit descended from 90d2288fb9613312be8f055bd74bf8d19edeb317 that contains the active transactional protocol.",
+    "The producer writes only its declared owned subtree on its unique runner branch.",
+    "The canary payload exactly matches the nonce and content declared by the immutable task input.",
+    "The producer emits a complete artifact manifest with SHA-256 and byte counts.",
+    "The producer commits and pushes the result to a unique remote branch.",
+    "A distinct controller process reads every artifact from the immutable remote commit and verifies bytes and hashes.",
+    "The controller checkout branch and HEAD observed before dispatch are unchanged when the producer returns.",
+    "Provider completion without a durable result commit is classified PROVIDER_COMPLETED_UNCOMMITTED.",
+    "Only the controller may record COMPLETED and the producer may not independently accept its own result."
+  ],
+  "required_artifacts": [
+    "canary.txt",
+    "artifact-manifest.json",
+    "ready-to-commit.json"
+  ],
+  "allowed_dispositions": [
+    "PASS",
+    "FAIL",
+    "NOT_YET",
+    "NOT_SUPPORTED",
+    "OWNER_BLOCKED"
+  ],
+  "decision_changed": []
+}

@@ -1,0 +1,45 @@
+{
+  "review_id": "PO03-WA-CANARY-000-INDEPENDENT-REVIEW-001",
+  "task_id": "PO03-WA-CANARY-000",
+  "reviewer_id": "controller-verifier:bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+  "reviewed_at": "2026-08-22T07:02:43Z",
+  "producer_result_branch": "cursor/po03-canary-b195-1a9f",
+  "producer_payload_commit": "a702a5a053d384377f63690a814233e27904233b",
+  "producer_return_commit": "997c452247dc5e5ccbb9cdcaacd51c882b600304",
+  "controller_ingestion_commit": "9adebfcf85394df424a78f15a0bf2b636aec5ef3",
+  "readback": {
+    "method": "git fetch of the exact remote branch followed by git show of every artifact at immutable commit 997c452247dc5e5ccbb9cdcaacd51c882b600304",
+    "changed_paths_exactly_owned": true,
+    "artifacts": [
+      {
+        "path": "workstreams/po03/runs/bc-b1956656-b897-4889-aeab-82c4556c1a9f/units/wa-canary-000/result/canary.txt",
+        "sha256": "f67caf2903e38971f76b0f1c4c841d8f5250b8e8fdafdfacef1d7644a2c96aa4",
+        "bytes": 65,
+        "verified": true
+      },
+      {
+        "path": "workstreams/po03/runs/bc-b1956656-b897-4889-aeab-82c4556c1a9f/units/wa-canary-000/result/artifact-manifest.json",
+        "sha256": "26dee42271d99dc76751d0c5eb8bdbe66472676ee5689aa3175dc1c2f543654a",
+        "bytes": 3622,
+        "verified": true
+      },
+      {
+        "path": "workstreams/po03/runs/bc-b1956656-b897-4889-aeab-82c4556c1a9f/units/wa-canary-000/result/ready-to-commit.json",
+        "sha256": "2b22bd929f772d99db6419e1214970e489c27767af84cc359d5bb214baf14027",
+        "bytes": 11406,
+        "verified": true
+      }
+    ]
+  },
+  "result_custody": "PASS",
+  "runtime_isolation": {
+    "state": "FAIL",
+    "evidence": "The subordinate left the shared controller workspace checked out on cursor/po03-canary-b195-1a9f. The next controller command observed that branch directly. The claimed cloud route therefore did not prove a separate VM or checkout.",
+    "material_route_disposition": "REJECT"
+  },
+  "independent_disposition": "REJECTED",
+  "reason": "Durable write, commit, push, and immutable readback passed, but checkout isolation failed. This route is fenced from material concurrent work pending a successful isolated-worktree canary.",
+  "po01_touched": false,
+  "pull_request_8_touched": false,
+  "decision_changed": []
+}
