@@ -1,0 +1,146 @@
+{
+  "criteria_version": "PO03-WAVE-A-043-FROZEN-CRITERIA-v1",
+  "task_id": "wave-a-043-path-scope-adversarial-review",
+  "function": "independent-evaluation",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "decision_changed": [],
+  "hypothesis_under_test": "The scope guard rejects modified, added, copied, renamed, and deleted out-of-allowlist paths.",
+  "oracle": {
+    "source": "workstreams/po03/COMMISSION.md",
+    "writable": [
+      "workstreams/po03/**",
+      "receipts/po03/**",
+      ".github/workflows/po03-*.yml"
+    ],
+    "read_only": "every other path in the repository, including packs/**, modules/operators/**, _transport/**, modules/work_unit_contract/**, existing state/** and dispatch/** current-pointer files, .cursor/environment.json and every PO-01 branch and artefact",
+    "glob_interpretation": "The wildcard in .github/workflows/po03-*.yml is read with ordinary pathname-glob semantics, in which * does not cross a / separator. This reading is stated before evaluation so that the workflow-lookalike verdicts cannot be adjusted afterwards."
+  },
+  "decision_rule": {
+    "commission_requirement": "The oracle verdict for each case: ALLOW means the guard must not block it, REJECT means the guard must fail closed.",
+    "requirement_satisfied": "For pure path cases the observed disposition equals commission_requirement. For git cases a REJECT requirement is satisfied by any non-zero exit code and an ALLOW requirement by exit code 0.",
+    "hypothesis_verdict": "REFUTED if any case with commission_requirement REJECT is not rejected; otherwise NOT_REFUTED.",
+    "false_positive": "A case with commission_requirement ALLOW that the guard blocks. Any false positive is reported as a defect of equal standing to a miss, because it would stall sanctioned PO-03 work.",
+    "prediction_held": "Recorded separately from the oracle verdict. A refuted prediction is a finding against this reviewer, not against the guard."
+  },
+  "artifact_under_review": {
+    "path": "workstreams/po03/tools/check_path_scope.py",
+    "sha256": "d0c207b1710e5ea4026319d6250d1f85ec91c327f8250c552e2a0ed627881b97",
+    "git_blob_sha1": "17bb2d4c51ee1f4f62dd0cbd9002f3dd18279891",
+    "bytes": 2856
+  },
+  "sources_hashed_before_freeze": [
+    {
+      "path": "workstreams/po03/COMMISSION.md",
+      "sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+      "git_blob_sha1": "1947aa35f59b2a0b0d73abfbe260134699496da4",
+      "bytes": 16030,
+      "role": "oracle for the collision boundary"
+    },
+    {
+      "path": "workstreams/po03/tools/check_path_scope.py",
+      "sha256": "d0c207b1710e5ea4026319d6250d1f85ec91c327f8250c552e2a0ed627881b97",
+      "git_blob_sha1": "17bb2d4c51ee1f4f62dd0cbd9002f3dd18279891",
+      "bytes": 2856,
+      "role": "guard under review"
+    },
+    {
+      "path": "workstreams/po03/tests/test_check_path_scope.py",
+      "sha256": "1b4db1202097e551599e19c769e8305d5c3ae3b96d93cb254c00d7e7c258ee8d",
+      "git_blob_sha1": "b6e311b088e0529c71d25a963453a98a9873787d",
+      "bytes": 1792,
+      "role": "existing coverage, read to avoid duplicating cases"
+    },
+    {
+      "path": "workstreams/po03/tests/test_path_scope.py",
+      "sha256": "e68b539f13bdbe277b5e667feb950391c39fb6e5115c72a60bbfb396af0e4b0f",
+      "git_blob_sha1": "bd50c0e1b9234e5185a8c487f756de5513057d2e",
+      "bytes": 1842,
+      "role": "existing coverage, read to avoid duplicating cases"
+    },
+    {
+      "path": ".github/workflows/po03-contracts.yml",
+      "sha256": "7e6948eb5a449f5f5716e64319164809c07fe3fdf6812e013211e1e3df9b32ff",
+      "git_blob_sha1": "9b2b69a68e7f89bb233d15a43b83ce782b6bf39a",
+      "bytes": 1481,
+      "role": "invocation surface that determines how the guard is actually called in CI"
+    },
+    {
+      "path": "workstreams/po03/contracts/transactional-result.schema.json",
+      "sha256": "91fb63c1238a895dc7be8e837c7e101522ac12984aff2a62ea6bc78e98152102",
+      "git_blob_sha1": "06d8be28c02e4b8b1709884171457f675a618c27",
+      "bytes": 5251,
+      "role": "transactional custody contract for the result of this attempt"
+    },
+    {
+      "path": "workstreams/po03/control/path-ownership.json",
+      "sha256": "8c7abcbdaf63652185e6fd9073059ea2a1e52faa58c2275189adc2a607a41c80",
+      "git_blob_sha1": "97f5556a39b91d88a8cc7797721fa1f4cde3b172",
+      "bytes": 13906,
+      "role": "confirms this attempt's owned subtree and fence token"
+    }
+  ],
+  "capsule_verification": {
+    "method": "sha256 computed over immutable Git blob bytes read with git cat-file blob, not over working-tree files",
+    "immutable_input": {
+      "path": "workstreams/po03/control/tasks/wave-a-043-path-scope-adversarial-review/input.json",
+      "declared_sha256": "12bb357e2ab898c2f04f451442f36ba70b1da5bab3c8da015abea48916e8cb27",
+      "observed_sha256": "12bb357e2ab898c2f04f451442f36ba70b1da5bab3c8da015abea48916e8cb27",
+      "match": true
+    },
+    "acceptance_contract": {
+      "path": "workstreams/po03/control/tasks/wave-a-043-path-scope-adversarial-review/acceptance.json",
+      "declared_sha256": "2bdea3eb1600f95c6ada33b388200bdd2ea77e5598d00c9f9d0f2d3723fdf14d",
+      "observed_sha256": "2bdea3eb1600f95c6ada33b388200bdd2ea77e5598d00c9f9d0f2d3723fdf14d",
+      "match": true
+    },
+    "commission": {
+      "declared_sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+      "observed_at_controller_head_sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+      "observed_at_dispatch_base_sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+      "match": true
+    },
+    "transaction_schema": {
+      "declared_sha256": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1",
+      "observed_at_controller_head_sha256": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1",
+      "observed_at_dispatch_base_sha256": "91fb63c1238a895dc7be8e837c7e101522ac12984aff2a62ea6bc78e98152102",
+      "match_at_declared_head": true,
+      "drift_after_declared_head": true
+    }
+  },
+  "additive_source_hardening_disclosure": {
+    "statement": "The transactional result schema changed between the controller_head_sha recorded in this attempt's immutable input and the dispatch base this attempt branches from. The change is disclosed rather than treated as capsule corruption.",
+    "controller_head_sha": "1bb843b2a81fd8d73617caf2f1db81909266bb6e",
+    "dispatch_base_sha": "06210fb82ba2b0b9e30b2a9c752ca781c0d2d466",
+    "changed_source": "workstreams/po03/contracts/transactional-result.schema.json",
+    "change_character": "ADDITIVE_HARDENING",
+    "observed_change_summary": "Nullable string fields were rewritten from a type array to an equivalent anyOf, and result_commit_id gained a 40 or 64 lowercase hex pattern constraint. The rewrite narrows what validates; it removes no field and relaxes no prior constraint.",
+    "effect_on_this_attempt": "None. This attempt validates no document against that schema and writes no shared control file. The disclosure exists so that an acceptor comparing capsule hashes does not read the difference as tampering.",
+    "guard_and_workflow_drift": "workstreams/po03/tools/check_path_scope.py, both existing path-scope test files and .github/workflows/po03-contracts.yml are byte-identical at the controller head, at the dispatch base and at the controller tip observed during admission (731fb2b). The artefact under review therefore did not move under this attempt."
+  },
+  "freeze": {
+    "frozen_case_set": "hidden-cases.json",
+    "frozen_case_set_sha256": "b2180bb19422b9d2272ef0dacb77e263766a437b0f2fb36005cb493acb7f143e",
+    "path_case_count": 92,
+    "git_case_count": 28,
+    "freeze_statement": "The case set, including every commission_requirement and every predicted_guard_* field, was authored and rendered before the guard was executed against it. The committed hidden-cases.json is byte-identical to the input of the first execution, so no prediction was edited after an observation.",
+    "generator_determinism": "tests/generate_cases.py --check re-renders the document and fails on any drift, so an acceptor can verify the frozen file was not hand-edited.",
+    "white_box_disclosure": "The guard source was inside the admitted context capsule before the cases were written, because the task instruction required reading it. The case set is therefore white-box informed. This raises the chance that the cases target real weaknesses and lowers their value as evidence about what a blind reviewer would find; it is disclosed rather than concealed.",
+    "pre_commit_execution_disclosure": "The harness was executed once against these exact case bytes before the implementation commit, to confirm the harness itself ran. Because that run could otherwise have contaminated the freeze, the frozen file was not modified afterwards and its sha256 above is the verifiable proof of that."
+  },
+  "safety_rules": {
+    "no_forbidden_durable_write": "No case writes outside this attempt's owned slot. Dangerous mutations exist only inside throwaway Git repositories created under a temporary directory and removed after evaluation, or as pure string inputs that touch no filesystem.",
+    "shared_code_untouched": "The guard, its tests and the workflow are read and executed, never modified. Findings are reported; no repair is applied.",
+    "po01": "PO-01 paths appear only as fixture strings and as files inside throwaway repositories. No PO-01 branch, artefact, pull request or process is read for narrative evidence, contacted or mutated."
+  },
+  "expected_evidence": [
+    "hidden-cases.json frozen before execution",
+    "observed-results.json with expected and observed values for every case",
+    "findings.json separating oracle failures from refuted predictions",
+    "analysis.md",
+    "limitations.json",
+    "runtime-binding.json",
+    "commands.md with the exact commands run",
+    "readback-evidence.json produced from a separate fresh read-only clone",
+    "manifest.json covering every durable file except itself"
+  ]
+}

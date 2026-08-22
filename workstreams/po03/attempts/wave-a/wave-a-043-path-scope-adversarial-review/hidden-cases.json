@@ -1,0 +1,2113 @@
+{
+  "case_set_version": "PO03-WAVE-A-043-HIDDEN-CASES-v1",
+  "decision_changed": [],
+  "generator": "tests/generate_cases.py",
+  "git_case_count": 28,
+  "git_cases": [
+    {
+      "base_ref": "base",
+      "case_id": "GIT-001",
+      "commission_requirement": "ALLOW",
+      "description": "Modify a single in-allowlist file.",
+      "family": "positive-control",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "content": "{\"seed\":\"inside\",\"edit\":1}\n",
+          "op": "write",
+          "path": "workstreams/po03/control/inside.json"
+        },
+        {
+          "message": "modify inside",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 0,
+      "predicted_reported_paths": [
+        "workstreams/po03/control/inside.json"
+      ],
+      "predicted_violation_paths": [],
+      "rationale": "Ordinary sanctioned work must pass; a failure here is a false positive that would block PO-03.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "M"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-002",
+      "commission_requirement": "ALLOW",
+      "description": "Add a new in-allowlist file and a new PO-03 workflow.",
+      "family": "positive-control",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "content": "{}\n",
+          "op": "write",
+          "path": "receipts/po03/2026-08-22/new.json"
+        },
+        {
+          "content": "name: x\n",
+          "op": "write",
+          "path": ".github/workflows/po03-new.yml"
+        },
+        {
+          "message": "add inside",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 0,
+      "predicted_reported_paths": [
+        ".github/workflows/po03-new.yml",
+        "receipts/po03/2026-08-22/new.json"
+      ],
+      "predicted_violation_paths": [],
+      "rationale": "All three allowlist components must be additively writable.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "A"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-003",
+      "commission_requirement": "ALLOW",
+      "description": "Delete an in-allowlist file.",
+      "family": "positive-control",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "op": "delete",
+          "path": "workstreams/po03/control/inside-two.json"
+        },
+        {
+          "message": "delete inside",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 0,
+      "predicted_reported_paths": [
+        "workstreams/po03/control/inside-two.json"
+      ],
+      "predicted_violation_paths": [],
+      "rationale": "Deleting one's own artefact is inside authority.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "D"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-004",
+      "commission_requirement": "ALLOW",
+      "description": "Add an in-allowlist file whose name contains a newline.",
+      "family": "positive-control-exotic",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "content": "{}\n",
+          "op": "write",
+          "path": "workstreams/po03/control/new\nline.json"
+        },
+        {
+          "message": "add exotic inside",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 0,
+      "predicted_reported_paths": [
+        "workstreams/po03/control/new\nline.json"
+      ],
+      "predicted_violation_paths": [],
+      "rationale": "A line-oriented reader would split this into a bogus second path and reject it; -z must prevent that.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "A"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-005",
+      "commission_requirement": "REJECT",
+      "description": "Modify a protected out-of-allowlist file.",
+      "family": "modified-out",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "content": "{\"seed\":\"tampered\"}\n",
+          "op": "write",
+          "path": "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+        },
+        {
+          "message": "modify protected",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_reported_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "predicted_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "rationale": "Core hypothesis: modified out-of-allowlist paths are rejected.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "M"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-006",
+      "commission_requirement": "REJECT",
+      "description": "Add a new out-of-allowlist file.",
+      "family": "added-out",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "content": "{}\n",
+          "op": "write",
+          "path": "state/PO03-SHOULD-NOT-WRITE.json"
+        },
+        {
+          "message": "add protected",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_reported_paths": [
+        "state/PO03-SHOULD-NOT-WRITE.json"
+      ],
+      "predicted_violation_paths": [
+        "state/PO03-SHOULD-NOT-WRITE.json"
+      ],
+      "rationale": "Core hypothesis: added out-of-allowlist paths are rejected.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "A"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-007",
+      "commission_requirement": "REJECT",
+      "description": "Delete a protected out-of-allowlist file.",
+      "family": "deleted-out",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "op": "delete",
+          "path": "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+        },
+        {
+          "message": "delete protected",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_reported_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "predicted_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "rationale": "Core hypothesis: deleted out-of-allowlist paths are rejected.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "D"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-008",
+      "commission_requirement": "REJECT",
+      "description": "Delete a PO-01 artefact.",
+      "family": "deleted-out-po01",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "op": "delete",
+          "path": "workstreams/po01/producer-result.json"
+        },
+        {
+          "message": "delete po01",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_reported_paths": [
+        "workstreams/po01/producer-result.json"
+      ],
+      "predicted_violation_paths": [
+        "workstreams/po01/producer-result.json"
+      ],
+      "rationale": "PO-01 non-interference is absolute; deletion is the most destructive contact form.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "D"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-009",
+      "commission_requirement": "REJECT",
+      "description": "Rename an in-allowlist file to an out-of-allowlist destination.",
+      "family": "renamed-in-to-out",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "content": "alpha line 0 of the rename fixture payload\nalpha line 1 of the rename fixture payload\nalpha line 2 of the rename fixture payload\nalpha line 3 of the rename fixture payload\nalpha line 4 of the rename fixture payload\nalpha line 5 of the rename fixture payload\nalpha line 6 of the rename fixture payload\nalpha line 7 of the rename fixture payload\nalpha line 8 of the rename fixture payload\nalpha line 9 of the rename fixture payload\nalpha line 10 of the rename fixture payload\nalpha line 11 of the rename fixture payload\nalpha line 12 of the rename fixture payload\nalpha line 13 of the rename fixture payload\nalpha line 14 of the rename fixture payload\nalpha line 15 of the rename fixture payload\nalpha line 16 of the rename fixture payload\nalpha line 17 of the rename fixture payload\nalpha line 18 of the rename fixture payload\nalpha line 19 of the rename fixture payload\nalpha line 20 of the rename fixture payload\nalpha line 21 of the rename fixture payload\nalpha line 22 of the rename fixture payload\nalpha line 23 of the rename fixture payload\nalpha line 24 of the rename fixture payload\nalpha line 25 of the rename fixture payload\nalpha line 26 of the rename fixture payload\nalpha line 27 of the rename fixture payload\nalpha line 28 of the rename fixture payload\nalpha line 29 of the rename fixture payload\nalpha line 30 of the rename fixture payload\nalpha line 31 of the rename fixture payload\nalpha line 32 of the rename fixture payload\nalpha line 33 of the rename fixture payload\nalpha line 34 of the rename fixture payload\nalpha line 35 of the rename fixture payload\nalpha line 36 of the rename fixture payload\nalpha line 37 of the rename fixture payload\nalpha line 38 of the rename fixture payload\nalpha line 39 of the rename fixture payload\nalpha line 40 of the rename fixture payload\nalpha line 41 of the rename fixture payload\nalpha line 42 of the rename fixture payload\nalpha line 43 of the rename fixture payload\nalpha line 44 of the rename fixture payload\nalpha line 45 of the rename fixture payload\nalpha line 46 of the rename fixture payload\nalpha line 47 of the rename fixture payload\nalpha line 48 of the rename fixture payload\nalpha line 49 of the rename fixture payload\nalpha line 50 of the rename fixture payload\nalpha line 51 of the rename fixture payload\nalpha line 52 of the rename fixture payload\nalpha line 53 of the rename fixture payload\nalpha line 54 of the rename fixture payload\nalpha line 55 of the rename fixture payload\nalpha line 56 of the rename fixture payload\nalpha line 57 of the rename fixture payload\nalpha line 58 of the rename fixture payload\nalpha line 59 of the rename fixture payload\n",
+          "op": "write",
+          "path": "workstreams/po03/control/inside.json"
+        },
+        {
+          "message": "prepare rename payload",
+          "op": "commit"
+        },
+        {
+          "name": "base",
+          "op": "tag"
+        },
+        {
+          "from": "workstreams/po03/control/inside.json",
+          "op": "move",
+          "to": "state/escaped.json"
+        },
+        {
+          "message": "rename inside to outside",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_reported_paths": [
+        "state/escaped.json"
+      ],
+      "predicted_violation_paths": [
+        "state/escaped.json"
+      ],
+      "rationale": "The destination escapes the allowlist and must be reported.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "R"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-010",
+      "commission_requirement": "REJECT",
+      "description": "Rename a protected out-of-allowlist file into the allowlist, deleting the protected path.",
+      "family": "renamed-out-to-in",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "content": "alpha line 0 of the rename fixture payload\nalpha line 1 of the rename fixture payload\nalpha line 2 of the rename fixture payload\nalpha line 3 of the rename fixture payload\nalpha line 4 of the rename fixture payload\nalpha line 5 of the rename fixture payload\nalpha line 6 of the rename fixture payload\nalpha line 7 of the rename fixture payload\nalpha line 8 of the rename fixture payload\nalpha line 9 of the rename fixture payload\nalpha line 10 of the rename fixture payload\nalpha line 11 of the rename fixture payload\nalpha line 12 of the rename fixture payload\nalpha line 13 of the rename fixture payload\nalpha line 14 of the rename fixture payload\nalpha line 15 of the rename fixture payload\nalpha line 16 of the rename fixture payload\nalpha line 17 of the rename fixture payload\nalpha line 18 of the rename fixture payload\nalpha line 19 of the rename fixture payload\nalpha line 20 of the rename fixture payload\nalpha line 21 of the rename fixture payload\nalpha line 22 of the rename fixture payload\nalpha line 23 of the rename fixture payload\nalpha line 24 of the rename fixture payload\nalpha line 25 of the rename fixture payload\nalpha line 26 of the rename fixture payload\nalpha line 27 of the rename fixture payload\nalpha line 28 of the rename fixture payload\nalpha line 29 of the rename fixture payload\nalpha line 30 of the rename fixture payload\nalpha line 31 of the rename fixture payload\nalpha line 32 of the rename fixture payload\nalpha line 33 of the rename fixture payload\nalpha line 34 of the rename fixture payload\nalpha line 35 of the rename fixture payload\nalpha line 36 of the rename fixture payload\nalpha line 37 of the rename fixture payload\nalpha line 38 of the rename fixture payload\nalpha line 39 of the rename fixture payload\nalpha line 40 of the rename fixture payload\nalpha line 41 of the rename fixture payload\nalpha line 42 of the rename fixture payload\nalpha line 43 of the rename fixture payload\nalpha line 44 of the rename fixture payload\nalpha line 45 of the rename fixture payload\nalpha line 46 of the rename fixture payload\nalpha line 47 of the rename fixture payload\nalpha line 48 of the rename fixture payload\nalpha line 49 of the rename fixture payload\nalpha line 50 of the rename fixture payload\nalpha line 51 of the rename fixture payload\nalpha line 52 of the rename fixture payload\nalpha line 53 of the rename fixture payload\nalpha line 54 of the rename fixture payload\nalpha line 55 of the rename fixture payload\nalpha line 56 of the rename fixture payload\nalpha line 57 of the rename fixture payload\nalpha line 58 of the rename fixture payload\nalpha line 59 of the rename fixture payload\n",
+          "op": "write",
+          "path": "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+        },
+        {
+          "message": "prepare protected payload",
+          "op": "commit"
+        },
+        {
+          "name": "base",
+          "op": "tag"
+        },
+        {
+          "from": "state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+          "op": "move",
+          "to": "workstreams/po03/control/absorbed.json"
+        },
+        {
+          "message": "rename outside into inside",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_reported_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+        "workstreams/po03/control/absorbed.json"
+      ],
+      "predicted_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "rationale": "This mutation deletes a protected file. Predicted miss: git diff --name-only prints only the rename destination, so the deleted source never reaches the guard.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "R"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-011",
+      "commission_requirement": "REJECT",
+      "description": "Rename one protected file to another protected path.",
+      "family": "renamed-out-to-out",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "content": "alpha line 0 of the rename fixture payload\nalpha line 1 of the rename fixture payload\nalpha line 2 of the rename fixture payload\nalpha line 3 of the rename fixture payload\nalpha line 4 of the rename fixture payload\nalpha line 5 of the rename fixture payload\nalpha line 6 of the rename fixture payload\nalpha line 7 of the rename fixture payload\nalpha line 8 of the rename fixture payload\nalpha line 9 of the rename fixture payload\nalpha line 10 of the rename fixture payload\nalpha line 11 of the rename fixture payload\nalpha line 12 of the rename fixture payload\nalpha line 13 of the rename fixture payload\nalpha line 14 of the rename fixture payload\nalpha line 15 of the rename fixture payload\nalpha line 16 of the rename fixture payload\nalpha line 17 of the rename fixture payload\nalpha line 18 of the rename fixture payload\nalpha line 19 of the rename fixture payload\nalpha line 20 of the rename fixture payload\nalpha line 21 of the rename fixture payload\nalpha line 22 of the rename fixture payload\nalpha line 23 of the rename fixture payload\nalpha line 24 of the rename fixture payload\nalpha line 25 of the rename fixture payload\nalpha line 26 of the rename fixture payload\nalpha line 27 of the rename fixture payload\nalpha line 28 of the rename fixture payload\nalpha line 29 of the rename fixture payload\nalpha line 30 of the rename fixture payload\nalpha line 31 of the rename fixture payload\nalpha line 32 of the rename fixture payload\nalpha line 33 of the rename fixture payload\nalpha line 34 of the rename fixture payload\nalpha line 35 of the rename fixture payload\nalpha line 36 of the rename fixture payload\nalpha line 37 of the rename fixture payload\nalpha line 38 of the rename fixture payload\nalpha line 39 of the rename fixture payload\nalpha line 40 of the rename fixture payload\nalpha line 41 of the rename fixture payload\nalpha line 42 of the rename fixture payload\nalpha line 43 of the rename fixture payload\nalpha line 44 of the rename fixture payload\nalpha line 45 of the rename fixture payload\nalpha line 46 of the rename fixture payload\nalpha line 47 of the rename fixture payload\nalpha line 48 of the rename fixture payload\nalpha line 49 of the rename fixture payload\nalpha line 50 of the rename fixture payload\nalpha line 51 of the rename fixture payload\nalpha line 52 of the rename fixture payload\nalpha line 53 of the rename fixture payload\nalpha line 54 of the rename fixture payload\nalpha line 55 of the rename fixture payload\nalpha line 56 of the rename fixture payload\nalpha line 57 of the rename fixture payload\nalpha line 58 of the rename fixture payload\nalpha line 59 of the rename fixture payload\n",
+          "op": "write",
+          "path": "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+        },
+        {
+          "message": "prepare protected payload",
+          "op": "commit"
+        },
+        {
+          "name": "base",
+          "op": "tag"
+        },
+        {
+          "from": "state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+          "op": "move",
+          "to": "state/renamed-pointer.json"
+        },
+        {
+          "message": "rename outside to outside",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_reported_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+        "state/renamed-pointer.json"
+      ],
+      "predicted_violation_paths": [
+        "state/renamed-pointer.json"
+      ],
+      "rationale": "Destination is out of allowlist, so at least the destination should be reported even if the source is dropped.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "R"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-012",
+      "commission_requirement": "REJECT",
+      "description": "Rename a PO-01 artefact into the PO-03 allowlist.",
+      "family": "renamed-out-to-in-po01",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "content": "alpha line 0 of the rename fixture payload\nalpha line 1 of the rename fixture payload\nalpha line 2 of the rename fixture payload\nalpha line 3 of the rename fixture payload\nalpha line 4 of the rename fixture payload\nalpha line 5 of the rename fixture payload\nalpha line 6 of the rename fixture payload\nalpha line 7 of the rename fixture payload\nalpha line 8 of the rename fixture payload\nalpha line 9 of the rename fixture payload\nalpha line 10 of the rename fixture payload\nalpha line 11 of the rename fixture payload\nalpha line 12 of the rename fixture payload\nalpha line 13 of the rename fixture payload\nalpha line 14 of the rename fixture payload\nalpha line 15 of the rename fixture payload\nalpha line 16 of the rename fixture payload\nalpha line 17 of the rename fixture payload\nalpha line 18 of the rename fixture payload\nalpha line 19 of the rename fixture payload\nalpha line 20 of the rename fixture payload\nalpha line 21 of the rename fixture payload\nalpha line 22 of the rename fixture payload\nalpha line 23 of the rename fixture payload\nalpha line 24 of the rename fixture payload\nalpha line 25 of the rename fixture payload\nalpha line 26 of the rename fixture payload\nalpha line 27 of the rename fixture payload\nalpha line 28 of the rename fixture payload\nalpha line 29 of the rename fixture payload\nalpha line 30 of the rename fixture payload\nalpha line 31 of the rename fixture payload\nalpha line 32 of the rename fixture payload\nalpha line 33 of the rename fixture payload\nalpha line 34 of the rename fixture payload\nalpha line 35 of the rename fixture payload\nalpha line 36 of the rename fixture payload\nalpha line 37 of the rename fixture payload\nalpha line 38 of the rename fixture payload\nalpha line 39 of the rename fixture payload\nalpha line 40 of the rename fixture payload\nalpha line 41 of the rename fixture payload\nalpha line 42 of the rename fixture payload\nalpha line 43 of the rename fixture payload\nalpha line 44 of the rename fixture payload\nalpha line 45 of the rename fixture payload\nalpha line 46 of the rename fixture payload\nalpha line 47 of the rename fixture payload\nalpha line 48 of the rename fixture payload\nalpha line 49 of the rename fixture payload\nalpha line 50 of the rename fixture payload\nalpha line 51 of the rename fixture payload\nalpha line 52 of the rename fixture payload\nalpha line 53 of the rename fixture payload\nalpha line 54 of the rename fixture payload\nalpha line 55 of the rename fixture payload\nalpha line 56 of the rename fixture payload\nalpha line 57 of the rename fixture payload\nalpha line 58 of the rename fixture payload\nalpha line 59 of the rename fixture payload\n",
+          "op": "write",
+          "path": "workstreams/po01/producer-result.json"
+        },
+        {
+          "message": "prepare po01 payload",
+          "op": "commit"
+        },
+        {
+          "name": "base",
+          "op": "tag"
+        },
+        {
+          "from": "workstreams/po01/producer-result.json",
+          "op": "move",
+          "to": "workstreams/po03/attempts/absorbed-po01.json"
+        },
+        {
+          "message": "absorb po01 artefact",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_reported_paths": [
+        "workstreams/po01/producer-result.json",
+        "workstreams/po03/attempts/absorbed-po01.json"
+      ],
+      "predicted_violation_paths": [
+        "workstreams/po01/producer-result.json"
+      ],
+      "rationale": "Same predicted miss as GIT-010, applied to the absolute PO-01 non-interference boundary.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "R"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-013",
+      "commission_requirement": "REJECT",
+      "description": "Move a protected file into the allowlist while replacing its content, defeating rename detection.",
+      "family": "renamed-out-to-in-below-threshold",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "content": "alpha line 0 of the rename fixture payload\nalpha line 1 of the rename fixture payload\nalpha line 2 of the rename fixture payload\nalpha line 3 of the rename fixture payload\nalpha line 4 of the rename fixture payload\nalpha line 5 of the rename fixture payload\nalpha line 6 of the rename fixture payload\nalpha line 7 of the rename fixture payload\nalpha line 8 of the rename fixture payload\nalpha line 9 of the rename fixture payload\nalpha line 10 of the rename fixture payload\nalpha line 11 of the rename fixture payload\nalpha line 12 of the rename fixture payload\nalpha line 13 of the rename fixture payload\nalpha line 14 of the rename fixture payload\nalpha line 15 of the rename fixture payload\nalpha line 16 of the rename fixture payload\nalpha line 17 of the rename fixture payload\nalpha line 18 of the rename fixture payload\nalpha line 19 of the rename fixture payload\nalpha line 20 of the rename fixture payload\nalpha line 21 of the rename fixture payload\nalpha line 22 of the rename fixture payload\nalpha line 23 of the rename fixture payload\nalpha line 24 of the rename fixture payload\nalpha line 25 of the rename fixture payload\nalpha line 26 of the rename fixture payload\nalpha line 27 of the rename fixture payload\nalpha line 28 of the rename fixture payload\nalpha line 29 of the rename fixture payload\nalpha line 30 of the rename fixture payload\nalpha line 31 of the rename fixture payload\nalpha line 32 of the rename fixture payload\nalpha line 33 of the rename fixture payload\nalpha line 34 of the rename fixture payload\nalpha line 35 of the rename fixture payload\nalpha line 36 of the rename fixture payload\nalpha line 37 of the rename fixture payload\nalpha line 38 of the rename fixture payload\nalpha line 39 of the rename fixture payload\nalpha line 40 of the rename fixture payload\nalpha line 41 of the rename fixture payload\nalpha line 42 of the rename fixture payload\nalpha line 43 of the rename fixture payload\nalpha line 44 of the rename fixture payload\nalpha line 45 of the rename fixture payload\nalpha line 46 of the rename fixture payload\nalpha line 47 of the rename fixture payload\nalpha line 48 of the rename fixture payload\nalpha line 49 of the rename fixture payload\nalpha line 50 of the rename fixture payload\nalpha line 51 of the rename fixture payload\nalpha line 52 of the rename fixture payload\nalpha line 53 of the rename fixture payload\nalpha line 54 of the rename fixture payload\nalpha line 55 of the rename fixture payload\nalpha line 56 of the rename fixture payload\nalpha line 57 of the rename fixture payload\nalpha line 58 of the rename fixture payload\nalpha line 59 of the rename fixture payload\n",
+          "op": "write",
+          "path": "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+        },
+        {
+          "message": "prepare protected payload",
+          "op": "commit"
+        },
+        {
+          "name": "base",
+          "op": "tag"
+        },
+        {
+          "op": "delete",
+          "path": "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+        },
+        {
+          "content": "omega row 0 carrying entirely different content\nomega row 1 carrying entirely different content\nomega row 2 carrying entirely different content\nomega row 3 carrying entirely different content\nomega row 4 carrying entirely different content\nomega row 5 carrying entirely different content\nomega row 6 carrying entirely different content\nomega row 7 carrying entirely different content\nomega row 8 carrying entirely different content\nomega row 9 carrying entirely different content\nomega row 10 carrying entirely different content\nomega row 11 carrying entirely different content\nomega row 12 carrying entirely different content\nomega row 13 carrying entirely different content\nomega row 14 carrying entirely different content\nomega row 15 carrying entirely different content\nomega row 16 carrying entirely different content\nomega row 17 carrying entirely different content\nomega row 18 carrying entirely different content\nomega row 19 carrying entirely different content\nomega row 20 carrying entirely different content\nomega row 21 carrying entirely different content\nomega row 22 carrying entirely different content\nomega row 23 carrying entirely different content\nomega row 24 carrying entirely different content\nomega row 25 carrying entirely different content\nomega row 26 carrying entirely different content\nomega row 27 carrying entirely different content\nomega row 28 carrying entirely different content\nomega row 29 carrying entirely different content\nomega row 30 carrying entirely different content\nomega row 31 carrying entirely different content\nomega row 32 carrying entirely different content\nomega row 33 carrying entirely different content\nomega row 34 carrying entirely different content\nomega row 35 carrying entirely different content\nomega row 36 carrying entirely different content\nomega row 37 carrying entirely different content\nomega row 38 carrying entirely different content\nomega row 39 carrying entirely different content\nomega row 40 carrying entirely different content\nomega row 41 carrying entirely different content\nomega row 42 carrying entirely different content\nomega row 43 carrying entirely different content\nomega row 44 carrying entirely different content\nomega row 45 carrying entirely different content\nomega row 46 carrying entirely different content\nomega row 47 carrying entirely different content\nomega row 48 carrying entirely different content\nomega row 49 carrying entirely different content\nomega row 50 carrying entirely different content\nomega row 51 carrying entirely different content\nomega row 52 carrying entirely different content\nomega row 53 carrying entirely different content\nomega row 54 carrying entirely different content\nomega row 55 carrying entirely different content\nomega row 56 carrying entirely different content\nomega row 57 carrying entirely different content\nomega row 58 carrying entirely different content\nomega row 59 carrying entirely different content\n",
+          "op": "write",
+          "path": "workstreams/po03/control/rewritten.json"
+        },
+        {
+          "message": "move with rewrite",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_reported_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+        "workstreams/po03/control/rewritten.json"
+      ],
+      "predicted_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "rationale": "Below the similarity threshold Git reports D plus A, so the protected deletion should surface. Contrast with GIT-010.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "R"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-014",
+      "commission_requirement": "REJECT",
+      "description": "Repeat the GIT-010 mutation with diff.renames disabled in the repository config.",
+      "family": "renamed-out-to-in-renames-disabled",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "content": "alpha line 0 of the rename fixture payload\nalpha line 1 of the rename fixture payload\nalpha line 2 of the rename fixture payload\nalpha line 3 of the rename fixture payload\nalpha line 4 of the rename fixture payload\nalpha line 5 of the rename fixture payload\nalpha line 6 of the rename fixture payload\nalpha line 7 of the rename fixture payload\nalpha line 8 of the rename fixture payload\nalpha line 9 of the rename fixture payload\nalpha line 10 of the rename fixture payload\nalpha line 11 of the rename fixture payload\nalpha line 12 of the rename fixture payload\nalpha line 13 of the rename fixture payload\nalpha line 14 of the rename fixture payload\nalpha line 15 of the rename fixture payload\nalpha line 16 of the rename fixture payload\nalpha line 17 of the rename fixture payload\nalpha line 18 of the rename fixture payload\nalpha line 19 of the rename fixture payload\nalpha line 20 of the rename fixture payload\nalpha line 21 of the rename fixture payload\nalpha line 22 of the rename fixture payload\nalpha line 23 of the rename fixture payload\nalpha line 24 of the rename fixture payload\nalpha line 25 of the rename fixture payload\nalpha line 26 of the rename fixture payload\nalpha line 27 of the rename fixture payload\nalpha line 28 of the rename fixture payload\nalpha line 29 of the rename fixture payload\nalpha line 30 of the rename fixture payload\nalpha line 31 of the rename fixture payload\nalpha line 32 of the rename fixture payload\nalpha line 33 of the rename fixture payload\nalpha line 34 of the rename fixture payload\nalpha line 35 of the rename fixture payload\nalpha line 36 of the rename fixture payload\nalpha line 37 of the rename fixture payload\nalpha line 38 of the rename fixture payload\nalpha line 39 of the rename fixture payload\nalpha line 40 of the rename fixture payload\nalpha line 41 of the rename fixture payload\nalpha line 42 of the rename fixture payload\nalpha line 43 of the rename fixture payload\nalpha line 44 of the rename fixture payload\nalpha line 45 of the rename fixture payload\nalpha line 46 of the rename fixture payload\nalpha line 47 of the rename fixture payload\nalpha line 48 of the rename fixture payload\nalpha line 49 of the rename fixture payload\nalpha line 50 of the rename fixture payload\nalpha line 51 of the rename fixture payload\nalpha line 52 of the rename fixture payload\nalpha line 53 of the rename fixture payload\nalpha line 54 of the rename fixture payload\nalpha line 55 of the rename fixture payload\nalpha line 56 of the rename fixture payload\nalpha line 57 of the rename fixture payload\nalpha line 58 of the rename fixture payload\nalpha line 59 of the rename fixture payload\n",
+          "op": "write",
+          "path": "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+        },
+        {
+          "message": "prepare protected payload",
+          "op": "commit"
+        },
+        {
+          "name": "base",
+          "op": "tag"
+        },
+        {
+          "from": "state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+          "op": "move",
+          "to": "workstreams/po03/control/absorbed.json"
+        },
+        {
+          "message": "rename outside into inside",
+          "op": "commit"
+        },
+        {
+          "key": "diff.renames",
+          "op": "git_config",
+          "value": "false"
+        }
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_reported_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+        "workstreams/po03/control/absorbed.json"
+      ],
+      "predicted_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "rationale": "Shows whether the outcome of GIT-010 depends on repository or runner configuration rather than on the guard.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "R"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-015",
+      "commission_requirement": "ALLOW",
+      "description": "Copy a protected file into the allowlist, leaving the original in place.",
+      "family": "copied-out-to-in",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "content": "alpha line 0 of the rename fixture payload\nalpha line 1 of the rename fixture payload\nalpha line 2 of the rename fixture payload\nalpha line 3 of the rename fixture payload\nalpha line 4 of the rename fixture payload\nalpha line 5 of the rename fixture payload\nalpha line 6 of the rename fixture payload\nalpha line 7 of the rename fixture payload\nalpha line 8 of the rename fixture payload\nalpha line 9 of the rename fixture payload\nalpha line 10 of the rename fixture payload\nalpha line 11 of the rename fixture payload\nalpha line 12 of the rename fixture payload\nalpha line 13 of the rename fixture payload\nalpha line 14 of the rename fixture payload\nalpha line 15 of the rename fixture payload\nalpha line 16 of the rename fixture payload\nalpha line 17 of the rename fixture payload\nalpha line 18 of the rename fixture payload\nalpha line 19 of the rename fixture payload\nalpha line 20 of the rename fixture payload\nalpha line 21 of the rename fixture payload\nalpha line 22 of the rename fixture payload\nalpha line 23 of the rename fixture payload\nalpha line 24 of the rename fixture payload\nalpha line 25 of the rename fixture payload\nalpha line 26 of the rename fixture payload\nalpha line 27 of the rename fixture payload\nalpha line 28 of the rename fixture payload\nalpha line 29 of the rename fixture payload\nalpha line 30 of the rename fixture payload\nalpha line 31 of the rename fixture payload\nalpha line 32 of the rename fixture payload\nalpha line 33 of the rename fixture payload\nalpha line 34 of the rename fixture payload\nalpha line 35 of the rename fixture payload\nalpha line 36 of the rename fixture payload\nalpha line 37 of the rename fixture payload\nalpha line 38 of the rename fixture payload\nalpha line 39 of the rename fixture payload\nalpha line 40 of the rename fixture payload\nalpha line 41 of the rename fixture payload\nalpha line 42 of the rename fixture payload\nalpha line 43 of the rename fixture payload\nalpha line 44 of the rename fixture payload\nalpha line 45 of the rename fixture payload\nalpha line 46 of the rename fixture payload\nalpha line 47 of the rename fixture payload\nalpha line 48 of the rename fixture payload\nalpha line 49 of the rename fixture payload\nalpha line 50 of the rename fixture payload\nalpha line 51 of the rename fixture payload\nalpha line 52 of the rename fixture payload\nalpha line 53 of the rename fixture payload\nalpha line 54 of the rename fixture payload\nalpha line 55 of the rename fixture payload\nalpha line 56 of the rename fixture payload\nalpha line 57 of the rename fixture payload\nalpha line 58 of the rename fixture payload\nalpha line 59 of the rename fixture payload\n",
+          "op": "write",
+          "path": "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+        },
+        {
+          "message": "prepare protected payload",
+          "op": "commit"
+        },
+        {
+          "name": "base",
+          "op": "tag"
+        },
+        {
+          "from": "state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+          "op": "copy",
+          "to": "workstreams/po03/control/copied.json"
+        },
+        {
+          "message": "copy protected content inside",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 0,
+      "predicted_reported_paths": [
+        "workstreams/po03/control/copied.json"
+      ],
+      "predicted_violation_paths": [],
+      "rationale": "No protected path changes, so the guard should pass. Copy detection is off by default, so the entry should appear as A.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "C"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-016",
+      "commission_requirement": "REJECT",
+      "description": "Copy an in-allowlist file to an out-of-allowlist destination.",
+      "family": "copied-in-to-out",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "content": "alpha line 0 of the rename fixture payload\nalpha line 1 of the rename fixture payload\nalpha line 2 of the rename fixture payload\nalpha line 3 of the rename fixture payload\nalpha line 4 of the rename fixture payload\nalpha line 5 of the rename fixture payload\nalpha line 6 of the rename fixture payload\nalpha line 7 of the rename fixture payload\nalpha line 8 of the rename fixture payload\nalpha line 9 of the rename fixture payload\nalpha line 10 of the rename fixture payload\nalpha line 11 of the rename fixture payload\nalpha line 12 of the rename fixture payload\nalpha line 13 of the rename fixture payload\nalpha line 14 of the rename fixture payload\nalpha line 15 of the rename fixture payload\nalpha line 16 of the rename fixture payload\nalpha line 17 of the rename fixture payload\nalpha line 18 of the rename fixture payload\nalpha line 19 of the rename fixture payload\nalpha line 20 of the rename fixture payload\nalpha line 21 of the rename fixture payload\nalpha line 22 of the rename fixture payload\nalpha line 23 of the rename fixture payload\nalpha line 24 of the rename fixture payload\nalpha line 25 of the rename fixture payload\nalpha line 26 of the rename fixture payload\nalpha line 27 of the rename fixture payload\nalpha line 28 of the rename fixture payload\nalpha line 29 of the rename fixture payload\nalpha line 30 of the rename fixture payload\nalpha line 31 of the rename fixture payload\nalpha line 32 of the rename fixture payload\nalpha line 33 of the rename fixture payload\nalpha line 34 of the rename fixture payload\nalpha line 35 of the rename fixture payload\nalpha line 36 of the rename fixture payload\nalpha line 37 of the rename fixture payload\nalpha line 38 of the rename fixture payload\nalpha line 39 of the rename fixture payload\nalpha line 40 of the rename fixture payload\nalpha line 41 of the rename fixture payload\nalpha line 42 of the rename fixture payload\nalpha line 43 of the rename fixture payload\nalpha line 44 of the rename fixture payload\nalpha line 45 of the rename fixture payload\nalpha line 46 of the rename fixture payload\nalpha line 47 of the rename fixture payload\nalpha line 48 of the rename fixture payload\nalpha line 49 of the rename fixture payload\nalpha line 50 of the rename fixture payload\nalpha line 51 of the rename fixture payload\nalpha line 52 of the rename fixture payload\nalpha line 53 of the rename fixture payload\nalpha line 54 of the rename fixture payload\nalpha line 55 of the rename fixture payload\nalpha line 56 of the rename fixture payload\nalpha line 57 of the rename fixture payload\nalpha line 58 of the rename fixture payload\nalpha line 59 of the rename fixture payload\n",
+          "op": "write",
+          "path": "workstreams/po03/control/inside.json"
+        },
+        {
+          "message": "prepare payload",
+          "op": "commit"
+        },
+        {
+          "name": "base",
+          "op": "tag"
+        },
+        {
+          "from": "workstreams/po03/control/inside.json",
+          "op": "copy",
+          "to": "state/copied-out.json"
+        },
+        {
+          "message": "copy inside content outside",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_reported_paths": [
+        "state/copied-out.json"
+      ],
+      "predicted_violation_paths": [
+        "state/copied-out.json"
+      ],
+      "rationale": "A copy that lands outside the allowlist is a new protected-path write.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "C"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-017",
+      "commission_requirement": "REJECT",
+      "description": "Mix one legitimate in-allowlist change with one out-of-allowlist change.",
+      "family": "mixed",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "content": "{\"seed\":\"inside\",\"edit\":2}\n",
+          "op": "write",
+          "path": "workstreams/po03/control/inside.json"
+        },
+        {
+          "content": "def runner():\n    return 'tampered'\n",
+          "op": "write",
+          "path": "modules/operators/runner.py"
+        },
+        {
+          "message": "mixed change",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_reported_paths": [
+        "workstreams/po03/control/inside.json",
+        "modules/operators/runner.py"
+      ],
+      "predicted_violation_paths": [
+        "modules/operators/runner.py"
+      ],
+      "rationale": "A single escaping path inside an otherwise legitimate commit must fail the whole change.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "AM"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-018",
+      "commission_requirement": "REJECT",
+      "description": "Replace a protected regular file with a symlink.",
+      "family": "type-change",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "op": "delete",
+          "path": "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+        },
+        {
+          "op": "symlink",
+          "path": "state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+          "target": "../workstreams/po03/control/inside.json"
+        },
+        {
+          "message": "typechange protected",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_reported_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "predicted_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "rationale": "Type changes rewrite protected content semantics without editing bytes in place.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "T"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-019",
+      "commission_requirement": "REJECT",
+      "description": "Change only the file mode of a protected file.",
+      "family": "mode-change",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "mode": "755",
+          "op": "chmod",
+          "path": "modules/operators/runner.py"
+        },
+        {
+          "message": "chmod protected",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_reported_paths": [
+        "modules/operators/runner.py"
+      ],
+      "predicted_violation_paths": [
+        "modules/operators/runner.py"
+      ],
+      "rationale": "A mode-only change is still a mutation of a read-only path.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "M"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-020",
+      "commission_requirement": "REJECT",
+      "description": "Add an out-of-allowlist gitlink entry.",
+      "family": "submodule",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "op": "gitlink",
+          "path": "modules/vendored",
+          "sha1": "0123456789012345678901234567890123456789"
+        },
+        {
+          "add": false,
+          "message": "add gitlink",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_reported_paths": [
+        "modules/vendored"
+      ],
+      "predicted_violation_paths": [
+        "modules/vendored"
+      ],
+      "rationale": "A submodule pointer outside the allowlist introduces external content into a read-only tree.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "A"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-021",
+      "commission_requirement": "REJECT",
+      "description": "Add an out-of-allowlist file whose name is not valid UTF-8.",
+      "family": "encoding",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "content": "{}\n",
+          "op": "write_hex",
+          "path_hex": "73746174652fff2e6a736f6e"
+        },
+        {
+          "message": "add non-utf8 protected path",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 2,
+      "predicted_reported_paths": [],
+      "predicted_violation_paths": [],
+      "rationale": "Undecodable bytes must not silently pass. Exit 2 is an acceptable fail-closed outcome; exit 0 would be a defect.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "A"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-022",
+      "commission_requirement": "REJECT",
+      "description": "Add an out-of-allowlist file whose name contains a newline.",
+      "family": "encoding",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "content": "{}\n",
+          "op": "write",
+          "path": "state/new\nline.json"
+        },
+        {
+          "message": "add newline protected path",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_reported_paths": [
+        "state/new\nline.json"
+      ],
+      "predicted_violation_paths": [
+        "state/new\nline.json"
+      ],
+      "rationale": "Newline in a protected path must not be split into two fragments that both look harmless.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "A"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-023",
+      "commission_requirement": "ALLOW",
+      "description": "Change a protected file on the base side only, after the fork point.",
+      "family": "history-shape",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "name": "fork",
+          "op": "tag"
+        },
+        {
+          "checkout": true,
+          "name": "work",
+          "op": "branch"
+        },
+        {
+          "content": "{\"seed\":\"inside\",\"edit\":3}\n",
+          "op": "write",
+          "path": "workstreams/po03/control/inside.json"
+        },
+        {
+          "message": "work-side legitimate change",
+          "op": "commit"
+        },
+        {
+          "op": "checkout",
+          "ref": "master"
+        },
+        {
+          "content": "{\"seed\":\"base-side-change\"}\n",
+          "op": "write",
+          "path": "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+        },
+        {
+          "message": "base-side protected change",
+          "op": "commit"
+        },
+        {
+          "name": "base",
+          "op": "tag"
+        },
+        {
+          "op": "checkout",
+          "ref": "work"
+        }
+      ],
+      "predicted_guard_exit_code": 0,
+      "predicted_reported_paths": [
+        "workstreams/po03/control/inside.json"
+      ],
+      "predicted_violation_paths": [],
+      "rationale": "With three-dot diff semantics a change made on the base branch is not attributed to this branch. Confirms the guard does not manufacture false positives from divergence.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "M"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-024",
+      "commission_requirement": "REJECT",
+      "description": "Merge a branch that changed a protected file, then diff from the pinned base.",
+      "family": "history-shape",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "name": "base",
+          "op": "tag"
+        },
+        {
+          "checkout": true,
+          "name": "side",
+          "op": "branch"
+        },
+        {
+          "content": "{\"seed\":\"side-change\"}\n",
+          "op": "write",
+          "path": "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+        },
+        {
+          "message": "side protected change",
+          "op": "commit"
+        },
+        {
+          "op": "checkout",
+          "ref": "master"
+        },
+        {
+          "content": "{\"seed\":\"inside\",\"edit\":4}\n",
+          "op": "write",
+          "path": "workstreams/po03/control/inside.json"
+        },
+        {
+          "message": "mainline legitimate change",
+          "op": "commit"
+        },
+        {
+          "message": "merge side",
+          "op": "merge",
+          "ref": "side"
+        }
+      ],
+      "predicted_guard_exit_code": 1,
+      "predicted_reported_paths": [
+        "workstreams/po03/control/inside.json",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "predicted_violation_paths": [
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+      ],
+      "rationale": "Content merged in from a side branch is present in the head tree and must be attributed.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "M"
+    },
+    {
+      "base_ref": "0000000000000000000000000000000000000000",
+      "case_id": "GIT-025",
+      "commission_requirement": "REJECT",
+      "description": "Invoke the guard with the all-zero base SHA that GitHub sends as github.event.before on branch creation.",
+      "family": "invocation",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "content": "{\"seed\":\"inside\",\"edit\":5}\n",
+          "op": "write",
+          "path": "workstreams/po03/control/inside.json"
+        },
+        {
+          "message": "modify inside",
+          "op": "commit"
+        }
+      ],
+      "predicted_guard_exit_code": 2,
+      "predicted_reported_paths": [],
+      "predicted_violation_paths": [],
+      "rationale": "The workflow passes github.event.before directly. On branch creation that value is all zeros. Fail-closed exit 2 is correct; exit 0 would be a false green.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "ERROR"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-026",
+      "commission_requirement": "ALLOW",
+      "description": "Run the guard over a range with no changes at all.",
+      "family": "invocation",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "op": "noop"
+        }
+      ],
+      "predicted_guard_exit_code": 0,
+      "predicted_reported_paths": [],
+      "predicted_violation_paths": [],
+      "rationale": "An empty change set must pass rather than error.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "NONE"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-027",
+      "commission_requirement": "ALLOW",
+      "description": "Leave an out-of-allowlist modification uncommitted in the working tree.",
+      "family": "worktree-state",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "content": "{\"seed\":\"inside\",\"edit\":6}\n",
+          "op": "write",
+          "path": "workstreams/po03/control/inside.json"
+        },
+        {
+          "message": "committed legitimate change",
+          "op": "commit"
+        },
+        {
+          "content": "{\"seed\":\"uncommitted-tamper\"}\n",
+          "op": "write",
+          "path": "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+        }
+      ],
+      "predicted_guard_exit_code": 0,
+      "predicted_reported_paths": [
+        "workstreams/po03/control/inside.json"
+      ],
+      "predicted_violation_paths": [],
+      "rationale": "The guard compares commits, so uncommitted work is out of its remit. Recorded to bound the guard's claim, not as a defect.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "M"
+    },
+    {
+      "base_ref": "base",
+      "case_id": "GIT-028",
+      "commission_requirement": "ALLOW",
+      "description": "Stage an out-of-allowlist modification without committing it.",
+      "family": "worktree-state",
+      "head_ref": "HEAD",
+      "operations": [
+        {
+          "content": "{\"seed\":\"inside\",\"edit\":7}\n",
+          "op": "write",
+          "path": "workstreams/po03/control/inside.json"
+        },
+        {
+          "message": "committed legitimate change",
+          "op": "commit"
+        },
+        {
+          "content": "{\"seed\":\"staged-tamper\"}\n",
+          "op": "write",
+          "path": "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+        },
+        {
+          "op": "stage",
+          "path": "state/ACTIVE_CONTROL_POINTER_CURRENT.json"
+        }
+      ],
+      "predicted_guard_exit_code": 0,
+      "predicted_reported_paths": [
+        "workstreams/po03/control/inside.json"
+      ],
+      "predicted_violation_paths": [],
+      "rationale": "Same boundary as GIT-027 for the index rather than the working tree.",
+      "seed_files": {
+        "README.md": "# throwaway fixture repository\n",
+        "modules/operators/runner.py": "def runner():\n    return 'protected'\n",
+        "state/ACTIVE_CONTROL_POINTER_CURRENT.json": "{\"seed\":\"protected-pointer\",\"note\":\"throwaway fixture only\"}\n",
+        "workstreams/po01/producer-result.json": "{\"seed\":\"po01-fixture\"}\n",
+        "workstreams/po03/control/inside-two.json": "{\"seed\":\"inside-two\"}\n",
+        "workstreams/po03/control/inside.json": "{\"seed\":\"inside\"}\n"
+      },
+      "status_class": "M"
+    }
+  ],
+  "hypothesis_under_test": "The scope guard rejects modified, added, copied, renamed, and deleted out-of-allowlist paths.",
+  "oracle": "workstreams/po03/COMMISSION.md collision boundary: writable workstreams/po03/**, receipts/po03/**, .github/workflows/po03-*.yml; everything else read-only.",
+  "path_case_count": 92,
+  "path_cases": [
+    {
+      "case_id": "PP-001",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control",
+      "path_display": "'workstreams/po03/tools/check_path_scope.py'",
+      "path_hex": "776f726b73747265616d732f706f30332f746f6f6c732f636865636b5f706174685f73636f70652e7079",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "Canonical in-allowlist tool path; the guard must not block its own maintenance.",
+      "requirement_basis": "commission-allowlist-workstreams"
+    },
+    {
+      "case_id": "PP-002",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control",
+      "path_display": "'receipts/po03/2026-08-22/producer-execution.json'",
+      "path_hex": "72656365697074732f706f30332f323032362d30382d32322f70726f64756365722d657865637574696f6e2e6a736f6e",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "Mandatory receipt path named by the commission.",
+      "requirement_basis": "commission-allowlist-receipts"
+    },
+    {
+      "case_id": "PP-003",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control",
+      "path_display": "'.github/workflows/po03-contracts.yml'",
+      "path_hex": "2e6769746875622f776f726b666c6f77732f706f30332d636f6e7472616374732e796d6c",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "The live PO-03 workflow file itself.",
+      "requirement_basis": "commission-allowlist-workflow"
+    },
+    {
+      "case_id": "PP-004",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control",
+      "path_display": "'workstreams/po03/attempts/wave-a/wave-a-043-path-scope-adversarial-review/manifest.json'",
+      "path_hex": "776f726b73747265616d732f706f30332f617474656d7074732f776176652d612f776176652d612d3034332d706174682d73636f70652d616476657273617269616c2d7265766965772f6d616e69666573742e6a736f6e",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "This attempt's own owned slot must remain writable.",
+      "requirement_basis": "commission-allowlist-workstreams"
+    },
+    {
+      "case_id": "PP-005",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control",
+      "path_display": "'workstreams/po03/.gitignore'",
+      "path_hex": "776f726b73747265616d732f706f30332f2e67697469676e6f7265",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "Dotfile inside the allowlist; leading dot must not defeat the prefix test.",
+      "requirement_basis": "commission-allowlist-workstreams"
+    },
+    {
+      "case_id": "PP-006",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control",
+      "path_display": "'receipts/po03/2026-08-22/nested/deeper/still/inside.json'",
+      "path_hex": "72656365697074732f706f30332f323032362d30382d32322f6e65737465642f6465657065722f7374696c6c2f696e736964652e6a736f6e",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "Deep nesting inside an allowed prefix stays allowed.",
+      "requirement_basis": "commission-allowlist-receipts"
+    },
+    {
+      "case_id": "PP-007",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control",
+      "path_display": "'workstreams/po03/control/events/wave-a-043/000001-created.json'",
+      "path_hex": "776f726b73747265616d732f706f30332f636f6e74726f6c2f6576656e74732f776176652d612d3034332f3030303030312d637265617465642e6a736f6e",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "Controller event path used by the live factory.",
+      "requirement_basis": "commission-allowlist-workstreams"
+    },
+    {
+      "case_id": "PP-008",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control-exotic",
+      "path_display": "'workstreams/po03/a file with spaces.json'",
+      "path_hex": "776f726b73747265616d732f706f30332f612066696c652077697468207370616365732e6a736f6e",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "Spaces are legal in Git paths and must not trip normalisation.",
+      "requirement_basis": "commission-allowlist-workstreams"
+    },
+    {
+      "case_id": "PP-009",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control-exotic",
+      "path_display": "'workstreams/po03/quote\\'and\"double.json'",
+      "path_hex": "776f726b73747265616d732f706f30332f71756f746527616e6422646f75626c652e6a736f6e",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "Quote characters would be shell-quoted by git without -z; the guard uses -z.",
+      "requirement_basis": "commission-allowlist-workstreams"
+    },
+    {
+      "case_id": "PP-010",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control-exotic",
+      "path_display": "'workstreams/po03/tab\\tinside.json'",
+      "path_hex": "776f726b73747265616d732f706f30332f74616209696e736964652e6a736f6e",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "Tab inside an allowed path is legal and must not be treated as a separator.",
+      "requirement_basis": "commission-allowlist-workstreams"
+    },
+    {
+      "case_id": "PP-011",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control-exotic",
+      "path_display": "'workstreams/po03/newline\\ninside.json'",
+      "path_hex": "776f726b73747265616d732f706f30332f6e65776c696e650a696e736964652e6a736f6e",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "Newline in an allowed path; a line-oriented parser would split this case.",
+      "requirement_basis": "commission-allowlist-workstreams"
+    },
+    {
+      "case_id": "PP-012",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control-exotic",
+      "path_display": "'workstreams/po03/\u30d5\u30a1\u30a4\u30eb.json'",
+      "path_hex": "776f726b73747265616d732f706f30332fe38395e382a1e382a4e383ab2e6a736f6e",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "Non-ASCII suffix inside an allowed prefix stays allowed.",
+      "requirement_basis": "commission-allowlist-workstreams"
+    },
+    {
+      "case_id": "PP-013",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control-exotic",
+      "path_display": "'workstreams/po03/caf\u00e9.json'",
+      "path_hex": "776f726b73747265616d732f706f30332f636166c3a92e6a736f6e",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "NFC precomposed form inside an allowed prefix.",
+      "requirement_basis": "commission-allowlist-workstreams"
+    },
+    {
+      "case_id": "PP-014",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control-exotic",
+      "path_display": "'workstreams/po03/cafe\u0301.json'",
+      "path_hex": "776f726b73747265616d732f706f30332f63616665cc812e6a736f6e",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "NFD decomposed form of the same name; must behave identically to the NFC form.",
+      "requirement_basis": "commission-allowlist-workstreams"
+    },
+    {
+      "case_id": "PP-015",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control-exotic",
+      "path_display": "'workstreams/po03/x.py\\u200b'",
+      "path_hex": "776f726b73747265616d732f706f30332f782e7079e2808b",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "Zero-width space in the leaf name; still inside the allowed prefix.",
+      "requirement_basis": "commission-allowlist-workstreams"
+    },
+    {
+      "case_id": "PP-016",
+      "commission_requirement": "ALLOW",
+      "family": "positive-control",
+      "path_display": "'.github/workflows/po03-a.yml'",
+      "path_hex": "2e6769746875622f776f726b666c6f77732f706f30332d612e796d6c",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "Minimal well-formed PO-03 workflow name.",
+      "requirement_basis": "commission-allowlist-workflow"
+    },
+    {
+      "case_id": "PP-017",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "path_display": "'workstreams/po03x/file.json'",
+      "path_hex": "776f726b73747265616d732f706f3033782f66696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Sibling directory whose name extends po03; a prefix test without the separator would pass it.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-018",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "path_display": "'workstreams/po030/file.json'",
+      "path_hex": "776f726b73747265616d732f706f3033302f66696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Digit-extended sibling directory.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-019",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "path_display": "'workstreams/po03-extra/file.json'",
+      "path_hex": "776f726b73747265616d732f706f30332d65787472612f66696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Hyphen-extended sibling directory.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-020",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "path_display": "'workstreams/po03.bak/file.json'",
+      "path_hex": "776f726b73747265616d732f706f30332e62616b2f66696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Dot-extended sibling directory.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-021",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "path_display": "'workstreams/po03'",
+      "path_hex": "776f726b73747265616d732f706f3033",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "A regular file literally named po03 at the workstreams root is not the po03 subtree.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-022",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "path_display": "'receipts/po03x/file.json'",
+      "path_hex": "72656365697074732f706f3033782f66696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Receipts-side sibling directory extension.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-023",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "path_display": "'receipts/po03'",
+      "path_hex": "72656365697074732f706f3033",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Receipts-side bare file named po03.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-024",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "path_display": "'workstreams-po03/file.json'",
+      "path_hex": "776f726b73747265616d732d706f30332f66696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Top-level directory that merges the two allowlist components.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-025",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "path_display": "'aworkstreams/po03/file.json'",
+      "path_hex": "61776f726b73747265616d732f706f30332f66696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Allowed prefix present but not anchored at the start of the path.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-026",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "path_display": "'x/workstreams/po03/file.json'",
+      "path_hex": "782f776f726b73747265616d732f706f30332f66696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Allowed prefix nested one level deep; a substring test would pass it.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-027",
+      "commission_requirement": "REJECT",
+      "family": "prefix-confusable",
+      "path_display": "'workstreams/po03suffix/receipts/po03/file.json'",
+      "path_hex": "776f726b73747265616d732f706f30337375666669782f72656365697074732f706f30332f66696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Allowed prefix appears later in the path but the anchored component is not allowed.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-028",
+      "commission_requirement": "REJECT",
+      "family": "case-folding",
+      "path_display": "'Workstreams/po03/file.json'",
+      "path_hex": "576f726b73747265616d732f706f30332f66696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "On a case-insensitive checkout this resolves to the allowed directory; the guard must stay byte-exact.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-029",
+      "commission_requirement": "REJECT",
+      "family": "case-folding",
+      "path_display": "'workstreams/PO03/file.json'",
+      "path_hex": "776f726b73747265616d732f504f30332f66696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Upper-case component name.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-030",
+      "commission_requirement": "REJECT",
+      "family": "case-folding",
+      "path_display": "'WORKSTREAMS/PO03/FILE.JSON'",
+      "path_hex": "574f524b53545245414d532f504f30332f46494c452e4a534f4e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Fully upper-cased allowlist path.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-031",
+      "commission_requirement": "REJECT",
+      "family": "case-folding",
+      "path_display": "'Receipts/po03/file.json'",
+      "path_hex": "52656365697074732f706f30332f66696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Receipts-side case variant.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-032",
+      "commission_requirement": "REJECT",
+      "family": "case-folding",
+      "path_display": "'.GitHub/workflows/po03-x.yml'",
+      "path_hex": "2e4769744875622f776f726b666c6f77732f706f30332d782e796d6c",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Case variant of the .github directory.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-033",
+      "commission_requirement": "REJECT",
+      "family": "case-folding",
+      "path_display": "'.github/Workflows/po03-x.yml'",
+      "path_hex": "2e6769746875622f576f726b666c6f77732f706f30332d782e796d6c",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Case variant of the workflows directory.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-034",
+      "commission_requirement": "REJECT",
+      "family": "traversal",
+      "path_display": "'workstreams/po03/../po01/producer-result.json'",
+      "path_hex": "776f726b73747265616d732f706f30332f2e2e2f706f30312f70726f64756365722d726573756c742e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Traversal out of the allowlist into PO-01 while retaining an allowed prefix.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-035",
+      "commission_requirement": "REJECT",
+      "family": "traversal",
+      "path_display": "'workstreams/po03/../../state/ACTIVE_CONTROL_POINTER_CURRENT.json'",
+      "path_hex": "776f726b73747265616d732f706f30332f2e2e2f2e2e2f73746174652f4143544956455f434f4e54524f4c5f504f494e5445525f43555252454e542e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Double traversal onto a protected current-pointer file.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-036",
+      "commission_requirement": "REJECT",
+      "family": "traversal",
+      "path_display": "'workstreams/po03/./control/x.json'",
+      "path_hex": "776f726b73747265616d732f706f30332f2e2f636f6e74726f6c2f782e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Non-canonical single-dot component; git never emits it, so fail-closed rejection is correct.",
+      "requirement_basis": "fail-closed-non-canonical"
+    },
+    {
+      "case_id": "PP-037",
+      "commission_requirement": "REJECT",
+      "family": "traversal",
+      "path_display": "'workstreams//po03/x.json'",
+      "path_hex": "776f726b73747265616d732f2f706f30332f782e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Doubled separator collapses to an allowed path under naive normalisation.",
+      "requirement_basis": "fail-closed-non-canonical"
+    },
+    {
+      "case_id": "PP-038",
+      "commission_requirement": "REJECT",
+      "family": "traversal",
+      "path_display": "'/workstreams/po03/x.json'",
+      "path_hex": "2f776f726b73747265616d732f706f30332f782e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Absolute path form.",
+      "requirement_basis": "fail-closed-non-canonical"
+    },
+    {
+      "case_id": "PP-039",
+      "commission_requirement": "REJECT",
+      "family": "traversal",
+      "path_display": "'./workstreams/po03/x.json'",
+      "path_hex": "2e2f776f726b73747265616d732f706f30332f782e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Relative dot-slash prefix.",
+      "requirement_basis": "fail-closed-non-canonical"
+    },
+    {
+      "case_id": "PP-040",
+      "commission_requirement": "REJECT",
+      "family": "traversal",
+      "path_display": "'workstreams/po03/'",
+      "path_hex": "776f726b73747265616d732f706f30332f",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Directory form with trailing separator.",
+      "requirement_basis": "fail-closed-non-canonical"
+    },
+    {
+      "case_id": "PP-041",
+      "commission_requirement": "REJECT",
+      "family": "traversal",
+      "path_display": "'..'",
+      "path_hex": "2e2e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Bare parent reference.",
+      "requirement_basis": "fail-closed-non-canonical"
+    },
+    {
+      "case_id": "PP-042",
+      "commission_requirement": "REJECT",
+      "family": "degenerate",
+      "path_display": "'.'",
+      "path_hex": "2e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Bare current-directory reference is not an allowed file path.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-043",
+      "commission_requirement": "REJECT",
+      "family": "degenerate",
+      "path_display": "''",
+      "path_hex": "",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Empty string must never be treated as allowed.",
+      "requirement_basis": "fail-closed-non-canonical"
+    },
+    {
+      "case_id": "PP-044",
+      "commission_requirement": "REJECT",
+      "family": "degenerate",
+      "path_display": "' workstreams/po03/x.json'",
+      "path_hex": "20776f726b73747265616d732f706f30332f782e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Leading space defeats the anchored prefix and must not be stripped.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-045",
+      "commission_requirement": "ALLOW",
+      "family": "degenerate",
+      "path_display": "'workstreams/po03/x.json '",
+      "path_hex": "776f726b73747265616d732f706f30332f782e6a736f6e20",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "Trailing space is a legal distinct filename inside the allowlist.",
+      "requirement_basis": "commission-allowlist-workstreams"
+    },
+    {
+      "case_id": "PP-046",
+      "commission_requirement": "REJECT",
+      "family": "separator",
+      "path_display": "'workstreams\\\\po03\\\\x.json'",
+      "path_hex": "776f726b73747265616d735c706f30335c782e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Windows separators throughout.",
+      "requirement_basis": "fail-closed-non-canonical"
+    },
+    {
+      "case_id": "PP-047",
+      "commission_requirement": "REJECT",
+      "family": "separator",
+      "path_display": "'workstreams/po03\\\\..\\\\..\\\\state\\\\x.json'",
+      "path_hex": "776f726b73747265616d732f706f30335c2e2e5c2e2e5c73746174655c782e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Mixed separators with Windows traversal after an allowed prefix.",
+      "requirement_basis": "fail-closed-non-canonical"
+    },
+    {
+      "case_id": "PP-048",
+      "commission_requirement": "REJECT",
+      "family": "separator",
+      "path_display": "'workstreams/po03/sub\\\\file.json'",
+      "path_hex": "776f726b73747265616d732f706f30332f7375625c66696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Backslash inside an otherwise allowed path; Git treats it as an ordinary character, the guard fails closed.",
+      "requirement_basis": "fail-closed-non-canonical"
+    },
+    {
+      "case_id": "PP-049",
+      "commission_requirement": "REJECT",
+      "family": "separator",
+      "path_display": "'state/x.json\\x00workstreams/po03/y.json'",
+      "path_hex": "73746174652f782e6a736f6e00776f726b73747265616d732f706f30332f792e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Embedded NUL attempting to smuggle a protected path in front of an allowed one.",
+      "requirement_basis": "fail-closed-non-canonical"
+    },
+    {
+      "case_id": "PP-050",
+      "commission_requirement": "REJECT",
+      "family": "separator",
+      "path_display": "'workstreams/po03/y.json\\x00state/x.json'",
+      "path_hex": "776f726b73747265616d732f706f30332f792e6a736f6e0073746174652f782e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Embedded NUL with the allowed path first; must still fail closed.",
+      "requirement_basis": "fail-closed-non-canonical"
+    },
+    {
+      "case_id": "PP-051",
+      "commission_requirement": "REJECT",
+      "family": "unicode-confusable",
+      "path_display": "'workstreams/p\u043e03/file.json'",
+      "path_hex": "776f726b73747265616d732f70d0be30332f66696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Cyrillic small o inside po03 renders identically to the allowed directory.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-052",
+      "commission_requirement": "REJECT",
+      "family": "unicode-confusable",
+      "path_display": "'works\u0442reams/po03/file.json'",
+      "path_hex": "776f726b73d1827265616d732f706f30332f66696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Cyrillic te substituted for t in workstreams.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-053",
+      "commission_requirement": "REJECT",
+      "family": "unicode-confusable",
+      "path_display": "'\uff57orkstreams/po03/file.json'",
+      "path_hex": "efbd976f726b73747265616d732f706f30332f66696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Fullwidth latin w.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-054",
+      "commission_requirement": "REJECT",
+      "family": "unicode-confusable",
+      "path_display": "'workstreams\u2044po03\u2044file.json'",
+      "path_hex": "776f726b73747265616d73e28184706f3033e2818466696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Fraction slash used in place of the path separator.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-055",
+      "commission_requirement": "REJECT",
+      "family": "unicode-confusable",
+      "path_display": "'workstreams/po03\\u200b/file.json'",
+      "path_hex": "776f726b73747265616d732f706f3033e2808b2f66696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Zero-width space between po03 and the separator breaks the anchored prefix invisibly.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-056",
+      "commission_requirement": "REJECT",
+      "family": "unicode-confusable",
+      "path_display": "'workstreams/po\u30030\u33333/file.json'",
+      "path_hex": "776f726b73747265616d732f706fe3808330e38cb3332f66696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Ideographic and squared characters mimicking po03.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-057",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "path_display": "'.github/workflows/not-po03.yml'",
+      "path_hex": "2e6769746875622f776f726b666c6f77732f6e6f742d706f30332e796d6c",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "PO-03 token present but not anchored at the filename start.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-058",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "path_display": "'.github/workflows/po03-guard.yaml'",
+      "path_hex": "2e6769746875622f776f726b666c6f77732f706f30332d67756172642e79616d6c",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "The commission allowlist names .yml, not .yaml.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-059",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "path_display": "'.github/workflows/po03-guard.yml.bak'",
+      "path_hex": "2e6769746875622f776f726b666c6f77732f706f30332d67756172642e796d6c2e62616b",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Suffix appended after the allowed extension.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-060",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "path_display": "'.github/workflows/po03_guard.yml'",
+      "path_hex": "2e6769746875622f776f726b666c6f77732f706f30335f67756172642e796d6c",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Underscore instead of the hyphen required by po03-*.yml.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-061",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "path_display": "'.github/workflows/PO03-guard.yml'",
+      "path_hex": "2e6769746875622f776f726b666c6f77732f504f30332d67756172642e796d6c",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Upper-case workflow prefix.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-062",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "path_display": "'.github/workflows/sub/po03-guard.yml'",
+      "path_hex": "2e6769746875622f776f726b666c6f77732f7375622f706f30332d67756172642e796d6c",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "PO-03 workflow name nested below the workflows directory.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-063",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "path_display": "'.github/workflows/po03-guard/payload.yml'",
+      "path_hex": "2e6769746875622f776f726b666c6f77732f706f30332d67756172642f7061796c6f61642e796d6c",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "The commission glob po03-*.yml does not cross a separator, but a startswith/endswith pair does. Predicted over-permissive.",
+      "requirement_basis": "commission-allowlist-workflow-glob"
+    },
+    {
+      "case_id": "PP-064",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "path_display": "'.github/workflows/po03-a/b/c/deep.yml'",
+      "path_hex": "2e6769746875622f776f726b666c6f77732f706f30332d612f622f632f646565702e796d6c",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "Deeper form of the same predicted separator-crossing weakness.",
+      "requirement_basis": "commission-allowlist-workflow-glob"
+    },
+    {
+      "case_id": "PP-065",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "path_display": "'.github/workflows/po03-a/.github/workflows/evil.yml'",
+      "path_hex": "2e6769746875622f776f726b666c6f77732f706f30332d612f2e6769746875622f776f726b666c6f77732f6576696c2e796d6c",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "Separator-crossing form that also reintroduces a workflow-looking tail.",
+      "requirement_basis": "commission-allowlist-workflow-glob"
+    },
+    {
+      "case_id": "PP-066",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "path_display": "'.github/workflowspo03-x.yml'",
+      "path_hex": "2e6769746875622f776f726b666c6f7773706f30332d782e796d6c",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Missing separator between the workflows directory and the filename.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-067",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "path_display": "'.github/actions/po03-x.yml'",
+      "path_hex": "2e6769746875622f616374696f6e732f706f30332d782e796d6c",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Correct filename under the wrong directory.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-068",
+      "commission_requirement": "ALLOW",
+      "family": "workflow-lookalike",
+      "path_display": "'.github/workflows/po03-.yml'",
+      "path_hex": "2e6769746875622f776f726b666c6f77732f706f30332d2e796d6c",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "Degenerate but glob-conformant name where the wildcard matches the empty string.",
+      "requirement_basis": "commission-allowlist-workflow-glob"
+    },
+    {
+      "case_id": "PP-069",
+      "commission_requirement": "ALLOW",
+      "family": "workflow-lookalike",
+      "path_display": "'.github/workflows/po03-x.yml.yml'",
+      "path_hex": "2e6769746875622f776f726b666c6f77732f706f30332d782e796d6c2e796d6c",
+      "predicted_guard_disposition": "ALLOW",
+      "rationale": "Double extension still matches po03-*.yml because the wildcard absorbs the first .yml.",
+      "requirement_basis": "commission-allowlist-workflow-glob"
+    },
+    {
+      "case_id": "PP-070",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "path_display": "'.github/workflows/operator-taxonomy-currentness.yml'",
+      "path_hex": "2e6769746875622f776f726b666c6f77732f6f70657261746f722d7461786f6e6f6d792d63757272656e746e6573732e796d6c",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "The other live workflow in this repository is outside PO-03 authority.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-071",
+      "commission_requirement": "REJECT",
+      "family": "workflow-lookalike",
+      "path_display": "'.github/workflows/po03-x.yml/../../../state/x.json'",
+      "path_hex": "2e6769746875622f776f726b666c6f77732f706f30332d782e796d6c2f2e2e2f2e2e2f2e2e2f73746174652f782e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Traversal anchored behind an allowed workflow name.",
+      "requirement_basis": "fail-closed-non-canonical"
+    },
+    {
+      "case_id": "PP-072",
+      "commission_requirement": "REJECT",
+      "family": "po01",
+      "path_display": "'workstreams/po01/COMMISSION.md'",
+      "path_hex": "776f726b73747265616d732f706f30312f434f4d4d495353494f4e2e6d64",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "PO-01 commission file must never be writable by PO-03.",
+      "requirement_basis": "po01-non-interference"
+    },
+    {
+      "case_id": "PP-073",
+      "commission_requirement": "REJECT",
+      "family": "po01",
+      "path_display": "'workstreams/po01/producer-result.json'",
+      "path_hex": "776f726b73747265616d732f706f30312f70726f64756365722d726573756c742e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "PO-01 producer artefact.",
+      "requirement_basis": "po01-non-interference"
+    },
+    {
+      "case_id": "PP-074",
+      "commission_requirement": "REJECT",
+      "family": "po01",
+      "path_display": "'receipts/po01/2026-08-22/pack.json'",
+      "path_hex": "72656365697074732f706f30312f323032362d30382d32322f7061636b2e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "PO-01 receipt namespace.",
+      "requirement_basis": "po01-non-interference"
+    },
+    {
+      "case_id": "PP-075",
+      "commission_requirement": "REJECT",
+      "family": "po01",
+      "path_display": "'.github/workflows/po01-pack.yml'",
+      "path_hex": "2e6769746875622f776f726b666c6f77732f706f30312d7061636b2e796d6c",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "PO-01 workflow file.",
+      "requirement_basis": "po01-non-interference"
+    },
+    {
+      "case_id": "PP-076",
+      "commission_requirement": "REJECT",
+      "family": "po01",
+      "path_display": "'workstreams/po03/../po01/pack/manifest.json'",
+      "path_hex": "776f726b73747265616d732f706f30332f2e2e2f706f30312f7061636b2f6d616e69666573742e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "PO-01 reached through traversal from the PO-03 subtree.",
+      "requirement_basis": "po01-non-interference"
+    },
+    {
+      "case_id": "PP-077",
+      "commission_requirement": "REJECT",
+      "family": "po01",
+      "path_display": "'workstreams/po01x/file.json'",
+      "path_hex": "776f726b73747265616d732f706f3031782f66696c652e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "PO-01 sibling namespace.",
+      "requirement_basis": "po01-non-interference"
+    },
+    {
+      "case_id": "PP-078",
+      "commission_requirement": "REJECT",
+      "family": "po01",
+      "path_display": "'packs/po01/pack.json'",
+      "path_hex": "7061636b732f706f30312f7061636b2e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "PO-01 pack content under the read-only packs tree.",
+      "requirement_basis": "po01-non-interference"
+    },
+    {
+      "case_id": "PP-079",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "path_display": "'state/ACTIVE_CONTROL_POINTER_CURRENT.json'",
+      "path_hex": "73746174652f4143544956455f434f4e54524f4c5f504f494e5445525f43555252454e542e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Current programme execution pointer.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-080",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "path_display": "'state/operator-system/ACTIVE_INSTRUCTION_STACK.json'",
+      "path_hex": "73746174652f6f70657261746f722d73797374656d2f4143544956455f494e535452554354494f4e5f535441434b2e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "The one active instruction stack.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-081",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "path_display": "'.cursor/environment.json'",
+      "path_hex": "2e637572736f722f656e7669726f6e6d656e742e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "PR #8 environment file named as read-only by the commission.",
+      "requirement_basis": "pr8-non-interference"
+    },
+    {
+      "case_id": "PP-082",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "path_display": "'packs/operator-pack/manifest.json'",
+      "path_hex": "7061636b732f6f70657261746f722d7061636b2f6d616e69666573742e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Read-only packs tree.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-083",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "path_display": "'modules/operators/runner.py'",
+      "path_hex": "6d6f64756c65732f6f70657261746f72732f72756e6e65722e7079",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Read-only operator modules.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-084",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "path_display": "'modules/work_unit_contract/contract.json'",
+      "path_hex": "6d6f64756c65732f776f726b5f756e69745f636f6e74726163742f636f6e74726163742e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Read-only work-unit contract module.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-085",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "path_display": "'_transport/inbox/file.bin'",
+      "path_hex": "5f7472616e73706f72742f696e626f782f66696c652e62696e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Read-only transport tree.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-086",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "path_display": "'AGENTS.md'",
+      "path_hex": "4147454e54532e6d64",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Repository-wide operator instructions.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-087",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "path_display": "'operations/README.md'",
+      "path_hex": "6f7065726174696f6e732f524541444d452e6d64",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Operator entry point.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-088",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "path_display": "'scripts/check_operator_taxonomy.py'",
+      "path_hex": "736372697074732f636865636b5f6f70657261746f725f7461786f6e6f6d792e7079",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Shared taxonomy check invoked before commit.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-089",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "path_display": "'.gitattributes'",
+      "path_hex": "2e67697461747472696275746573",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Root Git attributes could rewrite how content is stored repository-wide.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-090",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "path_display": "'.gitmodules'",
+      "path_hex": "2e6769746d6f64756c6573",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Root submodule declaration.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-091",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "path_display": "'.github/CODEOWNERS'",
+      "path_hex": "2e6769746875622f434f44454f574e455253",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Review-ownership control outside PO-03 authority.",
+      "requirement_basis": "commission-readonly"
+    },
+    {
+      "case_id": "PP-092",
+      "commission_requirement": "REJECT",
+      "family": "protected-readonly",
+      "path_display": "'dispatch/CURRENT.json'",
+      "path_hex": "64697370617463682f43555252454e542e6a736f6e",
+      "predicted_guard_disposition": "REJECT",
+      "rationale": "Read-only dispatch current-pointer file.",
+      "requirement_basis": "commission-readonly"
+    }
+  ],
+  "safety": "No case mutates this repository. Path cases are pure strings. Git cases run only in throwaway repositories created under a temporary directory and deleted afterwards.",
+  "task_id": "wave-a-043-path-scope-adversarial-review"
+}
