@@ -76,6 +76,25 @@ def is_protected(branch: str, globs: list) -> bool:
     return any(fnmatch.fnmatch(branch, g) for g in globs)
 
 
+def _rev_parse(cwd: Path, rev: str) -> str:
+    try:
+        r = subprocess.run(["git", "rev-parse", "--verify", "--quiet", rev],
+                           cwd=cwd, capture_output=True, text=True, timeout=10)
+        return r.stdout.strip() if r.returncode == 0 else ""
+    except (OSError, subprocess.SubprocessError):
+        return ""
+
+
+def _contains(cwd: Path, ref: str, sha: str) -> bool:
+    """True when `ref` already contains `sha`, or when the answer is unknowable."""
+    try:
+        r = subprocess.run(["git", "merge-base", "--is-ancestor", sha, ref],
+                           cwd=cwd, capture_output=True, text=True, timeout=15)
+        return r.returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return True  # cannot tell, so do not block
+
+
 def push_targets(command: str, cwd: Path) -> list:
     """Branch names a `git push` would update, best effort.
 
@@ -145,7 +164,49 @@ def main() -> None:
         except re.error:
             continue
 
-    # 2. Pushes onto a protected branch.
+    # 2. Detached HEAD, and pushes of a branch ref that does not contain HEAD.
+    #
+    # Added after reproducing the failure it prevents: sibling lanes sharing one
+    # /workspace checkout committed onto a detached HEAD, so their branch refs
+    # stayed at the base commit. `git push -u origin <lane-branch>` then pushed
+    # the stale ref, printed "Everything up-to-date" and exited 0. A lane that
+    # trusted that exit code would report work it had not published.
+    if re.search(r"\bgit\s+(commit|push)\b", command) and config.get("refuse_detached_head", True):
+        branch = current_branch(cwd)
+        if branch == "HEAD":
+            audit(config, {"decision": "deny", "rule": "DETACHED-HEAD", "command": command})
+            emit(
+                "deny",
+                user_message="Refused: HEAD is detached.",
+                agent_message=(
+                    "Refused before execution: HEAD is detached, so this commit would advance no "
+                    "branch and a later `git push <branch>` would silently push the branch's old "
+                    "position and report 'Everything up-to-date' with exit 0.\n\n"
+                    "If several agents share this checkout, take your own worktree first:\n"
+                    "  git worktree add /tmp/<lane> -b <lane-branch> <base-sha>\n"
+                    "and work there. Otherwise check out your branch before committing."
+                ),
+            )
+
+    if re.search(r"\bgit\s+push\b", command) and config.get("refuse_detached_head", True):
+        head_sha = _rev_parse(cwd, "HEAD")
+        for target in push_targets(command, cwd):
+            ref_sha = _rev_parse(cwd, target)
+            if head_sha and ref_sha and head_sha != ref_sha and not _contains(cwd, target, head_sha):
+                audit(config, {"decision": "deny", "rule": "PUSH-REF-BEHIND-HEAD",
+                               "branch": target, "command": command})
+                emit(
+                    "deny",
+                    user_message=f"Refused: '{target}' does not contain your current HEAD.",
+                    agent_message=(
+                        f"Refused before execution: branch '{target}' is at {ref_sha[:12]} but HEAD "
+                        f"is {head_sha[:12]}, and '{target}' does not contain it.\n\n"
+                        "Pushing now would publish the branch's old position and report success. "
+                        "Move the ref to the work you actually mean to publish first, then push."
+                    ),
+                )
+
+    # 3. Pushes onto a protected branch.
     if re.search(r"\bgit\s+push\b", command):
         for target in push_targets(command, cwd):
             if target and is_protected(target, branch_globs):
@@ -164,7 +225,7 @@ def main() -> None:
                     ),
                 )
 
-    # 3. Commits made while HEAD is a protected branch.
+    # 4. Commits made while HEAD is a protected branch.
     if re.search(r"\bgit\s+commit\b", command):
         branch = current_branch(cwd)
         if branch and is_protected(branch, branch_globs):

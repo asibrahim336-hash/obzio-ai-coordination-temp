@@ -4,17 +4,78 @@
   "decision_changed": [],
   "binds_nothing": "Every item below is a recommendation with evidence. No tool, model or architecture is bound by this document. Items marked delegable are safe for Cursor to perform in-repository; items marked founder_authenticated require an act only the account owner can perform.",
   "prioritisation_basis": "Ordered by how much of the estate's reproduced failure surface each item removes per unit of risk, not by implementation effort. G1 through G4 are the items whose absence is directly implicated in the six named recurring failures.",
-
   "recurring_failures_being_designed_against": [
-    {"id": "F1", "failure": "competing claims of what is current", "addressed_by": ["G1", "G2", "G4"]},
-    {"id": "F2", "failure": "proposed / launched / observed / completed / accepted conflated", "addressed_by": ["G1", "G3"]},
-    {"id": "F3", "failure": "PRs, ZIPs and acknowledgements treated as completed capability", "addressed_by": ["G1", "G3"]},
-    {"id": "F4", "failure": "overlapping whole-operation commissions", "addressed_by": ["G2", "G6"]},
-    {"id": "F5", "failure": "the founder becoming the routine relay and merge layer", "addressed_by": ["G5", "G7", "G8"]},
-    {"id": "F6", "failure": "lessons documented without changing the mechanism", "addressed_by": ["G1", "G2", "G3", "G6"]}
+    {
+      "id": "F1",
+      "failure": "competing claims of what is current",
+      "addressed_by": [
+        "G0",
+        "G1",
+        "G2",
+        "G4"
+      ]
+    },
+    {
+      "id": "F2",
+      "failure": "proposed / launched / observed / completed / accepted conflated",
+      "addressed_by": [
+        "G1",
+        "G3"
+      ]
+    },
+    {
+      "id": "F3",
+      "failure": "PRs, ZIPs and acknowledgements treated as completed capability",
+      "addressed_by": [
+        "G1",
+        "G3"
+      ]
+    },
+    {
+      "id": "F4",
+      "failure": "overlapping whole-operation commissions",
+      "addressed_by": [
+        "G0",
+        "G2",
+        "G6"
+      ]
+    },
+    {
+      "id": "F5",
+      "failure": "the founder becoming the routine relay and merge layer",
+      "addressed_by": [
+        "G5",
+        "G7",
+        "G8"
+      ]
+    },
+    {
+      "id": "F6",
+      "failure": "lessons documented without changing the mechanism",
+      "addressed_by": [
+        "G1",
+        "G2",
+        "G3",
+        "G6"
+      ]
+    }
   ],
-
   "gaps": [
+    {
+      "id": "G0",
+      "priority": 0,
+      "title": "Sibling lanes share one working tree, so declared branch isolation is not actual isolation",
+      "capability_gained": "Lane isolation that holds, and a refusal instead of a silent success when it does not.",
+      "evidence_of_the_gap": {
+        "label": "DIRECTLY_REPRODUCED",
+        "observed": "All five lanes of this group are subagents in ONE VM sharing ONE git repository at /workspace. L2, L3, L4 and the root controller each created a separate `git worktree` under /tmp and were isolated. This lane and L5 both used the shared /workspace checkout, whose HEAD was detached at 20:20:34Z. Three commits from two different lanes then interleaved on that one detached HEAD, so this lane's second commit carries an L5 commit as an ancestor. Both lanes' branch refs stayed at the immutable base, because a commit on a detached HEAD advances no branch. `git push -u origin cursor/oe-l1-cursor-baseline-696d` then pushed the stale ref, printed 'Everything up-to-date' and exited 0."
+      },
+      "why_it_matters_for_this_operation": "This is F4 and F1 reproduced live, in the very group that was dispatched to diagnose them. A manifest declaring five isolated branches did not produce five isolated branches, and the failure is silent and exit-code-zero. A lane trusting its push would report READY_TO_COMMIT while the reconciling controller reads an empty branch — which is exactly how a declared denominator diverges from an actual one. Every commit is also authored by 'Cursor Agent', so nothing in git metadata attributes work to a lane.",
+      "exact_change": "Two parts. First, dispatch must create a worktree per lane: `git worktree add /tmp/<lane> -b <lane-branch> <immutable-base-sha>`. Second, the staged guard now refuses a commit or push on a detached HEAD (DETACHED-HEAD) and refuses a push whose target ref does not contain HEAD (PUSH-REF-BEHIND-HEAD). Both were added after reproducing this failure and are verified across six cases.",
+      "risk": "The guard makes the failure loud, not impossible. Two lanes sharing a checkout still interleave; they are simply refused at commit time. Only the per-lane worktree prevents it.",
+      "delegability": "delegable_to_cursor_in_repo",
+      "founder_action_required": false
+    },
     {
       "id": "G1",
       "priority": 1,
@@ -37,11 +98,34 @@
       },
       "what_was_actually_reproduced": {
         "label": "DIRECTLY_REPRODUCED",
-        "statement": "The three hook scripts were executed standalone against synthetic stdin in two throwaway git sandboxes and behave correctly across 30 cases.",
-        "guard_cases_passed": 22,
-        "guard_coverage": ["allows benign git status and gh pr list", "allows push and commit on a lane branch", "denies push to main, so02/*, soo/*, packs/*, cursor/po03-*, cursor/so02-cur-orch-qual-01 and cursor/operating-environment-return-*", "resolves SRC:DST refspecs and refs/heads/ prefixes to the destination branch", "treats a bare `git push` as targeting the current branch", "denies commit while HEAD is a protected branch", "denies gh pr create/merge and gh issue create", "denies --force but allows --force-with-lease", "denies rebase, filter-branch, reset --hard and commit --amend", "denies commit when the currentness check exits non-zero, quoting the check output", "fails open on malformed stdin and on a missing write-scope.json"],
+        "statement": "The three hook scripts were executed standalone against synthetic stdin in three throwaway git sandboxes and behave correctly across 39 cases.",
+        "guard_cases_passed": 28,
+        "guard_coverage": [
+          "allows benign git status and gh pr list",
+          "allows push and commit on a lane branch",
+          "denies push to main, so02/*, soo/*, packs/*, cursor/po03-*, cursor/so02-cur-orch-qual-01 and cursor/operating-environment-return-*",
+          "resolves SRC:DST refspecs and refs/heads/ prefixes to the destination branch",
+          "treats a bare `git push` as targeting the current branch",
+          "denies commit while HEAD is a protected branch",
+          "denies gh pr create/merge and gh issue create",
+          "denies --force but allows --force-with-lease",
+          "denies rebase, filter-branch, reset --hard and commit --amend",
+          "denies commit when the currentness check exits non-zero, quoting the check output",
+          "denies commit and push while HEAD is detached",
+          "denies a push whose target ref does not contain HEAD, verified independently with HEAD attached",
+          "honours a refuse_detached_head:false opt-out in write-scope.json",
+          "fails open on malformed stdin and on a missing write-scope.json"
+        ],
         "stop_gate_cases_passed": 8,
-        "stop_gate_coverage": ["fires on a COMPLETED claim with no receipt manifest", "stays silent once a MANIFEST.json with bundle_sha256 exists", "fires on an ACCEPTED claim with a self-written acceptor", "fires when a pull request or a handover archive is described as completion or delivery", "stays silent on an honest READY_TO_COMMIT / REQUESTED_NOT_GRANTED artifact", "stays silent when the turn status is aborted", "stays silent on malformed stdin"],
+        "stop_gate_coverage": [
+          "fires on a COMPLETED claim with no receipt manifest",
+          "stays silent once a MANIFEST.json with bundle_sha256 exists",
+          "fires on an ACCEPTED claim with a self-written acceptor",
+          "fires when a pull request or a handover archive is described as completion or delivery",
+          "stays silent on an honest READY_TO_COMMIT / REQUESTED_NOT_GRANTED artifact",
+          "stays silent when the turn status is aborted",
+          "stays silent on malformed stdin"
+        ],
         "ledger_verified": "records subagent type, id, the top-level agent id, the checked-out branch and the raw input key set, and distinguishes turn_source live / boot_snapshot / unavailable"
       },
       "honest_gap": "Standalone script correctness is reproduced. Hook FIRING in this runtime is DOCUMENTED only — no hook was installed or fired during this lane, because writing .cursor/hooks.json is outside this lane's namespace. APPLY.md specifies the one-command firing probe that must be run immediately after applying, and states that nothing should be relied upon until that probe refuses something actually typed.",
@@ -49,7 +133,6 @@
       "delegability": "delegable_to_cursor_in_repo",
       "founder_action_required": false
     },
-
     {
       "id": "G2",
       "priority": 2,
@@ -75,7 +158,6 @@
       "delegability": "delegable_to_cursor_in_repo",
       "founder_action_required": false
     },
-
     {
       "id": "G3",
       "priority": 3,
@@ -102,7 +184,6 @@
       "delegability": "delegable_to_cursor_in_repo_but_unverifiable_from_this_lane",
       "founder_action_required": false
     },
-
     {
       "id": "G4",
       "priority": 4,
@@ -129,7 +210,6 @@
       "delegability": "delegable_to_cursor_in_repo",
       "founder_action_required": false
     },
-
     {
       "id": "G5",
       "priority": 5,
@@ -145,7 +225,6 @@
       "delegability": "founder_authenticated",
       "founder_action_required": true
     },
-
     {
       "id": "G6",
       "priority": 6,
@@ -162,7 +241,6 @@
       "delegability": "delegable_to_cursor_in_repo",
       "founder_action_required": false
     },
-
     {
       "id": "G7",
       "priority": 7,
@@ -178,7 +256,6 @@
       "delegability": "founder_authenticated",
       "founder_action_required": true
     },
-
     {
       "id": "G8",
       "priority": 8,
@@ -199,7 +276,6 @@
       "delegability": "recording_only",
       "founder_action_required": false
     },
-
     {
       "id": "G9",
       "priority": 9,
@@ -216,7 +292,6 @@
       "founder_action_required": false
     }
   ],
-
   "explicitly_not_recommended": [
     {
       "item": "Putting lineage, acceptance or coordination state in the persistent agent store at /cursor/stores/self",

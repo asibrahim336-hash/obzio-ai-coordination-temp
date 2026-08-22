@@ -612,6 +612,51 @@
     },
 
     {
+      "capability_id": "CAP-SIBLING-LANE-WORKTREE-COLLISION",
+      "domain": "concurrency_and_isolation",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "instrument": "git worktree list; git status -sb; git reflog --date=iso; git rev-parse against each sibling lane branch ref, all executed at 2026-08-22T20:27:19Z",
+      "raw_evidence": ["raw/shared-worktree-collision.txt"],
+      "what_happened": "All five sibling lanes of this group run as subagents inside ONE cloud-agent VM and share ONE git repository at /workspace. Four of them — L2, L3, L4 and the root controller — created separate `git worktree` checkouts under /tmp and were correctly isolated. This lane (L1) and L5 both worked directly in the shared /workspace checkout and collided.",
+      "observed": {
+        "worktrees_present": [
+          "/workspace — detached HEAD at 96af4244",
+          "/tmp/oe-l2 — [cursor/oe-l2-capability-research-696d] at d6291a8d",
+          "/tmp/oe-l3-evidence — detached HEAD at 11a60dcf",
+          "/tmp/oe-l3-independent-acceptance — [cursor/oe-l3-independent-acceptance-696d] at 541eff44",
+          "/tmp/oe-l4 — [cursor/oe-l4-currentness-recovery-696d] at 35b30191",
+          "/tmp/oe-root — [cursor/operating-environment-return-20260822-v001] at 30f460dd"
+        ],
+        "shared_head_became_detached": "At 20:20:34 the shared /workspace HEAD was moved to the immutable base SHA in a detached state, after L2 and L3 had each committed and reset on it.",
+        "interleaved_commits_on_one_detached_head": [
+          "20:21:35  9851d988  OE-L1 (this lane) — first commit",
+          "20:25:30  fe934462  oe-l5 — a different lane's commit stacked directly on top of this lane's",
+          "20:26:43  96af4244  OE-L1 (this lane) — second commit, now carrying L5's commit as an ancestor"
+        ],
+        "branch_refs_left_behind": "cursor/oe-l1-cursor-baseline-696d and cursor/oe-l5-chatgpt-scale-696d both still pointed at the immutable base fe0a5952, because commits made on a detached HEAD advance no branch.",
+        "push_failure_mode": "`git push -u origin cursor/oe-l1-cursor-baseline-696d` from the detached HEAD pushed the BRANCH REF, which was still at the base commit, and reported 'Everything up-to-date'. It exited 0. Nothing warned that the two commits just made were not on the branch being pushed.",
+        "author_identity_is_useless_for_attribution": "All commits from every lane are authored by 'Cursor Agent <cursoragent@cursor.com>'. Nothing in the commit metadata distinguishes which lane produced which commit."
+      },
+      "why_this_is_decision_relevant": [
+        "This is the reproduced mechanism behind the declared-versus-actual denominator problem. A group manifest declaring five isolated branches does not produce five isolated branches. Isolation here is a per-lane discipline (create a worktree) that nothing enforces, and two of five lanes did not apply it.",
+        "The failure is silent in the worst possible way: the push succeeds, exits 0 and says 'Everything up-to-date'. A lane that trusted its exit code would report READY_TO_COMMIT with an empty branch on the remote, and the reconciling controller would read the base commit and find no work.",
+        "Commit interleaving means one lane's branch can silently carry another lane's commit as an ancestor. Had this lane pushed the detached HEAD directly, its branch would have contained L5's work presented under L1's return.",
+        "It also bounds a capability claim: subagent parallelism in this runtime is concurrency inside one filesystem and one git repository, not isolation. The prior baseline recorded subagent dispatch as 'available' without recording that its isolation is caller-provided."
+      ],
+      "how_this_lane_handled_it": "The lane branch was repaired without touching the shared working tree or the shared HEAD, so no sibling lane was disturbed. A temporary index (GIT_INDEX_FILE) was seeded from the immutable base tree, only this lane's two owned namespaces were added to it, a tree was written, a single-parent commit was created with git commit-tree against the immutable base, and refs/heads/cursor/oe-l1-cursor-baseline-696d was moved to it with git update-ref. No checkout, no reset, no index mutation and no operation on any other lane's ref.",
+      "mechanism_added_in_response": {
+        "statement": "Two checks were added to the staged guard AFTER this failure was reproduced, and are labelled as such in the script's own comments rather than presented as though they had been designed in from the start.",
+        "checks": [
+          "DETACHED-HEAD — refuses `git commit` and `git push` while HEAD is detached, and tells the agent to take its own `git worktree` when a checkout is shared.",
+          "PUSH-REF-BEHIND-HEAD — refuses a push whose target branch ref does not contain the current HEAD, which is the check that converts this specific silent success into a refusal."
+        ],
+        "verified": "DIRECTLY_REPRODUCED across six further cases in a throwaway sandbox: allows commit and push while attached to a branch that contains HEAD; denies commit and push while detached; denies a push to a stale ref while ATTACHED, proving the second check fires independently of the first; allows a bare `git push` targeting the current branch; and honours a `refuse_detached_head: false` opt-out in write-scope.json.",
+        "still_recommended_beyond_the_guard": "A `git worktree add` per lane at dispatch. The guard turns the failure into a refusal; only a per-lane worktree prevents the collision from occurring."
+      },
+      "honest_gap": "The guard makes this failure loud rather than impossible. Two lanes sharing one checkout will still interleave commits on a shared HEAD; they will simply be refused at commit time instead of silently publishing nothing. Isolation itself remains caller-provided."
+    },
+
+    {
       "capability_id": "CAP-REPO-GOVERNANCE-ENFORCEMENT-PATH",
       "domain": "governance_enforcement",
       "evidence_label": "DIRECTLY_REPRODUCED",
