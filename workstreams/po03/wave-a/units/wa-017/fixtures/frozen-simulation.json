@@ -1,0 +1,238 @@
+{
+  "candidate_parameters": {
+    "central-gate": {
+      "verification_capacity": 1,
+      "verification_ticks": 2,
+      "worker_capacity": 3
+    },
+    "event-log": {
+      "materializer_capacity": 2,
+      "materializer_ticks": 1,
+      "worker_capacity": 6
+    },
+    "lease-shards": {
+      "shard_count": 3,
+      "verification_ticks": 1,
+      "verifiers_per_shard": 1,
+      "workers_per_shard": 2
+    }
+  },
+  "fault_semantics": {
+    "artifact_corrupt_first": "The first produced artifact fails hash verification and must be re-executed.",
+    "duplicate_callback": "A byte-identical callback is delivered twice; at most one acceptance may result.",
+    "none": "No injected task-specific fault.",
+    "provider_loss_first": "The first worker attempt disappears before a durable result is reported.",
+    "stale_completion_first": "The first callback carries the prior attempt generation and must be rejected."
+  },
+  "logical_time": {
+    "maximum_ticks": 160,
+    "unit": "deterministic_tick"
+  },
+  "protocol_version": "OBZIO-PO03-FROZEN-FACTORY-SIMULATION-v1",
+  "sanitization": {
+    "contains_credentials": false,
+    "contains_owner_identity_data": false,
+    "contains_third_party_content": false,
+    "description": "Synthetic PO-03 repository work units use only fictitious task IDs, relative paths, deterministic durations, and fault labels derived from repository-native custody requirements.",
+    "external_effects": false
+  },
+  "simulation_id": "PO03-WA-017-FROZEN-SIM-001",
+  "tasks": [
+    {
+      "duration": 2,
+      "fault": "none",
+      "release_tick": 0,
+      "shard": 0,
+      "task_id": "PO03-SIM-001",
+      "write_key": "units/alpha/result"
+    },
+    {
+      "duration": 1,
+      "fault": "none",
+      "release_tick": 0,
+      "shard": 1,
+      "task_id": "PO03-SIM-002",
+      "write_key": "units/beta/result"
+    },
+    {
+      "duration": 3,
+      "fault": "none",
+      "release_tick": 0,
+      "shard": 0,
+      "task_id": "PO03-SIM-003",
+      "write_key": "shared/index-a"
+    },
+    {
+      "duration": 2,
+      "fault": "none",
+      "release_tick": 0,
+      "shard": 1,
+      "task_id": "PO03-SIM-004",
+      "write_key": "shared/index-a"
+    },
+    {
+      "duration": 2,
+      "fault": "none",
+      "release_tick": 1,
+      "shard": 2,
+      "task_id": "PO03-SIM-005",
+      "write_key": "units/gamma/result"
+    },
+    {
+      "duration": 1,
+      "fault": "artifact_corrupt_first",
+      "release_tick": 1,
+      "shard": 0,
+      "task_id": "PO03-SIM-006",
+      "write_key": "units/delta/result"
+    },
+    {
+      "duration": 3,
+      "fault": "none",
+      "release_tick": 1,
+      "shard": 1,
+      "task_id": "PO03-SIM-007",
+      "write_key": "units/epsilon/result"
+    },
+    {
+      "duration": 2,
+      "fault": "none",
+      "release_tick": 1,
+      "shard": 2,
+      "task_id": "PO03-SIM-008",
+      "write_key": "units/zeta/result"
+    },
+    {
+      "duration": 1,
+      "fault": "none",
+      "release_tick": 2,
+      "shard": 0,
+      "task_id": "PO03-SIM-009",
+      "write_key": "units/eta/result"
+    },
+    {
+      "duration": 2,
+      "fault": "provider_loss_first",
+      "release_tick": 2,
+      "shard": 2,
+      "task_id": "PO03-SIM-010",
+      "write_key": "units/theta/result"
+    },
+    {
+      "duration": 2,
+      "fault": "none",
+      "release_tick": 2,
+      "shard": 1,
+      "task_id": "PO03-SIM-011",
+      "write_key": "shared/index-b"
+    },
+    {
+      "duration": 2,
+      "fault": "none",
+      "release_tick": 2,
+      "shard": 2,
+      "task_id": "PO03-SIM-012",
+      "write_key": "shared/index-b"
+    },
+    {
+      "duration": 3,
+      "fault": "none",
+      "release_tick": 3,
+      "shard": 0,
+      "task_id": "PO03-SIM-013",
+      "write_key": "units/iota/result"
+    },
+    {
+      "duration": 1,
+      "fault": "stale_completion_first",
+      "release_tick": 3,
+      "shard": 1,
+      "task_id": "PO03-SIM-014",
+      "write_key": "units/kappa/result"
+    },
+    {
+      "duration": 2,
+      "fault": "none",
+      "release_tick": 3,
+      "shard": 2,
+      "task_id": "PO03-SIM-015",
+      "write_key": "units/lambda/result"
+    },
+    {
+      "duration": 1,
+      "fault": "none",
+      "release_tick": 3,
+      "shard": 0,
+      "task_id": "PO03-SIM-016",
+      "write_key": "units/mu/result"
+    },
+    {
+      "duration": 3,
+      "fault": "none",
+      "release_tick": 4,
+      "shard": 1,
+      "task_id": "PO03-SIM-017",
+      "write_key": "units/nu/result"
+    },
+    {
+      "duration": 2,
+      "fault": "duplicate_callback",
+      "release_tick": 4,
+      "shard": 2,
+      "task_id": "PO03-SIM-018",
+      "write_key": "units/xi/result"
+    },
+    {
+      "duration": 2,
+      "fault": "none",
+      "release_tick": 4,
+      "shard": 0,
+      "task_id": "PO03-SIM-019",
+      "write_key": "shared/index-c"
+    },
+    {
+      "duration": 2,
+      "fault": "none",
+      "release_tick": 4,
+      "shard": 2,
+      "task_id": "PO03-SIM-020",
+      "write_key": "shared/index-c"
+    },
+    {
+      "duration": 1,
+      "fault": "none",
+      "release_tick": 5,
+      "shard": 0,
+      "task_id": "PO03-SIM-021",
+      "write_key": "units/omicron/result"
+    },
+    {
+      "duration": 3,
+      "fault": "none",
+      "release_tick": 5,
+      "shard": 1,
+      "task_id": "PO03-SIM-022",
+      "write_key": "units/pi/result"
+    },
+    {
+      "duration": 2,
+      "fault": "none",
+      "release_tick": 5,
+      "shard": 2,
+      "task_id": "PO03-SIM-023",
+      "write_key": "units/rho/result"
+    },
+    {
+      "duration": 1,
+      "fault": "none",
+      "release_tick": 5,
+      "shard": 1,
+      "task_id": "PO03-SIM-024",
+      "write_key": "units/sigma/result"
+    }
+  ],
+  "workload_source": {
+    "description": "Sanitized executable projection of PO-03 material work-unit custody, path ownership, corruption, stale-fence, lost-worker, and duplicate-callback conditions.",
+    "repository_source_base_commit": "ef81e041befe9654ced9390ffd6cc046d8cdd033"
+  }
+}
