@@ -1,0 +1,74 @@
+$ python3 custody_fsm.py --demo
+{
+  "component": "PO03-WA-001 custody_fsm",
+  "legal_walk": {
+    "final_state": "COMPLETED",
+    "steps": 9
+  },
+  "producer_ceiling": {
+    "accepted": false,
+    "detail": "a worker may not report above RESULT_STAGED",
+    "reason": "PRODUCER_CEILING_EXCEEDED",
+    "source": "RESULT_STAGED",
+    "target": "RESULT_VERIFIED"
+  },
+  "rejections": [
+    {
+      "accepted": false,
+      "detail": "COMPLETED is 9 rungs above CREATED; only 1 is legal",
+      "reason": "SKIPPED_STATE",
+      "source": "CREATED",
+      "target": "COMPLETED"
+    },
+    {
+      "accepted": false,
+      "detail": "RESULT_COMMITTED is 5 rungs above RUNNING; only 1 is legal",
+      "reason": "SKIPPED_STATE",
+      "source": "RUNNING",
+      "target": "RESULT_COMMITTED"
+    },
+    {
+      "accepted": false,
+      "detail": "RUNNING is 5 rung(s) below RESULT_COMMITTED",
+      "reason": "REVERSED_STATE",
+      "source": "RESULT_COMMITTED",
+      "target": "RUNNING"
+    },
+    {
+      "accepted": false,
+      "detail": "COMPLETED is terminal and has no outgoing edges",
+      "reason": "TERMINAL_STATE_RESURRECTION",
+      "source": "COMPLETED",
+      "target": "RUNNING"
+    }
+  ]
+}
+
+$ python3 custody_fsm.py --from CREATED --to COMPLETED   # expect exit 1
+{"accepted": false, "detail": "COMPLETED is 9 rungs above CREATED; only 1 is legal", "reason": "SKIPPED_STATE", "source": "CREATED", "target": "COMPLETED"}
+exit=1
+
+$ python3 -m unittest -v test_custody_fsm
+test_full_legal_walk_reaches_completed_only_through_every_rung (test_custody_fsm.ActorTests.test_full_legal_walk_reaches_completed_only_through_every_rung) ... ok
+test_worker_cannot_ingest_or_complete (test_custody_fsm.ActorTests.test_worker_cannot_ingest_or_complete) ... ok
+test_worker_cannot_pass_the_producer_ceiling (test_custody_fsm.ActorTests.test_worker_cannot_pass_the_producer_ceiling) ... ok
+test_every_ladder_pair_is_classified (test_custody_fsm.LadderExhaustionTests.test_every_ladder_pair_is_classified) ... ok
+test_no_reversal_is_accepted (test_custody_fsm.LadderExhaustionTests.test_no_reversal_is_accepted) ... ok
+test_no_skip_is_accepted (test_custody_fsm.LadderExhaustionTests.test_no_skip_is_accepted) ... ok
+test_self_transition_rejected (test_custody_fsm.LadderExhaustionTests.test_self_transition_rejected) ... ok
+test_terminal_states_have_no_outgoing_edges (test_custody_fsm.LadderExhaustionTests.test_terminal_states_have_no_outgoing_edges) ... ok
+test_created_to_completed_is_rejected_as_a_skip (test_custody_fsm.Po02DefectTests.test_created_to_completed_is_rejected_as_a_skip) ... ok
+test_provider_completion_leaves_the_ladder_instead_of_completing (test_custody_fsm.Po02DefectTests.test_provider_completion_leaves_the_ladder_instead_of_completing) ... ok
+test_running_cannot_jump_over_staging_to_committed (test_custody_fsm.Po02DefectTests.test_running_cannot_jump_over_staging_to_committed) ... ok
+test_a_lower_fence_cannot_advance_a_live_record (test_custody_fsm.RetryAndFenceTests.test_a_lower_fence_cannot_advance_a_live_record) ... ok
+test_committed_result_cannot_be_retried_only_recovered (test_custody_fsm.RetryAndFenceTests.test_committed_result_cannot_be_retried_only_recovered) ... ok
+test_retry_cannot_reenter_mid_ladder (test_custody_fsm.RetryAndFenceTests.test_retry_cannot_reenter_mid_ladder) ... ok
+test_retry_reentry_requires_a_higher_fence (test_custody_fsm.RetryAndFenceTests.test_retry_reentry_requires_a_higher_fence) ... ok
+test_edge_set_never_references_an_unknown_state (test_custody_fsm.UnknownStateTests.test_edge_set_never_references_an_unknown_state) ... ok
+test_unknown_states_are_named_not_silently_dropped (test_custody_fsm.UnknownStateTests.test_unknown_states_are_named_not_silently_dropped) ... ok
+
+----------------------------------------------------------------------
+Ran 17 tests in 0.001s
+
+OK
+exit=0
