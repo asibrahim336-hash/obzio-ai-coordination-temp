@@ -54,7 +54,7 @@ def detect_git(repo: str, commit: str, manifest_path: str) -> dict[str, Any]:
     return result
 
 
-def detect_directory(pack_dir: Path, manifest_name: str = "manifest.json") -> dict[str, Any]:
+def detect_directory(pack_dir: Path, manifest_name: str = "fixture_manifest.json") -> dict[str, Any]:
     manifest = json.loads((pack_dir / manifest_name).read_text(encoding="utf-8"))
     result = detect(
         manifest_name,
@@ -77,7 +77,7 @@ def main() -> int:
     source.add_argument("--repo")
     source.add_argument("--pack-dir", type=Path)
     parser.add_argument("--commit")
-    parser.add_argument("--manifest", default="manifest.json")
+    parser.add_argument("--manifest", default="fixture_manifest.json")
     args = parser.parse_args()
     if args.repo:
         if not args.commit:
