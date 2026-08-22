@@ -24,8 +24,11 @@ class TransactionalFactoryTests(unittest.TestCase):
         repository = Path(self.temporary.name) / "repository"
         po03 = repository / "workstreams" / "po03"
         (po03 / "contracts").mkdir(parents=True)
+        (po03 / "tools").mkdir()
         (po03 / "COMMISSION.md").write_text("commission\n", encoding="utf-8")
         (po03 / "contracts" / "transactional-result.schema.json").write_text("{}\n", encoding="utf-8")
+        validator = MODULE_PATH.with_name("validate_contracts.py").read_text(encoding="utf-8")
+        (po03 / "tools" / "validate_contracts.py").write_text(validator, encoding="utf-8")
         MODULE.REPO_ROOT = repository
         MODULE.PO03_ROOT = po03
         MODULE.CONTROL_ROOT = po03 / "control"
@@ -74,6 +77,12 @@ class TransactionalFactoryTests(unittest.TestCase):
             MODULE._recovery_action("PARENT_INGESTED"),
         )
         self.assertEqual("NONE", MODULE._recovery_action("COMPLETED"))
+        self.assertEqual(
+            "COMPLETED",
+            MODULE.provider_state_from_events(
+                [{"state": "CREATED"}, {"state": "RESULT_STAGED"}, {"state": "RECOVERY_REQUIRED"}]
+            ),
+        )
 
     def test_write_once_is_idempotent_but_immutable(self):
         destination = MODULE.PO03_ROOT / "control" / "immutable.json"
@@ -100,13 +109,19 @@ class TransactionalFactoryTests(unittest.TestCase):
         self.assertEqual("QUEUED", transaction["provider_state"])
         self.assertIsNone(transaction["result_transaction"]["result_commit_id"])
 
+    def test_task_capsule_same_input_replays_idempotently(self):
+        first = self._create_task()
+        second = self._create_task()
+        self.assertEqual(first, second)
+        self.assertEqual(1, len(list((MODULE.CONTROL_ROOT / "events" / "po03-test-task").glob("*.json"))))
+
     def test_event_chain_is_monotonic_and_tamper_evident(self):
         self._create_task()
         MODULE.hash_chain_event(
             "po03-test-task",
             "LEASED",
             actor="integration-controller",
-            details={"fence_token": 1},
+            details={"fence_token": 1, "worker_id": "worker-1", "provider_run_id": "reservation-1"},
             observed_at="2026-08-22T07:00:00Z",
         )
         self.assertEqual([], MODULE.verify_chain("po03-test-task"))
@@ -115,6 +130,23 @@ class TransactionalFactoryTests(unittest.TestCase):
         document["details"]["fence_token"] = 2
         event.write_text(json.dumps(document), encoding="utf-8")
         self.assertTrue(any("event hash mismatch" in error for error in MODULE.verify_chain("po03-test-task")))
+
+    def test_event_chain_rejects_semantically_stale_lease(self):
+        self._create_task()
+        event = MODULE.hash_chain_event(
+            "po03-test-task",
+            "LEASED",
+            actor="integration-controller",
+            details={"fence_token": 1, "worker_id": "worker-1", "provider_run_id": "reservation-1"},
+            observed_at="2026-08-22T07:00:00Z",
+        )
+        document = json.loads(event.read_text(encoding="utf-8"))
+        document["details"]["fence_token"] = 2
+        unhashed = dict(document)
+        unhashed.pop("event_sha256")
+        document["event_sha256"] = MODULE.sha256_bytes(MODULE.canonical_json(unhashed))
+        event.write_bytes(MODULE.canonical_json(document))
+        self.assertTrue(any("invalid lease fence" in error for error in MODULE.verify_chain("po03-test-task")))
 
     def test_controller_predispatch_transition_requires_explicit_marker(self):
         self._create_task()
@@ -140,6 +172,141 @@ class TransactionalFactoryTests(unittest.TestCase):
             details={"controller_pre_dispatch": True, "provider_run_id": "reserved-run-1"},
         )
         self.assertEqual("RUNNING", MODULE.task_events("po03-test-task")[-1]["state"])
+
+    def _advance_to_result_committed(self):
+        self._create_task()
+        MODULE.advance_task(
+            "po03-test-task",
+            state="LEASED",
+            actor="integration-controller",
+            fence_token=1,
+            details={"worker_id": "worker-1", "provider_run_id": "reservation-1"},
+        )
+        MODULE.advance_task(
+            "po03-test-task",
+            state="RUNNING",
+            actor="worker-1",
+            fence_token=1,
+        )
+        MODULE.advance_task(
+            "po03-test-task",
+            state="RESULT_STAGING",
+            actor="worker-1",
+            fence_token=1,
+        )
+        MODULE.advance_task(
+            "po03-test-task",
+            state="RESULT_STAGED",
+            actor="worker-1",
+            fence_token=1,
+            details={"manifest_sha256": "a" * 64, "total_bytes": 1},
+        )
+        MODULE.advance_task(
+            "po03-test-task",
+            state="RESULT_VERIFIED",
+            actor="worker-1",
+            fence_token=1,
+            details={"verified_artifacts": 1, "parent_remote_readback": "PASS"},
+        )
+        result_commit_id = "c" * 40
+        MODULE.advance_task(
+            "po03-test-task",
+            state="RESULT_COMMITTED",
+            actor="integration-controller",
+            fence_token=1,
+            details={"result_commit_id": result_commit_id},
+        )
+        return result_commit_id
+
+    def _write_parent_ingestion(self, result_commit_id):
+        task_directory = MODULE.CONTROL_ROOT / "tasks" / "po03-test-task"
+        created = json.loads((task_directory / "transaction-created.json").read_text(encoding="utf-8"))
+        record = {
+            "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+            "task_id": "po03-test-task",
+            "commission_id": created["commission_id"],
+            "immutable_input_manifest_sha256": created["immutable_input_manifest_sha256"],
+            "acceptance_contract_sha256": created["acceptance_contract_sha256"],
+            "provider_state": "COMPLETED",
+            "obzio_state": "PARENT_INGESTED",
+            "attempt": {
+                "attempt_id": "po03-test-task-attempt-1",
+                "idempotency_key": created["attempt"]["idempotency_key"],
+                "lease_id": created["attempt"]["lease_id"],
+                "fence_token": 1,
+                "provider_run_id": "provider-1",
+                "worker_id": "worker-1",
+                "heartbeat_at": "2026-08-22T07:00:00Z",
+                "checkpoint_seq": 4,
+            },
+            "result_transaction": {
+                "result_txn_id": "result-po03-test-task-1",
+                "state": "INGESTED",
+                "manifest_uri": "git:po03/test@commit:manifest.json",
+                "manifest_sha256": "a" * 64,
+                "artifact_count": 1,
+                "total_bytes": 1,
+                "committed_at": "2026-08-22T07:00:00Z",
+                "verified_at": "2026-08-22T07:00:01Z",
+                "parent_ingested_at": "2026-08-22T07:00:02Z",
+                "result_commit_id": result_commit_id,
+            },
+            "artifacts": [
+                {
+                    "artifact_id": "artifact-1",
+                    "logical_name": "result.json",
+                    "content_uri": "git:po03/test@commit:result.json",
+                    "sha256": "a" * 64,
+                    "bytes": 1,
+                    "media_type": "application/json",
+                    "readback_verified_at": "2026-08-22T07:00:01Z",
+                }
+            ],
+            "completion_actor": None,
+            "independent_acceptance": {"state": "PENDING", "reviewer_id": None, "receipt_uri": None},
+        }
+        (task_directory / "transaction-ingested.json").write_bytes(MODULE.canonical_json(record))
+
+    def test_parent_ingestion_requires_immutable_result_record(self):
+        result_commit_id = self._advance_to_result_committed()
+        with self.assertRaises(MODULE.FactoryError):
+            MODULE.advance_task(
+                "po03-test-task",
+                state="PARENT_INGESTED",
+                actor="integration-controller",
+                fence_token=1,
+                details={"parent_readback": "PASS", "result_commit_id": result_commit_id},
+            )
+
+    def test_recovery_rebuild_preserves_parent_ingestion_without_completion(self):
+        result_commit_id = self._advance_to_result_committed()
+        self._write_parent_ingestion(result_commit_id)
+        MODULE.advance_task(
+            "po03-test-task",
+            state="PARENT_INGESTED",
+            actor="integration-controller",
+            fence_token=1,
+            details={"parent_readback": "PASS", "result_commit_id": result_commit_id},
+        )
+        projection = MODULE.rebuild_recovery_state(run_id="bc-rebuild")
+        unit = projection["units"]["po03-test-task"]
+        self.assertEqual("PARENT_INGESTED", unit["obzio_state"])
+        self.assertEqual("COMPLETED", unit["provider_state"])
+        self.assertEqual(result_commit_id, unit["result_commit_id"])
+        self.assertEqual([], MODULE.verify_recovery_state())
+
+    def test_source_lock_hashes_pinned_git_bytes_not_worktree_bytes(self):
+        original_git = MODULE.git
+        original_git_bytes = MODULE.git_bytes
+        self.addCleanup(setattr, MODULE, "git", original_git)
+        self.addCleanup(setattr, MODULE, "git_bytes", original_git_bytes)
+        MODULE.git = lambda *arguments: "f" * 40
+        MODULE.git_bytes = lambda *arguments: b"pinned-source-bytes"
+        lock = MODULE.source_lock("a" * 40)
+        self.assertTrue(all(source["bytes"] == 19 for source in lock["sources"]))
+        self.assertTrue(
+            all(source["sha256"] == MODULE.sha256_bytes(b"pinned-source-bytes") for source in lock["sources"])
+        )
 
     def test_duplicate_task_with_changed_acceptance_fails_closed(self):
         self._create_task()

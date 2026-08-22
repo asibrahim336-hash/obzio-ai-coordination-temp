@@ -66,34 +66,9 @@ def _merge_ownership(run_id: str, task_rows: list[dict[str, Any]]) -> None:
     factory.replace_atomic(path, factory.canonical_json(ownership))
 
 
-def _merge_recovery(head_sha: str, run_id: str, task_rows: list[dict[str, Any]]) -> None:
-    path = factory.CONTROL_ROOT / "recovery-state.json"
-    recovery = factory.read_json(path) if path.exists() else {
-        "recovery_version": "PO03-RECOVERY-STATE-v1",
-        "scan_state": "ACTIVE",
-        "units": {},
-        "false_completion_count": 0,
-        "orphan_count": 0,
-        "duplicate_callback_count": 0,
-        "collision_count": 0,
-        "decision_changed": [],
-    }
-    recovery["wave_id"] = WAVE_ID
-    recovery["registration_head_sha"] = head_sha
-    recovery["registration_run_id"] = run_id
-    for row in task_rows:
-        recovery.setdefault("units", {}).setdefault(
-            row["task_id"],
-            {
-                "obzio_state": "CREATED",
-                "provider_state": "NOT_DISPATCHED",
-                "latest_event_sequence": 1,
-                "fence_token": 1,
-                "result_commit_id": None,
-                "recovery_action": "AWAIT_CANARY_AND_DISPATCH",
-            },
-        )
-    factory.replace_atomic(path, factory.canonical_json(recovery))
+def _merge_recovery(_head_sha: str, run_id: str, _task_rows: list[dict[str, Any]]) -> None:
+    """Refresh every task projection from its immutable event chain."""
+    factory.rebuild_recovery_state(run_id=run_id)
 
 
 def register(repo_root: Path, *, head_sha: str, run_id: str) -> dict[str, Any]:

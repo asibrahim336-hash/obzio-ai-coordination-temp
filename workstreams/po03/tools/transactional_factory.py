@@ -10,7 +10,9 @@ result commit and independent read-back can reach ``COMPLETED``.
 from __future__ import annotations
 
 import argparse
+import contextlib
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -18,7 +20,12 @@ import subprocess
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Iterator
+
+try:
+    import fcntl
+except ImportError:  # pragma: no cover - Cursor and GitHub Actions use POSIX locks.
+    fcntl = None
 
 
 PO03_ROOT = Path(__file__).resolve().parents[1]
@@ -30,6 +37,7 @@ PROTOCOL_VERSION = "OBZIO-TRANSACTIONAL-RESULT-v1"
 TASK_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{2,95}$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 GIT_OBJECT_RE = re.compile(r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")
+EVENT_FILE_RE = re.compile(r"^(?P<sequence>[0-9]{6})-(?P<state>[a-z_]+)\.json$")
 
 ALLOWED_WRITE_PREFIXES = (
     "workstreams/po03/",
@@ -131,6 +139,25 @@ def assert_allowed_path(path: Path) -> None:
         raise FactoryError(f"write outside PO-03 allowlist: {relative}")
 
 
+@contextlib.contextmanager
+def _task_lock(task_id: str) -> Iterator[None]:
+    """Serialize one task's capsule and state transitions without a lock file."""
+    if not TASK_ID_RE.fullmatch(task_id):
+        raise FactoryError(f"invalid task id: {task_id}")
+    task_directory = CONTROL_ROOT / "tasks" / task_id
+    assert_allowed_path(task_directory)
+    task_directory.mkdir(parents=True, exist_ok=True)
+    descriptor = os.open(task_directory, os.O_RDONLY)
+    try:
+        if fcntl is not None:
+            fcntl.flock(descriptor, fcntl.LOCK_EX)
+        yield
+    finally:
+        if fcntl is not None:
+            fcntl.flock(descriptor, fcntl.LOCK_UN)
+        os.close(descriptor)
+
+
 def _fsync_directory(directory: Path) -> None:
     descriptor = os.open(directory, os.O_RDONLY)
     try:
@@ -146,6 +173,7 @@ def write_once(path: Path, payload: bytes) -> None:
     if path.exists():
         if path.read_bytes() != payload:
             raise FileExistsError(f"immutable file differs: {repo_relative(path)}")
+        _fsync_directory(path.parent)
         return
     descriptor, temporary_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
     temporary = Path(temporary_name)
@@ -203,6 +231,16 @@ def git(*arguments: str) -> str:
         text=True,
     )
     return result.stdout.strip()
+
+
+def git_bytes(*arguments: str) -> bytes:
+    result = subprocess.run(
+        ("git", *arguments),
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+    )
+    return result.stdout
 
 
 def require_git_object_id(value: str, field: str) -> None:
@@ -278,12 +316,29 @@ def verify_chain(task_id: str) -> list[str]:
     errors: list[str] = []
     events = _event_files(task_id)
     previous_hash: str | None = None
+    previous_state: str | None = None
+    lease_owner: str | None = None
+    current_fence: int | None = None
     for expected_sequence, path in enumerate(events, start=1):
         try:
             event = read_json(path)
         except (OSError, ValueError, json.JSONDecodeError) as exc:
             errors.append(f"{path}: unreadable event: {exc}")
             continue
+        match = EVENT_FILE_RE.fullmatch(path.name)
+        if match is None:
+            errors.append(f"{repo_relative(path)}: non-canonical event filename")
+        elif int(match["sequence"]) != expected_sequence:
+            errors.append(f"{repo_relative(path)}: filename sequence mismatch")
+        if event.get("event_version") != "PO03-EVENT-v1":
+            errors.append(f"{repo_relative(path)}: unsupported event version")
+        if event.get("task_id") != task_id:
+            errors.append(f"{repo_relative(path)}: task ID mismatch")
+        state = event.get("state")
+        if not isinstance(state, str) or state not in ALLOWED_TRANSITIONS:
+            errors.append(f"{repo_relative(path)}: unsupported state")
+        elif match is not None and match["state"] != state.lower():
+            errors.append(f"{repo_relative(path)}: filename state mismatch")
         if event.get("sequence") != expected_sequence:
             errors.append(f"{repo_relative(path)}: non-monotonic sequence")
         if event.get("previous_event_sha256") != previous_hash:
@@ -292,7 +347,63 @@ def verify_chain(task_id: str) -> list[str]:
         computed = sha256_bytes(canonical_json(event))
         if claimed != computed:
             errors.append(f"{repo_relative(path)}: event hash mismatch")
+
+        actor = event.get("actor")
+        details = event.get("details")
+        if not _nonempty(actor):
+            errors.append(f"{repo_relative(path)}: actor must be non-empty")
+        if not isinstance(details, dict):
+            errors.append(f"{repo_relative(path)}: details must be an object")
+            details = {}
+        fence_token = details.get("fence_token")
+        if not isinstance(fence_token, int) or fence_token < 1:
+            errors.append(f"{repo_relative(path)}: invalid fence token")
+
+        if previous_state is None:
+            if state != "CREATED":
+                errors.append(f"{repo_relative(path)}: first event must be CREATED")
+            if actor != "integration-controller":
+                errors.append(f"{repo_relative(path)}: only controller may create a task")
+            if isinstance(fence_token, int) and fence_token >= 1:
+                current_fence = fence_token
+        else:
+            if isinstance(state, str) and state in ALLOWED_TRANSITIONS and state not in ALLOWED_TRANSITIONS.get(previous_state, set()):
+                errors.append(f"{repo_relative(path)}: invalid transition {previous_state} -> {state}")
+            if details.get("prior_state") != previous_state:
+                errors.append(f"{repo_relative(path)}: prior-state evidence mismatch")
+            if state == "LEASED":
+                first_lease = previous_state == "CREATED"
+                valid_fence = (
+                    isinstance(fence_token, int)
+                    and current_fence is not None
+                    and (fence_token == current_fence if first_lease else fence_token > current_fence)
+                )
+                if not valid_fence:
+                    errors.append(f"{repo_relative(path)}: invalid lease fence")
+                if actor != "integration-controller":
+                    errors.append(f"{repo_relative(path)}: only controller may lease a task")
+                if not _nonempty(details.get("worker_id")) or not _nonempty(details.get("provider_run_id")):
+                    errors.append(f"{repo_relative(path)}: lease lacks worker or provider run")
+                lease_owner = details.get("worker_id") if _nonempty(details.get("worker_id")) else None
+                if isinstance(fence_token, int) and fence_token >= 1:
+                    current_fence = fence_token
+            elif current_fence is not None and fence_token != current_fence:
+                errors.append(f"{repo_relative(path)}: stale or missing fence token")
+
+        if isinstance(state, str) and state in PRODUCER_STATES:
+            controller_pre_dispatch = (
+                state == "RUNNING"
+                and actor == "integration-controller"
+                and details.get("controller_pre_dispatch") is True
+                and _nonempty(details.get("provider_run_id"))
+            )
+            if actor != lease_owner and not controller_pre_dispatch:
+                errors.append(f"{repo_relative(path)}: producer state has no active leased worker")
+        if isinstance(state, str) and state in CONTROLLER_STATES and actor != "integration-controller":
+            errors.append(f"{repo_relative(path)}: controller state has non-controller actor")
+
         previous_hash = sha256_file(path)
+        previous_state = state if isinstance(state, str) else previous_state
     if not events:
         errors.append(f"task {task_id}: no events")
     return errors
@@ -322,6 +433,43 @@ def task_capsule(
     nonce: str | None = None,
     function: str | None = None,
 ) -> dict[str, str]:
+    """Create or safely replay one immutable task capsule."""
+    with _task_lock(task_id):
+        return _task_capsule_locked(
+            task_id=task_id,
+            head_sha=head_sha,
+            run_id=run_id,
+            model=model,
+            reasoning=reasoning,
+            hypothesis=hypothesis,
+            prompt=prompt,
+            owned_paths=owned_paths,
+            result_slot=result_slot,
+            acceptance=acceptance,
+            lease_seconds=lease_seconds,
+            fence_token=fence_token,
+            nonce=nonce,
+            function=function,
+        )
+
+
+def _task_capsule_locked(
+    *,
+    task_id: str,
+    head_sha: str,
+    run_id: str,
+    model: str,
+    reasoning: str,
+    hypothesis: str,
+    prompt: str,
+    owned_paths: list[str],
+    result_slot: str,
+    acceptance: dict[str, Any],
+    lease_seconds: int,
+    fence_token: int,
+    nonce: str | None = None,
+    function: str | None = None,
+) -> dict[str, str]:
     """Freeze a task input, acceptance contract, and initial created state."""
     if not TASK_ID_RE.fullmatch(task_id):
         raise FactoryError(f"invalid task id: {task_id}")
@@ -332,6 +480,10 @@ def task_capsule(
     if fence_token < 1 or lease_seconds < 1:
         raise FactoryError("lease and fence token must be positive")
     task_directory = CONTROL_ROOT / "tasks" / task_id
+    input_path = task_directory / "input.json"
+    existing_input = read_json(input_path) if input_path.exists() else None
+    if existing_input is not None and not _nonempty(existing_input.get("created_at")):
+        raise FactoryError(f"existing task capsule is missing created_at: {repo_relative(input_path)}")
     acceptance_bytes = canonical_json(acceptance)
     acceptance_hash = sha256_bytes(acceptance_bytes)
     input_document = {
@@ -371,7 +523,7 @@ def task_capsule(
             "provider_run_id": "PENDING_PROVIDER_ASSIGNMENT",
         },
         "canary_nonce": nonce,
-        "created_at": utc_now(),
+        "created_at": existing_input["created_at"] if existing_input is not None else utc_now(),
         "decision_changed": [],
     }
     input_bytes = canonical_json(input_document)
@@ -414,20 +566,30 @@ def task_capsule(
             "receipt_uri": None,
         },
     }
-    write_once(task_directory / "input.json", input_bytes)
+    write_once(input_path, input_bytes)
     write_once(task_directory / "acceptance.json", acceptance_bytes)
     write_once(task_directory / "transaction-created.json", canonical_json(initial_result))
-    event = hash_chain_event(
-        task_id,
-        "CREATED",
-        actor="integration-controller",
-        details={
-            "input_sha256": input_hash,
-            "acceptance_sha256": acceptance_hash,
-            "result_slot": result_slot,
-            "fence_token": fence_token,
-        },
-    )
+    events = _event_files(task_id)
+    if events:
+        errors = verify_chain(task_id)
+        if errors:
+            raise FactoryError("; ".join(errors))
+        created = read_json(events[0])
+        if created.get("state") != "CREATED":
+            raise FactoryError(f"task capsule has no CREATED event: {task_id}")
+        event = events[0]
+    else:
+        event = hash_chain_event(
+            task_id,
+            "CREATED",
+            actor="integration-controller",
+            details={
+                "input_sha256": input_hash,
+                "acceptance_sha256": acceptance_hash,
+                "result_slot": result_slot,
+                "fence_token": fence_token,
+            },
+        )
     return {
         "task_id": task_id,
         "input_path": repo_relative(task_directory / "input.json"),
@@ -477,14 +639,116 @@ def _provider_projection(state: str) -> str:
     return "RUNNING"
 
 
+def provider_state_from_events(events: list[dict[str, Any]]) -> str:
+    """Preserve completed provider evidence when custody later needs recovery."""
+    states = {event["state"] for event in events}
+    if states & {
+        "RESULT_STAGING",
+        "RESULT_STAGED",
+        "RESULT_VERIFIED",
+        "RESULT_COMMITTED",
+        "PARENT_INGESTED",
+        "COMPLETED",
+        "PROVIDER_COMPLETED_UNCOMMITTED",
+    }:
+        return "COMPLETED"
+    if "FAILED_TERMINAL" in states:
+        return "FAILED"
+    if "CANCELLED" in states:
+        return "CANCELLED"
+    if states == {"CREATED"}:
+        return "NOT_DISPATCHED"
+    return "RUNNING"
+
+
+def _latest_result_commit(events: list[dict[str, Any]]) -> str | None:
+    for event in reversed(events):
+        candidate = event.get("details", {}).get("result_commit_id")
+        if _nonempty(candidate):
+            return candidate
+    return None
+
+
 def _recovery_action(state: str) -> str:
     if state in {"PROVIDER_COMPLETED_UNCOMMITTED", "RECOVERY_REQUIRED", "RETRY_SCHEDULED"}:
         return "RERUN_OR_RECONCILE"
     if state == "PARENT_INGESTED":
         return "AWAIT_COORDINATOR_COMPLETION_AND_INDEPENDENT_REVIEW"
+    if state == "CREATED":
+        return "NOT_DISPATCHED"
     if state in TERMINAL_STATES:
         return "NONE"
     return "MONITOR"
+
+
+def _recovery_unit(task_id: str) -> dict[str, Any]:
+    events = task_events(task_id)
+    latest = events[-1]
+    input_document = read_json(CONTROL_ROOT / "tasks" / task_id / "input.json")
+    event_path = _event_files(task_id)[-1]
+    return {
+        "obzio_state": latest["state"],
+        "provider_state": provider_state_from_events(events),
+        "latest_event_sequence": latest["sequence"],
+        "latest_event_sha256": sha256_file(event_path),
+        "fence_token": _latest_fence(events, int(input_document["transaction"]["fence_token"])),
+        "result_commit_id": _latest_result_commit(events),
+        "recovery_action": _recovery_action(latest["state"]),
+    }
+
+
+def rebuild_recovery_state(*, run_id: str) -> dict[str, Any]:
+    """Reconstruct the mutable recovery projection from immutable event chains."""
+    path = CONTROL_ROOT / "recovery-state.json"
+    projection = read_json(path) if path.exists() else {
+        "recovery_version": "PO03-RECOVERY-STATE-v1",
+        "scan_state": "ACTIVE",
+        "false_completion_count": 0,
+        "orphan_count": 0,
+        "duplicate_callback_count": 0,
+        "collision_count": 0,
+        "decision_changed": [],
+    }
+    units: dict[str, dict[str, Any]] = {}
+    for task_directory in sorted((CONTROL_ROOT / "tasks").glob("*")):
+        if task_directory.is_dir():
+            units[task_directory.name] = _recovery_unit(task_directory.name)
+    projection["recovery_version"] = "PO03-RECOVERY-STATE-v1"
+    projection["scan_state"] = "ACTIVE"
+    projection["units"] = units
+    projection["rebuilt_from_immutable_events"] = True
+    projection["rebuilt_by_run_id"] = run_id
+    replace_atomic(path, canonical_json(projection))
+    return projection
+
+
+def verify_recovery_state() -> list[str]:
+    """Fail closed when the derived projection diverges from immutable custody."""
+    path = CONTROL_ROOT / "recovery-state.json"
+    if not path.exists():
+        return [f"missing {repo_relative(path)}"]
+    projection = read_json(path)
+    units = projection.get("units")
+    if not isinstance(units, dict):
+        return [f"{repo_relative(path)}: units must be an object"]
+    errors: list[str] = []
+    observed: set[str] = set()
+    for task_directory in sorted((CONTROL_ROOT / "tasks").glob("*")):
+        if not task_directory.is_dir():
+            continue
+        task_id = task_directory.name
+        observed.add(task_id)
+        expected = _recovery_unit(task_id)
+        actual = units.get(task_id)
+        if not isinstance(actual, dict):
+            errors.append(f"{repo_relative(path)}: missing unit {task_id}")
+            continue
+        for field, value in expected.items():
+            if actual.get(field) != value:
+                errors.append(f"{repo_relative(path)}: {task_id}.{field} diverges from immutable events")
+    for task_id in sorted(set(units) - observed):
+        errors.append(f"{repo_relative(path)}: orphaned projection unit {task_id}")
+    return errors
 
 
 def _update_recovery_projection(
@@ -510,19 +774,105 @@ def _update_recovery_projection(
             "decision_changed": [],
         }
     units = projection.setdefault("units", {})
-    units[task_id] = {
-        "obzio_state": state,
-        "provider_state": _provider_projection(state),
-        "latest_event_sequence": len(_event_files(task_id)),
-        "latest_event_sha256": sha256_file(event_path),
-        "fence_token": fence_token,
-        "result_commit_id": details.get("result_commit_id"),
-        "recovery_action": _recovery_action(state),
-    }
+    units[task_id] = _recovery_unit(task_id)
     replace_atomic(path, canonical_json(projection))
 
 
+_RESULT_VALIDATOR: Any | None = None
+
+
+def _result_validator() -> Any:
+    global _RESULT_VALIDATOR
+    if _RESULT_VALIDATOR is None:
+        validator_path = PO03_ROOT / "tools" / "validate_contracts.py"
+        specification = importlib.util.spec_from_file_location("po03_validate_contracts", validator_path)
+        if specification is None or specification.loader is None:
+            raise FactoryError(f"unable to load result validator: {repo_relative(validator_path)}")
+        module = importlib.util.module_from_spec(specification)
+        specification.loader.exec_module(module)
+        _RESULT_VALIDATOR = module
+    return _RESULT_VALIDATOR
+
+
+def validate_ingested_result(task_id: str) -> list[str]:
+    """Validate the immutable parent-ingestion record against a frozen task."""
+    task_directory = CONTROL_ROOT / "tasks" / task_id
+    result_path = task_directory / "transaction-ingested.json"
+    if not result_path.is_file():
+        return [f"missing {repo_relative(result_path)}"]
+    try:
+        result = read_json(result_path)
+        created = read_json(task_directory / "transaction-created.json")
+    except (OSError, ValueError, json.JSONDecodeError) as exc:
+        return [f"{repo_relative(result_path)}: unreadable result record: {exc}"]
+    errors = list(_result_validator().validate_result(result))
+    if result.get("task_id") != task_id:
+        errors.append("result task_id does not match custody task")
+    if result.get("obzio_state") != "PARENT_INGESTED":
+        errors.append("result record must remain PARENT_INGESTED before coordinator completion")
+    for field in ("immutable_input_manifest_sha256", "acceptance_contract_sha256"):
+        if result.get(field) != created.get(field):
+            errors.append(f"result {field} does not match the frozen task")
+    commit_id = result.get("result_transaction", {}).get("result_commit_id")
+    if not isinstance(commit_id, str) or not GIT_OBJECT_RE.fullmatch(commit_id):
+        errors.append("result transaction lacks a full immutable result commit ID")
+    return errors
+
+
+def _require_detail_sha256(details: dict[str, Any], name: str) -> None:
+    if not isinstance(details.get(name), str) or not SHA256_RE.fullmatch(details[name]):
+        raise FactoryError(f"{name} must be a lowercase SHA-256")
+
+
+def _require_detail_positive_int(details: dict[str, Any], name: str) -> None:
+    if not isinstance(details.get(name), int) or details[name] < 1:
+        raise FactoryError(f"{name} must be an integer >= 1")
+
+
+def _validate_transition_evidence(task_id: str, state: str, details: dict[str, Any]) -> None:
+    if state == "RESULT_STAGED":
+        _require_detail_sha256(details, "manifest_sha256")
+        _require_detail_positive_int(details, "total_bytes")
+    elif state == "RESULT_VERIFIED":
+        _require_detail_positive_int(details, "verified_artifacts")
+        if details.get("parent_remote_readback") != "PASS":
+            raise FactoryError("RESULT_VERIFIED requires parent_remote_readback=PASS")
+    elif state == "RESULT_COMMITTED":
+        result_commit_id = details.get("result_commit_id")
+        if not isinstance(result_commit_id, str) or not GIT_OBJECT_RE.fullmatch(result_commit_id):
+            raise FactoryError("RESULT_COMMITTED requires a full immutable result commit ID")
+    elif state in {"PARENT_INGESTED", "COMPLETED"}:
+        if state == "PARENT_INGESTED" and details.get("parent_readback") != "PASS":
+            raise FactoryError("PARENT_INGESTED requires parent_readback=PASS")
+        errors = validate_ingested_result(task_id)
+        if errors:
+            raise FactoryError("; ".join(errors))
+        result = read_json(CONTROL_ROOT / "tasks" / task_id / "transaction-ingested.json")
+        result_commit_id = result["result_transaction"]["result_commit_id"]
+        if details.get("result_commit_id") != result_commit_id:
+            raise FactoryError("event result commit does not match immutable ingestion record")
+
+
 def advance_task(
+    task_id: str,
+    *,
+    state: str,
+    actor: str,
+    fence_token: int,
+    details: dict[str, Any] | None = None,
+) -> Path:
+    """Serialize a fenced task transition before changing durable custody."""
+    with _task_lock(task_id):
+        return _advance_task_locked(
+            task_id,
+            state=state,
+            actor=actor,
+            fence_token=fence_token,
+            details=details,
+        )
+
+
+def _advance_task_locked(
     task_id: str,
     *,
     state: str,
@@ -573,6 +923,7 @@ def advance_task(
     event_details = dict(details or {})
     event_details.setdefault("fence_token", fence_token)
     event_details.setdefault("prior_state", prior_state)
+    _validate_transition_evidence(task_id, state, event_details)
     event_path = hash_chain_event(task_id, state, actor=actor, details=event_details)
     append_jsonl(
         CONTROL_ROOT / "work-unit-registry.jsonl",
@@ -606,15 +957,9 @@ def recovery_scan() -> list[dict[str, Any]]:
         events = task_events(task_id)
         latest = events[-1]
         if latest["state"] not in TERMINAL_STATES:
-            input_document = read_json(task_directory / "input.json")
-            findings.append(
-                {
-                    "task_id": task_id,
-                    "state": latest["state"],
-                    "fence_token": _latest_fence(events, int(input_document["transaction"]["fence_token"])),
-                    "last_event_sha256": sha256_file(_event_files(task_id)[-1]),
-                }
-            )
+            finding = _recovery_unit(task_id)
+            finding["task_id"] = task_id
+            findings.append(finding)
     return findings
 
 
@@ -627,20 +972,23 @@ def source_lock(head_sha: str) -> dict[str, Any]:
         "workstreams/po03/tests/test_validate_contracts.py",
         ".github/workflows/po03-contracts.yml",
     )
+    sources: list[dict[str, Any]] = []
+    for path in paths:
+        blob = git_bytes("show", f"{head_sha}:{path}")
+        sources.append(
+            {
+                "path": path,
+                "git_blob_sha": git("rev-parse", f"{head_sha}:{path}"),
+                "sha256": sha256_bytes(blob),
+                "bytes": len(blob),
+            }
+        )
     return {
         "source_lock_version": "PO03-SOURCE-LOCK-v1",
         "repository": "github.com/asibrahim336-hash/obzio-ai-coordination-temp",
         "branch": "po03/repository-engineering-portable-runtime-20260822-v001",
         "head_sha": head_sha,
-        "sources": [
-            {
-                "path": path,
-                "git_blob_sha": git("rev-parse", f"{head_sha}:{path}"),
-                "sha256": sha256_file(REPO_ROOT / path),
-                "bytes": (REPO_ROOT / path).stat().st_size,
-            }
-            for path in paths
-        ],
+        "sources": sources,
         "producer_narratives_read_for_acceptance": False,
         "decision_changed": [],
     }
@@ -875,11 +1223,29 @@ def verify(args: argparse.Namespace) -> int:
         if sha256_file(task_directory / "acceptance.json") != transaction.get("acceptance_contract_sha256"):
             errors.append("acceptance contract hash mismatch")
     errors.extend(verify_chain(args.task_id))
+    if not errors and task_events(args.task_id)[-1]["state"] in {"PARENT_INGESTED", "COMPLETED"}:
+        errors.extend(validate_ingested_result(args.task_id))
     if errors:
         for error in errors:
             print(f"INVALID: {error}")
         return 1
     print(f"VALID task={args.task_id}")
+    return 0
+
+
+def rebuild_recovery(args: argparse.Namespace) -> int:
+    projection = rebuild_recovery_state(run_id=args.run_id)
+    print(json.dumps({"rebuilt_units": len(projection["units"]), "run_id": args.run_id}, sort_keys=True))
+    return 0
+
+
+def verify_recovery(args: argparse.Namespace) -> int:
+    errors = verify_recovery_state()
+    if errors:
+        for error in errors:
+            print(f"INVALID: {error}")
+        return 1
+    print("VALID recovery projection")
     return 0
 
 
@@ -914,6 +1280,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     scan_parser = subparsers.add_parser("scan-recovery")
     scan_parser.set_defaults(handler=lambda args: (print(json.dumps(recovery_scan(), sort_keys=True)) or 0))
+    rebuild_parser = subparsers.add_parser("rebuild-recovery")
+    rebuild_parser.add_argument("--run-id", required=True)
+    rebuild_parser.set_defaults(handler=rebuild_recovery)
+    verify_recovery_parser = subparsers.add_parser("verify-recovery")
+    verify_recovery_parser.set_defaults(handler=verify_recovery)
     return parser
 
 

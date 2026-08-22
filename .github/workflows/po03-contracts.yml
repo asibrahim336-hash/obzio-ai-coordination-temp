@@ -2,23 +2,16 @@ name: PO-03 result custody and compounding contracts
 
 on:
   pull_request:
-    paths:
-      - "workstreams/po03/**"
-      - "receipts/po03/**"
-      - ".github/workflows/po03-*.yml"
   push:
     branches:
       - "po03/**"
-    paths:
-      - "workstreams/po03/**"
-      - "receipts/po03/**"
-      - ".github/workflows/po03-*.yml"
 
 permissions:
   contents: read
 
 jobs:
   path-scope:
+    if: github.event_name == 'push' || startsWith(github.head_ref, 'po03/')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -35,6 +28,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: python workstreams/po03/tools/check_path_scope.py --base "$BASE_SHA" --head "$HEAD_SHA"
   contracts:
+    if: github.event_name == 'push' || startsWith(github.head_ref, 'po03/')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

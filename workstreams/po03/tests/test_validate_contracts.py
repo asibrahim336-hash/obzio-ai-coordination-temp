@@ -143,6 +143,12 @@ class TransactionalResultTests(unittest.TestCase):
     def test_invalid_provider_state_is_rejected(self):
         self.assert_invalid(lambda d: d.update(provider_state="DONE"), "$.provider_state")
 
+    def test_unknown_root_property_is_rejected(self):
+        self.assert_invalid(lambda d: d.update(unreviewed_override=True), "$.unreviewed_override")
+
+    def test_unknown_nested_property_is_rejected(self):
+        self.assert_invalid(lambda d: d["attempt"].update(unreviewed_override=True), "$.attempt.unreviewed_override")
+
     def test_running_state_cannot_claim_committed_artifacts(self):
         self.assert_invalid(
             lambda d: d.update(obzio_state="RUNNING"),
@@ -198,6 +204,18 @@ class TransactionalResultTests(unittest.TestCase):
 
     def test_acceptance_before_completion_rejected(self):
         self.assert_invalid(lambda d: d.update(obzio_state="RESULT_COMMITTED"), "requires COMPLETED")
+
+    def test_parent_ingestion_cannot_claim_coordinator_completion(self):
+        self.assert_invalid(
+            lambda d: d.update(obzio_state="PARENT_INGESTED", completion_actor="coordinator"),
+            "parent ingestion",
+        )
+
+    def test_post_provider_custody_requires_provider_completion(self):
+        self.assert_invalid(
+            lambda d: d.update(provider_state="RUNNING"),
+            "custody after provider completion",
+        )
 
 
 class WaveCompoundingTests(unittest.TestCase):

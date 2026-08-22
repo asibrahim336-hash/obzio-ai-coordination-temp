@@ -71,6 +71,10 @@ def _required(obj: dict[str, Any], names: tuple[str, ...], prefix: str) -> list[
     return [f"{prefix}.{name}: missing" for name in names if name not in obj]
 
 
+def _unexpected(obj: dict[str, Any], names: set[str], prefix: str) -> list[str]:
+    return [f"{prefix}.{name}: unexpected" for name in sorted(set(obj) - names)]
+
+
 def validate_result(doc: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     required = (
@@ -88,6 +92,7 @@ def validate_result(doc: dict[str, Any]) -> list[str]:
         "independent_acceptance",
     )
     errors.extend(_required(doc, required, "$"))
+    errors.extend(_unexpected(doc, set(required), "$"))
     if errors:
         return errors
 
@@ -126,6 +131,22 @@ def validate_result(doc: dict[str, Any]) -> list[str]:
             "$.attempt",
         )
     )
+    errors.extend(
+        _unexpected(
+            attempt,
+            {
+                "attempt_id",
+                "idempotency_key",
+                "lease_id",
+                "fence_token",
+                "provider_run_id",
+                "worker_id",
+                "heartbeat_at",
+                "checkpoint_seq",
+            },
+            "$.attempt",
+        )
+    )
     if errors:
         return errors
     for field in ("attempt_id", "idempotency_key", "lease_id", "provider_run_id", "worker_id"):
@@ -153,6 +174,7 @@ def validate_result(doc: dict[str, Any]) -> list[str]:
         "result_commit_id",
     )
     errors.extend(_required(txn, txn_required, "$.result_transaction"))
+    errors.extend(_unexpected(txn, set(txn_required), "$.result_transaction"))
     if errors:
         return errors
     if txn["state"] not in TRANSACTION_STATES:
@@ -182,6 +204,13 @@ def validate_result(doc: dict[str, Any]) -> list[str]:
         )
         if any(name not in artifact for name in ("artifact_id", "logical_name", "content_uri", "sha256", "bytes", "media_type", "readback_verified_at")):
             continue
+        errors.extend(
+            _unexpected(
+                artifact,
+                {"artifact_id", "logical_name", "content_uri", "sha256", "bytes", "media_type", "readback_verified_at"},
+                prefix,
+            )
+        )
         if artifact["artifact_id"] in artifact_ids:
             errors.append(f"{prefix}.artifact_id: duplicate")
         artifact_ids.add(artifact["artifact_id"])
@@ -218,6 +247,18 @@ def validate_result(doc: dict[str, Any]) -> list[str]:
 
     if state in {"PARENT_INGESTED", "COMPLETED"} and not _nonempty(txn["parent_ingested_at"]):
         errors.append("$.result_transaction.parent_ingested_at: required after parent ingestion")
+    if state in {
+        "RESULT_STAGING",
+        "RESULT_STAGED",
+        "RESULT_VERIFIED",
+        "RESULT_COMMITTED",
+        "PARENT_INGESTED",
+        "COMPLETED",
+        "PROVIDER_COMPLETED_UNCOMMITTED",
+    } and provider_state != "COMPLETED":
+        errors.append("$.provider_state: custody after provider completion requires COMPLETED")
+    if state == "PARENT_INGESTED" and doc["completion_actor"] is not None:
+        errors.append("$.completion_actor: parent ingestion is not coordinator completion")
     if state == "COMPLETED" and doc["completion_actor"] != "coordinator":
         errors.append("$.completion_actor: only coordinator may set COMPLETED")
     if provider_state == "COMPLETED" and not _nonempty(txn["result_commit_id"]):
@@ -231,6 +272,15 @@ def validate_result(doc: dict[str, Any]) -> list[str]:
         errors.append("$.independent_acceptance: must be an object")
     else:
         errors.extend(_required(acceptance, ("state", "reviewer_id", "receipt_uri"), "$.independent_acceptance"))
+        errors.extend(
+            _unexpected(
+                acceptance,
+                {"state", "reviewer_id", "receipt_uri"},
+                "$.independent_acceptance",
+            )
+        )
+        if acceptance.get("state") not in {"NOT_TESTED", "PENDING", "ACCEPTED", "REJECTED"}:
+            errors.append("$.independent_acceptance.state: invalid")
         if acceptance.get("state") in {"ACCEPTED", "REJECTED"}:
             if not _nonempty(acceptance.get("reviewer_id")) or not _nonempty(acceptance.get("receipt_uri")):
                 errors.append("$.independent_acceptance: terminal review requires reviewer_id and receipt_uri")
@@ -259,6 +309,7 @@ def validate_wave(doc: dict[str, Any]) -> list[str]:
         "decision_changed",
     )
     errors.extend(_required(doc, required, "$"))
+    errors.extend(_unexpected(doc, set(required), "$"))
     if errors:
         return errors
     if doc["protocol_version"] != "OBZIO-WAVE-COMPOUNDING-v1":

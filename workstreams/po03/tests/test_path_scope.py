@@ -32,5 +32,16 @@ class PathScopeTests(unittest.TestCase):
         )
 
 
+class WorkflowScopeTests(unittest.TestCase):
+    def test_po03_guard_runs_for_out_of_scope_changes_on_po03_branches(self):
+        workflow = Path(__file__).parents[3] / ".github" / "workflows" / "po03-contracts.yml"
+        content = workflow.read_text(encoding="utf-8")
+        self.assertNotIn("  paths:", content)
+        self.assertEqual(
+            2,
+            content.count("if: github.event_name == 'push' || startsWith(github.head_ref, 'po03/')"),
+        )
+
+
 if __name__ == "__main__":
     unittest.main()
