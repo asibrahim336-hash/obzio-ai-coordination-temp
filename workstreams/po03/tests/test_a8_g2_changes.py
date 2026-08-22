@@ -335,6 +335,129 @@ class RecurrenceTests(unittest.TestCase):
         new.submit()
         self.assertTrue(new.do("ingest", unit_id="u1").admitted)
 
+    # C-10 and C-11 come from cohort a10's independent audit of the same control
+    # plane.  Neither is covered by a frozen suite case, because the suite was
+    # frozen before a10 published; the audit reproducer is the evidence instead.
+
+    ESCAPE = "./../workstreams/po03/successor/decoy.json"
+
+    def _escape_submit(self, fixture):
+        fixture.do("create", unit_id="u1", spec=SPEC)
+        fixture.do("lease", unit_id="u1", worker="w1", ttl=3600)
+        fixture.do("write_artifact", path=self.ESCAPE, content=CONTENT)
+        return fixture.submit(
+            artifacts=[{"artifact_id": "art-01", "path": self.ESCAPE, "sha256": "@auto", "bytes": "@auto"}]
+        )
+
+    def test_c10_path_escape_refused(self):
+        """C-10, from a10's finding D1 (INV-6).
+
+        The declared path's leading run is only dots and slashes, so G1's
+        ``lstrip('./')`` removes all of it and the remainder looks owned and
+        in-allowlist.  The raw string is what reaches the filesystem, and it
+        lands outside the artifact store the guard believed it had checked.
+        """
+        old, new = self._pair()
+
+        old_outcome = self._escape_submit(old)
+        self.assertTrue(old_outcome.admitted, "G1 admitted an artifact from outside the store it verifies against")
+        store = (Path(old.scratch.name) / "artifacts").resolve()
+        landed = (store / self.ESCAPE).resolve()
+        self.assertNotIn(store, landed.parents, "the fixture must genuinely escape or it proves nothing")
+
+        new_outcome = self._escape_submit(new)
+        self.assertFalse(new_outcome.admitted)
+        self.assertEqual(new_outcome.reason_code, "OUT_OF_ALLOWLIST")
+        self.assertEqual(new_outcome.detail["paths"], [self.ESCAPE])
+
+    def test_c10_an_absolute_declared_path_is_refused(self):
+        """The companion shape: `Path.__truediv__` discards the store entirely."""
+        new = _Fixture(g2, self)
+        new.do("create", unit_id="u1", spec=SPEC)
+        new.do("lease", unit_id="u1", worker="w1", ttl=3600)
+        outcome = new.submit(
+            artifacts=[
+                {"artifact_id": "art-01", "path": "/workstreams/po03/successor/x.json", "sha256": "0" * 64, "bytes": 1}
+            ]
+        )
+        self.assertFalse(outcome.admitted)
+        self.assertEqual(outcome.reason_code, "OUT_OF_ALLOWLIST")
+
+    def test_c10_an_escaping_path_also_reads_as_absent(self):
+        """The guard and the read must agree, or the escape survives one step on."""
+        controller = _Fixture(g2, self).controller
+        controller.apply("write_artifact", {"path": self.ESCAPE, "content": CONTENT})
+        self.assertIsNone(controller.read_artifact(self.ESCAPE))
+
+    def test_c10_an_honest_relative_path_still_admits(self):
+        new = _Fixture(g2, self).dispatched()
+        self.assertTrue(new.submit().admitted)
+
+    def test_c11_terminal_state_cannot_be_re_entered(self):
+        """C-11, from a10's finding D4 (INV-3b).
+
+        A resubmission against a COMPLETED unit walked G1's projection back to
+        RESULT_COMMITTED, which is what let a second completion be recorded for
+        one unit under a different result_commit_id.
+        """
+        for module, expect_terminal in ((g1, False), (g2, True)):
+            fixture = _Fixture(module, self).dispatched()
+            fixture.submit()
+            fixture.do("ingest", unit_id="u1")
+            fixture.do("complete", unit_id="u1", actor="coordinator")
+            self.assertEqual(fixture.do("state", unit_id="u1").detail["obzio_state"], "COMPLETED")
+
+            fixture.do("write_artifact", path=ARTIFACT, content=CONTENT + " second")
+            outcome = fixture.submit(result_commit_id="b" * 40)
+            state = fixture.do("state", unit_id="u1").detail["obzio_state"]
+            if expect_terminal:
+                self.assertFalse(outcome.admitted)
+                self.assertEqual(outcome.reason_code, "TERMINAL_STATE")
+                self.assertEqual(state, "COMPLETED")
+                self.assertEqual(fixture.do("state", unit_id="u1").detail["result_commit_id"], COMMIT)
+            else:
+                self.assertTrue(outcome.admitted, "G1 accepted a resubmission after completion")
+                self.assertEqual(state, "RESULT_COMMITTED", "G1's projection regressed out of a terminal state")
+
+    def test_c11_a_second_completion_cannot_be_recorded(self):
+        """The consequence a10 named: two COMPLETED rows for one unit."""
+        for module, expect_second in ((g1, True), (g2, False)):
+            fixture = _Fixture(module, self).dispatched()
+            fixture.submit()
+            fixture.do("ingest", unit_id="u1")
+            fixture.do("complete", unit_id="u1", actor="coordinator")
+            fixture.do("write_artifact", path=ARTIFACT, content=CONTENT + " second")
+            fixture.submit(result_commit_id="b" * 40)
+            fixture.do("ingest", unit_id="u1")
+            fixture.do("complete", unit_id="u1", actor="coordinator")
+            completions = [
+                row for row in fixture.controller.ledger.rows()
+                if row["unit_id"] == "u1" and row["event"] == "COMPLETED"
+            ]
+            if expect_second:
+                self.assertEqual(len(completions), 2, "G1 recorded two completions for one unit")
+            else:
+                self.assertEqual(len(completions), 1)
+
+    def test_c11_a_first_submission_is_unaffected(self):
+        new = _Fixture(g2, self).dispatched()
+        self.assertTrue(new.submit().admitted)
+        self.assertTrue(new.do("ingest", unit_id="u1").admitted)
+
+    def test_c11_a_committed_but_unclosed_unit_still_reaches_replay_adjudication(self):
+        """Closed is narrower than committed, deliberately.
+
+        Blocking every unit that already holds a result would make C-06
+        unreachable: a conflicting retry would be refused as closed and never
+        adjudicated on its idempotency key. The two changes have to compose.
+        """
+        new = _Fixture(g2, self).dispatched()
+        new.submit()
+        self.assertEqual(new.do("state", unit_id="u1").detail["obzio_state"], "RESULT_COMMITTED")
+        outcome = new.submit(result_commit_id="c" * 40)
+        self.assertTrue(outcome.admitted, "a committed-but-open unit must still be able to resubmit")
+        self.assertEqual(new.do("ingest", unit_id="u1").reason_code, "OK")
+
 
 class SafetyPreservationTests(unittest.TestCase):
     """G2 must not have traded a false-completion guarantee for its new checks."""

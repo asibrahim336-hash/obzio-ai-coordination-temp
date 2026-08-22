@@ -94,7 +94,36 @@ class LineageDocumentTests(unittest.TestCase):
 
     def test_every_change_reports_all_its_named_failures_closed(self):
         for change in self.lineage["changes"]:
-            self.assertTrue(change["all_named_failures_closed"], change["change_id"])
+            if change["caused_by_failures"]:
+                self.assertIs(change["all_named_failures_closed"], True, change["change_id"])
+            else:
+                self.assertEqual(change["all_named_failures_closed"], "NOT_APPLICABLE", change["change_id"])
+
+    def test_a_change_with_no_frozen_case_rests_on_an_independent_lesson(self):
+        """The suites froze before the evaluators published, so later findings have no case.
+
+        Such a change is still traceable, but only through a lesson. Allowing it
+        without that requirement would reopen the untraceable-change hole that
+        a8-u04's acceptance turns on, so the basis is asserted explicitly.
+        """
+        if not LESSONS.is_file():
+            self.skipTest("lesson ledger lands with a8-u06")
+        lessons = {
+            lesson["lesson_id"]: lesson
+            for lesson in json.loads(LESSONS.read_text(encoding="utf-8"))["lessons"]
+        }
+        for change in self.lineage["changes"]:
+            if change["caused_by_failures"]:
+                self.assertEqual(change["evidence_basis"], "frozen_suite_case", change["change_id"])
+                continue
+            self.assertEqual(change["evidence_basis"], "independently_supported_lesson", change["change_id"])
+            self.assertTrue(change["caused_by_lessons"], change["change_id"])
+            for lesson_id in change["caused_by_lessons"]:
+                self.assertIn(lesson_id, lessons, change["change_id"])
+                self.assertTrue(
+                    lessons[lesson_id]["independently_supported"],
+                    f"{change['change_id']} rests on {lesson_id}, which has no independent support",
+                )
 
     def test_every_change_names_a_recurrence_test_that_runs(self):
         for change in self.lineage["changes"]:
@@ -126,6 +155,17 @@ class LineageDocumentTests(unittest.TestCase):
         for entry in self.lineage["not_changed_and_why"]:
             self.assertTrue(entry["candidate"].strip())
             self.assertTrue(entry["reason"].strip())
+
+    def test_a_declined_candidate_later_adopted_keeps_its_original_record(self):
+        """Superseding must add a disposition, not rewrite what was believed."""
+        adopted = [
+            entry for entry in self.lineage["not_changed_and_why"] if entry.get("superseded_by")
+        ]
+        change_ids = {change["change_id"] for change in self.lineage["changes"]}
+        for entry in adopted:
+            self.assertIn(entry["superseded_by"], change_ids)
+            self.assertTrue(entry["disposition_basis"].strip())
+            self.assertTrue(entry["reason"].strip(), "the original reasoning must survive the supersession")
 
 
 class LessonCrossReferenceTests(unittest.TestCase):

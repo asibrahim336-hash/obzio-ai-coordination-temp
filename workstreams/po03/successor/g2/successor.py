@@ -4,12 +4,19 @@
 Compilation rule
 ----------------
 Every change in this file traces to a specific case G1 was observed to fail, or
-to a lesson independently supported by cohort a6's review, or to both.  Nothing
-was added because it seemed like a good idea.  ``CHANGES`` below is the machine
-readable form of that rule and ``lineage.json`` is its committed projection;
-``tests/test_a8_g2_lineage.py`` asserts the two agree and that every change is
-covered by a recurrence test, so an untraceable change fails the build rather
-than quietly shipping.
+to a lesson independently supported by an evaluator cohort of a different owner,
+or to both.  Nothing was added because it seemed like a good idea.  ``CHANGES``
+below is the machine readable form of that rule and ``lineage.json`` is its
+committed projection; ``tests/test_a8_g2_lineage.py`` asserts the two agree and
+that every change is covered by a recurrence test, so an untraceable change
+fails the build rather than quietly shipping.
+
+C-10 and C-11 arrived after the suites were frozen and after the first scoring
+run, from cohort a10's audit of the same control plane this file ports.  They
+have no frozen case, because there was no case to write by then; their evidence
+is the audit finding and the recurrence test that reproduces it.  Both leave the
+measured scores unchanged, which is recorded in the lesson register rather than
+left for a reader to verify.
 
 G2 subclasses G1 on purpose.  A successor that is meant to be *compiled from*
 its predecessor should be diffable against it: everything inherited is a part of
@@ -34,6 +41,7 @@ Honest boundaries, stated here rather than discovered later
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -58,11 +66,18 @@ from ..g1.factory import (
 )
 
 PROVENANCE = (
-    "successor compiled from G1's measured failures on the frozen public suite and cohort a6's "
-    "independently authored holdout; see workstreams/po03/successor/g2/lineage.json"
+    "successor compiled from G1's measured failures on the frozen public suite, cohort a6's "
+    "independently authored holdout, and cohort a10's published audit of the same control plane; "
+    "see workstreams/po03/successor/g2/lineage.json and successor/lessons/lessons.json"
 )
 
 COORDINATOR_PRINCIPAL = "coordinator"
+
+# C-11.  G1 inherited a single ``TERMINAL_STATES`` set that mixed "this unit has
+# a durable result" with "this unit is closed".  Replay adjudication has to stay
+# reachable for the first group - that is what C-06 does - so the closed set is
+# named separately and is the only one that refuses new work outright.
+CLOSED_STATES = {"COMPLETED", "FAILED_TERMINAL", "CANCELLED"}
 
 # Authority is a decision against this table, not a string written onto an event.
 CAPABILITIES: dict[str, set[str]] = {
@@ -153,7 +168,55 @@ CHANGES: tuple[dict[str, Any], ...] = (
         "change": "admission requires the result record to be readable at the immutable locator it declares and to match the submitted bytes, so a locator that holds nothing is refused",
         "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c09_unresolvable_locator_refused",
     },
+    {
+        "change_id": "C-10",
+        "name": "path scope judged with filesystem semantics",
+        "caused_by_failures": [],
+        "caused_by_lessons": ["L-11"],
+        "g1_behaviour": "`path_in_allowlist` and `check_ownership` normalised with `str.lstrip('./')`, which strips a *character set* rather than a prefix; a declared path whose leading run is only dots and slashes was judged in-allowlist and owned, while the raw string was joined to the artifact root and the filesystem walked out of it",
+        "change": "a declared path is normalised with the same semantics the filesystem join uses and must resolve inside the artifact store; the allowlist and ownership checks then run on that resolved relative path, so the string judged and the bytes read are the same file",
+        "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c10_path_escape_refused",
+    },
+    {
+        "change_id": "C-11",
+        "name": "terminal states are not re-enterable",
+        "caused_by_failures": [],
+        "caused_by_lessons": ["L-12"],
+        "g1_behaviour": "the state projection assigned `obzio_state` from the newest matching row with no monotonicity guard, so a resubmission against an already COMPLETED unit reset the projection to RESULT_COMMITTED and a second completion could be recorded against a different result_commit_id",
+        "change": "a submission against a closed unit is refused before anything is written, and `COMPLETED`, `FAILED_TERMINAL` and `CANCELLED` are named as closed separately from the merely committed states so that replay adjudication stays reachable",
+        "recurrence_test": "test_a8_g2_changes.RecurrenceTests.test_c11_terminal_state_cannot_be_re_entered",
+    },
 )
+
+
+def contained_relative_path(store: Path, declared: str) -> str | None:
+    """Normalise ``declared`` the way the filesystem join will, or refuse it.
+
+    C-10.  The defect this replaces was not a missing check but a check that
+    reasoned about a *different string* than the one handed to the filesystem.
+    Returning the resolved relative path, rather than a boolean, is what forces
+    the caller to judge and to read the same file: there is no second
+    normalisation left for the two to disagree about.
+    """
+    text = declared.strip()
+    if not text or text.startswith("/") or Path(text).is_absolute():
+        return None
+    resolved = os.path.normpath(os.path.join("/anchor", text))
+    if not resolved.startswith("/anchor/"):
+        return None
+    relative = resolved[len("/anchor/") :]
+    if not relative:
+        return None
+    # Belt and braces against symlinks and platform quirks: the join actually
+    # used for I/O must land inside the store.
+    base = store.resolve()
+    try:
+        candidate = (base / relative).resolve()
+    except OSError:
+        return None
+    if candidate != base and base not in candidate.parents:
+        return None
+    return relative
 
 
 class AnchoredLedger(Ledger):
@@ -182,7 +245,7 @@ class AnchoredLedger(Ledger):
 
 
 class G2Controller(G1Controller):
-    """G1 plus the nine changes in ``CHANGES``, and nothing else."""
+    """G1 plus the changes in ``CHANGES``, and nothing else."""
 
     generation_id = "G2"
     generation_label = "successor custody engine compiled from G1 failures"
@@ -258,6 +321,21 @@ class G2Controller(G1Controller):
             json.dumps(manifest, indent=2, sort_keys=True) + "\n", encoding="utf-8"
         )
 
+    # -- C-10: path scope --------------------------------------------------
+
+    def read_artifact(self, path: str) -> bytes | None:
+        """Never read bytes the scope guard would have refused.
+
+        Overriding the read, not only the check, is the point of C-10: every
+        later sweep re-reads artifacts, and a guard that protects admission but
+        not re-verification would leave the escape reachable one step further
+        along.  An escaping path reads as absent, which is the safe answer.
+        """
+        relative = contained_relative_path(self.artifact_dir, path)
+        if relative is None:
+            return None
+        return super().read_artifact(relative)
+
     # -- C-08: outbox ------------------------------------------------------
 
     def _outbox_path(self, unit_id: str) -> Path:
@@ -326,6 +404,18 @@ class G2Controller(G1Controller):
         dispatch = self._dispatch(unit_id)
         if unit is None or dispatch is None:
             return refuse("UNKNOWN_UNIT", unit_id=unit_id)
+
+        # C-11: a closed unit takes no further work.  This is checked before
+        # anything is written, because the harm in G1 was not the second result
+        # but the projection being walked backwards to accept it.
+        if unit["obzio_state"] in CLOSED_STATES:
+            return refuse(
+                "TERMINAL_STATE",
+                unit_id=unit_id,
+                obzio_state=unit["obzio_state"],
+                admitted_result_commit_id=unit["result_commit_id"],
+                offered_result_commit_id=result_commit_id,
+            )
 
         if provider_state == "COMPLETED" and not result_commit_id:
             self.ledger.append(
@@ -399,7 +489,29 @@ class G2Controller(G1Controller):
                 observed={"artifact_count": len(claimed), "total_bytes": derived_bytes},
             )
 
-        paths = [entry.get("path", "") for entry in claimed]
+        # C-10: resolve every declared path with filesystem semantics first, then
+        # judge the resolved path.  A path that leaves the store is refused here
+        # rather than being scope-checked as one file and read as another.
+        declared_paths = [entry.get("path", "") for entry in claimed]
+        resolved_paths: dict[str, str] = {}
+        escapes: list[str] = []
+        for declared in declared_paths:
+            relative = contained_relative_path(self.artifact_dir, declared)
+            if relative is None:
+                escapes.append(declared)
+            else:
+                resolved_paths[declared] = relative
+        if escapes:
+            # A path that resolves outside the repository is outside the
+            # allowlist by construction, so the existing reason code is the
+            # accurate one; the detail records why it was refused.
+            return refuse(
+                "OUT_OF_ALLOWLIST",
+                paths=sorted(escapes),
+                reason="the declared path resolves outside the artifact store it would be verified against",
+            )
+
+        paths = [resolved_paths[declared] for declared in declared_paths]
         outside = check_allowlist(paths)
         if outside:
             return refuse("OUT_OF_ALLOWLIST", paths=outside)

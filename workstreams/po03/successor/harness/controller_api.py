@@ -84,6 +84,7 @@ REASON_CODES = (
     # Completion truthfulness.
     "NO_RESULT_COMMIT",       # completion claimed without a durable commit
     "NOT_INGESTED",           # completion claimed before parent ingestion
+    "TERMINAL_STATE",         # a unit already in a terminal state was re-entered
     # Replay semantics.
     "DUPLICATE_IGNORED",      # byte-identical replay, harmlessly discarded
     "CONFLICTING_REPLAY",     # same idempotency key, different content
