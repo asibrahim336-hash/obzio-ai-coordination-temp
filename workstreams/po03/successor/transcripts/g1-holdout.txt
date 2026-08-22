@@ -1,0 +1,10 @@
+$ python3 -I workstreams/po03/successor/g1/run.py --suite holdout
+generation G1: high-scale transactional factory
+provenance: port of workstreams/po03/tools/control_plane.py and tools/make_result.py at branch cursor/po03-wave-a-transactional-factory-ed20 commit dd2fcc6, re-rooted for standalone execution
+capabilities: create, lease, submit, ingest, complete, review, state, restart, recover, verify, tamper, advance_clock, write_artifact
+absent capabilities: none
+[holdout] 7/10 passed rate=0.7 critical=0.6667 false_completions=2 unsupported_cases=0
+  FAIL H02-noncoordinator-completion: admitted@complete: admitted=True expected=False; detail@observe: detail.obzio_state='COMPLETED' expected='PARENT_INGESTED'
+  FAIL H09-corrupt_readback: detail@verify: detail.drift_detected=[] expected=['workstreams/po03/successor/scores/probe.json']
+  FAIL H10-parent-restart: detail@observe: detail.obzio_state='RESULT_COMMITTED' expected='PARENT_INGESTED'; detail@observe: detail.ingest_count=0 expected=1
+exit_code=0

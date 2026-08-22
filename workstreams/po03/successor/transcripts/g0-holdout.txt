@@ -1,0 +1,17 @@
+$ python3 -I workstreams/po03/successor/g0/run.py --suite holdout
+generation G0: pre-amendment receipt-file controller
+provenance: reconstructed from prior_observed_head d627119351a6dc0e90158705abf6aab96e26b3dd (workstreams/po03/COMMISSION.md v001 and receipts/po03/2026-08-22/appointment-seed.json); no executable controller code exists at that commit
+capabilities: create, submit, complete, review, state, restart, verify, tamper, advance_clock, write_artifact
+absent capabilities: ingest, lease, recover
+[holdout] 0/10 passed rate=0.0 critical=0.0 false_completions=3 unsupported_cases=9
+  FAIL H01-provider-completed-without-commit: admitted@submit: admitted=True expected=False; detail@observe: detail.obzio_state='COMPLETED' expected one of ['PROVIDER_COMPLETED_UNCOMMITTED', 'RECOVERY_REQUIRED']
+  FAIL H02-noncoordinator-completion: admitted@complete: admitted=True expected=False; detail@observe: detail.obzio_state='COMPLETED' expected='PARENT_INGESTED'
+  FAIL H03-terminal-without-readback: admitted@submit: admitted=True expected=False
+  FAIL H04-accounting-drift: admitted@submit: admitted=True expected=False
+  FAIL H05-duplicate-artifact-id: admitted@submit: admitted=True expected=False
+  FAIL H06-self-acceptance: admitted@review: admitted=True expected=False
+  FAIL H07-duplicate-callback: detail@observe: detail.ingest_count=<absent> expected=1
+  FAIL H08-stale-fence-after-transfer: admitted@submit: admitted=True expected=False
+  FAIL H09-corrupt_readback: detail@verify: detail.drift_detected=[] expected=['workstreams/po03/successor/scores/probe.json']
+  FAIL H10-parent-restart: detail@observe: detail.obzio_state='RESULT_COMMITTED' expected='PARENT_INGESTED'; detail@observe: detail.ingest_count=<absent> expected=1
+exit_code=0
