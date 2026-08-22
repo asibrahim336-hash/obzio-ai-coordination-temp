@@ -1,0 +1,109 @@
+{
+  "protocol_version": "OBZIO-WA-006-ADVERSARIAL-FIXTURE-v1",
+  "task_id": "PO03-WA-006",
+  "hypothesis_id": "H-PO03-WA-006",
+  "purpose": "Sanitized repository-native pack corpus whose manifest claims disagree with its committed blobs in known ways, so a reproducer that trusts manifests or ignores content-addressed relocation fails observably.",
+  "sanitization": {
+    "po01_bytes_included": false,
+    "secrets_included": false,
+    "content_generation": "Deterministic synthetic UTF-8 text keyed on pack and file name; no PO-01 blob is copied, quoted or embedded.",
+    "shape_mirrored_from": "Structural shape only (two manifest dialects, a collapsed shared spine, an aggregate manifest with an absolute build root) observed at immutable commit 1e6f53c323f8326d12af213557082a3665991f19.",
+    "external_effects": "none; the fixture is built in a temporary directory and a local git repository"
+  },
+  "pack_root": "packs",
+  "shared_spine": {
+    "published_at": "packs/_shared/_spine.py",
+    "filler_lines": 40
+  },
+  "aggregate": {
+    "non_portable_root": "/tmp/fixture-packs"
+  },
+  "packs": [
+    {
+      "name": "alpha-clean",
+      "dialect": "v2_object",
+      "purpose": "Negative control: every claim must verify, so the reproducer cannot pass by reporting defects everywhere.",
+      "files": [
+        { "name": "BOUNDARIES.md", "filler_lines": 6 },
+        { "name": "checks.py", "filler_lines": 9 },
+        { "name": "engine.py", "filler_lines": 12 }
+      ]
+    },
+    {
+      "name": "beta-relocated",
+      "dialect": "array_path",
+      "purpose": "Mirrors the real corpus defect: a spine claimed at the pack path whose bytes were published once at a shared path.",
+      "files": [
+        { "name": "LAUNCH.md", "filler_lines": 5 },
+        { "name": "checks.py", "filler_lines": 8 },
+        { "name": "_spine.py", "content": "SHARED_SPINE", "inject": "OMIT_FROM_TREE" }
+      ]
+    },
+    {
+      "name": "gamma-absent",
+      "dialect": "v2_object",
+      "purpose": "A genuinely lost file, which must not be confused with a relocated one.",
+      "files": [
+        { "name": "BOUNDARIES.md", "filler_lines": 7 },
+        { "name": "lost.py", "filler_lines": 11, "inject": "OMIT_FROM_TREE" }
+      ]
+    },
+    {
+      "name": "delta-digest",
+      "dialect": "array_path",
+      "purpose": "Content that does not match its claimed digest, both with and without a byte-length change.",
+      "files": [
+        { "name": "LAUNCH.md", "filler_lines": 4 },
+        { "name": "checks.py", "filler_lines": 10, "inject": "WRONG_DIGEST" },
+        { "name": "engine.py", "filler_lines": 13, "inject": "ALTER_BYTES_AFTER_CLAIM" }
+      ]
+    },
+    {
+      "name": "epsilon-counts",
+      "dialect": "v2_object",
+      "purpose": "Correct files with an understated file_count, so a counting bug is caught independently of content checks.",
+      "injects": ["UNDERSTATE_FILE_COUNT"],
+      "understate_by": 1,
+      "files": [
+        { "name": "BOUNDARIES.md", "filler_lines": 6 },
+        { "name": "checks.py", "filler_lines": 6 },
+        { "name": "state_machine.py", "filler_lines": 14 }
+      ]
+    },
+    {
+      "name": "zeta-bytes",
+      "dialect": "array_path",
+      "purpose": "An overstated per-file byte claim plus an inconsistent pack total, which are separate defects.",
+      "injects": ["WRONG_TOTAL_BYTES"],
+      "total_bytes_delta": 99,
+      "files": [
+        { "name": "LAUNCH.md", "filler_lines": 5 },
+        { "name": "oracle.py", "filler_lines": 9, "inject": "OVERSTATE_BYTES", "overstate_by": 17 }
+      ]
+    },
+    {
+      "name": "eta-nonportable",
+      "dialect": "v2_object",
+      "purpose": "A build-host absolute path embedded in a published claim, and a pack the aggregate manifest omits.",
+      "injects": ["NON_PORTABLE_PACK_ROOT"],
+      "non_portable_value": "/tmp/fixture-build/packs/eta-nonportable",
+      "aggregate_covered": false,
+      "files": [
+        { "name": "BOUNDARIES.md", "filler_lines": 5 },
+        { "name": "checks.py", "filler_lines": 7 }
+      ]
+    }
+  ],
+  "expected_discrepancy_kind_counts": {
+    "MISSING_AT_CLAIMED_PATH_CONTENT_RELOCATED": 1,
+    "MISSING_AT_CLAIMED_PATH_CONTENT_ABSENT": 1,
+    "DIGEST_MISMATCH": 2,
+    "BYTE_COUNT_MISMATCH": 2,
+    "FILE_COUNT_MISMATCH": 1,
+    "TOTAL_BYTES_MISMATCH": 1,
+    "NON_PORTABLE_ABSOLUTE_PATH_CLAIM": 2,
+    "AGGREGATE_COVERAGE_GAP": 1
+  },
+  "expected_discrepancy_total": 11,
+  "expected_clean_pack": "alpha-clean"
+}
