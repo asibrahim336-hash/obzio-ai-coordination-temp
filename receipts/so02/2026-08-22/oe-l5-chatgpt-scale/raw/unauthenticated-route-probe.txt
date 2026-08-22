@@ -1,0 +1,29 @@
+=== UNAUTHENTICATED OPENAI ROUTE PROBE ===
+-- run at: 2026-08-22T20:38:23Z
+-- credential sent: NONE (no Authorization header is set by this script)
+-- OPENAI_API_KEY present in this environment: no
+
+--- GET https://api.openai.com/v1/models
+    http_status: 401
+    body: {  "error": {    "message": "Missing bearer authentication in header",    "type": "invalid_request_error",    "param": null,    "code": null  }}
+
+--- GET https://api.openai.com/v1/conversations/conv_probe_nonexistent
+    http_status: 401
+    body: {  "error": {    "message": "Missing bearer or basic authentication in header",    "type": "invalid_request_error",    "param": null,    "code": null  }}
+
+--- GET https://api.openai.com/v1/responses/resp_probe_nonexistent
+    http_status: 401
+    body: {  "error": {    "message": "Missing bearer or basic authentication in header",    "type": "invalid_request_error",    "param": null,    "code": null  }}
+
+--- GET https://api.openai.com/v1/batches
+    http_status: 401
+    body: {  "error": {    "message": "Missing bearer or basic authentication in header",    "type": "invalid_request_error",    "param": null,    "code": null  }}
+
+--- GET https://api.chatgpt.com/v1/workspace_agents/agtch_probe/runs/apirun_probe
+    http_status: 401
+    body: {"error":{"message":"You didn't provide an access token. Provide one in the Authorization header using Bearer authentication (for example, Authorization: Bearer $AGENT_ACCESS_TOKEN). You can create an access token at https://chatgpt.com/admin/access-tokens.","type":"invalid_request_error","code":"missing_api_key","param":null}}
+
+=== INTERPRETATION ===
+401  -> route exists, is reachable, and is gated on a credential.
+404  -> route does not exist at that path; the path claim is wrong.
+000  -> network or DNS failure; egress is the problem, not the credential.

@@ -1,0 +1,31 @@
+=== register validator, run 2026-08-22T20:42:01Z ===
+register: OE-L5-CHATGPT-FUNCTION-TOPOLOGY-20260822-v001
+functions checked: 31
+internal decision classes: 32
+external decision classes: 8
+project slots: 12
+
+PASS: all 12 invariants hold
+
+=== register negative tests ===
+baseline register: exit=0 violations=0
+NT1 REJECTED: two functions claim the same decision class (the overlapping-commission failure)
+      I1 DC-CAPABILITY-BACKLOG has 2 holders: ['F-RESEARCH', 'F-CAPDEV']
+      I2 DC-CAPABILITY-BACKLOG claimed by ['F-RESEARCH', 'F-CAPDEV']
+      I5 F-RESEARCH lists DC-CAPABILITY-BACKLOG in both decides and must_not_decide
+NT2 REJECTED: a function claims the reserved programme-shape class (the whole-operation commission)
+      I3 F-RESEARCH claims external class DC-PROGRAMME-SHAPE
+      I5 F-RESEARCH lists DC-PROGRAMME-SHAPE in both decides and must_not_decide
+      I12 F-RESEARCH claims or informs the reserved class DC-PROGRAMME-SHAPE
+NT3 REJECTED: a producing function names itself as its own acceptance owner
+      I9 F-CAPDEV is its own acceptance owner
+NT4 REJECTED: a decorative function with no decision class survives admission
+      I1 DC-ECOSYSTEM-POSITION has 0 holders: []
+      I4 F-ECOSYSTEM has an empty decides set
+NT5 REJECTED: an assurance container starts hosting producing functions
+      I8 assurance slot P-ASSURE-ACCEPT permits producing functions
+      I8 assurance slot P-ASSURE-ACCEPT permits producing functions
+NT6 REJECTED: a warrant is admitted with no pre-registered falsifier
+      I10 F-KNOW has no pre-registered falsifier
+
+PASS: all 6 failure modes rejected by the validator
