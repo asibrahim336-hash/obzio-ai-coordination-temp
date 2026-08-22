@@ -1,0 +1,99 @@
+{
+  "criteria_id": "CRIT-A10-U01-FAULT-MATRIX-20260822-v001",
+  "frozen_by": "po03-worker-a10",
+  "frozen_before_reading": [
+    "cursor/po03-a2-fault-recovery-ed20 (any commit)",
+    "workstreams/po03/faults/**",
+    "workstreams/po03/evidence/recovery-fault-matrix.json",
+    "receipts/po03/2026-08-22/transactional-recovery.json",
+    "any a2 result document under workstreams/po03/control/units/a2/"
+  ],
+  "note_on_freeze_proof": "This file is committed and pushed before this worktree performs its first `git fetch`/`git show`/`git cat-file` against origin/cursor/po03-a2-fault-recovery-ed20 content beyond the already-shared remote-tracking ref pointer. Git commit timestamps and the absence of any a2 path in earlier commits on this branch are the proof.",
+  "scope": "Applies to a2-u01..a2-u12 (function F8, fault injection and recovery), quoted verbatim from workstreams/po03/control/dispatch/a2-u01.json..a2-u12.json, which are frozen dispatch inputs, not producer conclusions.",
+  "global_standard": [
+    "A claim counts as PROVEN only if there is an executable test under python3 -I -m unittest (or an equivalent runnable script whose exact invocation and output are recorded) that a2 itself provides, AND this reviewer can re-run it (or an equivalent independent probe) from the pinned worktree state and observe the same outcome.",
+    "Prose narrative describing a fault scenario, without a runnable fixture that actually injects the fault against the real workstreams/po03/tools/control_plane.py (or a faithful scratch copy of it), does not satisfy any acceptance clause below.",
+    "A fault class is 'insufficiently proven' if any of: (a) no injection fixture exists for it, (b) the fixture asserts on a mock/stub rather than the real control-plane invariant it claims to test, (c) the fixture's assertion would also pass under a trivially broken implementation (a weak-oracle test), or (d) the fixture is not independently re-runnable by this reviewer without a2's private state.",
+    "Zero false completion is an absolute bar: any single injected trial that leaves a unit observable as COMPLETED without a verified durable commit is a REJECT for that unit and for the cohort-level 'zero false completion' claim in COMMISSION.md.",
+    "This reviewer will independently attempt to break at least one claim per unit using its own adversarial case in a scratch copy, per the same methodology used for a10-u03; a unit that survives an independent adversarial attempt in addition to its own fixture is scored PROVEN, otherwise RECORDED AS UNCONFIRMED with the exact fixture used."
+  ],
+  "per_unit_bars": [
+    {
+      "unit_id": "a2-u01",
+      "claim": "Process/session loss mid-execution is fully recoverable from immutable input with no false completion.",
+      "pass_bar": "A fixture kills the worker process (or simulates session loss) after at least three distinct state transitions (post-LEASED, post-CHECKPOINTED, post-RESULT_STAGED) and shows, for each: (1) the unit is never observed as COMPLETED, (2) `scan`/`verify` reports it RECOVERY_REQUIRED or resumable, (3) a fresh lease with a strictly higher fence token succeeds and completes the unit exactly once.",
+      "reject_triggers": ["any trial leaves obzio_state == COMPLETED without result_commit_id", "recovery requires manual/founder intervention", "fence token does not strictly increase across re-lease"]
+    },
+    {
+      "unit_id": "a2-u02",
+      "claim": "Lost return callback never loses a committed result.",
+      "pass_bar": "A fixture commits a result, discards/never delivers the callback, then runs the recovery scanner with zero callback replay and shows the scanner alone reconciles the unit to PARENT_INGESTED/COMPLETED using only the ledger/remote, not any callback channel.",
+      "reject_triggers": ["scanner requires the original callback payload to reconcile", "any founder relay step is invoked"]
+    },
+    {
+      "unit_id": "a2-u03",
+      "claim": "Partial writes are always detected and never ingested.",
+      "pass_bar": "A fixture truncates an artifact byte stream (at least three truncation points: 1 byte short, half-length, header-only) and a half-written manifest, and shows `ingest_result` raises `ControlPlaneError` for every case via byte-count and hash mismatch, in a real call to the real ingestion path (not a re-implementation).",
+      "reject_triggers": ["any truncated artifact reaches PARENT_INGESTED", "detection is by file size only without also proving a hash-only corruption case (same length, wrong content) is independently caught"]
+    },
+    {
+      "unit_id": "a2-u04",
+      "claim": "Pre-commit and post-commit failures are distinguishable and both recoverable without duplicate external effect.",
+      "pass_bar": "Two fixtures: (a) crash strictly before result_transaction.state reaches COMMITTED -> rerun produces exactly one committed result; (b) crash strictly after COMMITTED but before the caller observes success -> resumption ingests the existing commit and a byte-identical resubmission is proven to append zero additional PARENT_INGESTED ledger rows (checked by counting ledger rows before/after, not by assertion on a mock).",
+      "reject_triggers": ["post-commit resume produces a second distinct result_commit_id for the same unit", "the harmless-duplicate claim is asserted without counting ledger rows"]
+    },
+    {
+      "unit_id": "a2-u05",
+      "claim": "Pre-push and post-push failures are both recoverable and never leave the parent believing in a result the remote does not hold.",
+      "pass_bar": "A fixture simulates failure before a claimed push completes and shows the unit is marked PROVIDER_COMPLETED_UNCOMMITTED (not COMPLETED) and rerun from immutable input; a second fixture simulates failure after a real push and shows reconciliation reads the remote by immutable SHA rather than trusting local state.",
+      "reject_triggers": ["a pre-push failure is ever recorded as COMPLETED or RESULT_COMMITTED without an independently checkable remote object", "post-push reconciliation trusts a local claim without a git-level read-back (e.g. git cat-file/ls-tree against the claimed commit)"]
+    },
+    {
+      "unit_id": "a2-u06",
+      "claim": "A stale lease holder is evicted deterministically and cannot commit afterwards.",
+      "pass_bar": "A fixture obtains fence token N, lets the lease expire, re-leases to obtain fence token N+1, then submits a result with fence token N and shows `ingest_result` raises `ControlPlaneError` referencing a stale/rejected fence, in the real ingestion code path, across at least 20 repeated trials with no flake.",
+      "reject_triggers": ["the fence check accepts a token equal to or greater than the last recorded value without verifying that token was ever actually leased to the submitting attempt (this reviewer will test this exact gap independently in a10-u03 regardless of a2's own coverage)"]
+    },
+    {
+      "unit_id": "a2-u07",
+      "claim": "Duplicate callbacks are harmless under concurrency, not merely sequential replay.",
+      "pass_bar": "A concurrency fixture launches at least 50 concurrent (thread- or process-based) identical ingestion attempts for the same result and shows exactly one PARENT_INGESTED row survives and the ledger hash chain verifies with zero corruption, run at least 200 total interleavings as the dispatch record specifies.",
+      "reject_triggers": ["fewer than 200 interleavings are actually executed", "concurrency is simulated by sequential calls dressed as 'concurrent'", "any chain-verification failure appears in any trial"]
+    },
+    {
+      "unit_id": "a2-u08",
+      "claim": "A corrupt or missing artifact is always caught before completion, never after.",
+      "pass_bar": "Fixtures cover both deletion (file absent at read-back) and corruption (file present, wrong bytes, correct length) and show both are rejected at `ingest_result` and the unit is left in a non-terminal, resumable state.",
+      "reject_triggers": ["a corrupted-but-same-length artifact is not distinguished from a valid one", "detection happens only after COMPLETED is already set"]
+    },
+    {
+      "unit_id": "a2-u09",
+      "claim": "Network interruption during push/fetch degrades throughput, never correctness.",
+      "pass_bar": "A fixture simulates a git network failure (e.g. an unreachable/mocked remote or a killed subprocess mid-push) and shows retry-with-backoff is bounded (has a max attempt count) and that no partially-recorded or corrupted durable state results from any interrupted attempt.",
+      "reject_triggers": ["retry is unbounded (can hang indefinitely)", "an interrupted push leaves a ledger row claiming a commit id that a subsequent `git cat-file -e` cannot verify"]
+    },
+    {
+      "unit_id": "a2-u10",
+      "claim": "A parent restart with zero in-memory state reconstructs the exact fleet state from the ledger.",
+      "pass_bar": "A fixture computes the projection, discards all Python process state (fresh interpreter invocation), rebuilds via `project_units`/`materialize` from the ledger file alone, and diffs the two projections byte-for-byte (canonical JSON), showing zero difference, including for at least one in-flight (non-terminal) unit.",
+      "reject_triggers": ["the rebuilt projection differs in any field", "the fixture keeps state in module globals across the 'restart' instead of truly re-invoking the interpreter"]
+    },
+    {
+      "unit_id": "a2-u11",
+      "claim": "Entire provider-runtime loss is survivable because durable results live in the git remote.",
+      "pass_bar": "A fixture performs a fresh `git clone` (or `git worktree add` from a pinned remote SHA) into an isolated scratch directory with no reuse of the original working tree, and shows every committed result is present and hash-verifiable there, while any uncommitted-but-claimed result is correctly classified PROVIDER_COMPLETED_UNCOMMITTED.",
+      "reject_triggers": ["the 'clean clone' reuses cached objects or working-tree files from the original checkout in a way that would not survive true runtime loss (e.g. relies on /tmp state or an uncommitted file)"]
+    },
+    {
+      "unit_id": "a2-u12",
+      "claim": "The PO-02 Code-2 fixture is classified PROVIDER_COMPLETED_UNCOMMITTED and never as a deliverable.",
+      "pass_bar": "The fixture is replayed as literal input to the real control plane (not merely asserted in prose) and the resulting obzio_state is PROVIDER_COMPLETED_UNCOMMITTED with an automatic rerun-from-immutable-input path exercised, and workstreams/po03/evidence/recovery-fault-matrix.json enumerates the full fault taxonomy from COMMISSION.md's list (process/session loss, lost return message, partial write, pre/post commit failure, pre/post push failure, stale lease, duplicate callback, corrupt/missing artifact, network interruption, parent restart, provider-runtime loss) with no class left untested.",
+      "reject_triggers": ["the fixture is only described, not replayed", "any of the eleven named fault classes in COMMISSION.md has zero corresponding fixture"]
+    }
+  ],
+  "cohort_level_disposition_rule": {
+    "ACCEPTED": "Every one of the 12 units meets its pass_bar with a re-runnable fixture this reviewer could execute or directly inspect the output of, AND this reviewer's own independent adversarial probes (a10-u03 methodology applied to the same code paths) do not surface a fault class from the COMMISSION.md list that a2 left completely uncovered.",
+    "REJECTED": "One or more units fails its pass_bar, or any reject_trigger is observed, or a fault class from COMMISSION.md's list has no corresponding a2 fixture at all.",
+    "tie_breaking": "Where a2 depends on the coordinator's control_plane.py and a10-u03 finds that file itself violates an invariant a2 assumed sound, that finding is recorded against the coordinator (u03), not against a2, provided a2's own fixture correctly detected the anomalous behaviour it was designed to catch."
+  }
+}

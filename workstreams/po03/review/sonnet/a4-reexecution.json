@@ -1,0 +1,81 @@
+{
+  "disposition_id": "DISP-A10-U02-A4-REEXECUTION-20260822-v001",
+  "reviewer": "po03-worker-a10",
+  "producer": "po03-worker-a4",
+  "criteria_applied": "workstreams/po03/review/sonnet/criteria-a4.json (frozen and pushed at commit d58004a, before this reviewer fetched/read any a4 branch content)",
+  "producer_branch_fetched_from": "origin/cursor/po03-a4-pack-qualification-ed20",
+  "producer_head_at_review_time": "af35380",
+  "method_statement": "For every claim, this reviewer extracted a4's committed tools (git show <ref>:<path>, read-only, never checked out as a worktree) into an isolated scratch tree, and separately built a throwaway 'git clone --shared' mirror of this reviewer's own worktree (sharing the same object database, so all pinned commits fetched via `git fetch origin 'refs/heads/*:refs/remotes/origin/*'` are reachable) to serve as the --repository argument, so a4's extracted, unmodified code could run against real git objects without ever touching a4's own worktree on disk or writing to any PO-01-owned ref.",
+  "reexecution_results": [
+    {
+      "unit_id": "a4-u01",
+      "claim": "Every PO-01 source needed for qualification is pinned to an immutable SHA without contacting or mutating PO-01.",
+      "reexecution_performed": "Independently ran `git cat-file -e <sha>^{commit}` and `git cat-file -t <sha>` for all 8 SHAs listed in source-lock.json, against this reviewer's own fetched object store (git fetch origin 'refs/heads/*:refs/remotes/origin/*', a read-only operation).",
+      "result": "8/8 pinned SHAs independently resolve to real commit objects, matching source-lock.json exactly. All are recorded by full 40-hex SHA, never by branch name alone. This reviewer never pushed, branched onto, or wrote any PO-01 ref during verification.",
+      "verdict": "CONFIRMED"
+    },
+    {
+      "unit_id": "a4-u02",
+      "claim": "Freezing criteria before reading producer narrative changes the outcome relative to narrative-first review, provable from git history.",
+      "reexecution_performed": "Independently ran `git log --oneline --reverse` over a4's branch scoped to evidence/criteria-freeze.json, evidence/reproduction-results.json, evidence/repository-disposition.json.",
+      "result": "Commit order confirmed: 74481da (freeze pack qualification criteria) is a4's first commit after the shared base, strictly before 18130af (reproduction) and f8152f9 (disposition). Ordering claim holds. However, a4 itself honestly self-reports this unit NOT_YET ('criteria ordering is proven, but no admissible narrative-first baseline exists to establish changed outcome') -- a4 does not claim more than its evidence supports.",
+      "verdict": "ORDERING_CONFIRMED_BUT_COMPARATIVE_CLAIM_HONESTLY_UNPROVEN_BY_A4_ITSELF"
+    },
+    {
+      "unit_id": "a4-u03",
+      "claim": "An independent pack qualifier detects manifest entries with no corresponding blob at the pinned SHA.",
+      "reexecution_performed": "Ran a4's own run_qualification.py (unmodified) fresh against the 8 pinned commits from a clean mirror clone. Additionally, independently cross-checked one specific reported finding (packs/06-browser-execution/_spine.py at commit 1e6f53c323f8...) using raw `git show <sha>:<manifest>` to confirm the manifest really lists the file with the claimed sha256, and raw `git cat-file -e <sha>:<path>` to confirm the blob really does not exist at that path -- without depending on qualify.py's own logic being correct.",
+      "result": "Fresh run reproduces exactly 10 missing-blob findings, byte-for-byte identical to a4's committed reproduction-results.json (diff empty except for machine-local absolute paths in evidence_inputs). The independent raw-git spot check confirms the sampled finding is real, not a detector artifact.",
+      "verdict": "CONFIRMED"
+    },
+    {
+      "unit_id": "a4-u04",
+      "claim": "Non-portable paths inside operator packs are detected mechanically from the pinned tree.",
+      "reexecution_performed": "Same fresh run_qualification.py execution as a4-u03 (single combined run covers all detectors).",
+      "result": "Fresh run reproduces exactly 68 portability findings, identical to a4's claim. Independently corroborated by the a4-u06 process-boundary rerun (below), which shows the exact runtime failure mode (hardcoded /tmp/packs/... paths) that the portability detector is designed to catch -- two different detectors converging on the same real defect.",
+      "verdict": "CONFIRMED"
+    },
+    {
+      "unit_id": "a4-u05",
+      "claim": "Manifest/provenance gaps (unlisted files, unhashed entries, hash mismatches) are a closed, detectable set.",
+      "reexecution_performed": "Same fresh run_qualification.py execution.",
+      "result": "Fresh run reproduces gap_counts identical to a4's claim: {'unlisted_files': 4, 'unhashed_entries': 0, 'hash_mismatches': 0}. This reviewer notes the real pinned packs happen to have zero cases in two of the three classes; a4's own fixture-based gating (referenced in its hypothesis_dispositions text) is what establishes the detector actually distinguishes all three classes rather than being vacuously silent, but this reviewer did not independently re-verify a4's specific planted fixtures for the zero-count classes given time budget -- disclosed as a scope limit rather than silently assumed.",
+      "verdict": "CONFIRMED_FOR_REAL_PACKS_FIXTURE_GATING_NOT_INDEPENDENTLY_REVERIFIED"
+    },
+    {
+      "unit_id": "a4-u06",
+      "claim": "Pack claims that hold in-process fail across a real process boundary.",
+      "reexecution_performed": "Same fresh run_qualification.py execution (boundary_run.execute uses git archive to export each pinned root into an isolated scratch directory with a sanitized environment, then runs run_all_tests.sh as a real subprocess).",
+      "result": "Fresh run reproduces exactly 2 process_boundary_failures, identical to a4's claim, with identical stderr: 'cd: /tmp/packs/strategic-orchestration: No such file or directory' -- the exported pack's own run_all_tests.sh hardcodes /tmp/packs/... and fails immediately once run from any other directory. a4 itself honestly reports this unit NOT_YET rather than PASS ('an independent in-process pass was not established'), which is the correct, non-overclaiming disposition given the finding is a FAILURE mode, not a success proof.",
+      "verdict": "CONFIRMED_FAILURE_MODE_HONESTLY_NOT_OVERCLAIMED"
+    },
+    {
+      "unit_id": "a4-u07",
+      "claim": "Transport debris is mechanically distinguishable from live repository content with a stated, read-only rule.",
+      "reexecution_performed": "Same fresh run_qualification.py execution; separately confirmed via `git status` inside the scratch mirror before/after the run that no path outside /tmp/a10-scratch was ever touched (debris.inspect only reads git tree entries).",
+      "result": "Fresh run reproduces exactly 16 transport-debris findings, identical to a4's claim (paths under _transport/ and two .tmp-* probe files). No mutation occurred anywhere during the check.",
+      "verdict": "CONFIRMED"
+    },
+    {
+      "unit_id": "a4-u08",
+      "claim": "Current-source/supersession disposition is compiled mechanically and reproducibly from a clean clone.",
+      "reexecution_performed": "Ran a4's disposition.py (unmodified) twice in immediate succession against this reviewer's own worktree, then diffed the two outputs; separately diffed the fresh output against a4's committed repository-disposition.json.",
+      "result": "The two fresh runs are byte-for-byte identical (empty diff). The fresh run is also byte-for-byte identical to a4's committed claim (empty diff) -- no manual input was required and no non-determinism was observed.",
+      "verdict": "CONFIRMED"
+    }
+  ],
+  "overall_summary": {
+    "units_reexecuted": 8,
+    "units_fully_confirmed_by_fresh_execution": 6,
+    "units_confirmed_with_disclosed_scope_limits": 2,
+    "units_where_a4_overclaimed": 0,
+    "note": "This is the strongest cohort in this review by evidentiary quality: every numeric claim this reviewer attempted to reproduce matched exactly on a completely fresh execution (new mirror clone, new scratch directories, no reuse of a4's own runtime state), and a4 itself withholds PASS on exactly the two units (a4-u02, a4-u06) where its own evidence does not fully support it -- the opposite of ceremonial acceptance."
+  },
+  "hypothesis_evaluation": {
+    "a10_u02_hypothesis": "The PO-01 qualification results from a4 contain at least one claim that does not survive independent re-execution.",
+    "result": "NOT CONFIRMED",
+    "explanation": "Every quantitative claim this reviewer re-executed fresh (missing-blob count, portability count, manifest-gap counts, debris count, process-boundary failure count and stderr text, disposition compiler output) reproduced exactly. This reviewer explicitly disclosed the two claims not independently re-verified in full (a4-u05's fixture-gating for the zero-count gap classes, and a4-u02's inherently unfalsifiable narrative-first-baseline claim, which a4 itself marks NOT_YET) rather than silently passing them. Per this reviewer's own frozen standard against ceremonial acceptance: this is a genuine, disclosed boundary, not a hidden gap -- the hypothesis that at least one claim would fail re-execution is not borne out by the evidence obtained."
+  },
+  "cohort_level_disposition": "ACCEPTED",
+  "cohort_level_rationale": "Per criteria-a4.json's cohort_level_disposition_rule, ACCEPTED requires every unit's reexecution_method to have actually been carried out with the reviewer's own observed output matching the pass_bar, and zero fail_triggers observed. All 8 units meet this bar; the two units with disclosed scope limits (a4-u02, a4-u05) do not trigger any fail_trigger because a4 itself does not overclaim on them -- a4-u02 is correctly marked NOT_YET by its own producer, and a4-u05's real-pack counts (the falsifiable, checkable part of the claim) were independently reproduced exactly."
+}

@@ -1,0 +1,163 @@
+{
+  "audit_id": "AUDIT-A10-U03-CONTROL-PLANE-20260822-v001",
+  "auditor": "po03-worker-a10",
+  "audited_file": "workstreams/po03/tools/control_plane.py",
+  "audited_file_sha256_at_time_of_audit": "9c3d3c95a7bd333c8e2e9f19c2095a9cfe7520ae5f1adafd71b4199b135f84c8",
+  "methodology": "Every case runs an unmodified byte-for-byte copy of the real control_plane.py and validate_contracts.py as a real subprocess CLI, inside an isolated scratch repo tree per test (tempfile.TemporaryDirectory), never touching the shared ledger. See workstreams/po03/review/sonnet/attacks/scratch_control_plane.py and workstreams/po03/tests/test_a10_control_plane_attacks.py.",
+  "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a10_control_plane_attacks.py' -v",
+  "command_output": "workstreams/po03/review/sonnet/coordinator-audit/run-log.txt (17 tests, all pass -- each test's own assertions encode whether HELD or BREAK/BOUNDARY was expected)",
+  "summary": {"invariants_attacked": 9, "broken": 5, "boundary_documented": 1, "held": 3},
+  "invariants": [
+    {
+      "id": "INV-1",
+      "statement": "A producer must not reach COMPLETED without coordinator ingestion.",
+      "result": "HELD",
+      "case": "TestInv1CompletionRequiresIngestion.test_complete_before_any_ingestion_is_rejected",
+      "evidence": "cmd_complete requires unit['obzio_state'] == 'PARENT_INGESTED' (control_plane.py:620); calling `complete` on a leased-but-never-ingested unit raises ControlPlaneError.",
+      "boundary": "Stopped at control_plane.py line 620-623."
+    },
+    {
+      "id": "INV-2",
+      "statement": "A stale fence token must not commit after ownership transfer.",
+      "result": "PARTIALLY BROKEN",
+      "sub_cases": [
+        {
+          "case": "TestInv2FenceToken.test_a_stale_fence_after_release_is_rejected",
+          "result": "HELD",
+          "evidence": "A fence token strictly lower than the last recorded value is rejected with FENCE_REJECTED (control_plane.py:524-534)."
+        },
+        {
+          "case": "TestInv2FenceToken.test_b_never_leased_fence_token_is_accepted_BREAK",
+          "result": "BREAK",
+          "evidence": "ingest_result's only fence check is `if incoming_fence < unit['fence_token']` (control_plane.py:524). It never checks that `incoming_fence` was ever actually granted by a `lease` call. A unit that has never been leased has unit['fence_token'] == 0 by the project_units default (control_plane.py:272), so any self-chosen fence_token >= 1 passes -- a party that never held the lease can commit as if it did.",
+          "root_cause": "Fencing is implemented as a monotonic-counter check, not as lease-holder-identity verification. There is no record consulted of *which* fence values were actually issued via `lease`, only the high-water mark."
+        }
+      ]
+    },
+    {
+      "id": "INV-3",
+      "statement": "A duplicate callback must not produce two effects.",
+      "result": "PARTIALLY BROKEN",
+      "sub_cases": [
+        {
+          "case": "TestInv3DuplicateCallbacks.test_a_byte_identical_duplicate_is_a_harmless_noop",
+          "result": "HELD",
+          "evidence": "A byte-identical resubmission is recognised via sha256(canonical(result_doc)) matching a prior PARENT_INGESTED payload and recorded as DUPLICATE_IGNORED (control_plane.py:569-586); exactly one PARENT_INGESTED row exists."
+        },
+        {
+          "case": "TestInv3DuplicateCallbacks.test_b_non_identical_resubmission_after_completed_enables_second_completion_BREAK",
+          "result": "BREAK",
+          "evidence": "Deduplication is keyed on the hash of the *entire* result document, not on task_id/idempotency_key. A unit already COMPLETED that receives a result document differing only in artifact bytes/result_commit_id/checkpoint_seq is not recognised as a duplicate, is re-ingested, and project_units' generic fallback `unit['obzio_state'] = row.get('obzio_state') or event` (control_plane.py:326-327) resets the projected state from COMPLETED back to PARENT_INGESTED with no monotonicity guard against regressing from a terminal state. `complete` can then be called a second time, producing two COMPLETED ledger rows for one unit_id with two different result_commit_id values.",
+          "root_cause": "(a) dedup keys on full-document hash instead of a stable content-independent identity; (b) the state projection has no 'COMPLETED is terminal, cannot be re-entered' rule."
+        }
+      ]
+    },
+    {
+      "id": "INV-4",
+      "statement": "An artifact must not pass read-back without matching bytes.",
+      "result": "HELD",
+      "cases": [
+        "TestInv4ReadbackByteMismatch.test_hash_mismatch_at_readback_is_rejected",
+        "TestInv4ReadbackByteMismatch.test_missing_artifact_at_readback_is_rejected"
+      ],
+      "evidence": "sha256_file(target) is recomputed and compared to the claimed hash (control_plane.py:561-566); a missing file raises before hashing (control_plane.py:559-560). Both a corrupted-content and a deleted-artifact fixture are rejected.",
+      "boundary": "Stopped at control_plane.py lines 559-566, PROVIDED `target` resolves to the intended path -- see INV-6, where this guarantee is shown to fail."
+    },
+    {
+      "id": "INV-5",
+      "statement": "A result must not be accepted if it references a dispatch manifest it was not issued under.",
+      "result": "HELD",
+      "case": "TestInv5WrongDispatchManifest.test_manifest_sha_copied_from_a_different_unit_is_rejected",
+      "evidence": "ingest_result compares result_doc['immutable_input_manifest_sha256'] to the dispatch record's own value looked up by task_id (control_plane.py:540-543) and rejects a mismatch, including a hash copied verbatim from a different real unit's dispatch record.",
+      "boundary": "Stopped at control_plane.py lines 540-543."
+    },
+    {
+      "id": "INV-6",
+      "statement": "A write outside the allowlist or outside the owner's subtree must not pass ingestion.",
+      "result": "BROKEN",
+      "sub_cases": [
+        {
+          "case": "TestInv6AllowlistAndOwnershipEscape.test_a_mid_string_traversal_is_rejected",
+          "result": "HELD",
+          "evidence": "A '..' segment that survives lstrip('./') (because non-dot/slash characters precede it) is caught by `'..' in normalised.split('/')` (control_plane.py:141-146)."
+        },
+        {
+          "case": "TestInv6AllowlistAndOwnershipEscape.test_b_leading_dotslash_traversal_escapes_repo_root_BREAK",
+          "result": "BREAK",
+          "evidence": "`path_in_allowlist`/`check_ownership` normalise with `path.strip().lstrip('./')` (control_plane.py:142, 182). Python's `str.lstrip` treats its argument as a *character set*, not a prefix. A content_uri whose leading run consists only of '.' and '/' characters (e.g. '../workstreams/po03/control/units/attacker/x') has that entire run stripped, leaving a normalised string that starts with an allowed/owned prefix and contains no residual '..' component -- so both the allowlist and ownership checks pass. But the RAW string is what is actually joined to artifact_root (`artifact_root / relative`, control_plane.py:558) and the OS resolves the '..' literally, walking out of the repo root before descending back into a path that only *looks* like it is inside the owner's subtree. The test plants a decoy file as a sibling of the scratch repo root (genuinely outside it) and shows ingest_result accepts and verifies it.",
+          "companion_case": "TestInv6AllowlistAndOwnershipEscape.test_c_string_level_divergence_absolute_path shows the same class of bug for an absolute content_uri: pathlib's `/` operator discards the left operand entirely when the right operand is absolute, so artifact_root is silently ignored, while the string checks (which also lstrip the leading '/') judge it in-allowlist and owned.",
+          "root_cause": "The path-scope guard's normalisation (character-class lstrip) is not equivalent to the path semantics actually used for the filesystem join. Any validator that must reason about the same string a filesystem call will use has to apply the *same* normalisation (e.g. os.path.normpath / Path.resolve with a containment check) to both, not a weaker character-strip to one and raw interpretation to the other.",
+          "severity_note": "This is the single highest-value finding in this audit: it directly breaks the custody guarantee that 'a subordinate cannot write outside its owned subtree or the commission allowlist' (control_plane.py module docstring, line 23-24) and 'The controller re-checks ownership at ingestion, so a subordinate that writes outside its subtree cannot enter shared custody even if its own worktree accepted the write' (path-ownership.json 'rule' field). Both claims are false for a crafted content_uri."
+        }
+      ]
+    },
+    {
+      "id": "INV-7",
+      "statement": "A producer must not accept its own work.",
+      "result": "PARTIALLY BROKEN (boundary, not a full break)",
+      "sub_cases": [
+        {
+          "case": "TestInv7SelfAcceptance.test_a_exact_owner_string_is_rejected",
+          "result": "HELD",
+          "evidence": "cmd_review rejects `--reviewer` exactly equal to `dispatch['owner']` (control_plane.py:646-648)."
+        },
+        {
+          "case": "TestInv7SelfAcceptance.test_b_alias_reviewer_id_is_accepted_BOUNDARY",
+          "result": "BOUNDARY",
+          "evidence": "The guard is a byte-equality string comparison against the dispatch record's `owner` field. There is no mechanism binding `--reviewer` to any authenticated caller identity (no credential, token, or process-level check), so the same actor that produced the work can self-review by invoking `review` with any string other than the exact owner id, and the CLI accepts it. Stopped precisely at: byte-equal owner strings only.",
+          "root_cause": "Identity throughout control_plane.py (owner, worker_id, reviewer, actor) is an unauthenticated, caller-supplied string. This affects INV-7 directly and is the same mechanism that lets `cmd_complete` hardcode `actor='coordinator'` regardless of which process actually invokes it (control_plane.py:629) -- there is no code-level barrier preventing any process capable of executing the script from invoking `complete`, `ingest`, or `review`; the 'only the coordinator sets COMPLETED' rule is enforced by convention/process topology, not by the tool."
+        }
+      ]
+    },
+    {
+      "id": "INV-8",
+      "statement": "A tampered ledger row must not pass chain verification.",
+      "result": "PARTIALLY BROKEN",
+      "sub_cases": [
+        {
+          "case": "TestInv8LedgerTamper.test_a_in_place_edit_without_rehash_is_rejected",
+          "result": "HELD",
+          "evidence": "Editing a row's payload without recomputing row_sha256/prev_sha256 breaks verify_chain's per-row hash check (control_plane.py:206-209)."
+        },
+        {
+          "case": "TestInv8LedgerTamper.test_b_cascade_rehashed_tamper_passes_verification_BREAK",
+          "result": "BREAK",
+          "evidence": "verify_chain (control_plane.py:197-211) only checks internal self-consistency: each row's own row_sha256 matches its canonical body, and prev_sha256 chains to the immediately preceding row. There is no externally anchored checkpoint (e.g. a previously git-committed head hash recorded outside the mutable file itself). An actor with write access to ledger.jsonl can therefore edit one row's event/payload (e.g. flip REJECTED to ACCEPTED) and cascade-recompute row_sha256/prev_sha256 for every subsequent row, producing a file that is fully self-consistent end-to-end. `cmd_verify` reports it valid.",
+          "root_cause": "Hash-chaining alone (without an external anchor such as a signed/pinned prior head, or reliance on git's own immutable history as the actual source of truth rather than the working-tree file) only proves internal consistency, not non-tampering by a party with filesystem write access to the whole file.",
+          "mitigating_factor": "Because ledger.jsonl is itself git-tracked, a wholesale rewrite would appear as a large diff in git history and could be caught by a reviewer diffing commits -- but that protection lives in the surrounding git workflow and human/automated review discipline, not in control_plane.py's own verify_chain function, which is exactly what this unit was asked to test."
+        }
+      ]
+    },
+    {
+      "id": "INV-9",
+      "statement": "A PROVIDER_COMPLETED_UNCOMMITTED unit must never be reported as COMPLETED.",
+      "result": "PARTIALLY BROKEN",
+      "sub_cases": [
+        {
+          "case": "TestInv9ProviderCompletedUncommitted.test_schema_forces_the_label_when_result_commit_id_is_empty",
+          "result": "HELD",
+          "evidence": "validate_contracts.validate_result forces obzio_state == PROVIDER_COMPLETED_UNCOMMITTED whenever provider_state == COMPLETED and result_commit_id is empty (validate_contracts.py:192-196)."
+        },
+        {
+          "case": "TestInv9ProviderCompletedUncommitted.test_fabricated_result_commit_id_over_uncommitted_working_tree_file_reaches_completed_BREAK",
+          "result": "BREAK",
+          "evidence": "The schema guard above is satisfied by ANY non-empty string in result_commit_id -- it never checks that the string refers to a real, resolvable git commit. ingest_result re-hashes whatever file currently exists on disk at the claimed path (control_plane.py:556-567) but performs no `git cat-file -e <sha>` or equivalent existence check against the claimed result_commit_id. The scratch repo in this test has no `.git` directory at all (asserted explicitly), so no result_commit_id in it could possibly be real; a syntactically well-formed but entirely fabricated 40-hex-character string is accepted, and the unit reaches COMPLETED.",
+          "root_cause": "'Committed to git' is asserted by the producer's self-report and never independently verified by the control plane against actual git object storage. The durability guarantee the whole protocol exists to provide (COMMISSION.md: 'the result is committed to a deterministic po03/* remote branch or ingested by the controller') is not mechanically checked here at all -- only the working-tree file's current bytes are checked, which is a strictly weaker property than durable git commitment and does not survive the working tree being discarded."
+        }
+      ]
+    }
+  ],
+  "aggregate_defects": [
+    "D1 (INV-6, highest severity): character-class lstrip normalisation in path_in_allowlist/check_ownership diverges from the raw-string filesystem join used for real I/O, letting a crafted content_uri (relative '../' runs, or an absolute path) pass allowlist+ownership checks while the actual verified/read file lives outside the repo root and the owner's subtree.",
+    "D2 (INV-9): result_commit_id is never checked against real git history; a fabricated commit id over a purely working-tree (never git-committed) artifact reaches COMPLETED, which is precisely the PROVIDER_COMPLETED_UNCOMMITTED failure mode the whole protocol exists to prevent.",
+    "D3 (INV-2b): fence-token checking is monotonicity-only; it does not verify the submitted fence_token was ever actually issued by a `lease` call, so an unleased actor can commit by guessing/reading the current high-water mark from the (readable) ledger.",
+    "D4 (INV-3b): result deduplication keys on a hash of the entire document rather than unit identity, and the state projection has no terminal-state monotonicity guard, so a semantically different resubmission after COMPLETED is accepted and can be completed a second time with different underlying artifacts.",
+    "D5 (INV-8b): the ledger's hash chain has no external anchor, so a cascade-rehashed rewrite of ledger.jsonl is internally self-consistent and passes verify_chain; tamper-evidence for this class of attack currently depends entirely on the surrounding git workflow, not on the tool.",
+    "D6 (INV-7b, boundary not break): no caller-identity authentication exists anywhere in the CLI; 'coordinator', 'reviewer', and 'owner' are all unauthenticated strings supplied at the command line, so the commission's 'only the coordinator sets COMPLETED' and 'producer cannot accept own work' rules are enforced by process/topology convention, not by control_plane.py itself."
+  ],
+  "what_was_not_attacked": [
+    "Concurrency / true multi-process race conditions on the ledger append (append_event re-reads and re-verifies the chain each call, but this audit did not attempt concurrent writers racing on the same file descriptor from separate OS processes; a2-u07's dispatch record specifically claims this territory and is evaluated under a10-u01 against a2's own concurrency fixture, not duplicated here).",
+    "Denial-of-service / resource-exhaustion attacks (e.g. extremely large ledgers, pathological JSON) -- out of scope for the 9 named invariants.",
+    "The `create`, `event`, `scan`, and `check-paths` subcommands were exercised incidentally (via create_unit/lease helpers and INV-6's allowlist checks) but were not independently adversarially targeted beyond what the 9 named invariants required."
+  ]
+}
