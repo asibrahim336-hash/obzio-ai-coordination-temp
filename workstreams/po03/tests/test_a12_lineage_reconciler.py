@@ -17,6 +17,8 @@ RECONCILER_PATH = CAPSULE_DIR / "lineage_reconciler.py"
 EVIDENCE_PATH = (
     REPO_ROOT / "workstreams" / "po03" / "evidence" / "source-capsule-drift.json"
 )
+EVIDENCE_REPO_PATH = EVIDENCE_PATH.relative_to(REPO_ROOT).as_posix()
+PINNED_EVIDENCE_COMMIT = "773be21a8843311f16c97fb4705478eb5c5797ca"
 FROZEN_REF = "04827c3cca829ece4ccca87e3d4196cc1b64a7a7"
 CURRENT_REF = "b7b1888ad17eb232b9f284c753df79da3c0633ba"
 SPEC = importlib.util.spec_from_file_location("a12_lineage_reconciler", RECONCILER_PATH)
@@ -35,7 +37,18 @@ class LineageReconcilerTests(unittest.TestCase):
             current_ref=CURRENT_REF,
             source_spec_path="workstreams/po03/control/wave-a-spec.json",
         )
-        cls.evidence = json.loads(EVIDENCE_PATH.read_text(encoding="utf-8"))
+        cls.pinned_evidence_bytes = subprocess.run(
+            [
+                "git",
+                "cat-file",
+                "blob",
+                f"{PINNED_EVIDENCE_COMMIT}:{EVIDENCE_REPO_PATH}",
+            ],
+            cwd=REPO_ROOT,
+            check=True,
+            capture_output=True,
+        ).stdout
+        cls.evidence = json.loads(cls.pinned_evidence_bytes)
 
     def test_git_only_recomputation_finds_all_four_drift_lineages(self):
         self.assertEqual(FROZEN_REF, self.computed["frozen_commit_sha"])
@@ -71,6 +84,15 @@ class LineageReconcilerTests(unittest.TestCase):
             comparison,
         )
         self.assertEqual(4, comparison["compared_drift_count"])
+        self.assertEqual(8, len(comparison["suggested_evidence_corrections"]))
+        self.assertTrue(
+            all(
+                correction["action"] == "SUGGEST_ONLY"
+                and correction["authoritative_git_subject"]
+                for correction in comparison["suggested_evidence_corrections"]
+            ),
+            comparison,
+        )
 
     def test_causal_commits_are_full_ordered_git_history(self):
         by_path = {
@@ -123,6 +145,8 @@ class LineageReconcilerTests(unittest.TestCase):
         ) as temporary:
             computed_path = Path(temporary) / "computed.json"
             comparison_path = Path(temporary) / "comparison.json"
+            evidence_path = Path(temporary) / "pinned-evidence.json"
+            evidence_path.write_bytes(self.pinned_evidence_bytes)
             recompute = subprocess.run(
                 [
                     "python3",
@@ -154,7 +178,7 @@ class LineageReconcilerTests(unittest.TestCase):
                     "--computed",
                     str(computed_path),
                     "--evidence",
-                    str(EVIDENCE_PATH),
+                    str(evidence_path),
                     "--output",
                     str(comparison_path),
                 ],

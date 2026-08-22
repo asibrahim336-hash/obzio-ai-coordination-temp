@@ -206,6 +206,7 @@ def compare_with_evidence(
         row["path"]: row for row in evidence.get("drifted_sources", [])
     }
     discrepancies: list[dict[str, Any]] = []
+    suggested_corrections: list[dict[str, Any]] = []
     for path in sorted(set(computed_rows) | set(evidence_rows)):
         computed_row = computed_rows.get(path)
         evidence_row = evidence_rows.get(path)
@@ -262,6 +263,16 @@ def compare_with_evidence(
                     computed=computed_commit.get("subject"),
                     evidence=evidence_commit.get("subject"),
                 )
+                suggested_corrections.append(
+                    {
+                        "action": "SUGGEST_ONLY",
+                        "path": path,
+                        "causal_commit_sha": computed_sha,
+                        "evidence_commit_sha": evidence_sha,
+                        "evidence_subject": evidence_commit.get("subject"),
+                        "authoritative_git_subject": computed_commit.get("subject"),
+                    }
+                )
     return {
         "protocol_version": "OBZIO-SOURCE-CAPSULE-RECONCILIATION-v1",
         "computed_frozen_commit_sha": computed.get("frozen_commit_sha"),
@@ -277,6 +288,7 @@ def compare_with_evidence(
         "evidence_only_fields_not_inferred_from_git": ["legitimate", "note"],
         "agrees": not discrepancies,
         "discrepancies": discrepancies,
+        "suggested_evidence_corrections": suggested_corrections,
     }
 
 
