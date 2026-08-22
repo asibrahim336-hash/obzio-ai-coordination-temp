@@ -1,0 +1,511 @@
+{
+  "schema_version": "OBZIO-PO03-WA003-RESULT-v1",
+  "task_id": "PO03-WA-003",
+  "attempt_id": "PO03-WA-003-A01",
+  "hypothesis_id": "H-PO03-WA-003",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "wave_id": "PO03-WAVE-A",
+  "standing_function": "clean-runtime-reproduction",
+  "group": "engineering",
+  "title": "Clean-clone runtime harness",
+  "started_at": "2026-08-22T07:16:00Z",
+  "finished_at": "2026-08-22T07:56:00Z",
+  "immutable_input": {
+    "path": "workstreams/po03/control/inputs/wave-a/wa-003.json",
+    "sha256": "83ec24412e49b231dbec3ca44b94ed70d300863783e2eef750d249602a2d974e",
+    "bytes": 4175,
+    "protocol_version": "OBZIO-IMMUTABLE-TASK-INPUT-v1",
+    "idempotency_key": "po03:100bc20:wa-003:a01",
+    "lease_id": "lease-po03-wa-003-a01",
+    "fence_token": 1,
+    "lease_expires_at": "2026-08-22T13:13:11Z",
+    "generated_inside_lease_window": true
+  },
+  "acceptance_contract": {
+    "path": "workstreams/po03/control/acceptance/wave-a-material-v1.json",
+    "declared_sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a",
+    "observed_sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a",
+    "match": true
+  },
+  "falsifiable_hypothesis": "The PO-03 suite can execute from a clean clone with no warm checkout, uncommitted files, SW memory, or /tmp dependency.",
+  "hypothesis_outcome": "SUPPORTED",
+  "hypothesis_outcome_basis": "REPRO-1 executed the unmodified seeded PO-03 contract suite from two independent pristine clones of the delivered commit, with the environment reduced to an allowlist, HOME and TMPDIR redirected into a per-run sandbox, ambient git configuration disabled and every proxy variable pinned to a closed loopback port. All twenty gate assertions returned PASS or a declared non-blocking disposition, the eight source hashes the immutable input declares matched inside the clone, and both clones produced one identical tree, exit code and outcome signature. REPRO-5 repeated the certification for this unit's own forty-two-case suite. The hypothesis is supported for the suite as delivered, and the adversarial reproductions show the gate would have refuted it had any of the four named contamination classes been present.",
+  "hypothesis_outcome_scope": "The claim is about the PO-03 suite at commit 7bbe7b45aaffe6e4461791d3a06482e5ec81f575 on one Linux runner. It is not a claim about hosted GitHub Actions, other operating systems or other Python versions; see limitations.json NS-7 and LIM-6.",
+  "method": {
+    "summary": "Build an executable clean-clone gate, run it against the real repository-native PO-03 suite, then attack it with sanitized Obzio-native mutants and synthetic fixtures until each named contamination class is provably caught.",
+    "execution_environment": "isolated-git-worktree",
+    "worktree_root": "/tmp/po03-wa-003-b1956656/runner",
+    "isolation_evidence": "A no-hardlink clone of the repository at a unique branch. /workspace was read for the operator route, the immutable input and the remote URL, and never written. Ownership over the whole commit range was verified by the delivered guard.",
+    "steps": [
+      "Read the immutable task input, the frozen acceptance contract, the commission revision, the portfolio entry, the seeded contracts, the seeded validator and the seeded suite, and recompute every declared SHA-256 before writing anything.",
+      "Implement the gate as twenty named assertions over a pristine clone: clone hygiene before execution, environment and runtime measurement at launch, suite outcome, and checkout state plus recurrence after execution.",
+      "Write focused tests with one adversarial fixture per contamination class and a portable positive control for each, so a check that cannot fail is visible as such.",
+      "Run six declarative reproductions, each carrying its predicted dispositions, so that a receipt diverging from its prediction is a defect rather than a narrative.",
+      "Repair every defect the tests and the gate found, including two the gate found in this unit's own delivered commit, and re-run.",
+      "Validate ownership, run the repository taxonomy gate, commit to a unique runner branch, push, and read every artifact back from the immutable remote commit."
+    ],
+    "executable_output": [
+      "workstreams/po03/wave-a/units/wa-003/harness/clean_clone_harness.py",
+      "workstreams/po03/wave-a/units/wa-003/harness/ownership_guard.py",
+      "workstreams/po03/wave-a/units/wa-003/harness/run_reproductions.py",
+      "workstreams/po03/wave-a/units/wa-003/harness/build_result_ledgers.py",
+      "workstreams/po03/wave-a/units/wa-003/tests/test_clean_clone_harness.py",
+      "workstreams/po03/wave-a/units/wa-003/tests/test_ownership_guard.py"
+    ],
+    "recurrence_commands": [
+      "git clone --no-hardlinks <repo> <dest> && git -C <dest> checkout --detach 7bbe7b45aaffe6e4461791d3a06482e5ec81f575",
+      "python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-003/tests -p 'test_*.py' -v",
+      "python3 workstreams/po03/wave-a/units/wa-003/harness/run_reproductions.py --repo . --commit $(git rev-parse HEAD) --work-root <scratch>/work --out-dir <scratch>/out",
+      "python3 workstreams/po03/wave-a/units/wa-003/harness/ownership_guard.py --repo . --base e56eda6e8e4a4e958795f7157839926d93272b30 --head HEAD --input workstreams/po03/control/inputs/wave-a/wa-003.json",
+      "python3 scripts/check_operator_taxonomy.py"
+    ],
+    "no_external_effect": "No pull request created or modified, nothing merged or promoted, no network write other than git push to this unit's own new branch, no protected path touched, no secret read into an artifact."
+  },
+  "gate_assertions": [
+    {"id": "CC-01", "name": "no_warm_checkout_reuse", "blocking": true, "asserts": "clone targets do not pre-exist, so a warm checkout cannot be reused"},
+    {"id": "CC-02", "name": "clone_at_immutable_commit", "blocking": true, "asserts": "the clone HEAD equals the requested full 40-character commit"},
+    {"id": "CC-03", "name": "no_borrowed_object_store", "blocking": true, "asserts": "no .git/objects/info/alternates, so no object is borrowed from a warm repository"},
+    {"id": "CC-04", "name": "worktree_equals_committed_tree", "blocking": true, "asserts": "the working tree file set equals git ls-tree of HEAD and porcelain status is empty"},
+    {"id": "CC-05", "name": "no_warm_build_residue", "blocking": true, "asserts": "no bytecode, cache, vendored-dependency or virtualenv residue exists before execution"},
+    {"id": "CC-06", "name": "provenance_pins_resolve", "blocking": true, "asserts": "every declared provenance SHA resolves in the clone and, when requested, is an ancestor of HEAD"},
+    {"id": "CC-07", "name": "declared_source_hashes_match", "blocking": true, "asserts": "every declared source SHA-256 matches the bytes inside the clone"},
+    {"id": "CC-08", "name": "no_non_portable_path_literals", "blocking": true, "asserts": "the declared suite closure contains no absolute, home-relative, temporary-directory or drive-letter literal"},
+    {"id": "CC-09", "name": "scrubbed_environment_admitted", "blocking": true, "asserts": "the suite environment contains only allowlisted and injected names, with no provider or secret-shaped variable"},
+    {"id": "CC-10", "name": "temp_and_home_redirected_into_sandbox", "blocking": true, "asserts": "measured from inside the runtime, tempfile and Path.home resolve into the per-run sandbox"},
+    {"id": "CC-11", "name": "suite_passes_in_pristine_clone", "blocking": true, "asserts": "the declared suite exits zero under those conditions"},
+    {"id": "CC-12", "name": "no_semantic_checkout_mutation_by_suite", "blocking": true, "asserts": "the suite writes no non-bytecode change into its own checkout"},
+    {"id": "CC-13", "name": "no_system_temp_residue", "blocking": false, "asserts": "no new entry appears in the shared system temporary directory; weakens to INCONCLUSIVE because that directory has concurrent writers"},
+    {"id": "CC-14", "name": "no_proxy_aware_network_egress_required", "blocking": false, "asserts": "the suite passes with every proxy variable pinned to a closed loopback port"},
+    {"id": "CC-15", "name": "warm_versus_clean_divergence", "blocking": true, "asserts": "the warm checkout and the pristine clone agree; warm-only green is a failure"},
+    {"id": "CC-16", "name": "warm_source_uncommitted_files", "blocking": false, "asserts": "the warm baseline had no uncommitted file before execution, measured before anything runs in it"},
+    {"id": "CC-17", "name": "recurrence_across_independent_clean_clones", "blocking": true, "asserts": "independent clones produce one identical tree, exit code and outcome signature"},
+    {"id": "CC-18", "name": "harness_writes_confined_to_work_root", "blocking": true, "asserts": "every path the harness created is under the declared work root"},
+    {"id": "CC-19", "name": "bytecode_residue_written_into_checkout", "blocking": false, "asserts": "reports the bytecode the suite writes into its own checkout, which is how a warm checkout accumulates the residue CC-05 rejects"},
+    {"id": "CC-20", "name": "python_environment_hardening_effective", "blocking": false, "asserts": "measures whether the interpreter honoured the requested PYTHON* hardening instead of assuming it did"}
+  ],
+  "current_method_hypotheses": [
+    {
+      "id": "H-CM-01",
+      "state": "current_method_hypothesis",
+      "statement": "The seeded PO-03 contract suite executes from a pristine clone with no warm checkout, uncommitted file, provider environment memory, home-directory state or system temporary directory.",
+      "status": "SUPPORTED",
+      "tested_by": "REPRO-1",
+      "evidence": "Twenty assertions returned PASS or a declared non-blocking disposition across two independent clean clones; 23 seeded tests OK in each."
+    },
+    {
+      "id": "H-CM-02",
+      "state": "current_method_hypothesis",
+      "statement": "Running the suite with Python isolated mode is sufficient to establish environment independence.",
+      "status": "REFUTED",
+      "tested_by": "REPRO-3",
+      "evidence": "A sanitized Obzio-native mutant that reads one provider session variable passes in the warm checkout and fails in the pristine clone. Isolated mode blocks PYTHON* configuration, not os.environ reads, so it says nothing about session memory. Recorded as rejection REJ-1."
+    },
+    {
+      "id": "H-CM-03",
+      "state": "current_method_hypothesis",
+      "statement": "Redirecting TMPDIR, TEMP and TMP is sufficient to detect a system temporary-directory dependency.",
+      "status": "REFUTED",
+      "tested_by": "REPRO-4",
+      "evidence": "A mutant that hardcodes /tmp/po03-warm-state.json passes CC-10 and CC-11 unchanged, because a literal absolute path ignores TMPDIR entirely. Only the static closure scan catches it. Recorded as rejection REJ-2."
+    },
+    {
+      "id": "H-CM-04",
+      "state": "current_method_hypothesis",
+      "statement": "PYTHONDONTWRITEBYTECODE in a scrubbed environment prevents the seeded suite command from writing bytecode into its checkout.",
+      "status": "REFUTED",
+      "tested_by": "CC-20 measurement inside REPRO-1 and REPRO-5, plus test_isolated_mode_makes_bytecode_suppression_inert_and_is_reported",
+      "evidence": "The seeded command runs python -I, which implies -E, so all PYTHON* variables are ignored. Measured inside the clone: dont_write_bytecode is False under the suite's own flags and True for the same environment without isolation. Suppression requires the -B interpreter flag. Recorded as rejection REJ-3."
+    },
+    {
+      "id": "H-CM-05",
+      "state": "current_method_hypothesis",
+      "statement": "A green result in the warm controller checkout is evidence of clean-clone portability.",
+      "status": "REFUTED",
+      "tested_by": "REPRO-1 CC-16, REPRO-3 CC-15, and the observed state of the controller checkout",
+      "evidence": "The controller checkout carries untracked workstreams/po03/tests/__pycache__ and workstreams/po03/tools/__pycache__, and CC-19 shows the seeded command itself creates them on every run. REPRO-3 shows a suite that is green in a warm tree and red in a pristine clone. Warm green is therefore not portability evidence."
+    },
+    {
+      "id": "H-CM-06",
+      "state": "current_method_hypothesis",
+      "statement": "The existing po03-contracts.yml workflow already proves the properties this hypothesis names.",
+      "status": "REFUTED",
+      "tested_by": "inspection of the workflow at SHA-256 427949c07d93fe69bea6485a91ca58c4297be21759e6b0b00a0e5cc9f450c7cb, together with REPRO-3 and REPRO-4",
+      "evidence": "That job checks out and runs python -I -m unittest discover with the runner's own environment, home directory, temporary directory, git configuration and network. It would catch an uncommitted-file dependency because actions/checkout is clean, and would pass both the REPRO-3 provider-memory mutant and the REPRO-4 hardcoded-/tmp mutant. It also enforces no changed-path ownership, which the commission requires."
+    },
+    {
+      "id": "H-CM-07",
+      "state": "current_method_hypothesis",
+      "statement": "Every provenance SHA that the Wave A immutable inputs declare resolves inside a clean clone of the repository.",
+      "status": "REFUTED",
+      "tested_by": "REPRO-2",
+      "evidence": "All 64 Wave A inputs declare source_base.minimum_protocol_ancestor 100bc20ad5eec62a4f35b60921423135cc0b9d9a, which resolves to no object. Its seven-character prefix resolves to commit 100bc2079cedc193af3524234ab833cc9f9f4669, which is a genuine ancestor of the delivered commit, so the intent is satisfiable but the recorded value is not verifiable. Root cause: the hardcoded PROTOCOL_ANCESTOR literal on line 25 of workstreams/po03/tools/prepare_wave_a.py, which is never resolved against the repository. commission_commit 552b12eacee637716451492a98980fb0da19ff3e resolves and is an ancestor."
+    },
+    {
+      "id": "H-CM-08",
+      "state": "current_method_hypothesis",
+      "statement": "The warm runtime's inherited configuration is performance-neutral for the suite.",
+      "status": "REFUTED",
+      "tested_by": "measured isolation recorded in tests.json OBS-WALL-1",
+      "evidence": "The same fixture module takes 30.288s with the inherited global git configuration, 0.415s with global and system configuration disabled, and 0.423s with only commit.gpgsign disabled. The warm runtime signs commits through the provider-installed program /home/ubuntu/.cursor/bin/cursor-git-ssh-keygen, so the suite silently depended on a provider binary and paid 72x for it. The full unit suite went from 61.51s to 8.19s once local git operations stopped inheriting that configuration."
+    }
+  ],
+  "reproductions": [
+    {
+      "id": "REPRO-1",
+      "state": "reproduction",
+      "workload": "repository-native, unmodified seeded PO-03 contract suite",
+      "sanitized": true,
+      "receipt": "result/reproductions/repro-1.json",
+      "prediction": {"overall": "PASS", "CC-11": "PASS", "CC-15": "PASS", "CC-17": "PASS", "CC-07": "PASS"},
+      "prediction_held": true,
+      "notes": "Warm baseline is a sanitized clone that has already been run in, reproducing the observed warm-checkout residue through the same mechanism that produced it. Eight declared source hashes verified inside the clone."
+    },
+    {
+      "id": "REPRO-2",
+      "state": "reproduction",
+      "workload": "repository-native provenance pins declared by the immutable Wave A inputs",
+      "sanitized": true,
+      "receipt": "result/reproductions/repro-2.json",
+      "prediction": {"overall": "FAIL", "CC-06": "FAIL", "CC-11": "PASS"},
+      "prediction_held": true,
+      "notes": "Deliberately isolates the provenance claim from the runtime claim so one defect does not contaminate the other verdict."
+    },
+    {
+      "id": "REPRO-3",
+      "state": "reproduction",
+      "workload": "sanitized Obzio-native mutant: the real seeded suite plus one committed probe module that reads a provider session variable",
+      "sanitized": true,
+      "receipt": "result/reproductions/repro-3.json",
+      "prediction": {"overall": "FAIL", "CC-11": "FAIL", "CC-15": "FAIL", "CC-09": "PASS"},
+      "prediction_held": true,
+      "notes": "The mutant exists only inside the work root, committed to a throwaway local branch. The synthetic variable value is not a real secret and is redacted from captured output regardless."
+    },
+    {
+      "id": "REPRO-4",
+      "state": "reproduction",
+      "workload": "sanitized Obzio-native mutant: the real seeded suite plus one committed probe module hardcoding /tmp",
+      "sanitized": true,
+      "receipt": "result/reproductions/repro-4.json",
+      "prediction": {"overall": "FAIL", "CC-08": "FAIL", "CC-11": "PASS", "CC-10": "PASS"},
+      "prediction_held": true,
+      "notes": "Shows the dynamic checks pass and only the static scan fails, which is why CC-08 is blocking."
+    },
+    {
+      "id": "REPRO-5",
+      "state": "reproduction",
+      "workload": "repository-native: this unit's own forty-two-case suite, executed from two pristine clones",
+      "sanitized": true,
+      "receipt": "result/reproductions/repro-5.json",
+      "prediction": {"overall": "PASS", "CC-11": "PASS", "CC-17": "PASS", "CC-08": "PASS", "CC-12": "PASS"},
+      "prediction_held": true,
+      "notes": "The gate certifies itself. Inside each clone the suite re-runs the gate against that clone, so the recurrence property is exercised at two levels."
+    },
+    {
+      "id": "REPRO-6",
+      "state": "reproduction",
+      "workload": "repository-native audit of the scan-exclusion list used by REPRO-5",
+      "sanitized": true,
+      "receipt": "result/reproductions/repro-6.json",
+      "prediction": {"overall": "FAIL", "CC-08": "FAIL", "CC-11": "PASS"},
+      "prediction_held": true,
+      "notes": "Scanning the unit with no exclusions flags exactly clean_clone_harness.py, run_reproductions.py and test_clean_clone_harness.py out of five scanned files, confirming the exclusion list is complete and that ownership_guard.py and test_ownership_guard.py carry no non-portable literal."
+    }
+  ],
+  "mechanism_changes": [
+    {
+      "id": "MECH-1",
+      "state": "mechanism_change",
+      "scope": "live in this unit's owned subtree",
+      "change": "A clean-clone contamination gate with twenty named assertions, usable as a CLI or an importable function, dependency-free so it runs in the runtimes it certifies.",
+      "independent_test": "42-case suite with one adversarial fixture and one positive control per contamination class; REPRO-1 and REPRO-5 on real workloads.",
+      "disposition": "RETAIN"
+    },
+    {
+      "id": "MECH-2",
+      "state": "mechanism_change",
+      "scope": "live in this unit's owned subtree",
+      "change": "The checkout-state assertion was split into CC-12 semantic mutation (blocking), CC-19 bytecode residue (observation) and CC-20 interpreter-hardening measurement, after the first version failed every Python suite by treating bytecode caches as mutation.",
+      "independent_test": "test_isolated_mode_makes_bytecode_suppression_inert_and_is_reported, test_non_isolated_suite_command_suppresses_bytecode_entirely, test_suite_that_mutates_its_own_checkout_is_caught, test_bytecode_residue_classifier",
+      "disposition": "RETAIN"
+    },
+    {
+      "id": "MECH-3",
+      "state": "mechanism_change",
+      "scope": "live in this unit's owned subtree",
+      "change": "Local git operations in the harness, the guard and both test modules now run with global and system git configuration disabled. Clone and fetch keep the caller environment so remote credentials still work.",
+      "measured_effect": "unit suite 61.51s to 8.19s in the warm checkout; cause isolated to commit.gpgsign in the inherited configuration",
+      "independent_test": "test_local_git_env_neutralises_ambient_configuration, test_fixture_commits_do_not_inherit_ambient_signing_configuration",
+      "disposition": "RETAIN"
+    },
+    {
+      "id": "MECH-4",
+      "state": "mechanism_change",
+      "scope": "live in this unit's owned subtree",
+      "change": "Untracked four committed .pyc files and added a unit-scoped .gitignore, repairing a defect the gate found in this unit's own first commit.",
+      "independent_test": "REPRO-1 CC-05 on the delivered commit; test_committed_warm_build_residue_is_caught as the synthetic recurrence case",
+      "disposition": "RETAIN"
+    },
+    {
+      "id": "MECH-5",
+      "state": "mechanism_change",
+      "scope": "live in this unit's owned subtree",
+      "change": "A changed-path ownership guard that reads the allowlist and denylist straight out of an immutable task input, with git-style glob semantics where a single star stops at a separator, and rename and deletion handling.",
+      "independent_test": "10-case suite including the deliberate out-of-allowlist mutation fixture the commission requires, a PO-01 denylist case, a sibling-unit collision case and a controller-shared-path case",
+      "disposition": "RETAIN"
+    }
+  ],
+  "evidence_backed_rejections": [
+    {
+      "id": "REJ-1",
+      "state": "evidence_backed_rejection",
+      "rejected_claim": "Python isolated mode establishes environment independence for the PO-03 suite.",
+      "evidence": "REPRO-3: warm exit 0, clean exit 1, CC-15 warm-only green.",
+      "consequence": "Environment scrubbing to an allowlist is required and is now a blocking assertion."
+    },
+    {
+      "id": "REJ-2",
+      "state": "evidence_backed_rejection",
+      "rejected_claim": "Temporary-directory redirection detects system temporary-directory dependency.",
+      "evidence": "REPRO-4: CC-10 PASS, CC-11 PASS, CC-08 FAIL on the same mutant.",
+      "consequence": "The static closure scan is retained as blocking rather than advisory."
+    },
+    {
+      "id": "REJ-3",
+      "state": "evidence_backed_rejection",
+      "rejected_claim": "PYTHONDONTWRITEBYTECODE suppresses bytecode residue for the seeded suite command.",
+      "evidence": "CC-20 measured dont_write_bytecode False under the suite's own flags and True without isolation, for the same environment.",
+      "consequence": "Residue is reported as an observation instead of being silently assumed away, and -B is named as the actual fix."
+    }
+  ],
+  "strategy_proposals": [
+    {
+      "id": "SP-1",
+      "state": "strategy_proposal",
+      "status": "PROPOSED_NOT_APPLIED",
+      "proposal": "Adopt workstreams/po03/wave-a/units/wa-003/integration-ready/po03-clean-clone.yml.candidate as .github/workflows/po03-clean-clone.yml.",
+      "rationale": "The existing contracts job proves a clean checkout, not independence from the runner environment, home directory, temporary directory or network, and enforces no changed-path ownership.",
+      "owner": "controller; .github/workflows/po03-*.yml is outside this unit's allowlist"
+    },
+    {
+      "id": "SP-2",
+      "state": "strategy_proposal",
+      "status": "PROPOSED_NOT_APPLIED",
+      "proposal": "Resolve every provenance SHA with git rev-parse --verify before writing it into an immutable task input, and fail generation when it does not resolve.",
+      "rationale": "REPRO-2 shows all 64 Wave A inputs carry an unresolvable minimum_protocol_ancestor from a hardcoded literal.",
+      "owner": "controller; workstreams/po03/tools/** and workstreams/po03/control/** are read-only here. This unit does not rewrite immutable inputs."
+    },
+    {
+      "id": "SP-3",
+      "state": "strategy_proposal",
+      "status": "PROPOSED_NOT_APPLIED",
+      "proposal": "Add the -B interpreter flag to the seeded suite command so CI stops writing bytecode into its own checkout.",
+      "rationale": "CC-19 and CC-20 show the current command writes twelve bytecode paths per run and that environment-based suppression cannot prevent it.",
+      "owner": "controller"
+    },
+    {
+      "id": "SP-4",
+      "state": "strategy_proposal",
+      "status": "PROPOSED_NOT_APPLIED",
+      "proposal": "Extend the gate so it asserts, rather than merely enforces, that the suite under test is independent of ambient git configuration.",
+      "rationale": "H-CM-08 measured a 72x effect from one inherited setting, and a suite that needs a provider-installed signing binary is not portable.",
+      "owner": "successor generation of this unit"
+    }
+  ],
+  "artifacts": {
+    "manifest": "workstreams/po03/wave-a/units/wa-003/result/artifact-manifest.json",
+    "artifact_count": null,
+    "artifact_bytes": null,
+    "accounting_note": "Exact counts and per-artifact SHA-256 and byte values live in artifact-manifest.json and are restated in ready-to-commit.json. A byte total that includes this file cannot appear inside this file.",
+    "required_by_contract": [
+      "result.json",
+      "tests.json",
+      "limitations.json",
+      "artifact-manifest.json",
+      "ready-to-commit.json"
+    ],
+    "additional": [
+      "result/source-claims.json",
+      "result/ownership-guard.json",
+      "result/reproductions/reproduction-ledger.json",
+      "result/reproductions/repro-1.json",
+      "result/reproductions/repro-2.json",
+      "result/reproductions/repro-3.json",
+      "result/reproductions/repro-4.json",
+      "result/reproductions/repro-5.json",
+      "result/reproductions/repro-6.json",
+      "result/logs/commands.txt",
+      "integration-ready/po03-clean-clone.yml.candidate"
+    ]
+  },
+  "tests": {
+    "detail": "workstreams/po03/wave-a/units/wa-003/result/tests.json",
+    "test_count": 42,
+    "test_count_including_read_only_seeded_suite": 65,
+    "verdict": "OK",
+    "exit_code": 0,
+    "first_pass_outcome": "FAIL_THEN_REPAIRED",
+    "taxonomy_check": "PASS",
+    "ownership_check": "PASS"
+  },
+  "source_claims": {
+    "detail": "workstreams/po03/wave-a/units/wa-003/result/source-claims.json",
+    "source_claim_count": 16,
+    "unresolved_count": 0,
+    "external_source_claims": [],
+    "external_source_claim_status": "NOT_SUPPORTED",
+    "read_at_commit": "7bbe7b45aaffe6e4461791d3a06482e5ec81f575",
+    "declared_hash_verification": [
+      {"field": "commission_sha256", "path": "workstreams/po03/COMMISSION.md", "match": true},
+      {"field": "validator_sha256", "path": "workstreams/po03/tools/validate_contracts.py", "match": true},
+      {"field": "seed_tests_sha256", "path": "workstreams/po03/tests/test_validate_contracts.py", "match": true},
+      {"field": "transactional_schema_sha256", "path": "workstreams/po03/contracts/transactional-result.schema.json", "match": true},
+      {"field": "wave_schema_sha256", "path": "workstreams/po03/contracts/wave-compounding.schema.json", "match": true},
+      {"field": "workflow_sha256", "path": ".github/workflows/po03-contracts.yml", "match": true},
+      {"field": "acceptance_contract.sha256", "path": "workstreams/po03/control/acceptance/wave-a-material-v1.json", "match": true},
+      {"field": "portfolio.sha256", "path": "workstreams/po03/control/wave-a-portfolio.json", "match": true},
+      {"field": "source_base.commission_commit", "resolves": true, "ancestor_of_head": true},
+      {"field": "source_base.minimum_protocol_ancestor", "resolves": false, "prefix_resolves_to": "100bc2079cedc193af3524234ab833cc9f9f4669", "prefix_is_ancestor_of_head": true}
+    ]
+  },
+  "limitations": {
+    "detail": "workstreams/po03/wave-a/units/wa-003/result/limitations.json",
+    "not_supported_count": 8,
+    "limitation_count": 8,
+    "exclusion_count": 5
+  },
+  "model_observed": {
+    "requested_model_slug": "claude-opus-5-thinking-high",
+    "runtime_self_report": "Claude Opus 5",
+    "provider_run_original_model_name": "gpt-5.6-sol-max-fast",
+    "provider_run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+    "attestation": "NOT_SUPPORTED",
+    "note": "provider_run_original_model_name describes the enclosing controller run, not this subagent. No provider-signed per-subagent model attestation exists, so the divergence is recorded rather than resolved. See limitations.json NS-2."
+  },
+  "reasoning_observed": {
+    "requested": "high",
+    "auto_model_selection": false,
+    "readback": "NOT_SUPPORTED",
+    "note": "The provider exposes no reasoning-effort readback to the running subagent."
+  },
+  "metrics": {
+    "preregistered": [
+      "wall_time",
+      "test_count",
+      "first_pass_outcome",
+      "artifact_count",
+      "artifact_bytes",
+      "source_claim_count",
+      "reproduction_count",
+      "mechanism_change_count",
+      "defects",
+      "rework",
+      "provider_block",
+      "collision",
+      "recovery_events"
+    ],
+    "wall_time": {
+      "unit_elapsed_seconds_approximate": 2400,
+      "basis": "invocation at 2026-08-22T07:16Z to result generation at 2026-08-22T07:56Z; the provider exposes no per-subagent timer, so this is derived from observed timestamps",
+      "measured_components": {
+        "unit_suite_warm_checkout_seconds": 8.19,
+        "unit_suite_warm_checkout_before_repair_seconds": 61.51,
+        "unit_suite_pristine_clone_seconds": 8.575,
+        "seeded_suite_seconds": 0.001,
+        "six_reproductions_seconds": 21.1
+      }
+    },
+    "test_count": 42,
+    "gate_assertion_count": 20,
+    "first_pass_outcome": "FAIL_THEN_REPAIRED",
+    "artifact_count": null,
+    "artifact_bytes": null,
+    "source_claim_count": 16,
+    "reproduction_count": 6,
+    "mechanism_change_count": 5,
+    "evidence_backed_rejection_count": 3,
+    "current_method_hypothesis_count": 8,
+    "strategy_proposal_count": 4,
+    "defects": {
+      "in_own_work_found_and_repaired": 6,
+      "found_in_existing_mechanism_reported_not_repaired": 2,
+      "escaped": 0,
+      "detail": "tests.json defects_found_and_repaired; the two external findings are the unresolvable provenance pin across all 64 Wave A inputs and the coverage gap in po03-contracts.yml"
+    },
+    "rework": {
+      "cycles": 3,
+      "detail": "first suite repair after six failing cases, bytecode untracking after the gate failed its own commit, ambient git configuration hardening after the wall-time measurement"
+    },
+    "provider_block": 0,
+    "collision": 0,
+    "recovery_events": 0,
+    "founder_action_required": 0
+  },
+  "acceptance_self_check": [
+    {
+      "assertion": "The attempt tests the exact falsifiable hypothesis and does not substitute a plan, inventory, renamed clone, idle session or narrative-only summary.",
+      "disposition": "PASS",
+      "evidence": "Six executed reproductions with predicted dispositions, 42 executed tests, 20 named gate assertions and captured command output. No planning document is delivered."
+    },
+    {
+      "assertion": "The attempt leaves at least one executable component, reproduction, test, adversarial case, acceptance decision or evidence-backed rejection in its owned subtree.",
+      "disposition": "PASS",
+      "evidence": "Four executable modules, two test modules, six reproductions, nine adversarial fixture classes and three evidence-backed rejections."
+    },
+    {
+      "assertion": "Current source claims are recorded separately from hypotheses, reproductions, mechanism changes and strategy proposals.",
+      "disposition": "PASS",
+      "evidence": "source_claims, current_method_hypotheses, reproductions, mechanism_changes, evidence_backed_rejections and strategy_proposals are distinct blocks, and each entry carries an explicit state field."
+    },
+    {
+      "assertion": "An engineering attempt includes focused automated tests and command output; unexecuted code fails.",
+      "disposition": "PASS",
+      "evidence": "42 tests OK, 23 seeded tests OK, taxonomy check PASS, ownership guard PASS, all captured in result/logs/commands.txt."
+    },
+    {
+      "assertion": "A reproduction attempt runs on a sanitized repository-native Obzio workload and records enough detail for clean-clone recurrence.",
+      "disposition": "PASS",
+      "evidence": "REPRO-1 and REPRO-5 run the real PO-03 suites; REPRO-3 and REPRO-4 mutate a sanitized clone inside the work root. Every receipt records the source repository, commit, suite command, scan closure, exclusions and environment shape, and method.recurrence_commands lists the exact rerun commands."
+    },
+    {
+      "assertion": "The producer records exact source URLs or immutable repository SHAs actually read, plus exclusions and limitations, and uses NOT_SUPPORTED rather than invention.",
+      "disposition": "PASS",
+      "evidence": "16 repository source claims with computed SHA-256 and byte counts, zero unresolved; five exclusions; eight limitations; eight explicit NOT_SUPPORTED boundaries including external sources and model attestation."
+    },
+    {
+      "assertion": "The producer writes only its declared owned subtree in an isolated best-of-N worktree and causes no external effect.",
+      "disposition": "PASS",
+      "evidence": "Ownership guard over the full commit range reports every changed path inside workstreams/po03/wave-a/units/wa-003/** with zero prohibited hits. Execution occurred in a separate clone; /workspace was never written. No pull request, merge, promotion or protected act."
+    },
+    {
+      "assertion": "The result contains result.json, tests.json, limitations.json, artifact-manifest.json and ready-to-commit.json with complete SHA-256 and byte accounting.",
+      "disposition": "PASS",
+      "evidence": "All five are delivered. The manifest covers every artifact byte-for-byte; the two documents that cannot hash themselves are covered by the declared hash chain."
+    },
+    {
+      "assertion": "The producer validates changed paths, commits, pushes a unique branch and reads every artifact back from an immutable remote commit.",
+      "disposition": "PASS",
+      "evidence": "Recorded in ready-to-commit.json readback_verification, performed from a fresh clone of the immutable return commit."
+    },
+    {
+      "assertion": "The producer reports only READY_TO_COMMIT; provider completion without a durable commit is PROVIDER_COMPLETED_UNCOMMITTED.",
+      "disposition": "PASS",
+      "evidence": "The terminal report is READY_TO_COMMIT with obzio_state RESULT_COMMITTED. No COMPLETED or ACCEPTED claim appears anywhere in this result."
+    },
+    {
+      "assertion": "Only the coordinator may record COMPLETED, and a producer cannot independently accept its own result.",
+      "disposition": "PASS",
+      "evidence": "completion_actor is null and independent_acceptance.state is NOT_TESTED."
+    },
+    {
+      "assertion": "PO-01, PR #8, protected state, shared current pointers and every path outside the PO-03 allowlist remain untouched.",
+      "disposition": "PASS",
+      "evidence": "limitations.json exclusions EXC-1 through EXC-5, corroborated by the ownership guard receipt."
+    }
+  ],
+  "independent_disposition": "NOT_YET",
+  "independent_disposition_note": "Reserved for a different producer. This unit does not accept its own result.",
+  "obzio_state": "RESULT_COMMITTED",
+  "provider_state": "RUNNING",
+  "completion_actor": null,
+  "decision_changed": []
+}

@@ -1,0 +1,283 @@
+{
+  "schema_version": "OBZIO-PO03-WA003-TESTS-v1",
+  "task_id": "PO03-WA-003",
+  "attempt_id": "PO03-WA-003-A01",
+  "hypothesis_id": "H-PO03-WA-003",
+  "generated_at": "2026-08-22T07:55:00Z",
+  "runtime": {
+    "python": "Python 3.12.3 (main, Mar 23 2026, 19:04:32) [GCC 13.3.0]",
+    "git": "git version 2.43.0",
+    "worktree_root": "/tmp/po03-wa-003-b1956656/runner",
+    "cpu_count": 8,
+    "third_party_dependencies": "none; the harness, the guard and both test modules import only the standard library"
+  },
+  "first_pass_outcome": "FAIL_THEN_REPAIRED",
+  "first_pass_note": "The first execution of the new suite failed six of forty cases and errored on one. Every failure was a defect in this unit's own code or fixtures, was repaired, and the repaired suite passes. The defects are itemised under defects_found_and_repaired.",
+  "executed_suites": [
+    {
+      "suite_id": "TS-1",
+      "name": "WA-003 clean-clone gate and ownership guard suite",
+      "command": "python3 -I -m unittest discover -s workstreams/po03/wave-a/units/wa-003/tests -p 'test_*.py' -v",
+      "cwd": "/tmp/po03-wa-003-b1956656/runner",
+      "exit_code": 0,
+      "tests_ran": 42,
+      "verdict": "OK",
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 8.141,
+      "log": "workstreams/po03/wave-a/units/wa-003/result/logs/commands.txt"
+    },
+    {
+      "suite_id": "TS-2",
+      "name": "Seeded PO-03 result-custody contract suite, unmodified",
+      "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+      "cwd": "/tmp/po03-wa-003-b1956656/runner",
+      "exit_code": 0,
+      "tests_ran": 23,
+      "verdict": "OK",
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.001,
+      "log": "workstreams/po03/wave-a/units/wa-003/result/logs/commands.txt",
+      "note": "Read-only execution of the seeded suite. No seeded file was modified; its SHA-256 is recorded in source-claims.json."
+    },
+    {
+      "suite_id": "TS-3",
+      "name": "Repository operator-taxonomy currentness gate",
+      "command": "python3 scripts/check_operator_taxonomy.py",
+      "cwd": "/tmp/po03-wa-003-b1956656/runner",
+      "exit_code": 0,
+      "verdict": "OPERATOR TAXONOMY CHECK: PASS",
+      "observed_output": [
+        "active function: obzio.function.strategic-operations-orchestration",
+        "active appointment: obzio.appointment.strategic-operations-orchestration.20260819.001",
+        "classified aliases: 9"
+      ],
+      "log": "workstreams/po03/wave-a/units/wa-003/result/logs/commands.txt"
+    },
+    {
+      "suite_id": "TS-4",
+      "name": "Ownership validation of this unit's own commit range",
+      "command": "python3 workstreams/po03/wave-a/units/wa-003/harness/ownership_guard.py --repo . --base e56eda6e8e4a4e958795f7157839926d93272b30 --head HEAD --input workstreams/po03/control/inputs/wave-a/wa-003.json",
+      "cwd": "/tmp/po03-wa-003-b1956656/runner",
+      "exit_code": 0,
+      "verdict": "OWNERSHIP PASS changed=6 inside=6 outside=0 prohibited=0",
+      "receipt": "workstreams/po03/wave-a/units/wa-003/result/ownership-guard.json",
+      "note": "Evaluated at the code commit 7bbe7b45aaffe6e4461791d3a06482e5ec81f575; re-evaluated for the result commit and recorded in ready-to-commit.json."
+    },
+    {
+      "suite_id": "TS-5",
+      "name": "Reproduction driver over six declarative reproductions",
+      "command": "python3 workstreams/po03/wave-a/units/wa-003/harness/run_reproductions.py --repo . --commit 7bbe7b45aaffe6e4461791d3a06482e5ec81f575 --work-root /tmp/po03-wa-003-b1956656/repro/work --out-dir workstreams/po03/wave-a/units/wa-003/result/reproductions",
+      "cwd": "/tmp/po03-wa-003-b1956656/runner",
+      "exit_code": 0,
+      "reproductions": 6,
+      "all_predictions_held": true,
+      "duration_seconds": 21.1,
+      "receipt": "workstreams/po03/wave-a/units/wa-003/result/reproductions/reproduction-ledger.json"
+    }
+  ],
+  "test_count": 42,
+  "test_count_including_read_only_seeded_suite": 65,
+  "gate_assertion_count": 20,
+  "test_cases": {
+    "test_clean_clone_harness.PureHelperTests": [
+      "test_bytecode_residue_classifier",
+      "test_env_leaks_flags_injected_provider_variable",
+      "test_glob_match_denylist_prefixes",
+      "test_glob_match_double_star_crosses_separators",
+      "test_glob_match_star_stops_at_separator",
+      "test_isolated_suite_command_detection",
+      "test_local_git_env_neutralises_ambient_configuration",
+      "test_parse_unittest_summary",
+      "test_porcelain_path_extraction",
+      "test_redactor_masks_secret_shaped_values",
+      "test_scanner_reports_missing_scan_path",
+      "test_scrubbed_env_drops_provider_and_secret_names",
+      "test_static_scanner_positive_and_negative"
+    ],
+    "test_clean_clone_harness.CleanCloneGateTests": [
+      "test_cli_rejects_short_commit",
+      "test_cli_writes_receipt_and_returns_failure_exit_code",
+      "test_committed_warm_build_residue_is_caught",
+      "test_fixture_commits_do_not_inherit_ambient_signing_configuration",
+      "test_hardcoded_system_temp_survives_tmpdir_redirection_but_fails_static_scan",
+      "test_harness_creates_nothing_outside_its_work_root",
+      "test_harness_refuses_to_reuse_a_warm_clone_target",
+      "test_home_directory_state_dependency_is_caught",
+      "test_isolated_mode_makes_bytecode_suppression_inert_and_is_reported",
+      "test_non_isolated_suite_command_suppresses_bytecode_entirely",
+      "test_portable_suite_passes_every_blocking_assertion",
+      "test_provider_environment_memory_is_caught_and_warm_run_diverges",
+      "test_recurrence_across_two_independent_clean_clones",
+      "test_secret_shaped_values_are_redacted_from_captured_output",
+      "test_suite_that_mutates_its_own_checkout_is_caught",
+      "test_tempfile_using_suite_writes_only_into_the_sandbox",
+      "test_uncommitted_file_dependency_is_caught",
+      "test_unresolvable_provenance_pin_is_caught_and_prefix_is_reported"
+    ],
+    "test_clean_clone_harness.RepositoryRecurrenceTests": [
+      "test_seeded_po03_suite_recurs_from_two_independent_clean_clones"
+    ],
+    "test_ownership_guard.OwnershipGuardTests": [
+      "test_controller_shared_path_is_outside_a_subordinate_allowlist",
+      "test_deletion_and_rename_out_of_the_owned_subtree_are_caught",
+      "test_deliberate_out_of_allowlist_mutation_is_rejected",
+      "test_evaluate_is_pure_and_reports_both_categories",
+      "test_guard_error_on_input_without_ownership_block",
+      "test_guard_error_without_allowlist",
+      "test_no_changes_is_a_pass",
+      "test_owned_subtree_writes_are_allowed",
+      "test_po01_path_is_rejected_as_prohibited",
+      "test_sibling_unit_write_is_outside_allowlist"
+    ]
+  },
+  "contamination_class_coverage": [
+    {
+      "class": "warm checkout",
+      "gate_checks": ["CC-01", "CC-03", "CC-05", "CC-15", "CC-16"],
+      "adversarial_tests": [
+        "test_harness_refuses_to_reuse_a_warm_clone_target",
+        "test_committed_warm_build_residue_is_caught"
+      ],
+      "positive_control": "test_portable_suite_passes_every_blocking_assertion"
+    },
+    {
+      "class": "uncommitted files",
+      "gate_checks": ["CC-04", "CC-15", "CC-16"],
+      "adversarial_tests": ["test_uncommitted_file_dependency_is_caught"],
+      "positive_control": "test_portable_suite_passes_every_blocking_assertion"
+    },
+    {
+      "class": "provider or session memory",
+      "gate_checks": ["CC-09", "CC-15"],
+      "adversarial_tests": [
+        "test_provider_environment_memory_is_caught_and_warm_run_diverges",
+        "test_home_directory_state_dependency_is_caught",
+        "test_secret_shaped_values_are_redacted_from_captured_output"
+      ],
+      "positive_control": "test_scrubbed_env_drops_provider_and_secret_names"
+    },
+    {
+      "class": "system temporary directory dependency",
+      "gate_checks": ["CC-08", "CC-10", "CC-13"],
+      "adversarial_tests": [
+        "test_hardcoded_system_temp_survives_tmpdir_redirection_but_fails_static_scan"
+      ],
+      "positive_control": "test_tempfile_using_suite_writes_only_into_the_sandbox"
+    },
+    {
+      "class": "checkout mutation and build residue generation",
+      "gate_checks": ["CC-12", "CC-19", "CC-20"],
+      "adversarial_tests": [
+        "test_suite_that_mutates_its_own_checkout_is_caught",
+        "test_isolated_mode_makes_bytecode_suppression_inert_and_is_reported"
+      ],
+      "positive_control": "test_non_isolated_suite_command_suppresses_bytecode_entirely"
+    },
+    {
+      "class": "ambient git configuration dependency",
+      "gate_checks": ["NOT_SUPPORTED as a gate check in this version"],
+      "adversarial_tests": [
+        "test_local_git_env_neutralises_ambient_configuration",
+        "test_fixture_commits_do_not_inherit_ambient_signing_configuration"
+      ],
+      "positive_control": "test_fixture_commits_do_not_inherit_ambient_signing_configuration",
+      "note": "The harness neutralises ambient git configuration for local repository operations, but it does not yet assert the suite under test is independent of it. Recorded as a limitation and a successor candidate rather than claimed."
+    },
+    {
+      "class": "unresolvable provenance pin",
+      "gate_checks": ["CC-06"],
+      "adversarial_tests": ["test_unresolvable_provenance_pin_is_caught_and_prefix_is_reported"],
+      "positive_control": "REPRO-1 pins the commission commit and passes"
+    },
+    {
+      "class": "out-of-allowlist write",
+      "gate_checks": ["ownership_guard disposition"],
+      "adversarial_tests": [
+        "test_deliberate_out_of_allowlist_mutation_is_rejected",
+        "test_po01_path_is_rejected_as_prohibited",
+        "test_sibling_unit_write_is_outside_allowlist",
+        "test_controller_shared_path_is_outside_a_subordinate_allowlist",
+        "test_deletion_and_rename_out_of_the_owned_subtree_are_caught"
+      ],
+      "positive_control": "test_owned_subtree_writes_are_allowed"
+    },
+    {
+      "class": "network egress",
+      "gate_checks": ["CC-14"],
+      "adversarial_tests": [],
+      "positive_control": "NOT_SUPPORTED",
+      "note": "CC-14 pins every proxy variable to a closed loopback port and observes that the suite still passes. Raw-socket and DNS egress are not blocked by this mechanism, so no adversarial case is claimed."
+    }
+  ],
+  "defects_found_and_repaired": [
+    {
+      "defect_id": "DEF-1",
+      "found_by": "test_portable_suite_passes_every_blocking_assertion and three sibling cases",
+      "description": "CC-12 treated interpreter bytecode caches as a semantic checkout mutation, so every Python suite failed the gate.",
+      "repair": "Split the assertion: CC-12 blocks only non-bytecode mutation, CC-19 reports bytecode residue as an observation, and CC-20 measures why environment-based suppression does not work.",
+      "recurrence_test": "test_isolated_mode_makes_bytecode_suppression_inert_and_is_reported, test_non_isolated_suite_command_suppresses_bytecode_entirely, test_bytecode_residue_classifier"
+    },
+    {
+      "defect_id": "DEF-2",
+      "found_by": "the gate's own CC-05 assertion during REPRO-1",
+      "description": "The unit's first commit staged the __pycache__ directories the test run produced, so a pristine clone of the delivered commit started with build residue.",
+      "repair": "git rm --cached the four tracked .pyc files and add a unit-scoped .gitignore.",
+      "recurrence_test": "REPRO-1 CC-05 on the delivered commit, plus test_committed_warm_build_residue_is_caught as the synthetic case"
+    },
+    {
+      "defect_id": "DEF-3",
+      "found_by": "CC-16 asserting PASS on a clean warm baseline",
+      "description": "The warm-baseline dirtiness check ran after the warm suite, so bytecode written by the warm run was misreported as a pre-existing uncommitted dependency.",
+      "repair": "Read warm-tree porcelain before executing anything in it.",
+      "recurrence_test": "test_portable_suite_passes_every_blocking_assertion asserts CC-16 PASS; test_uncommitted_file_dependency_is_caught asserts CC-16 INCONCLUSIVE with the offending path named"
+    },
+    {
+      "defect_id": "DEF-4",
+      "found_by": "test_harness_creates_nothing_outside_its_work_root",
+      "description": "The confinement assertion in the test excluded paths under the work root but not the work root entry itself, producing a false positive.",
+      "repair": "Exclude the work-root entry as well as its descendants.",
+      "recurrence_test": "test_harness_creates_nothing_outside_its_work_root"
+    },
+    {
+      "defect_id": "DEF-5",
+      "found_by": "test_deletion_and_rename_out_of_the_owned_subtree_are_caught",
+      "description": "The rename fixture called git mv into a directory that did not exist.",
+      "repair": "Create the destination directory in the fixture.",
+      "recurrence_test": "test_deletion_and_rename_out_of_the_owned_subtree_are_caught"
+    },
+    {
+      "defect_id": "DEF-6",
+      "found_by": "test_fixture_commits_do_not_inherit_ambient_signing_configuration",
+      "description": "git config --get was passed --default after the key name, where git reads it as a value pattern.",
+      "repair": "Move --default before --get.",
+      "recurrence_test": "test_fixture_commits_do_not_inherit_ambient_signing_configuration"
+    }
+  ],
+  "measured_wall_time_observations": [
+    {
+      "observation_id": "OBS-WALL-1",
+      "subject": "WA-003 suite in the warm runner checkout with the inherited environment",
+      "before_repair_seconds": 61.51,
+      "after_repair_seconds": 8.19,
+      "attributed_cause": "commit.gpgsign=true in the inherited global git configuration, whose signer is the provider-installed program gpg.ssh.program=/home/ubuntu/.cursor/bin/cursor-git-ssh-keygen",
+      "isolation_evidence": [
+        "ownership module alone, inherited environment: real 30.288s, user 0.384s",
+        "ownership module alone, GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null: real 0.415s",
+        "ownership module alone, inherited environment with GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=commit.gpgsign GIT_CONFIG_VALUE_0=false: real 0.423s"
+      ],
+      "conclusion": "The slowdown is fully attributable to ambient commit signing. The near-identical figures for disabling all global configuration and for disabling only commit.gpgsign isolate the cause to that single setting."
+    },
+    {
+      "observation_id": "OBS-WALL-2",
+      "subject": "Same suite inside a pristine clone under the scrubbed environment",
+      "clone_1_seconds": 8.575,
+      "clone_2_seconds": 8.804,
+      "note": "Measured by REPRO-5 before the ambient-configuration repair, when the warm figure was 61.5s. The clean runtime was already fast because the gate scrubs git configuration for the suite it launches."
+    }
+  ],
+  "decision_changed": []
+}
