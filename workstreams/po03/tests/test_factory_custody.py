@@ -237,16 +237,43 @@ class CompletionTests(CustodyTestCase):
         with self.assertRaises(ValueError):
             MODULE.complete_unit("po03-unit-001", document)
 
-    def test_completion_requires_parent_ingested_timestamp(self):
+    def test_coordinator_stamps_parent_ingestion_itself(self):
+        document = self._ingested_document()
+        ingestion = MODULE.ingest_result("po03-unit-001", document)
+        completed = MODULE.complete_unit("po03-unit-001", document)
+        self.assertEqual(
+            ingestion["ingested_at"], completed["result_transaction"]["parent_ingested_at"]
+        )
+
+    def test_producer_supplied_parent_ingestion_is_refused(self):
         document = self._ingested_document()
         MODULE.ingest_result("po03-unit-001", document)
+        forged = json.loads(json.dumps(document))
+        forged["result_transaction"]["parent_ingested_at"] = "2026-08-22T07:03:00Z"
+        with self.assertRaises(ValueError):
+            MODULE.complete_unit("po03-unit-001", forged)
+
+    def test_completion_requires_a_matching_ingestion_record(self):
+        document = self._ingested_document()
+        MODULE.ingest_result("po03-unit-001", document)
+        divergent = json.loads(json.dumps(document))
+        divergent["attempt"]["checkpoint_seq"] = 99
+        with self.assertRaises(ValueError):
+            MODULE.complete_unit("po03-unit-001", divergent)
+
+    def test_completion_of_a_failed_ingestion_is_refused(self):
+        body = b'{"unit":"po03-unit-001"}\n'
+        commit = self._init_repository_with_artifact(body)
+        document = self._result_document(commit=commit, sha256="b" * 64, size=len(body))
+        MODULE.grant_lease("po03-unit-001", holder="producer-1", lease_seconds=60, attempt=1)
+        MODULE.ingest_result("po03-unit-001", document)
+        MODULE.hash_chain_event("po03-unit-001", "PARENT_INGESTED", actor="test", details={})
         with self.assertRaises(ValueError):
             MODULE.complete_unit("po03-unit-001", document)
 
     def test_coordinator_completion_passes_the_seeded_contract(self):
         document = self._ingested_document()
         MODULE.ingest_result("po03-unit-001", document)
-        document["result_transaction"]["parent_ingested_at"] = "2026-08-22T07:03:00Z"
         completed = MODULE.complete_unit("po03-unit-001", document, reviewer_id="reviewer-2")
         self.assertEqual("COMPLETED", completed["obzio_state"])
         self.assertEqual("coordinator", completed["completion_actor"])
@@ -257,7 +284,6 @@ class CompletionTests(CustodyTestCase):
     def test_completion_never_self_accepts(self):
         document = self._ingested_document()
         MODULE.ingest_result("po03-unit-001", document)
-        document["result_transaction"]["parent_ingested_at"] = "2026-08-22T07:03:00Z"
         completed = MODULE.complete_unit("po03-unit-001", document, reviewer_id="producer-1")
         self.assertNotEqual("ACCEPTED", completed["independent_acceptance"]["state"])
 
@@ -271,7 +297,6 @@ class DispositionTests(CustodyTestCase):
         )
         MODULE.grant_lease("po03-unit-001", holder="producer-1", lease_seconds=60, attempt=1)
         MODULE.ingest_result("po03-unit-001", document)
-        document["result_transaction"]["parent_ingested_at"] = "2026-08-22T07:03:00Z"
         MODULE.complete_unit("po03-unit-001", document, reviewer_id="reviewer-2")
 
     def test_disposition_before_completion_is_impossible(self):

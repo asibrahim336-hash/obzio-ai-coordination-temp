@@ -55,6 +55,10 @@ def utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
+def _nonempty_text(value: Any) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
 def canonical_json(value: Any) -> bytes:
     return (json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False) + "\n").encode("utf-8")
 
@@ -1053,14 +1057,35 @@ def ingest_result(task_id: str, document: dict[str, Any]) -> dict[str, Any]:
     return ingestion
 
 
+def find_ingestion(task_id: str, result_sha256: str) -> dict[str, Any] | None:
+    candidate = CONTROL_ROOT / "tasks" / task_id / f"ingestion-{result_sha256[:16]}.json"
+    return read_json(candidate) if candidate.is_file() else None
+
+
 def complete_unit(task_id: str, document: dict[str, Any], *, reviewer_id: str | None = None) -> dict[str, Any]:
-    """Set Obzio COMPLETED. Only the coordinator may call this, and only after ingestion."""
+    """Set Obzio COMPLETED. Only the coordinator may call this, and only after ingestion.
+
+    Parent ingestion is a fact the coordinator observes, never a field a producer
+    supplies, so a pre-populated `parent_ingested_at` is treated as forgery and
+    the timestamp is stamped from the controller's own ingestion record.
+    """
     events = sorted((CONTROL_ROOT / "events" / task_id).glob("*.json"))
     ingested = any(read_json(path).get("state") == "PARENT_INGESTED" for path in events)
     if not ingested:
         raise ValueError(f"{task_id}: cannot complete before PARENT_INGESTED")
 
+    if _nonempty_text(document.get("result_transaction", {}).get("parent_ingested_at")):
+        raise ValueError(
+            f"{task_id}: producer supplied parent_ingested_at; only the coordinator records ingestion"
+        )
+    ingestion = find_ingestion(task_id, sha256_bytes(canonical_json(document)))
+    if ingestion is None:
+        raise ValueError(f"{task_id}: no ingestion record matches this result document")
+    if ingestion.get("errors"):
+        raise ValueError(f"{task_id}: cannot complete a result that failed ingestion")
+
     completed = json.loads(json.dumps(document))
+    completed["result_transaction"]["parent_ingested_at"] = ingestion["ingested_at"]
     completed["obzio_state"] = "COMPLETED"
     completed["completion_actor"] = "coordinator"
     completed["independent_acceptance"] = {
