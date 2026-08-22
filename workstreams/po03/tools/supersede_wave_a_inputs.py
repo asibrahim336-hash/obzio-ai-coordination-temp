@@ -239,14 +239,28 @@ def validate_git_provenance(
 ) -> None:
     ancestor = _resolve_exact_commit(repo, protocol_ancestor, "corrected ancestor")
     commission = _resolve_exact_commit(repo, commission_commit, "commission commit")
-    result = _git(repo, "merge-base", "--is-ancestor", ancestor, commission)
-    if result.returncode == 1:
+    head = _resolve_exact_commit(
+        repo,
+        _git(repo, "rev-parse", "--verify", "HEAD^{commit}").stdout.strip(),
+        "controller HEAD",
+    )
+    chronology = _git(repo, "merge-base", "--is-ancestor", commission, ancestor)
+    if chronology.returncode == 1:
         raise MigrationError(
-            f"corrected ancestor {ancestor} is not an ancestor of "
-            f"commission commit {commission}"
+            f"commission commit {commission} is not an ancestor of "
+            f"corrected protocol commit {ancestor}"
         )
-    if result.returncode != 0:
-        detail = result.stderr.strip() or "git ancestry check failed"
+    if chronology.returncode != 0:
+        detail = chronology.stderr.strip() or "git chronology check failed"
+        raise MigrationError(f"unable to validate commission chronology: {detail}")
+    ancestry = _git(repo, "merge-base", "--is-ancestor", ancestor, head)
+    if ancestry.returncode == 1:
+        raise MigrationError(
+            f"corrected protocol commit {ancestor} is not an ancestor of "
+            f"controller HEAD {head}"
+        )
+    if ancestry.returncode != 0:
+        detail = ancestry.stderr.strip() or "git ancestry check failed"
         raise MigrationError(f"unable to validate corrected ancestry: {detail}")
 
 
@@ -989,7 +1003,8 @@ def _review(
             "defective_declared_ancestor": INVALID_PROTOCOL_ANCESTOR,
             "corrected_resolved_ancestor": protocol_ancestor,
             "commission_commit": commission_commit,
-            "corrected_ancestor_is_ancestor_of_commission": True,
+            "commission_is_ancestor_of_corrected_protocol": True,
+            "corrected_protocol_is_ancestor_of_controller_head": True,
         },
         "a01_input": {
             "path": _uri(_a01_rel(number)),

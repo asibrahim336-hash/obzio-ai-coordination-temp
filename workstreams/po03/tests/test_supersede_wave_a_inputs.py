@@ -61,14 +61,14 @@ class SyntheticControl:
         self.repo = Path(self.temporary.name)
         self.root = self.repo / "workstreams" / "po03"
         self.git("init", "-q")
-        (self.repo / "marker.txt").write_text("protocol\n", encoding="utf-8")
-        self.git("add", "marker.txt")
-        self.git("commit", "-q", "-m", "protocol")
-        self.ancestor = self.git("rev-parse", "HEAD").stdout.strip()
         (self.repo / "marker.txt").write_text("commission\n", encoding="utf-8")
         self.git("add", "marker.txt")
         self.git("commit", "-q", "-m", "commission")
         self.commission = self.git("rev-parse", "HEAD").stdout.strip()
+        (self.repo / "marker.txt").write_text("protocol\n", encoding="utf-8")
+        self.git("add", "marker.txt")
+        self.git("commit", "-q", "-m", "protocol")
+        self.ancestor = self.git("rev-parse", "HEAD").stdout.strip()
         self._write_control()
 
     def cleanup(self):
