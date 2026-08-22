@@ -1,0 +1,279 @@
+{
+  "protocol_version": "OBZIO-WAVE-A-UNIT-RESULT-v1",
+  "task_id": "PO03-WA-018",
+  "wave_id": "PO03-WAVE-A",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "attempt_id": "PO03-WA-018-A02",
+  "idempotency_key": "po03:100bc2079ced:wa-018:a02",
+  "lease_id": "lease-po03-wa-018-a02",
+  "fence_token": 2,
+  "hypothesis_id": "H-PO03-WA-018",
+  "hypothesis": "Increasing concurrency without proportional verification capacity creates a measurable false-green or recovery penalty.",
+  "hypothesis_outcome": "SUPPORTED",
+  "hypothesis_outcome_bound": "Supported wherever verification is or becomes the binding constraint, and the grid locates that boundary precisely. Two bounds are load-bearing and evidenced rather than asserted. First, which penalty appears is decided by the promotion policy rather than by the capacity ratio: a strictly blocking gate produced zero false greens in all 40 of its grid cells while paying a 972 percent increase in p95 staged wait, whereas every policy that trades verification for pace pays in false greens instead. Second, proportional capacity counted in verifier slots does not bound the escape rate, because escapes are set by verification power; holding the ratio constant while degrading power left the escaped-defect count at exactly 36 on all four rungs. In the slack region where verification already exceeds demand, no channel is material, and that region is the frontier's location rather than a defect in the finding.",
+
+  "assignment": {
+    "title": "Safety-throughput frontier challenge",
+    "standing_function": "zero-base-strategy",
+    "group": "strategy",
+    "required_executable_output": "Queue/verification simulation, threshold cases, and evidence-backed disposition.",
+    "delivered": [
+      "queue_verification_sim.py, a deterministic discrete-event simulation of the produce-then-verify pipeline with four promotion policies and common random numbers",
+      "threshold_cases.py, 12 named preregistered threshold cases plus a 160-cell frontier grid, 8 falsifier evaluations and 6 sensitivity sweeps",
+      "disposition.json, an evidence-backed disposition with 7 principal findings and 5 route dispositions",
+      "calibrate_from_repository.py and reproduce_all.py, sanitized calibration and end-to-end byte-identical reproduction"
+    ]
+  },
+
+  "method": {
+    "design": "A discrete-event simulation of the PO-03 lifecycle from LEASED through ACCEPTED, calibrated only from committed PO-03 control and metrics evidence at one immutable commit. Producer slots are capped at C and are released at staging, because a real producer pushes its branch and returns before the controller verifies. Verifier slots are capped at V and serve the staged queue. Four promotion policies are compared: a strictly blocking gate, a deadline-driven bypass, capacity-driven sampling that sheds the queue, and truncated verification that shortens each verification to keep pace. Concurrency is raised with V fixed to remove proportionality, and a null control raises C and V together at the balanced ratio implied by the calibrated mean service times.",
+    "why_this_design": "The hypothesis can be made trivially true by a simulator that mechanically discards verification, so the model was built so that a blocking gate is structurally incapable of a capacity-attributable false green at any concurrency. That makes the false-green channel an outcome of the promotion policy rather than an artefact, and it means the blocking-gate arm is a live falsification opportunity rather than a formality.",
+    "common_random_numbers": "Every per-unit draw is addressed by blake2b over seed, unit index and stream name rather than taken from a sequential stream, so a given unit has the same produce duration, verification cost, latent-defect flag and detection draw at every concurrency, verifier count and policy. Differences across configurations are therefore structural rather than sampling noise, which is asserted by test_unit_attributes_are_invariant_across_configurations.",
+    "calibration": "Producer durations and controller verification latencies were derived from 549 ledger events at immutable commit 48ac81e2580c6efefae8de39dc6b484b57e5c881, giving 12 produce samples with a mean of 1295.25 seconds and 12 verification samples with a mean of 371.083 seconds. The latent-defect rate is the observed single rejection in 14 verifier decisions. The producer concurrency ceiling of 8 and the single verifier actor are both observed, not assumed.",
+    "balanced_ratio": "3.4905 producer slots per verifier slot, from 1295.25 divided by 371.083. The proportional control ladder is C3/V1, C7/V2, C14/V4 and C28/V8.",
+    "grid": "10 concurrency values from 1 to 32, 4 verifier counts from 1 to 8, 4 policies, 32 seeds per cell: 160 cells, 5120 ensemble runs and 327680 simulated unit executions.",
+    "preregistration": "workstreams/po03/wave-a/units/wa-018/result/preregistration.json, committed at 0c7413f before the simulator existed and before any configuration was executed. The parameter grid, comparison thresholds, frontier definitions, 8 falsifiers, the decision rule and the list of moves prohibited after reading outcomes were all frozen there.",
+    "ordering_evidence": "Preregistration and calibration at 0c7413f, code and tests at dade7fa, outcomes at 99013eb. The ordering is verifiable from history rather than asserted.",
+    "exact_falsifiers": "Eight preregistered falsifiers, three of which invalidate the run rather than merely refuting the hypothesis, all carried as executable tests: a blocking gate at full power must never produce an escape, a zero latent-defect rate must never produce an escape, and conservation of promotions and of the verification-class partition must hold in every run.",
+    "reproduction": "R-PO03-WA-018-001",
+    "reproduction_design": "reproduce_all.py rebuilds the calibration capsule from the immutable commit, reruns all 75 focused tests, regenerates the frontier grid and threshold cases, and compares all three regenerated artifacts byte for byte against the committed ones. All three are identical over 615264 bytes, with only the host timing field compute_seconds excluded and that exclusion declared in the report."
+  },
+
+  "observed": {
+    "grid_cells": 160,
+    "ensemble_runs": 5120,
+    "simulated_unit_executions": 327680,
+    "threshold_cases": 12,
+    "expectations_met": 11,
+    "expectations_total": 12,
+    "falsifiers_evaluated": 8,
+    "falsifiers_fired": ["F-018-2", "F-018-5"],
+    "invalidating_falsifiers_fired": 0,
+    "blocking_gate_false_greens_across_all_40_cells": 0,
+    "blocking_gate_v1_p95_wait_seconds_balanced_to_c32": [1818.406, 19487.375],
+    "blocking_gate_v1_p95_relative_increase": 9.716735,
+    "blocking_gate_v1_time_to_detect_seconds_balanced_to_c32": [2508.679, 12743.968],
+    "blocking_gate_v1_time_to_detect_relative_increase": 4.079952,
+    "deadline_bypass_v1_false_greens_at_c3_c8_c32": [3, 53, 86],
+    "deadline_bypass_v1_seed_fraction_at_c8_c32": [0.9375, 1.0],
+    "deadline_bypass_v1_nominal_throughput_at_c3_c8_c32": [7.416, 16.715, 27.862],
+    "deadline_bypass_v1_verified_throughput_at_c3_c8_c32": [7.912, 8.818, 7.296],
+    "sampled_verification_v1_false_greens_at_c32": 85,
+    "sampled_verification_v1_peak_backlog_at_c32": 9.0,
+    "truncated_verification_v1_false_greens_at_c3_c32": [7, 66],
+    "truncated_verification_v1_verified_throughput_at_c3_c32": [6.159, 2.601],
+    "truncated_verification_v1_p95_wait_at_c3_c32": [903.156, 746.844],
+    "safety_frontier_by_verifier_count": {
+      "BLOCKING_GATE": [32, 32, 32, 32],
+      "DEADLINE_BYPASS": [2, 6, 16, 32],
+      "SAMPLED_VERIFICATION": [3, 6, 12, 24],
+      "TRUNCATED_VERIFICATION": [1, 4, 12, 24]
+    },
+    "safety_frontier_note": "The blocking-gate series is the grid maximum, meaning no upper bound was found within the grid rather than that none exists; the output flags this as safety_frontier_is_grid_maximum.",
+    "usable_concurrency_cap_at_one_verifier": {
+      "BLOCKING_GATE": 6,
+      "DEADLINE_BYPASS": 2,
+      "SAMPLED_VERIFICATION": 3,
+      "TRUNCATED_VERIFICATION": 1
+    },
+    "live_configuration": {
+      "observed_producer_concurrency": 8,
+      "observed_verifier_slots": 1,
+      "balanced_ratio": 3.4905,
+      "multiple_of_balanced_ratio": 2.292,
+      "exceeds_usable_cap_under_every_policy_tested": true,
+      "blocking_gate_c6_to_c8_verified_throughput_change": 0.0027,
+      "blocking_gate_c6_to_c8_p95_wait_change": 0.3106
+    },
+    "proportional_slots_with_degraded_power_escapes_by_rung": [36, 36, 36, 36],
+    "service_floor_sensitivity_false_greens_at_c32": {
+      "DEADLINE_BYPASS": 53,
+      "SAMPLED_VERIFICATION": 54,
+      "TRUNCATED_VERIFICATION": 54
+    },
+    "verified_throughput_analytic_ceiling_at_one_verifier": 9.7013,
+    "verified_throughput_observed_plateau_at_one_verifier": 9.416
+  },
+
+  "principal_findings": [
+    "The safety-throughput frontier is real and computable: safe concurrency scales close to linearly in verification capacity, with a policy-dependent slope.",
+    "A strictly blocking verification gate converts the entire cost of disproportion into latency and time-to-detect and produced no false green at any concurrency tested. Back-pressure, not slack, is what buys the zero-false-completion guarantee.",
+    "Nominal throughput above the frontier is largely illusory and eventually negative: under deadline bypass at one verifier, nominal throughput tripled while verified throughput fell below its own value at C=8.",
+    "The live PO-03 Wave A configuration of 8 producers against 1 verifier sits above the usable concurrency cap for every policy tested, and is safe today only because its controller gate is blocking.",
+    "Balancing by mean service times is not a safe operating point: at balance the p95 wait already breaches the observation-derived SLO and the deadline-bypass safety frontier lies below balance.",
+    "Verification capacity and verification power are separate axes and only power bounds the escape rate; proportional slot scaling changed the escape count by exactly zero.",
+    "The penalty survives the most adversarial calibration available, so it is not an artefact of using commit-to-ingest latency as the service-time estimate."
+  ],
+
+  "deviations": [
+    {
+      "id": "D-018-01",
+      "summary": "The preregistered latency materiality rule mixed an absolute SLO clause with a relative penalty rule, so falsifier F-018-2 fired on the proportional control ladder for a reason unrelated to proportional scaling.",
+      "as_written_verdict": "F-018-2 FIRED, consequence REFUTED_AS_CONFOUNDED",
+      "handling": "Nothing preregistered was edited or removed. The as-written verdict is still computed and still reported as fired. An additive decomposition separates the three drivers and each is reported with its own evidence.",
+      "counted_as": "one defect and one rework cycle"
+    },
+    {
+      "id": "D-018-02",
+      "summary": "Falsifier F-018-5 attached a single global consequence to twelve distinct frontier objects.",
+      "as_written_verdict": "F-018-5 FIRED, consequence INCONCLUSIVE",
+      "handling": "Reported as fired with the failing object named and its series shown. Every safety frontier and every saturation frontier is monotone; the single failing object is the truncated-verification service frontier, which is reported INCONCLUSIVE.",
+      "counted_as": "one defect and one rework cycle"
+    }
+  ],
+
+  "artifacts": {
+    "preregistration": "workstreams/po03/wave-a/units/wa-018/result/preregistration.json",
+    "executable_simulation": "workstreams/po03/wave-a/units/wa-018/result/queue_verification_sim.py",
+    "executable_threshold_cases": "workstreams/po03/wave-a/units/wa-018/result/threshold_cases.py",
+    "executable_calibrator": "workstreams/po03/wave-a/units/wa-018/result/calibrate_from_repository.py",
+    "executable_reproduction": "workstreams/po03/wave-a/units/wa-018/result/reproduce_all.py",
+    "custody_tool": "workstreams/po03/wave-a/units/wa-018/result/result_custody.py",
+    "focused_tests_simulation": "workstreams/po03/wave-a/units/wa-018/result/test_queue_verification_sim.py",
+    "focused_tests_harness": "workstreams/po03/wave-a/units/wa-018/result/test_threshold_cases.py",
+    "calibration_capsule": "workstreams/po03/wave-a/units/wa-018/result/calibration-capsule.json",
+    "frontier_results": "workstreams/po03/wave-a/units/wa-018/result/frontier-results.json",
+    "threshold_case_results": "workstreams/po03/wave-a/units/wa-018/result/threshold-case-results.json",
+    "reproduction_result": "workstreams/po03/wave-a/units/wa-018/result/reproduction-result.json",
+    "disposition": "workstreams/po03/wave-a/units/wa-018/result/disposition.json",
+    "hypotheses": "workstreams/po03/wave-a/units/wa-018/result/hypotheses.json",
+    "source_claims": "workstreams/po03/wave-a/units/wa-018/result/source-claims.json",
+    "mechanism_change": "workstreams/po03/wave-a/units/wa-018/result/mechanism-change.json",
+    "strategy_proposals": "workstreams/po03/wave-a/units/wa-018/result/strategy-proposals.json",
+    "tests": "workstreams/po03/wave-a/units/wa-018/result/tests.json",
+    "test_output": "workstreams/po03/wave-a/units/wa-018/result/test-output.txt",
+    "limitations": "workstreams/po03/wave-a/units/wa-018/result/limitations.json",
+    "manifest": "workstreams/po03/wave-a/units/wa-018/result/artifact-manifest.json",
+    "producer_return": "workstreams/po03/wave-a/units/wa-018/result/ready-to-commit.json"
+  },
+
+  "tests": {
+    "path": "workstreams/po03/wave-a/units/wa-018/result/tests.json",
+    "focused": {"count": 75, "outcome": "PASS"},
+    "focused_simulation_module": {"count": 40, "outcome": "PASS"},
+    "focused_harness_module": {"count": 35, "outcome": "PASS"},
+    "frontier_grid": {"cells": 160, "ensemble_runs": 5120, "outcome": "PASS"},
+    "threshold_cases": {"cases": 12, "expectations_met": 11, "outcome": "PASS"},
+    "falsifier_evaluation": {"declared": 8, "evaluated": 8, "fired": 2, "invalidating_fired": 0},
+    "sensitivity_sweeps": {"parameters": 6, "rows": 20, "outcome": "PASS"},
+    "sanitized_reproduction": {"artifacts_compared": 3, "identical": 3, "bytes": 615264, "outcome": "PASS"},
+    "clean_clone_reproduction": {"count": 75, "outcome": "PASS"},
+    "seeded_po03_contracts_read_only": {"count": 60, "outcome": "PASS"},
+    "taxonomy_check": {"outcome": "PASS"},
+    "changed_path_ownership_check": {"outcome": "PASS"},
+    "test_count": 135,
+    "first_pass_outcome": "FAIL",
+    "final_outcome": "PASS"
+  },
+
+  "source_claims": {
+    "path": "workstreams/po03/wave-a/units/wa-018/result/source-claims.json",
+    "count": 21,
+    "external_network_retrieval": "NOT_SUPPORTED",
+    "external_url_claims": "NONE_CLAIMED",
+    "claim_types": [
+      "IMMUTABLE_REPOSITORY_READ",
+      "DERIVED_FROM_IMMUTABLE_REPOSITORY_READ",
+      "ARITHMETIC_ON_IMMUTABLE_EVIDENCE",
+      "RUNTIME_OBSERVATION",
+      "MODELLING_CHOICE_NOT_EVIDENCE"
+    ],
+    "immutable_commit": "48ac81e2580c6efefae8de39dc6b484b57e5c881",
+    "declared_source_hashes_verified": [
+      "commission_sha256",
+      "transactional_schema_sha256",
+      "wave_schema_sha256",
+      "validator_sha256",
+      "seed_tests_sha256",
+      "workflow_sha256",
+      "acceptance_contract_sha256",
+      "portfolio_sha256"
+    ]
+  },
+
+  "hypotheses": {
+    "path": "workstreams/po03/wave-a/units/wa-018/result/hypotheses.json",
+    "derived_count": 8,
+    "frozen_before_first_execution": 8,
+    "added_after_first_execution": 0,
+    "predictions_correct": 7,
+    "predictions_wrong": 1,
+    "prediction_wrong_detail": "H-018-5. I predicted the balanced ratio would be a safe operating point; it is not.",
+    "current_method_hypothesis_count": 0,
+    "current_method_hypothesis_note": "The immutable input requires 0 and no external retrieval route was exposed; no external-method hypothesis is claimed."
+  },
+
+  "reproductions": {
+    "path": "workstreams/po03/wave-a/units/wa-018/result/reproduction-result.json",
+    "sanitized_obzio_reproduction_count": 1,
+    "reproduction_id": "R-PO03-WA-018-001",
+    "immutable_commit": "48ac81e2580c6efefae8de39dc6b484b57e5c881",
+    "byte_identical_artifacts": 3,
+    "bytes_compared": 615264
+  },
+
+  "mechanism_changes": {
+    "path": "workstreams/po03/wave-a/units/wa-018/result/mechanism-change.json",
+    "count": 4,
+    "dispositions": ["RETAIN", "SUPERSEDE", "SUPERSEDE", "RETAIN"],
+    "explicit_rejections": 5,
+    "scope": "All four changes are inside this owned subtree. No shared PO-03 control path, contract, tool or workflow was modified.",
+    "summary": [
+      "MC-018-01 corrected a wrong closed-form assertion in my own test after the first suite run failed",
+      "MC-018-02 separated relative penalty from absolute level after F-018-2 fired on the control ladder",
+      "MC-018-03 scoped the F-018-5 consequence to the frontier object that failed",
+      "MC-018-04 added the operating recommendation reducing each cell to a usable concurrency cap"
+    ]
+  },
+
+  "strategy_proposals": {
+    "path": "workstreams/po03/wave-a/units/wa-018/result/strategy-proposals.json",
+    "count": 7,
+    "applied": 0,
+    "status": "UNBOUND_PROPOSAL"
+  },
+
+  "limitations": {
+    "path": "workstreams/po03/wave-a/units/wa-018/result/limitations.json",
+    "count": 22
+  },
+
+  "model_requested": "claude-opus-5-thinking-high",
+  "model_observed": "claude-opus-5",
+  "model_observed_source": "runtime self-report only; the provider exposed no separate model attestation to this runner",
+  "reasoning_requested": "high",
+  "reasoning_observed": "NOT_SUPPORTED",
+  "reasoning_observed_note": "No reasoning-effort attestation was exposed to this runner. Recorded as observed rather than inferred from the requested value.",
+  "auto_model_selection": false,
+  "started_at": "2026-08-22T09:07:00Z",
+  "started_at_precision": "MINUTE_FROM_INVOCATION_TIMESTAMP",
+  "finished_at": "2026-08-22T09:45:00Z",
+  "finished_at_precision": "MINUTE_FROM_SHELL_TIMESTAMP",
+
+  "preregistered_metrics": {
+    "wall_time": 2280,
+    "wall_time_unit": "seconds",
+    "wall_time_precision": "MINUTE_FROM_INVOCATION_AND_SHELL_TIMESTAMPS",
+    "test_count": 135,
+    "first_pass_outcome": "FAIL",
+    "artifact_count": "RECORDED_IN_ARTIFACT_MANIFEST",
+    "artifact_bytes": "RECORDED_IN_ARTIFACT_MANIFEST",
+    "source_claim_count": 21,
+    "reproduction_count": 1,
+    "mechanism_change_count": 4,
+    "defects": 3,
+    "defect_detail": "One wrong closed-form assertion in my own test found by the first suite run; one preregistered materiality rule that conflated absolute level with relative penalty, found when F-018-2 fired; one falsifier consequence attached globally to twelve distinct frontier objects, found on the full grid.",
+    "rework": 3,
+    "provider_block": false,
+    "collision": false,
+    "recovery_events": 0
+  },
+
+  "producer_state": "READY_TO_COMMIT",
+  "obzio_state_claimed": "RESULT_COMMITTED_AFTER_REMOTE_READBACK_ONLY",
+  "completion_claimed": false,
+  "completion_actor": null,
+  "independent_acceptance": "NOT_TESTED",
+  "self_acceptance": "REFUSED_BY_PROTOCOL",
+  "decision_changed": []
+}
