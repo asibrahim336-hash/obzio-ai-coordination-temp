@@ -77,12 +77,24 @@ def read_committed(repo: Path, commit: str, path: str) -> bytes:
 
 
 def load_validator(repo: Path):
+    """Load the seeded validator without emitting bytecode.
+
+    A producer owns only its own result slot.  Importing the shared validator
+    normally writes __pycache__ into workstreams/po03/tools/, which would push
+    the producer across its own path boundary as a side effect of running this
+    tool, so bytecode writing is disabled for the duration of the import.
+    """
     module_path = repo / "workstreams/po03/tools/validate_contracts.py"
     spec = importlib.util.spec_from_file_location("po03_validate_contracts", module_path)
     if spec is None or spec.loader is None:
         raise SystemExit(f"cannot load contract validator at {module_path}")
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    previous = sys.dont_write_bytecode
+    sys.dont_write_bytecode = True
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        sys.dont_write_bytecode = previous
     return module
 
 

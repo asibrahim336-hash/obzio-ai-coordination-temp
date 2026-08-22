@@ -15,6 +15,7 @@ import json
 import os
 import re
 import subprocess
+import sys
 import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
@@ -1027,12 +1028,18 @@ def read_object_bytes(locator: str) -> bytes:
 
 
 def load_result_validator():
+    """Load the seeded validator without leaving bytecode in a shared path."""
     module_path = PO03_ROOT / "tools" / "validate_contracts.py"
     spec = importlib.util.spec_from_file_location("po03_validate_contracts", module_path)
     if spec is None or spec.loader is None:
         raise ValueError(f"cannot load contract validator: {repo_relative(module_path)}")
     module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    previous = sys.dont_write_bytecode
+    sys.dont_write_bytecode = True
+    try:
+        spec.loader.exec_module(module)
+    finally:
+        sys.dont_write_bytecode = previous
     return module
 
 

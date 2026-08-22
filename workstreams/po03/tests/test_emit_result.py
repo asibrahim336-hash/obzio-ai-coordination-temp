@@ -156,6 +156,13 @@ class EmitterExclusionTests(unittest.TestCase):
         self.assertEqual("NOT_TESTED", result["independent_acceptance"]["state"])
         self.assertIsNone(result["result_transaction"]["parent_ingested_at"])
 
+    def test_emitting_leaves_no_bytecode_in_a_shared_path(self):
+        """A producer owns only its slot, so this tool must not write elsewhere."""
+        tools = self.repo / "workstreams/po03/tools"
+        self._emit()
+        self.assertEqual([], sorted(tools.rglob("__pycache__")))
+        self.assertEqual([], sorted(tools.rglob("*.pyc")))
+
     def test_a_slot_holding_only_bytecode_is_refused(self):
         for name in ("component.py", "test_component.py", "test_output.txt"):
             (self.repo / SLOT / name).unlink()
