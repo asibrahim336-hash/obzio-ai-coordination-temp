@@ -1,0 +1,104 @@
+{
+  "protocol_version": "OBZIO-TEST-RESULT-v1",
+  "task_id": "PO03-WA-014",
+  "verified_at": "2026-08-22T09:01:41Z",
+  "first_pass_outcome": "FAIL",
+  "first_test_execution": "PASS",
+  "first_pass_evidence": {
+    "finding": "Post-test safety review found commit sampled time before acquiring the SQLite transaction lock.",
+    "risk": "A commit blocked on another writer could cross lease expiry while retaining a pre-wait time and be accepted.",
+    "repair": "Clock sampling moved inside BEGIN IMMEDIATE for claim, renew, and commit.",
+    "recurrence": "test_commit_samples_clock_after_waiting_for_transaction_lock holds a write lock, advances through expiry, releases the lock, and requires LeaseExpired."
+  },
+  "automated_unittest_count": 81,
+  "focused_test_count": 23,
+  "seeded_po03_test_count": 58,
+  "standalone_fixture_count": 1,
+  "recurrence_iteration_count": 64,
+  "suites": [
+    {
+      "suite_id": "TS-PO03-WA-014-FOCUSED",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -B -I -m unittest discover -s workstreams/po03/wave-a/units/wa-014/tests -p 'test_*.py' -v",
+      "tests": 23,
+      "failures": 0,
+      "errors": 0,
+      "outcome": "PASS",
+      "output": "workstreams/po03/wave-a/units/wa-014/result/focused-tests-output.txt",
+      "coverage": [
+        "stale worker commit after lease transfer",
+        "transaction-lock wait spanning lease expiry",
+        "strict monotonic token progression",
+        "simultaneous transfer contenders",
+        "expired commit before transfer",
+        "forged higher and lower token rejection",
+        "wrong owner and lease identity rejection",
+        "idempotent duplicate callback",
+        "idempotency payload conflict",
+        "stale replay after transfer"
+      ]
+    },
+    {
+      "suite_id": "TS-PO03-WA-014-CONCURRENCY-FIXTURE",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -B -I workstreams/po03/wave-a/units/wa-014/mechanism/run_concurrency_fixture.py --output workstreams/po03/wave-a/units/wa-014/result/concurrency-fixture.json",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "outcome": "PASS",
+      "hypothesis_outcome": "SUPPORTED",
+      "stale_commit_accepted": false,
+      "initial_fence": 1,
+      "transfer_fence": 2,
+      "output": "workstreams/po03/wave-a/units/wa-014/result/fixture-output.txt"
+    },
+    {
+      "suite_id": "TS-PO03-WA-014-RECURRENCE",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -B -I workstreams/po03/wave-a/units/wa-014/mechanism/run_recurrence.py --iterations 64 --output workstreams/po03/wave-a/units/wa-014/result/recurrence-evidence.json",
+      "tests": 64,
+      "failures": 0,
+      "errors": 0,
+      "outcome": "PASS",
+      "stale_attempts": 64,
+      "blocked_stale_attempts": 64,
+      "false_acceptances": 0,
+      "output": "workstreams/po03/wave-a/units/wa-014/result/recurrence-output.txt"
+    },
+    {
+      "suite_id": "TS-PO03-WA-014-SEEDED-PO03",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -B -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+      "tests": 58,
+      "failures": 0,
+      "errors": 0,
+      "outcome": "PASS",
+      "output": "workstreams/po03/wave-a/units/wa-014/result/seeded-tests-output.txt"
+    },
+    {
+      "suite_id": "TS-PO03-WA-014-TAXONOMY",
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 -B scripts/check_operator_taxonomy.py",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "outcome": "PASS",
+      "output": "workstreams/po03/wave-a/units/wa-014/result/taxonomy-output.txt"
+    }
+  ],
+  "runtime": {
+    "python": "3.12.3",
+    "git": "2.43.0",
+    "operating_system": "linux 6.12.94+",
+    "third_party_python_dependencies": "NONE"
+  },
+  "write_residue_check": {
+    "outcome": "PASS",
+    "tracked_or_untracked_paths_outside_owned_subtree": 0,
+    "bytecode_paths_created": 0,
+    "note": "All test scratch databases were created and removed under the owned WA-014 subtree. Seeded temporary fixtures cleaned themselves; post-run git status showed no residue outside the owned subtree."
+  },
+  "fresh_remote_clone": {
+    "state": "PENDING_UNTIL_IMMUTABLE_RESULT_COMMIT",
+    "independent_acceptance": "NOT_TESTED"
+  },
+  "final_producer_worktree_outcome": "PASS",
+  "defects": 1,
+  "rework_events": 1,
+  "decision_changed": []
+}

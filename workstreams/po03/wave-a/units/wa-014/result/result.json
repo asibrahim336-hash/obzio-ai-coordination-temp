@@ -1,0 +1,117 @@
+{
+  "protocol_version": "PO03-WAVE-A-MATERIAL-RESULT-v1",
+  "task_id": "PO03-WA-014",
+  "hypothesis_id": "H-PO03-WA-014",
+  "hypothesis": "Monotonic fence tokens prevent an expired worker from committing after ownership transfer.",
+  "hypothesis_outcome": "SUPPORTED",
+  "hypothesis_outcome_boundary": "Supported for the executed SQLite shared-store mechanism and sanitized local concurrency model. Networked consensus, hostile database writers, cross-host clocks, and crash/reboot liveness are not generalized.",
+  "method": {
+    "summary": "Implemented a transactional lease/fence store, froze exact adversarial falsifiers, forced a two-thread stale-worker interleaving, ran focused and seeded tests, and repeated the ownership-transfer fixture 64 times.",
+    "atomicity": "SQLite BEGIN IMMEDIATE serializes token allocation and commit validation against one durable current-lease row.",
+    "commit_predicate": "candidate.fence_token == current.fence_token AND candidate.owner_id == current.owner_id AND candidate.lease_id == current.lease_id AND observed_time < current.expires_at_ns",
+    "critical_ordering": "The commit predicate is evaluated before idempotency replay handling.",
+    "exact_falsifier": "Any fence-1 post-transfer commit accepted, any successor token other than 2, duplicate fence-2 grants under contention, or a durable payload not owned by the current fence-2 worker.",
+    "observed": {
+      "initial_fence_token": 1,
+      "transfer_fence_token": 2,
+      "committed_fence_token": 2,
+      "stale_commit_attempts": 64,
+      "stale_commit_attempts_blocked": 64,
+      "false_acceptances": 0,
+      "durable_commits_per_fixture": 1
+    }
+  },
+  "artifacts": {
+    "implementation": "workstreams/po03/wave-a/units/wa-014/mechanism/lease_fence.py",
+    "concurrency_fixture": "workstreams/po03/wave-a/units/wa-014/mechanism/run_concurrency_fixture.py",
+    "recurrence_runner": "workstreams/po03/wave-a/units/wa-014/mechanism/run_recurrence.py",
+    "focused_tests": "workstreams/po03/wave-a/units/wa-014/tests/test_lease_fence.py",
+    "source_claims": "workstreams/po03/wave-a/units/wa-014/evidence/source-claims.json",
+    "frozen_hypotheses": "workstreams/po03/wave-a/units/wa-014/evidence/frozen-hypotheses.json",
+    "sanitized_reproduction": "workstreams/po03/wave-a/units/wa-014/evidence/sanitized-reproduction.json",
+    "mechanism_changes": "workstreams/po03/wave-a/units/wa-014/evidence/mechanism-changes.json",
+    "strategy_proposals": "workstreams/po03/wave-a/units/wa-014/evidence/strategy-proposals.json",
+    "fixture_result": "workstreams/po03/wave-a/units/wa-014/result/concurrency-fixture.json",
+    "recurrence_evidence": "workstreams/po03/wave-a/units/wa-014/result/recurrence-evidence.json",
+    "manifest": "workstreams/po03/wave-a/units/wa-014/result/artifact-manifest.json",
+    "producer_return": "workstreams/po03/wave-a/units/wa-014/result/ready-to-commit.json"
+  },
+  "tests": {
+    "path": "workstreams/po03/wave-a/units/wa-014/result/tests.json",
+    "focused_automated_tests": 23,
+    "seeded_po03_tests": 58,
+    "recurrence_iterations": 64,
+    "taxonomy_check": "PASS",
+    "first_pass_outcome": "FAIL",
+    "first_pass_evidence": "The original 22 tests passed, but post-test safety review found that commit sampled its clock before waiting for the SQLite write lock. That uncovered TOCTOU defect was repaired and a lock-wait-across-expiry adversarial test now passes.",
+    "final_producer_worktree_outcome": "PASS",
+    "fresh_remote_clone_outcome": "PENDING_UNTIL_RESULT_COMMIT"
+  },
+  "source_claims": {
+    "path": "workstreams/po03/wave-a/units/wa-014/evidence/source-claims.json",
+    "count": 5,
+    "external_source_count": 0
+  },
+  "limitations": {
+    "path": "workstreams/po03/wave-a/units/wa-014/result/limitations.json",
+    "count": 9
+  },
+  "model_requested": "gpt-5.6-sol-xhigh",
+  "reasoning_requested": "xhigh",
+  "auto_model_selection": false,
+  "model_observed": "gpt-5.6-sol-max-fast",
+  "model_observation_source": "Cursor Cloud run-info for bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+  "reasoning_observed": "NOT_SUPPORTED",
+  "started_at": "2026-08-22T08:51:00Z",
+  "finished_at": "2026-08-22T09:01:41Z",
+  "preregistered_metrics": {
+    "wall_time": {
+      "value": 641,
+      "unit": "seconds",
+      "precision": "invocation timestamp to first complete producer-worktree verification"
+    },
+    "test_count": {
+      "value": 147,
+      "breakdown": {
+        "focused_unittest_cases": 23,
+        "seeded_unittest_cases": 58,
+        "standalone_concurrency_fixture": 1,
+        "recurrence_iterations": 64,
+        "taxonomy_check": 1
+      }
+    },
+    "first_pass_outcome": "FAIL",
+    "artifact_count": "RECORDED_IN_ARTIFACT_MANIFEST",
+    "artifact_bytes": "RECORDED_IN_ARTIFACT_MANIFEST",
+    "source_claim_count": 5,
+    "reproduction_count": 1,
+    "mechanism_change_count": 1,
+    "defects": 1,
+    "defect_detail": "Commit time was sampled before transaction-lock acquisition, allowing a lock wait to span expiry while validation used the old time.",
+    "rework": 1,
+    "provider_block": false,
+    "provider_observation": "Execution was not blocked, but requested gpt-5.6-sol-xhigh was not the provider-reported run model; observed gpt-5.6-sol-max-fast. Separate reasoning attestation was unavailable.",
+    "collision": false,
+    "recovery_events": 0
+  },
+  "attempt": {
+    "attempt_id": "PO03-WA-014-A02",
+    "idempotency_key": "po03:100bc2079ced:wa-014:a02",
+    "lease_id": "lease-po03-wa-014-a02",
+    "fence_token": 2,
+    "checkpoint_seq": 0
+  },
+  "source_base_commit": "2c05988f4fe156c32e8193287c95b8a2c4ff3114",
+  "source_base": {
+    "immutable_controller_base": "2c05988f4fe156c32e8193287c95b8a2c4ff3114",
+    "producer_start_commit": "2c05988f4fe156c32e8193287c95b8a2c4ff3114",
+    "minimum_protocol_ancestor": "100bc2079cedc193af3524234ab833cc9f9f4669"
+  },
+  "immutable_input_manifest_sha256": "b20db80d631d80e79ce9b2a7a01b742ac26194e3375f45fdcccb64c9e0d31555",
+  "acceptance_contract_sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a",
+  "producer_state": "READY_TO_COMMIT",
+  "completion_claimed": false,
+  "completion_actor": null,
+  "independent_acceptance": "NOT_TESTED",
+  "decision_changed": []
+}
