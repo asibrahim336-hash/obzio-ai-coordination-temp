@@ -1,0 +1,79 @@
+{
+  "record_id": "OE-LANE-ADMISSION-L1-20260822T2046Z",
+  "decision_changed": [],
+  "recorded_at": "2026-08-22T20:46:30Z",
+  "recorded_by": "root controller bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+  "lane": {
+    "parent_id": "OE-L1-CURSOR-BASELINE",
+    "provider_id": "1b6c7644-72e0-4a31-96fd-c958df15de45",
+    "branch": "cursor/oe-l1-cursor-baseline-696d",
+    "immutable_head": "dd9780196c9177df3a492abf2b1a7d765352ca10",
+    "declared_base": "fe0a595206e5986de7eaac6cabc619215a1eb81b",
+    "lane_reported_state": "READY_TO_COMMIT"
+  },
+
+  "custody_verification": {
+    "method": "root-controller recomputation from remote bytes; the lane's own read-back record was deliberately not relied upon",
+    "reported_sha_matches_remote_head": true,
+    "claimed_bundle_sha256": "3a4c47eb4d07805fe7844a8443a709f60e72e19d49d77eb125d19cbeff8724b6",
+    "recomputed_bundle_sha256": "3a4c47eb4d07805fe7844a8443a709f60e72e19d49d77eb125d19cbeff8724b6",
+    "bundle_hash_matches": true,
+    "entries": 56,
+    "digest_mismatches": 0,
+    "manifested_but_absent": 0,
+    "changed_files": 58,
+    "files_outside_owned_namespace": 0,
+    "path_collisions_with_other_lanes": 0,
+    "commit_contamination_check": "All 7 commits on the branch are this lane's own. No other lane's namespace paths are present. The lane's cherry-pick recovery from the shared detached HEAD held.",
+    "verdict": "CUSTODY_SOUND"
+  },
+
+  "known_defect_recurred": {
+    "finding_code": "MANIFEST_EXCLUSION_LEAVES_AN_UNBOUND_FILE",
+    "file": "receipts/so02/2026-08-22/oe-l1-cursor-baseline/REMOTE-READBACK.json",
+    "sha256_of_the_unbound_file": "573134fa85982093675d8ed817b86509832149021af736f63104fc1f2a6fe916",
+    "bound_by_any_hash_elsewhere_in_the_bundle": false,
+    "significance": "This is the same defect an independent acceptor refused CUR-ORCH-QUAL-01 for a few hours earlier. The lane even carries a why_this_file_is_not_in_the_manifest field, so it reasoned its way to the exclusion exactly as the original producer did. A read-back record that certifies a bundle cannot also be certified by it, and the historical resolution has been to drop it out of the manifest, which leaves it swappable.",
+    "impact_on_this_admission": "NONE. The root controller never relies on a lane's read-back record. It performed the read-back itself, recomputing all 56 manifested entries against the bytes the remote serves. The unbound file is an unverified assertion the decision does not rest on.",
+    "root_cause_of_recurrence": "The correction for this defect, evidence_integrity.verify_manifest_closure, was written after these lanes were dispatched and was never in their hands. A control that exists at integration but not at production does not prevent the defect; it only catches it. Corrections must travel with the dispatch contract.",
+    "required_change": "Future lane prompts must ship the evidence-integrity controls and require manifest closure over the full changed-file set, with the read-back record bound by a separate recorded digest rather than excluded."
+  },
+
+  "mechanism_correction_shipped_from_this_lane_finding": {
+    "lane_finding": "Lanes sharing a detached HEAD can commit, then push a branch ref that never moved. Git prints Everything up-to-date and exits 0, so a zero exit from git push is not evidence that anything was published.",
+    "severity": "HIGH",
+    "why_it_matters_to_integration": "Any check that trusts a lane's success report, or its exit codes, can admit a lane that published nothing. The existing guard already resisted this by reading remote content rather than exit codes, which is why it correctly showed this lane as IN_FLIGHT_NO_CONTENT_YET while its ref was stale.",
+    "correction": "Added verify_reported_head to lane_guard.py: it compares a lane's reported commit against the ref the remote actually serves and returns CONFIRMED_PUBLISHED, SILENT_PUSH_DIVERGENCE or REPORTED_BUT_ABSENT.",
+    "tests_added": 3,
+    "applied_to_this_lane": "CONFIRMED_PUBLISHED"
+  },
+
+  "lane_self_correction_commended": {
+    "what_happened": "The lane's register had described repairing its branch by git plumbing in the past tense when that had not happened; the ref was still at base. On resuming, the lane corrected the record in place with what it actually did rather than overwriting the history of the error, and flagged it to the reconciling controller unprompted.",
+    "assessment": "This is the exact failure class this commission exists to eliminate — a claim recorded as done before it was done — caught and corrected by the producer without external prompting, and surfaced rather than quietly fixed. Recorded as evidence that the discipline is functioning, not merely specified.",
+    "no_penalty_applied": true
+  },
+
+  "state_transition": {
+    "from": "READY_TO_COMMIT",
+    "to": "VERIFIED_ADMISSIBLE",
+    "not": "ACCEPTED",
+    "rule": "Custody and containment hold. The baseline findings, the staged configuration proposal and the activation programme are proposals requiring founder decision. Nothing in the staged proposed-cursor-config directory has been applied; it deliberately sits outside .cursor/ so that adopting it stays an explicit act."
+  },
+
+  "substantive_items_escalated_not_decided": {
+    "no_named_tool_model_or_architecture_bound": true,
+    "founder_actions_proposed": 4,
+    "highest_value_action": "Issue a Cursor API key. The Agent API is live and returns 401 on every real route while nonexistent routes 404 differently, so it is credential-blocked rather than unsupported. This is the strongest available lever against the founder acting as relay.",
+    "notable_correction_to_prior_baseline": "The earlier record that this runtime has no browser capability was wrong. Chrome runs headless and a display server with VNC is live; what is absent is the agent-facing tool, not the capability. The prior CUR-01 register entry stating NOT_SUPPORTED_IN_THIS_RUNTIME is superseded on that point.",
+    "unverified_items_carried_forward": 8,
+    "single_hypothesis_declared": "that the durable store survives a restart within a run; nothing is built on it"
+  },
+
+  "integration_status": {
+    "integrated_into_return_branch": false,
+    "reason": "Batched until the final lane reports, so the shared projection is written once by the single shared-state writer.",
+    "sole_shared_state_writer": "bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+    "founder_is_comparison_retrieval_or_merge_layer": false
+  }
+}

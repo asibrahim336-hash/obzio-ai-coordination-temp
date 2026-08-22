@@ -75,6 +75,31 @@ class CollisionDetectionTests(unittest.TestCase):
         self.assertEqual([], lane_guard.detect_path_collisions(results))
 
 
+class ReportedHeadTests(unittest.TestCase):
+    """A zero exit from git push is not evidence of publication."""
+
+    def test_absent_branch_with_a_reported_sha_is_flagged(self) -> None:
+        result = lane_guard.verify_reported_head("cursor/oe-branch-that-does-not-exist-696d", "a" * 40)
+        self.assertEqual("REPORTED_BUT_ABSENT", result["state"])
+        self.assertFalse(result["matches"])
+
+    def test_a_wrong_reported_sha_is_flagged_as_silent_push_divergence(self) -> None:
+        result = lane_guard.verify_reported_head("cursor/oe-l1-cursor-baseline-696d", "b" * 40)
+        if result["remote_sha"] is not None:
+            self.assertEqual("SILENT_PUSH_DIVERGENCE", result["state"])
+            self.assertFalse(result["matches"])
+
+    def test_a_correct_reported_sha_confirms_publication(self) -> None:
+        branch = "cursor/oe-l1-cursor-baseline-696d"
+        code, out, _ = lane_guard.run(["git", "ls-remote", "--heads", "origin", f"refs/heads/{branch}"])
+        if code != 0 or not out.strip():
+            self.skipTest("lane branch not published in this environment")
+        actual = out.split()[0]
+        result = lane_guard.verify_reported_head(branch, actual)
+        self.assertEqual("CONFIRMED_PUBLISHED", result["state"])
+        self.assertTrue(result["matches"])
+
+
 class ProtectedRefTests(unittest.TestCase):
     def test_protected_branches_are_recognised(self) -> None:
         for branch in (

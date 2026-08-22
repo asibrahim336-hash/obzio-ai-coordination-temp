@@ -124,6 +124,38 @@ def evaluate_lane(parent: dict[str, Any], base_sha: str) -> dict[str, Any]:
     }
 
 
+def verify_reported_head(branch: str, reported_sha: str) -> dict[str, Any]:
+    """Check a lane's reported commit against what the remote actually serves.
+
+    A lane sharing a detached HEAD can commit, then `git push` a branch ref that
+    never moved. Git prints "Everything up-to-date" and exits 0, so a zero exit
+    is not evidence of publication. Only the remote ref is evidence.
+    """
+    code, out, _ = run(["git", "ls-remote", "--heads", "origin", f"refs/heads/{branch}"])
+    if code != 0 or not out.strip():
+        return {
+            "branch": branch,
+            "reported_sha": reported_sha,
+            "remote_sha": None,
+            "state": "REPORTED_BUT_ABSENT",
+            "matches": False,
+            "detail": "the lane reported a commit but the remote holds no such branch",
+        }
+    remote = out.split()[0]
+    matches = remote == reported_sha
+    return {
+        "branch": branch,
+        "reported_sha": reported_sha,
+        "remote_sha": remote,
+        "state": "CONFIRMED_PUBLISHED" if matches else "SILENT_PUSH_DIVERGENCE",
+        "matches": matches,
+        "detail": None if matches else (
+            "the remote head differs from the commit the lane reported; a push may have "
+            "silently no-opped against a stale ref"
+        ),
+    }
+
+
 def detect_path_collisions(results: list[dict[str, Any]]) -> list[str]:
     """Two lanes claiming one path is an automatic fail-closed rejection of both."""
     owners: dict[str, list[str]] = {}
