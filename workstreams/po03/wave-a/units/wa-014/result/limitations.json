@@ -1,0 +1,68 @@
+{
+  "protocol_version": "OBZIO-LIMITATIONS-v1",
+  "task_id": "PO03-WA-014",
+  "limitations": [
+    {
+      "limitation_id": "L-PO03-WA-014-01",
+      "status": "BOUNDED_SUPPORT",
+      "subject": "Shared-store topology",
+      "boundary": "The implementation coordinates processes that can open the same SQLite database and filesystem lock. It does not claim distributed consensus across independent hosts or partitions."
+    },
+    {
+      "limitation_id": "L-PO03-WA-014-02",
+      "status": "NOT_SUPPORTED",
+      "subject": "Networked database generalization",
+      "boundary": "PostgreSQL, MySQL, Redis, cloud lease APIs, and object-store compare-and-swap were not executed. Their transaction, isolation, clock, and failover semantics cannot be inferred from this SQLite result."
+    },
+    {
+      "limitation_id": "L-PO03-WA-014-03",
+      "status": "SUPPORTED_BOUNDARY",
+      "subject": "Database writer trust",
+      "boundary": "Fence correctness assumes workers access commits through the API and cannot directly rewrite the SQLite file. A principal with arbitrary database-write authority can corrupt lease and commit rows."
+    },
+    {
+      "limitation_id": "L-PO03-WA-014-04",
+      "status": "NOT_SUPPORTED",
+      "subject": "Host reboot and monotonic epoch liveness",
+      "boundary": "The default clock is time.monotonic_ns. A database persisted across host reboot can contain expiries from a prior monotonic epoch; the mechanism fails closed, but automatic epoch recovery and liveness were not implemented or tested."
+    },
+    {
+      "limitation_id": "L-PO03-WA-014-05",
+      "status": "NOT_SUPPORTED",
+      "subject": "Crash and storage fault matrix",
+      "boundary": "Thread contention and transactional rollback semantics were exercised, but process kill, torn filesystem writes, disk-full behavior, SQLite corruption, NFS locking, and power loss at each transition were not fault-injected."
+    },
+    {
+      "limitation_id": "L-PO03-WA-014-06",
+      "status": "BOUNDED_SUPPORT",
+      "subject": "Scheduling coverage",
+      "boundary": "The fixture enforces the critical stale-after-successor ordering and the tests race two transfer contenders. It does not enumerate every possible scheduler interleaving or prove linearizability formally."
+    },
+    {
+      "limitation_id": "L-PO03-WA-014-07",
+      "status": "NOT_SUPPORTED",
+      "subject": "Requested exact model availability",
+      "boundary": "The immutable input requested gpt-5.6-sol-xhigh with xhigh reasoning and auto-selection false. Cursor Cloud run-info reported gpt-5.6-sol-max-fast for the enclosing run, so execution by the exact requested slug is not attested."
+    },
+    {
+      "limitation_id": "L-PO03-WA-014-08",
+      "status": "NOT_SUPPORTED",
+      "subject": "Observed reasoning setting",
+      "boundary": "No runtime evidence separately attested the actual reasoning effort. The requested value is xhigh; reasoning_observed is therefore NOT_SUPPORTED."
+    },
+    {
+      "limitation_id": "L-PO03-WA-014-09",
+      "status": "NOT_TESTED",
+      "subject": "Independent acceptance",
+      "boundary": "The producer executed focused, seeded, recurrence, taxonomy, and immutable-readback checks but cannot independently accept its own result. Coordinator completion and a distinct acceptance disposition remain unset."
+    }
+  ],
+  "limitation_count": 9,
+  "external_outreach": "NONE",
+  "external_mutation": "NONE_EXCEPT_PUSH_TO_OWN_ATTEMPT_BRANCH",
+  "po01_or_pr8_contact": "NONE",
+  "protected_state_mutation": "NONE",
+  "completion_actor": null,
+  "independent_acceptance": "NOT_TESTED",
+  "decision_changed": []
+}

@@ -1,0 +1,58 @@
+{
+  "protocol_version": "PO03-SANITIZED-REPRODUCTION-v1",
+  "task_id": "PO03-WA-014",
+  "hypothesis_id": "H-PO03-WA-014",
+  "state": "SANITIZED_REPRODUCTION",
+  "state_note": "This artifact records executed reproduction observations. It does not restate source claims, bind strategy, or independently accept the result.",
+  "reproduction_id": "R-PO03-WA-014-001",
+  "executed_at": "2026-08-22T08:57:00Z",
+  "fixture": "workstreams/po03/wave-a/units/wa-014/mechanism/run_concurrency_fixture.py",
+  "result": "workstreams/po03/wave-a/units/wa-014/result/concurrency-fixture.json",
+  "design": {
+    "workers": 2,
+    "coordination": "Two threads use events to ensure worker A's delayed commit is attempted only after worker B has transferred ownership and committed.",
+    "clock": "A deterministic thread-safe monotonic clock expires worker A without wall-clock sleep.",
+    "storage": "A temporary SQLite database created and removed beneath the owned WA-014 subtree.",
+    "payloads": "Fixed synthetic bytes with no repository, user, account, or secret content.",
+    "external_effects": []
+  },
+  "observed": {
+    "worker_a_fence": 1,
+    "worker_b_fence": 2,
+    "committed_fence": 2,
+    "stale_commit_accepted": false,
+    "stale_rejection": "StaleFence",
+    "durable_commit_count": 1,
+    "durable_owner": "worker-b-successor",
+    "committed_payload_sha256": "06aba93e4760377c51b2fb2fa6e96c35d041cc850c3d23f21fa8910bfd564c46",
+    "committed_payload_bytes": 24
+  },
+  "adversarial_coverage": [
+    "lower stale token",
+    "guessed higher token",
+    "current token with wrong owner",
+    "current token with wrong lease ID",
+    "expired commit before transfer",
+    "duplicate callback after transfer",
+    "changed-payload idempotency replay",
+    "two simultaneous transfer contenders",
+    "transaction-lock wait spanning lease expiry",
+    "repeated transfers through fences 1, 2, 3, and 4"
+  ],
+  "recurrence": {
+    "result": "workstreams/po03/wave-a/units/wa-014/result/recurrence-evidence.json",
+    "iterations": 64,
+    "stale_attempts": 64,
+    "blocked": 64,
+    "false_acceptances": 0,
+    "observed_token_sequences": [
+      [
+        1,
+        2
+      ]
+    ]
+  },
+  "hypothesis_outcome": "SUPPORTED",
+  "independent_acceptance": "NOT_TESTED",
+  "decision_changed": []
+}

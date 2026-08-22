@@ -1,0 +1,33 @@
+{
+  "decision_changed": [],
+  "external_effects": [],
+  "fixture_task": "sanitized-po03-wa-014",
+  "hypothesis_id": "H-PO03-WA-014",
+  "hypothesis_outcome": "SUPPORTED",
+  "observed": {
+    "committed_fence_token": 2,
+    "committed_payload_bytes": 24,
+    "committed_payload_sha256": "06aba93e4760377c51b2fb2fa6e96c35d041cc850c3d23f21fa8910bfd564c46",
+    "current_lease_id": "fixture-lease-b",
+    "current_owner": "worker-b-successor",
+    "durable_commit_count": 1,
+    "initial_fence_token": 1,
+    "stale_commit_accepted": false,
+    "stale_rejection": "StaleFence",
+    "transfer_fence_token": 2
+  },
+  "ordering": [
+    "worker A acquires fence 1",
+    "clock advances beyond A expiry",
+    "worker B transfers ownership and receives fence 2",
+    "worker B commits at fence 2",
+    "worker A resumes and attempts its fence-1 commit"
+  ],
+  "protocol_version": "PO03-WA-014-CONCURRENCY-FIXTURE-v1",
+  "sanitized": true,
+  "task_id": "PO03-WA-014",
+  "threads": [
+    "expired-worker-a",
+    "successor-worker-b"
+  ]
+}

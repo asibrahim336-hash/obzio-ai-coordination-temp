@@ -1,0 +1,45 @@
+{
+  "protocol_version": "PO03-MECHANISM-CHANGES-v1",
+  "task_id": "PO03-WA-014",
+  "state": "MECHANISM_CHANGES",
+  "state_note": "This artifact records executable mechanism disposition only. Source claims, frozen hypotheses, reproduction observations, and strategy proposals remain separate.",
+  "changes": [
+    {
+      "mechanism_change_id": "MC-PO03-WA-014-01",
+      "title": "Transactional lease store with store-issued monotonic fences",
+      "implementation": "workstreams/po03/wave-a/units/wa-014/mechanism/lease_fence.py",
+      "behavior": [
+        "Serializes claim, transfer, renewal, and commit with SQLite BEGIN IMMEDIATE transactions.",
+        "Allocates fence 1 on first claim and increments exactly once on each expired-lease ownership transfer.",
+        "Requires exact current fence, owner, lease ID, and an unexpired lease before commit.",
+        "Checks authority before idempotency replay so historical callbacks cannot regain authority.",
+        "Binds duplicate callbacks to the same task, owner, lease, fence, idempotency key, payload digest, and byte count."
+      ],
+      "focused_tests": "workstreams/po03/wave-a/units/wa-014/tests/test_lease_fence.py",
+      "sanitized_fixture": "workstreams/po03/wave-a/units/wa-014/result/concurrency-fixture.json",
+      "recurrence_evidence": "workstreams/po03/wave-a/units/wa-014/result/recurrence-evidence.json",
+      "disposition": "RETAIN",
+      "disposition_basis": "Twenty-three focused tests pass after repairing a post-test review finding: the commit clock must be sampled after acquiring the transaction lock. The new adversarial test holds that lock across expiry and proves the delayed commit is rejected. The two-thread stale-worker fixture committed only fence 2; 64 independent fixture iterations blocked all 64 stale attempts with zero false acceptance.",
+      "applied_scope": "This owned WA-014 unit only; no shared controller or protected state was modified."
+    }
+  ],
+  "mechanism_change_count": 1,
+  "rejected_candidates": [
+    {
+      "candidate": "Accept any caller token greater than or equal to the stored token",
+      "decision": "REJECT",
+      "reason": "It lets a worker guess future authority; exact equality is required and adversarially tested."
+    },
+    {
+      "candidate": "Check idempotency before checking current ownership",
+      "decision": "REJECT",
+      "reason": "It can return success to a stale callback after transfer; ownership validation deliberately precedes replay."
+    },
+    {
+      "candidate": "Use process-local locks without a durable row",
+      "decision": "REJECT",
+      "reason": "Separate workers would not share current ownership or a monotonic allocation point."
+    }
+  ],
+  "decision_changed": []
+}
