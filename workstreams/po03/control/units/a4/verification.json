@@ -1,0 +1,71 @@
+{
+  "schema_version": "po03-a4-verification-v1",
+  "worker_id": "po03-worker-a4",
+  "branch": "cursor/po03-a4-pack-qualification-ed20",
+  "canary": {
+    "command": "python3 -I workstreams/po03/tools/control_plane.py canary --worker po03-worker-a4 --root workstreams/po03/control/units/a4",
+    "exit_code": 0,
+    "output": "{\"canary_sha256\":\"3d379e1079eceb574cadbc91f4be7fdc238793b5a19c1f803bb9d81adf3fe8e8\",\"roundtrip_ok\":true,\"worker_id\":\"po03-worker-a4\"}"
+  },
+  "qualification": {
+    "command": "python3 -I workstreams/po03/packverify/run_qualification.py --repository . --source-lock workstreams/po03/evidence/source-lock.json --criteria workstreams/po03/evidence/criteria-freeze.json --scratch workstreams/po03/control/units/a4/scratch --output workstreams/po03/evidence/reproduction-results.json",
+    "exit_code": 0,
+    "deterministic_output_sha256": "aee677ded374e923a75748fd765f90a9831ebf6b75922a0c924f130c3b5100a5",
+    "summary": {
+      "manifest_gap_findings": {
+        "hash_mismatches": 0,
+        "unhashed_entries": 0,
+        "unlisted_files": 4
+      },
+      "missing_blob_findings": 10,
+      "portability_findings": 68,
+      "process_boundary_failures": 2,
+      "source_count": 8,
+      "sources_with_pack_roots": 2,
+      "transport_debris_findings": 16
+    }
+  },
+  "tests": [
+    {
+      "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a4_*.py'",
+      "exit_code": 0,
+      "result": "Ran 17 tests; OK"
+    },
+    {
+      "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py'",
+      "exit_code": 0,
+      "result": "Ran 40 tests; OK"
+    }
+  ],
+  "taxonomy": {
+    "required_literal_command": {
+      "command": "python scripts/check_operator_taxonomy.py",
+      "exit_code": 127,
+      "result": "NOT_SUPPORTED: python executable is absent in this runtime"
+    },
+    "available_interpreter_command": {
+      "command": "python3 scripts/check_operator_taxonomy.py",
+      "exit_code": 0,
+      "result": "OPERATOR TAXONOMY CHECK: PASS"
+    }
+  },
+  "contract_validation": {
+    "command_pattern": "python3 -I workstreams/po03/tools/validate_contracts.py result workstreams/po03/control/units/a4/a4-uNN.json",
+    "results": {
+      "a4-u01": "VALID result sha256=2f2783a9782377eeafb28b9990c01aa042dd71a67dd849cf0c5cb0e7a244f0b7",
+      "a4-u02": "VALID result sha256=e9ce79c9f1fc7d3970cfed584620f68beeeff26e597b3ab139ad861d33090f15",
+      "a4-u03": "VALID result sha256=27468bb185a334673f8dabe38ac473918846b5203b4b63b56ab5c56585a8d325",
+      "a4-u04": "VALID result sha256=a3b0a9958d1075717010032640c39817bd4f683fe43674fe8bcdafe205c5b76b",
+      "a4-u05": "VALID result sha256=10f60cb9840b168275497282a4c8362f57e8179f4c6d974fe362b19a00925ed4",
+      "a4-u06": "VALID result sha256=3cdf6649df2d7f244dbb7d7ff94a4b761a944c56a5eb429e340c10704f0b21dc",
+      "a4-u07": "VALID result sha256=bcd8aca2026776dca4708e260b706b300567270fe84f4e570468952cdaad0f5a",
+      "a4-u08": "VALID result sha256=778f5d17a65593fd4f97be842da024613d1680f8915c29aa6f20b48d6b4c266e"
+    }
+  },
+  "remote_readback": {
+    "method": "git cat-file blob origin/cursor/po03-a4-pack-qualification-ed20:<artifact-path> followed by SHA-256 comparison",
+    "result": "PASS: all 27 artifact locators across a4-u01 through a4-u08 match their recorded hashes"
+  },
+  "po01_ref_writes": [],
+  "strongest_worker_return": "READY_TO_COMMIT"
+}
