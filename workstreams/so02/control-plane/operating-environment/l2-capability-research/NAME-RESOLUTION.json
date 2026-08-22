@@ -1,0 +1,105 @@
+{
+  "artifact_id": "OE-L2-NAME-RESOLUTION-20260822-v001",
+  "lane": "OE-L2-CAPABILITY-RESEARCH",
+  "purpose": "The commission requires ambiguous product names to be resolved rather than assumed. This records what each ambiguous seed was resolved to, what was probed, and where resolution failed, so the failure is inspectable rather than papered over.",
+  "resolved_at_utc": "2026-08-22T20:50:00Z",
+
+  "resolutions": [
+    {
+      "seed_as_written": "Aircrift / Aircraft",
+      "status": "UNRESOLVED",
+      "conclusion": "No AI, agent, browser-automation or assistant product named Aircrift or Aircraft could be found on any surface this lane could reach. The name is most likely a speech-to-text corruption that was never read back and confirmed, and it then survived into a work order. This lane will not guess a referent.",
+      "surfaces_probed": [
+        {"surface": "GitHub repository search", "query": "aircrift", "instrument": "gh api /search/repositories", "result": "2 results, both unrelated Chinese pixi.js aeroplane shooter games (JmzSky/aircrift, huangXin1538/pixi-aircrift-wars)", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"surface": "GitHub repository search", "query": "aircraft in:name AI, sorted by stars", "instrument": "gh api /search/repositories", "result": "flight-simulator, aviation-physics and predictive-maintenance repositories only", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"surface": "GitHub user and organisation search", "query": "aircraft", "instrument": "gh api /search/users", "result": "aviation accounts only (aircraft, aircraft721, cirrusaircraft)", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"surface": "Chrome Web Store search", "query": "aircraft", "instrument": "curl https://chromewebstore.google.com/search/aircraft", "result": "aviation themes, a Google Flights aircraft-type filter, and an aircraft-parts search extension; no AI assistant", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"surface": "Chrome Web Store search", "query": "aircrift", "instrument": "curl https://chromewebstore.google.com/search/aircrift", "result": "no relevant listing", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"surface": "npm registry search", "query": "aircraft", "instrument": "curl https://registry.npmjs.org/-/v1/search", "result": "aviation packages only", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"surface": "npm registry search", "query": "aircrift", "instrument": "curl https://registry.npmjs.org/-/v1/search", "result": "zero results", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"surface": "PyPI", "query": "aircrift", "instrument": "curl https://pypi.org/pypi/aircrift/json", "result": "HTTP 404", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"surface": "DNS and HTTP", "query": "aircrift.com, aircrift.ai, aircrift.io", "instrument": "curl -L", "result": "all three fail to resolve (Could not resolve host)", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"surface": "DNS and HTTP", "query": "aircraft.ai", "instrument": "curl -L", "result": "HTTP 200 returning a 114-byte parked stub whose only content is a script redirecting to /lander; no product", "evidence_class": "DIRECTLY_REPRODUCED"}
+      ],
+      "candidates_considered_and_rejected": [
+        {"candidate": "Airtop (airtop.ai)", "category_match": "STRONG — cloud browsers for AI agents that log in, browse and act; npm publishes @airtop/sdk and @airtop/core", "name_match": "WEAK — shares only the Air prefix", "disposition": "Recorded in the candidate register on its own merits as the closest live in-category product, but NOT asserted as the referent", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"candidate": "Aircraft.ai", "category_match": "NONE", "name_match": "EXACT", "disposition": "Rejected: parked domain with no product", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"candidate": "Aircall (aircall.io)", "category_match": "NONE — business telephony", "name_match": "MODERATE", "disposition": "Rejected: wrong category, though voice adjacency made it worth probing", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"candidate": "AirDroid (airdroid.com)", "category_match": "WEAK — remote device control", "name_match": "WEAK", "disposition": "Rejected: not an AI browser assistant", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"candidate": "Recraft (recraft.ai)", "category_match": "NONE — image generation", "name_match": "MODERATE under poor transcription", "disposition": "Rejected: wrong category", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"candidate": "AirOps (airops.com)", "category_match": "WEAK — content workflow automation", "name_match": "WEAK", "disposition": "Rejected", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"candidate": "Arc (arc.net)", "category_match": "MODERATE — browser with AI features", "name_match": "WEAK", "disposition": "Rejected on name; the browser-choice question is real but is not this seed", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"candidate": "air.chat", "category_match": "voice-first social", "name_match": "WEAK", "disposition": "Rejected: HTTP 404", "evidence_class": "DIRECTLY_REPRODUCED"}
+      ],
+      "method_limitation": {
+        "evidence_class": "DIRECTLY_REPRODUCED",
+        "statement": "No general web search engine was reachable from this environment on 2026-08-22. DuckDuckGo lite and html both returned HTTP 202 with a bot challenge asking to select squares containing a duck, Brave returned HTTP 429, Mojeek returned HTTP 403, and searx.be returned a browser-verification interstitial. Negative existence is therefore established only across GitHub, the Chrome Web Store, npm, PyPI and DNS. A product with no presence on any of those surfaces would not have been found."
+      },
+      "founder_question_ref": "FQ-09",
+      "recommended_disambiguation": "Ask the founder one question with concrete options rather than researching further: was the intended product (a) a browser sidebar assistant in the same family as HARPA and Sider, (b) a cloud browser service that holds logins, in the family of Airtop and Browserbase, (c) a voice or dictation tool, or (d) something else entirely. Any of those answers costs one sentence and resolves in minutes what unbounded search cannot."
+    },
+    {
+      "seed_as_written": "Goose",
+      "status": "RESOLVED_WITH_CORRECTION",
+      "resolved_to": "aaif-goose/goose",
+      "conclusion": "Goose has moved out of the Block organisation into aaif-goose, described on GitHub as the goose ai agent platform, and the project README states it is part of the Agentic AI Foundation at the Linux Foundation. The prior halted batch cited aaif-goose/goose, which is correct.",
+      "evidence": [
+        {"instrument": "curl -o /dev/null -w %{http_code} https://api.github.com/repos/block/goose", "result": "HTTP 301", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"instrument": "gh api /repos/block/goose", "result": "full_name resolves to aaif-goose/goose, created 2024-08-23", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"instrument": "gh api /orgs/aaif-goose", "result": "organisation created 2026-03-25, blog https://goose-docs.ai/", "evidence_class": "DIRECTLY_REPRODUCED"}
+      ]
+    },
+    {
+      "seed_as_written": "Sider / Sidebar",
+      "status": "RESOLVED",
+      "resolved_to": "Sider, a proprietary Chrome extension listed as 'Sider: Chat with all AI: GPT-5, Claude, DeepSeek, Gemini, Grok' with extension id difoiogjjojoaoomphldepapgpbgkhkb",
+      "conclusion": "'Sidebar' in the seed is a description of the product form, not a second product. The listing reports 5,000,000 users and 4.9 from 114.2K ratings, and declares that the extension handles personally identifiable information and website content.",
+      "evidence": [
+        {"instrument": "curl https://chromewebstore.google.com/detail/.../difoiogjjojoaoomphldepapgpbgkhkb", "result": "listing retrieved; user count, rating and declared data handling recorded", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"instrument": "curl -L https://sider.ai/pricing", "result": "HTTP 403; the vendor's own terms could not be independently retrieved by this lane", "evidence_class": "DIRECTLY_REPRODUCED"}
+      ]
+    },
+    {
+      "seed_as_written": "HARPA",
+      "status": "RESOLVED",
+      "resolved_to": "HARPA AI (harpa.ai), a proprietary Chrome extension, plus HARPA GRID, its cloud browser-orchestration API",
+      "conclusion": "Two distinct things share one name and they have very different trust boundaries. The extension is local and its store listing declares no data collection. GRID is a cloud API whose own documentation states that it orchestrates your machine to run the tasks for you, handling data behind logins. Treating them as one candidate would hide the decision that actually matters.",
+      "evidence": [
+        {"instrument": "curl https://harpa.ai/", "result": "product site retrieved; describes a hybrid browser-automation and AI engine supporting bring-your-own model including local Llama", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"instrument": "curl https://harpa.ai/grid", "result": "redirects to /grid/web-automation; Browser Orchestration API documentation retrieved", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"instrument": "curl https://chromewebstore.google.com/detail/.../eanggfilgoajaocelnaflolkadkeghjp", "result": "300,000 users, 4.7 from 3.2K ratings, EU trader identified, developer discloses no data collection", "evidence_class": "DIRECTLY_REPRODUCED"}
+      ]
+    },
+    {
+      "seed_as_written": "Kimi",
+      "status": "RESOLVED_WITH_CORRECTION",
+      "resolved_to": "Moonshot AI's Kimi family, currently flagship kimi-k3",
+      "conclusion": "The GitHub repository MoonshotAI/Kimi-K2 that the name most obviously points at was last pushed 2026-01-21 and documents a superseded generation. The live surfaces are the Kimi API platform, which documents kimi-k3 as flagship, and the model weights on Hugging Face. Citing the repository as the product would have described a January artifact as the current route.",
+      "evidence": [
+        {"instrument": "curl https://platform.moonshot.ai/docs/introduction", "result": "kimi-k3 documented as flagship; kimi-k2.6 also current", "evidence_class": "DIRECTLY_REPRODUCED"},
+        {"instrument": "curl https://huggingface.co/api/models/moonshotai/Kimi-K3", "result": "safetensors total 2,779,931,837,184 parameters, ungated", "evidence_class": "DIRECTLY_REPRODUCED"}
+      ]
+    }
+  ],
+
+  "other_slug_corrections_found": {
+    "note": "These were found incidentally while harvesting and matter because a register or runbook written from memory would point at a redirect. All DIRECTLY_REPRODUCED via gh api on 2026-08-22.",
+    "moves": {
+      "block/goose": "aaif-goose/goose",
+      "zed-industries/agent-client-protocol": "agentclientprotocol/agent-client-protocol",
+      "invariantlabs-ai/mcp-scan": "snyk/agent-scan",
+      "microsoft/presidio": "data-privacy-stack/presidio",
+      "iterative/dvc": "treeverse/dvc",
+      "mediar-ai/screenpipe": "screenpipe/screenpipe",
+      "mendableai/firecrawl": "firecrawl/firecrawl",
+      "Mozilla-Ocho/llamafile": "mozilla-ai/llamafile",
+      "hypermodeinc/dgraph": "dgraph-io/dgraph",
+      "EventStore/EventStore": "kurrent-io/KurrentDB",
+      "GibsonAI/memori": "MemoriLabs/Memori",
+      "THUDM/GLM-4": "zai-org/GLM-4",
+      "OpenInterpreter/open-interpreter": "openinterpreter/openinterpreter",
+      "anthropics/anthropic-quickstarts": "anthropics/claude-quickstarts",
+      "QwenLM/Qwen2.5-Coder": "QwenLM/Qwen3-Coder"
+    }
+  }
+}
