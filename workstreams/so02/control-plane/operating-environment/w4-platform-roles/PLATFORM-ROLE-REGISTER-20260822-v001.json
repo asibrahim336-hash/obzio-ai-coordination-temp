@@ -1,0 +1,1468 @@
+{
+  "register_id": "OE-W4-PLATFORM-ROLE-REGISTER-20260822-v001",
+  "lane": "OE-W4-PLATFORM-ROLES",
+  "commission_id": "COM-CUR-ENV-01-20260822-v001",
+  "declares_commission": false,
+  "governing_authority": "FOUNDER-AUTHORITY-DERESTRICTION-20260822T2225Z",
+  "state": "READY_TO_COMMIT",
+  "is_a_proposal_not_a_binding": true,
+  "binds_company_strategy": false,
+  "named_model_or_architecture_bound": false,
+  "canonical_store": "git_repository",
+  "provider_memory_is_canonical": false,
+  "design_basis": "Roles are derived from reproduced or documented capability asymmetries. No structure is inherited from an earlier lane's proposal.",
+  "evidence_labels": {
+    "DIRECTLY_REPRODUCED": "a command was run or an artifact recomputed, here or in a cited lane receipt",
+    "DOCUMENTED": "an official source states it and the URL is recorded",
+    "HYPOTHESIS": "untested inference",
+    "FOUNDER_SUPPLIED": "stated by the founder and treated as established input; not reproduced by any lane"
+  },
+  "platforms": [
+    {
+      "platform_id": "CURSOR",
+      "kind": "agent platform",
+      "founder_characterisation": "An agent platform, not one agent and not a narrow repository worker.",
+      "asymmetries": [
+        {
+          "id": "CUR-A1",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "It writes the canonical store directly and provably. R1 GitHub immutable-SHA custody is the one route that survived independent challenge: a fresh clone fetched the evidence commit and independently matched all 13 listed entries.",
+          "evidence": "l3-independent-acceptance/VERDICT.json AC-04 PASS"
+        },
+        {
+          "id": "CUR-A2",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "It is already operating as a multi-agent platform: nine top-level cloud agents on this repository, five distinct exact model configurations and two model families, in one account.",
+          "evidence": "receipts/so02/2026-08-22/oe-w4-platform-roles/raw/cursor-agent-inventory.json"
+        },
+        {
+          "id": "CUR-A3",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "A single run can hold isolated subagents, each in its own git worktree on its own branch and namespace. This lane is one of them.",
+          "evidence": "GROUP-MANIFEST-OE-20260822-v001.json parents[] and this lane's own worktree"
+        },
+        {
+          "id": "CUR-A4",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "It has a full container runtime for hermetic replay with no network and no inherited credentials: Docker Engine 29.1.4, API 1.52, answering on 127.0.0.1:2375 without authentication. There is no docker CLI, which is why it was missed for so long.",
+          "evidence": "l1-cursor-baseline/BASELINE-FINDINGS.md finding 6"
+        },
+        {
+          "id": "CUR-A5",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "Browser capability is present and the agent-facing tool is absent. Chrome 148 runs headless and returns a parsed DOM; DISPLAY :1 is live with Xtigervnc and a noVNC bridge; no browser, computer-control, web-search or web-fetch tool appears in any tool list or MCP catalogue.",
+          "evidence": "l1-cursor-baseline/BASELINE-FINDINGS.md finding 7"
+        },
+        {
+          "id": "CUR-A6",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "Its own Agent API is live and credential-blocked rather than unsupported: /v1/agents, /v1/agents/{id}/runs, /v1/models, /v1/repositories and /v1/me all return 401, while nonexistent routes return a differently shaped 404.",
+          "evidence": "l1-cursor-baseline/BASELINE-FINDINGS.md finding 4"
+        },
+        {
+          "id": "CUR-A7",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "Egress is unrestricted, so any HTTPS route the estate needs is reachable without an allowlist change.",
+          "evidence": "receipts/so02/2026-08-22/oe-w4-platform-roles/raw/cursor-environment-info.json"
+        },
+        {
+          "id": "CUR-A8",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "GitHub Actions gives it a second execution domain on a different machine, which is a real independence gain for replay even though it is not independent corroboration when the producer wrote the assertions.",
+          "evidence": "l3-independent-acceptance/VERDICT.json AC-12"
+        },
+        {
+          "id": "CUR-A9",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "It holds no authenticated founder session and no microphone, and cannot acquire either. A cloud VM has no route to the founder's logged-in browser, and every mechanism for building one admits a third party into the trust boundary.",
+          "evidence": "l2-capability-research/TOPOLOGY-COMPARISON.md section 2"
+        },
+        {
+          "id": "CUR-A10",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "Its durable store is a per-run mailbox rather than cross-run continuity: /cursor/stores exposes only the run's own bcId and foreign store paths cannot be created.",
+          "evidence": "l1-cursor-baseline/BASELINE-FINDINGS.md finding 8"
+        },
+        {
+          "id": "CUR-A11",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "Eight MCP namespaces are reachable from this runtime. Three are ready (cursor-cloud, cursor-subscriptions, Cloudflare-docs) and five report needsAuth (Supabase, Vercel, Cloudflare-bindings, Cloudflare-builds, Cloudflare-observability). The unauthenticated five are the estate's nearest unclaimed authorised access.",
+          "evidence": "receipts/so02/2026-08-22/oe-w4-platform-roles/raw/mcp-namespace-status.json"
+        },
+        {
+          "id": "CUR-A12",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "CURSOR_API_KEY is absent from this runtime by name census, and the injected secret set contains only four unrelated AUREA_E2E_* names. The key the founder says exists is not reachable from here today.",
+          "evidence": "receipts/so02/2026-08-22/oe-w4-platform-roles/raw/secret-name-census.txt"
+        }
+      ]
+    },
+    {
+      "platform_id": "CHATGPT",
+      "kind": "agent platform with authenticated estate access",
+      "founder_characterisation": "A platform that can be launched at scale across multiple projects, models, teams and functions. It must not be reduced to evidence review or a passive founder interface.",
+      "asymmetries": [
+        {
+          "id": "CGP-A1",
+          "label": "FOUNDER_SUPPLIED",
+          "claim": "It is the only surface holding the founder's authenticated account context: 11 projects, 61 chats in OBZIO — STRATEGIC CONTROL, 121 ordinary sidebar chats, project instructions, project Sources and provider memory. No Cursor agent can reach any of it.",
+          "evidence": "founder review; not reproduced by any lane"
+        },
+        {
+          "id": "CGP-A2",
+          "label": "DOCUMENTED",
+          "claim": "Connectors, plugins and MCP servers run inside the chat and bring context and actions from other services into it. This is the estate's only route into Ahmed/Obzio systems that the repository does not already reach.",
+          "evidence": "https://learn.chatgpt.com/docs/plugins.md (fetched 2026-08-22)"
+        },
+        {
+          "id": "CGP-A3",
+          "label": "DOCUMENTED",
+          "claim": "It has a durable cadence engine: Scheduled tasks, standalone or in-chat, with RFC 5545 RRULE recurrence, able to invoke skills and plugins. Cursor's nearest equivalent is a per-run subscription that expires with the run.",
+          "evidence": "https://learn.chatgpt.com/docs/automations.md (fetched 2026-08-22)"
+        },
+        {
+          "id": "CGP-A4",
+          "label": "DOCUMENTED",
+          "claim": "It packages reusable capability as skills with progressive disclosure, and runs subagents inside a chat that return summaries rather than raw intermediate output.",
+          "evidence": "https://learn.chatgpt.com/docs/build-skills.md and .../agent-configuration/subagents.md (fetched 2026-08-22)"
+        },
+        {
+          "id": "CGP-A5",
+          "label": "FOUNDER_SUPPLIED",
+          "claim": "It is the platform the founder actually speaks to, which is the only place a voice-first intake with same-exchange read-back can happen at all.",
+          "evidence": "FOUNDER-OPERATING-DIRECTIVES-20260822.md, founder interface and activation"
+        },
+        {
+          "id": "CGP-A6",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "Its API is a different store from its UI. The Responses and Conversations routes operate on api.openai.com platform objects and cannot see the projects, the chats, project instructions, Sources, memory or the Scheduled view. No amount of API activation changes that.",
+          "evidence": "l5-chatgpt-scale/OPENAI-API-SURFACE-FINDINGS-20260822-v001.md section 8"
+        },
+        {
+          "id": "CGP-A7",
+          "label": "DOCUMENTED",
+          "claim": "Workspace Agents can start work inside the account from outside and report status, and the documentation states plainly that the agent's response cannot currently be retrieved through the API. It is dispatch without return.",
+          "evidence": "https://developers.openai.com/workspace-agents (fetched 2026-08-22), claim C-WA-NO-RETURN"
+        },
+        {
+          "id": "CGP-A8",
+          "label": "DOCUMENTED",
+          "claim": "Conversations are retained until explicitly deleted, are not Zero-Data-Retention eligible, and deleting a conversation does not delete its items. Their metadata is capped at 16 pairs with 64-character keys and 512-character values, which is far below what provenance requires.",
+          "evidence": "l5-chatgpt-scale/OPENAI-SURFACE-EVIDENCE-20260822-v001.json C-RET-CONVERSATIONS, C-CONV-METADATA-LIMIT"
+        },
+        {
+          "id": "CGP-A9",
+          "label": "DOCUMENTED",
+          "claim": "Structured Outputs with strict JSON Schema makes an illegal state ungeneratable rather than merely discouraged, and works inside Batch as well as Responses.",
+          "evidence": "l5-chatgpt-scale/OPENAI-SURFACE-EVIDENCE-20260822-v001.json C-SO-GUARANTEE, C-SO-SURFACES"
+        },
+        {
+          "id": "CGP-A10",
+          "label": "DOCUMENTED",
+          "claim": "Batch runs high-volume low-reasoning work at 50% cost on a separate rate-limit pool, up to 50,000 requests and 200 MB per batch, with a 24-hour turnaround.",
+          "evidence": "l5-chatgpt-scale/OPENAI-SURFACE-EVIDENCE-20260822-v001.json C-BATCH-ECONOMICS, C-BATCH-LIMITS"
+        }
+      ]
+    },
+    {
+      "platform_id": "SW",
+      "kind": "paused capability factory",
+      "founder_characterisation": "Capable but paused. Do not message, operate, configure it, or make it central. Its future role may be planned.",
+      "asymmetries": [
+        {
+          "id": "SW-A1",
+          "label": "FOUNDER_SUPPLIED",
+          "claim": "It is a repository-connected discovery and synthesis factory intended to run at office scale, on the order of one hundred coworkers and agents when provider capacity allows.",
+          "evidence": "FOUNDER-OPERATING-DIRECTIVES-20260822.md, capability factory and compounding loop"
+        },
+        {
+          "id": "SW-A2",
+          "label": "DOCUMENTED",
+          "claim": "It is paused before its first message because the available operation was not yet strategically controlled. The pause is a reversible routing decision, not a rejection of the platform.",
+          "evidence": "FOUNDER-OPERATING-DIRECTIVES-20260822.md, estate and runtime allocation"
+        },
+        {
+          "id": "SW-A3",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "Its provider surface is recorded with a stable ID (space 1054976614269477) and a rename requirement, and no return branch exists. The estate can address it when reactivated without inventing a locator.",
+          "evidence": "control-plane.json runtime_bindings SCF-01/SW-01"
+        }
+      ]
+    },
+    {
+      "platform_id": "GITHUB",
+      "kind": "canonical store and substitute runtime",
+      "founder_characterisation": "Git and other open, portable Obzio-controlled state remain canonical.",
+      "asymmetries": [
+        {
+          "id": "GH-A1",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "It is the canonical store and the only custody route that survived independent challenge.",
+          "evidence": "l3-independent-acceptance/VERDICT.json AC-01, AC-04"
+        },
+        {
+          "id": "GH-A2",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "Actions is a substitute runtime that executes the estate's bytes on a machine no agent controls.",
+          "evidence": "l3-independent-acceptance/VERDICT.json AC-12"
+        },
+        {
+          "id": "GH-A3",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "Issues, Actions secrets, branch protection, webhooks, deployments, code scanning and Dependabot all return 403 to the agent's installation token. Issues are therefore unavailable as a coordination substrate, and no agent can read or set branch protection, so the protected-branch rule has no server-side enforcement.",
+          "evidence": "l1-cursor-baseline/BASELINE-FINDINGS.md finding 5"
+        },
+        {
+          "id": "GH-A4",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "It is a single vendor holding the hosting, the API and the permissions at once. Everything currently depends on it, which is a strength and a concentration in the same fact.",
+          "evidence": "l2-capability-research/TOPOLOGY-COMPARISON.md FQ-05"
+        },
+        {
+          "id": "GH-A5",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "The last thing to reach main was PR #3 on 2026-08-19, and seven open PRs sit in a four-deep stack where three branches are simultaneously the head of one PR and the base of another. Nothing in the chain can land until the bottom lands.",
+          "evidence": "l4-currentness-recovery/diagnosis/DIAGNOSIS-L4-20260822-v001.md"
+        }
+      ]
+    },
+    {
+      "platform_id": "OPEN_LOCAL_MODELS",
+      "kind": "substitutability and second-cognition route",
+      "founder_characterisation": "A prior directive names Qwen as the coordinating open-weight base with Kimi and DeepSeek alongside and Grok on Cursor. That allocation is neither deleted nor newly bound.",
+      "asymmetries": [
+        {
+          "id": "OSS-A1",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "Open weights and local operation are different properties and they come apart at the top. Kimi K3 is about 2.78 trillion parameters and ungated, and no laptop will run it; Qwen3.8-27B is 27.8B under Apache-2.0 with a published 4-bit mlx build, gpt-oss-20b is 21.5B under Apache-2.0, GLM-4.7-Flash is 31.2B under MIT.",
+          "evidence": "l2-capability-research/CANDIDATE-REGISTER.json, Hugging Face API 2026-08-22"
+        },
+        {
+          "id": "OSS-A2",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "Routing policy dominates spend more than model choice: about 50x on input and 88x on output between the cheapest capable open route and the frontier open route.",
+          "evidence": "l2-capability-research/TOPOLOGY-COMPARISON.md section 5, OpenRouter catalogue 2026-08-22"
+        },
+        {
+          "id": "OSS-A3",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "Exact-model pinning is mechanically available: the catalogue exposes a dated canonical_slug beside every moving id.",
+          "evidence": "l2-capability-research/TOPOLOGY-COMPARISON.md section 5"
+        },
+        {
+          "id": "OSS-A4",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "DeepSeek publishes both an OpenAI-compatible and an Anthropic-compatible base URL, so it substitutes behind either SDK shape without a rewrite.",
+          "evidence": "l2-capability-research/TOPOLOGY-COMPARISON.md section 5"
+        },
+        {
+          "id": "OSS-A5",
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "The device-local compute plane is empty today and fills on the MacBook. Every component is verified live and permissively licensed; only the hardware is missing, so this gap is scheduled rather than permanent.",
+          "evidence": "l2-capability-research/TOPOLOGY-COMPARISON.md T4"
+        }
+      ]
+    }
+  ],
+  "decision_classes": [
+    {
+      "class_id": "DC-PROGRAMME-SHAPE",
+      "tier": "FOUNDER",
+      "title": "What the programme is and how it is divided",
+      "holder_function": "FOUNDER",
+      "why_this_holder": "Reserved. A whole-operation commission is precisely a commission that claims programme shape, so reserving the class makes one rejectable at admission rather than discoverable later by contradiction."
+    },
+    {
+      "class_id": "DC-COMPANY-STRATEGY",
+      "tier": "FOUNDER",
+      "title": "Binding company strategy",
+      "holder_function": "FOUNDER",
+      "why_this_holder": "Operating method is delegable and company strategy is not. Functions emit proposals; only a founder binding produces a decision."
+    },
+    {
+      "class_id": "DC-SPEND-COMMITMENT",
+      "tier": "FOUNDER",
+      "title": "Committing money or a recurring obligation",
+      "holder_function": "FOUNDER",
+      "why_this_holder": "On the founder's own stop list. Functions compare, cost and recommend."
+    },
+    {
+      "class_id": "DC-IDENTITY-AND-SECRETS",
+      "tier": "FOUNDER",
+      "title": "Owner identity acts and secret material",
+      "holder_function": "FOUNDER",
+      "why_this_holder": "On the founder's own stop list. No function requests a secret in chat or stores a value."
+    },
+    {
+      "class_id": "DC-THIRD-PARTY-OUTREACH",
+      "tier": "FOUNDER",
+      "title": "Contacting anyone outside Obzio",
+      "holder_function": "FOUNDER",
+      "why_this_holder": "On the founder's own stop list, and prohibited to every function."
+    },
+    {
+      "class_id": "DC-SW-REACTIVATION",
+      "tier": "FOUNDER",
+      "title": "Reactivating SW",
+      "holder_function": "FOUNDER",
+      "why_this_holder": "SW is paused by founder decision and stays unmessaged, unoperated and unconfigured until a separate founder reactivation."
+    },
+    {
+      "class_id": "DC-EXTERNAL-AUTHORISATION",
+      "tier": "FOUNDER",
+      "title": "Granting new external OAuth or account permissions",
+      "holder_function": "FOUNDER",
+      "why_this_holder": "On the founder's own stop list. This is the class the Supabase MCP authorisation falls into, which is why it returns as an owner action rather than being performed."
+    },
+    {
+      "class_id": "DC-POINTER-SUPERSESSION",
+      "tier": "FOUNDER",
+      "title": "Declaring which competing currentness claim wins",
+      "holder_function": "FOUNDER",
+      "why_this_holder": "Four scopes have competing claims and the compiler refuses all four. Choosing is an authority act, not a compilation result."
+    },
+    {
+      "class_id": "DC-MODEL-ALLOCATION-BINDING",
+      "tier": "FOUNDER",
+      "title": "Binding a named model family",
+      "holder_function": "FOUNDER",
+      "why_this_holder": "The earlier Qwen/Kimi/DeepSeek/Grok allocation is explicitly neither deleted nor renewed. Recommendation is delegable; binding is not."
+    },
+    {
+      "class_id": "DC-DISCLOSURE-POLICY",
+      "tier": "FOUNDER",
+      "title": "Role-specific disclosure and codename policy",
+      "holder_function": "FOUNDER",
+      "why_this_holder": "Deferred by the founder. Registered with an owner and an activation trigger, building nothing, so the gap cannot be filled by accident."
+    },
+    {
+      "class_id": "DC-DECISION-RIGHTS",
+      "tier": "CONSTITUTIONAL",
+      "title": "Who may decide what",
+      "holder_function": "F-CLEARING",
+      "why_this_holder": "Held where the partition is machine-checkable, which is the repository. Seven undifferentiated commission overlaps and one identifier collision exist today because nothing owns it."
+    },
+    {
+      "class_id": "DC-CURRENTNESS",
+      "tier": "CONSTITUTIONAL",
+      "title": "What is current",
+      "holder_function": "F-CURRENT",
+      "why_this_holder": "Held by the compiler that can refuse. Four scopes currently have competing claims and the resolver withholds an answer rather than picking a majority."
+    },
+    {
+      "class_id": "DC-SUPERSESSION",
+      "tier": "CONSTITUTIONAL",
+      "title": "What replaces what",
+      "holder_function": "F-SUPERSEDE",
+      "why_this_holder": "Separated from currentness so that no single function can retire an inconvenient instruction by declaring it superseded and then declaring itself current."
+    },
+    {
+      "class_id": "DC-ADMISSION",
+      "tier": "CONSTITUTIONAL",
+      "title": "What evidence advances a claim",
+      "holder_function": "F-ADMIT",
+      "why_this_holder": "Held in the repository because the ladder must be applicable by someone who was not there. Eight of sixteen workstreams currently claim more than their evidence supports."
+    },
+    {
+      "class_id": "DC-OPEN-QUESTIONS",
+      "tier": "CONSTITUTIONAL",
+      "title": "Custody of unresolved questions",
+      "holder_function": "F-QUESTIONS",
+      "why_this_holder": "Open questions currently live in the closing paragraphs of returns and evaporate when a chat scrolls."
+    },
+    {
+      "class_id": "DC-FOUNDER-LOAD",
+      "tier": "CONSTITUTIONAL",
+      "title": "Whether a design sends a routine verb to the founder",
+      "holder_function": "F-LOAD",
+      "why_this_holder": "Re-specified from the withdrawn touch-point budget: it detects and refuses routine relay, retrieval, comparison, merging and monitoring, and holds no cap on genuine decisions."
+    },
+    {
+      "class_id": "DC-WAVE-LEARNING",
+      "tier": "CONSTITUTIONAL",
+      "title": "Whether a wave changed a live mechanism",
+      "holder_function": "F-WAVE",
+      "why_this_holder": "The directive requires every wave to end in a changed live mechanism. Unmeasured, a wave closes on documents."
+    },
+    {
+      "class_id": "DC-ESTATE-INVENTORY",
+      "tier": "DISCOVERY",
+      "title": "What accounts, integrations, plugins, connectors and tools exist",
+      "holder_function": "F-ESTATE",
+      "why_this_holder": "Only ChatGPT can see the founder's authenticated account surface. No Cursor agent can enumerate it, and the repository can prove it never held the enumeration."
+    },
+    {
+      "class_id": "DC-INTEGRATION-ALIGNMENT",
+      "tier": "DISCOVERY",
+      "title": "Aligning existing capabilities so Cursor receives maximum useful authorised access",
+      "holder_function": "F-ALIGN",
+      "why_this_holder": "The founder's named immediate role for ChatGPT. It is the only function whose output is other functions' authority to act."
+    },
+    {
+      "class_id": "DC-INTENT-CAPTURE",
+      "tier": "DISCOVERY",
+      "title": "Typing a live founder statement and reading it back inside the same exchange",
+      "holder_function": "F-INTAKE",
+      "why_this_holder": "Capture must happen where the founder speaks, in the modality he uses, with a read-back before the exchange ends. A cloud agent is asynchronous and has no microphone."
+    },
+    {
+      "class_id": "DC-INTENT-CORPUS",
+      "tier": "DISCOVERY",
+      "title": "Recovering and reconciling the corpus of standing founder intent",
+      "holder_function": "F-INTENT",
+      "why_this_holder": "Separated from capture: capture runs against the clock and its decisive act is refusal to type; corpus recovery can take its time and its decisive act is reconstruction."
+    },
+    {
+      "class_id": "DC-SURFACE-DISPOSITION",
+      "tier": "DISCOVERY",
+      "title": "What happens to the back catalogue of chats and projects",
+      "holder_function": "F-SALVAGE",
+      "why_this_holder": "Requires reading UI-resident content, which only the account owner's surface or an owner export can supply."
+    },
+    {
+      "class_id": "DC-BLINDSPOT-STATUS",
+      "tier": "DISCOVERY",
+      "title": "What cannot currently be assessed, and when that becomes a risk finding",
+      "holder_function": "F-BLINDSPOT",
+      "why_this_holder": "Unowned blind spots decay into assumed-clean. Dated ones decay into escalation."
+    },
+    {
+      "class_id": "DC-OPENV-ARCHITECTURE",
+      "tier": "PRODUCTION",
+      "title": "The founder operating environment's architecture",
+      "holder_function": "F-OPENV",
+      "why_this_holder": "Founder-assigned to Cursor under COM-CUR-ENV-01 and retained at exactly that width."
+    },
+    {
+      "class_id": "DC-OPENV-STAGED-GUIDANCE",
+      "tier": "PRODUCTION",
+      "title": "The staged human implementation programme",
+      "holder_function": "F-GUIDE",
+      "why_this_holder": "Founder-assigned to Cursor under the same commission."
+    },
+    {
+      "class_id": "DC-CAPABILITY-DEVELOPMENT",
+      "tier": "PRODUCTION",
+      "title": "Building, extracting and packaging portable capability",
+      "holder_function": "F-CAPDEV",
+      "why_this_holder": "Held where mechanisms are executable and testable. SW becomes a second holder under a separate lease when reactivated, never a sole one."
+    },
+    {
+      "class_id": "DC-RESEARCH-FRONTIER",
+      "tier": "PRODUCTION",
+      "title": "What the outside world offers that the estate is not using",
+      "holder_function": "F-RESEARCH",
+      "why_this_holder": "Deliberately overlapping in topic with several functions and disjoint in decision: it decides what enters the candidate register, not what is adopted."
+    },
+    {
+      "class_id": "DC-REMEDIATION",
+      "tier": "PRODUCTION",
+      "title": "Fixing a reproduced defect",
+      "holder_function": "F-REMEDIATE",
+      "why_this_holder": "Held outside assurance so remediation cannot grade its own repair."
+    },
+    {
+      "class_id": "DC-EVAL-DEFINITION",
+      "tier": "ASSURANCE",
+      "title": "What the measure is",
+      "holder_function": "F-EVAL",
+      "why_this_holder": "Separated from acceptance so the measure cannot be moved to fit the artifact in front of it."
+    },
+    {
+      "class_id": "DC-ACCEPTANCE",
+      "tier": "ASSURANCE",
+      "title": "Whether a specific artifact is accepted",
+      "holder_function": "F-ACCEPT",
+      "why_this_holder": "Held in Cursor because independence here is produced by isolated context, distinct model identity and evidence custody, all of which Cursor supplies today and demonstrated by refusing."
+    },
+    {
+      "class_id": "DC-ADVERSARIAL-FINDING",
+      "tier": "ASSURANCE",
+      "title": "What breaks",
+      "holder_function": "F-REDTEAM",
+      "why_this_holder": "Housed apart from acceptance because the adversarial relationship that produces the finding disappears when the attacker and the gate share history and incentive."
+    },
+    {
+      "class_id": "DC-PROVIDER-CLAIM-AUDIT",
+      "tier": "ASSURANCE",
+      "title": "Whether a provider's claim of completion corresponds to anything",
+      "holder_function": "F-PROVAUDIT",
+      "why_this_holder": "Provider completion is required to be an observation. Something has to perform the corroboration that turns it into a fact or a contradiction."
+    },
+    {
+      "class_id": "DC-ROUTE-QUALIFICATION",
+      "tier": "RUNTIME",
+      "title": "Whether a route works end to end",
+      "holder_function": "F-ROUTE",
+      "why_this_holder": "One route has already been lost to quota exhaustion with no qualified successor."
+    },
+    {
+      "class_id": "DC-QUOTA-HEADROOM",
+      "tier": "RUNTIME",
+      "title": "Whether to keep running and when to stop",
+      "holder_function": "F-QUOTA",
+      "why_this_holder": "Distinct from spend, which asks what things cost. Re-specified so that structurally unmeasurable headroom is recorded as a blind spot rather than treated as zero."
+    },
+    {
+      "class_id": "DC-PORTABILITY",
+      "tier": "RUNTIME",
+      "title": "Whether the estate could survive losing a provider",
+      "holder_function": "F-PORT",
+      "why_this_holder": "Portability is a standing requirement that nothing currently tests, so lock-in accumulates invisibly until a route dies."
+    },
+    {
+      "class_id": "DC-CUSTODY",
+      "tier": "RUNTIME",
+      "title": "Where results are durably held and how they are addressed",
+      "holder_function": "F-CUSTODY",
+      "why_this_holder": "Held next to the canonical store. GitHub concentration is a live risk this function owns rather than one nobody owns."
+    }
+  ],
+  "functions": [
+    {
+      "function_id": "F-CLEARING",
+      "name": "Decision-rights registrar",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-DECISION-RIGHTS"
+      ],
+      "informs": [
+        "DC-CURRENTNESS",
+        "DC-OPEN-QUESTIONS"
+      ],
+      "must_not_decide": [
+        "DC-PROGRAMME-SHAPE",
+        "DC-ACCEPTANCE"
+      ],
+      "authority_envelope": {
+        "appointment": "COM-CUR-ENV-01 constitutional tier",
+        "authority": "Writes the lease table; may refuse an admission",
+        "runtime_binding": "Cursor cloud agent, exact model recorded per run",
+        "return_and_evaluation_route": "R1 repo-native commit plus CI invariant check"
+      },
+      "acceptance_owner": "F-ACCEPT",
+      "substitution_route": "Any runtime that can run rolectl.py against the register; the partition is data, not a service",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "note": ""
+    },
+    {
+      "function_id": "F-CURRENT",
+      "name": "Portfolio currentness",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-CURRENTNESS"
+      ],
+      "informs": [
+        "DC-ADMISSION",
+        "DC-SUPERSESSION"
+      ],
+      "must_not_decide": [
+        "DC-POINTER-SUPERSESSION",
+        "DC-DECISION-RIGHTS"
+      ],
+      "authority_envelope": {
+        "appointment": "COM-CUR-ENV-01 constitutional tier",
+        "authority": "Compiles current state from repository evidence; refuses when claims compete",
+        "runtime_binding": "Cursor cloud agent",
+        "return_and_evaluation_route": "R1 repo-native; currentctl.py exits non-zero on findings"
+      },
+      "acceptance_owner": "F-ACCEPT",
+      "substitution_route": "currentctl.py is plain Python over git; it runs anywhere with a clone",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "note": ""
+    },
+    {
+      "function_id": "F-SUPERSEDE",
+      "name": "Supersession and contradiction custody",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-SUPERSESSION"
+      ],
+      "informs": [
+        "DC-CURRENTNESS"
+      ],
+      "must_not_decide": [
+        "DC-CURRENTNESS",
+        "DC-POINTER-SUPERSESSION"
+      ],
+      "authority_envelope": {
+        "appointment": "COM-CUR-ENV-01 constitutional tier",
+        "authority": "Maintains the change graph; may not declare currentness",
+        "runtime_binding": "Cursor cloud agent",
+        "return_and_evaluation_route": "R1 repo-native"
+      },
+      "acceptance_owner": "F-ACCEPT",
+      "substitution_route": "Graph is committed data; any runtime can extend it",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "note": ""
+    },
+    {
+      "function_id": "F-ADMIT",
+      "name": "Admission ladder",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-ADMISSION"
+      ],
+      "informs": [
+        "DC-ACCEPTANCE"
+      ],
+      "must_not_decide": [
+        "DC-ACCEPTANCE",
+        "DC-EVAL-DEFINITION"
+      ],
+      "authority_envelope": {
+        "appointment": "COM-CUR-ENV-01 constitutional tier",
+        "authority": "Classifies evidence classes; cannot accept",
+        "runtime_binding": "Cursor cloud agent",
+        "return_and_evaluation_route": "R1 repo-native"
+      },
+      "acceptance_owner": "F-ACCEPT",
+      "substitution_route": "Ladder is committed data plus a validator",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "note": "Admission and acceptance are separated deliberately: admission says what class of evidence a claim has, acceptance says whether this artifact passes."
+    },
+    {
+      "function_id": "F-QUESTIONS",
+      "name": "Open-question custody",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-OPEN-QUESTIONS"
+      ],
+      "informs": [
+        "DC-FOUNDER-LOAD"
+      ],
+      "must_not_decide": [
+        "DC-PROGRAMME-SHAPE"
+      ],
+      "authority_envelope": {
+        "appointment": "COM-CUR-ENV-01 constitutional tier",
+        "authority": "Holds and ages unresolved questions; routes founder-bound ones with their cost",
+        "runtime_binding": "Cursor cloud agent",
+        "return_and_evaluation_route": "R1 repo-native"
+      },
+      "acceptance_owner": "F-ACCEPT",
+      "substitution_route": "A committed question ledger",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "note": ""
+    },
+    {
+      "function_id": "F-LOAD",
+      "name": "Founder-load routine-verb detector",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-FOUNDER-LOAD"
+      ],
+      "informs": [
+        "DC-ROUTE-QUALIFICATION"
+      ],
+      "must_not_decide": [
+        "DC-SPEND-COMMITMENT",
+        "DC-PROGRAMME-SHAPE"
+      ],
+      "authority_envelope": {
+        "appointment": "COM-CUR-ENV-01 constitutional tier",
+        "authority": "Refuses any design whose return route requires the founder to relay, retrieve, compare, merge or monitor. Holds no cap on genuine founder decisions.",
+        "runtime_binding": "Cursor cloud agent",
+        "return_and_evaluation_route": "R1 repo-native"
+      },
+      "acceptance_owner": "F-ACCEPT",
+      "substitution_route": "A rule over the register's declared return routes",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "note": "Re-specified from the withdrawn touch-point budget. It measures the class of task, not the volume."
+    },
+    {
+      "function_id": "F-WAVE",
+      "name": "Wave learning and mechanism change",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-WAVE-LEARNING"
+      ],
+      "informs": [
+        "DC-CAPABILITY-DEVELOPMENT",
+        "DC-EVAL-DEFINITION"
+      ],
+      "must_not_decide": [
+        "DC-ACCEPTANCE"
+      ],
+      "authority_envelope": {
+        "appointment": "COM-CUR-ENV-01 constitutional tier",
+        "authority": "Will not close a wave without a named live mechanism, an observation before, an observation after and a retest",
+        "runtime_binding": "Cursor cloud agent",
+        "return_and_evaluation_route": "R1 repo-native"
+      },
+      "acceptance_owner": "F-ACCEPT",
+      "substitution_route": "A closure rule over committed deltas",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "note": ""
+    },
+    {
+      "function_id": "F-ESTATE",
+      "name": "Estate inventory and locator custody",
+      "platform_binding": "CHATGPT",
+      "decides": [
+        "DC-ESTATE-INVENTORY"
+      ],
+      "informs": [
+        "DC-INTEGRATION-ALIGNMENT",
+        "DC-ROUTE-QUALIFICATION",
+        "DC-BLINDSPOT-STATUS"
+      ],
+      "must_not_decide": [
+        "DC-OPENV-ARCHITECTURE",
+        "DC-ACCEPTANCE",
+        "DC-EXTERNAL-AUTHORISATION"
+      ],
+      "authority_envelope": {
+        "appointment": "Founder-named immediate ChatGPT role",
+        "authority": "Enumerates accounts, integrations, plugins, connectors, tools and context; records exact IDs or NOT_EXPOSED",
+        "runtime_binding": "ChatGPT project bound to this envelope by header contract",
+        "return_and_evaluation_route": "R4 connector write to repository if available, else R6 owner export, else R0-DEGRADED and reported as such"
+      },
+      "acceptance_owner": "F-ACCEPT (in Cursor)",
+      "substitution_route": "If ChatGPT is unavailable the class becomes unownable and is recorded as a blind spot with a risk-conversion date; it does not silently transfer",
+      "evidence_label": "FOUNDER_SUPPLIED",
+      "note": "This function exists because the repository can prove it never held the enumeration. Inventing one would be the confident and useless answer."
+    },
+    {
+      "function_id": "F-ALIGN",
+      "name": "Integration alignment for maximum authorised access",
+      "platform_binding": "CHATGPT",
+      "decides": [
+        "DC-INTEGRATION-ALIGNMENT"
+      ],
+      "informs": [
+        "DC-ROUTE-QUALIFICATION",
+        "DC-PORTABILITY"
+      ],
+      "must_not_decide": [
+        "DC-EXTERNAL-AUTHORISATION",
+        "DC-IDENTITY-AND-SECRETS",
+        "DC-SPEND-COMMITMENT"
+      ],
+      "authority_envelope": {
+        "appointment": "Founder-named immediate ChatGPT role",
+        "authority": "Identifies which existing capability would give Cursor useful authorised access and specifies the exact owner act; never performs the authorisation and never handles a secret value",
+        "runtime_binding": "ChatGPT project bound by header contract",
+        "return_and_evaluation_route": "R4 if available, else R0-DEGRADED with the exact owner act named"
+      },
+      "acceptance_owner": "F-ACCEPT (in Cursor)",
+      "substitution_route": "The specification is repository data; the authorisation is a founder act either way",
+      "evidence_label": "DOCUMENTED",
+      "note": "The highest-value instance today is the Supabase route to the Cursor API key the founder says already exists."
+    },
+    {
+      "function_id": "F-INTAKE",
+      "name": "Founder intake, disambiguation and read-back",
+      "platform_binding": "CHATGPT",
+      "decides": [
+        "DC-INTENT-CAPTURE"
+      ],
+      "informs": [
+        "DC-INTENT-CORPUS",
+        "DC-OPEN-QUESTIONS"
+      ],
+      "must_not_decide": [
+        "DC-OPENV-ARCHITECTURE",
+        "DC-COMPANY-STRATEGY",
+        "DC-PROGRAMME-SHAPE"
+      ],
+      "authority_envelope": {
+        "appointment": "Founder interface directive, voice-first",
+        "authority": "Types a live statement as fact, hypothesis, proposal, operating change or bound decision, and reads the consequential interpretation back before the exchange ends. Its decisive act is refusal to type.",
+        "runtime_binding": "ChatGPT, the surface the founder speaks to",
+        "return_and_evaluation_route": "The typed event is a repository artifact; the chat is the capture surface and never the record"
+      },
+      "acceptance_owner": "F-ACCEPT (in Cursor)",
+      "substitution_route": "Any surface with the founder's voice and a read-back step; the corpus itself is repository-resident and portable",
+      "evidence_label": "FOUNDER_SUPPLIED",
+      "note": "The Aircrift/Aircraft seed is the reproduced case for this function: an unconfirmed transcription entered a work order and survived several hands."
+    },
+    {
+      "function_id": "F-INTENT",
+      "name": "Intent corpus recovery and reconciliation",
+      "platform_binding": "CHATGPT",
+      "decides": [
+        "DC-INTENT-CORPUS"
+      ],
+      "informs": [
+        "DC-SUPERSESSION",
+        "DC-OPEN-QUESTIONS"
+      ],
+      "must_not_decide": [
+        "DC-SUPERSESSION",
+        "DC-COMPANY-STRATEGY"
+      ],
+      "authority_envelope": {
+        "appointment": "Founder-assigned ChatGPT support function",
+        "authority": "Recovers standing intent from the account's own history and reconciles it against the repository corpus",
+        "runtime_binding": "ChatGPT projects with the account's history",
+        "return_and_evaluation_route": "R4 if available, else R6 export, else R0-DEGRADED"
+      },
+      "acceptance_owner": "F-ACCEPT (in Cursor)",
+      "substitution_route": "The corpus is repository-canonical; only recovery from account history is platform-bound",
+      "evidence_label": "FOUNDER_SUPPLIED",
+      "note": ""
+    },
+    {
+      "function_id": "F-SALVAGE",
+      "name": "Back-catalogue sweep and disposition",
+      "platform_binding": "CHATGPT",
+      "decides": [
+        "DC-SURFACE-DISPOSITION"
+      ],
+      "informs": [
+        "DC-ESTATE-INVENTORY",
+        "DC-INTENT-CORPUS",
+        "DC-DECISION-RIGHTS"
+      ],
+      "must_not_decide": [
+        "DC-ESTATE-INVENTORY",
+        "DC-ACCEPTANCE"
+      ],
+      "authority_envelope": {
+        "appointment": "Founder-assigned ChatGPT support function",
+        "authority": "Applies default dispositions by claim predicate with no founder decision per item; nothing is deleted",
+        "runtime_binding": "ChatGPT plus Cursor batch processing of an owner export",
+        "return_and_evaluation_route": "Owner export ingested into the repository, swept in Cursor, dispositions committed"
+      },
+      "acceptance_owner": "F-ACCEPT (in Cursor)",
+      "substitution_route": "The sweep itself is a batch classification job that runs anywhere the export can be read",
+      "evidence_label": "DOCUMENTED",
+      "note": "Recurring with a rate target rather than a one-off with an unreachable zero-backlog exit condition."
+    },
+    {
+      "function_id": "F-BLINDSPOT",
+      "name": "Non-assessability management",
+      "platform_binding": "CHATGPT",
+      "decides": [
+        "DC-BLINDSPOT-STATUS"
+      ],
+      "informs": [
+        "DC-ROUTE-QUALIFICATION",
+        "DC-QUOTA-HEADROOM"
+      ],
+      "must_not_decide": [
+        "DC-ACCEPTANCE"
+      ],
+      "authority_envelope": {
+        "appointment": "Founder-assigned ChatGPT support function",
+        "authority": "Records what cannot be assessed with a dated risk-conversion trigger; CANNOT_ASSESS never counts as assessed-clean and never blocks the programme",
+        "runtime_binding": "ChatGPT project, with records committed to the repository",
+        "return_and_evaluation_route": "R4 if available, else R0-DEGRADED"
+      },
+      "acceptance_owner": "F-ACCEPT (in Cursor)",
+      "substitution_route": "Records are repository data",
+      "evidence_label": "DOCUMENTED",
+      "note": ""
+    },
+    {
+      "function_id": "F-OPENV",
+      "name": "Operating-environment architecture",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-OPENV-ARCHITECTURE"
+      ],
+      "informs": [
+        "DC-RESEARCH-FRONTIER",
+        "DC-PORTABILITY",
+        "DC-ROUTE-QUALIFICATION"
+      ],
+      "must_not_decide": [
+        "DC-COMPANY-STRATEGY",
+        "DC-MODEL-ALLOCATION-BINDING",
+        "DC-ACCEPTANCE"
+      ],
+      "authority_envelope": {
+        "appointment": "COM-CUR-ENV-01, founder-assigned",
+        "authority": "Designs the environment and recommends; binds no named tool, model or architecture",
+        "runtime_binding": "Cursor agent group",
+        "return_and_evaluation_route": "R1 repo-native"
+      },
+      "acceptance_owner": "F-ACCEPT",
+      "substitution_route": "Design is repository data; the ACP surface is the documented substitution path for the runtime itself",
+      "evidence_label": "DOCUMENTED",
+      "note": ""
+    },
+    {
+      "function_id": "F-GUIDE",
+      "name": "Staged human implementation guidance",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-OPENV-STAGED-GUIDANCE"
+      ],
+      "informs": [
+        "DC-FOUNDER-LOAD",
+        "DC-OPEN-QUESTIONS"
+      ],
+      "must_not_decide": [
+        "DC-SPEND-COMMITMENT",
+        "DC-EXTERNAL-AUTHORISATION"
+      ],
+      "authority_envelope": {
+        "appointment": "COM-CUR-ENV-01, founder-assigned",
+        "authority": "Produces the staged programme with exact actions, verification, rollback and stop gates; returns no action against an unverified assumption",
+        "runtime_binding": "Cursor agent group",
+        "return_and_evaluation_route": "R1 repo-native"
+      },
+      "acceptance_owner": "F-ACCEPT",
+      "substitution_route": "The programme is repository data",
+      "evidence_label": "DOCUMENTED",
+      "note": ""
+    },
+    {
+      "function_id": "F-CAPDEV",
+      "name": "Capability development, extraction and packaging",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-CAPABILITY-DEVELOPMENT"
+      ],
+      "informs": [
+        "DC-RESEARCH-FRONTIER",
+        "DC-WAVE-LEARNING"
+      ],
+      "must_not_decide": [
+        "DC-ACCEPTANCE",
+        "DC-EVAL-DEFINITION"
+      ],
+      "authority_envelope": {
+        "appointment": "Capability factory directive",
+        "authority": "Builds, tests, extracts and packages portable mechanisms",
+        "runtime_binding": "Cursor agent group; SW joins under a separate lease on reactivation",
+        "return_and_evaluation_route": "R1 repo-native"
+      },
+      "acceptance_owner": "F-ACCEPT",
+      "substitution_route": "Packages are repository-resident and runtime-agnostic by construction",
+      "evidence_label": "DOCUMENTED",
+      "note": "SW's planned role attaches here as a co-holder under a separate lease, never as sole holder and never as coordinator."
+    },
+    {
+      "function_id": "F-RESEARCH",
+      "name": "Frontier research and candidate intake",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-RESEARCH-FRONTIER"
+      ],
+      "informs": [
+        "DC-CAPABILITY-DEVELOPMENT",
+        "DC-PORTABILITY",
+        "DC-QUOTA-HEADROOM"
+      ],
+      "must_not_decide": [
+        "DC-CAPABILITY-DEVELOPMENT",
+        "DC-MODEL-ALLOCATION-BINDING"
+      ],
+      "authority_envelope": {
+        "appointment": "Permanent functions list",
+        "authority": "Decides what enters the candidate register; decides nothing about adoption",
+        "runtime_binding": "Cursor agent group, plus ChatGPT connected-app research as a contributing function",
+        "return_and_evaluation_route": "R1 repo-native"
+      },
+      "acceptance_owner": "F-ACCEPT",
+      "substitution_route": "Candidate register is repository data",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "note": "Topic overlap with ChatGPT research is deliberate and legal; decision overlap is impossible because only this function writes the register."
+    },
+    {
+      "function_id": "F-REMEDIATE",
+      "name": "Reproduced-defect remediation",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-REMEDIATION"
+      ],
+      "informs": [
+        "DC-ADVERSARIAL-FINDING",
+        "DC-WAVE-LEARNING"
+      ],
+      "must_not_decide": [
+        "DC-ACCEPTANCE",
+        "DC-ADVERSARIAL-FINDING"
+      ],
+      "authority_envelope": {
+        "appointment": "Permanent functions list",
+        "authority": "Fixes a reproduced defect and lands the adversary's own probe as a regression test",
+        "runtime_binding": "Cursor agent group",
+        "return_and_evaluation_route": "R1 repo-native"
+      },
+      "acceptance_owner": "F-REDTEAM",
+      "substitution_route": "Fixes are code in the repository",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "note": "Accepted by red team rather than by acceptance, so a repair is graded by the party that found the break."
+    },
+    {
+      "function_id": "F-EVAL",
+      "name": "Evaluation definition",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-EVAL-DEFINITION"
+      ],
+      "informs": [
+        "DC-ADMISSION"
+      ],
+      "must_not_decide": [
+        "DC-ACCEPTANCE",
+        "DC-REMEDIATION"
+      ],
+      "authority_envelope": {
+        "appointment": "Assurance tier, isolated container",
+        "authority": "Defines and retires measures; never applies one to grant a verdict",
+        "runtime_binding": "Cursor acceptance lane, isolated worktree, distinct exact model",
+        "return_and_evaluation_route": "R1 repo-native, criteria committed before use"
+      },
+      "acceptance_owner": "F-REDTEAM",
+      "substitution_route": "Measures are repository data",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "note": ""
+    },
+    {
+      "function_id": "F-ACCEPT",
+      "name": "Independent acceptance",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-ACCEPTANCE"
+      ],
+      "informs": [
+        "DC-ADMISSION",
+        "DC-EVAL-DEFINITION"
+      ],
+      "must_not_decide": [
+        "DC-EVAL-DEFINITION",
+        "DC-REMEDIATION",
+        "DC-CAPABILITY-DEVELOPMENT",
+        "DC-ADVERSARIAL-FINDING"
+      ],
+      "authority_envelope": {
+        "appointment": "Constituted by Cursor, launched by Cursor, with no founder as initiator or relay",
+        "authority": "Issues or refuses a verdict from committed artifacts only; may not read the producing run's transcript or events; may not modify a committed verdict",
+        "runtime_binding": "Cursor acceptance lane: isolated worktree, criteria committed as an earlier commit than the verdict, distinct exact model configuration, container replay with no network and no inherited credentials, write scope fenced to the verdict path",
+        "return_and_evaluation_route": "R1 repo-native; verdict is an immutable commit"
+      },
+      "acceptance_owner": "F-REDTEAM",
+      "substitution_route": "A second acceptance lane on a different exact model configuration, or a hosted open-weight route through the adapter boundary; the criteria and the replay are portable",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "note": "Placed in Cursor on reproduced evidence: an acceptance lane here refused this programme's own evidence, on a different model family, with no founder in the loop."
+    },
+    {
+      "function_id": "F-REDTEAM",
+      "name": "Adversarial finding",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-ADVERSARIAL-FINDING"
+      ],
+      "informs": [
+        "DC-ACCEPTANCE",
+        "DC-REMEDIATION"
+      ],
+      "must_not_decide": [
+        "DC-ACCEPTANCE",
+        "DC-REMEDIATION"
+      ],
+      "authority_envelope": {
+        "appointment": "Assurance tier, isolated container",
+        "authority": "Attempts to break accepted artifacts and forge evidence that should be refused",
+        "runtime_binding": "Cursor lane, isolated, distinct exact model from both producer and acceptor",
+        "return_and_evaluation_route": "R1 repo-native"
+      },
+      "acceptance_owner": "F-ACCEPT",
+      "substitution_route": "Adversarial probes are committed tests that run anywhere",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "note": "Reciprocal acceptance with F-ACCEPT: neither may close a re-adjudication it lost, and a reproduced break may not be dismissed."
+    },
+    {
+      "function_id": "F-PROVAUDIT",
+      "name": "Provider-claim audit",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-PROVIDER-CLAIM-AUDIT"
+      ],
+      "informs": [
+        "DC-ROUTE-QUALIFICATION",
+        "DC-ACCEPTANCE"
+      ],
+      "must_not_decide": [
+        "DC-ACCEPTANCE"
+      ],
+      "authority_envelope": {
+        "appointment": "Assurance tier",
+        "authority": "Corroborates or contradicts a provider's completion claim against committed artifacts",
+        "runtime_binding": "Cursor lane, isolated",
+        "return_and_evaluation_route": "R1 repo-native"
+      },
+      "acceptance_owner": "F-ACCEPT",
+      "substitution_route": "Corroboration is recomputation over committed bytes",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "note": ""
+    },
+    {
+      "function_id": "F-ROUTE",
+      "name": "Route qualification and degradation",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-ROUTE-QUALIFICATION"
+      ],
+      "informs": [
+        "DC-PORTABILITY",
+        "DC-QUOTA-HEADROOM",
+        "DC-BLINDSPOT-STATUS"
+      ],
+      "must_not_decide": [
+        "DC-ACCEPTANCE",
+        "DC-EXTERNAL-AUTHORISATION"
+      ],
+      "authority_envelope": {
+        "appointment": "Runtime tier",
+        "authority": "Qualifies a route from live end-to-end evidence and marks a degraded route rather than blocking work on it",
+        "runtime_binding": "Cursor agent group",
+        "return_and_evaluation_route": "R1 repo-native"
+      },
+      "acceptance_owner": "F-ACCEPT",
+      "substitution_route": "Qualification records are repository data",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "note": ""
+    },
+    {
+      "function_id": "F-QUOTA",
+      "name": "Runtime headroom and stop conditions",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-QUOTA-HEADROOM"
+      ],
+      "informs": [
+        "DC-ROUTE-QUALIFICATION",
+        "DC-BLINDSPOT-STATUS"
+      ],
+      "must_not_decide": [
+        "DC-SPEND-COMMITMENT"
+      ],
+      "authority_envelope": {
+        "appointment": "Runtime tier",
+        "authority": "Measures at the layer that is observable and declares a stop condition. Structurally unmeasurable headroom is a dated blind spot, not zero headroom.",
+        "runtime_binding": "Cursor agent group",
+        "return_and_evaluation_route": "R1 repo-native"
+      },
+      "acceptance_owner": "F-ACCEPT",
+      "substitution_route": "Measurement is over provider status fields, available to any runtime with the same read",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "note": ""
+    },
+    {
+      "function_id": "F-PORT",
+      "name": "Provider-independence verification",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-PORTABILITY"
+      ],
+      "informs": [
+        "DC-CUSTODY",
+        "DC-CAPABILITY-DEVELOPMENT"
+      ],
+      "must_not_decide": [
+        "DC-MODEL-ALLOCATION-BINDING",
+        "DC-ACCEPTANCE"
+      ],
+      "authority_envelope": {
+        "appointment": "Runtime tier",
+        "authority": "Tests that the estate survives losing a provider: clean-clone reconstruction, substitute-runtime replay, adapter substitution under one evaluation suite",
+        "runtime_binding": "Cursor lane plus GitHub Actions as the substitute runtime",
+        "return_and_evaluation_route": "R1 repo-native"
+      },
+      "acceptance_owner": "F-ACCEPT",
+      "substitution_route": "This function is itself the substitution mechanism; it fails loudly rather than transferring",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "note": "It owns the check that every function record names a substitution route, which is how exclusive dependency is prevented rather than merely prohibited."
+    },
+    {
+      "function_id": "F-CUSTODY",
+      "name": "Result custody and canonical store",
+      "platform_binding": "CURSOR",
+      "decides": [
+        "DC-CUSTODY"
+      ],
+      "informs": [
+        "DC-PORTABILITY",
+        "DC-CURRENTNESS"
+      ],
+      "must_not_decide": [
+        "DC-ACCEPTANCE",
+        "DC-EXTERNAL-AUTHORISATION"
+      ],
+      "authority_envelope": {
+        "appointment": "Runtime tier",
+        "authority": "Owns manifests, read-back by recomputation and the concentration risk of a single host",
+        "runtime_binding": "Cursor agent group",
+        "return_and_evaluation_route": "R1 repo-native"
+      },
+      "acceptance_owner": "F-ACCEPT",
+      "substitution_route": "Git is portable by construction; a second remote or a signed bundle is the concrete mitigation and is costed here",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "note": ""
+    }
+  ],
+  "return_route_classes": [
+    {
+      "class": "R1-repo-native",
+      "reaches": "the canonical store",
+      "founder_involvement": "none",
+      "status": "DIRECTLY_REPRODUCED",
+      "note": "Qualified. The one route that survived independent challenge."
+    },
+    {
+      "class": "R2-openai-api",
+      "reaches": "the API platform's own store, not the ChatGPT UI",
+      "founder_involvement": "one credential act, then none",
+      "status": "credential-blocked, endpoints reachable and returning 401",
+      "note": "Useful for API-native bulk work. Cannot see the founder's projects or chats."
+    },
+    {
+      "class": "R3-cursor-agent-api",
+      "reaches": "creation and steering of Cursor runs from outside a run",
+      "founder_involvement": "one authorisation of an existing integration",
+      "status": "credential-blocked; key absent from this runtime by name census",
+      "note": "The strongest available lever against founder-as-relay for multi-lane dispatch."
+    },
+    {
+      "class": "R4-ui-connector-write",
+      "reaches": "whatever a ChatGPT chat can see, pushed out from inside",
+      "founder_involvement": "one install and authorisation",
+      "status": "candidate, unqualified",
+      "note": "The only ongoing non-founder return route for UI-resident functions. If a GitHub connector is available on the plan, this collapses into R1 and the ask shrinks."
+    },
+    {
+      "class": "R5-scheduled-pull",
+      "reaches": "cadence for a UI-resident function",
+      "founder_involvement": "none after creation",
+      "status": "documented, unqualified",
+      "note": "Supplies cadence, not transport. Must re-emit through R4."
+    },
+    {
+      "class": "R6-owner-export",
+      "reaches": "a snapshot of the account's own data",
+      "founder_involvement": "one owner action",
+      "status": "owner action",
+      "note": "For the one-time back-catalogue sweep this is the correct instrument, not a poor substitute for a route."
+    },
+    {
+      "class": "R7-actions-runtime",
+      "reaches": "execution on a machine no agent controls",
+      "founder_involvement": "none",
+      "status": "DIRECTLY_REPRODUCED",
+      "note": "A second execution domain. Independent corroboration only when the assertions are not producer-authored."
+    },
+    {
+      "class": "R0-founder-relay",
+      "reaches": "anywhere, by the founder carrying a result",
+      "founder_involvement": "every message",
+      "status": "classified as a defect",
+      "note": "Never prevented by a gate; always labelled. A function whose only route is R0 is reported R0-DEGRADED and still runs."
+    }
+  ],
+  "acceptance_constitution": {
+    "principle": "Independence is a property of the arrangement, not of the vendor.",
+    "separable_properties": [
+      {
+        "property": "isolated context",
+        "requires": "a different run",
+        "requires_second_provider": false,
+        "evidence": "L3 ran as a subagent in the same account and still refused"
+      },
+      {
+        "property": "separate criteria",
+        "requires": "commit ordering",
+        "requires_second_provider": false,
+        "evidence": "criteria commit 9a390df3 precedes the verdict commit"
+      },
+      {
+        "property": "evidence custody",
+        "requires": "the repository",
+        "requires_second_provider": false,
+        "evidence": "AC-04 PASS from a fresh clone"
+      },
+      {
+        "property": "distinct identity",
+        "requires": "a different exact model, ideally a different family",
+        "requires_second_provider": false,
+        "evidence": "two model families already live in this one account: claude-opus-5-thinking-max and gpt-5.6-sol-max-fast among nine runs"
+      },
+      {
+        "property": "adversarial tests",
+        "requires": "an actor whose success criterion is finding a break",
+        "requires_second_provider": false,
+        "evidence": "the forged read-back and the synthetic ERROR transition"
+      },
+      {
+        "property": "no self-modification of the verdict",
+        "requires": "write-scope fencing",
+        "requires_second_provider": false,
+        "evidence": "post_commit_mutation_rule plus a client-side guard"
+      }
+    ],
+    "conclusion": "Independent acceptance lives in Cursor and is multi-lane by default rather than multi-provider.",
+    "residual_class_that_does_need_a_second_provider": {
+      "class": "claims about the Cursor platform's own behaviour",
+      "why": "A defect in the runtime is correlated across every lane inside it. The shared-worktree collision and the exit-zero push are exactly this class: no number of Cursor lanes would have been independent of them.",
+      "cheapest_second_domain": "GitHub Actions for execution (already reproduced), and a hosted open-weight route behind the adapter boundary for cognition",
+      "explicitly_not": "ChatGPT. Its asymmetry is access, not isolation, and routing evidence through the founder's authenticated account adds founder-visible context to the acceptance loop, which reduces independence rather than increasing it."
+    },
+    "comparison_rule": {
+      "problem": "Several acceptance lanes may run, and comparing their verdicts is itself a merge act the founder must never perform.",
+      "rule": "Verdicts are tallied by a rule declared before the lanes run, never merged. Any REFUSE stands. Concordance is reported with its denominator. A lane that abstains is reported as an abstention, not dropped.",
+      "why": "This removes the arbitration step entirely rather than delegating it, which is what keeps a multi-lane design from recreating a comparison layer."
+    }
+  },
+  "visibility_mechanism": {
+    "name": "Authority envelope plus contribution ledger",
+    "requirement": "Functions may overlap and collaborate, provided authority, provenance, conflicts and acceptance stay visible.",
+    "why_it_is_estate_wide": "The earlier design made overlap visible inside ChatGPT and listed everything else as held elsewhere. Cross-platform overlap was therefore not representable and could not be checked. Here every decision class in the estate has exactly one holder and every holder names its platform, so an overlap between a ChatGPT function and a Cursor function is an ordinary row rather than an invisible collision.",
+    "components": [
+      {
+        "id": "V1",
+        "name": "Authority envelope",
+        "content": "One function, one appointment, one authority statement, one runtime binding, one return and evaluation route. These are exactly the five fields AGENTS.md rule 8 already requires, so the mechanism satisfies the repository's own rule rather than running beside it.",
+        "enforced_by": "rolectl.py, invariant I1 through I4"
+      },
+      {
+        "id": "V2",
+        "name": "Runtime is not authority",
+        "content": "A runtime binding records where a function executes. It never grants standing, and a rename never removes standing. A function whose only recorded authority is its runtime is rejected.",
+        "enforced_by": "rolectl.py, invariant I5"
+      },
+      {
+        "id": "V3",
+        "name": "Decision-class partition with reserved classes",
+        "content": "Every class has exactly one holder; ten classes are reserved to the founder and unclaimable; a function with an empty decides set is decorative and fails admission.",
+        "enforced_by": "rolectl.py, invariants I6 through I8"
+      },
+      {
+        "id": "V4",
+        "name": "Contribution ledger",
+        "content": "A non-holder touching a held class files a row: decision class, holder, contributor, wave, evidence label, position of agree, dissent or abstain, disposition and conflict id. Collaboration becomes a record instead of an inference, and an overruled dissent stays in the ledger.",
+        "enforced_by": "rolectl.py, invariant I9"
+      },
+      {
+        "id": "V5",
+        "name": "Conflict as a first-class object",
+        "content": "States OPEN, RESOLVED_BY_EVIDENCE, RESOLVED_BY_FOUNDER and STANDING_DISSENT. A conflict may not be closed by the holder alone when the contributor's position is DIRECTLY_REPRODUCED and the holder's is HYPOTHESIS: evidence outranks ownership. An unresolved conflict never blocks work; it is attached to the work as a standing dissent.",
+        "enforced_by": "rolectl.py, invariant I10"
+      },
+      {
+        "id": "V6",
+        "name": "Acceptance independence",
+        "content": "No function is its own acceptance owner, no producing function sits inside an assurance container, and the acceptance holder's own acceptance owner is the adversary.",
+        "enforced_by": "rolectl.py, invariants I11 and I12"
+      },
+      {
+        "id": "V7",
+        "name": "Substitution route required",
+        "content": "Every function names how its work would be performed if its platform were removed. This is the concrete form of the never-create-exclusive-dependency rule: without it, dependency accumulates silently until a route dies.",
+        "enforced_by": "rolectl.py, invariant I13"
+      },
+      {
+        "id": "V8",
+        "name": "Projection into the runtime surface",
+        "content": "The envelope is rendered into the surface where the work happens, carrying the short SHA of the register commit that generated it. In ChatGPT that is the first block of the project instructions and the first message of every chat; in Cursor it is the lane brief and the rules file; in CI it is a failing check. A surface whose header SHA does not match the current register is STALE_BINDING and cannot produce an admissible return until re-bound.",
+        "enforced_by": "rolectl.py, invariant I14, plus the currentness check",
+        "why": "This is what stops a project instruction block or a lane brief from becoming a second source of authority, which is the same failure as provider memory becoming canonical, in a different place."
+      }
+    ]
+  },
+  "overrules_earlier_lanes": [
+    {
+      "earlier": "OE-L5 placed independent acceptance, evaluation and red-teaming in ChatGPT assurance projects.",
+      "now": "They live in Cursor.",
+      "evidence": "Acceptance ran in Cursor on gpt-5.6-sol-xhigh against a Claude-family producer, with criteria committed before the verdict and no founder in the loop, and refused. Two of its findings were then reproduced against the producer's own tooling. Meanwhile a ChatGPT-resident acceptance function would sit in the estate's most context-saturated surface and would have no qualified return route for its verdict.",
+      "label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "earlier": "OE-L5 treated the 121 sidebar chats as a routing problem needing R4, R5 or R6, with the owner export described as a snapshot rather than a route.",
+      "now": "The one-time back-catalogue sweep runs off the owner export, and that is the correct instrument rather than a weak substitute.",
+      "evidence": "The API demonstrably cannot read the UI, and no route will exist for historical content. A snapshot is exactly right for a bounded historical corpus: it is exported once, ingested into the repository, and swept in Cursor with structured outputs at batch economics. The route question then applies only to ongoing content, where it belongs.",
+      "label": "DOCUMENTED"
+    },
+    {
+      "earlier": "OE-L5 gave the salvage function an exit condition of a zero unswept backlog with all new chats arriving bound.",
+      "now": "It is a recurring sweep with a rate target.",
+      "evidence": "A founder thinking out loud creates an unbound chat, which is normal. The backlog therefore never reaches zero, so the stated exit condition is unreachable and the function is permanent while presenting as temporary.",
+      "label": "DOCUMENTED"
+    },
+    {
+      "earlier": "OE-L5 anchored the topology to eleven operating project slots plus one frozen container.",
+      "now": "Slot count follows separation requirements and function demand; the founder's floor is at least ten and there is no ceiling.",
+      "evidence": "L5's own text says the match to eleven is a migration convenience rather than a design constraint, and the founder has since said the platform can be launched at scale across projects, models, teams and functions.",
+      "label": "DOCUMENTED"
+    },
+    {
+      "earlier": "OE-L5 made M10, end-to-end qualification of one non-founder return route, a gate on wave one producing anything.",
+      "now": "Wave one produces immediately; a function with no non-founder route is labelled R0-DEGRADED and reported.",
+      "evidence": "Founder-bound text states that route acceptance must not gate the founder-assigned strategic development work.",
+      "label": "DOCUMENTED"
+    },
+    {
+      "earlier": "OE-L1 and FOUNDER-TRANCHE-01 asked the founder to issue a new Cursor API key.",
+      "now": "The owner act is authorising the existing Supabase integration so the key the founder says already exists becomes reachable.",
+      "evidence": "CURSOR_API_KEY is absent from this runtime by name census, and the Supabase MCP namespace is present and reports needsAuth. The blocker is an unauthenticated integration, not a missing credential.",
+      "label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "earlier": "OE-L1 recommended granting nothing new on GitHub and widening probably never.",
+      "now": "Three options reopen as candidates for founder judgment: Issues as a coordination substrate, Actions secrets verification, and branch protection.",
+      "evidence": "The reproduced facts describe what the token cannot do, not harm from widening. Branch protection in particular is the only server-side enforcement of the protected-branch rule, and no agent can currently even read it.",
+      "label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "earlier": "OE-L5 specified that the quota function fails closed, treating unknown headroom as zero.",
+      "now": "Structurally unmeasurable headroom is a dated blind spot with a stop condition, not zero headroom.",
+      "evidence": "Capacity non-interference is measurable only at the visible top-level run layer and cannot see compute or rate-limit contention, so headroom is permanently unknown and a fail-closed rule halts all new work forever.",
+      "label": "DIRECTLY_REPRODUCED"
+    }
+  ],
+  "founder_judgment_required": [
+    {
+      "id": "FJ-01",
+      "question": "May a ChatGPT connector hold repository write?",
+      "why_it_is_genuinely_founder_bound": "It is a disclosure decision as much as a technical one, and it grants an external surface standing authority over the canonical store.",
+      "what_it_unblocks": "The only ongoing non-founder return route for every UI-resident function. Without it, ChatGPT's discovery, alignment, intake and salvage functions all return R0-DEGRADED.",
+      "cheaper_variant_to_check_first": "If a GitHub connector is already available on the account's plan, the return route collapses into R1 and no custom connector is needed. F-ESTATE settles this without a founder turn.",
+      "blocking": false
+    },
+    {
+      "id": "FJ-02",
+      "question": "Authorise the existing Supabase integration so the Cursor API key already held in Edge Secrets becomes reachable.",
+      "why_it_is_genuinely_founder_bound": "Granting a new external OAuth or account permission is on the founder's own stop list.",
+      "what_it_unblocks": "Programmatic creation and steering of Cursor runs, which is the strongest single lever against the founder acting as relay for multi-lane dispatch.",
+      "cheaper_variant_to_check_first": "None. The name census confirms the key is not injected into this runtime and the namespace confirms the route is unauthenticated.",
+      "blocking": false
+    },
+    {
+      "id": "FJ-03",
+      "question": "Is indefinite provider-side retention of founder-intent material acceptable?",
+      "why_it_is_genuinely_founder_bound": "Conversations are retained until deleted, are not ZDR-eligible, and deleting a conversation does not delete its items. Durability and retention are the same property seen from two sides and no setting separates them.",
+      "what_it_unblocks": "How much of the intent corpus may ever transit the Conversations endpoint. The repository stays canonical either way.",
+      "cheaper_variant_to_check_first": "Intent capture can run without Conversations at all, using the chat surface for capture and the repository for the record. The question only becomes live if API-side threading is wanted.",
+      "blocking": false
+    },
+    {
+      "id": "FJ-04",
+      "question": "Which competing pointer claim wins, PR #6 or PR #7?",
+      "why_it_is_genuinely_founder_bound": "Both rewrite the same pointer files with different bytes, so whichever merges first silently sets currentness for the other. The compiler refuses and records the refusal.",
+      "what_it_unblocks": "Four unresolvable currentness scopes, and the prohibition on writing state/**, operations/**, dispatch/** and modules/work_unit_contract/** from this lineage.",
+      "cheaper_variant_to_check_first": "None. This is an authority act by construction.",
+      "blocking": false
+    },
+    {
+      "id": "FJ-05",
+      "question": "Does the Qwen / Kimi / DeepSeek / Grok allocation still bind, and is the requirement open weights or runnable by us?",
+      "why_it_is_genuinely_founder_bound": "The directive explicitly neither deletes nor renews it, and the two readings select different families.",
+      "what_it_unblocks": "Model qualification, which currently cannot proceed without either reopening a settled decision or ignoring one.",
+      "cheaper_variant_to_check_first": "If the answer is runnable by us, the existing directive already holds and needs only to be reaffirmed with that reason attached; on the evidence Qwen is the only named family spanning both the API rung and the local rung under a permissive licence.",
+      "blocking": false
+    },
+    {
+      "id": "FJ-06",
+      "question": "Is GitHub acceptable as the sole host of canonical state, or should a second remote exist?",
+      "why_it_is_genuinely_founder_bound": "It is a resilience posture with a cost, not a technical finding.",
+      "what_it_unblocks": "The concentration risk F-CUSTODY owns. A second remote is cheap; the decision is whether the estate wants one.",
+      "cheaper_variant_to_check_first": "A signed git bundle committed on a cadence gives most of the recovery value with no second account, and can be built without a founder turn.",
+      "blocking": false
+    }
+  ],
+  "counting_rule": "The only throughput number is ACCEPTED, issued by the holder of DC-ACCEPTANCE. Every other number is inventory and is reported with its accepted denominator."
+}
