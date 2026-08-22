@@ -109,13 +109,19 @@ def git(repo: Path, *args: str) -> str:
         capture_output=True,
         text=True,
         check=True,
+        env=HARNESS.local_git_env(),
     )
     return result.stdout
 
 
 def make_repo(root: Path, files: dict[str, str | bytes]) -> Path:
     root.mkdir(parents=True, exist_ok=True)
-    subprocess.run(["git", "init", "--quiet", "-b", "main", str(root)], check=True, capture_output=True)
+    subprocess.run(
+        ["git", "init", "--quiet", "-b", "main", str(root)],
+        check=True,
+        capture_output=True,
+        env=HARNESS.local_git_env(),
+    )
     git(root, "config", "user.email", "po03-fixture@obzio.invalid")
     git(root, "config", "user.name", "PO03 Fixture")
     for relative, content in files.items():
@@ -221,6 +227,13 @@ class PureHelperTests(unittest.TestCase):
             )
             self.assertEqual([], excluded)
 
+    def test_local_git_env_neutralises_ambient_configuration(self):
+        env = HARNESS.local_git_env({"PATH": "/usr/bin"})
+        self.assertEqual(os.devnull, env["GIT_CONFIG_GLOBAL"])
+        self.assertEqual(os.devnull, env["GIT_CONFIG_SYSTEM"])
+        self.assertEqual("0", env["GIT_TERMINAL_PROMPT"])
+        self.assertEqual("/usr/bin", env["PATH"])
+
     def test_bytecode_residue_classifier(self):
         self.assertTrue(HARNESS.is_bytecode_residue("suite/__pycache__/x.cpython-312.pyc"))
         self.assertTrue(HARNESS.is_bytecode_residue("suite/__pycache__"))
@@ -271,6 +284,17 @@ class CleanCloneGateTests(unittest.TestCase):
         }
         config_kwargs.update(overrides)
         return HARNESS.run_harness(HARNESS.HarnessConfig(**config_kwargs))
+
+    def test_fixture_commits_do_not_inherit_ambient_signing_configuration(self):
+        """Ambient git config must not reach fixtures.
+
+        The warm runtime here enables commit signing through a provider-installed
+        program; inheriting it made this module take 30.3s instead of 0.42s and
+        would make the suite fail wherever that program is absent.
+        """
+        source = make_repo(self.root / "signing", {"suite/test_ok.py": PASSING_SUITE})
+        self.assertEqual("N", git(source, "log", "-1", "--format=%G?").strip())
+        self.assertEqual("", git(source, "config", "--default", "", "--get", "commit.gpgsign").strip())
 
     def test_portable_suite_passes_every_blocking_assertion(self):
         source = make_repo(self.root / "portable", {"suite/test_ok.py": PASSING_SUITE})

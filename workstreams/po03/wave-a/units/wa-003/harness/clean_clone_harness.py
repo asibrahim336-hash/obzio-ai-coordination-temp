@@ -240,9 +240,23 @@ def env_leaks(env: Mapping[str, str]) -> dict[str, list[str]]:
     return {"unexpected": unexpected, "provider": provider, "secret_shaped": secretish}
 
 
+def local_git_env(base_env: Mapping[str, str] | None = None) -> dict[str, str]:
+    """Environment for git operations on a local repository.
+
+    Ambient global and system configuration is neutralised so that inspection and
+    fixture commits do not inherit signing programs, file-system monitors or URL
+    rewrites from the warm runtime.  Clone and fetch deliberately keep the caller
+    environment, because remote transports may legitimately need its credentials.
+    """
+    env = dict(base_env if base_env is not None else os.environ)
+    env["GIT_CONFIG_GLOBAL"] = os.devnull
+    env["GIT_CONFIG_SYSTEM"] = os.devnull
+    env["GIT_TERMINAL_PROMPT"] = "0"
+    return env
+
+
 def _git(repo: Path, *args: str, check: bool = True, env: Mapping[str, str] | None = None) -> str:
-    run_env = dict(env or os.environ)
-    run_env.setdefault("GIT_TERMINAL_PROMPT", "0")
+    run_env = local_git_env(env)
     result = subprocess.run(
         ["git", "-C", str(repo), *args],
         capture_output=True,
@@ -642,6 +656,7 @@ def run_harness(config: HarnessConfig) -> dict[str, Any]:
             ["git", "-C", str(primary), "cat-file", "-t", spec],
             capture_output=True,
             text=True,
+            env=local_git_env(),
         )
         resolved = object_type.returncode == 0
         record: dict[str, Any] = {
@@ -656,6 +671,7 @@ def run_harness(config: HarnessConfig) -> dict[str, Any]:
                 subprocess.run(
                     ["git", "-C", str(primary), "merge-base", "--is-ancestor", spec, "HEAD"],
                     capture_output=True,
+                    env=local_git_env(),
                 ).returncode
                 == 0
             )
@@ -664,6 +680,7 @@ def run_harness(config: HarnessConfig) -> dict[str, Any]:
                 ["git", "-C", str(primary), "rev-parse", "--verify", f"{spec[:7]}^{{commit}}"],
                 capture_output=True,
                 text=True,
+                env=local_git_env(),
             )
             record["prefix_resolves_to"] = (
                 abbreviated.stdout.strip() if abbreviated.returncode == 0 else None
