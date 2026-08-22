@@ -1,0 +1,49 @@
+{
+  "correction_version": "PO03-PROVENANCE-CORRECTION-v1",
+  "route_id": "route-05",
+  "wave_id": "PO03-WAVE-A-20260822",
+  "raised_by": "producer",
+  "raised_at": "2026-08-22T07:26:00Z",
+  "subject": "recorded staging timestamps in the eight result records and the route receipt are producer estimates, not clock readings",
+  "finding": "The 'readback_verified_at', 'heartbeat_at' and 'verified_at' fields in the eight result.json records carry 2026-08-22T07:33:00Z, and 'generated_at' in route-manifest.json and execution-receipt.json carries 2026-08-22T07:50:00Z. Both values were written by the producer's emitter as constants rather than read from the system clock. The actual staging and generation happened earlier, as the authoritative git committer timestamps below show. The values are therefore later than the events they label, by roughly nine and twenty-seven minutes respectively.",
+  "authoritative_timestamps": {
+    "source": "git committer time on the immutable result commits",
+    "preflight_verification_at": "2026-08-22T07:02:13Z",
+    "task_result_commits_at": "2026-08-22T07:20:58Z",
+    "route_receipt_commit_at": "2026-08-22T07:23:26Z",
+    "correction_raised_at": "2026-08-22T07:26:00Z"
+  },
+  "materiality": {
+    "affects_artifact_hashes": false,
+    "affects_byte_counts": false,
+    "affects_dispositions": false,
+    "affects_lease_validity": false,
+    "lease_expires_at": "2026-08-22T07:56:37Z",
+    "all_recorded_and_actual_times_inside_lease_window": true,
+    "note": "Every estimated timestamp still falls inside the lease window, and no hash, byte count, verdict or state depends on these fields. The defect is in provenance labelling only."
+  },
+  "disposition": "RECORDED_NOT_REWRITTEN",
+  "rationale": "Correcting the constants in place would change every artifact digest and require rewriting nine already-pushed immutable result commits. History rewriting was not authorised and would destroy the immutable locators the coordinator was given. The discrepancy is therefore recorded as an additive correction so a reviewer reconciles against the git committer times rather than the embedded constants.",
+  "reviewer_guidance": "Treat the git committer timestamps as authoritative for when each result was staged and committed. Treat the embedded timestamp fields as producer-declared labels only.",
+  "affected_files": [
+    "workstreams/po03/runs/wave-a/route-05/PO03-WA-033/result.json",
+    "workstreams/po03/runs/wave-a/route-05/PO03-WA-034/result.json",
+    "workstreams/po03/runs/wave-a/route-05/PO03-WA-035/result.json",
+    "workstreams/po03/runs/wave-a/route-05/PO03-WA-036/result.json",
+    "workstreams/po03/runs/wave-a/route-05/PO03-WA-037/result.json",
+    "workstreams/po03/runs/wave-a/route-05/PO03-WA-038/result.json",
+    "workstreams/po03/runs/wave-a/route-05/PO03-WA-039/result.json",
+    "workstreams/po03/runs/wave-a/route-05/PO03-WA-040/result.json",
+    "workstreams/po03/runs/wave-a/route-05/PO03-WA-033/manifest.json",
+    "workstreams/po03/runs/wave-a/route-05/PO03-WA-034/manifest.json",
+    "workstreams/po03/runs/wave-a/route-05/PO03-WA-035/manifest.json",
+    "workstreams/po03/runs/wave-a/route-05/PO03-WA-036/manifest.json",
+    "workstreams/po03/runs/wave-a/route-05/PO03-WA-037/manifest.json",
+    "workstreams/po03/runs/wave-a/route-05/PO03-WA-038/manifest.json",
+    "workstreams/po03/runs/wave-a/route-05/PO03-WA-039/manifest.json",
+    "workstreams/po03/runs/wave-a/route-05/PO03-WA-040/manifest.json",
+    "workstreams/po03/runs/wave-a/route-05/_route/route-manifest.json",
+    "workstreams/po03/runs/wave-a/route-05/_route/execution-receipt.json"
+  ],
+  "decision_changed": []
+}
