@@ -1,0 +1,31 @@
+{
+  "unit_id": "a6-u03",
+  "implementation_under_test": {
+    "kind": "durable_local_fixture",
+    "path": "workstreams/po03/review/luna/false-green-fixture",
+    "producer_target": "NOT_YET: no a1 producer branch was available at scoring time"
+  },
+  "command": "python3 -I workstreams/po03/review/luna/false_green.py --root workstreams/po03/review/luna/false-green-fixture --mutations workstreams/po03/review/luna/false-green-fixture/mutations.json --test-command \"python3 -I -m unittest discover -s tests -p 'test_*.py'\"",
+  "scratch_boundary": "Each mutation is copied into a temporary .po03-fg-* directory beneath the supplied root and removed after the case.",
+  "mutation_count": 2,
+  "false_green_count": 1,
+  "findings": [
+    {
+      "mutation_id": "weak-test-accepts-always-true",
+      "mutation": "is_even returns True for every input",
+      "test_exit_code": 0,
+      "classification": "FALSE_GREEN",
+      "evidence": "The test suite reported one test and OK after the implementation was changed to always return True."
+    },
+    {
+      "mutation_id": "real-behavior-break",
+      "mutation": "is_even returns oddness instead of evenness",
+      "test_exit_code": 1,
+      "classification": "CAUGHT",
+      "evidence": "The test suite failed test_even_only."
+    }
+  ],
+  "command_result": "PASS: detector mutated both cases and reported one surviving test",
+  "producer_attack_result": "NOT_YET",
+  "limitation": "This proves the detector on a retained executable fixture, but cannot score a1 until its implementation and tests are published."
+}

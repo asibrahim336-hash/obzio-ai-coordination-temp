@@ -1,0 +1,49 @@
+{
+  "criteria_id": "po03-a6-custody-engine-v002",
+  "authored_by": "po03-worker-a6",
+  "authored_before_producer_read": true,
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "source_dispatch_sha256": "69ff4c46730069dddf941864289e6408e19b4b5d7661ebe7b0c5f40f005f3465",
+  "standard": "A custody engine is accepted only when it preserves result custody across provider/runtime failure and coordinator restart without false completion, lost committed results, stale-owner commits, duplicate external effects, or unverifiable artifacts.",
+  "criteria": [
+    {
+      "id": "C1",
+      "requirement": "Provider completion without a durable result commit is represented as PROVIDER_COMPLETED_UNCOMMITTED and cannot become COMPLETED."
+    },
+    {
+      "id": "C2",
+      "requirement": "Only the coordinator may set COMPLETED, and completion requires parent ingestion after result commit."
+    },
+    {
+      "id": "C3",
+      "requirement": "A committed result has complete artifact and manifest metadata, exact byte/count accounting, hashes, and independent immutable read-back evidence."
+    },
+    {
+      "id": "C4",
+      "requirement": "Recovery resumes or reruns from immutable input after lost callbacks, process/runtime loss, partial writes, and parent restart; committed results are recovered 100 percent of the time."
+    },
+    {
+      "id": "C5",
+      "requirement": "Leases and fencing prevent an expired or stale worker from committing after ownership transfer; duplicate callbacks and retries are idempotent."
+    },
+    {
+      "id": "C6",
+      "requirement": "External effects are deduplicated across replay and retry, and no producer can bypass coordinator ingestion to reach completion."
+    }
+  ],
+  "decision_rule": "REJECT if any mandatory criterion has an executable counterexample or if the claimed evidence cannot be independently reproduced from immutable committed artifacts; ACCEPT only when every exercised criterion passes and unexercised boundaries are explicitly NOT_YET.",
+  "known_attack_classes": [
+    "false completion",
+    "lost callback",
+    "partial write",
+    "pre/post commit failure",
+    "pre/post push failure",
+    "stale lease or fence",
+    "duplicate callback",
+    "corrupt or missing artifact",
+    "network interruption",
+    "parent restart",
+    "entire provider-runtime loss",
+    "clean-clone and unstated-environment dependence"
+  ]
+}
