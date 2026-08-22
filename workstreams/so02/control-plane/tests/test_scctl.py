@@ -30,7 +30,7 @@ class ControlPlaneTests(unittest.TestCase):
 
     def test_project_rebuilds_from_event_head(self) -> None:
         projection = scctl.project(self.root)
-        self.assertEqual(5, projection["event_count"])
+        self.assertEqual(7, projection["event_count"])
         self.assertEqual("ACTIVE_INTERIM", projection["subjects"]["SCF-01/CGPT-01"]["state"])
 
     def test_event_chain_is_valid(self) -> None:
@@ -130,6 +130,26 @@ class ControlPlaneTests(unittest.TestCase):
         changed = copy.deepcopy(self.control)
         changed["current_founder_actions"][0]["blocking_scope"] = "global"
         self.assertTrue(any("incorrectly gates" in item for item in self.errors_for(changed)))
+
+    def test_multi_parent_requires_exactly_one_shared_writer(self) -> None:
+        changed = copy.deepcopy(self.control)
+        changed["multi_parent_execution_contract"]["root_shared_writer_count"] = 8
+        self.assertTrue(any("exactly one shared-state writer" in item for item in self.errors_for(changed)))
+
+    def test_multi_parent_requires_isolated_parent_namespaces(self) -> None:
+        changed = copy.deepcopy(self.control)
+        changed["multi_parent_execution_contract"]["isolated_parent_branch_and_namespace_required"] = False
+        self.assertTrue(any("isolated parent branches" in item for item in self.errors_for(changed)))
+
+    def test_nested_agent_lineage_denominator_is_enforced(self) -> None:
+        changed = copy.deepcopy(self.control)
+        changed["multi_parent_execution_contract"]["nested_lineage_fields"].remove("parent_id")
+        self.assertTrue(any("nested lineage denominator" in item for item in self.errors_for(changed)))
+
+    def test_founder_cannot_be_candidate_merge_layer(self) -> None:
+        changed = copy.deepcopy(self.control)
+        changed["multi_parent_execution_contract"]["founder_is_comparison_retrieval_or_merge_layer"] = True
+        self.assertTrue(any("founder cannot be" in item for item in self.errors_for(changed)))
 
     def test_sources_are_hash_bound(self) -> None:
         sources = scctl.read_json(self.root / "sources/SOURCE-REGISTER.json")
