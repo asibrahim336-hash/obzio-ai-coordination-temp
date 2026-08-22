@@ -41,10 +41,14 @@ def load(path: Path, root: Path) -> tuple[unittest.TestSuite | None, str | None]
         return None, f"{path}: unloadable"
     module = importlib.util.module_from_spec(spec)
     sys.modules[module_name] = module
+    previous = sys.dont_write_bytecode
+    sys.dont_write_bytecode = True
     try:
         spec.loader.exec_module(module)
     except Exception as exc:  # a producer's broken test file must fail the gate, not hide
         return None, f"{path}: import failed: {exc!r}"
+    finally:
+        sys.dont_write_bytecode = previous
     return unittest.defaultTestLoader.loadTestsFromModule(module), None
 
 
