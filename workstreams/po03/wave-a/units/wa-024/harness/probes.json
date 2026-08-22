@@ -1,0 +1,266 @@
+{
+  "schema": "PO03-WA-024-PROBES-v1",
+  "note": "Sanitized repository-native Obzio workloads. Every argv is either a command the repository's own workflows declare, or a provenance check the PO-03 transactional protocol requires of every producer. No secrets, no network and no third-party service are involved, and no probe writes outside the tree it runs in.",
+  "argv_conventions": {
+    "PYTHON": "replaced by the interpreter running the harness, so a runner without actions/setup-python still executes the probe"
+  },
+  "design": "Probes run in declared order against one tree per mode, which is how a single Actions job behaves, so ordered gate probes establish causation. Gate probes p01, p03, p05, p07 and p09 are the same command; a change in a gate's outcome is attributable to the command that ran between it and the previous gate. Probes marked reset_untracked_delta return the tree to the untracked state observed at harness start, and never remove a file the caller already had.",
+  "probes": [
+    {
+      "probe_id": "p01-cleanliness-gate-initial",
+      "workload": "PO-03 ownership gate: the tree must carry no untracked or modified files before the job's workload runs.",
+      "hypothesis_ids": ["H-WA024-02"],
+      "role": "gate",
+      "argv": [
+        "PYTHON",
+        "-c",
+        "import subprocess,sys; out=subprocess.run(['git','status','--porcelain','--untracked-files=all'],capture_output=True,text=True).stdout.strip(); print('dirty_paths=%d' % (len(out.splitlines()) if out else 0)); print(out); sys.exit(1 if out else 0)"
+      ],
+      "cwd": ".",
+      "expected_classification": "AGREE",
+      "expected_outcomes": {"warm": "PASS", "clean_full": "PASS", "clean_shallow": "PASS"}
+    },
+    {
+      "probe_id": "p02-contract-tests-bytecode-free",
+      "workload": "Candidate mechanism change MC-WA024-02: the PO-03 contract-test command with -B, so CPython writes no bytecode cache into the checkout.",
+      "hypothesis_ids": ["H-WA024-02"],
+      "role": "candidate_mechanism_change",
+      "argv": ["PYTHON", "-B", "-I", "-m", "unittest", "discover", "-s", "workstreams/po03/tests", "-p", "test_*.py"],
+      "cwd": ".",
+      "expected_classification": "AGREE",
+      "expected_outcomes": {"warm": "PASS", "clean_full": "PASS", "clean_shallow": "PASS"},
+      "expect_worktree_mutation": false
+    },
+    {
+      "probe_id": "p03-cleanliness-gate-after-bytecode-free",
+      "workload": "The ownership gate re-run after the bytecode-free command. Passing here is the independent test that MC-WA024-02 removes the contamination.",
+      "hypothesis_ids": ["H-WA024-02"],
+      "role": "gate",
+      "argv": [
+        "PYTHON",
+        "-c",
+        "import subprocess,sys; out=subprocess.run(['git','status','--porcelain','--untracked-files=all'],capture_output=True,text=True).stdout.strip(); print('dirty_paths=%d' % (len(out.splitlines()) if out else 0)); print(out); sys.exit(1 if out else 0)"
+      ],
+      "cwd": ".",
+      "expected_classification": "AGREE",
+      "expected_outcomes": {"warm": "PASS", "clean_full": "PASS", "clean_shallow": "PASS"}
+    },
+    {
+      "probe_id": "p04-contract-tests-as-declared",
+      "workload": ".github/workflows/po03-contracts.yml step 'Run dependency-free contract tests', exactly as the workflow declares it.",
+      "hypothesis_ids": ["H-WA024-02", "H-WA024-03"],
+      "role": "declared_ci_command",
+      "argv": ["PYTHON", "-I", "-m", "unittest", "discover", "-s", "workstreams/po03/tests", "-p", "test_*.py"],
+      "cwd": ".",
+      "expected_classification": "AGREE",
+      "expected_outcomes": {"warm": "PASS", "clean_full": "PASS", "clean_shallow": "PASS"},
+      "expect_worktree_mutation": true
+    },
+    {
+      "probe_id": "p05-cleanliness-gate-after-declared",
+      "workload": "The ownership gate re-run after the workflow-declared command. Failing here while p03 passed isolates the declared command as the cause.",
+      "hypothesis_ids": ["H-WA024-02"],
+      "role": "gate",
+      "argv": [
+        "PYTHON",
+        "-c",
+        "import subprocess,sys; out=subprocess.run(['git','status','--porcelain','--untracked-files=all'],capture_output=True,text=True).stdout.strip(); print('dirty_paths=%d' % (len(out.splitlines()) if out else 0)); print(out); sys.exit(1 if out else 0)"
+      ],
+      "cwd": ".",
+      "expected_classification": "AGREE",
+      "expected_outcomes": {"warm": "FAIL", "clean_full": "FAIL", "clean_shallow": "FAIL"}
+    },
+    {
+      "probe_id": "p06-naive-bytecode-remediation-under-isolation",
+      "workload": "Adversarial case for H-WA024-02B: the declared isolated-mode command with the widely recommended PYTHONDONTWRITEBYTECODE=1 applied. The tree is first returned to its start state so the effect is attributable to this run.",
+      "hypothesis_ids": ["H-WA024-02B"],
+      "role": "adversarial_case",
+      "argv": ["PYTHON", "-I", "-m", "unittest", "discover", "-s", "workstreams/po03/tests", "-p", "test_*.py"],
+      "cwd": ".",
+      "env_overlay": {"PYTHONDONTWRITEBYTECODE": "1"},
+      "reset_untracked_delta": true,
+      "expected_classification": "AGREE",
+      "expected_outcomes": {"warm": "PASS", "clean_full": "PASS", "clean_shallow": "PASS"},
+      "expect_worktree_mutation": true
+    },
+    {
+      "probe_id": "p07-cleanliness-gate-after-naive-remediation",
+      "workload": "The ownership gate re-run after the naive remediation. Failing here shows the recommended environment variable does not protect an isolated-mode command.",
+      "hypothesis_ids": ["H-WA024-02B"],
+      "role": "gate",
+      "argv": [
+        "PYTHON",
+        "-c",
+        "import subprocess,sys; out=subprocess.run(['git','status','--porcelain','--untracked-files=all'],capture_output=True,text=True).stdout.strip(); print('dirty_paths=%d' % (len(out.splitlines()) if out else 0)); print(out); sys.exit(1 if out else 0)"
+      ],
+      "cwd": ".",
+      "expected_classification": "AGREE",
+      "expected_outcomes": {"warm": "FAIL", "clean_full": "FAIL", "clean_shallow": "FAIL"}
+    },
+    {
+      "probe_id": "p08-bytecode-env-var-without-isolation",
+      "workload": "Control for H-WA024-02B: the same environment variable with isolated mode removed. This separates 'the variable does not work' from 'isolated mode ignores it'.",
+      "hypothesis_ids": ["H-WA024-02B"],
+      "role": "negative_control",
+      "argv": ["PYTHON", "-m", "unittest", "discover", "-s", "workstreams/po03/tests", "-p", "test_*.py"],
+      "cwd": ".",
+      "env_overlay": {"PYTHONDONTWRITEBYTECODE": "1"},
+      "reset_untracked_delta": true,
+      "expected_classification": "AGREE",
+      "expected_outcomes": {"warm": "PASS", "clean_full": "PASS", "clean_shallow": "PASS"},
+      "expect_worktree_mutation": false
+    },
+    {
+      "probe_id": "p09-cleanliness-gate-after-non-isolated-run",
+      "workload": "The ownership gate re-run after the non-isolated command. Passing here completes the causal separation for H-WA024-02B.",
+      "hypothesis_ids": ["H-WA024-02B"],
+      "role": "gate",
+      "argv": [
+        "PYTHON",
+        "-c",
+        "import subprocess,sys; out=subprocess.run(['git','status','--porcelain','--untracked-files=all'],capture_output=True,text=True).stdout.strip(); print('dirty_paths=%d' % (len(out.splitlines()) if out else 0)); print(out); sys.exit(1 if out else 0)"
+      ],
+      "cwd": ".",
+      "expected_classification": "AGREE",
+      "expected_outcomes": {"warm": "PASS", "clean_full": "PASS", "clean_shallow": "PASS"}
+    },
+    {
+      "probe_id": "p10-operator-taxonomy-check",
+      "workload": ".github/workflows/operator-taxonomy-currentness.yml step 'python scripts/check_operator_taxonomy.py', run from the workspace root.",
+      "hypothesis_ids": ["H-WA024-03"],
+      "role": "declared_ci_command",
+      "argv": ["PYTHON", "scripts/check_operator_taxonomy.py"],
+      "cwd": ".",
+      "expected_classification": "AGREE",
+      "expected_outcomes": {"warm": "PASS", "clean_full": "PASS", "clean_shallow": "PASS"}
+    },
+    {
+      "probe_id": "p11-operator-taxonomy-check-foreign-cwd",
+      "workload": "The same taxonomy check invoked from a nested directory. Negative control for root resolution: the script derives its root from __file__, so it must not depend on the working directory.",
+      "hypothesis_ids": ["H-WA024-03"],
+      "role": "negative_control",
+      "argv": ["PYTHON", "../../scripts/check_operator_taxonomy.py"],
+      "cwd": "workstreams/po03",
+      "expected_classification": "AGREE",
+      "expected_outcomes": {"warm": "PASS", "clean_full": "PASS", "clean_shallow": "PASS"}
+    },
+    {
+      "probe_id": "p12-contract-tests-foreign-cwd",
+      "workload": "The declared PO-03 contract-test command invoked from a nested directory, testing whether it silently assumes that the working directory is GITHUB_WORKSPACE.",
+      "hypothesis_ids": ["H-WA024-03"],
+      "role": "portability_probe",
+      "argv": ["PYTHON", "-B", "-I", "-m", "unittest", "discover", "-s", "workstreams/po03/tests", "-p", "test_*.py"],
+      "cwd": "workstreams/po03",
+      "expected_classification": "AGREE",
+      "expected_outcomes": {"warm": "FAIL", "clean_full": "FAIL", "clean_shallow": "FAIL"}
+    },
+    {
+      "probe_id": "p13-protocol-ancestor-as-frozen-in-input",
+      "workload": "The PO-03 ancestry check using minimum_protocol_ancestor exactly as recorded in every Wave A immutable input: 100bc20ad5eec62a4f35b60921423135cc0b9d9a.",
+      "hypothesis_ids": ["H-WA024-04"],
+      "role": "identifier_integrity_probe",
+      "argv": ["git", "merge-base", "--is-ancestor", "100bc20ad5eec62a4f35b60921423135cc0b9d9a", "HEAD"],
+      "cwd": ".",
+      "expected_classification": "AGREE",
+      "expected_outcomes": {"warm": "FAIL", "clean_full": "FAIL", "clean_shallow": "FAIL"}
+    },
+    {
+      "probe_id": "p14-protocol-ancestor-abbreviated",
+      "workload": "The ancestry check using only the seven-character prefix 100bc20. A full-history object store resolves the abbreviation, so a lenient provenance check appears to pass even though the recorded forty-character identifier is wrong.",
+      "hypothesis_ids": ["H-WA024-04"],
+      "role": "identifier_integrity_probe",
+      "argv": ["git", "merge-base", "--is-ancestor", "100bc20", "HEAD"],
+      "cwd": ".",
+      "expected_classification": "DEPTH_SENSITIVE",
+      "expected_outcomes": {"warm": "PASS", "clean_full": "PASS", "clean_shallow": "FAIL"}
+    },
+    {
+      "probe_id": "p15-protocol-ancestor-verification",
+      "workload": "PO-03 transactional protocol provenance check with the actual object id 100bc2079cedc193af3524234ab833cc9f9f4669: the producer's start commit must descend from the minimum protocol ancestor.",
+      "hypothesis_ids": ["H-WA024-01"],
+      "role": "protocol_required_check",
+      "argv": ["git", "merge-base", "--is-ancestor", "100bc2079cedc193af3524234ab833cc9f9f4669", "HEAD"],
+      "cwd": ".",
+      "expected_classification": "DEPTH_SENSITIVE",
+      "expected_outcomes": {"warm": "PASS", "clean_full": "PASS", "clean_shallow": "FAIL"}
+    },
+    {
+      "probe_id": "p16-commission-commit-readable",
+      "workload": "PO-03 source-base check: the frozen commission commit 552b12eacee637716451492a98980fb0da19ff3e must be readable so its recorded SHA-256 can be reproduced.",
+      "hypothesis_ids": ["H-WA024-01"],
+      "role": "protocol_required_check",
+      "argv": ["git", "cat-file", "-e", "552b12eacee637716451492a98980fb0da19ff3e^{commit}"],
+      "cwd": ".",
+      "expected_classification": "DEPTH_SENSITIVE",
+      "expected_outcomes": {"warm": "PASS", "clean_full": "PASS", "clean_shallow": "FAIL"}
+    },
+    {
+      "probe_id": "p17-pinned-base-readable",
+      "workload": "PO-03 commission pinned_base_sha 5db7affeb7f00763e148e6d98a33ee6b751f2def must be readable to reproduce the pinned base.",
+      "hypothesis_ids": ["H-WA024-01"],
+      "role": "protocol_required_check",
+      "argv": ["git", "cat-file", "-e", "5db7affeb7f00763e148e6d98a33ee6b751f2def^{commit}"],
+      "cwd": ".",
+      "expected_classification": "DEPTH_SENSITIVE",
+      "expected_outcomes": {"warm": "PASS", "clean_full": "PASS", "clean_shallow": "FAIL"}
+    },
+    {
+      "probe_id": "p18-no-provider-environment-leak",
+      "workload": "Portability check on the ambient environment. Fails when provider, agent or credential-shaped variable names are present. Only counts are printed; no variable name or value is emitted, so no secret can reach the evidence record.",
+      "hypothesis_ids": ["H-WA024-05"],
+      "role": "environment_probe",
+      "argv": [
+        "PYTHON",
+        "-c",
+        "import os,re,sys; pat=re.compile(r'CURSOR|ANTHROPIC|OPENAI|CLAUDE|_TOKEN|SECRET|_KEY|AGENT_TRANSCRIPTS|CLOUD_AGENT',re.I); hits=[n for n in os.environ if pat.search(n)]; print('provider_shaped_env_vars=%d' % len(hits)); print('total_env_vars=%d' % len(os.environ)); sys.exit(1 if hits else 0)"
+      ],
+      "cwd": ".",
+      "expected_classification": "CLEAN_ONLY_PASS",
+      "expected_outcomes": {"warm": "FAIL", "clean_full": "PASS", "clean_shallow": "PASS"},
+      "expectation_binding": "advisory",
+      "expectation_binding_reason": "Depends on the ambient environment of the invoking host, not on repository content or clone depth, so it is recorded but not enforced for clean-clone recurrence."
+    },
+    {
+      "probe_id": "p19-no-tmpdir-carryover",
+      "workload": "Portability check on TMPDIR. Fails when the ambient temporary directory already holds PO-03 run state, which is the /tmp dependence the commission forbids. Only a count is printed.",
+      "hypothesis_ids": ["H-WA024-05"],
+      "role": "environment_probe",
+      "argv": [
+        "PYTHON",
+        "-c",
+        "import os,glob,sys,tempfile; root=tempfile.gettempdir(); hits=glob.glob(os.path.join(root,'*po03*'))+glob.glob(os.path.join(root,'*wa024*')); print('tmpdir_po03_entries=%d' % len(hits)); sys.exit(1 if hits else 0)"
+      ],
+      "cwd": ".",
+      "expected_classification": "CLEAN_ONLY_PASS",
+      "expected_outcomes": {"warm": "FAIL", "clean_full": "PASS", "clean_shallow": "PASS"},
+      "expectation_binding": "advisory",
+      "expectation_binding_reason": "Depends on the ambient environment of the invoking host, not on repository content or clone depth, so it is recorded but not enforced for clean-clone recurrence."
+    },
+    {
+      "probe_id": "p20-bare-python-interpreter-available",
+      "workload": "Both workflows spell the interpreter 'python'. This probe tests whether a bare 'python' exists without actions/setup-python having run, which is the assumption the workflow step text carries.",
+      "hypothesis_ids": ["H-WA024-06"],
+      "role": "toolchain_probe",
+      "argv": ["python", "-c", "print('bare python present')"],
+      "cwd": ".",
+      "expected_classification": "AGREE",
+      "expectation_binding": "advisory",
+      "expectation_binding_reason": "Depends on the invoking host's PATH, not on repository content."
+    },
+    {
+      "probe_id": "p21-cleanliness-gate-final",
+      "workload": "Final ownership gate. The harness returns the tree to its start state before this gate, so a passing result shows the harness itself leaves no residue in the caller's checkout.",
+      "hypothesis_ids": ["H-WA024-02"],
+      "role": "gate",
+      "argv": [
+        "PYTHON",
+        "-c",
+        "import subprocess,sys; out=subprocess.run(['git','status','--porcelain','--untracked-files=all'],capture_output=True,text=True).stdout.strip(); print('dirty_paths=%d' % (len(out.splitlines()) if out else 0)); print(out); sys.exit(1 if out else 0)"
+      ],
+      "cwd": ".",
+      "reset_untracked_delta": true,
+      "expected_classification": "AGREE",
+      "expected_outcomes": {"warm": "PASS", "clean_full": "PASS", "clean_shallow": "PASS"}
+    }
+  ]
+}

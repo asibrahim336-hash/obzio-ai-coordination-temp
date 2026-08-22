@@ -1,0 +1,102 @@
+{
+  "protocol_version": "PO03-WA-024-HYPOTHESES-v1",
+  "task_id": "PO03-WA-024",
+  "state": "FROZEN_HYPOTHESIS",
+  "state_note": "Hypotheses are frozen before the reproductions run, and are recorded separately from the source claims that motivated them, from the reproduction results, from mechanism changes and from strategy proposals.",
+  "frozen_at": "2026-08-22T07:20:00Z",
+  "frozen_before_reproduction": true,
+  "parent_hypothesis": {
+    "hypothesis_id": "H-PO03-WA-024",
+    "statement": "A clean Actions runner exposes hidden local-state assumptions that a warm checkout misses.",
+    "source": "workstreams/po03/control/inputs/wave-a/wa-024.json, assignment.falsifiable_hypothesis",
+    "operationalisation": "For a workload W, a hidden local-state assumption exists when W's outcome in a warm reused checkout differs from its outcome in a freshly materialised tree that contains only committed content and runs under a scrubbed environment. The parent hypothesis is SUPPORTED only if at least one repository-native Obzio workload shows such a difference, and it is REFUTED if every repository-native workload agrees across environments.",
+    "refutation_condition": "Every declared repository-native probe produces an identical outcome in warm, clean_full and clean_shallow modes, and no probe mutates the checkout."
+  },
+  "hypotheses": [
+    {
+      "hypothesis_id": "H-WA024-01",
+      "derived_from_source_claims": ["SC-WA024-01", "SC-WA024-02", "SC-WA024-R2", "SC-WA024-R5"],
+      "current_method_claim": "Pin CI to a shallow default checkout and fetch history only where a job needs it.",
+      "statement": "Because actions/checkout defaults to fetch-depth 1, the provenance checks the PO-03 transactional protocol requires of every producer - that the start commit descends from the minimum protocol ancestor, and that the commission commit and pinned base are readable - succeed in a warm full-history checkout and fail on a default clean runner.",
+      "prediction": "The ancestry and object-readability probes classify DEPTH_SENSITIVE: PASS in warm and clean_full, FAIL in clean_shallow.",
+      "refutation_condition": "The probes pass in clean_shallow, or fail in clean_full, which would mean depth is not the discriminating variable.",
+      "measured_by": ["p09-protocol-ancestor-verification", "p10-commission-commit-readable", "p11-pinned-base-readable"]
+    },
+    {
+      "hypothesis_id": "H-WA024-02",
+      "derived_from_source_claims": ["SC-WA024-03", "SC-WA024-06", "SC-WA024-R1"],
+      "current_method_claim": "Treat the runner workspace as disposable, so a step may leave artefacts behind.",
+      "statement": "The repository's own declared PO-03 contract-test command writes a CPython bytecode cache into tracked, read-only PO-03 directories. A clean runner discards that contamination with the virtual machine, while a warm reused checkout retains it, so any later ownership or changed-path validation in a warm checkout sees untracked paths it did not create.",
+      "prediction": "A cleanliness gate passes before the declared command and fails after it, in every mode; and the same command run with -B leaves the gate passing.",
+      "refutation_condition": "The declared command leaves the checkout unchanged, or -B fails to prevent the change.",
+      "measured_by": [
+        "p01-cleanliness-gate-initial",
+        "p02-contract-tests-bytecode-free",
+        "p03-cleanliness-gate-after-bytecode-free",
+        "p04-contract-tests-as-declared",
+        "p05-cleanliness-gate-after-declared"
+      ]
+    },
+    {
+      "hypothesis_id": "H-WA024-02B",
+      "derived_from_source_claims": ["SC-WA024-06"],
+      "current_method_claim": "Suppress bytecode writing in CI by exporting PYTHONDONTWRITEBYTECODE=1 for the job.",
+      "statement": "That remediation is silently ineffective for this repository, because the declared command runs CPython in isolated mode and isolated mode ignores every PYTHON* environment variable. An operator who applies the widely recommended fix will observe no change and may conclude the contamination has another cause.",
+      "prediction": "Running the declared isolated-mode command with PYTHONDONTWRITEBYTECODE=1 still mutates the checkout, while the same command without isolated mode does not.",
+      "refutation_condition": "PYTHONDONTWRITEBYTECODE=1 suppresses bytecode writing under -I.",
+      "measured_by": [
+        "p06-naive-bytecode-remediation-under-isolation",
+        "p07-cleanliness-gate-after-naive-remediation",
+        "p08-bytecode-env-var-without-isolation",
+        "p09-cleanliness-gate-after-non-isolated-run"
+      ]
+    },
+    {
+      "hypothesis_id": "H-WA024-03",
+      "derived_from_source_claims": ["SC-WA024-04", "SC-WA024-06", "SC-WA024-R1"],
+      "current_method_claim": "Resolve repository paths from GITHUB_WORKSPACE, which Actions sets as the step working directory.",
+      "statement": "Repository workloads split into two portability classes. A workload that resolves its root from __file__ is working-directory independent; a workload that names a working-directory-relative start directory is not, and only appears correct because Actions happens to start every step at the workspace root.",
+      "prediction": "The taxonomy check passes from both the root and a nested directory; the declared contract-test command passes from the root and fails from a nested directory, identically in all three environments.",
+      "refutation_condition": "Both workloads behave the same way with respect to the working directory.",
+      "measured_by": [
+        "p10-operator-taxonomy-check",
+        "p11-operator-taxonomy-check-foreign-cwd",
+        "p12-contract-tests-foreign-cwd"
+      ]
+    },
+    {
+      "hypothesis_id": "H-WA024-04",
+      "derived_from_source_claims": ["SC-WA024-01", "SC-WA024-R3", "SC-WA024-R4"],
+      "current_method_claim": "Pin provenance to full forty-character object identifiers rather than abbreviations.",
+      "statement": "A recorded forty-character identifier that is only prefix-correct is indistinguishable from a valid one under a lenient check in a warm full-history checkout, because git resolves the abbreviation. The recorded identifier is therefore unverifiable, and every Wave A immutable input carries this defect because the generator holds it as an unchecked literal.",
+      "prediction": "The ancestry check fails in all three environments when given the identifier exactly as recorded, passes in warm and clean_full when given only the seven-character prefix, and fails in clean_shallow even for the prefix.",
+      "refutation_condition": "The recorded forty-character identifier resolves, or the prefix fails to resolve in a full-history checkout.",
+      "measured_by": ["p13-protocol-ancestor-as-frozen-in-input", "p14-protocol-ancestor-abbreviated"]
+    },
+    {
+      "hypothesis_id": "H-WA024-05",
+      "derived_from_source_claims": ["SC-WA024-03", "SC-WA024-04", "SC-WA024-R5"],
+      "current_method_claim": "A hosted runner supplies its own HOME and RUNNER_TEMP and carries no operator state.",
+      "statement": "The warm agent checkout runs inside an ambient environment that carries provider-specific and credential-shaped variable names and a temporary directory already holding PO-03 run state. Any workload that reads either surface would pass warm and fail on a clean runner.",
+      "prediction": "Environment and temporary-directory portability probes fail in warm and pass in both clean modes.",
+      "refutation_condition": "The warm environment carries no provider-shaped variables and no PO-03 temporary state.",
+      "measured_by": ["p15-no-provider-environment-leak", "p16-no-tmpdir-carryover"],
+      "expectation_binding": "advisory",
+      "binding_note": "The outcome depends on the invoking host rather than on repository content, so it is recorded as an observation and is not enforced for clean-clone recurrence."
+    },
+    {
+      "hypothesis_id": "H-WA024-06",
+      "derived_from_source_claims": ["SC-WA024-05", "SC-WA024-R1", "SC-WA024-R2"],
+      "current_method_claim": "Spell the interpreter 'python' in workflow steps after actions/setup-python has run.",
+      "statement": "Both repository workflows depend on actions/setup-python to make the bare name 'python' resolvable. The commands are therefore not reproducible outside Actions, which weakens the commission's clean-clone reproduction requirement even though the workflows themselves are correct.",
+      "prediction": "A bare 'python' invocation errors with executable-not-found identically in all three environments on a host without setup-python.",
+      "refutation_condition": "A bare 'python' resolves on a host where no setup action ran.",
+      "measured_by": ["p17-bare-python-interpreter-available"],
+      "expectation_binding": "advisory",
+      "binding_note": "Depends on the invoking host's PATH, not on repository content."
+    }
+  ],
+  "counted_current_method_hypotheses": 7,
+  "minimum_required_by_input": 2,
+  "decision_changed": []
+}
