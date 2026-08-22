@@ -34,6 +34,7 @@
     "cohorts_returned": [
       "a1",
       "a2",
+      "a3",
       "a4",
       "a5",
       "a6",
@@ -44,7 +45,6 @@
       "a12"
     ],
     "cohorts_in_flight": [
-      "a3",
       "a11",
       "a13"
     ]
@@ -412,5 +412,83 @@
     "sequence": "a6 found tracked __pycache__ and attributed it to a3. The coordinator corrected that: the files were introduced by the coordinator at 04827c3 and 6f5e386 via a broad git add -A, and a3 inherited them by branching. a6 independently confirmed this with git log --diff-filter=A and corrected its own record. The coordinator then told a8 that zero tracked bytecode remains, citing git ls-files.",
     "correction": "That statement was true on the integration branch and not on a8's branch. a8's branch head 01dfb05 predates the removal at e19982d, so the two .pyc files are still tracked there and a8's L-13 RETEST was accurate for its own working state. a8 was right and the coordinator's correction to it was imprecise. The removal reaches a8 when it merges the integration branch, not before.",
     "why_recorded": "Three successive refinements of one small attribution, each by a different party. The record keeps all three rather than only the final one, because who introduced a defect determines who must fix it and the wrong answer sends work to the wrong owner."
+  },
+  "clean_runtime_evidence_final": {
+    "requirement": "The commission requires the capability be exercised in Cursor and in a clean GitHub Actions environment without provider memory, local hidden state, /tmp dependencies or uncommitted files.",
+    "satisfied_in_cursor": {
+      "clean_clone": "PASS — cloned from the real remote into an outside-repo scratch tree and ran the suite under env -i",
+      "offline": "PASS — 145 tests, exit 0, with egress removed by a network namespace and the removal itself proved by baseline probes failing inside the sandbox"
+    },
+    "satisfied_on_github_actions": {
+      "workflow": "PO-03 clean-runner reproduction",
+      "run_id": "32562707415",
+      "run_url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp/actions/runs/32562707415",
+      "conclusion": "success",
+      "duration": "71s",
+      "steps": "15 of 15 green",
+      "branch": "cursor/po03-a3-portable-runtime-ed20",
+      "independently_verified_by_coordinator": true
+    },
+    "honest_not_supported_on_actions": [
+      {
+        "id": "PO03-CI-001",
+        "subject": "clean clone on GitHub Actions",
+        "state": "NOT_SUPPORTED",
+        "boundary": "The repository is private, so a hosted runner cannot clone it without a credential the commission forbids the workflow from requiring. Proved inside this runtime and recorded with a transcript; on Actions it is unproven rather than false."
+      },
+      {
+        "id": "PO03-CI-002",
+        "subject": "offline execution on GitHub Actions",
+        "state": "NOT_SUPPORTED",
+        "boundary": "unshare -rn does not work on ubuntu-latest. Both baseline probes succeed there, so the runner has egress but cannot remove it. Proved inside this runtime with a transcript."
+      }
+    ],
+    "ci_failures_reported_not_hidden": {
+      "count": 3,
+      "run_ids": [
+        "32559890968",
+        "32562323177",
+        "32562567125"
+      ],
+      "coordinator_verification": "All three confirmed as genuine failures via gh run view. The producer reported its own CI failures alongside its success rather than only the green run.",
+      "causes": [
+        "the path-scope workflow diffed against origin/main and charged the branch with a write its pinned base commit made",
+        "the entry-point manifest omitted a committed module",
+        "a result document pinned bytes that a later fix amended, so the committed-only gate reported MANIFEST_UNVERIFIABLE"
+      ]
+    }
+  },
+  "stale_audit_base_pattern": {
+    "finding": "Four cohorts audited a stale base and reported defects the coordinator had already fixed.",
+    "instances": [
+      {
+        "cohort": "a10",
+        "claim": "INV-6 lstrip traversal escape",
+        "actually": "fixed at 6f5e386 before a10 audited"
+      },
+      {
+        "cohort": "a3",
+        "claims": [
+          "lstrip normalisation defect, patch supplied",
+          "two tracked .pyc files, PO03-REPO-002",
+          "po03-contracts.yml never fires on cursor/** branches"
+        ],
+        "actually": "all three fixed at 6f5e386, e19982d and a23583f respectively, before a3 looked"
+      },
+      {
+        "cohort": "a8",
+        "claim": "two .pyc files remain tracked, L-13 held at RETEST",
+        "actually": "accurate for a8's own branch, which predates the removal; the coordinator's correction to a8 was itself imprecise"
+      },
+      {
+        "cohort": "a6",
+        "claim": "tracked bytecode attributed to a3",
+        "actually": "introduced by the coordinator; a6 later corrected itself"
+      }
+    ],
+    "root_cause": "A coordinator dispatch defect, not a cohort failure. Every prompt instructed a fetch and merge of the integration branch as a first command, but nothing required periodic re-sync. Long-running cohorts therefore audited the tree as it stood at dispatch. a3 in particular ran for most of the wave against the dispatch base.",
+    "value_retained": "The duplication was not waste. The lstrip defect now has three independent discoverers, the coordinator's own test suite, a10 and a3, and a3 shipped a verified patch. Independent rediscovery of the same defect by different families is corroboration, and it is the reason the fix is trusted rather than merely believed.",
+    "remedy": "Dispatch prompts must require a periodic re-fetch of the integration branch, and a cohort must record the integration commit it audited against so a stale finding is visible as stale rather than as new.",
+    "disposition": "RETAIN as a lesson for the successor generation"
   }
 }
