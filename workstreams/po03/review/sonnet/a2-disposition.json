@@ -1,0 +1,110 @@
+{
+  "disposition_id": "DISP-A10-U01-A2-FAULT-MATRIX-20260822-v001",
+  "reviewer": "po03-worker-a10",
+  "producer": "po03-worker-a2",
+  "criteria_applied": "workstreams/po03/review/sonnet/criteria-a2.json (frozen and pushed at commit d58004a, before this reviewer fetched/read any a2 branch content)",
+  "producer_branch_fetched_from": "origin/cursor/po03-a2-fault-recovery-ed20",
+  "producer_head_at_review_time": "1cb2ffc",
+  "verification_method": "For every one of the 12 units, this reviewer extracted a2's committed fault-injection script (git show <ref>:<path>, read-only) into an isolated /tmp scratch tree together with a2's own pinned copy of control_plane.py/validate_contracts.py, and RE-EXECUTED it fresh (not merely read a2's reported JSON). The freshly produced outcome document was then diff-compared against a2's committed outcome for that unit. For a2-u06 and a2-u07 (the units whose findings overlap this reviewer's own a10-u03 control-plane attacks), the underlying fixture source was additionally read to confirm real OS-level concurrency (threading.Barrier-synchronized threads for a2-u07) rather than sequential calls dressed as concurrent.",
+  "rerun_vs_original_status_table": [
+    {"unit_id": "a2-u01", "original_status": "FAIL", "rerun_status": "FAIL", "match": true},
+    {"unit_id": "a2-u02", "original_status": "FAIL", "rerun_status": "FAIL", "match": true},
+    {"unit_id": "a2-u03", "original_status": "PASS", "rerun_status": "PASS", "match": true},
+    {"unit_id": "a2-u04", "original_status": "FAIL", "rerun_status": "FAIL", "match": true},
+    {"unit_id": "a2-u05", "original_status": "FAIL", "rerun_status": "FAIL", "match": true},
+    {"unit_id": "a2-u06", "original_status": "FAIL", "rerun_status": "FAIL", "match": true},
+    {"unit_id": "a2-u07", "original_status": "FAIL", "rerun_status": "FAIL", "match": true},
+    {"unit_id": "a2-u08", "original_status": "FAIL", "rerun_status": "FAIL", "match": true},
+    {"unit_id": "a2-u09", "original_status": "NOT_SUPPORTED", "rerun_status": "NOT_SUPPORTED", "match": true},
+    {"unit_id": "a2-u10", "original_status": "FAIL", "rerun_status": "FAIL", "match": true},
+    {"unit_id": "a2-u11", "original_status": "FAIL", "rerun_status": "FAIL", "match": true},
+    {"unit_id": "a2-u12", "original_status": "FAIL", "rerun_status": "FAIL", "match": true}
+  ],
+  "per_unit_disposition": [
+    {
+      "unit_id": "a2-u01",
+      "pass_bar_met": true,
+      "notes": "Fixture exercises the fault at every named lifecycle transition (a2's own lifecycle_transitions list covers all 10 states, exceeding this reviewer's minimum of 3). Finding ('scan_recovery reports resumable units but performs no lease expiry, re-lease, retry scheduling, or rerun') is a real, re-executed, correctly-attributed defect, not narrative. Hypothesis is honestly reported FALSIFIED (FAIL) rather than papered over.",
+      "unit_verdict": "SOUND_FIXTURE_HYPOTHESIS_FALSIFIED"
+    },
+    {
+      "unit_id": "a2-u02",
+      "pass_bar_met": true,
+      "notes": "Correctly identifies that the recovery scanner reads only the ledger and never reconciles a dropped callback via any other channel -- this is itself evidence the pass_bar's requirement ('scanner alone reconciles ... not any callback channel') is unmet by the coordinator, which a2 reports honestly as FAIL.",
+      "unit_verdict": "SOUND_FIXTURE_HYPOTHESIS_FALSIFIED"
+    },
+    {
+      "unit_id": "a2-u03",
+      "pass_bar_met": true,
+      "notes": "The one unit where the coordinator's control plane actually holds: truncated artifacts and hash-mismatched fixtures are rejected at ingestion. This reviewer's own a10-u03 INV-4 cases independently confirm the same code path (control_plane.py:559-566) using a different fixture. Two independent reviewers using two independently written fixtures agree the property holds -- this is the strongest possible form of confirmation available under this review's methodology.",
+      "unit_verdict": "SOUND_FIXTURE_HYPOTHESIS_CONFIRMED"
+    },
+    {
+      "unit_id": "a2-u04",
+      "pass_bar_met": true,
+      "notes": "Finding: sequential replay is idempotent (matches this reviewer's a10-u03 INV-3a HELD finding) but no automatic recovery path discovers a post-commit result or reruns a pre-commit failure -- a distinct, additional gap this reviewer's a10-u03 did not test (a10-u03 tested manual resubmission, not automatic discovery/rerun).",
+      "unit_verdict": "SOUND_FIXTURE_HYPOTHESIS_FALSIFIED"
+    },
+    {
+      "unit_id": "a2-u05",
+      "pass_bar_met": true,
+      "notes": "Finding: 'ingest_result accepts any non-empty result_commit_id and git locator after local-file verification; it performs no remote immutable-SHA read-back.' This is the SAME root cause this reviewer found independently in a10-u03 INV-9 (D2): result_commit_id is never checked against real git history. Two independently produced findings from two different model families converge on the identical code defect by two different routes (push-boundary fault injection here; fabricated-commit-id ingestion in a10-u03).",
+      "unit_verdict": "SOUND_FIXTURE_HYPOTHESIS_FALSIFIED_CONVERGES_WITH_A10_U03"
+    },
+    {
+      "unit_id": "a2-u06",
+      "pass_bar_met": false,
+      "gap": "This reviewer's frozen pass_bar required 'at least 20 repeated trials with no flake'; a2's fixture (and this reviewer's fresh re-execution of the identical script) ran exactly 10 trials (injection_count/stale_commits.injected == 10), covering all 10 named lifecycle transitions once each rather than repeating a single transition 20+ times.",
+      "notes": "Despite the evidentiary-volume shortfall against this reviewer's specific bar, the qualitative finding is unambiguous, reproduced identically on independent re-execution, and independently corroborated by this reviewer's own separately-written a10-u03 INV-2b case (never-leased fence token accepted): 'ingest_result rejects only fence tokens lower than current; an unissued higher token is accepted.' This reviewer treats the finding as CONFIRMED on convergent-evidence grounds even though a2's own trial count alone would not have met the frozen bar in isolation.",
+      "unit_verdict": "HYPOTHESIS_FALSIFIED_MINOR_EVIDENTIARY_GAP_BUT_INDEPENDENTLY_CONFIRMED"
+    },
+    {
+      "unit_id": "a2-u07",
+      "pass_bar_met": true,
+      "notes": "Verified by reading fault_lab.py:661-730: genuine OS-level concurrency via threading.Barrier(2)-synchronized threads, not sequential calls dressed as concurrent (this reviewer's explicit reject_trigger). 200 interleavings run, matching the frozen bar exactly. Finding ('append_event performs read/verify/append without a lock or compare-and-swap; two callbacks can append the same sequence and predecessor hash, breaking the ledger chain') is a materially more severe and differently-scoped defect than anything this reviewer's own a10-u03 tested (a10-u03 explicitly scoped true multi-process/thread races out as 'not attacked'). This is the strongest single finding in the a2 cohort.",
+      "unit_verdict": "SOUND_FIXTURE_HYPOTHESIS_FALSIFIED_EXCEEDS_A10_U03_SCOPE"
+    },
+    {
+      "unit_id": "a2-u08",
+      "pass_bar_met": true,
+      "notes": "Confirms ingestion-time rejection (matches a10-u03 INV-4) and additionally finds the rejection appends no RECOVERY_REQUIRED event and the scanner never re-hashes artifacts after COMPLETED to catch later deletion/corruption -- a distinct post-completion monitoring gap this reviewer did not test.",
+      "unit_verdict": "SOUND_FIXTURE_HYPOTHESIS_FALSIFIED"
+    },
+    {
+      "unit_id": "a2-u09",
+      "pass_bar_met": "not_applicable",
+      "notes": "Honest NOT_SUPPORTED: control_plane.py has no push/fetch/network/retry/backoff code path at all, so there is nothing for a network-interruption injector to intercept. This reviewer independently confirms by reading control_plane.py in full (a10-u03 review pass): no subprocess git push/fetch call exists anywhere in the file. This is the correct disposition, not an evasion.",
+      "unit_verdict": "HONEST_NOT_SUPPORTED_CONFIRMED"
+    },
+    {
+      "unit_id": "a2-u10",
+      "pass_bar_met": true,
+      "notes": "Confirms ledger projection rebuild is deterministic (a property this reviewer relies on but did not separately re-verify byte-for-byte in a10-u03) but finds scan_recovery does not execute any advertised resume action -- a defect in the automation layer around the correctly-deterministic projection.",
+      "unit_verdict": "SOUND_FIXTURE_HYPOTHESIS_FALSIFIED"
+    },
+    {
+      "unit_id": "a2-u11",
+      "pass_bar_met": true,
+      "notes": "Finding: a fresh clone of only the coordinator's branch cannot discover committed result branches (no git-remote reconciliation route in scan_recovery). This reviewer notes the frozen pass_bar's requirement for a truly clean `git clone`/`git worktree add` from a pinned remote SHA appears to have been followed based on the fixture's own description; this reviewer did not independently reproduce the multi-branch clone scenario itself due to time budget, so this specific sub-claim is recorded as ACCEPTED-ON-A2-EVIDENCE rather than independently re-verified end-to-end, which this reviewer discloses explicitly per the commission's standard against ceremonial acceptance.",
+      "unit_verdict": "ACCEPTED_ON_A2_EVIDENCE_NOT_FULLY_REEXECUTED"
+    },
+    {
+      "unit_id": "a2-u12",
+      "pass_bar_met": true,
+      "notes": "The PO-02 Code-2 fixture is replayed against the real control plane (not merely described) and shows 'ingest_result nevertheless admits the zero-artifact uncommitted document as PARENT_INGESTED, creating a scanner-reported false completion' -- directly on point for COMMISSION.md's explicit instruction to freeze this fixture and use it as a fault fixture. This reviewer independently re-executed the identical script and reproduced FAIL.",
+      "unit_verdict": "SOUND_FIXTURE_HYPOTHESIS_FALSIFIED"
+    }
+  ],
+  "cohort_level_disposition": "REJECTED",
+  "cohort_level_rationale": "Per criteria-a2.json's cohort_level_disposition_rule, REJECTED applies because (a) a2-u06 does not fully meet this reviewer's frozen 20-trial evidentiary bar even though its qualitative conclusion is independently confirmed, and (b) more fundamentally, 10 of 12 units report the underlying hypothesis FALSIFIED -- the coordinator's control plane does not actually deliver the recovery/fencing/duplicate-safety guarantees COMMISSION.md requires for Wave A acceptance ('Acceptance requires zero false completion, 100% recovery of committed results, ... zero duplicate external effects'). This is a disposition of the CLAIMED CAPABILITY (fault-tolerant custody), not a criticism of a2's own workmanship, which this reviewer independently verified to be rigorous, honestly reported, and in most units reproducible byte-for-byte. a2's own dispatch acceptance contracts explicitly self-falsify (a2 marked 10/12 units FAIL against its own falsified_if clauses), so REJECTED here concurs with, rather than overrides, a2's own self-assessment.",
+  "hypothesis_evaluation": {
+    "a10_u01_hypothesis": "Criteria for the fault matrix frozen before seeing a2 conclusions will reject at least one insufficiently proven fault class.",
+    "result": "PARTIALLY CONFIRMED, DIFFERENT SHAPE THAN EXPECTED",
+    "explanation": "This reviewer expected to find a2 overclaiming a fault class as resolved when it was not (ceremonial acceptance). Instead, a2's own self-grading is already appropriately harsh (10/12 FAIL). The one genuine gap against this reviewer's frozen evidentiary bar is a2-u06's trial count (10 vs. the frozen 20-trial minimum) -- a real, disclosed shortfall, but not the kind of silent overclaiming the hypothesis anticipated. The hypothesis is scored PARTIALLY CONFIRMED: a fault class (a2-u06) was found insufficiently proven by the letter of the frozen bar, but the substantive finding underneath it was not false."
+  },
+  "convergence_with_a10_u03": [
+    "a2-u05 and a10-u03 INV-9 independently converge on: result_commit_id is never checked against real git history by ingest_result.",
+    "a2-u06 and a10-u03 INV-2b independently converge on: the fence-token check only enforces monotonicity, never that the token was actually issued by a lease.",
+    "a2-u07 discovers a concurrency/locking defect (unsynchronized append_event) that a10-u03 explicitly scoped out as 'not attacked' -- a2's coverage exceeds this reviewer's own audit here."
+  ]
+}
