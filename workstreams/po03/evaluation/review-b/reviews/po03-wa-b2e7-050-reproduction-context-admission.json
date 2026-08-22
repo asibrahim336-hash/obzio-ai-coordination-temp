@@ -1,0 +1,71 @@
+{
+  "task_id": "po03-wa-b2e7-050-reproduction-context-admission",
+  "cohort": "c7",
+  "producer": "gpt-5.6-sol-xhigh",
+  "ref_reviewed": "refs/heads/po03/wa-b2e7-c7",
+  "reviewer_id": "po03-reviewer-b-claude-sonnet-5",
+  "protocol": {
+    "step1_frozen_acceptance_sha256_recorded_before_disclosure": "c307be4326f24bc1e962fc2d743bb37afb4ea5af2d05578df52ba61a2d0cb0f2",
+    "step1_frozen_hypothesis": "Bounded hashed context capsules outperform indiscriminate context dumping on a sanitized Obzio workload.",
+    "step2_archive_command": "git archive po03/wa-b2e7-c7 workstreams/po03/attempts/po03-wa-b2e7-050-reproduction-context-admission | tar -x -C /home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-050-reproduction-context-admission",
+    "step3_independent_execution": "executed test_context_admission.py and experiment.py myself under python3 -I before reading manifest.json/result.json; read preregister.json before disclosure since it is the frozen pre-run contract, not the outcome"
+  },
+  "independent_execution": {
+    "tests_command": "python3 -I test_context_admission.py -v",
+    "tests_raw_output": "test_capsule_hash_detects_mutation (__main__.ContextAdmissionTests.test_capsule_hash_detects_mutation) ... ok\ntest_matched_reproduction_meets_frozen_threshold (__main__.ContextAdmissionTests.test_matched_reproduction_meets_frozen_threshold) ... ok\n\n----------------------------------------------------------------------\nRan 2 tests in 0.005s\n\nOK",
+    "tests_exit_code": 0,
+    "experiment_command": "python3 -I experiment.py --output /tmp/repro_050.json",
+    "experiment_raw_output_summary": {
+      "bounded_hashed_capsule_recovery": 1.0,
+      "indiscriminate_full_dump_recovery": 0.155,
+      "bounded_minus_dump_recovery": 0.845,
+      "bounded_hash_mismatches": 0,
+      "seed": 50050,
+      "sample_size": 100,
+      "verdict": "PASS"
+    },
+    "reproducibility": "EXACT MATCH -- re-running experiment.py with the committed preregister.json (seed 50050) in a fresh python3 -I process reproduced 1.000 / 0.155 / delta 0.845 / 0 mismatches bit-for-bit against the committed measurement.json."
+  },
+  "construction_audit": {
+    "description": "Read experiment.py's make_workload/full_dump/bounded_capsule functions. make_workload builds, per trial, a list of the 6 REQUIRED fields plus 64 'irrelevant_NNN' noise fields (70 total), then calls rng.shuffle(fields) BEFORE either arm sees it. full_dump(fields, budget) is dict(fields[:budget]) -- i.e. it takes whichever 12 of the 70 fields happen to land first in the shuffled order. bounded_capsule(fields, budget) explicitly filters for `key in REQUIRED`, so it is definitionally guaranteed to recover all 6 required fields whenever budget >= 6, independent of any shuffle.",
+    "fairness_of_losing_arm": "The full_dump arm is not given a fair opportunity to represent 'indiscriminate dumping' as it would actually occur on a real Obzio task capsule. A real full context dump of a JSON-shaped task capsule would almost always preserve the object's natural key order (in which the 6 required identity fields -- task_id, commission_id, fence_token, acceptance_hash, owned_path, return_route -- are typically declared first/near the top, exactly as REQUIRED is ordered in this very file). By inserting an unconditional rng.shuffle() specifically before truncation, the experiment converts 'indiscriminate dumping' into 'uniformly-random 12-of-70 field selection', which is a substantially harder and less realistic task than truncating a naturally-ordered payload.",
+    "hidden_case_A_analytical_expectation": {
+      "description": "Computed the closed-form expected recovery rate for full_dump under the as-built shuffle-then-truncate design: E[recovered]/6 = budget * (required/total) / required = 12 * (6/70) / 6.",
+      "command": "python3 -I one-off: 12 * (6/70) / 6",
+      "raw_output": "0.1714285714285714 (analytical) vs 0.155 (observed over 100 trials)",
+      "analysis": "The observed 0.155 is within ordinary sampling noise of the analytically-predicted 0.171 for a pure uniform 12-of-70 draw. This confirms the reported delta is not measuring anything about context-admission mechanism quality -- it is measuring the combinatorics of a fixed 6-required/70-total/12-budget uniform-random-draw design, which is fully determined before any 'admission logic' runs at all."
+    },
+    "hidden_case_B_alternative_fair_baseline": {
+      "description": "Rebuilt make_workload with the rng.shuffle() call removed (fields kept in natural construction order: 6 required fields first, then 64 noise fields), which is at least as legitimate a model of 'indiscriminate full dump of a task capsule' as the shuffled version, then re-ran full_dump against it with the same budget=12 on all 100 trials.",
+      "command": "python3 -I one-off script defining make_workload_unshuffled() (identical to committed make_workload but without rng.shuffle), then exp.full_dump(fields, 12) over the same 100 trials",
+      "raw_output": "full_dump recovery WITHOUT the shuffle step = 1.0 (identical to bounded_capsule's 1.0)",
+      "outcome": "FAILS to reproduce the claimed effect",
+      "analysis": "Under an equally 'indiscriminate' but naturally-ordered full-dump baseline, the delta collapses from 0.845 to 0.0 -- the claimed 1.000-vs-0.155 effect size is therefore an artifact of the specific, unstated design choice to shuffle field order before truncation, not an intrinsic property of bounded-capsule admission versus full-dump admission. The experiment is measuring its own construction (an arbitrarily inserted randomization step applied to only one arm's input), not a real effect on a sanitized Obzio workload."
+    },
+    "preregistration_bindingness": "preregister.json fixes accept_when at bounded_minus_dump_recovery >= 0.20. Given the fixed parameters (required=6, total_fields=70, budget=12) baked into experiment.py (which are not stated or pinned inside preregister.json itself, only sample_size/seed/admission_budget_fields/required_fields are), the analytically-guaranteed expected delta under the as-built shuffle design is ~0.83, more than 4x the accept threshold, for ANY seed. The preregistration therefore does not constrain the outcome in any meaningful sense -- the accept condition was virtually certain to be satisfied before the seed was even chosen, because the field-count parameters (70 total / 6 required), which are the true determinants of the effect size, were fixed in the unregistered experiment.py code rather than in the frozen preregister.json contract."
+  },
+  "independent_verdict": "FAIL",
+  "independent_verdict_reasoning": "Every mechanical acceptance box is checked (component runs under python -I, tests execute and pass, artifact manifest lists SHA-256 and byte counts, result document conforms, commit is read back by immutable object id, an explicit verdict is recorded, no hash or metric value is literally fabricated). However the deliverable required is 'a measured reproduction comparing bounded-capsule admission against full-dump admission ... reporting the metric, the effect', and the falsifiable hypothesis is a comparison between two mechanisms. My hidden-case reconstruction shows the reported 0.845 delta is fully explained by an arbitrary randomization step applied only to the losing arm's input construction, and vanishes to 0.0 under an equally legitimate unshuffled construction of the same 'indiscriminate dump' concept. A comparison whose effect size is determined by which of two equally defensible constructions of the losing arm the author happened to choose is not evidence for or against the stated hypothesis; it is evidence about the author's simulation design. Per this review's explicit adversarial charge to treat 'a simulation whose arms are defined so one must win' as not evidence, I record this as FAIL against the required_deliverable, notwithstanding that the code executes correctly and honestly.",
+  "hidden_case": {
+    "summary": "See construction_audit.hidden_case_A_analytical_expectation and hidden_case_B_alternative_fair_baseline above for the two hidden probes and their outcomes.",
+    "outcome": "FAILS -- effect size is an artifact of an unstated, arm-asymmetric randomization choice, not a property of the admission mechanisms being compared."
+  },
+  "producer_claim": {
+    "verdict": "PASS",
+    "evidence_text": "Executed 100 matched seeded tasks: bounded hashed capsules recovered 1.000 required fields versus 0.155 for equal-budget full dumping, delta 0.845, zero hash mismatches; 2 tests passed.",
+    "manifest_artifact_count": 6,
+    "producer_disclosed_limitation": "Deterministic synthetic field recovery does not measure semantic answer quality from a live language model."
+  },
+  "agreement": "DIVERGE",
+  "divergence_reason": "Producer treats the 0.845 delta as a genuine, reportable effect supporting the hypothesis (PASS). My independent reconstruction shows this delta is an artifact of an asymmetric experimental construction (unconditional shuffle applied before truncation, which only harms the full_dump arm because bounded_capsule explicitly filters by key name rather than position) and collapses to 0.0 under an equally valid unshuffled construction of the same baseline concept. The producer's own disclosed limitation (synthetic field recovery vs semantic quality) is real but does not reach this deeper construction-validity problem, which the c7-specific adversarial charge in this review's brief explicitly directs reviewers to check for.",
+  "additional_findings": {
+    "committed_pycache_bytecode": "The producer's committed subtree includes workstreams/po03/attempts/po03-wa-b2e7-050-reproduction-context-admission/__pycache__/experiment.cpython-312.pyc (6497 bytes), which IS listed in manifest.json/result.json with a correct SHA-256 (unlike some other c5 units where pycache was omitted from the manifest). This is not a manifest-integrity defect here, but committing compiled bytecode artifacts as if they were meaningful deliverable artifacts is sloppy practice and inflates the artifact count with a build byproduct rather than a durable evidentiary artifact.",
+    "vacuous_test_check": {
+      "performed": true,
+      "method": "Considered whether a stub bounded_capsule (e.g. returning an empty dict) or a stub full_dump (e.g. returning all fields) would still pass test_context_admission.py. test_matched_reproduction_meets_frozen_threshold specifically asserts bounded_minus_dump_recovery >= 0.20 and mismatches == 0 by calling the real experiment.run(); a stub that broke bounded_capsule's filtering would drop bounded recovery and very likely fail the assertion, and test_capsule_hash_detects_mutation directly asserts a hash mismatch is detected after mutating an admitted dict.",
+      "result": "NOT_VACUOUS -- the tests do exercise real component behavior, they just do not probe the construction-validity issue found above, which is a design/methodology gap rather than a test-vacuity gap."
+    }
+  },
+  "disposition_recommendation": "REJECTED",
+  "disposition_reason": "Although the code is honest, reproducible, and non-vacuous, the core scientific deliverable -- a comparison in which the losing arm receives a fair implementation -- is not met. The experiment measures a mathematically-predetermined artifact of its own construction (an arbitrary field-order randomization applied asymmetrically to only the full_dump arm) rather than a real property of bounded-capsule versus full-dump context admission. The preregistered accept_when threshold (0.20) is set far below the analytically-guaranteed floor (~0.83) implied by the unregistered field-count parameters baked into experiment.py, so the preregistration did not genuinely constrain the outcome. This should be recorded as a refutation of the framing (the comparison as designed cannot distinguish the hypothesis from a null result), not restated as a confirmed PASS."
+}

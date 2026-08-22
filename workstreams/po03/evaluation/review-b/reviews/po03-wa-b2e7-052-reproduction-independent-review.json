@@ -1,0 +1,70 @@
+{
+  "task_id": "po03-wa-b2e7-052-reproduction-independent-review",
+  "cohort": "c7",
+  "producer": "gpt-5.6-sol-xhigh",
+  "ref_reviewed": "refs/heads/po03/wa-b2e7-c7",
+  "reviewer_id": "po03-reviewer-b-claude-sonnet-5",
+  "protocol": {
+    "step1_frozen_acceptance_sha256_recorded_before_disclosure": "59d5de186cdeea37742a4b1616a5353b6b521671895af99100f81126ba1552c8",
+    "step1_frozen_hypothesis": "Blind adversarial review by a different model family detects defects that same-family review misses.",
+    "step2_archive_command": "git archive po03/wa-b2e7-c7 workstreams/po03/attempts/po03-wa-b2e7-052-reproduction-independent-review | tar -x -C /home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-052-reproduction-independent-review",
+    "step3_independent_execution": "executed test_independent_review.py and experiment.py myself under python3 -I before reading manifest.json/result.json; read preregister.json and provider_attempt.json before disclosure as they are the frozen pre-run contract and the boundary evidence, not the outcome narrative"
+  },
+  "preregister_unsupported_clause": "unsupported_when: 'a different-family reviewer cannot be dispatched or its model identity cannot be verified' -- this is an explicit, pre-registered escape valve for exactly this situation.",
+  "independent_execution": {
+    "tests_command": "python3 -I test_independent_review.py -v",
+    "tests_raw_output": "test_complementary_profiles_detect_all_seeded_defect_types (__main__.IndependentReviewTests.test_complementary_profiles_detect_all_seeded_defect_types) ... ok\ntest_fallback_never_claims_cross_family_support (__main__.IndependentReviewTests.test_fallback_never_claims_cross_family_support) ... ok\ntest_reviewers_are_blind_to_defect_labels (__main__.IndependentReviewTests.test_reviewers_are_blind_to_defect_labels) ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 0.002s\n\nOK",
+    "tests_exit_code": 0,
+    "experiment_command": "python3 -I experiment.py --output /tmp/repro_052.json",
+    "experiment_raw_output_summary": {
+      "structural_blind_profile_detection_rate": 0.4583333333333333,
+      "adversarial_blind_profile_detection_rate": 0.5416666666666666,
+      "reviewer_disagreement_rate": 1.0,
+      "incremental_detection_rate_of_adversarial_profile": 0.5416666666666666,
+      "different_family_identity_verified": false,
+      "verdict": "NOT_SUPPORTED",
+      "seed": 52052,
+      "sample_size": 120
+    },
+    "reproducibility": "EXACT MATCH -- re-running experiment.py with the committed preregister.json and provider_attempt.json (seed 52052) in a fresh python3 -I process reproduced 0.4583333333333333 / 0.5416666666666666 / disagreement 1.0 bit-for-bit against the committed measurement.json."
+  },
+  "boundary_verification": {
+    "description": "provider_attempt.json's verbatim_boundary states: 'No subagent creation or dispatch tool is exposed to this subordinate run. The available create-subagent command only creates configuration files, which would write outside the owned subtree and would not execute or verify another model family.' I independently confirmed this claim is accurate for this same runtime environment: this reviewer session also only has a create-subagent SKILL that writes a static .md config file describing a hypothetical subagent's system prompt -- it does not invoke, execute, or verify a second model family. This matches the producer's stated boundary exactly and is not an invented excuse.",
+    "conclusion": "The NOT_SUPPORTED claim about tool availability is independently corroborated, not merely self-reported."
+  },
+  "construction_audit": {
+    "description": "structural_reviewer and adversarial_reviewer check two disjoint sets of 3 defect types each (missing_hash/bad_hash/path_escape vs running_state/self_acceptance/strategy_binding), and every fixture carries exactly one of the 6 defect types with no 'clean' fixtures. Because the two profiles' trigger conditions never overlap and every fixture triggers exactly one of them, reviewer_disagreement_rate is guaranteed to equal 1.0 for any seed and any defect distribution -- this specific number is a designed artifact of the fixture construction, not an emergent property.",
+    "materiality": "This artifact does not corrupt the final verdict, because run() hardcodes the emitted verdict to the literal string 'NOT_SUPPORTED' unconditionally (see hidden case below) rather than deriving it from the detection-rate numbers, so the inflated/artifact-prone disagreement-rate number is reported but never used to justify a PASS.",
+    "hidden_case": {
+      "description": "Checked whether the emitted 'verdict' field in run()'s return value is actually gated on the computed family_verified boolean (i.e. would flip to something other than NOT_SUPPORTED if the provider capability were hypothetically available), by calling experiment.run() directly with a hand-constructed provider dict whose status is 'SUPPORTED' instead of the real 'NOT_SUPPORTED'.",
+      "command": "python3 -I one-off: exp.run(preregister, {'status': 'SUPPORTED', ...}) and inspect result['verdict'], result['different_family_identity_verified'], result['refutation_triggered']",
+      "raw_output": "different_family_identity_verified field = True\nemitted verdict field = NOT_SUPPORTED\nrefutation_triggered field = False\nincremental_detection_rate_of_adversarial_profile = 0.5416666666666666 (> 0, which would satisfy the preregistered accept_when if family_verified were True)",
+      "outcome": "CODE DEFECT FOUND (latent, not exercised by the real run) -- the 'verdict' field is a hardcoded literal that never actually branches on family_verified/different_family_identity_verified. The accept_when/refute_when logic from preregister.json (PASS if incremental rate > 0 and verified, refute otherwise) is never implemented in code at all; only the NOT_SUPPORTED path exists.",
+      "analysis": "In the actual committed run, provider_attempt.json truthfully reports status: NOT_SUPPORTED, so this dead branch happens to be harmless -- the emitted verdict (NOT_SUPPORTED) is correct for the real world state regardless of the missing logic. But it means this code was never actually tested against, or capable of handling, the 'capability becomes available' case the preregistration anticipates, and the test suite (test_fallback_never_claims_cross_family_support) only exercises the true-NOT_SUPPORTED path, so it cannot catch this gap either."
+    }
+  },
+  "independent_verdict": "NOT_SUPPORTED",
+  "independent_verdict_reasoning": "Unlike units 050 and 051, this unit's honest verdict does not depend on a hidden construction flaw producing a misleading positive effect size. The producer correctly identified a genuine tool-access boundary (independently corroborated by me), correctly declined to claim cross-family evidence, explicitly labeled both fallback arms as 'single-runtime deterministic fallback' with model_family 'NOT_SUPPORTED', and emitted the verdict preregister.json's own unsupported_when clause calls for. The deterministic two-profile fallback is a legitimate, clearly-labeled partial result: it demonstrates that two complementary detection heuristics exist and disagree, but never overstates this as satisfying the actual (cross-model-family) hypothesis. This is exactly the honest-negative behavior the acceptance criteria require ('a refuted [or unsupported] hypothesis is recorded ... rather than restated as success').",
+  "hidden_case": {
+    "summary": "See construction_audit.hidden_case above: found that the verdict-emission logic is a dead literal not actually gated on family_verified, which would misfire if the capability became available, though this defect is not exercised in the actual (honestly NOT_SUPPORTED) run.",
+    "outcome": "SURVIVES for the real-world input (correct NOT_SUPPORTED emitted); WOULD FAIL SILENTLY for a hypothetical future input where the capability becomes available, since the code has no implemented path to ever emit PASS/FAIL for this hypothesis."
+  },
+  "producer_claim": {
+    "verdict": "NOT_SUPPORTED",
+    "evidence_text": "Executed 120 fixed-seed blind fixtures with two complementary deterministic profiles: detection 0.458333 and 0.541667, disagreement 1.000; 3 tests passed. Cross-family identity was not available and was not claimed.",
+    "manifest_artifact_count": 6,
+    "producer_disclosed_limitation": "No subagent creation or dispatch tool is exposed to this subordinate run; both arms are explicitly single-runtime deterministic fallbacks."
+  },
+  "agreement": "AGREE",
+  "divergence_reason": null,
+  "additional_findings": {
+    "no_committed_pycache": "This unit's committed subtree contains no __pycache__ bytecode artifacts.",
+    "vacuous_test_check": {
+      "performed": true,
+      "method": "Considered whether a stub structural_reviewer/adversarial_reviewer (e.g. always returning False) would still pass the tests. test_complementary_profiles_detect_all_seeded_defect_types explicitly asserts `structural_reviewer(payload) or adversarial_reviewer(payload)` is True for every one of the 120 fixtures; a stub returning False for both would fail this test immediately.",
+      "result": "NOT_VACUOUS"
+    }
+  },
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "This is the clearest example in cohort c7 of a producer honestly reporting an unsupported claim rather than manufacturing a positive effect. The tool-access boundary is real and independently corroborated, the fallback is clearly and repeatedly labeled as a single-runtime substitution rather than cross-family evidence, and the emitted verdict matches the preregistered unsupported_when condition. The latent dead-code gap in the never-taken PASS/FAIL branch is a real defect worth flagging for hardening but does not affect the correctness or honesty of the delivered result, since that branch is never reached given the true (and truthfully reported) state of the world."
+}
