@@ -1,0 +1,63 @@
+PO03-WA-040 execution evidence
+captured_at_utc: 2026-08-22T07:16:33Z
+python: Python 3.12.3
+platform: Linux 6.12.94+ x86_64
+worktree_head: 44de68e52a0baa480a8a8c0b95fd5071391dd4a1
+base_commit: 44de68e52a0baa480a8a8c0b95fd5071391dd4a1
+cwd: workstreams/po03/runs/wave-a/route-05/PO03-WA-040
+
+$ python3 -m unittest discover -s tests -p 'test_*.py' -v
+test_controller_shared_write_exits_zero (test_shared_path_controller_gate.CommandLineTests.test_controller_shared_write_exits_zero) ... ok
+test_unreadable_policy_exits_two (test_shared_path_controller_gate.CommandLineTests.test_unreadable_policy_exits_two) ... ok
+test_worker_owned_write_exits_zero (test_shared_path_controller_gate.CommandLineTests.test_worker_owned_write_exits_zero) ... ok
+test_worker_shared_write_exits_one (test_shared_path_controller_gate.CommandLineTests.test_worker_shared_write_exits_one) ... ok
+test_controller_with_current_fence_may_write_shared_paths (test_shared_path_controller_gate.ControllerAdmissionTests.test_controller_with_current_fence_may_write_shared_paths) ... ok
+test_worker_may_write_its_own_subtree (test_shared_path_controller_gate.ControllerAdmissionTests.test_worker_may_write_its_own_subtree) ... ok
+test_commit_without_precommit_check_is_refused (test_shared_path_controller_gate.FailClosedTests.test_commit_without_precommit_check_is_refused) ... ok
+test_malformed_policy_is_refused (test_shared_path_controller_gate.FailClosedTests.test_malformed_policy_is_refused) ... ok
+test_nothing_is_staged_to_disk_before_commit (test_shared_path_controller_gate.FailClosedTests.test_nothing_is_staged_to_disk_before_commit) ... ok
+test_staged_digest_changes_with_content (test_shared_path_controller_gate.FailClosedTests.test_staged_digest_changes_with_content) ... ok
+test_staged_digest_is_order_independent (test_shared_path_controller_gate.FailClosedTests.test_staged_digest_is_order_independent) ... ok
+test_staging_after_the_check_invalidates_the_decision (test_shared_path_controller_gate.FailClosedTests.test_staging_after_the_check_invalidates_the_decision) ... ok
+test_swapping_the_staged_set_after_the_check_is_refused (test_shared_path_controller_gate.FailClosedTests.test_swapping_the_staged_set_after_the_check_is_refused)
+Time-of-check/time-of-use: pass with a benign set, then swap. ... ok
+test_control_paths_are_shared (test_shared_path_controller_gate.SharedPathClassificationTests.test_control_paths_are_shared) ... ok
+test_metrics_evidence_and_receipts_are_shared (test_shared_path_controller_gate.SharedPathClassificationTests.test_metrics_evidence_and_receipts_are_shared) ... ok
+test_route_subtree_is_not_shared (test_shared_path_controller_gate.SharedPathClassificationTests.test_route_subtree_is_not_shared) ... ok
+test_unrelated_workflow_is_not_shared (test_shared_path_controller_gate.SharedPathClassificationTests.test_unrelated_workflow_is_not_shared) ... ok
+test_workflow_glob_is_shared (test_shared_path_controller_gate.SharedPathClassificationTests.test_workflow_glob_is_shared) ... ok
+test_forged_controller_id_without_the_fence_token_is_refused (test_shared_path_controller_gate.WorkerRefusalTests.test_forged_controller_id_without_the_fence_token_is_refused) ... ok
+test_one_violation_refuses_the_whole_batch (test_shared_path_controller_gate.WorkerRefusalTests.test_one_violation_refuses_the_whole_batch) ... ok
+test_worker_shared_path_write_is_refused_before_commit (test_shared_path_controller_gate.WorkerRefusalTests.test_worker_shared_path_write_is_refused_before_commit) ... ok
+test_worker_write_to_a_sibling_route_is_refused (test_shared_path_controller_gate.WorkerRefusalTests.test_worker_write_to_a_sibling_route_is_refused) ... ok
+test_write_outside_the_allowlist_entirely_is_refused (test_shared_path_controller_gate.WorkerRefusalTests.test_write_outside_the_allowlist_entirely_is_refused) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 0.664s
+
+OK
+[exit code: 0]
+
+$ python3 src/shared_path_controller_gate.py --actor-id route-05-worker ... --target <own slot>
+ok   ALLOWED                            workstreams/po03/runs/wave-a/route-05/PO03-WA-040/result.json  (writer owns this path)
+summary: staged=1 violations=0
+[exit code: 0]
+
+$ python3 src/shared_path_controller_gate.py --actor-id route-05-worker ... --target <control/metrics/sibling/outside>
+FAIL REJECTED_NOT_CONTROLLER            workstreams/po03/control/leases/route-05.json  (shared control path may only be written by the controller identity)
+FAIL REJECTED_NOT_CONTROLLER            workstreams/po03/metrics/work-unit-runs.jsonl  (shared control path may only be written by the controller identity)
+FAIL REJECTED_OUTSIDE_OWNED_SUBTREE     workstreams/po03/runs/wave-a/route-04/PO03-WA-025/x.json  (path is outside the writer's owned subtree workstreams/po03/runs/wave-a/route-05/PO03-WA-040)
+FAIL REJECTED_OUTSIDE_ALLOWLIST         docs/roadmap.md  (path is outside the PO-03 write allowlist entirely)
+summary: staged=4 violations=4
+[exit code: 1]
+
+$ python3 src/shared_path_controller_gate.py --actor-id <controller> --fence-token 0 --target <control>
+FAIL REJECTED_STALE_FENCE               workstreams/po03/control/outbox.jsonl  (controller identity presented without the current fence token)
+summary: staged=1 violations=1
+[exit code: 1]
+
+$ python3 src/shared_path_controller_gate.py --actor-id <controller> --fence-token 1 --target <control>
+ok   ALLOWED                            workstreams/po03/control/outbox.jsonl  (controller writing a shared path)
+summary: staged=1 violations=0
+[exit code: 0]
+
