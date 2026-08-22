@@ -1,0 +1,72 @@
+{
+  "unit_id": "a12-u01",
+  "fence_token": 2,
+  "outcome": "READY_TO_COMMIT",
+  "seeded_assertions_weakened": false,
+  "seeded_test_file_modified": false,
+  "schema_keywords_enforced_systematically": [
+    "$ref",
+    "additionalProperties",
+    "anyOf",
+    "const",
+    "enum",
+    "items",
+    "minimum",
+    "minLength",
+    "pattern",
+    "properties",
+    "required",
+    "type"
+  ],
+  "pre_fix": {
+    "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a12_validate_contracts.py'",
+    "exit_code": 1,
+    "output_summary": "Ran 2 tests in 0.002s; FAILED (failures=25, errors=1)",
+    "error": "validate_contracts had no SUPPORTED_SCHEMA_KEYWORDS inventory",
+    "executable_accepted_schema_invalid_fixtures": [
+      "root additional property",
+      "attempt additional property",
+      "transaction additional property",
+      "artifact additional property",
+      "acceptance additional property",
+      "provider state enum",
+      "transaction state enum",
+      "acceptance state enum",
+      "heartbeat type",
+      "boolean fence token",
+      "boolean checkpoint sequence",
+      "empty transaction id",
+      "uncommitted manifest URI type",
+      "uncommitted manifest hash type",
+      "boolean artifact count",
+      "boolean total bytes",
+      "uncommitted committed-at type",
+      "uncommitted verified-at type",
+      "uncommitted parent-ingested-at type",
+      "uncommitted commit-id type",
+      "boolean artifact bytes",
+      "uncommitted readback timestamp type",
+      "completion actor type",
+      "untested reviewer type",
+      "untested receipt type"
+    ]
+  },
+  "post_fix": [
+    {
+      "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a12_validate_contracts.py'",
+      "exit_code": 0,
+      "output": "Ran 2 tests in 0.003s; OK"
+    },
+    {
+      "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_validate_contracts.py'",
+      "exit_code": 0,
+      "output": "Ran 23 tests in 0.002s; OK"
+    }
+  ],
+  "existing_result_documents_newly_rejected": [],
+  "notes": [
+    "The executable now evaluates every validation keyword used by transactional-result.schema.json before applying the pre-existing custody invariants.",
+    "Python booleans are rejected for schema integer fields; bool is a subclass of int and previously bypassed the minimum checks.",
+    "The executable intentionally retains semantic custody constraints that are stronger than the structural schema."
+  ]
+}
