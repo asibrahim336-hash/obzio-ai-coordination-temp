@@ -46,6 +46,9 @@ class WorktreeIsolationProbeTests(unittest.TestCase):
         self.assertTrue(all(result["assertions"].values()), result)
         self.assertFalse(result["sanitization"]["real_repository_content_used"])
         self.assertFalse(result["sanitization"]["external_mutation"])
+        serialized = json.dumps(result, sort_keys=True)
+        self.assertNotIn(str(UNIT), serialized)
+        self.assertIn("$SANITIZED_ROOT", serialized)
 
     def test_guard_passes_for_stable_checkout(self):
         with tempfile.TemporaryDirectory(dir=self.scratch) as temporary:

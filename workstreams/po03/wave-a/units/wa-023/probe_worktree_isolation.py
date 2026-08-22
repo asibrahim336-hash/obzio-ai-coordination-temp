@@ -272,21 +272,32 @@ def reproduce(scratch_root: Path | None = None) -> dict[str, Any]:
                 == ""
             ),
         }
+
+        def portable_identity(identity: CheckoutIdentity) -> dict[str, str]:
+            values = asdict(identity)
+            for field in ("toplevel", "git_dir", "common_dir"):
+                values[field] = values[field].replace(
+                    str(root), "$SANITIZED_ROOT"
+                )
+            return values
+
         return {
             "protocol_version": "PO03-WA-023-REPRODUCTION-v1",
             "workload": "sanitized repository with one controller and two workers",
             "git_version": _run(("git", "--version"), cwd=controller)
             .stdout.strip(),
             "identities": {
-                "controller_before": asdict(controller_before),
-                "controller_after": asdict(controller_after),
-                "worker_a": asdict(worker_a_identity),
-                "worker_b": asdict(worker_b_identity),
+                "controller_before": portable_identity(controller_before),
+                "controller_after": portable_identity(controller_after),
+                "worker_a": portable_identity(worker_a_identity),
+                "worker_b": portable_identity(worker_b_identity),
             },
             "occupied_branch_attempt": {
                 "command": "git switch worker-a-switched",
                 "returncode": branch_guard_result.returncode,
-                "stderr": branch_guard_result.stderr.strip(),
+                "stderr": branch_guard_result.stderr.strip().replace(
+                    str(root), "$SANITIZED_ROOT"
+                ),
             },
             "assertions": assertions,
             "result": "PASS" if all(assertions.values()) else "FAIL",
