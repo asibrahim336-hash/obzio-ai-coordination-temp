@@ -86,12 +86,25 @@
     "target": "harness/fuzz.py:run_case"
   },
   {
+    "additional_recurrence_test": "tests/test_emit_result.py::ArtifactAccountingTests::test_the_chain_accounts_for_every_owned_file_exactly_once",
+    "change": "The return documents record where each undigestable digest is deferred to instead of reading their own path off disk. A document cannot contain its own digest, and an implementation that tries reports whatever an earlier run left behind: a digest that is plausible, current-looking and wrong. The manifest and result now defer explicitly and name the link that closes the chain.",
+    "disposition": "RETAIN",
+    "hypothesis_ids": [
+      "CM-H7"
+    ],
+    "mechanism_id": "M9",
+    "rationale": "The same class of defect as a false completion, in the reporting layer rather than the machine: a self-digest reads as verified while attesting to bytes that are no longer there. Caught here only because the digest was recomputed rather than trusted.",
+    "recurrence_test": "tests/test_emit_result.py::ArtifactAccountingTests::test_a_stale_digest_left_by_an_earlier_run_is_not_reported_as_current",
+    "scope": "LIVE_IN_THIS_UNIT",
+    "target": "harness/emit_result.py:build_manifest, harness/emit_result.py:artifact_accounting"
+  },
+  {
     "change": "Randomized multi-fault fuzzing is retained as a cheap regression sweep but rejected as a substitute for exhaustive single-fault enumeration at this model's size.",
     "disposition": "EVIDENCE_BACKED_REJECTION",
     "hypothesis_ids": [
       "CM-H8"
     ],
-    "mechanism_evidence": "12 seeded fuzz cases with up to 3 overlapping faults produced 0 safety violations and 0 classes not already covered by the 101-cell exhaustive matrix.",
+    "mechanism_evidence": "2000 seeded fuzz cases with up to 4 overlapping faults produced 0 safety violations and 0 classes not already covered by the 101-cell exhaustive matrix.",
     "mechanism_id": "M6",
     "rationale": "Filled in from the campaign result at run time; see mechanism_evidence in result.json.",
     "recurrence_test": "tests/test_fuzz.py::CampaignTests::test_fuzz_finds_no_class_the_matrix_missed",
