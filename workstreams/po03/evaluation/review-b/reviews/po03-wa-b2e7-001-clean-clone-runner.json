@@ -1,0 +1,55 @@
+{
+  "task_id": "po03-wa-b2e7-001-clean-clone-runner",
+  "cohort": "c1",
+  "overlap_unit": true,
+  "producer": "gpt-5.6-sol-xhigh",
+  "ref_reviewed": "refs/heads/po03/wa-b2e7-c1",
+  "reviewer_id": "po03-reviewer-b-claude-sonnet-5",
+  "note": "Also reviewed independently by Reviewer A per task instructions. No coordination with Reviewer A occurred.",
+  "protocol": {
+    "step1_frozen_acceptance_sha256_recorded_before_disclosure": "f19bf86a8fd781a84689a3718159baa63af864b423c3d2d8645817fe506fe9a5",
+    "step1_frozen_hypothesis": "The complete PO-03 suite executes from a fresh clone of an immutable commit with no warm checkout, no provider memory, no /tmp dependency and no uncommitted files.",
+    "step2_archive_command": "git archive po03/wa-b2e7-c1 workstreams/po03/attempts/po03-wa-b2e7-001-clean-clone-runner | tar -x -C /home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-001-clean-clone-runner",
+    "step3_independent_execution": "executed test_clean_clone_runner.py myself under python3 -I before reading manifest.json/result.json/evidence.md; then independently invoked clean_clone_runner.py against the ACTUAL repository (not a synthetic fixture) at a real immutable commit before reading the producer's own evidence.md"
+  },
+  "independent_execution": {
+    "producer_test_suite": {
+      "command": "python3 -I test_clean_clone_runner.py -v",
+      "raw_output": "test_discovers_nested_committed_tests_by_file_path ... ok\ntest_fails_closed_when_test_dirties_clone ... ok\ntest_rejects_nonimmutable_commit_name ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 1.007s\n\nOK",
+      "exit_code": 0
+    },
+    "independent_hidden_case_real_repo": {
+      "description": "The producer's own tests only exercise a tiny 1-2-file synthetic fixture repository. I designed a much stronger hidden case: invoke clean_clone_runner.py directly against the ACTUAL live repository (/workspace, the real git repo backing this worktree) at a real immutable commit SHA (the tip of po03/wa-b2e7-c1, 5c0dfcd8ced545cf122d0ab2d8541dd4f4e561af), which the producer had not tested against (their own evidence.md used an earlier commit, 5ef49cb...).",
+      "command": "python3 -I clean_clone_runner.py --source /workspace --commit 5c0dfcd8ced545cf122d0ab2d8541dd4f4e561af --destination /tmp/hidden_case_001_dest",
+      "raw_output": "exit code 0; JSON summary: {\"commit\": \"5c0dfcd8ced545cf122d0ab2d8541dd4f4e561af\", \"test_count\": 12, \"failed_tests\": [], \"dirty_after_run\": false}, discovering and passing test files across units 001-008 plus the shared workstreams/po03/tests/ suite (test_check_path_scope.py, test_factory_custody.py, test_transactional_factory.py, test_validate_contracts.py)",
+      "outcome": "SURVIVES -- the runner correctly cloned the real, much larger repository, discovered exactly the git-committed test_*.py files under workstreams/po03 (not scanning the untracked working directory), executed all 12 in isolated python3 -I -B subprocesses, all passed, and the clone remained clean afterward.",
+      "negative_control": "Also tested with a well-formed-but-nonexistent commit hash (all zeros, 40 hex chars): python3 -I clean_clone_runner.py --source /workspace --commit 0000000000000000000000000000000000000000 --destination /tmp/hidden_case_001_dest2 -> exit code 2, {\"error\": \"immutable commit checkout failed\", \"stderr\": \"fatal: reference is not a tree: 0...\"}. Fails closed cleanly rather than crashing or hanging."
+    }
+  },
+  "positive_finding": "This producer's own evidence.md independently ran clean_clone_runner.py against the real repository at an earlier real commit (5ef49cb148f5186397acf1303f325f726bb58543) with genuine verbatim subprocess output for 4 real test files (58 individual test cases via unittest). My own hidden case against a LATER, different real commit (12 files) independently corroborates that this generalizes correctly and was not a one-off fluke tied to a specific hand-picked commit.",
+  "independent_verdict": "PASS",
+  "independent_verdict_reasoning": "All acceptance criteria are met and independently verified: the component runs under python -I, tests execute and their outcome is recorded verbatim, the manifest lists SHA-256 and byte counts for all 3 artifacts, the result document conforms to the transactional schema, the commit is read back by immutable object id, an explicit PASS verdict is recorded, and no value appears invented -- the numbers I independently reproduced against a different real commit than the one the producer tested match the claimed behavior exactly. The clean-fail path (non-immutable ref rejected, dirty clone rejected) is real and was independently verified against both the producer's synthetic fixtures and my own additional nonexistent-commit probe.",
+  "hidden_case": {
+    "summary": "See independent_hidden_case_real_repo above: ran the actual runner against the real production repository at a real, more-recent commit the producer never tested, and separately against a well-formed-but-nonexistent commit hash.",
+    "outcome": "SURVIVES both probes -- correctly succeeds against the real larger test suite and correctly fails closed against an invalid commit."
+  },
+  "producer_claim": {
+    "verdict": "PASS",
+    "evidence_text": "python3 -I test_clean_clone_runner.py passed 3 tests; clean_clone_runner.py cloned immutable 5ef49cb148f5186397acf1303f325f726bb58543, recursively ran 4 committed test files (58 tests), reported zero failed tests and dirty_after_run=false",
+    "manifest_artifact_count": 3,
+    "producer_disclosed_limitation": "Local clone transport was exercised; remote clone authentication and availability were not tested."
+  },
+  "agreement": "AGREE",
+  "divergence_reason": null,
+  "additional_findings": {
+    "no_committed_pycache": "This unit's committed subtree contains no __pycache__ bytecode artifacts.",
+    "vacuous_test_check": {
+      "performed": true,
+      "method": "Considered whether a stub run_clean_clone (e.g. always returning success without actually cloning or running tests) would pass. test_fails_closed_when_test_dirties_clone specifically writes a real file from within a real subprocess-executed test and asserts the runner detects the resulting dirty working tree via a real `git status` call; a stub would not perform any real git operations and would fail this test's setup expectations (no actual clone would exist to check).",
+      "result": "NOT_VACUOUS -- and confirmed doubly non-vacuous by my own real-repository hidden case, which exercises the entire pipeline (real git clone, real detached checkout, real git ls-tree discovery, real subprocess test execution, real git status dirty-check) against production data neither the producer's fixtures nor I had staged in advance."
+    },
+    "disclosed_limitation_assessment": "The disclosed limitation (remote clone transport not tested) is honest and appropriately scoped -- the required_deliverable only asks for cloning 'into a caller-supplied directory' from a 'repository', which is satisfied by local-path cloning; nothing in the acceptance criteria mandates remote/network transport testing, and the forbidden list explicitly disallows treating network dependencies as acceptable, so local-only transport is the correct and safer choice."
+  },
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "This is one of the strongest units reviewed in this entire session. The mechanism is genuinely real, was independently verified not just against the producer's own synthetic fixtures but against the actual production repository at a commit the producer never saw, correctly discovers only git-committed tests (not working-directory scan artifacts), correctly fails closed on both an invalid commit reference and a dirtied working tree, and the producer's own evidence already included a real (not synthetic) self-test against the live repository, which is uncommon rigor in this cohort."
+}

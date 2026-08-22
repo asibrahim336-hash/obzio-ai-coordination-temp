@@ -1,0 +1,56 @@
+{
+  "task_id": "po03-wa-b2e7-005-deterministic-rerun-equivalence",
+  "cohort": "c1",
+  "overlap_unit": true,
+  "producer": "gpt-5.6-sol-xhigh",
+  "ref_reviewed": "refs/heads/po03/wa-b2e7-c1",
+  "reviewer_id": "po03-reviewer-b-claude-sonnet-5",
+  "note": "Also reviewed independently by Reviewer A per task instructions. No coordination with Reviewer A occurred.",
+  "protocol": {
+    "step1_frozen_acceptance_sha256_recorded_before_disclosure": "9217cffb89c7143ab7b4da4aed720d0fd1399cf7369adb7efbe4dc8908526e90",
+    "step1_frozen_hypothesis": "Two independent clean clones of the same immutable commit produce byte-identical canonical outputs.",
+    "step2_archive_command": "git archive po03/wa-b2e7-c1 workstreams/po03/attempts/po03-wa-b2e7-005-deterministic-rerun-equivalence | tar -x -C /home/ubuntu/po03-review-scratch-b/po03-wa-b2e7-005-deterministic-rerun-equivalence",
+    "step3_independent_execution": "executed test_double_clone_runner.py myself under python3 -I before reading manifest.json/result.json/evidence.md; then independently invoked double_clone_runner.py against the actual live repository at a real commit"
+  },
+  "independent_execution": {
+    "producer_test_suite": {
+      "command": "python3 -I test_double_clone_runner.py -v",
+      "raw_output": "test_normalizer_reports_only_fields_it_changes ... ok\ntest_process_specific_output_is_not_equal ... ok\ntest_two_clean_clones_have_equal_canonical_output ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 0.716s\n\nOK",
+      "exit_code": 0
+    },
+    "independent_real_repo_run": {
+      "command": "python3 -I double_clone_runner.py --source /workspace --commit 5c0dfcd8ced545cf122d0ab2d8541dd4f4e561af --workspace /tmp/hidden_case_005_ws",
+      "raw_output_summary": {"commit": "5c0dfcd8ced545cf122d0ab2d8541dd4f4e561af", "test_file_count": 12, "byte_equivalent": true, "failed_tests": [], "clean_after_run": [true, true], "normalized_fields_clone_a": {"unittest_elapsed_seconds": 12}, "normalized_fields_clone_b": {"unittest_elapsed_seconds": 12}},
+      "exit_code": 0,
+      "conclusion": "Independently reproduced against the real repository at a commit the producer never tested (their evidence.md used 6497c14c...; I used 5c0dfcd8..., the tip of po03/wa-b2e7-c1). Two genuinely separate clone-and-run cycles of all 12 real committed test files produced byte-identical canonical output after only the disclosed elapsed-time normalization."
+    }
+  },
+  "hidden_case": {
+    "description": "The producer's normalizer strips ISO-8601 timestamps, unittest elapsed-duration numbers, and the clone's own absolute path, on the theory that these are the only legitimately non-deterministic fields. I checked whether this list is complete by examining what environment variables double_clone_runner.py actually passes to each `python3 -I -B <test>` subprocess: {LANG, LC_ALL, PATH, TMPDIR}. Notably, unlike the sibling unit po03-wa-b2e7-001-clean-clone-runner's clean_environment() (which explicitly sets PYTHONHASHSEED=0), this runner's run_suite() does NOT set PYTHONHASHSEED at all, and builds a fresh environment dict rather than inheriting the parent's. I constructed a minimal test file that prints a Python set's iteration order (a legitimate, common pattern in diagnostic test output) and ran it twice under the EXACT environment configuration this runner uses (LANG/LC_ALL/PATH set, no PYTHONHASHSEED, no inheritance of a fixed seed).",
+    "command": "env -i LANG=C.UTF-8 LC_ALL=C.UTF-8 PATH=\"$PATH\" python3 -I -B test_hash_order.py (run twice, no PYTHONHASHSEED set, matching double_clone_runner.py's actual subprocess environment construction)",
+    "raw_output": "run 1: ['item_2', 'item_7', 'item_8', 'item_6', 'item_19', 'item_13', 'item_3', 'item_9', 'item_1', 'item_15', ...]\nrun 2: ['item_2', 'item_10', 'item_5', 'item_18', 'item_12', 'item_4', 'item_8', 'item_7', 'item_6', 'item_17', ...]\ndiff: DIFFERENT",
+    "outcome": "CONFIRMS A REAL GAP -- printed set/dict iteration order is genuinely non-deterministic across separate invocations under this runner's actual subprocess environment (Python's default hash randomization is not pinned), and this class of legitimate non-determinism is neither normalized out of the canonical output nor disclosed as a limitation, unlike timestamps/elapsed-time/clone-path which ARE handled.",
+    "analysis": "This does not invalidate today's PASS verdict, because none of the PO-03 suite's CURRENT committed tests happen to print unordered set/dict content (confirmed: my real-repo run against all 12 current test files produced byte_equivalent=true with zero unexpected diffs). But it is a genuine, demonstrable latent defect in the general mechanism the falsifiable hypothesis claims ('two independent clean clones ... produce byte-identical canonical outputs'): if any current or future PO-03 test ever prints hash-order-sensitive content, this runner would either (a) falsely report byte_equivalent=false for two functionally identical clones (a false-negative undermining trust in the tool), or worse (b) coincidentally happen to match on a given pair of runs and give a false sense of security. The sibling unit 001 in this same cohort already solved this exact problem by pinning PYTHONHASHSEED=0; this unit's independently-written environment-construction code did not carry that fix over."
+  },
+  "independent_verdict": "PASS",
+  "independent_verdict_reasoning": "All 8 acceptance criteria are met for the CURRENT delivered artifact and CURRENT PO-03 suite: the component runs under python -I, tests execute and are recorded verbatim, the manifest lists SHA-256/byte counts, the result conforms to the schema, the commit is read back by immutable object id, an explicit PASS is recorded, and no value is invented -- I independently reproduced byte-equivalent output against the real repository at a different real commit than the one the producer tested. The hidden case reveals a real robustness gap (unpinned PYTHONHASHSEED) rather than a wrong verdict for the artifact as it exists today.",
+  "producer_claim": {
+    "verdict": "PASS",
+    "evidence_text": "python3 -I -B test_double_clone_runner.py passed 3 tests; two clones of 6497c14c49a2f6ddb75c056bb1ee1e4a8196ebe1 ran 8 recursive test files with no failures, clean trees, and byte-equivalent canonical output after only unittest elapsed-duration normalization",
+    "manifest_artifact_count": 3,
+    "producer_disclosed_limitation": "Normalization rules are explicit but could conceal a defect if inappropriately broadened; their occurrence inventory is emitted for review."
+  },
+  "agreement": "AGREE",
+  "divergence_reason": "The producer's own disclosed limitation addresses the opposite risk (normalization being too broad and concealing real defects) but does not identify the specific gap I found (an UNDER-normalized/unpinned source of legitimate non-determinism: hash randomization). This is not a divergence on the verdict itself -- I agree PASS is correct for the artifact as delivered against the current real suite -- but it is a real finding the producer's own limitations section missed.",
+  "additional_findings": {
+    "no_committed_pycache": "This unit's committed subtree contains no __pycache__ bytecode artifacts.",
+    "cross_unit_comparison": "Sibling unit po03-wa-b2e7-001-clean-clone-runner's clean_environment() explicitly sets PYTHONHASHSEED=0; this unit's run_suite() environment dict does not. Both units were produced by the same producer (gpt-5.6-sol-xhigh) in the same cohort, so this is an internal inconsistency between two closely related artifacts, not merely a hypothetical concern.",
+    "vacuous_test_check": {
+      "performed": true,
+      "method": "Checked whether a stub run_double_clone (e.g. hardcoding byte_equivalent=True without actually running anything) would pass. test_process_specific_output_is_not_equal specifically constructs output containing genuinely different content between two runs and asserts the comparison correctly reports inequality; a stub that always reports equal would fail this test.",
+      "result": "NOT_VACUOUS"
+    }
+  },
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "The mechanism is real, independently verified against the actual production repository at a commit the producer never tested, and the tests are non-vacuous. The hidden case surfaces a genuine and previously undisclosed hardening gap (unpinned PYTHONHASHSEED allowing legitimate non-determinism to leak into supposedly canonical output for any test that ever prints unordered set/dict content) that does not affect the correctness of today's specific PASS verdict against the current suite, but should be fixed before this tool is relied upon as a general-purpose determinism gate for future PO-03 tests. I recommend the controller apply the same PYTHONHASHSEED=0 fix already present in sibling unit 001."
+}
