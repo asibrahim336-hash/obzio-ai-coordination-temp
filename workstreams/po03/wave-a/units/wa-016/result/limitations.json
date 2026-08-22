@@ -1,0 +1,107 @@
+{
+  "limitations": [
+    {
+      "id": "L1",
+      "limitation": "The external world is a simulation, not the real remote.",
+      "mitigation": "The one property the matrix depends on, that republishing an identical tree converges on one commit, is checked against real git plumbing in R3 and tests/test_git_custody_probe.py. Nothing else about the remote is asserted.",
+      "residual_risk": "Real remotes can fail in ways this world does not model: partial packs, ref races between two writers, server-side hooks, quota refusals."
+    },
+    {
+      "id": "L2",
+      "limitation": "Faults are injected at declared boundaries, not at arbitrary instruction points.",
+      "mitigation": "The boundaries are chosen where the bytes on disk actually differ before and after, and every deliberately excluded (transition, fault) pair is enumerated with a reason rather than silently omitted.",
+      "residual_risk": "A durability boundary nobody named cannot be faulted."
+    },
+    {
+      "id": "L3",
+      "limitation": "The simulation is single-threaded, so no true concurrency is exercised.",
+      "mitigation": "Ownership transfer is modelled explicitly through fence tokens and lease expiry, which is the concurrency hazard the commission's custody rules address.",
+      "residual_risk": "Interleavings that require two workers to be genuinely simultaneous are out of scope. Determinism was chosen over concurrency deliberately: an unrepeatable failing run cannot be used as evidence."
+    },
+    {
+      "id": "L4",
+      "limitation": "The fuzz campaign is 2000 seeded cases with up to 4 overlapping faults, which is not exhaustive over multi-fault schedules.",
+      "mitigation": "The exhaustive single-fault matrix is complete over its declared vocabulary.",
+      "residual_risk": "The M6 rejection says only that this campaign found no safety class the matrix missed at this model's size. A larger campaign or a larger model could invert it, which is why the comparison is a standing test rather than a conclusion."
+    },
+    {
+      "detail": [
+        {
+          "claim_id": "S9",
+          "disposition": "NOT_SUPPORTED",
+          "http_status": 200,
+          "reason": "The PDF was retrieved and hashed, but no PDF text extractor is available in this runtime (pdftotext absent, no third-party packages permitted), so no claim is asserted from it.",
+          "retrieved_bytes": 619692,
+          "sha256": "2cd4463c773dae22259ed7c112f287b2126b669f75cc6777cc36b8cc8f964e09",
+          "url": "https://www.usenix.org/system/files/conference/osdi14/osdi14-paper-yuan.pdf"
+        },
+        {
+          "claim_id": "S10",
+          "disposition": "NOT_SUPPORTED",
+          "http_status": 403,
+          "reason": "The abstract page returned an interstitial challenge rather than content.",
+          "retrieved_bytes": 5460,
+          "sha256": "202f3abc0c39757a5c5bb1d348ac15ecc5291a79eb07d4137f379de341853e68",
+          "url": "https://www.usenix.org/conference/osdi14/technical-sessions/presentation/yuan"
+        },
+        {
+          "claim_id": "S11",
+          "disposition": "NOT_SUPPORTED",
+          "http_status": 404,
+          "reason": "Intended as a lineage-driven fault injection source; the URL no longer resolves to the paper, so no lineage-driven claim is asserted anywhere in this unit.",
+          "retrieved_bytes": 3684,
+          "sha256": "6c134308ad963409b229440707aee4e8d1e6070995a544046642055df4527232",
+          "url": "https://people.eecs.berkeley.edu/~palvaro/molly.pdf"
+        }
+      ],
+      "id": "L5",
+      "limitation": "Three external sources could not be read in this runtime.",
+      "mitigation": "They are recorded as NOT_SUPPORTED and no hypothesis cites them; tests/test_reproductions.py asserts that separation.",
+      "residual_risk": "Any argument those sources would have supported is simply absent."
+    },
+    {
+      "id": "L6",
+      "limitation": "M1 and M2 are proposals, not applied changes: the seeded validator and the input generator are read-only to this unit.",
+      "mitigation": "Both arrive with a working implementation in this subtree and a paired recurrence test, so the coordinator can evaluate them against evidence rather than a description.",
+      "residual_risk": "Until a coordinator acts, the repository gate is still the unstrengthened seeded validator, and all 64 frozen Wave A inputs still cannot resolve their own minimum_protocol_ancestor."
+    },
+    {
+      "detail": ".github/workflows/po03-contracts.yml runs unittest discovery rooted at workstreams/po03/tests, so this unit's 244 tests are not executed by CI as configured. The workflow is read-only to this unit.",
+      "id": "L7",
+      "limitation": "The seeded workflow does not discover tests in a unit subtree.",
+      "mitigation": "The command and its full output are recorded in evidence/test-run.txt.",
+      "residual_risk": "Without a coordinator change, these tests will not gate future commits."
+    },
+    {
+      "id": "L8",
+      "limitation": "The read-back verification in ready-to-commit.json is performed by this producer, from a fresh clone of the immutable remote commit.",
+      "mitigation": "It reads from the pushed commit rather than the working tree, through a clone that shares no objects with the producer's worktree, and reports each artifact's digest and byte count.",
+      "residual_risk": "A producer verifying its own return is not independent acceptance. That remains NOT_TESTED and is the coordinator's to perform."
+    },
+    {
+      "id": "L9",
+      "limitation": "The canary fixture's originating commit may not be present in every clone.",
+      "mitigation": "The bytes and digest are embedded, and git_custody_probe.verify_recorded_canary reports NOT_SUPPORTED rather than guessing when the object is absent.",
+      "residual_risk": "In such a clone the fixture's provenance rests on the recorded digest alone."
+    }
+  ],
+  "not_supported": [
+    {
+      "disposition": "NOT_SUPPORTED",
+      "question": "Does the production PO-03 dispatch path survive these faults?",
+      "reason": "This unit builds and tests a harness and a reference custody machine. It does not instrument the live dispatcher, and no claim is made about it."
+    },
+    {
+      "disposition": "NOT_SUPPORTED",
+      "question": "Was the recorded PO-02 Code-2 loss caused by the mechanism this unit models?",
+      "reason": "R1 reproduces the recorded outcome, a provider completion with no durable commit classified as PROVIDER_COMPLETED_UNCOMMITTED, on a sanitized workload. Reproducing an outcome is not establishing the original cause, and no post-hoc cause is claimed."
+    },
+    {
+      "disposition": "NOT_SUPPORTED",
+      "question": "Would multi-fault fuzzing outperform exhaustive enumeration on a larger model?",
+      "reason": "Measured only at this model's size; nothing is asserted beyond it."
+    }
+  ],
+  "scope_of_the_claim": "The SUPPORTED verdict is about this custody model under this fault vocabulary, in a deterministic single-process simulation. It is not a claim about the production dispatch path, which this unit does not execute.",
+  "task_id": "PO03-WA-016"
+}
