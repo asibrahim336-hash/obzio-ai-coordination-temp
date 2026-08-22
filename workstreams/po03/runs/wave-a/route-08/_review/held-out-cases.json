@@ -1,0 +1,238 @@
+{
+  "suite_id": "PO03-WA-ROUTE-08-HELD-OUT-v1",
+  "frozen_at": "2026-08-22T08:18:23Z",
+  "derived_only_from": [
+    "frozen criteria",
+    "source lock",
+    "target task inputs",
+    "target acceptance contracts",
+    "transactional result schema"
+  ],
+  "cases": [
+    {
+      "case_id": "H001-skip-and-reverse",
+      "task_id": "PO03-WA-001",
+      "critical": true,
+      "stimulus": "Attempt CREATED->RESULT_STAGED, RESULT_STAGED->RUNNING, and COMPLETED->RESULT_COMMITTED.",
+      "oracle": "Every skipped or reverse transition is rejected without changing durable state."
+    },
+    {
+      "case_id": "H002-fence-type-and-order",
+      "task_id": "PO03-WA-002",
+      "critical": true,
+      "stimulus": "Submit fence tokens 0, current-1, current, and current+1 against an existing lease.",
+      "oracle": "Only the exact live token may stage; stale/invalid tokens cannot mutate custody."
+    },
+    {
+      "case_id": "H003-idempotency-conflict",
+      "task_id": "PO03-WA-003",
+      "critical": true,
+      "stimulus": "Replay one callback byte-identically, then reuse its idempotency key with a different result transaction.",
+      "oracle": "Identical replay is a no-op and conflicting replay is rejected; exactly one transaction remains."
+    },
+    {
+      "case_id": "H004-replay-twice",
+      "task_id": "PO03-WA-004",
+      "critical": true,
+      "stimulus": "Crash after durable outbox append but before callback acknowledgement, then invoke recovery twice.",
+      "oracle": "The lost callback is recovered once and the second recovery performs no duplicate effect."
+    },
+    {
+      "case_id": "H005-same-size-corruption",
+      "task_id": "PO03-WA-005",
+      "critical": true,
+      "stimulus": "Replace an artifact with different bytes of the same length before staging.",
+      "oracle": "Hash reconciliation blocks RESULT_STAGED even though the byte count matches."
+    },
+    {
+      "case_id": "H006-after-commit-crash",
+      "task_id": "PO03-WA-006",
+      "critical": true,
+      "stimulus": "Crash immediately after durable commit and recover repeatedly.",
+      "oracle": "Recovery observes the committed transaction and never reruns its external effect."
+    },
+    {
+      "case_id": "H007-provider-only-completion",
+      "task_id": "PO03-WA-007",
+      "critical": true,
+      "stimulus": "Set provider_state=COMPLETED with null result_commit_id and an uncommitted result state.",
+      "oracle": "The state is classified PROVIDER_COMPLETED_UNCOMMITTED, never COMPLETED."
+    },
+    {
+      "case_id": "H008-recovery-order",
+      "task_id": "PO03-WA-008",
+      "critical": true,
+      "stimulus": "Scan the same mixed nonterminal task set in two insertion orders, including a duplicate task id.",
+      "oracle": "Both scans return the same unique deterministic resume order."
+    },
+    {
+      "case_id": "H033-delete-outside-allowlist",
+      "task_id": "PO03-WA-033",
+      "critical": true,
+      "stimulus": "Present an allowed addition plus an out-of-allowlist deletion.",
+      "oracle": "The guard fails and identifies the deletion; one allowed path cannot mask one forbidden path."
+    },
+    {
+      "case_id": "H034-relative-symlink-escape",
+      "task_id": "PO03-WA-034",
+      "critical": true,
+      "stimulus": "Use a relative symlink chain inside the allowlist that resolves outside it.",
+      "oracle": "Canonical resolution detects and rejects the escaped destination."
+    },
+    {
+      "case_id": "H035-rename-crossing-boundary",
+      "task_id": "PO03-WA-035",
+      "critical": true,
+      "stimulus": "Rename from allowed to forbidden and from forbidden to allowed.",
+      "oracle": "Both directions fail because source and destination are independently checked."
+    },
+    {
+      "case_id": "H036-unicode-byte-count",
+      "task_id": "PO03-WA-036",
+      "critical": true,
+      "stimulus": "Reconcile a UTF-8 artifact whose character count differs from its byte count, then alter one multibyte code point.",
+      "oracle": "Bytes, not characters, are counted and the altered content fails SHA-256 reconciliation."
+    },
+    {
+      "case_id": "H037-nested-transport-debris",
+      "task_id": "PO03-WA-037",
+      "critical": true,
+      "stimulus": "Include nested cache debris and a similarly named legitimate evidence file.",
+      "oracle": "Debris is reported without deletion and the legitimate file is not falsely classified."
+    },
+    {
+      "case_id": "H038-missing-parent-lineage",
+      "task_id": "PO03-WA-038",
+      "critical": true,
+      "stimulus": "Provide source/tool/configuration but omit the parent lineage field.",
+      "oracle": "The generated artifact is rejected as incomplete provenance."
+    },
+    {
+      "case_id": "H039-prefix-overlap",
+      "task_id": "PO03-WA-039",
+      "critical": true,
+      "stimulus": "Compare ownership paths a/b and a/bc plus two truly disjoint paths.",
+      "oracle": "String-prefix lookalikes do not collide; actual ancestor/descendant overlap does."
+    },
+    {
+      "case_id": "H040-forged-controller-label",
+      "task_id": "PO03-WA-040",
+      "critical": true,
+      "stimulus": "Claim controller identity in payload text without authenticated controller binding.",
+      "oracle": "The shared-path write fails before commit."
+    },
+    {
+      "case_id": "H041-capsule-key-order",
+      "task_id": "PO03-WA-041",
+      "critical": true,
+      "stimulus": "Build logically identical capsules with different JSON key order and one capsule with changed payload bytes.",
+      "oracle": "Canonical equivalents share an address and changed payload bytes do not."
+    },
+    {
+      "case_id": "H042-outbox-ack-loss",
+      "task_id": "PO03-WA-042",
+      "critical": true,
+      "stimulus": "Lose the acknowledgement after successful delivery, then replay twice.",
+      "oracle": "The fixture reaches one delivered effect with durable replay evidence."
+    },
+    {
+      "case_id": "H043-delayed-equal-owner",
+      "task_id": "PO03-WA-043",
+      "critical": true,
+      "stimulus": "Transfer ownership while retaining the same textual worker id but increasing the fence token.",
+      "oracle": "The delayed old token is rejected; worker-name equality cannot bypass fencing."
+    },
+    {
+      "case_id": "H044-sanitized-home-and-env",
+      "task_id": "PO03-WA-044",
+      "critical": true,
+      "stimulus": "Run with an empty temporary HOME, minimal environment, and an unrelated current directory.",
+      "oracle": "Any undeclared ambient-state dependence is exposed rather than silently inherited."
+    },
+    {
+      "case_id": "H045-invalid-state-injection",
+      "task_id": "PO03-WA-045",
+      "critical": true,
+      "stimulus": "Generate frozen-seed sequences that include one unknown state and repeated terminal transitions.",
+      "oracle": "The invariant checker rejects unknown and post-terminal transitions or reports the exact breach."
+    },
+    {
+      "case_id": "H046-equivalent-mutant",
+      "task_id": "PO03-WA-046",
+      "critical": true,
+      "stimulus": "Run one behavior-changing false-completion mutant and one behavior-equivalent syntax mutant.",
+      "oracle": "The critical mutant is killed and the equivalent mutant is not misreported as a correctness escape."
+    },
+    {
+      "case_id": "H047-newline-and-space-paths",
+      "task_id": "PO03-WA-047",
+      "critical": true,
+      "stimulus": "Run path variants containing spaces, Unicode, leading dots, and a newline.",
+      "oracle": "The same portability invariant is applied without shell-splitting or normalization bypass."
+    },
+    {
+      "case_id": "H048-clean-clone-untracked-mask",
+      "task_id": "PO03-WA-048",
+      "critical": true,
+      "stimulus": "Make local execution depend on an untracked helper absent from a clean clone.",
+      "oracle": "Differential execution reports the environment coupling and cannot PASS."
+    },
+    {
+      "case_id": "H049-null-commit-semantics",
+      "task_id": "PO03-WA-049",
+      "critical": true,
+      "stimulus": "Evaluate provider COMPLETED, Obzio RESULT_STAGED, null result commit, and pending independent acceptance.",
+      "oracle": "The evaluator does not collapse any of the three completion dimensions."
+    },
+    {
+      "case_id": "H050-casefold-and-whitespace-alias",
+      "task_id": "PO03-WA-050",
+      "critical": true,
+      "stimulus": "Use producer/reviewer identities differing only by case, surrounding whitespace, or an alias mapping.",
+      "oracle": "All equivalent identities are rejected as producer self-review."
+    },
+    {
+      "case_id": "H051-terminal-outgoing-edges",
+      "task_id": "PO03-WA-051",
+      "critical": true,
+      "stimulus": "Enumerate every legal edge, every one-state skip, and every outgoing edge from each terminal state.",
+      "oracle": "Legal coverage is complete and every prohibited transition is rejected."
+    },
+    {
+      "case_id": "H052-runtime-authority-injection",
+      "task_id": "PO03-WA-052",
+      "critical": true,
+      "stimulus": "Supply a runtime/provider name in an authority or appointment field.",
+      "oracle": "Ontology validation rejects runtime-to-authority conflation while allowing runtime in its own field."
+    },
+    {
+      "case_id": "H053-mixed-unknown-aggregation",
+      "task_id": "PO03-WA-053",
+      "critical": true,
+      "stimulus": "Aggregate numeric zero, null, NOT_SUPPORTED, and a positive measurement.",
+      "oracle": "Unknown remains NOT_SUPPORTED and is not coerced to zero or omitted from support accounting."
+    },
+    {
+      "case_id": "H054-conclusion-before-freeze",
+      "task_id": "PO03-WA-054",
+      "critical": true,
+      "stimulus": "Present a review log where a producer conclusion was opened before the rubric hash was committed.",
+      "oracle": "Blind-order validation fails regardless of the eventual recommendation."
+    },
+    {
+      "case_id": "H055-tie-and-missing-critical",
+      "task_id": "PO03-WA-055",
+      "critical": true,
+      "stimulus": "Rank three candidates with a score tie, then remove one candidate's critical criterion.",
+      "oracle": "Tie breaking is deterministic and missing critical evidence cannot be compensated by optional score."
+    },
+    {
+      "case_id": "H056-manifest-duplicate-path",
+      "task_id": "PO03-WA-056",
+      "critical": true,
+      "stimulus": "Supply duplicate artifact paths with conflicting hashes and one same-size hash corruption.",
+      "oracle": "No corrupt manifest variant can produce PASS."
+    }
+  ],
+  "decision_changed": []
+}
