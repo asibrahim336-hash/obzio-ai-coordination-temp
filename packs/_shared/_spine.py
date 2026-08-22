@@ -620,3 +620,485 @@ class CommitFirstAcceptor:
                 "candidate is anchored to it and is refused")
 
         attempts = sum(1 for e in run.ledger.entries
+                       if e.kind == "ACCEPTANCE_DECISION"
+                       and e.payload.get("acceptor_id") == self.acceptor_id)
+        if attempts >= self.max_attempts:
+            raise AcceptanceBudgetExhausted(
+                f"{attempts} acceptance decision(s) already made on run "
+                f"{run.run_id}; budget is {self.max_attempts}. Conservative "
+                "update on reject: a rejected run is not re-graded indefinitely.")
+
+        expected = self._derive(objective)          # NO workdir, by signature
+        nonce = secrets.token_hex(16)
+        reveal = Reveal(expected=expected, nonce=nonce)
+        e = run.ledger.append("ACCEPTOR_PRECOMMIT", {
+            "acceptor_id": self.acceptor_id,
+            "objective_digest": objective.digest(),
+            "expected_digest": reveal.digest(),
+            "independence_basis": objective.independence_basis,
+            "attempt": attempts + 1,
+        })
+        self._reveal = reveal
+        self._pre = Precommitment(
+            run_id=run.run_id, acceptor_id=self.acceptor_id,
+            objective_digest=objective.digest(), expected_digest=reveal.digest(),
+            ledger_head_at_commit=run.ledger.head(), ledger_seq=e.seq,
+            committed_at=time.time())
+        self._audit({"kind": "PRECOMMIT", "run_id": run.run_id,
+                     "acceptor_id": self.acceptor_id,
+                     "expected_digest": reveal.digest()})
+        return self._pre
+
+    # -- phase 2 ----------------------------------------------------------
+    def decide(self, run: "Run") -> AcceptanceOutcome:
+        if self._pre is None or self._reveal is None:
+            raise NoPrecommitment("decide() called before precommit()")
+        if self._pre.run_id != run.run_id:
+            raise CommitmentMismatch("precommitment belongs to another run")
+
+        run.ledger.verify_chain()
+        window = ArtefactWindow(run, self.acceptor_id)
+        window.open()                                   # ledger records the order
+        agree = bool(self._compare(self._reveal.expected, window.path()))
+
+        run.ledger.append("ACCEPTANCE_DECISION", {
+            "acceptor_id": self.acceptor_id,
+            "accept": agree,
+            "expected_digest": self._pre.expected_digest,
+            "reveal": self._reveal.to_dict(),
+            "precommit_seq": self._pre.ledger_seq,
+            "window_seq": window.opened_seq,
+        })
+        self._audit({"kind": "DECISION", "run_id": run.run_id, "accept": agree,
+                     "expected": self._reveal.expected})
+
+        if not agree:
+            out = AcceptanceOutcome(run_id=run.run_id, accept=False,
+                                    reveal=self._reveal, precommitment=self._pre)
+            raise RejectedByAcceptor(out)
+
+        token = self._gate.mint(run.run_id, run.ledger.head(), self.acceptor_id,
+                                "PASS", self._pre.expected_digest,
+                                precommit_digest=self._pre.expected_digest)
+        return AcceptanceOutcome(run_id=run.run_id, accept=True,
+                                 reveal=self._reveal, precommitment=self._pre,
+                                 token=token)
+
+
+class AttestedAcceptance:
+    """For objectives with no independently derivable expectation.
+
+    Produces no machine guarantee. It stamps `machine_enforced: false` into the
+    ledger and the return state so the artefact says out loud that this run was
+    accepted on a human's word."""
+
+    def __init__(self, attestor_id: str, gate: AcceptanceGate):
+        self.acceptor_id = attestor_id
+        self._gate = gate
+
+    def attest(self, run: "Run", objective: Objective,
+               statement: str) -> AcceptanceOutcome:
+        if self.acceptor_id == run.producer_id:
+            raise SelfAcceptanceRefused("attestor is the producer; refused")
+        nonce = secrets.token_hex(16)
+        reveal = Reveal(expected={"attested": True, "statement": statement,
+                                  "machine_enforced": False}, nonce=nonce)
+        e = run.ledger.append("ACCEPTOR_PRECOMMIT", {
+            "acceptor_id": self.acceptor_id,
+            "objective_digest": objective.digest(),
+            "expected_digest": reveal.digest(),
+            "independence_basis": BASIS_NONE,
+            "machine_enforced": False,
+            "attestation": statement,
+        })
+        pre = Precommitment(run_id=run.run_id, acceptor_id=self.acceptor_id,
+                            objective_digest=objective.digest(),
+                            expected_digest=reveal.digest(),
+                            ledger_head_at_commit=run.ledger.head(),
+                            ledger_seq=e.seq, committed_at=time.time())
+        ArtefactWindow(run, self.acceptor_id).open()
+        run.ledger.append("ACCEPTANCE_DECISION", {
+            "acceptor_id": self.acceptor_id, "accept": True,
+            "expected_digest": reveal.digest(), "reveal": reveal.to_dict(),
+            "precommit_seq": pre.ledger_seq, "machine_enforced": False,
+        })
+        token = self._gate.mint(run.run_id, run.ledger.head(), self.acceptor_id,
+                                "PASS", reveal.digest(),
+                                precommit_digest=reveal.digest())
+        return AcceptanceOutcome(run_id=run.run_id, accept=True, reveal=reveal,
+                                 precommitment=pre, token=token)
+
+
+class Run:
+    """
+    Strict, single-step lifecycle. Enforcement summary:
+
+      * advance() must target exactly phase+1 (no skipping, no rewind)
+      * target >= INDEPENDENT_ACCEPTANCE without a verified foreign token
+        raises SelfAcceptanceRefused
+      * the token must bind the ledger head at verification time, so a token
+        minted before the checks ran (or before later ledger writes) is refused
+    """
+
+    def __init__(self, pack: str, workdir: os.PathLike | str, producer_id: str,
+                 gate: AcceptanceGate, run_id: Optional[str] = None,
+                 mandate: Optional[Dict[str, Any]] = None):
+        self.pack = pack
+        self.workdir = Path(workdir)
+        self.workdir.mkdir(parents=True, exist_ok=True)
+        self.producer_id = producer_id
+        self.run_id = run_id or uuid.uuid4().hex
+        self.mandate = dict(mandate or {})
+        self._gate = gate
+        self.phase: Optional[Phase] = None
+        self._acceptance: Optional[AcceptanceToken] = None
+        self.ledger = Ledger(self.workdir / "run_ledger.jsonl")
+
+    # -- introspection ----------------------------------------------------
+    @property
+    def accepted(self) -> bool:
+        return self._acceptance is not None
+
+    def next_phase(self) -> Phase:
+        return Phase.PREFLIGHT if self.phase is None else Phase(int(self.phase) + 1)
+
+    def require_phase(self, p: Phase) -> None:
+        if self.phase != p:
+            raise PhaseOrderError(f"require {p.name}, at {self.phase and self.phase.name}")
+
+    # -- the gate ---------------------------------------------------------
+    def advance(self, target: Phase, evidence: Optional[Dict[str, Any]] = None,
+                token: Optional[AcceptanceToken] = None) -> Phase:
+        evidence = dict(evidence or {})
+        expected = self.next_phase()
+        if target != expected:
+            raise PhaseOrderError(
+                f"out-of-order advance: at "
+                f"{self.phase.name if self.phase is not None else 'START'}, "
+                f"next must be {expected.name}, got {target.name}"
+            )
+
+        if target >= Phase.INDEPENDENT_ACCEPTANCE and self._acceptance is None:
+            if token is None:
+                raise SelfAcceptanceRefused(
+                    f"{self.pack}: producer {self.producer_id!r} may not advance "
+                    f"to {target.name}; producer ceiling is "
+                    f"{PRODUCER_CEILING.name} and no acceptance token was presented"
+                )
+            self._gate.verify(token, self.run_id, self.ledger.head(), self.producer_id)
+            self._verify_commit_first(token)
+            self._acceptance = token
+            evidence = {
+                **evidence,
+                "acceptance": token.to_dict(),
+                "acceptor_id": token.acceptor_id,
+            }
+
+        if target > Phase.INDEPENDENT_ACCEPTANCE and self._acceptance is None:
+            raise SelfAcceptanceRefused(
+                f"{self.pack}: {target.name} requires a prior INDEPENDENT_ACCEPTANCE"
+            )
+
+        self.ledger.append(
+            "PHASE",
+            {
+                "phase": target.name,
+                "phase_ord": int(target),
+                "run_id": self.run_id,
+                "producer_id": self.producer_id,
+                "pack": self.pack,
+                "evidence": evidence,
+            },
+        )
+        self.phase = target
+        return target
+
+    def _verify_commit_first(self, token: AcceptanceToken) -> None:
+        """The fifth arm of the gate. Forgery, self-issuance, replay and
+        head-staleness are all checked by AcceptanceGate.verify; this checks
+        that the acceptor was not ANCHORED - that it committed its own answer
+        into the ledger before it opened the producer's artefacts."""
+        aid = token.acceptor_id
+        decisions = [e for e in self.ledger.entries
+                     if e.kind == "ACCEPTANCE_DECISION"
+                     and e.payload.get("acceptor_id") == aid]
+        if not decisions:
+            raise NoPrecommitment(
+                f"acceptor {aid!r} presented a token with no recorded decision. "
+                "A verifier that read the candidate and then judged it is "
+                "anchored to it; that design is refused.")
+        last = decisions[-1]
+        if not last.payload.get("accept"):
+            raise AcceptanceRefused("last recorded decision was REJECT")
+
+        # the round that produced this decision
+        pre_seq = precommit_seq(self.ledger, aid, before=last.seq)
+        if pre_seq is None:
+            raise NoPrecommitment(
+                f"acceptor {aid!r} presented a token with no ACCEPTOR_PRECOMMIT "
+                "in the ledger. A verifier that read the candidate and then "
+                "judged it is anchored to it; that design is refused.")
+        win_seq = window_seq(self.ledger, aid, before=last.seq)
+        if win_seq is None or win_seq < pre_seq:
+            raise PeekedBeforeCommit(
+                f"acceptor {aid!r}: artefact window at seq {win_seq} does not "
+                f"follow the commitment at seq {pre_seq}")
+
+        pre_entry = next(e for e in self.ledger.entries if e.seq == pre_seq)
+        committed = pre_entry.payload.get("expected_digest")
+        if token.precommit_digest != committed:
+            raise CommitmentMismatch(
+                f"token binds {token.precommit_digest[:12]}, ledger committed "
+                f"{str(committed)[:12]}")
+        rev = last.payload.get("reveal") or {}
+        opened = Reveal(expected=rev.get("expected"), nonce=rev.get("nonce", ""))
+        if opened.digest() != committed:
+            raise CommitmentMismatch(
+                "the revealed expectation does not open the commitment made "
+                "before the artefacts were read")
+        # conservative update on reject: the winning commitment must postdate
+        # every earlier rejection, so a rejected run is re-derived, not re-argued
+        for d in decisions[:-1]:
+            if not d.payload.get("accept") and d.seq > pre_seq:
+                raise CommitmentMismatch(
+                    f"precommitment at seq {pre_seq} predates a REJECT at seq "
+                    f"{d.seq}; a rejected run needs a fresh commitment")
+
+    def accept_with(self, outcome: AcceptanceOutcome) -> Phase:
+        """Advance to INDEPENDENT_ACCEPTANCE on a commit-first outcome."""
+        if not outcome.accept or outcome.token is None:
+            raise AcceptanceRefused("REJECT")
+        return self.advance(Phase.INDEPENDENT_ACCEPTANCE, token=outcome.token)
+
+    def note(self, kind: str, payload: Dict[str, Any]) -> Entry:
+        return self.ledger.append(kind, payload)
+
+    def write_return_state(self, extra: Optional[Dict[str, Any]] = None) -> Path:
+        if self._acceptance is None:
+            raise SelfAcceptanceRefused("return state may not be written unaccepted")
+        path = self.workdir / "return_state.json"
+        write_json(path, {
+            "pack": self.pack,
+            "run_id": self.run_id,
+            "producer_id": self.producer_id,
+            "acceptor_id": self._acceptance.acceptor_id,
+            "acceptance": self._acceptance.to_dict(),
+            "ledger_head": self.ledger.head(),
+            "ledger_entries": len(self.ledger.entries),
+            "spine_version": SPINE_VERSION,
+            "mandate": self.mandate,
+            "acceptance_model": "COMMIT_FIRST",
+            "precommit_digest": self._acceptance.precommit_digest,
+            "independence_basis": self._independence_basis(),
+            "acceptance_machine_enforced": self._acceptance_machine_enforced(),
+            **(extra or {}),
+        })
+        return path
+
+
+    def _precommit_entry(self):
+        aid = self._acceptance.acceptor_id if self._acceptance else None
+        for e in self.ledger.entries:
+            if e.kind == "ACCEPTOR_PRECOMMIT" and e.payload.get("acceptor_id") == aid:
+                return e
+        return None
+
+    def _independence_basis(self) -> str:
+        e = self._precommit_entry()
+        return (e.payload.get("independence_basis", BASIS_NONE) if e else BASIS_NONE)
+
+    def _acceptance_machine_enforced(self) -> bool:
+        e = self._precommit_entry()
+        if e is None:
+            return False
+        return e.payload.get("machine_enforced", True) is not False
+
+
+def phase_sequence_from_ledger(ledger: Ledger) -> List[str]:
+    return [e.payload["phase"] for e in ledger.entries if e.kind == "PHASE"]
+
+
+def validate_phase_sequence(seq: List[str]) -> Optional[str]:
+    """Return None if the observed phase sequence is legal, else the reason."""
+    if not seq:
+        return "no phases recorded"
+    names = [p.name for p in Phase]
+    if seq != names[: len(seq)]:
+        return f"illegal phase sequence: {seq}"
+    return None
+
+
+# --------------------------------------------------------------------------
+# Reusable deterministic checks (spine-level invariants)
+# --------------------------------------------------------------------------
+def load_jsonl(path: os.PathLike | str) -> List[Dict[str, Any]]:
+    rows: List[Dict[str, Any]] = []
+    p = Path(path)
+    if not p.exists():
+        return rows
+    with open(p, "r", encoding="utf-8") as fh:
+        for line in fh:
+            line = line.strip()
+            if line:
+                rows.append(json.loads(line))
+    return rows
+
+
+def check_required_files(rep: CheckReport, workdir: Path,
+                         required: List[str]) -> None:
+    missing = [f for f in required
+               if not (workdir / f).exists() or (workdir / f).stat().st_size == 0]
+    rep.add("required_artefacts_present", not missing,
+            f"missing/empty: {missing}" if missing else f"{len(required)} present")
+
+
+def check_run_ledger(rep: CheckReport, workdir: Path) -> Optional[Ledger]:
+    p = workdir / "run_ledger.jsonl"
+    if not p.exists():
+        rep.add("run_ledger_present", False, "run_ledger.jsonl absent")
+        return None
+    rep.add("run_ledger_present", True, "")
+    led = Ledger(p)
+    try:
+        led.verify_chain()
+        rep.add("run_ledger_chain_intact", True, f"{len(led.entries)} entries")
+    except LedgerTampered as e:
+        rep.add("run_ledger_chain_intact", False, str(e))
+        return led
+
+    seq = phase_sequence_from_ledger(led)
+    reason = validate_phase_sequence(seq)
+    rep.add("phase_sequence_legal", reason is None, reason or " -> ".join(seq))
+    return led
+
+
+def check_acceptance_provenance(rep: CheckReport, led: Optional[Ledger]) -> None:
+    """No phase at or beyond INDEPENDENT_ACCEPTANCE may exist in the ledger
+    without an acceptance recorded by a principal other than the producer."""
+    if led is None:
+        rep.add("acceptance_provenance", False, "no ledger")
+        return
+    problems: List[str] = []
+    accepted_by: Optional[str] = None
+    for e in led.entries:
+        if e.kind != "PHASE":
+            continue
+        ph = e.payload.get("phase_ord", -1)
+        producer = e.payload.get("producer_id")
+        ev = e.payload.get("evidence") or {}
+        if ph == int(Phase.INDEPENDENT_ACCEPTANCE):
+            acc = ev.get("acceptance")
+            if not acc:
+                problems.append(f"seq {e.seq}: INDEPENDENT_ACCEPTANCE with no token")
+            elif acc.get("acceptor_id") == producer:
+                problems.append(f"seq {e.seq}: self-accepted by {producer!r}")
+            elif acc.get("verdict") != "PASS":
+                problems.append(f"seq {e.seq}: verdict {acc.get('verdict')!r}")
+            else:
+                accepted_by = acc.get("acceptor_id")
+        elif ph > int(Phase.INDEPENDENT_ACCEPTANCE) and accepted_by is None:
+            problems.append(f"seq {e.seq}: {e.payload.get('phase')} before acceptance")
+    rep.add("acceptance_provenance", not problems,
+            "; ".join(problems) if problems
+            else f"independently accepted by {accepted_by!r}")
+
+
+def check_independent_review_recorded(rep: CheckReport,
+                                      led: Optional[Ledger]) -> None:
+    """Implication: if the run reached INDEPENDENT_ACCEPTANCE, a review entry
+    must exist. Stated this way on purpose - the acceptor itself runs the
+    checks BEFORE writing its review entry, so an unconditional form would be
+    unsatisfiable at the only moment that matters."""
+    if led is None:
+        rep.add("independent_review_recorded", False, "no ledger")
+        return
+    revs = [e for e in led.entries if e.kind == "INDEPENDENT_REVIEW"]
+    accepted = any(e.kind == "PHASE"
+                   and e.payload.get("phase_ord", -1) >= int(Phase.INDEPENDENT_ACCEPTANCE)
+                   for e in led.entries)
+    if not accepted:
+        rep.add("independent_review_recorded", True,
+                f"n/a: pre-acceptance ({len(revs)} review entries so far)")
+        return
+    ok = bool(revs) and all(r.payload.get("independent") for r in revs)
+    rep.add("independent_review_recorded", ok,
+            f"{len(revs)} review entr(y|ies)" if ok else "accepted with no review entry")
+
+
+def check_pack_manifest(rep: CheckReport, pack_dir: Path) -> None:
+    """Verify the control code itself has not been edited since manifesting."""
+    man = pack_dir / "MANIFEST.json"
+    if not man.exists():
+        rep.add("pack_manifest_intact", False, "MANIFEST.json absent")
+        return
+    try:
+        data = read_json(man)
+    except Exception as e:  # noqa: BLE001
+        rep.add("pack_manifest_intact", False, f"unparseable: {e}")
+        return
+    bad: List[str] = []
+    for entry in data.get("files", []):
+        f = pack_dir / entry["path"]
+        if not f.exists():
+            bad.append(f"{entry['path']}: absent")
+            continue
+        if f.stat().st_size != entry["bytes"]:
+            bad.append(f"{entry['path']}: size {f.stat().st_size} != {entry['bytes']}")
+        elif sha256_file(f) != entry["sha256"]:
+            bad.append(f"{entry['path']}: sha256 mismatch")
+    rep.add("pack_manifest_intact", not bad,
+            "; ".join(bad) if bad else f"{len(data.get('files', []))} files verified")
+
+
+def check_commit_first_ordering(rep: CheckReport, led: Optional[Ledger]) -> None:
+    """Acceptance implies: a precommitment exists, it precedes the artefact
+    window, and the revealed expectation opens it."""
+    if led is None:
+        rep.add("commit_first_ordering", False, "no ledger")
+        return
+    accepted = [e for e in led.entries if e.kind == "PHASE"
+                and e.payload.get("phase_ord", -1) >= int(Phase.INDEPENDENT_ACCEPTANCE)]
+    if not accepted:
+        rep.add("commit_first_ordering", True, "n/a: pre-acceptance")
+        rep.add("acceptance_channel_is_one_bit", True, "n/a: pre-acceptance")
+        return
+
+    problems: List[str] = []
+    basis = None
+    for e in led.entries:
+        if e.kind != "ACCEPTANCE_DECISION":
+            continue
+        aid = e.payload.get("acceptor_id")
+        pre = precommit_seq(led, aid, before=e.seq)
+        win = window_seq(led, aid, before=e.seq)
+        if pre is None:
+            problems.append(f"{aid}: decision with no precommitment")
+            continue
+        if win is None:
+            problems.append(f"{aid}: decision with no window record")
+        elif win < pre:
+            problems.append(f"{aid}: window opened at {win} before commit at {pre}")
+        rev = e.payload.get("reveal") or {}
+        opened = Reveal(expected=rev.get("expected"), nonce=rev.get("nonce", ""))
+        if opened.digest() != e.payload.get("expected_digest"):
+            problems.append(f"{aid}: reveal does not open the commitment")
+    for e in led.entries:
+        if e.kind == "ACCEPTOR_PRECOMMIT":
+            basis = e.payload.get("independence_basis", BASIS_NONE)
+    rep.add("commit_first_ordering", not problems,
+            "; ".join(problems) if problems
+            else f"commitment precedes window; reveal opens it; basis={basis}")
+
+    # the channel carried one bit: the decision entry has an accept flag and a
+    # reveal, and nothing that could function as a rubric
+    leaky = []
+    banned = {"failed", "report", "checks", "diff", "reason", "guidance",
+              "message", "rubric"}
+    for e in led.entries:
+        if e.kind == "ACCEPTANCE_DECISION":
+            hit = banned & set(e.payload)
+            if hit:
+                leaky.append(f"{e.payload.get('acceptor_id')}: {sorted(hit)}")
+    rep.add("acceptance_channel_is_one_bit", not leaky,
+            "; ".join(leaky) if leaky
+            else "decision entries carry accept + reveal only")
