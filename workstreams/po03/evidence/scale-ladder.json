@@ -69,7 +69,7 @@
     "target": "Begin at the maximum safe active concurrency the provider exposes and keep every available slot filled.",
     "mechanism_used": "One background Cursor subagent per cohort, each bound to an exclusive git worktree and an exclusive branch. Worktrees were created serially by the controller before dispatch so that concurrent workers never contend for the git configuration lock.",
     "simultaneous_background_subagents_dispatched": 13,
-    "provider_rejections": 1,
+    "provider_rejections": 2,
     "queued_cohorts_required": false,
     "observed_ceiling": "NOT_REACHED_AT_10",
     "ceiling_measurement_honesty": "Ten concurrent background subagents were accepted with zero provider rejection. That establishes a measured floor on available concurrency; it does not establish the true ceiling, and no ceiling value is asserted. If a later dispatch is rejected, the exact observed ceiling will be recorded here and the remaining attempts completed in queued cohorts.",
@@ -79,7 +79,7 @@
       "memory_gb": 47,
       "disk_available_gb": 228
     },
-    "rejection_note": "One dispatch failed with 'Workflow execution already started' while only about seven cohorts were active, well under the ten already accepted without rejection. It is recorded as a provider-side duplicate-launch artefact and recovered from, not as a ceiling. The ceiling remains unobserved."
+    "rejection_note": "Two dispatches failed with 'Workflow execution already started', one fresh and one resume, at about seven and about six active cohorts respectively. Both are well under the ten already accepted without rejection. Recorded as provider-side duplicate-launch artefacts affecting both dispatch kinds; the ceiling remains unobserved and no limit is inferred."
   },
   "expansion_rule": "Continue expanding beyond Wave B only while independently accepted throughput and discovery yield both improve. Scale is not increased on the strength of dispatched volume; it is increased on the strength of independently accepted results.",
   "guardrails_held_at_this_checkpoint": {
@@ -116,6 +116,26 @@
       },
       "significance": "This is an unplanned live test of the recovery path on real data, and it passed: a dispatch that produced nothing was correctly classified as never-started rather than as a failed result, the stale lease was retired, and the rerun proceeded from byte-identical immutable input with a strictly higher fence. It is also direct evidence for the gap cohort a2 identified as defect 1 and which is dispatched as a11-u08: detection and re-lease worked, but the coordinator had to actuate them by hand because scan_recovery still has no actuator. The commission requires automatic resume or rerun, so this remains NOT_YET until a11 lands.",
       "founder_relay_required": false
+    },
+    {
+      "observed_at": "2026-08-22T08:45:00Z",
+      "cohort": "a8",
+      "dispatch_kind": "resume of a completed subagent",
+      "provider_error": "Workflow execution already started",
+      "classification": "PROVIDER_DISPATCH_FAILURE_NOT_WORK_FAILURE",
+      "work_performed": "none",
+      "evidence_of_zero_work": "a8 remote head unchanged at 01dfb05, worktree head unchanged, all six a8 units still PARENT_INGESTED, ledger chain valid.",
+      "active_cohorts_at_time_of_failure": 6,
+      "attributable_to_a_concurrency_ceiling": false,
+      "pattern_note": "Second occurrence of the identical error. The first was a fresh dispatch of a12 with about seven cohorts active; this is a resume with about six. Ten concurrent dispatches were previously accepted with zero rejection, so neither failure is at or near an observed ceiling and the ceiling remains unobserved. Recorded as an observed provider behaviour affecting both fresh dispatch and resume, with no inferred limit.",
+      "recovery_actuated": {
+        "method": "No lease change was required because no unit regressed: a8's six units were already PARENT_INGESTED and its branch was untouched. The follow-up work was re-dispatched as a fresh subagent on the same owner and branch rather than retried as a resume.",
+        "units_regressed": 0,
+        "work_lost": 0,
+        "founder_relay_required": false,
+        "result": "PASS"
+      },
+      "operational_lesson": "A resume is not more durable than a fresh dispatch. Because every result was already committed and ingested before the resume was attempted, a failed resume cost nothing. That is the incremental-push discipline paying off rather than luck."
     }
   ]
 }
