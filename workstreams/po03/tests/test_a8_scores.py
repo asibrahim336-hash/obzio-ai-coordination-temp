@@ -10,6 +10,7 @@ guard is violated, including guards that no observed comparison happens to trip.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 import sys
@@ -309,10 +310,85 @@ class ReceiptTests(unittest.TestCase):
             self.assertIn(entry["status"], {"NOT_YET", "NOT_SUPPORTED"})
             self.assertTrue(entry["detail"].strip())
 
-    def test_the_receipt_does_not_write_into_another_cohorts_path(self):
+    def test_the_receipt_writer_writes_only_its_own_declared_target(self):
+        """The property is about this writer, not about another cohort's tree.
+
+        An earlier revision asserted that ``workstreams/po03/metrics`` did not
+        exist. That was true while this branch was isolated and became false the
+        moment cohort a7's metrics merged, which made the test fail for a reason
+        that had nothing to do with this cohort's behaviour. Naming a path as a
+        consumer is not writing to it, and whether a7 has published yet is a7's
+        business.
+
+        What is worth asserting is the invariant: running the writer changes
+        exactly one file, the one it declares, and that file is inside this
+        cohort's grant. Checked by digesting every tracked file in the wave-one
+        write allowlist either side of a real ``--write`` invocation.
+        """
+        target = "receipts/po03/2026-08-22/successor-generation.json"
+        self.assertEqual(self.RECEIPT, REPO_ROOT / target)
+
+        def snapshot() -> dict[str, str]:
+            tracked = subprocess.run(
+                ["git", "ls-files", "--", "workstreams/po03/", "receipts/po03/", ".github/workflows/"],
+                cwd=REPO_ROOT,
+                capture_output=True,
+                text=True,
+                check=True,
+            ).stdout.split()
+            digests = {}
+            for relative in tracked:
+                path = REPO_ROOT / relative
+                if path.is_file():
+                    digests[relative] = hashlib.sha256(path.read_bytes()).hexdigest()
+            return digests
+
+        before = snapshot()
+        self.assertIn(target, before, "the receipt itself must be among the files being guarded")
+        result = subprocess.run(
+            [sys.executable, "-I", "workstreams/po03/successor/write_receipt.py", "--write"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        after = snapshot()
+
+        self.assertEqual(set(before), set(after), "the writer created or removed a tracked file")
+        changed = sorted(key for key in before if before[key] != after[key])
+        # The receipt is consistent with the tree, so a faithful rewrite is
+        # byte-identical and even the declared target should be untouched.
+        self.assertEqual(changed, [], "the writer altered a file it does not own")
+
+    def test_the_receipt_names_another_cohorts_path_as_a_consumer_and_never_as_a_target(self):
+        """Handing a downstream owner a path is the opposite of writing to it.
+
+        a7 owns ``workstreams/po03/metrics/``. This cohort's score document is an
+        input to a7's comparison, so the receipt names that path so a7 can find
+        it. This asserts the distinction the previous test made accidentally:
+        the path appears among consumers and nowhere among the writer's outputs.
+        """
+        import importlib.util
+
         consumers = self._receipt()["consumers"]
-        self.assertIn("workstreams/po03/metrics/generation-comparison.json", consumers)
-        self.assertFalse((REPO_ROOT / "workstreams" / "po03" / "metrics").exists())
+        foreign = "workstreams/po03/metrics/generation-comparison.json"
+        self.assertIn(foreign, consumers)
+
+        spec = importlib.util.spec_from_file_location(
+            "write_receipt", REPO_ROOT / "workstreams" / "po03" / "successor" / "write_receipt.py"
+        )
+        writer = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(writer)
+        self.assertEqual(writer.TARGET, self.RECEIPT, "the writer declares one target and it is this cohort's")
+        self.assertFalse(
+            writer.TARGET.is_relative_to(REPO_ROOT / "workstreams" / "po03" / "metrics"),
+            "the only file this writer opens for writing must not be inside a7's subtree",
+        )
+        for artifact in writer.ARTIFACTS:
+            self.assertTrue(
+                artifact.startswith("workstreams/po03/successor/"),
+                f"{artifact} is hashed into the receipt but is not this cohort's to describe",
+            )
 
 
 class TranscriptTests(unittest.TestCase):
