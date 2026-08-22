@@ -72,6 +72,104 @@ def is_sha(value: str) -> bool:
     return len(value) == 40 and all(char in "0123456789abcdef" for char in value)
 
 
+# ---------------------------------------------------------------------------
+# Discovery
+# ---------------------------------------------------------------------------
+#
+# After total runtime loss the coordinator has a clone and nothing else.  A
+# clone does carry the remote's refs, so the bytes are not the missing part:
+# what is missing is any local record of which refs carry subordinate results.
+# That has to come from committed configuration -- the ownership roster and the
+# immutable dispatch records -- and be confirmed against the remote.
+#
+# Configuration is the authority and the remote is only the confirmation.  A
+# driver that ingested whatever branch it found pushed would treat push access
+# as custody authority, so an undeclared branch is reported and never read.
+
+
+def remote_heads(remote: str = "origin") -> dict[str, str]:
+    """Every branch the remote is offering, as ``{branch: sha}``."""
+    listing = git("ls-remote", "--heads", remote, check=False)
+    heads: dict[str, str] = {}
+    for line in listing.splitlines():
+        sha, _, ref = line.partition("\t")
+        if is_sha(sha.strip()) and ref.startswith("refs/heads/"):
+            heads[ref[len("refs/heads/") :]] = sha.strip()
+    return heads
+
+
+def _declare(declared: dict[str, dict], branch: str, *, cohort: str | None, source: str, owner: str | None) -> None:
+    entry = declared.setdefault(branch, {"cohorts": [], "sources": [], "owners": []})
+    for key, value in (("cohorts", cohort), ("sources", source), ("owners", owner)):
+        if value and value not in entry[key]:
+            entry[key].append(value)
+
+
+def declared_result_branches() -> dict[str, dict]:
+    """Result branches named by committed configuration, with their provenance.
+
+    Two independent sources are read, because either can be incomplete: the
+    ownership roster names one branch per subordinate, and each immutable
+    dispatch record names the branch of the result slot it reserved.
+    """
+    declared: dict[str, dict] = {}
+    ownership_path = Path(CP.PATH_OWNERSHIP_PATH)
+    if ownership_path.exists():
+        ownership = json.loads(ownership_path.read_text(encoding="utf-8"))
+        for owner, entry in (ownership.get("owners") or {}).items():
+            branch = entry.get("branch")
+            if owner == "coordinator" or not branch:
+                continue
+            _declare(
+                declared,
+                branch,
+                cohort=owner.rsplit("-", 1)[-1],
+                source="path-ownership",
+                owner=owner,
+            )
+    dispatch_dir = Path(CP.DISPATCH_DIR)
+    if dispatch_dir.exists():
+        for path in sorted(dispatch_dir.glob("*.json")):
+            try:
+                record = json.loads(path.read_text(encoding="utf-8"))
+            except (json.JSONDecodeError, OSError):
+                continue
+            branch = ((record.get("result_slot") or {}).get("branch")) or None
+            if not branch:
+                continue
+            unit_id = str(record.get("unit_id") or path.stem)
+            _declare(
+                declared,
+                branch,
+                cohort=record.get("cohort_id") or unit_id.split("-", 1)[0],
+                source="dispatch-result-slot",
+                owner=record.get("owner"),
+            )
+    return declared
+
+
+def discover_result_branches(remote: str = "origin") -> dict[str, object]:
+    """Enumerate result branches from configuration and confirm them remotely.
+
+    Pure: it reads the remote and the committed configuration, and writes
+    nothing.  Discovery has to be safe to run from a read-only clone before any
+    decision to ingest has been taken.
+    """
+    declared = declared_result_branches()
+    heads = remote_heads(remote)
+    for branch, entry in declared.items():
+        entry["on_remote"] = branch in heads
+        entry["remote_sha"] = heads.get(branch)
+    return {
+        "remote": remote,
+        "remote_branches": len(heads),
+        "branches": declared,
+        "cohorts": sorted({cohort for entry in declared.values() for cohort in entry["cohorts"]}),
+        "declared_but_absent": sorted(b for b, e in declared.items() if not e["on_remote"]),
+        "undeclared_on_remote": sorted(set(heads) - set(declared)),
+    }
+
+
 def unit_record_paths(sha: str, cohort: str) -> list[str]:
     """List the unit-record blobs a cohort published, straight from the tree."""
     prefix = f"workstreams/po03/control/units/{cohort}/"
@@ -101,8 +199,10 @@ def ingest_cohort(cohort: str, branch: str, *, complete: bool) -> dict[str, obje
         "completed": [],
         "state": "NOT_PUSHED",
         "worktree_materialised": False,
+        "fetched_branches": [],
     }
-    git("fetch", "origin", branch, check=False)
+    git("fetch", "origin", f"+{branch}:refs/remotes/origin/{branch}", check=False)
+    outcome["fetched_branches"].append(branch)
     # --verify --quiet is required: plain rev-parse echoes an unresolvable ref
     # back on stdout, which would make an unpushed cohort look resolvable.
     sha = git("rev-parse", "--verify", "--quiet", f"refs/remotes/origin/{branch}", check=False)
@@ -129,6 +229,18 @@ def ingest_cohort(cohort: str, branch: str, *, complete: bool) -> dict[str, obje
     outcome["results_found"] = len(records)
     if not records:
         return outcome
+
+    # An artifact locator carries the branch it was committed on, and it need
+    # not be this cohort's branch.  A fresh clone has to fetch that branch
+    # before it can resolve the commit, or an honest cross-branch result is
+    # rejected for nothing more than an unfetched object.
+    for _path, doc in records:
+        for artifact in doc.get("artifacts") or []:
+            artifact_branch, _commit, _relative = CP.parse_content_uri(str(artifact.get("content_uri") or ""))
+            if not artifact_branch or artifact_branch in outcome["fetched_branches"]:
+                continue
+            git("fetch", "origin", f"+{artifact_branch}:refs/remotes/origin/{artifact_branch}", check=False)
+            outcome["fetched_branches"].append(artifact_branch)
 
     # Only an uncommitted result needs a checkout; a durable one is read out of
     # the object database at the commit it declared.
@@ -170,11 +282,83 @@ def ingest_cohort(cohort: str, branch: str, *, complete: bool) -> dict[str, obje
     return outcome
 
 
+def _summarise(report: list[dict[str, object]], extra: dict[str, object] | None = None) -> dict[str, object]:
+    CP.materialize()
+    state = CP.scan_recovery()
+    summary: dict[str, object] = {
+        "cohorts": report,
+        "totals": {
+            "results_found": sum(int(r["results_found"]) for r in report),
+            "ingested": sum(len(r["ingested"]) for r in report),
+            "recovered": sum(len(r["ingested"]) for r in report),
+            "duplicates": sum(len(r["duplicates"]) for r in report),
+            "rejected": sum(len(r["rejected"]) for r in report),
+            "completed": sum(len(r["completed"]) for r in report),
+            "not_pushed": [r["cohort"] for r in report if r["state"] == "NOT_PUSHED"],
+        },
+        "fetched_branches": sorted({b for r in report for b in r.get("fetched_branches", [])}),
+        "recovery": {
+            "ledger_rows": state["ledger_rows"],
+            "ledger_chain_valid": state["ledger_chain_valid"],
+            "false_completions": state["false_completions"],
+            "provider_completed_uncommitted": state["provider_completed_uncommitted"],
+            "expired_leases": state["expired_leases"],
+        },
+    }
+    if extra:
+        summary.update(extra)
+    return summary
+
+
+def recover_from_remote(
+    *,
+    cohorts: list[str] | None = None,
+    complete: bool = False,
+    remote: str = "origin",
+) -> dict[str, object]:
+    """Discover result branches, then recover every committed result they hold.
+
+    This is the fresh-clone path: nothing here consults local state beyond
+    committed configuration, so a coordinator that lost its runtime entirely
+    recovers custody from the remote's bytes.  Verification is unchanged and
+    non-negotiable -- every artifact is re-read at the commit it declared and
+    re-hashed -- so a corrupt result is refused while its neighbours recover.
+    """
+    discovery = discover_result_branches(remote)
+    report: list[dict[str, object]] = []
+    for branch in sorted(discovery["branches"]):
+        entry = discovery["branches"][branch]
+        for cohort in entry["cohorts"]:
+            if cohorts is not None and cohort not in cohorts:
+                continue
+            report.append(ingest_cohort(cohort, branch, complete=complete))
+    return _summarise(report, {"discovery": discovery})
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="ingest a wave of subordinate results")
     parser.add_argument("--cohort", action="append", help="restrict to one or more cohorts")
     parser.add_argument("--complete", action="store_true", help="set COMPLETED for verified units")
+    parser.add_argument(
+        "--discover",
+        action="store_true",
+        help="enumerate result branches from committed configuration and the remote, and stop",
+    )
+    parser.add_argument(
+        "--recover",
+        action="store_true",
+        help="recover every committed result from the discovered branches (fresh-clone path)",
+    )
     args = parser.parse_args(argv)
+
+    if args.discover:
+        print(json.dumps(discover_result_branches(), indent=2, sort_keys=True))
+        return 0
+    if args.recover:
+        summary = recover_from_remote(cohorts=args.cohort, complete=args.complete)
+        print(json.dumps(summary, indent=2, sort_keys=True))
+        recovery = summary["recovery"]
+        return 1 if recovery["false_completions"] or not recovery["ledger_chain_valid"] else 0
 
     branches = cohort_branches()
     selected = args.cohort or sorted(branches, key=lambda c: (len(c), c))
@@ -186,28 +370,10 @@ def main(argv: list[str] | None = None) -> int:
             return 2
         report.append(ingest_cohort(cohort, branch, complete=args.complete))
 
-    CP.materialize()
-    state = CP.scan_recovery()
-    summary = {
-        "cohorts": report,
-        "totals": {
-            "results_found": sum(int(r["results_found"]) for r in report),
-            "ingested": sum(len(r["ingested"]) for r in report),
-            "duplicates": sum(len(r["duplicates"]) for r in report),
-            "rejected": sum(len(r["rejected"]) for r in report),
-            "completed": sum(len(r["completed"]) for r in report),
-            "not_pushed": [r["cohort"] for r in report if r["state"] == "NOT_PUSHED"],
-        },
-        "recovery": {
-            "ledger_rows": state["ledger_rows"],
-            "ledger_chain_valid": state["ledger_chain_valid"],
-            "false_completions": state["false_completions"],
-            "provider_completed_uncommitted": state["provider_completed_uncommitted"],
-            "expired_leases": state["expired_leases"],
-        },
-    }
+    summary = _summarise(report)
     print(json.dumps(summary, indent=2, sort_keys=True))
-    return 1 if state["false_completions"] or not state["ledger_chain_valid"] else 0
+    recovery = summary["recovery"]
+    return 1 if recovery["false_completions"] or not recovery["ledger_chain_valid"] else 0
 
 
 if __name__ == "__main__":

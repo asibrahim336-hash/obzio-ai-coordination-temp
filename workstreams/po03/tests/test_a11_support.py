@@ -386,6 +386,22 @@ class WaveFixture(ControlPlaneHarness):
         git("config", "user.name", "PO03 A11 Coordinator", cwd=self.coordinator)
         git("config", "user.email", "po03-a11@example.invalid", cwd=self.coordinator)
 
+    def dispatch_record(self, unit_id: str, owner: str | None = None) -> dict[str, Any]:
+        """A dispatch record whose result slot names this cohort's real branch.
+
+        The slot is committed configuration, and the fresh-clone discovery pass
+        reads it as a source of truth about where results live, so a fixture
+        whose slot named some other branch would not be testing discovery.
+        """
+        record = super().dispatch_record(unit_id, owner or self.producer_owner)
+        record["cohort_id"] = self.cohort
+        record["result_slot"] = {
+            "branch": self.branch,
+            "unit_record": f"workstreams/po03/control/units/{self.cohort}/{unit_id}.json",
+        }
+        self.cp.write_json(self.cp.DISPATCH_DIR / f"{unit_id}.json", record)
+        return record
+
     def load_ingest_wave(self):
         """Load the ingestion driver bound to this fixture's coordinator clone."""
         module = load_module(INGEST_WAVE_PATH, "iw")
