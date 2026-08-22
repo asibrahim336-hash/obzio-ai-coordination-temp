@@ -1,0 +1,107 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-sol-xhigh",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-004-process-boundary-isolation",
+  "cohort": "c1",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c1",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "68b00ba7d0290a1d43814861d12b2db7ddfa3e7c7f106faaa09d7b094459db9b",
+  "frozen_hypothesis": "PO-03 mechanisms carry no cross-invocation in-process state, so a fresh interpreter reproduces identical results.",
+  "frozen_required_deliverable": "A harness that runs each mechanism twice in separate interpreter processes with -I and compares canonical outputs byte for byte.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -I (CPython 3.12.3)",
+    "producer_test_command": "python3 -I test_process_boundary_harness.py -v",
+    "producer_test_output_verbatim": "test_identical_canonical_output_passes ... ok\ntest_missing_mechanism_fails_closed ... ok\ntest_process_specific_state_is_detected ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 0.551s\n\nOK",
+    "producer_test_exit_code": 0
+  },
+
+  "vacuity_probe": {
+    "method": "Three separate mechanism removals, each re-run against the producer's own test file.",
+    "stub_always_equivalent": {"mutation": "'equivalent': True instead of first_bytes == second_bytes", "producer_tests_exit_code": 1, "failures": 1, "tests_detected_stub": true},
+    "stub_single_process": {"mutation": "second = first (never spawns the second interpreter)", "producer_tests_exit_code": 1, "failures": 1, "tests_detected_stub": true},
+    "stub_no_scope_check": {"mutation": "removed the is_relative_to/is_file guard", "producer_tests_exit_code": 1, "failures": 1, "tests_detected_stub": true},
+    "vacuous_test_finding": false,
+    "conclusion": "Not vacuous. Importantly the 'single-process' stub is caught, so the tests really do pin the two-distinct-processes requirement of the frozen deliverable and not merely the comparison."
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-A",
+      "rationale": "The producer's tests are synthetic, but the unit ships a mechanisms.json declaring three REAL PO-03 mechanisms. I re-ran the harness against that real spec from a pristine git-archive export of the cohort commit, independently of the producer.",
+      "construction": "git archive refs/heads/po03/wa-b2e7-c1 | tar -x, then python3 -I process_boundary_harness.py --repo-root <export> --spec <export>/.../mechanisms.json",
+      "observed_output_verbatim": "HC-A exit=0\nmechanism_count: 3\nall_process_boundaries_equivalent: True\nmismatches: []\n - transaction-contract-validation equivalent= True rc= 0 stdout_len= 85 stderr_head= ''\n - changed-path-scope equivalent= True rc= 0 stdout_len= 37 stderr_head= ''\n - transaction-custody-verification equivalent= True rc= 0 stdout_len= 55 stderr_head= ''",
+      "component_survived": true,
+      "interpretation": "Non-synthetic confirmation of the frozen hypothesis. All three real mechanisms exit 0 and produce byte-equal canonical output across two fresh interpreters. This is genuine evidence, not a fixture echoing itself."
+    },
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "The producer's only positive adversary was os.getpid(). Filesystem-carried cross-invocation state is the more realistic failure and was untested.",
+      "construction": "mechanism that prints 'cold' if a sidecar marker file is absent and 'warm' if present, and writes the marker on every run.",
+      "observed_output_verbatim": "HC-B exit: 1 equivalent: False | first: 'cold\\n' second: 'warm\\n'",
+      "component_survived": true,
+      "interpretation": "Detected. The harness catches state carried across the process boundary through the filesystem, not just in-process identity leaks."
+    },
+    {
+      "hidden_case_id": "HC-C",
+      "rationale": "The scope guard uses .resolve() plus is_relative_to. I probed directory traversal, which the producer never tested.",
+      "construction": "spec entry with script '../../../../etc/hostname'",
+      "observed_output_verbatim": "HC-C traversal exit: 2 | out: {\n  \"error\": \"mechanism script is absent or outside repository: ../../../../etc/hostname\"\n}",
+      "component_survived": true,
+      "interpretation": "Fails closed with exit 2."
+    },
+    {
+      "hidden_case_id": "HC-D",
+      "rationale": "Symlink escape is the standard bypass for a resolve-then-compare guard.",
+      "construction": "symlink inside repo_root pointing at /usr/bin/true, declared as the mechanism script.",
+      "observed_output_verbatim": "HC-D symlink-escape exit: 2 | out: {\n  \"error\": \"mechanism script is absent or outside repository: link_out\"\n}",
+      "component_survived": true,
+      "interpretation": "Fails closed. .resolve() dereferences the symlink before the containment check, so the escape is caught."
+    },
+    {
+      "hidden_case_id": "HC-E",
+      "rationale": "Boundary probe: the comparison is raw byte equality with no normalisation, so a stateless mechanism with wall-clock output would be a false mismatch.",
+      "construction": "mechanism printing time.time_ns()",
+      "observed_output_verbatim": "HC-E exit: 1 equivalent: False (stateless, but wall-clock output)",
+      "component_survived": true,
+      "interpretation": "Reported as non-equivalent. I do NOT count this against the unit: the frozen deliverable explicitly demands comparison 'byte for byte', and it is unit 005's frozen deliverable - not this one's - that requires normalising timestamps out. The behaviour matches the frozen wording."
+    }
+  ],
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "MET - 3/3 reproduced, plus I reproduced the real 3-mechanism sweep.",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET - 4 artifacts, every SHA-256 and byte count recomputed by me and matched (ALL_ARTIFACTS_VERIFY: True).",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - acceptance_contract_sha256 equals my pre-disclosure hash 68b00ba7...; independent_acceptance NOT_TESTED.",
+    "result is committed and read back by a different process from an immutable object id": "MET - artifact_commit dabb613e47626b1f79110e2f86feea0a82d381df; my HC-A run read the whole subtree back from the cohort ref in a separate process.",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - PASS.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "NOT_APPLICABLE - not refuted; I independently confirmed it on real mechanisms.",
+    "no value, hash, metric or provider capability is invented": "MET - all four hashes and byte counts recomputed exactly; the three mechanism results in evidence.md reproduced identically in my own run."
+  },
+
+  "scope_honesty_assessment": {
+    "producer_declared_limitations": [
+      "State-mutating controller commands were excluded because this producer cannot write shared control paths."
+    ],
+    "assessment": "Honest and precise. The producer scoped its claim to three read-only mechanisms and said so, rather than implying whole-suite coverage. The declared reason (no authority to write shared control paths) matches the commission's own path-ownership prohibitions, so the exclusion is a genuine authority boundary rather than an evasion. This is the best-scoped claim I reviewed in cohort c1."
+  },
+
+  "verification_commands": {
+    "artifact_verification_verbatim": "  evidence.md 1200 1200 HASH_OK\n  mechanisms.json 653 653 HASH_OK\n  process_boundary_harness.py 3226 3226 HASH_OK\n  test_process_boundary_harness.py 3083 3083 HASH_OK\nALL_ARTIFACTS_VERIFY: True"
+  },
+
+  "nonportable_artifacts_in_subtree": [],
+  "reproducibility_check": "The real 3-mechanism sweep was run from a fresh git-archive export in a fresh python3 -I process and reproduced all_process_boundaries_equivalent=true, matching the producer's recorded outcome fields exactly.",
+
+  "reviewer_independent_verdict": "PASS",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "AGREE",
+  "divergence_reason": null,
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "This unit's PASS is justified plainly. All eight frozen criteria are independently met, every manifest hash and byte count recomputes exactly, and unlike most of the cohort the evidence is not synthetic-only: I reproduced the real three-mechanism cross-process sweep from a pristine export of the cohort commit and got byte-equal canonical output for all three. The tests survive three separate stub substitutions including one that removes the second interpreter entirely, so they pin the actual two-process requirement. My additional adversaries - filesystem-carried cross-invocation state, directory traversal, and symlink escape - were all handled correctly. The one non-equivalence I could manufacture (wall-clock output) is required behaviour under this unit's own 'byte for byte' deliverable wording. The producer's single declared limitation is accurate and is a real authority boundary.",
+  "followups_for_coordinator": []
+}

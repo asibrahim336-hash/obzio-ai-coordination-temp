@@ -1,0 +1,103 @@
+{
+  "review_version": "PO03-INDEPENDENT-REVIEW-v1",
+  "reviewer_id": "po03-reviewer-a-claude-opus-5",
+  "reviewer_family": "Anthropic",
+  "producer_model": "gpt-5.6-sol-xhigh",
+  "producer_family": "OpenAI",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "task_id": "po03-wa-b2e7-005-deterministic-rerun-equivalence",
+  "cohort": "c1",
+  "cohort_ref": "refs/heads/po03/wa-b2e7-c1",
+  "frozen_acceptance_sha256_recorded_before_disclosure": "9217cffb89c7143ab7b4da4aed720d0fd1399cf7369adb7efbe4dc8908526e90",
+  "frozen_hypothesis": "Two independent clean clones of the same immutable commit produce byte-identical canonical outputs.",
+  "frozen_required_deliverable": "A double-clone differential runner that normalises timestamps out of canonical output and asserts byte equality, reporting exactly which fields are legitimately non-deterministic.",
+
+  "independent_execution": {
+    "executed_by_reviewer": true,
+    "interpreter": "python3 -I (CPython 3.12.3)",
+    "producer_test_command": "python3 -I test_double_clone_runner.py -v",
+    "producer_test_output_verbatim": "test_normalizer_reports_only_fields_it_changes ... ok\ntest_process_specific_output_is_not_equal ... ok\ntest_two_clean_clones_have_equal_canonical_output ... ok\n\n----------------------------------------------------------------------\nRan 3 tests in 16.164s\n\nOK",
+    "producer_test_exit_code": 0
+  },
+
+  "vacuity_probe": {
+    "method": "Three mechanism removals re-run against the producer's own tests.",
+    "stub_always_equal": {"mutation": "equal = True", "producer_tests_exit_code": 1, "failures": 1, "tests_detected_stub": true},
+    "stub_one_clone": {"mutation": "second = first (the second clone's suite is never run)", "producer_tests_exit_code": 1, "failures": 1, "tests_detected_stub": true},
+    "stub_no_normalisation": {"mutation": "removed the unittest-elapsed normalisation", "producer_tests_exit_code": 1, "failures": 2, "tests_detected_stub": true},
+    "vacuous_test_finding": false,
+    "conclusion": "Not vacuous. The 'one-clone' stub is caught, so the tests genuinely pin the two-independent-clones requirement rather than just the comparison, and removing normalisation breaks two tests."
+  },
+
+  "hidden_cases": [
+    {
+      "hidden_case_id": "HC-A",
+      "rationale": "Independent real-repository double clone at the cohort head, which is a different and larger commit than the one the producer used.",
+      "construction": "python3 -I double_clone_runner.py --source /home/ubuntu/po03-worktrees/c1 --commit 5c0dfcd8ced545cf122d0ab2d8541dd4f4e561af --workspace <fresh>",
+      "observed_output_verbatim": "HC-A exit=0\ncommit: \"5c0dfcd8ced545cf122d0ab2d8541dd4f4e561af\"\ntest_file_count: 12\nbyte_equivalent: true\nfailed_tests: []\nclean_after_run: [true, true]\nnormalized_fields: {\"clone_a\": {\"unittest_elapsed_seconds\": 12}, \"clone_b\": {\"unittest_elapsed_seconds\": 12}}",
+      "component_survived": true,
+      "interpretation": "Independent confirmation of the frozen hypothesis at a larger commit than the producer used: 12 real test files, byte-equivalent after normalising only unittest elapsed duration, both clones clean. The only legitimately non-deterministic field is named and counted, which is what the frozen deliverable asks for."
+    },
+    {
+      "hidden_case_id": "HC-B",
+      "rationale": "The runner names its two clones 'clone-a' and 'clone-b'. normalize() rewrites only the FULL clone path string, so any suite that emits just the basename of its own root will diverge because of the runner's own naming choice, not because of suite nondeterminism.",
+      "construction": "committed test containing 'from pathlib import Path; print(Path.cwd().name)'",
+      "observed_output_verbatim": "HC-B exit: 1 byte_equivalent: False\n   clone_a stdout: 'clone-a\\n'  clone_b stdout: 'clone-b\\n'",
+      "component_survived": false,
+      "interpretation": "FALSE POSITIVE that is self-inflicted by the harness. A deterministic suite is reported non-equivalent purely because the two clone directories have deliberately different basenames. The fix is structural and cheap: give both clones the same basename under two different parent directories."
+    },
+    {
+      "hidden_case_id": "HC-C",
+      "rationale": "The frozen deliverable requires 'reporting exactly which fields are legitimately non-deterministic'. I checked what the report says when divergence is genuine rather than normalisable.",
+      "construction": "committed test containing 'import random; print(random.random())'",
+      "observed_output_verbatim": "HC-C exit: 1 byte_equivalent: False | report keys naming the diverging field: ['normalized_fields'] | normalized_fields: {\"clone_a\": {}, \"clone_b\": {}}",
+      "component_survived": true,
+      "interpretation": "Divergence is correctly detected and reported as non-equivalent. The report does not name WHICH observable diverged - the reader must diff canonical_results, which is included in full. I read the frozen wording as being satisfied by normalized_fields, which is precisely the inventory of fields treated as legitimately non-deterministic; so this is a usability gap rather than an unmet requirement."
+    },
+    {
+      "hidden_case_id": "HC-D",
+      "rationale": "Positive control for the clone-root normaliser, which the producer's tests exercise only through a synthetic string, never end to end.",
+      "construction": "committed test containing 'from pathlib import Path; print(Path.cwd())'",
+      "observed_output_verbatim": "HC-D exit: 0 byte_equivalent: True | normalized: '<CLONE_ROOT>\\n'",
+      "component_survived": true,
+      "interpretation": "The clone-root normaliser works end to end: two clones at different absolute paths are correctly reduced to '<CLONE_ROOT>' and compare equal."
+    }
+  ],
+
+  "criterion_by_criterion": {
+    "executable component exists inside the owned subtree and runs under python -I": "MET.",
+    "tests or reproduction evidence execute and their outcome is recorded verbatim": "MET - 3/3 reproduced, plus an independent real-repository double clone.",
+    "artifact manifest lists every artifact with SHA-256 and exact byte count": "MET - 3 artifacts, all hashes and byte counts recomputed and matched.",
+    "result document conforms to OBZIO-TRANSACTIONAL-RESULT-v1": "MET - acceptance_contract_sha256 equals my pre-disclosure hash 9217cffb...",
+    "result is committed and read back by a different process from an immutable object id": "MET - artifact_commit 6377133f6873cc92af382b1427bd91d611a34556.",
+    "hypothesis receives an explicit PASS, FAIL, NOT_YET, NOT_SUPPORTED or OWNER_BLOCKED verdict": "MET - PASS.",
+    "a refuted hypothesis is recorded as a refutation rather than restated as success": "NOT_APPLICABLE - not refuted; independently confirmed.",
+    "no value, hash, metric or provider capability is invented": "MET, and specifically checked: the producer cites commit 6497c14c49a2f6ddb75c056bb1ee1e4a8196ebe1 and claims 8 recursively discovered test files. That commit exists ('po03: po03-wa-b2e7-004-process-boundary-isolation result') and I counted exactly 8 committed test_*.py files under workstreams/po03 at it. The figure is real, not asserted."
+  },
+
+  "scope_honesty_assessment": {
+    "producer_declared_limitations": [
+      "Normalization rules are explicit but could conceal a defect if inappropriately broadened; their occurrence inventory is emitted for review."
+    ],
+    "assessment": "This is the right limitation to declare for a normalising comparator - over-broad normalisation is exactly the way such a tool goes vacuous, and the producer both names the risk and mitigates it by emitting the normalisation inventory. My stub probe confirms the mitigation is real: removing a normalisation rule breaks the tests, so the rules are pinned rather than free-floating. The producer did not anticipate the HC-B self-inflicted false positive."
+  },
+
+  "verification_commands": {
+    "artifact_verification_verbatim": "artifact_count: 3 ALL_ARTIFACTS_VERIFY: True",
+    "cited_commit_verification_verbatim": "6497c14 po03: po03-wa-b2e7-004-process-boundary-isolation result\n8"
+  },
+
+  "nonportable_artifacts_in_subtree": [],
+  "reproducibility_check": "The real double clone was run in a fresh python3 -I process; byte_equivalent=true reproduced, and normalized_fields was identical for both clones (12 and 12).",
+
+  "reviewer_independent_verdict": "PASS",
+  "producer_claimed_verdict": "PASS",
+  "agreement": "AGREE",
+  "divergence_reason": null,
+  "disposition_recommendation": "ACCEPTED",
+  "disposition_reason": "The PASS is justified and the evidence is not synthetic-only. I independently reproduced the frozen hypothesis at a larger commit than the producer used - 12 real test files, byte-equivalent, both clones clean, with only unittest elapsed duration normalised - and I verified the producer's cited commit and its 8-test-file count are both real rather than asserted. The tests survive three stub substitutions including removal of the second clone and removal of a normalisation rule, so the normalisation is pinned and cannot silently broaden. Accepted with one defect logged: HC-B shows a self-inflicted false positive from naming the clones 'clone-a' and 'clone-b', which makes a deterministic suite that prints its own root basename look non-deterministic.",
+  "followups_for_coordinator": [
+    "double_clone_runner names its clones 'clone-a' and 'clone-b' under one workspace, and normalize() rewrites only the full clone path. A committed test printing Path.cwd().name therefore yields byte_equivalent=false for a fully deterministic suite (reviewer-observed: 'clone-a' vs 'clone-b'). Use an identical basename under two distinct parent directories.",
+    "When byte_equivalent is false the report does not name the diverging observable; the reader must diff canonical_results. A diverging-field summary would make the negative case as legible as the positive one."
+  ]
+}
