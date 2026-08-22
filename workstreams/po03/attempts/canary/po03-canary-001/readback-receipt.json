@@ -1,0 +1,168 @@
+{
+  "artifacts_verified": [
+    {
+      "expected_bytes": 2979,
+      "expected_sha256": "ebe4a255ec42c7ee57796a6b5594e63842a487db6946590edbddff6db500af0e",
+      "independent_clone_readback": {
+        "bytes": 2979,
+        "match": true,
+        "sha256": "ebe4a255ec42c7ee57796a6b5594e63842a487db6946590edbddff6db500af0e"
+      },
+      "local_commit_readback": {
+        "bytes": 2979,
+        "match": true,
+        "sha256": "ebe4a255ec42c7ee57796a6b5594e63842a487db6946590edbddff6db500af0e"
+      },
+      "path": "workstreams/po03/attempts/canary/po03-canary-001/canary.json",
+      "remote_ref_readback": {
+        "bytes": 2979,
+        "match": true,
+        "sha256": "ebe4a255ec42c7ee57796a6b5594e63842a487db6946590edbddff6db500af0e"
+      }
+    },
+    {
+      "expected_bytes": 14343,
+      "expected_sha256": "f9cb9a15cd3df4222d2cdaa437b1dff447eb39f3165e62654d014bef64efdeff",
+      "independent_clone_readback": {
+        "bytes": 14343,
+        "match": true,
+        "sha256": "f9cb9a15cd3df4222d2cdaa437b1dff447eb39f3165e62654d014bef64efdeff"
+      },
+      "local_commit_readback": {
+        "bytes": 14343,
+        "match": true,
+        "sha256": "f9cb9a15cd3df4222d2cdaa437b1dff447eb39f3165e62654d014bef64efdeff"
+      },
+      "path": "workstreams/po03/attempts/canary/po03-canary-001/canary_tool.py",
+      "remote_ref_readback": {
+        "bytes": 14343,
+        "match": true,
+        "sha256": "f9cb9a15cd3df4222d2cdaa437b1dff447eb39f3165e62654d014bef64efdeff"
+      }
+    },
+    {
+      "expected_bytes": 1933,
+      "expected_sha256": "7d2c05868d1c59d95f6edc0544e91ab6421f5a08673e97c39ff1fe7244da7627",
+      "independent_clone_readback": {
+        "bytes": 1933,
+        "match": true,
+        "sha256": "7d2c05868d1c59d95f6edc0544e91ab6421f5a08673e97c39ff1fe7244da7627"
+      },
+      "local_commit_readback": {
+        "bytes": 1933,
+        "match": true,
+        "sha256": "7d2c05868d1c59d95f6edc0544e91ab6421f5a08673e97c39ff1fe7244da7627"
+      },
+      "manifest_round": 1,
+      "path": "workstreams/po03/attempts/canary/po03-canary-001/manifest.json",
+      "remote_ref_readback": {
+        "bytes": 1933,
+        "match": true,
+        "sha256": "7d2c05868d1c59d95f6edc0544e91ab6421f5a08673e97c39ff1fe7244da7627"
+      }
+    },
+    {
+      "expected_bytes": 3531,
+      "expected_sha256": "e96b760a6064e9a87f4f93b842a5bbc3b0a676646799d63c5ac86b8ad6d436d4",
+      "independent_clone_readback": {
+        "bytes": 3531,
+        "match": true,
+        "sha256": "e96b760a6064e9a87f4f93b842a5bbc3b0a676646799d63c5ac86b8ad6d436d4"
+      },
+      "local_commit_readback": {
+        "bytes": 3531,
+        "match": true,
+        "sha256": "e96b760a6064e9a87f4f93b842a5bbc3b0a676646799d63c5ac86b8ad6d436d4"
+      },
+      "path": "workstreams/po03/attempts/canary/po03-canary-001/readback.json",
+      "remote_ref_readback": {
+        "bytes": 3531,
+        "match": true,
+        "sha256": "e96b760a6064e9a87f4f93b842a5bbc3b0a676646799d63c5ac86b8ad6d436d4"
+      }
+    }
+  ],
+  "boundaries_observed": {
+    "accounts_or_secrets_touched": false,
+    "external_parties_contacted": false,
+    "merge_or_promotion_performed": false,
+    "po01_paths_touched": 0,
+    "pr_8_touched": false,
+    "shared_control_or_receipt_files_written": 0,
+    "shared_po03_branch_written": false,
+    "spend_or_obligation_created": false,
+    "writes_outside_owned_paths": 0
+  },
+  "branch": "cursor/po03-canary-custody-b759",
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "decision_changed": [],
+  "fence_token": 1,
+  "hash_algorithm": "sha256",
+  "isolation": {
+    "finding": "The shared checkout at /workspace was being advanced concurrently by another process during this run: HEAD moved from ba97ea9 to 1bb843b between two consecutive observations, and a branch checkout there was reverted by the other process.",
+    "mitigation": "All canary writes were performed in a dedicated git worktree at /tmp/po03-canary-wt bound to cursor/po03-canary-custody-b759, so the shared working tree and the shared PO-03 branch were left untouched.",
+    "shared_checkout_restored_to": "po03/repository-engineering-portable-runtime-20260822-v001",
+    "worktree_path": "/tmp/po03-canary-wt"
+  },
+  "methods": {
+    "independent_clone": "git clone --depth 1 --branch cursor/po03-canary-custody-b759 <remote> /tmp/po03-canary-independent && sha256sum <path>",
+    "local_immutable_commit": "git cat-file blob 2df4069c4218140e2d7df3b7b287d662954e4a29:<path> | sha256sum",
+    "remote_ref": "git fetch origin cursor/po03-canary-custody-b759 && git cat-file blob FETCH_HEAD:<path> | sha256sum"
+  },
+  "nonce_round_trip": {
+    "matches_capsule_nonce": true,
+    "matches_recorded_sha256": true,
+    "nonce_read_from_independent_clone": "721166a718cd5dd8b9b2525cf5c6b32a5e4b6e2b1b3ebb94fa3aaafa4a53177e",
+    "recomputed_sha256": "a3c93e3ebebd9c2cb78133f32063792b9b21e57e991db1a74cd84144dda9668f",
+    "source_of_truth": "workstreams/po03/control/tasks/po03-canary-001/input.json"
+  },
+  "obzio_state_claim": {
+    "claimed_by_producer": "READY_TO_COMMIT",
+    "completion_actor": null,
+    "independent_acceptance": "NOT_TESTED",
+    "not_claimed": ["ACCEPTED", "COMPLETED"],
+    "self_acceptance_performed": false
+  },
+  "prior_attempt": {
+    "attempt_number": 1,
+    "branch": "po03/po03-canary-001",
+    "disposition": "SUPERSEDED_BY_CONTINUATION",
+    "note": "Attempt-1 wrote canary.json, manifest.json and readback.json in this same slot. Its phase-1 commit was verified to exist on the remote and to be an ancestor of the remote branch tip, so those bytes remain durable evidence. readback.json is retained unchanged and carries disposition SUPERSEDED_PRIOR_ATTEMPT_EVIDENCE in the round-2 manifest.",
+    "phase_1_commit": "46080e21eec5766633b890c978fa5efdc53a3c94",
+    "phase_1_commit_present_on_remote": true,
+    "prior_canary_sha256": "1da6899e982e0360580d6cefb4256a51b5b190bda5a1a42479dcc765b60a0831",
+    "remote_branch_tip_at_observation": "4b0506a440614875987f52616f04deba879b9e16"
+  },
+  "receipt_version": "PO03-CANARY-READBACK-RECEIPT-v2",
+  "remote": {
+    "name": "origin",
+    "ref": "refs/heads/cursor/po03-canary-custody-b759",
+    "url": "https://github.com/asibrahim336-hash/obzio-ai-coordination-temp"
+  },
+  "round_1": {
+    "base_commit": "1bb843b2a81fd8d73617caf2f1db81909266bb6e",
+    "commit": "2df4069c4218140e2d7df3b7b287d662954e4a29",
+    "independent_clone_head": "2df4069c4218140e2d7df3b7b287d662954e4a29",
+    "pushed": true,
+    "remote_ref_sha_after_fetch": "2df4069c4218140e2d7df3b7b287d662954e4a29",
+    "result": "PASS",
+    "verified_at": "2026-08-22T07:01:25Z"
+  },
+  "round_2": {
+    "artifacts_added": [
+      "workstreams/po03/attempts/canary/po03-canary-001/readback-receipt.json",
+      "workstreams/po03/attempts/canary/po03-canary-001/verification.txt"
+    ],
+    "manifest_round": 2,
+    "note": "This receipt is itself committed in round 2, so its own immutable read-back is performed after the round-2 push and reported in the worker return rather than recursively inside this file. Reproduce it with: python3 workstreams/po03/attempts/canary/po03-canary-001/canary_tool.py verify --ref <round-2 commit sha> --depth 2",
+    "verification_command": "python3 workstreams/po03/attempts/canary/po03-canary-001/canary_tool.py verify --ref <round-2 commit sha> --depth 2"
+  },
+  "runtime_deviation": {
+    "actual_branch": "cursor/po03-canary-custody-b759",
+    "capsule_branch_requirement": "po03/po03-canary-001",
+    "reason": "The executing platform enforces a cursor/<name>-b759 branch template for branches this route creates. The deterministic permitted form was used; the shared PO-03 branch was not written.",
+    "type": "BRANCH_NAME_POLICY_SUBSTITUTION"
+  },
+  "task_id": "po03-canary-001",
+  "worker_id": "po03-canary-001-producer"
+}

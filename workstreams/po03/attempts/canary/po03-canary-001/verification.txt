@@ -1,0 +1,43 @@
+PO-03 transactional custody canary - reproducible verification
+task_id:            po03-canary-001
+commission_id:      COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001
+worker_id:          po03-canary-001-producer
+fence_token:        1
+branch:             cursor/po03-canary-custody-b759
+round_1_commit:     2df4069c4218140e2d7df3b7b287d662954e4a29
+base_commit:        1bb843b2a81fd8d73617caf2f1db81909266bb6e
+generated_at:       2026-08-22T07:01:25Z
+
+Every byte compared below is read out of a named commit object with
+`git cat-file blob <commit>:<path>`; no working-tree content is trusted.
+The round-2 commit adds readback-receipt.json, this file and the round-2
+manifest, so its own verification output cannot be contained in itself:
+re-run the same verify command with --ref <round-2 commit sha> to reproduce
+it, and see the round-2 digests recorded in the worker return.
+
+$ python3 workstreams/po03/attempts/canary/po03-canary-001/canary_tool.py verify --ref 2df4069c4218140e2d7df3b7b287d662954e4a29
+PO03_CANARY_VERIFY ref=2df4069c4218140e2d7df3b7b287d662954e4a29 commit=2df4069c4218140e2d7df3b7b287d662954e4a29
+MANIFEST path=workstreams/po03/attempts/canary/po03-canary-001/manifest.json round=1 sha256=7d2c05868d1c59d95f6edc0544e91ab6421f5a08673e97c39ff1fe7244da7627 bytes=1933
+ARTIFACT_PASS path=workstreams/po03/attempts/canary/po03-canary-001/canary.json sha256=ebe4a255ec42c7ee57796a6b5594e63842a487db6946590edbddff6db500af0e bytes=2979 media_type=application/json disposition=CURRENT
+ARTIFACT_PASS path=workstreams/po03/attempts/canary/po03-canary-001/canary_tool.py sha256=f9cb9a15cd3df4222d2cdaa437b1dff447eb39f3165e62654d014bef64efdeff bytes=14343 media_type=text/x-python disposition=CURRENT
+ARTIFACT_PASS path=workstreams/po03/attempts/canary/po03-canary-001/readback.json sha256=e96b760a6064e9a87f4f93b842a5bbc3b0a676646799d63c5ac86b8ad6d436d4 bytes=3531 media_type=application/json disposition=SUPERSEDED_PRIOR_ATTEMPT_EVIDENCE
+TOTALS_PASS artifact_count=3 total_bytes=20853
+COVERAGE_PASS tracked_in_slot=4 listed_plus_manifest=4
+REGENERATION_PASS path=workstreams/po03/attempts/canary/po03-canary-001/canary.json sha256=ebe4a255ec42c7ee57796a6b5594e63842a487db6946590edbddff6db500af0e
+PAYLOAD_METADATA_PASS payload_sha256=3c4f0417bed7fc9a354a81767adee04b7434cfd4acb776f6d12239a26d749c23 payload_bytes=860
+NONCE_PASS canary_nonce=721166a718cd5dd8b9b2525cf5c6b32a5e4b6e2b1b3ebb94fa3aaafa4a53177e sha256=a3c93e3ebebd9c2cb78133f32063792b9b21e57e991db1a74cd84144dda9668f
+IDENTITY_PASS worker_id=po03-canary-001-producer fence_token=1
+PATH_SCOPE_PASS depth=1 changed_paths=3 all_within=workstreams/po03/attempts/canary/po03-canary-001/
+RESULT=PASS failures=0
+exit_code: 0
+
+$ python3 workstreams/po03/tools/check_path_scope.py --base 1bb843b2a81fd8d73617caf2f1db81909266bb6e --head 2df4069c4218140e2d7df3b7b287d662954e4a29
+PO03_PATH_SCOPE_PASS changed_paths=3
+exit_code: 0
+
+$ python3 scripts/check_operator_taxonomy.py
+OPERATOR TAXONOMY CHECK: PASS
+active function: obzio.function.strategic-operations-orchestration
+active appointment: obzio.appointment.strategic-operations-orchestration.20260819.001
+classified aliases: 9
+exit_code: 0
