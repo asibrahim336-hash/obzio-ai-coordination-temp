@@ -1,0 +1,150 @@
+{
+  "access_mode": "git ls-tree and git cat-file only; no checkout",
+  "claim_count": 9,
+  "claims": [
+    {
+      "claim": "The aggregate manifest's byte and hash inventory matches the published pack tree.",
+      "commit": "1e6f53c323f8326d12af213557082a3665991f19",
+      "observed": {
+        "declared_mismatches": [],
+        "declared_rows": 92,
+        "declared_total_bytes": 811121,
+        "manifest_bytes": 28060,
+        "manifest_path": "packs/MANIFEST_ALL.json",
+        "manifest_sha256": "fc55964719c6c80be6da621595be392bd0f6f1020220bf4569aafaa8894872b1",
+        "self_exclusion_note": "file_count includes MANIFEST_ALL.json itself, which cannot hash itself; total_bytes excludes it",
+        "tree_file_count": 93,
+        "tree_not_hash_declared": [
+          "packs/MANIFEST_ALL.json"
+        ]
+      },
+      "reproduction_attempt": "Read MANIFEST_ALL.json with git cat-file; independently read and hash every declared blob; compare ls-tree coverage and totals.",
+      "target": "packs/operator-packs-v1-20260820",
+      "verdict": "PASS"
+    },
+    {
+      "claim": "The published operator pack tree is directly runnable and portable as committed.",
+      "commit": "1e6f53c323f8326d12af213557082a3665991f19",
+      "observed": {
+        "aggregate_restore_instruction_present": true,
+        "missing_declared_runtime_files": [
+          "packs/06-browser-execution/_spine.py",
+          "packs/07-capability-manufacture/_spine.py",
+          "packs/08-knowledge-currentness/_spine.py",
+          "packs/09-infrastructure-operation/_spine.py",
+          "packs/10-economics-measurement/_spine.py"
+        ]
+      },
+      "reproduction_attempt": "Resolve every declared sibling _spine.py from five runnable pack manifests at the pinned commit.",
+      "target": "packs/operator-packs-v1-20260820",
+      "verdict": "FAIL"
+    },
+    {
+      "claim": "The source target contains an operator-pack source tree.",
+      "commit": "37943ec2ff9f6702d72e127a3c8e56c81b0c3812",
+      "observed": {
+        "matching_path_count": 0,
+        "matching_paths": []
+      },
+      "reproduction_attempt": "List packs/** and modules/operators/** at the exact target SHA.",
+      "target": "packs/operator-packs-v1-source",
+      "verdict": "FAIL"
+    },
+    {
+      "claim": "The source target contains a qualifying operator-pack implementation.",
+      "commit": "4612fee16a0027ae41ed17d3b16b7bb18212ba6a",
+      "observed": {
+        "manifest_paths": [],
+        "matching_paths": [
+          "modules/operator-packs/.probe/a.txt",
+          "modules/operator-packs/.probe/b.sh"
+        ]
+      },
+      "reproduction_attempt": "List modules/operator-packs/** and require at least one MANIFEST.json.",
+      "target": "soo/operator-packs-source-v1-20260820",
+      "verdict": "FAIL"
+    },
+    {
+      "claim": "The modules/operators source is self-contained for all declared runtime files.",
+      "commit": "62c29e1a641932b817592ddc970df11f89b6c0f7",
+      "observed": {
+        "matching_path_count": 93,
+        "missing_declared_runtime_files": [
+          "modules/operators/06-browser-execution/_spine.py",
+          "modules/operators/07-capability-manufacture/_spine.py",
+          "modules/operators/08-knowledge-currentness/_spine.py",
+          "modules/operators/09-infrastructure-operation/_spine.py",
+          "modules/operators/10-economics-measurement/_spine.py"
+        ]
+      },
+      "reproduction_attempt": "List the immutable source tree and resolve each declared sibling _spine.py.",
+      "target": "soo/operator-packs-v1-source-20260820",
+      "verdict": "FAIL"
+    },
+    {
+      "claim": "The pinned work-unit contract commit contains the claimed five-file executable module.",
+      "commit": "9696c325f0897b7c9e7ff2cd9d57fc7c4bb19e27",
+      "observed": {
+        "matching_path_count": 5,
+        "matching_paths": [
+          "modules/work_unit_contract/README.md",
+          "modules/work_unit_contract/contract.py",
+          "modules/work_unit_contract/ledger.py",
+          "modules/work_unit_contract/runner.py",
+          "modules/work_unit_contract/test_forced_interruption.py"
+        ]
+      },
+      "reproduction_attempt": "List modules/work_unit_contract/** at the immutable commit and compare exact names.",
+      "target": "soo/work-unit-contract-and-run-ledger-20260819",
+      "verdict": "PASS"
+    },
+    {
+      "claim": "The pointer-repair commit independently supports an operator-pack claim.",
+      "commit": "8c52ef6d8f0d510cf1d2bfee48923a49ca19475d",
+      "observed": {
+        "matching_path_count": 0,
+        "matching_paths": []
+      },
+      "reproduction_attempt": "List operator-pack prefixes at the exact pointer-repair SHA.",
+      "target": "soo/v003-controlling-pointer-and-part-manifest-repair-20260820",
+      "verdict": "NOT_SUPPORTED"
+    },
+    {
+      "claim": "The pinned base contains the operator packs.",
+      "commit": "5db7affeb7f00763e148e6d98a33ee6b751f2def",
+      "observed": {
+        "matching_path_count": 0,
+        "matching_paths": []
+      },
+      "reproduction_attempt": "List operator-pack prefixes at the exact pinned base.",
+      "target": "pinned-base",
+      "verdict": "NOT_YET"
+    },
+    {
+      "claim": "Main contains the operator packs.",
+      "commit": "37943ec2ff9f6702d72e127a3c8e56c81b0c3812",
+      "observed": {
+        "matching_path_count": 0,
+        "matching_paths": []
+      },
+      "reproduction_attempt": "List operator-pack prefixes at the exact main SHA.",
+      "target": "main",
+      "verdict": "NOT_YET"
+    }
+  ],
+  "ledger_version": "PO03-PO01-IMMUTABLE-REPRODUCTION-v1",
+  "overall_meaning": "Every listed claim received an evidence-bounded reproduction verdict; individual FAIL and NOT_SUPPORTED findings remain negative.",
+  "overall_verdict": "PASS",
+  "po01_contact_or_mutation": false,
+  "targets": {
+    "main": "37943ec2ff9f6702d72e127a3c8e56c81b0c3812",
+    "packs/operator-packs-v1-20260820": "1e6f53c323f8326d12af213557082a3665991f19",
+    "packs/operator-packs-v1-source": "37943ec2ff9f6702d72e127a3c8e56c81b0c3812",
+    "pinned-base": "5db7affeb7f00763e148e6d98a33ee6b751f2def",
+    "soo/operator-packs-source-v1-20260820": "4612fee16a0027ae41ed17d3b16b7bb18212ba6a",
+    "soo/operator-packs-v1-source-20260820": "62c29e1a641932b817592ddc970df11f89b6c0f7",
+    "soo/v003-controlling-pointer-and-part-manifest-repair-20260820": "8c52ef6d8f0d510cf1d2bfee48923a49ca19475d",
+    "soo/work-unit-contract-and-run-ledger-20260819": "9696c325f0897b7c9e7ff2cd9d57fc7c4bb19e27"
+  }
+}
+test_reproduce_claims: PASS
