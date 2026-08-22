@@ -1,0 +1,73 @@
+{
+  "controller_ingestion_commit": "409a55029e67180ad9c90e5dfb207e9b940229ed",
+  "criteria_frozen_before_producer_result": true,
+  "decision_changed": [],
+  "exact_model_mapping": "NOT_SUPPORTED",
+  "hypothesis_id": "H-PO03-WA-014",
+  "hypothesis_outcome": "SUPPORTED",
+  "immutable_readback": {
+    "manifest_bytes": 11807,
+    "manifest_sha256": "eab19b3dbb3c100b0c1b2638832019b301c91d08a6bdd35708ae4ed83a106e5b",
+    "payload_artifact_bytes": 86805,
+    "payload_artifact_count": 21,
+    "return_envelope_bytes": 19398,
+    "return_envelope_sha256": "a4dfb7e07b82831df98cb52529afe4bce1f3e8724f4c5f60cf76e2946ea40dcc",
+    "state": "PASS",
+    "transaction_artifact_bytes": 118010,
+    "transaction_artifact_count": 23
+  },
+  "independent_disposition": "ACCEPTED",
+  "independent_tests": {
+    "focused": {
+      "count": 23,
+      "state": "PASS"
+    },
+    "seeded_contracts": {
+      "count": 60,
+      "state": "PASS"
+    }
+  },
+  "model_observed": "gpt-5.6-sol-max-fast",
+  "model_requested": "gpt-5.6-sol-xhigh",
+  "note": "The monotonic lease-fencing store is independently accepted after 23 focused tests, a standalone concurrency fixture, 64 recurrence iterations with 64 stale attempts blocked and zero false acceptance, 60 current PO-03 tests, taxonomy validation, owned-path verification, and 21-artifact immutable readback. The lock-wait lease-expiry TOCTOU defect found after first execution was repaired by sampling the commit clock after transaction-lock acquisition. Support remains bounded to a trusted SQLite shared-store topology; distributed databases, hostile writers, reboot epochs, exhaustive crash/storage faults, formal interleaving proof, and exact requested model/reasoning attestation remain untested or NOT_SUPPORTED.",
+  "ownership": {
+    "changed_paths": [
+      "workstreams/po03/wave-a/units/wa-014/README.md",
+      "workstreams/po03/wave-a/units/wa-014/evidence/frozen-hypotheses.json",
+      "workstreams/po03/wave-a/units/wa-014/evidence/mechanism-changes.json",
+      "workstreams/po03/wave-a/units/wa-014/evidence/sanitized-reproduction.json",
+      "workstreams/po03/wave-a/units/wa-014/evidence/source-claims.json",
+      "workstreams/po03/wave-a/units/wa-014/evidence/strategy-proposals.json",
+      "workstreams/po03/wave-a/units/wa-014/mechanism/lease_fence.py",
+      "workstreams/po03/wave-a/units/wa-014/mechanism/run_concurrency_fixture.py",
+      "workstreams/po03/wave-a/units/wa-014/mechanism/run_recurrence.py",
+      "workstreams/po03/wave-a/units/wa-014/result/artifact-manifest.json",
+      "workstreams/po03/wave-a/units/wa-014/result/build_manifest.py",
+      "workstreams/po03/wave-a/units/wa-014/result/concurrency-fixture.json",
+      "workstreams/po03/wave-a/units/wa-014/result/fixture-output.txt",
+      "workstreams/po03/wave-a/units/wa-014/result/focused-tests-output.txt",
+      "workstreams/po03/wave-a/units/wa-014/result/limitations.json",
+      "workstreams/po03/wave-a/units/wa-014/result/ready-to-commit.json",
+      "workstreams/po03/wave-a/units/wa-014/result/recurrence-evidence.json",
+      "workstreams/po03/wave-a/units/wa-014/result/recurrence-output.txt",
+      "workstreams/po03/wave-a/units/wa-014/result/result.json",
+      "workstreams/po03/wave-a/units/wa-014/result/seeded-tests-output.txt",
+      "workstreams/po03/wave-a/units/wa-014/result/taxonomy-output.txt",
+      "workstreams/po03/wave-a/units/wa-014/result/tests.json",
+      "workstreams/po03/wave-a/units/wa-014/tests/test_lease_fence.py"
+    ],
+    "owned_prefix": "workstreams/po03/wave-a/units/wa-014/",
+    "state": "PASS"
+  },
+  "po01_touched": false,
+  "producer_branch": "cursor/po03-wa-014-b195-a02-1a9f",
+  "producer_result_commit": "ff22e8f21f335881dcdaa76d7db959ebcda5cff1",
+  "producer_return_commit": "f5fae78eb4662453280f6ff1aa650aefc0848a8e",
+  "pull_request_8_touched": false,
+  "review_id": "PO03-WA-014-INDEPENDENT-REVIEW-001",
+  "reviewed_at": "2026-08-22T09:06:45Z",
+  "reviewer_id": "controller-verifier:bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+  "route_disposition": "RETAIN_SQLITE_MONOTONIC_FENCE_WITH_TOCTOU_REPAIR_AND_TOPOLOGY_BOUND",
+  "source_claim_count": 5,
+  "task_id": "PO03-WA-014"
+}
