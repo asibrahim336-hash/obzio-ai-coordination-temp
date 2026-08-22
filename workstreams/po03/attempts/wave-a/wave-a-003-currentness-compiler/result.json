@@ -160,9 +160,10 @@
       "evidence": "evidence/test-run.log",
       "outcome": "PASS",
       "observed": {
-        "tests_run": 21,
+        "tests_run": 25,
         "failures": 0,
-        "errors": 0
+        "errors": 0,
+        "coverage_note": "Twenty-one tests cover the compiler, the case matrix and the counterfactual; four cover the read-back verifier, including tampered hashes, foreign changed paths and undeclared artifacts."
       }
     },
     {
@@ -239,14 +240,31 @@
     "tmp_state_reuse": "NONE"
   },
   "clean_clone_reproduction": {
-    "command": "tools/run_clean_clone.sh <origin> 8edc4d1f984f29de3437567cc96a66252233a7fa /home/ubuntu/wa003-cleanclone",
+    "command": "tools/run_clean_clone.sh <origin> da51d2dfcfc1a3914812441ab13edab0eda985b6 /home/ubuntu/wa003-cleanclone",
     "evidence": "evidence/clean-clone-run.log",
-    "clone_commit": "8edc4d1f984f29de3437567cc96a66252233a7fa",
+    "clone_commit": "da51d2dfcfc1a3914812441ab13edab0eda985b6",
     "dirty_files": 0,
     "tests_run": 21,
+    "tests_run_note": "The clone was pinned to the evidence commit, which carried twenty-one tests. The four read-back verifier tests arrived in the following commit and are covered by the unit-suite experiment.",
     "failures": 0,
     "case_matrix": "11/11",
     "outcome": "PASS"
+  },
+  "immutable_readback": {
+    "verifier": "tools/readback.py",
+    "evidence": "evidence/readback.json",
+    "verifier_process": "separate process reading a separately fetched clone at /home/ubuntu/wa003-readback",
+    "result_base_commit_id": "85515f0b18f99ba026f2ec2a2c9cf4c888b50ac2",
+    "verified_commit_id": "da51d2dfcfc1a3914812441ab13edab0eda985b6",
+    "manifest_sha256": "a314e71d86f6a851f3be31144beeadceb51bd97989fcad0d555c43bdb8a26d7b",
+    "manifest_bytes": 5023,
+    "declared_artifacts": 20,
+    "verified_artifacts": 20,
+    "declared_artifact_bytes": 148919,
+    "changed_paths_outside_owned_subtree": 0,
+    "undeclared_changed_paths": 0,
+    "outcome": "PASS",
+    "final_commit_note": "The final commit of this result branch is verified by the same tool after push; that run is reported to the controller in the return rather than committed, because a commit cannot contain its own read-back evidence."
   },
   "durability": {
     "route_state": "DISPATCH_AUTHORIZED_ISOLATED_CLONES",

@@ -32,6 +32,7 @@ def _load(name: str, path: Path):
 COMPILER = _load("currentness_compiler", COMPILER_PATH)
 RUNNER = _load("run_cases", RUNNER_PATH)
 COUNTERFACTUAL = _load("counterfactual", UNIT_ROOT / "tools" / "counterfactual.py")
+READBACK = _load("readback", UNIT_ROOT / "tools" / "readback.py")
 CASES = json.loads(CASES_PATH.read_text(encoding="utf-8"))
 
 
@@ -244,6 +245,102 @@ class HelperUnitTests(unittest.TestCase):
         )
         rows = COMPILER.disposition_rows(text)
         self.assertEqual([row["paths"] for row in rows], [["state/OLD.json"], []])
+
+
+class ReadbackVerifierTests(unittest.TestCase):
+    """The read-back verifier must accept honest bytes and reject tampering."""
+
+    def _unit_repository(self):
+        directory = tempfile.TemporaryDirectory(prefix="po03-wa003-readback-")
+        self.addCleanup(directory.cleanup)
+        root = Path(directory.name)
+        for command in (
+            ("init", "-q"),
+            ("config", "user.email", "po03-wave-a-003@obzio.invalid"),
+            ("config", "user.name", "PO-03 wave-a-003 readback test"),
+            ("config", "commit.gpgsign", "false"),
+        ):
+            subprocess.run(("git", "-C", str(root), *command), check=True, capture_output=True)
+        (root / "seed.txt").write_text("base\n", encoding="utf-8")
+        subprocess.run(("git", "-C", str(root), "add", "-A"), check=True, capture_output=True)
+        subprocess.run(
+            ("git", "-C", str(root), "commit", "-q", "-m", "base"), check=True, capture_output=True
+        )
+        base = subprocess.run(
+            ("git", "-C", str(root), "rev-parse", "HEAD"), check=True, capture_output=True, text=True
+        ).stdout.strip()
+        unit = root / READBACK.UNIT_ROOT
+        unit.mkdir(parents=True)
+        payload = b"artifact bytes\n"
+        (unit / "artifact.txt").write_bytes(payload)
+        return root, base, unit, payload
+
+    def _commit(self, root: Path, message: str) -> str:
+        subprocess.run(("git", "-C", str(root), "add", "-A"), check=True, capture_output=True)
+        subprocess.run(
+            ("git", "-C", str(root), "commit", "-q", "-m", message), check=True, capture_output=True
+        )
+        return subprocess.run(
+            ("git", "-C", str(root), "rev-parse", "HEAD"), check=True, capture_output=True, text=True
+        ).stdout.strip()
+
+    def _manifest(self, payload: bytes, **overrides):
+        manifest = {
+            "manifest_version": "PO03-ATTEMPT-MANIFEST-v1",
+            "task_id": READBACK.TASK_ID,
+            "unit_root": READBACK.UNIT_ROOT,
+            "self_excluded": "manifest.json",
+            "artifact_count": 1,
+            "total_bytes": len(payload),
+            "sources": [
+                {
+                    "path": "artifact.txt",
+                    "sha256": __import__("hashlib").sha256(payload).hexdigest(),
+                    "bytes": len(payload),
+                    "git_blob_sha": READBACK.git_blob_sha(payload),
+                }
+            ],
+            "decision_changed": [],
+        }
+        manifest.update(overrides)
+        return manifest
+
+    def test_honest_manifest_and_range_pass(self):
+        root, base, unit, payload = self._unit_repository()
+        (unit / "manifest.json").write_text(json.dumps(self._manifest(payload)), encoding="utf-8")
+        commit = self._commit(root, "result")
+        report = READBACK.verify(repository=str(root), commit=commit, base=base)
+        self.assertEqual(report["outcome"], "PASS", report["failures"])
+        self.assertEqual(report["verified_artifact_count"], 1)
+        self.assertEqual(report["changed_paths_outside_owned_subtree"], [])
+
+    def test_tampered_hash_is_rejected(self):
+        root, base, unit, payload = self._unit_repository()
+        manifest = self._manifest(payload)
+        manifest["sources"][0]["sha256"] = "0" * 64
+        (unit / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
+        commit = self._commit(root, "tampered")
+        report = READBACK.verify(repository=str(root), commit=commit, base=base)
+        self.assertEqual(report["outcome"], "FAIL")
+        self.assertTrue(any("sha256 mismatch" in failure for failure in report["failures"]))
+
+    def test_change_outside_the_owned_subtree_is_rejected(self):
+        root, base, unit, payload = self._unit_repository()
+        (unit / "manifest.json").write_text(json.dumps(self._manifest(payload)), encoding="utf-8")
+        (root / "outside.txt").write_text("foreign change\n", encoding="utf-8")
+        commit = self._commit(root, "result with foreign path")
+        report = READBACK.verify(repository=str(root), commit=commit, base=base)
+        self.assertEqual(report["outcome"], "FAIL")
+        self.assertIn("outside.txt", report["changed_paths_outside_owned_subtree"])
+
+    def test_undeclared_owned_path_is_rejected(self):
+        root, base, unit, payload = self._unit_repository()
+        (unit / "manifest.json").write_text(json.dumps(self._manifest(payload)), encoding="utf-8")
+        (unit / "undeclared.txt").write_text("not in the manifest\n", encoding="utf-8")
+        commit = self._commit(root, "result with undeclared artifact")
+        report = READBACK.verify(repository=str(root), commit=commit, base=base)
+        self.assertEqual(report["outcome"], "FAIL")
+        self.assertTrue(any("undeclared" in failure for failure in report["failures"]))
 
 
 class LiveRepositoryTests(unittest.TestCase):
