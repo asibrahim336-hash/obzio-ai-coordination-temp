@@ -16,7 +16,7 @@
   "wave_state": {
     "wave_id": "po03-wave-a",
     "units_required": 64,
-    "units_registered": 98,
+    "units_registered": 101,
     "ledger_rows": 299,
     "ledger_chain_valid": true,
     "false_completions": 0,
@@ -35,6 +35,7 @@
       "a1",
       "a2",
       "a4",
+      "a5",
       "a6",
       "a7",
       "a9",
@@ -43,9 +44,9 @@
     ],
     "cohorts_in_flight": [
       "a3",
-      "a5",
       "a8",
-      "a11"
+      "a11",
+      "a13"
     ]
   },
   "reproduced_defects_in_the_coordinator_control_plane": [
@@ -265,6 +266,17 @@
       "why_it_matters": "Two reviewers from two families still left an attack surface untested, because both were reviewing artifacts rather than the executable entry point. Cross-family review is necessary but not sufficient; the review target matters as much as the reviewer.",
       "state": "ROUTED_TO_a6",
       "disposition": "RETAIN as an operating lesson for the successor generation"
+    },
+    {
+      "id": "DEF-21",
+      "severity": "CRITICAL",
+      "found_by": "po03-worker-a5 (claude-sonnet-5-thinking-xhigh), unit a5-u07, by deterministic simulation testing; reproduced by the coordinator",
+      "defect": "cmd_lease reads the current fence token, computes its successor and appends in three unsynchronised steps, so concurrent lease grants for one unit mint identical fence tokens.",
+      "reproduction": "Three concurrent grants for the same unit all minted fence token 1. Three holders shared one fence.",
+      "why_it_matters": "Fencing is the control that makes single-writer ownership real. If two holders share a fence, every downstream stale-worker protection is decorative under concurrency. The ledger chain still verified clean throughout, so chain integrity does not imply fence uniqueness and a11-u02 passing will not imply this is fixed.",
+      "method_significance": "Sequential fault injection found 0 of 24 violations; deterministic simulation testing found 84 of 90 exhaustive and 298 of 300 sampled. This is the clearest evidence in the wave that interleaving-aware testing reaches defects that sequential injection cannot, and it validates a5's own registered hypothesis a5-u07.",
+      "remediation_unit": "a11-u16",
+      "state": "OPEN_UNDER_REMEDIATION"
     }
   ],
   "findings_routed_to_other_cohorts": [
@@ -330,5 +342,29 @@
     "capsule": "commit-pinned (path, blob, commit) triples resolving from a bare clone",
     "preflight": "four-drift fixture exits 3, missing exits 4, clean exits 0",
     "lineage": "all four paths, hashes, causal commits and ordering agree with the coordinator's record; eight commit-subject discrepancies reported without editing either input"
+  },
+  "a5_research_conversion": {
+    "hypotheses_registered": 12,
+    "registered_before_reproduction": 12,
+    "reproductions_executed": 12,
+    "both_arms_actually_run": 12,
+    "mechanism_changes_with_evidence": 2,
+    "recurrence_tested": 2,
+    "commission_minimums": {
+      "hypotheses": 12,
+      "reproductions": 6,
+      "mechanism_changes": 2
+    },
+    "minimums_met": true,
+    "hypotheses_refined_or_falsified": [
+      "a5-u01 checkpoint is a precondition beneath idempotency-key dedup, not an independent lever",
+      "a5-u08 lease TTL has a real optimum but the argmin moves with cost weighting, so it is not a retainable constant",
+      "a5-u09 producer self-certification was not the plurality causal category in the available evidence; discretionary persistence was, 3 of 5 against 2 of 5"
+    ],
+    "honest_boundaries_recorded": [
+      "no live frontier-model call was available in the dependency-free runtime, so the cross-family and equal-reasoning claims are documented proxies marked PARTIALLY_SUPPORTED rather than literal multi-model measurement",
+      "a5-u12 recurrence testing was independent-process and independent-seed but not different-owner as the frozen acceptance literally required, recorded as an explicit NOT_YET boundary rather than silently satisfied"
+    ],
+    "coordinator_action": "The different-owner boundary is closed by a6-u07 and the time-bound NOT_YET by a5-u13. Neither was accepted as-is."
   }
 }
