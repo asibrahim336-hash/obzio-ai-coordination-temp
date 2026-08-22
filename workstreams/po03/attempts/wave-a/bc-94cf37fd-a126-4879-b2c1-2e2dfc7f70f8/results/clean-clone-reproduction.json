@@ -1,0 +1,65 @@
+{
+  "receipt_version": "PO03-CLEAN-CLONE-REPRODUCTION-v1",
+  "repository": "github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+  "branch": "cursor/po03-independent-challenger-70f8",
+  "immutable_commit_sha": "f5ce031f3efb3e6218a6df9de7001010fbb01fac",
+  "observed_at": "2026-08-22T06:58:43Z",
+  "runtime": {
+    "python": "python3",
+    "dependency_policy": "standard-library-only",
+    "checkout": "fresh single-branch remote clone",
+    "warm_checkout_used": false,
+    "uncommitted_files_used": false,
+    "provider_memory_required": false,
+    "temporary_checkout_retained_as_dependency": false
+  },
+  "checks": [
+    {
+      "name": "PO-03 changed-path boundary",
+      "command": "python3 -I workstreams/po03/tools/check_path_scope.py --base 5db7affeb7f00763e148e6d98a33ee6b751f2def --head HEAD",
+      "result": "PASS",
+      "observed": "PO03_PATH_SCOPE_PASS changed_paths=30"
+    },
+    {
+      "name": "seeded and controller tests",
+      "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v",
+      "result": "PASS",
+      "tests_run": 37,
+      "elapsed_seconds": 0.044
+    },
+    {
+      "name": "adversarial cohort tests",
+      "command": "python3 -I -m unittest discover -s workstreams/po03/attempts/wave-a/bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8/tests -p 'test_*.py' -v",
+      "result": "PASS",
+      "tests_run": 9,
+      "elapsed_seconds": 0.109
+    },
+    {
+      "name": "transaction-created validation",
+      "result": "PASS",
+      "sha256": "19508550bc6c68e87d0835ca571b6d1dd77b515b0cf7c094c148132d434ed31d"
+    },
+    {
+      "name": "transaction-leased validation",
+      "result": "PASS",
+      "sha256": "d4fd9ceefbd1929afb268f6335d5ac1965cd1c185cb1a0ba171b641b1204192a"
+    },
+    {
+      "name": "transaction-running validation",
+      "result": "PASS",
+      "sha256": "ce71051eee50d68970cca0229c5e5fc0b23ca64504cd69bb32fd7d730e24918c"
+    },
+    {
+      "name": "transaction-checkpointed validation",
+      "result": "PASS",
+      "sha256": "8cba7b89d3e285ae0d665fdc69ae8d5dcf64c0a601693c1a7af33b9390732c7d"
+    },
+    {
+      "name": "repository operator taxonomy",
+      "command": "python3 scripts/check_operator_taxonomy.py",
+      "result": "PASS"
+    }
+  ],
+  "failures": [],
+  "decision_changed": []
+}
