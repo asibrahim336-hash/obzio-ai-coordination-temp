@@ -1,0 +1,40 @@
+{
+  "protocol_version": "PO03-FROZEN-HYPOTHESES-v1",
+  "task_id": "PO03-WA-023",
+  "hypothesis_id": "H-PO03-WA-023",
+  "frozen_at": "2026-08-22T07:22:36Z",
+  "assignment_hypothesis": {
+    "statement": "Cursor's documented worktree isolation properties hold under branch switching, concurrent writes, and controller-checkout guard tests.",
+    "support_condition": "The assigned best-of-N run begins in a distinct worktree; worker branch switches and concurrent same-relative-path writes do not move or alter the controller checkout; and an occupied-branch or checkout-identity guard rejects collision.",
+    "falsification_condition": "Any assigned run shares the controller toplevel, a worker branch switch moves the controller checkout, concurrent writes cross checkout boundaries, or an identity/occupied-branch guard permits the collision."
+  },
+  "current_method_hypotheses": [
+    {
+      "method_hypothesis_id": "MH-WA-023-01",
+      "derived_from_source_claims": [
+        "SC-CURSOR-1",
+        "SC-CURSOR-2",
+        "SC-GIT-1"
+      ],
+      "statement": "A controller plus two distinct linked worktrees retain separate toplevels, HEAD/index state, branch identity, and tracked file bytes when one worker switches branches.",
+      "support_condition": "Controller identity and tracked bytes are byte-equal before and after the worker switch while all three git dirs and toplevels are distinct.",
+      "falsification_condition": "Controller toplevel, branch, HEAD, git-dir, index-visible state, or tracked bytes change as a result of the worker switch.",
+      "planned_test": "Sanitized three-checkout repository reproduction in probe_worktree_isolation.py."
+    },
+    {
+      "method_hypothesis_id": "MH-WA-023-02",
+      "derived_from_source_claims": [
+        "SC-GIT-2",
+        "SC-GIT-3",
+        "SC-GIT-TEST-1",
+        "SC-GIT-TEST-2"
+      ],
+      "statement": "Concurrent writes to the same relative path in different linked worktrees remain byte-isolated, and Git rejects a second checkout of a branch occupied by another worktree.",
+      "support_condition": "Each worker retains only its own sentinel bytes, controller bytes remain unchanged, and the occupied-branch command exits nonzero with a worktree-occupancy diagnostic.",
+      "falsification_condition": "Sentinel bytes cross between worktrees, controller bytes change, or the occupied branch is checked out without force.",
+      "planned_test": "Synchronized dual-writer sanitized reproduction plus occupied-branch negative test."
+    }
+  ],
+  "strategy_proposals": [],
+  "strategy_proposal_status": "NONE"
+}

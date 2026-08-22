@@ -1,0 +1,139 @@
+{
+  "protocol_version": "PO03-SOURCE-CLAIMS-v1",
+  "task_id": "PO03-WA-023",
+  "retrieval_date": "2026-08-22",
+  "sources": [
+    {
+      "source_id": "SRC-CURSOR-WORKTREES",
+      "source_type": "OFFICIAL_DOCUMENTATION",
+      "publisher": "Cursor",
+      "url": "https://cursor.com/docs/configuration/worktrees.md",
+      "repository_commit_sha": "NOT_SUPPORTED",
+      "retrieved_at": "2026-08-22T07:20:02Z",
+      "content_sha256": "cc4e372cea406d6f15d4bbfc1a7cc6b680781163fa1d6ed680b34fb52ab4e79d",
+      "bytes": 7556,
+      "claims": [
+        {
+          "claim_id": "SC-CURSOR-1",
+          "claim": "Cursor says worktrees give each task isolated files, dependencies, and changes while the main checkout stays untouched.",
+          "exact_excerpt": "Worktrees let Agent work in isolated Git checkouts. Each task gets its own files, dependencies, and changes while your main checkout stays untouched."
+        },
+        {
+          "claim_id": "SC-CURSOR-2",
+          "claim": "Cursor says each best-of-N run gets its own worktree and remains isolated from other candidates and the main checkout.",
+          "exact_excerpt": "Each run gets its own worktree, so the candidates stay isolated from each other and from your main checkout."
+        }
+      ],
+      "source_limitations": [
+        "The page is mutable and exposes no immutable documentation commit SHA; repository_commit_sha is therefore NOT_SUPPORTED.",
+        "The page describes Agents Window, IDE, CLI worktrees, and /best-of-n, but does not expose the implementation of this cloud orchestration route."
+      ]
+    },
+    {
+      "source_id": "SRC-GIT-WORKTREE-DOC",
+      "source_type": "OFFICIAL_UPSTREAM_REPOSITORY_DOCUMENTATION",
+      "publisher": "Git project",
+      "url": "https://raw.githubusercontent.com/git/git/1a3e64c6c4a623626ff0687008732a8e007e2a1c/Documentation/git-worktree.adoc",
+      "repository_commit_sha": "1a3e64c6c4a623626ff0687008732a8e007e2a1c",
+      "retrieved_at": "2026-08-22T07:19:00Z",
+      "content_sha256": "9dffe46a7cb20420ea638a59b0c8e103ea0a783c4900f68258343c05ff411c9c",
+      "bytes": 21886,
+      "claims": [
+        {
+          "claim_id": "SC-GIT-1",
+          "claim": "Git linked worktrees share repository state but keep HEAD, index, and other per-worktree files separate.",
+          "exact_excerpt": "The new worktree is linked to the current repository, sharing everything except per-worktree files such as `HEAD`, `index`, etc."
+        },
+        {
+          "claim_id": "SC-GIT-2",
+          "claim": "Git refuses, absent force, to create a worktree for a branch already checked out elsewhere.",
+          "exact_excerpt": "By default, `add` refuses to create a new worktree when _<commit-ish>_ is a branch name and is already checked out by another worktree"
+        },
+        {
+          "claim_id": "SC-GIT-3",
+          "claim": "Ordinary refs under refs/ are shared across worktrees even though HEAD is per-worktree.",
+          "exact_excerpt": "In general, all pseudo refs are per-worktree and all refs starting with `refs/` are shared."
+        }
+      ],
+      "source_limitations": [
+        "The current upstream SHA was resolved from refs/heads/master; the local runtime used Git 2.43.0 rather than a build of this exact upstream commit.",
+        "The Git manual warns that multiple checkout with submodules is incomplete; the sanitized reproduction has no submodules."
+      ]
+    },
+    {
+      "source_id": "SRC-GIT-WORKTREE-PRACTITIONER-TEST",
+      "source_type": "CURRENT_PRACTITIONER_UPSTREAM_TEST",
+      "publisher": "Git project contributors",
+      "url": "https://raw.githubusercontent.com/git/git/1a3e64c6c4a623626ff0687008732a8e007e2a1c/t/t2400-worktree-add.sh",
+      "repository_commit_sha": "1a3e64c6c4a623626ff0687008732a8e007e2a1c",
+      "retrieved_at": "2026-08-22T07:19:00Z",
+      "content_sha256": "543052f450a036f574be72676d64fba8c932d8204712acb7047c5492021df8d1",
+      "bytes": 35438,
+      "claims": [
+        {
+          "claim_id": "SC-GIT-TEST-1",
+          "claim": "The upstream practitioner suite tests that adding a worktree refuses a branch already checked out by another worktree.",
+          "exact_excerpt": "test_expect_success '\"add\" refuses to checkout locked branch'"
+        },
+        {
+          "claim_id": "SC-GIT-TEST-2",
+          "claim": "The upstream practitioner suite tests branch checkout refusal and verifies the branch and detached HEAD do not move on refusal.",
+          "exact_excerpt": "test_expect_success 'refuse to reset a branch in use elsewhere'"
+        }
+      ],
+      "source_limitations": [
+        "The complete upstream Git test suite was read but not executed; PO03-WA-023 executes a focused independent sanitized reproduction instead."
+      ]
+    }
+  ],
+  "local_frozen_sources_read": [
+    {
+      "path": "workstreams/po03/control/inputs/wave-a/wa-023.json",
+      "sha256": "7e2a16098038c9979cd4f25662ff394dc510262f377016513006587ef456788d"
+    },
+    {
+      "path": "workstreams/po03/control/acceptance/wave-a-material-v1.json",
+      "sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a"
+    },
+    {
+      "path": "workstreams/po03/COMMISSION.md",
+      "sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d"
+    },
+    {
+      "path": "workstreams/po03/contracts/transactional-result.schema.json",
+      "sha256": "bca86858131cf1644f88fcbe615f4ca7a4ef44b7464eebc086c84e39b77301f1"
+    },
+    {
+      "path": "workstreams/po03/contracts/wave-compounding.schema.json",
+      "sha256": "5278cb6bc4e7f41a5d513d4a00427a1ed199a21459025c7fa96fb97d56439360"
+    },
+    {
+      "path": "workstreams/po03/tools/validate_contracts.py",
+      "sha256": "ead7d6c78c1f60aaf5440db7fc00fc2ae57d773647ed3b24c279d1a59b43da03"
+    },
+    {
+      "path": "workstreams/po03/tests/test_validate_contracts.py",
+      "sha256": "401a684c0a2d3817d08a76044a331f0f241b16d687d2dd12d9ea0f31612dc112"
+    },
+    {
+      "path": ".github/workflows/po03-contracts.yml",
+      "sha256": "427949c07d93fe69bea6485a91ca58c4297be21759e6b0b00a0e5cc9f450c7cb"
+    },
+    {
+      "path": "workstreams/po03/control/wave-a-portfolio.json",
+      "sha256": "515cf2325bda326471140aa1a294696f02c6c10effc3bae9022d55934c063ebd"
+    }
+  ],
+  "exclusions": [
+    {
+      "subject": "Cursor orchestration implementation source and deployment SHA",
+      "status": "NOT_SUPPORTED",
+      "reason": "No implementation repository or immutable deployment revision was exposed to this runner."
+    },
+    {
+      "subject": "Third-party practitioner outreach",
+      "status": "NOT_SUPPORTED",
+      "reason": "Outreach was prohibited; only public documentation and repository content were read."
+    }
+  ]
+}
