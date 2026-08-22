@@ -1,0 +1,89 @@
+{
+  "acceptance_state": "NOT_YET",
+  "branch": "cursor/po03-a2-fault-recovery-ed20",
+  "code2_disposition": {
+    "acceptance_state": "NOT_ACCEPTED",
+    "automatic_rerun": "NOT_YET",
+    "deliverable": false,
+    "obzio_state": "PROVIDER_COMPLETED_UNCOMMITTED",
+    "recovery_state": "UNRECOVERED_AFTER_FOUR_REPORTED_ROUTES"
+  },
+  "code2_fixture": {
+    "bytes": 878,
+    "path": "workstreams/po03/faults/fixtures/po02-code2-lost-return.json",
+    "sha256": "940861a2dcd4575e7386b1372257ab7384e66f3380154b9fc8f071a09e234419"
+  },
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "commission_revision": "v002",
+  "decision_changed": [],
+  "defects": [
+    "A2-CP-001",
+    "A2-CP-002",
+    "A2-CP-003",
+    "A2-CP-004",
+    "A2-CP-005",
+    "A2-CP-006",
+    "A2-CP-007",
+    "A2-CP-008",
+    "A2-CP-009"
+  ],
+  "founder_relay_count": 0,
+  "limitations": [
+    "The runtime-loss test used a dependency-free local bare git remote because tests are required to run without network.",
+    "The live control plane contains no transport operation, so real network retry/backoff cannot be injected.",
+    "PO-02 Code-2 bytes and original immutable input are absent; the fixture preserves that boundary and does not fabricate them."
+  ],
+  "matrix": {
+    "bytes": 21452,
+    "path": "workstreams/po03/evidence/recovery-fault-matrix.json",
+    "sha256": "6c3e23c40c894ec7ee5d2b427798243ab4a8ac981af1b4b76a75f2c219da6085"
+  },
+  "matrix_acceptance": "FAIL",
+  "producer_state": "READY_TO_COMMIT",
+  "protocol_version": "OBZIO-PO03-TRANSACTIONAL-RECOVERY-RECEIPT-v1",
+  "receipt_id": "RCP-PO03-TRANSACTIONAL-RECOVERY-20260822-v001",
+  "recorded_at": "2026-08-22T07:21:54Z",
+  "source_commit": "23ef8373ebd114d436a42c5a9d9f29743707ac81",
+  "strategy_restarted": false,
+  "summary": {
+    "automatic_resume_or_rerun": {
+      "observed": false,
+      "required": true
+    },
+    "committed_result_recovery": {
+      "injected": 23,
+      "locator_only_recovered": 3,
+      "observed_percent": 0,
+      "reason": "Three ledger commit-id strings survived process loss, but no scanner path read result bytes back from a durable result branch.",
+      "recovered_with_hash_and_bytes_from_durable_sink": 0,
+      "required_percent": 100
+    },
+    "complete_hash_coverage": {
+      "observed": false,
+      "reason": "Remote commit existence is not verified and committed artifacts are not re-hashed during recovery.",
+      "required": true
+    },
+    "no_founder_relay": {
+      "count": 0,
+      "observed": true,
+      "required": true
+    },
+    "status": "FAIL",
+    "zero_duplicate_external_effects": {
+      "count": 200,
+      "observed": false,
+      "required": true
+    },
+    "zero_false_completion": {
+      "count": 29,
+      "observed": false,
+      "required": true
+    }
+  },
+  "test_run": {
+    "command": "python3 -I -m unittest discover -s workstreams/po03/tests -p 'test_a2_*.py' -v",
+    "exit_code": 0,
+    "python": "3.12.3",
+    "result": "Ran 15 tests; OK (expected failures=8)"
+  }
+}
