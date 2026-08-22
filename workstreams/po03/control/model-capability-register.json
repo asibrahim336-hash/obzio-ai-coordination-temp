@@ -1,0 +1,82 @@
+{
+  "register_id": "CTL-PO03-MODEL-CAPABILITY-REGISTER-WAVE-A-20260822-v001",
+  "recorded_at": "2026-08-22T07:16:29Z",
+  "wave": "WAVE-A",
+  "recording_rule": "Exposure is recorded from what was observed or reported this session. Families that could not be selected are NOT_SUPPORTED with the observed boundary. Nothing here asserts availability that was demonstrated by use.",
+  "directly_observed_runtime_binding": {
+    "observation_source": "cursor-cloud MCP run-info tool call at 2026-08-22T07:16Z",
+    "run_id": "bc-ecd55d9e-0ffe-49e1-897d-929d0a4b5086",
+    "run_url": "https://cursor.com/agents/bc-ecd55d9e-0ffe-49e1-897d-929d0a4b5086",
+    "run_name": "Po-03 wave a attempts",
+    "run_original_model_name": "claude-sonnet-5-thinking-max",
+    "run_source": "web",
+    "setup_status": "INSTALL_SUCCEEDED",
+    "repository": "github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+    "owning_user_name": "Ahmed Sadek",
+    "runtime": "Cursor Cloud",
+    "authority_effect": "NONE",
+    "interpretation": "This is the run-level model name reported by the provider for the cloud-agent run that hosts this worker. The worker executing Wave A is a subagent of that run; no exposed tool reports a separate worker-level model slug, so the run-level value is the strongest observation available.",
+    "worker_level_model_slug": "NOT_SUPPORTED",
+    "worker_level_model_slug_reason": "No exposed tool reports the model of the currently executing worker; only the hosting run's originalModelName is readable."
+  },
+  "integrator_family_actually_used": {
+    "family": "claude",
+    "provider": "anthropic",
+    "reasoning_control_observed": "thinking-max per the run's originalModelName suffix",
+    "role": "integration controller and sole writer for Wave A",
+    "units_executed": "WU-A01 through WU-A10"
+  },
+  "reported_exposed_dispatch_slugs": {
+    "provenance": "Reported to this worker by the orchestrating session as the exact slugs its agent-dispatch tool exposes. NOT independently verifiable from this worker, which has no agent-dispatch tool.",
+    "verification_state": "REPORTED_NOT_INDEPENDENTLY_OBSERVED",
+    "slugs": [
+      "claude-opus-5-thinking-high",
+      "claude-opus-5-thinking-high-fast",
+      "claude-sonnet-5-thinking-high",
+      "claude-sonnet-5-thinking-xhigh",
+      "gpt-5.6-luna-high",
+      "gpt-5.6-sol-high",
+      "gpt-5.6-sol-high-fast",
+      "gpt-5.6-sol-xhigh",
+      "gpt-5.6-sol-xhigh-fast",
+      "inherit"
+    ],
+    "families_present": ["claude-opus-5", "claude-sonnet-5", "gpt-5.6-sol", "gpt-5.6-luna"]
+  },
+  "commission_named_families_not_available": [
+    {
+      "family": "gemini-3.1-pro",
+      "state": "NOT_SUPPORTED",
+      "reason": "Not exposed anywhere in this tooling. It appears in workstreams/po03/evidence/so02-operating-correction.json but is absent from the dispatch slug list reported for this account, and this worker has no tool that can select it.",
+      "commission_intended_role": "independent long-context/whole-tree and alternative-generation default"
+    },
+    {
+      "family": "composer-2.5",
+      "state": "NOT_SUPPORTED",
+      "reason": "Not exposed anywhere in this tooling. Same observation boundary as gemini-3.1-pro.",
+      "commission_intended_role": "distinct Cursor-harness hypothesis under preregistered matched evaluation"
+    }
+  ],
+  "heterogeneous_independent_cognition": {
+    "state": "NOT_SUPPORTED",
+    "target": "At least one consequential design decision reviewed by a second frontier model family (gpt-5.6-*) before finalisation.",
+    "reason": "This worker has no mechanism to dispatch a reviewer on another model family. Checked this session: no agent-dispatch or subagent tool is present in the exposed toolset; `command -v cursor-agent` and `command -v cursor` both return nothing; and an MCP tool search across every connected server for agent/dispatch/create/launch/model returns only `cursor-cloud list-cloud-agents`, which lists existing runs read-only and cannot create one or set a model.",
+    "substitute_performed": "Producer self-review, recorded as WU-A07 in control/work-unit-registry.jsonl.",
+    "substitute_standing": "NOT_INDEPENDENT. A producer self-review cannot satisfy the commission's blind cross-family adversarial requirement and is not counted as independent evaluation.",
+    "substitute_yield_note": "The self-review was still materially productive: it found two real defects in this Wave's own controls (rename detection masking out-of-allowlist deletions; tracked symlinks importing outside content into the manifest), both fixed with regression tests in commit cbbf281dac6288a4c7bbb1a8d2a8d76fc368cfe4.",
+    "escalation_available": "A human reviewer can dispatch a gpt-5.6-* reviewer against the frozen artifacts in this branch; the design decision under review is recorded in workstreams/po03/evidence/scale-ladder.json."
+  },
+  "strongest_model_policy_compliance": {
+    "state": "NOT_YET",
+    "commission_lead_default": "claude-opus-5 with high thinking",
+    "observed_lead": "claude-sonnet-5-thinking-max (run-level observation)",
+    "gap": "The Wave executed on a claude-sonnet-5 configuration rather than the commission's claude-opus-5 lead default. The worker cannot select or change its own model, so this is a runtime binding property, not a downward cost optimisation decision taken by PO-03.",
+    "downward_cost_optimisation_performed": false
+  },
+  "auto_model_used": false,
+  "cost_and_token_observability": {
+    "state": "NOT_SUPPORTED",
+    "reason": "No exposed tool reports token counts or monetary cost for this run. cursor-cloud run-info returns lifecycle and identity metadata only, and no other connected server exposes usage or billing data."
+  },
+  "decision_changed": []
+}

@@ -1,0 +1,48 @@
+{
+  "record_id": "CTL-PO03-RECOVERY-STATE-WAVE-A-20260822-v001",
+  "recorded_at": "2026-08-22T07:20:30Z",
+  "wave": "WAVE-A",
+  "end_of_session_state": "NO_IN_FLIGHT_WORK",
+  "in_flight_leases": [],
+  "in_flight_lease_count": 0,
+  "expired_leases": [],
+  "orphaned_units": [],
+  "orphaned_unit_count": 0,
+  "duplicate_callbacks_observed": 0,
+  "lost_callbacks_observed": 0,
+  "unrecovered_results": [],
+  "provider_completed_uncommitted_units": [],
+  "false_completions_observed": 0,
+  "recovery_scanner": {
+    "state": "NOT_YET",
+    "reason": "A recovery scanner exists in this Wave only as an invariant validator over durable documents (workstreams/po03/tools/validate_contracts.py validate-dir), not as a live daemon that leases, heartbeats and re-dispatches. No queue, lease store or outbox service was stood up, because Wave A ran one sequential worker with no subordinate dispatch route available."
+  },
+  "lease_and_fence_mechanism": {
+    "state": "MODELLED_NOT_ENFORCED_AT_RUNTIME",
+    "detail": "Lease ids and fence tokens are recorded per unit in control/work-unit-registry.jsonl and validated structurally by the seeded result contract (fence_token integer >= 1, non-empty lease_id, monotonic checkpoint_seq). Their stale-writer semantics are tested at the document level in workstreams/po03/tests/test_validate_contracts.py, not against a live concurrent writer, because only one writer existed.",
+    "monotonicity_verified": "fence tokens 1..10 assigned strictly increasing, asserted by workstreams/po03/tests/test_control_evidence.py"
+  },
+  "live_fault_injection": {
+    "state": "NOT_YET",
+    "reason": "No live fault injection against real unreliable infrastructure was performed this session. There was no multi-process or multi-machine channel to interrupt: no subordinate dispatch tool is exposed to this worker, so no process loss, lost return message, stale-lease takeover, duplicate callback or provider-runtime loss could be induced against a real second party. What was exercised is unit-test-level invariant checking over durable custody documents, which falsifies the state machine's rules but not the transport.",
+    "what_was_exercised": [
+      "provider COMPLETED without a durable result commit must be PROVIDER_COMPLETED_UNCOMMITTED (test_provider_completion_without_commit_is_reclassified)",
+      "a worker cannot set COMPLETED (test_worker_cannot_set_completed)",
+      "committed results require manifest, hashes, byte reconciliation and artifact read-back (multiple tests)",
+      "a producer cannot self-accept (test_producer_cannot_self_accept)",
+      "duplicate artifact ids are rejected (test_duplicate_artifact_id_rejected)",
+      "the manifest detects any byte drift under workstreams/po03/ (test_verify_detects_modified_content)",
+      "a symlink cannot import outside content into the manifest (test_symlink_content_is_never_hashed_into_the_manifest)",
+      "a rename out of the allowlist is detected when rename detection is disabled (test_rename_out_of_the_allowlist_is_caught_without_rename_detection)"
+    ],
+    "residual_risk": "The changed-path guard passes vacuously on an empty changed-path set. If base resolution ever yields a commit identical to HEAD, the guard reports PASS 0 paths in scope rather than failing. This is recorded rather than repaired because a hard non-empty requirement would break legitimate re-runs of an unchanged commit; the workflow prints the resolved base and the full diff so a reviewer can see the input the guard received."
+  },
+  "crash_recovery_position": {
+    "restart_input": "workstreams/po03/evidence/criteria-freeze.json plus workstreams/po03/evidence/source-lock.json pin the immutable input and acceptance criteria; workstreams/po03/control/work-unit-registry.jsonl records per-unit terminal state and commit id.",
+    "resume_rule": "A restarted controller re-reads the registry, treats any unit whose result_commit_id is not a real commit as unfinished, and re-executes it from the frozen input. Units with a real commit id are recoverable by SHA and must not be re-run.",
+    "verification": "workstreams/po03/tests/test_control_evidence.py asserts every recorded 40-hex commit id resolves to a real commit object in this repository, so the resume rule cannot be satisfied by a fabricated id."
+  },
+  "founder_relay_required": false,
+  "owner_blocked_acts": [],
+  "decision_changed": []
+}

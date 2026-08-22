@@ -1,0 +1,112 @@
+{
+  "comparison_id": "MET-PO03-GENERATION-COMPARISON-v001",
+  "recorded_at": "2026-08-22T07:20:30Z",
+  "frozen_suite": "python3 -m unittest discover -s workstreams/po03/tests -p 'test_*.py'",
+  "suite_note": "Both generations are measured with the same discovery command in the same clean-runtime shape. G1 adds tests to that suite, so the suite is not held constant in size; the honest comparison is capability added, not a score on a fixed holdout.",
+  "evaluator_held_novel_cases": {
+    "state": "NOT_YET",
+    "reason": "A holdout set written by an independent evaluator does not exist. Every test in this repository was written by the same producer that wrote the code under test, so no test here can serve as an evaluator-held novel case."
+  },
+  "generations": {
+    "G0": {
+      "label": "pre-amendment seeded controller",
+      "state": "MEASURED",
+      "commit": "552b12eacee637716451492a98980fb0da19ff3e",
+      "commit_role": "branch point of this Wave; the tree as seeded before Wave A",
+      "executable_artifacts": [
+        "workstreams/po03/contracts/transactional-result.schema.json",
+        "workstreams/po03/contracts/wave-compounding.schema.json",
+        "workstreams/po03/tools/validate_contracts.py",
+        "workstreams/po03/tests/test_validate_contracts.py",
+        ".github/workflows/po03-contracts.yml"
+      ],
+      "tests_total": 23,
+      "tests_result": "OK",
+      "observed_at": "2026-08-22T06:59:45Z",
+      "controls_present": [
+        "transactional result invariants including provider-completion reclassification",
+        "producer cannot self-accept",
+        "wave compounding receipt invariants",
+        "clean-runtime unittest job in GitHub Actions"
+      ],
+      "controls_absent": [
+        "no changed-path allowlist enforcement despite the commission requiring it",
+        "no content manifest or provenance verification",
+        "no repository disposition compilation",
+        "no directory-level validation of custody documents",
+        "no per-unit durable result documents",
+        "no operating-system metrics"
+      ]
+    },
+    "G1": {
+      "label": "Wave A transactional factory controls",
+      "state": "MEASURED",
+      "commit": "PENDING_FINAL_COMMIT",
+      "commit_note": "The G1 commit is the head of cursor/po03-wave-a-transactional-factory-5086 after the final Wave A commit. It cannot be embedded in a file that is part of that commit; it is reported in the Wave return and recoverable with `git rev-parse`. Commits d67598a through the head are all G1.",
+      "shipped_executable_artifacts": [
+        "workstreams/po03/tools/path_scope_guard.py",
+        "workstreams/po03/tools/manifest.py",
+        "workstreams/po03/tools/repository_disposition.py",
+        "workstreams/po03/tools/emit_unit_results.py",
+        "workstreams/po03/tools/validate_contracts.py (validate-dir mode added)",
+        "workstreams/po03/tests/test_path_scope_guard.py",
+        "workstreams/po03/tests/test_manifest.py",
+        "workstreams/po03/tests/test_repository_disposition.py",
+        "workstreams/po03/tests/test_control_evidence.py",
+        "workstreams/po03/tests/test_validate_contracts.py (directory mode tests added)",
+        ".github/workflows/po03-contracts.yml (allowlist and manifest gates added)"
+      ],
+      "tests_total": "RECORDED_IN_RECEIPT",
+      "tests_total_note": "The final suite count is recorded in receipts/po03/2026-08-22/producer-execution.json from the real final run, so this file cannot drift from it.",
+      "controls_added": [
+        "changed-path allowlist guard enforced in CI for pull_request and push events, with rename detection disabled so a rename out of the allowlist cannot hide a deletion",
+        "content manifest over the tracked subtree with a CI verify gate, refusing symlinks and gitlinks",
+        "read-only repository disposition compilation with a partition guarantee and an alias cross-check against the taxonomy gate",
+        "directory-level validation of custody documents with fail-closed behaviour on an empty directory",
+        "per-unit transactional result documents with real artifact hashes and byte counts",
+        "operating-system metric definitions and one row per counted unit",
+        "anti-fabrication tests asserting every recorded commit id resolves to a real commit and every frozen source hash matches the branch-point bytes"
+      ],
+      "defects_found_in_own_controls_during_the_wave": 3,
+      "defects_repaired_with_regression_tests": 3
+    },
+    "G2": {
+      "state": "NOT_YET",
+      "reason": "No successor has been compiled from G1 field failures yet. G1 has not run live long enough to generate failures to learn from: its CI gates have not executed a single time on GitHub at the moment of recording, because the branch has not been pushed. Compiling a G2 now would mean inventing lessons rather than learning them.",
+      "prerequisite": "At least one real CI run of G1, plus an independent acceptance decision, so that G2 is compiled from observed failures rather than from anticipation."
+    }
+  },
+  "claimed_lift": {
+    "state": "NOT_YET",
+    "capability_delta_observed": "G0 had no changed-path, manifest, disposition or directory-validation control. G1 has all four, each with executable tests and CI enforcement. That is an observable capability difference and it is not a measured lift.",
+    "why_not_lift": "Lift requires the same preregistered metric measured on both generations against a common holdout with no quality regression. The added tests are not a holdout: they were written alongside the code they exercise, so counting them as a score would measure test-writing volume rather than capability. No independent evaluator set exists, and no throughput or acceptance metric has a G0 baseline because G0 was never run as a factory.",
+    "quality_regression_check": "The 23 G0 invariant tests were re-run in isolation against G1 and all pass, so G1 does not regress any G0 invariant.",
+    "three_generation_test": "NOT_YET",
+    "three_generation_test_reason": "The commission requires three measured generations. Two exist. G2 is deliberately withheld rather than fabricated."
+  },
+  "lessons_that_changed_live_mechanisms": [
+    {
+      "lesson": "A changed-path base must be resolved against the wave's own base branch, not the default branch, or the guard fails on commits the wave never authored.",
+      "mechanism_change": ".github/workflows/po03-contracts.yml base resolution order",
+      "recurrence_test": "workstreams/po03/tests/test_path_scope_guard.py::CliTests and local execution of all four resolution branches",
+      "disposition": "RETAIN"
+    },
+    {
+      "lesson": "Rename detection in git diff can hide a deletion outside the allowlist by reporting only the destination path.",
+      "mechanism_change": "--no-renames added to both diff invocations in the workflow",
+      "recurrence_test": "workstreams/po03/tests/test_path_scope_guard.py::DeliberateOutOfAllowlistFixtureTests::test_rename_out_of_the_allowlist_is_caught_without_rename_detection and ::test_ci_workflow_disables_rename_detection",
+      "disposition": "RETAIN"
+    },
+    {
+      "lesson": "A content manifest that follows symlinks can hash bytes from outside the subtree it claims to describe.",
+      "mechanism_change": "manifest.py enumerates git modes and refuses modes 120000 and 160000; manifest_text refuses symlinks directly",
+      "recurrence_test": "workstreams/po03/tests/test_manifest.py::WriteAndVerifyTests::test_symlink_content_is_never_hashed_into_the_manifest",
+      "disposition": "RETAIN"
+    }
+  ],
+  "independent_recurrence_testing": {
+    "state": "NOT_YET",
+    "reason": "The three recurrence tests were written by the same producer that made the repairs. Independent recurrence testing requires a reviewer who did not write the fix."
+  },
+  "decision_changed": []
+}

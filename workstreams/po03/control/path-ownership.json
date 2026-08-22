@@ -1,0 +1,47 @@
+{
+  "record_id": "CTL-PO03-PATH-OWNERSHIP-WAVE-A-20260822-v001",
+  "recorded_at": "2026-08-22T07:16:29Z",
+  "wave": "WAVE-A",
+  "sole_writer_branch": "cursor/po03-wave-a-transactional-factory-5086",
+  "sole_writer_role": "integration controller",
+  "pr_base_branch": "po03/repository-engineering-portable-runtime-20260822-v001",
+  "branch_point_sha": "552b12eacee637716451492a98980fb0da19ff3e",
+  "owned_subtree": [
+    "workstreams/po03/**",
+    "receipts/po03/**",
+    ".github/workflows/po03-*.yml"
+  ],
+  "concurrent_subordinate_writers": [],
+  "concurrent_subordinate_writer_count": 0,
+  "concurrency_statement": "No subordinate writer branch, worktree or agent existed during Wave A. Every write in the owned subtree was made by this single sequential worker on the branch named above. No two writers ever ran against this working directory at the same time.",
+  "collision_events": [],
+  "collision_count": 0,
+  "collision_detection_method": "Single-writer invariant plus `git status --porcelain` inspection before each commit; no lock service was required because no second writer existed.",
+  "worktree_isolation": {
+    "state": "NOT_APPLICABLE",
+    "reason": "Isolated worktrees exist to separate concurrent writers. Wave A had exactly one writer, so no isolation boundary was needed. Isolated worktrees or separate cloud VMs remain the correct mechanism if a future wave runs concurrent subordinate writers, and are recorded as available-but-unused in workstreams/po03/evidence/scale-ladder.json."
+  },
+  "read_only_surfaces_touched": [],
+  "read_only_surfaces_read": [
+    "operations/README.md",
+    "state/operator-system/ACTIVE_INSTRUCTION_STACK.json",
+    "state/operator-system/ACTIVE_OPERATOR_SYSTEM_POINTER_CURRENT.json",
+    "state/operator-system/OPERATOR_ALIAS_REGISTER.jsonl",
+    "scripts/check_operator_taxonomy.py",
+    "state/**, dispatch/**, commissions/**, handover/**, handoff/**, templates/** (scanned read-only by workstreams/po03/tools/repository_disposition.py)"
+  ],
+  "read_only_evidence": "workstreams/po03/tests/test_repository_disposition.py::ReadOnlyGuaranteeTests hashes every file in the scanned directories before and after analysis and asserts equality, and asserts `git status --porcelain` for those directories is empty.",
+  "po01_surfaces": {
+    "state": "NOT_APPLICABLE",
+    "reason": "No PO-01 branch, path or artifact exists at this head. `git branch -a` shows no PO-01 branch, and packs/**, modules/** and _transport/** are absent from the working tree. Nothing was read, contacted or written."
+  },
+  "protected_branches_untouched": [
+    "main",
+    "cursor/setup-dev-environment-b5ce",
+    "po03/repository-engineering-portable-runtime-20260822-v001"
+  ],
+  "pull_requests_untouched": [8, 9],
+  "merge_or_promotion_performed": false,
+  "enforcement": "workstreams/po03/tools/path_scope_guard.py, enforced on every pull_request and po03/cursor-po03 push by .github/workflows/po03-contracts.yml",
+  "decision_changed": []
+}

@@ -1,0 +1,18 @@
+{
+  "event_id": "EVT-PO03-WAVE-A-0005",
+  "seq": 5,
+  "occurred_at": "2026-08-22T07:07:22Z",
+  "timestamp_provenance": "REAL_GIT_COMMITTER_TIMESTAMP",
+  "event_type": "defect-found-and-repaired",
+  "wave": "WAVE-A",
+  "actor": "po03-integration-controller-bc-ecd55d9e",
+  "subject": ".github/workflows/po03-contracts.yml changed-path base resolution",
+  "detail": {
+    "found_by": "local execution of all four base-resolution branches of the extracted workflow step",
+    "defect": "The new-branch push fallback resolved the diff base with `git merge-base origin/main HEAD`, which includes pre-existing PO-03 base-branch content such as .cursor/environment.json. CI would have failed on commits this Wave never authored.",
+    "repair": "Resolution order is now PR base sha, then push before sha, then merge-base against the PO-03 base ref, then origin/main only as a last resort.",
+    "verification": "All four branches re-executed locally; each resolved to 552b12eacee637716451492a98980fb0da19ff3e and the guard passed.",
+    "result_commit_id": "a14145f32cbf660d0a6a41b66afc313c613ee705"
+  },
+  "decision_changed": []
+}

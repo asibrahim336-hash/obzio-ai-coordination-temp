@@ -1,0 +1,29 @@
+{
+  "event_id": "EVT-PO03-WAVE-A-0007",
+  "seq": 7,
+  "occurred_at": "2026-08-22T07:16:08Z",
+  "timestamp_provenance": "REAL_GIT_COMMITTER_TIMESTAMP",
+  "event_type": "review-returned",
+  "wave": "WAVE-A",
+  "actor": "po03-integration-controller-bc-ecd55d9e",
+  "reviewer_independence": "NOT_INDEPENDENT_PRODUCER_SELF_REVIEW",
+  "subject": "path-scope guard and manifest provenance design",
+  "detail": {
+    "defects_confirmed": 2,
+    "defect_1": {
+      "claim": "git diff --name-only with default rename detection reports only the destination path of a rename",
+      "reproduction": "throwaway /tmp repository: `git mv state/x.json workstreams/po03/x.json` produced a diff naming only workstreams/po03/x.json, so the guard passed while a governance file was deleted",
+      "repair": "the workflow now passes --no-renames to both diff invocations",
+      "regression_test": "workstreams/po03/tests/test_path_scope_guard.py::DeliberateOutOfAllowlistFixtureTests::test_rename_out_of_the_allowlist_is_caught_without_rename_detection"
+    },
+    "defect_2": {
+      "claim": "a tracked symlink under workstreams/po03/ makes the manifest hash content from outside the subtree",
+      "reproduction": "throwaway /tmp repository: workstreams/po03/link.json symlinked to state/secret.txt produced a manifest line whose digest equalled sha256(state/secret.txt)",
+      "repair": "manifest.py enumerates git modes and refuses entries with mode 120000 or 160000, and manifest_text refuses symlinks directly",
+      "regression_test": "workstreams/po03/tests/test_manifest.py::WriteAndVerifyTests::test_symlink_content_is_never_hashed_into_the_manifest"
+    },
+    "result_commit_id": "cbbf281dac6288a4c7bbb1a8d2a8d76fc368cfe4",
+    "standing": "These findings improved the mechanism but do not satisfy the commission's independent-review requirement, because producer and reviewer were the same worker."
+  },
+  "decision_changed": []
+}

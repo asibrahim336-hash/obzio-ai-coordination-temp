@@ -71,3 +71,7 @@ jobs:
         run: python -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v
       - name: Verify the PO-03 subtree manifest
         run: python -I workstreams/po03/tools/manifest.py --verify
+      - name: Validate every emitted result document
+        run: |
+          python -I workstreams/po03/tools/validate_contracts.py \
+            validate-dir result workstreams/po03/contracts/instances/results
