@@ -1,0 +1,569 @@
+{
+  "acceptance_contract_path": "workstreams/po03/control/acceptance/wave-a-material-v1.json",
+  "acceptance_contract_sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a",
+  "acceptance_self_check": [
+    {
+      "assertion": "The attempt tests the exact falsifiable hypothesis in its immutable task input and does not substitute a plan, inventory, renamed clone, idle session, or narrative-only summary.",
+      "disposition": "PASS",
+      "evidence": "H-PO03-WA-006 was decomposed into six predicates with exact falsifiers, frozen before any PO-01 commit was scanned, and each was tested. The deliverable is an executable harness plus a fixture and a frozen report, not a plan or a summary."
+    },
+    {
+      "assertion": "The attempt leaves at least one executable component, reproduction, test, adversarial case, acceptance decision, or evidence-backed rejection in its owned subtree.",
+      "disposition": "PASS",
+      "evidence": "pack_claim_reproducer.py, build_sanitized_fixture.py and compile_manifest.py are executable; 21 focused tests including a recurrence test and an adversarial fixture with 11 pre-declared injected defects run from the owned subtree."
+    },
+    {
+      "assertion": "A research attempt records current source claims separately from hypotheses, reproductions, mechanism changes, and strategy proposals; a source summary alone fails.",
+      "disposition": "PASS",
+      "evidence": "Five separate typed artifacts hold these states: source-claims.json, hypotheses.json, reproduction-result.json, disposition.json and strategy-proposals.json. Each declares its state and its distinction from the others; strategy proposals remain UNBOUND_PROPOSAL and mechanism_change_count is 0 with the reason recorded."
+    },
+    {
+      "assertion": "An engineering attempt includes focused automated tests and command output; unexecuted code fails.",
+      "disposition": "PASS",
+      "evidence": "61 tests pass across four suites. test-output.txt records the exact commands and their output, including the two CLI exit codes."
+    },
+    {
+      "assertion": "A reproduction attempt runs on a sanitized repository-native Obzio workload and records enough detail for clean-clone recurrence.",
+      "disposition": "PASS",
+      "evidence": "R-PO03-WA-006-001 runs on a synthetic pack corpus containing no PO-01 bytes and no secrets. Recurrence needs only Python 3 standard library and git; the committed reports contain no producer runtime path, and the object-availability precondition and its fetch command are recorded in limitations."
+    },
+    {
+      "assertion": "The producer records exact source URLs or immutable repository SHAs actually read, plus exclusions and limitations; unsupported facts use NOT_SUPPORTED rather than invention.",
+      "disposition": "PASS",
+      "evidence": "Seven source claims each name an immutable commit and path. Three PO-01 commits are listed. Thirteen limitations include five NOT_SUPPORTED and one OWNER_BLOCKED. No external documentation claim is made and no model or reasoning attestation is invented. A draft placeholder digest was caught and replaced with the value read from the immutable manifest blob; the defect is recorded as D-WA-006-02."
+    },
+    {
+      "assertion": "The producer writes only its declared owned subtree in an isolated best-of-N worktree and causes no external effect.",
+      "disposition": "PASS",
+      "evidence": "All 19 changed paths from the immutable base are under workstreams/po03/wave-a/units/wa-006/. Work ran in a unique no-hardlink clone; the shared workspace was never written and its branch never switched. Zero writes to prohibited or read-only globs; no PR, merge, promotion, tag, force push, deployment, secret or outreach act."
+    },
+    {
+      "assertion": "The result contains result.json, tests.json, limitations.json, artifact-manifest.json, and ready-to-commit.json, with complete SHA-256 and byte accounting.",
+      "disposition": "PASS",
+      "evidence": "All five are present in the result slot. artifact-manifest.json accounts for 18 artifacts totalling 146801 bytes with per-artifact SHA-256 and byte counts, computed by compile_manifest.py rather than written by hand."
+    },
+    {
+      "assertion": "The producer validates changed paths, commits, pushes a unique branch, and reads every artifact back from an immutable remote commit.",
+      "disposition": "PASS",
+      "evidence": "Changed paths validated against the immutable base with zero out-of-scope entries. Branch cursor/po03-wa-006-b195-a02-1a9f matches the required prefix. All 19 readback checks, being 18 artifacts plus the manifest itself, matched SHA-256 and bytes at commit 5af360b47f04e86c98a678a96a18ab185d3dcb85, read by a separate process in a fresh temporary bare repository fetched from the remote."
+    },
+    {
+      "assertion": "The producer reports only READY_TO_COMMIT; provider completion without a durable commit is PROVIDER_COMPLETED_UNCOMMITTED.",
+      "disposition": "PASS",
+      "evidence": "terminal_report is READY_TO_COMMIT and it is the only terminal report issued. A durable result commit exists and was verified from the remote, so PROVIDER_COMPLETED_UNCOMMITTED does not apply; obzio_state is RESULT_COMMITTED and the transactional_result block validates against the unmodified seeded validator."
+    },
+    {
+      "assertion": "Only the coordinator may record COMPLETED, and a producer cannot independently accept its own result.",
+      "disposition": "PASS",
+      "evidence": "completion_actor is null, completion_claimed is false, obzio_state is RESULT_COMMITTED rather than COMPLETED, and independent_acceptance.state is NOT_TESTED with reviewer_id and receipt_uri null."
+    },
+    {
+      "assertion": "PO-01, PR #8, protected state, shared current pointers, and every path outside the PO-03 allowlist remain untouched.",
+      "disposition": "PASS",
+      "evidence": "PO-01 was read only as git objects at three pinned commits using cat-file, ls-tree, rev-parse, for-each-ref and symbolic-ref. Zero PO-01 writes, ref mutations, checkouts, PR touches or signals; the harness records identical ref and HEAD digests before and after every scan and its allowlist excludes every write and network subcommand. PR #8 and cursor/setup-dev-environment-b5ce were not touched. state/**, dispatch/** and .cursor/environment.json are unchanged."
+    }
+  ],
+  "acceptance_self_check_note": "A producer self-check against the frozen contract's required assertions. It is not an acceptance decision and confers no acceptance; independent_acceptance remains NOT_TESTED and must be issued by a different producer.",
+  "artifact_count": 18,
+  "attempt_id": "PO03-WA-006-A02",
+  "changed_file_count": 19,
+  "changed_files": [
+    "workstreams/po03/wave-a/units/wa-006/result/artifact-manifest.json",
+    "workstreams/po03/wave-a/units/wa-006/result/build_sanitized_fixture.py",
+    "workstreams/po03/wave-a/units/wa-006/result/compile_manifest.py",
+    "workstreams/po03/wave-a/units/wa-006/result/disposition.json",
+    "workstreams/po03/wave-a/units/wa-006/result/fixtures/adversarial-fixture-spec.json",
+    "workstreams/po03/wave-a/units/wa-006/result/frozen-discrepancy-report.json",
+    "workstreams/po03/wave-a/units/wa-006/result/hypotheses.json",
+    "workstreams/po03/wave-a/units/wa-006/result/limitations.json",
+    "workstreams/po03/wave-a/units/wa-006/result/ownership-guard.json",
+    "workstreams/po03/wave-a/units/wa-006/result/pack_claim_reproducer.py",
+    "workstreams/po03/wave-a/units/wa-006/result/reproduction-po01-fleet.json",
+    "workstreams/po03/wave-a/units/wa-006/result/reproduction-po01-packs.json",
+    "workstreams/po03/wave-a/units/wa-006/result/reproduction-result.json",
+    "workstreams/po03/wave-a/units/wa-006/result/result.json",
+    "workstreams/po03/wave-a/units/wa-006/result/source-claims.json",
+    "workstreams/po03/wave-a/units/wa-006/result/strategy-proposals.json",
+    "workstreams/po03/wave-a/units/wa-006/result/test-output.txt",
+    "workstreams/po03/wave-a/units/wa-006/result/test_pack_claim_reproducer.py",
+    "workstreams/po03/wave-a/units/wa-006/result/tests.json"
+  ],
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "controller_run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+  "decision_changed": [],
+  "fence_token": 2,
+  "findings": {
+    "discrepancy_count": 9,
+    "file_claims_checked": 86,
+    "file_claims_falsified": 7,
+    "file_claims_verified": 79,
+    "frozen_report": "workstreams/po03/wave-a/units/wa-006/result/frozen-discrepancy-report.json",
+    "immutable_commits_read": 3,
+    "material_finding_count": 4,
+    "po01_in_place_repairs": 0
+  },
+  "generated_at": "2026-08-22T08:42:20.976239Z",
+  "hypothesis": "PO-01 pack claims can be checked from immutable commits without branch mutation or producer narrative.",
+  "hypothesis_id": "H-PO03-WA-006",
+  "hypothesis_outcome": "SUPPORTED",
+  "idempotency_key": "po03:100bc2079ced:wa-006:a02",
+  "immutable_input_bytes": 4520,
+  "immutable_input_manifest_sha256": "c881d2c18bbe8add72805e33440d57cbaca97e74a9960fa9ca3c79ae1ee5ebe0",
+  "immutable_input_path": "workstreams/po03/control/inputs/wave-a/wa-006-a02.json",
+  "lease_id": "lease-po03-wa-006-a02",
+  "limitations": {
+    "count": 13,
+    "details_path": "workstreams/po03/wave-a/units/wa-006/result/limitations.json",
+    "independent_acceptance": "NOT_TESTED",
+    "po01_repair": "OWNER_BLOCKED",
+    "separately_attested_model": "NOT_SUPPORTED",
+    "separately_attested_reasoning": "NOT_SUPPORTED",
+    "sha256_git_object_format": "NOT_SUPPORTED",
+    "third_manifest_dialect_MANIFEST_ALL": "NOT_SUPPORTED",
+    "workflow_run_url": "NOT_SUPPORTED"
+  },
+  "manifest_bytes": 7668,
+  "manifest_path": "workstreams/po03/wave-a/units/wa-006/result/artifact-manifest.json",
+  "manifest_readback_note": "artifact-manifest.json records readback_verified_at as null because it is written before the payload commit exists. The per-artifact readback timestamps are recorded in transactional_result.artifacts below, which is the document that reports on the readback.",
+  "manifest_sha256": "723e3c8e16a57527a11d5872a1ed6196d1681cb0536315530e349938f9b63d38",
+  "material_work": true,
+  "model_observed": "claude-opus-5",
+  "model_observed_provenance": "RUNTIME_SELF_REPORT_NOT_SEPARATELY_ATTESTED",
+  "model_requested": "claude-opus-5-thinking-high",
+  "owned_subtree": "workstreams/po03/wave-a/units/wa-006/",
+  "payload_commit": {
+    "base_to_payload_changed_path_count": 19,
+    "commit": "5af360b47f04e86c98a678a96a18ab185d3dcb85",
+    "committed_at": "2026-08-22T08:42:11+00:00",
+    "force_pushed": false,
+    "merged": false,
+    "out_of_scope_changed_path_count": 0,
+    "pr_created": false,
+    "promoted": false,
+    "remote_ref": "refs/heads/cursor/po03-wa-006-b195-a02-1a9f",
+    "remote_tip_at_readback": "5af360b47f04e86c98a678a96a18ab185d3dcb85"
+  },
+  "po01_immutable_commits_read": [
+    "1e6f53c323f8326d12af213557082a3665991f19",
+    "96adfe7d79257389318af10ee9c9e3a0c2138590",
+    "37943ec2ff9f6702d72e127a3c8e56c81b0c3812"
+  ],
+  "protocol_version": "OBZIO-PRODUCER-RETURN-v1",
+  "provider_run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+  "readback_verification": {
+    "all_match": true,
+    "artifact_count": 19,
+    "checks": [
+      {
+        "bytes": 7271,
+        "matches": true,
+        "observed_bytes": 7271,
+        "observed_sha256": "bb8c6c7c407da4e6e459ed95acb12bd5b44e9d41737f2e303d23f7da840a3c94",
+        "path": "workstreams/po03/wave-a/units/wa-006/result/build_sanitized_fixture.py",
+        "sha256": "bb8c6c7c407da4e6e459ed95acb12bd5b44e9d41737f2e303d23f7da840a3c94"
+      },
+      {
+        "bytes": 7840,
+        "matches": true,
+        "observed_bytes": 7840,
+        "observed_sha256": "8b60f33202356273a531e7117326eb62f307884bb936e27c8c6cf5ee81e8c453",
+        "path": "workstreams/po03/wave-a/units/wa-006/result/compile_manifest.py",
+        "sha256": "8b60f33202356273a531e7117326eb62f307884bb936e27c8c6cf5ee81e8c453"
+      },
+      {
+        "bytes": 9001,
+        "matches": true,
+        "observed_bytes": 9001,
+        "observed_sha256": "30eea4e4a97791daf6cb2d5e6acc0c8195da9caf385e2fa79166db22029fac7e",
+        "path": "workstreams/po03/wave-a/units/wa-006/result/disposition.json",
+        "sha256": "30eea4e4a97791daf6cb2d5e6acc0c8195da9caf385e2fa79166db22029fac7e"
+      },
+      {
+        "bytes": 4468,
+        "matches": true,
+        "observed_bytes": 4468,
+        "observed_sha256": "b40a9bb90c1c3009831347271bf34e53e06445324a1853a4a0ea9d1daded6f58",
+        "path": "workstreams/po03/wave-a/units/wa-006/result/fixtures/adversarial-fixture-spec.json",
+        "sha256": "b40a9bb90c1c3009831347271bf34e53e06445324a1853a4a0ea9d1daded6f58"
+      },
+      {
+        "bytes": 10726,
+        "matches": true,
+        "observed_bytes": 10726,
+        "observed_sha256": "8fa9dfcbeb2074ecdc02b0ffb265a21769c72734143eee270e67c934509fa55f",
+        "path": "workstreams/po03/wave-a/units/wa-006/result/frozen-discrepancy-report.json",
+        "sha256": "8fa9dfcbeb2074ecdc02b0ffb265a21769c72734143eee270e67c934509fa55f"
+      },
+      {
+        "bytes": 4938,
+        "matches": true,
+        "observed_bytes": 4938,
+        "observed_sha256": "8d46fa9c3c82848a63b1b377ff780f9f8dee9f796ab7db7496d1206a97af4f6a",
+        "path": "workstreams/po03/wave-a/units/wa-006/result/hypotheses.json",
+        "sha256": "8d46fa9c3c82848a63b1b377ff780f9f8dee9f796ab7db7496d1206a97af4f6a"
+      },
+      {
+        "bytes": 7478,
+        "matches": true,
+        "observed_bytes": 7478,
+        "observed_sha256": "673021c5489414fab07e4cd0e8e7b5ddda0fddbaccccda32dd8b85254c0e10ec",
+        "path": "workstreams/po03/wave-a/units/wa-006/result/limitations.json",
+        "sha256": "673021c5489414fab07e4cd0e8e7b5ddda0fddbaccccda32dd8b85254c0e10ec"
+      },
+      {
+        "bytes": 6918,
+        "matches": true,
+        "observed_bytes": 6918,
+        "observed_sha256": "257660e86635bc1352d57e3e84b30b44f391de87c049d7e9a648a7ed223bd00e",
+        "path": "workstreams/po03/wave-a/units/wa-006/result/ownership-guard.json",
+        "sha256": "257660e86635bc1352d57e3e84b30b44f391de87c049d7e9a648a7ed223bd00e"
+      },
+      {
+        "bytes": 21320,
+        "matches": true,
+        "observed_bytes": 21320,
+        "observed_sha256": "5307f16f7041157216d73b2d5203267a1a177fccb29784ff690b0caaab5be215",
+        "path": "workstreams/po03/wave-a/units/wa-006/result/pack_claim_reproducer.py",
+        "sha256": "5307f16f7041157216d73b2d5203267a1a177fccb29784ff690b0caaab5be215"
+      },
+      {
+        "bytes": 3571,
+        "matches": true,
+        "observed_bytes": 3571,
+        "observed_sha256": "cc5e9f20b5284bb6b5620f0fd9f1ba20c493242e9742bc6152dd01fc22c84345",
+        "path": "workstreams/po03/wave-a/units/wa-006/result/reproduction-po01-fleet.json",
+        "sha256": "cc5e9f20b5284bb6b5620f0fd9f1ba20c493242e9742bc6152dd01fc22c84345"
+      },
+      {
+        "bytes": 11634,
+        "matches": true,
+        "observed_bytes": 11634,
+        "observed_sha256": "5627fb734d6e4719c46480ca2b9f7a35ec2398567d51bb17ecd21cb91a0fb0c7",
+        "path": "workstreams/po03/wave-a/units/wa-006/result/reproduction-po01-packs.json",
+        "sha256": "5627fb734d6e4719c46480ca2b9f7a35ec2398567d51bb17ecd21cb91a0fb0c7"
+      },
+      {
+        "bytes": 7545,
+        "matches": true,
+        "observed_bytes": 7545,
+        "observed_sha256": "e77b875895b5cfa309f58cdda3b5adb8be08d467fc514c800d6aa94f1ed5aef7",
+        "path": "workstreams/po03/wave-a/units/wa-006/result/reproduction-result.json",
+        "sha256": "e77b875895b5cfa309f58cdda3b5adb8be08d467fc514c800d6aa94f1ed5aef7"
+      },
+      {
+        "bytes": 9596,
+        "matches": true,
+        "observed_bytes": 9596,
+        "observed_sha256": "ad7a4331c0249c0fbcd6189104f7411ec58f8276a5f43fc07bb2a354cf90c13b",
+        "path": "workstreams/po03/wave-a/units/wa-006/result/result.json",
+        "sha256": "ad7a4331c0249c0fbcd6189104f7411ec58f8276a5f43fc07bb2a354cf90c13b"
+      },
+      {
+        "bytes": 6859,
+        "matches": true,
+        "observed_bytes": 6859,
+        "observed_sha256": "1525f36c382c261d04a4e647ac77155c789a0539c054f309db624e380ac71df1",
+        "path": "workstreams/po03/wave-a/units/wa-006/result/source-claims.json",
+        "sha256": "1525f36c382c261d04a4e647ac77155c789a0539c054f309db624e380ac71df1"
+      },
+      {
+        "bytes": 3001,
+        "matches": true,
+        "observed_bytes": 3001,
+        "observed_sha256": "07e73b10288a39ac3a64972f95b610e3ec51d006e73e055cb462de5e613808ba",
+        "path": "workstreams/po03/wave-a/units/wa-006/result/strategy-proposals.json",
+        "sha256": "07e73b10288a39ac3a64972f95b610e3ec51d006e73e055cb462de5e613808ba"
+      },
+      {
+        "bytes": 4810,
+        "matches": true,
+        "observed_bytes": 4810,
+        "observed_sha256": "1292d0a0f65cafe8106201ef454a3b1d385c7638069c8587a05536fad400ca9c",
+        "path": "workstreams/po03/wave-a/units/wa-006/result/test-output.txt",
+        "sha256": "1292d0a0f65cafe8106201ef454a3b1d385c7638069c8587a05536fad400ca9c"
+      },
+      {
+        "bytes": 13608,
+        "matches": true,
+        "observed_bytes": 13608,
+        "observed_sha256": "fa127bce91713dec1ec8aaabfcbaa89bdee18b8211d40a58aa5d52231ad0946a",
+        "path": "workstreams/po03/wave-a/units/wa-006/result/test_pack_claim_reproducer.py",
+        "sha256": "fa127bce91713dec1ec8aaabfcbaa89bdee18b8211d40a58aa5d52231ad0946a"
+      },
+      {
+        "bytes": 6217,
+        "matches": true,
+        "observed_bytes": 6217,
+        "observed_sha256": "e664445053b0e0dcf1cc483d866d562c8cf514231aa4688a48e9c7c98615d91d",
+        "path": "workstreams/po03/wave-a/units/wa-006/result/tests.json",
+        "sha256": "e664445053b0e0dcf1cc483d866d562c8cf514231aa4688a48e9c7c98615d91d"
+      },
+      {
+        "bytes": 7668,
+        "matches": true,
+        "observed_bytes": 7668,
+        "observed_sha256": "723e3c8e16a57527a11d5872a1ed6196d1681cb0536315530e349938f9b63d38",
+        "path": "workstreams/po03/wave-a/units/wa-006/result/artifact-manifest.json",
+        "sha256": "723e3c8e16a57527a11d5872a1ed6196d1681cb0536315530e349938f9b63d38"
+      }
+    ],
+    "commit": "5af360b47f04e86c98a678a96a18ab185d3dcb85",
+    "manifest_bytes": 7668,
+    "manifest_sha256": "723e3c8e16a57527a11d5872a1ed6196d1681cb0536315530e349938f9b63d38",
+    "method": "Fresh temporary bare repository, forced fetch of the pushed branch into a dedicated ref, then git cat-file blob <immutable-commit>:<path> with SHA-256 and byte comparison.",
+    "remote_branch": "cursor/po03-wa-006-b195-a02-1a9f",
+    "remote_tip_at_readback": "5af360b47f04e86c98a678a96a18ab185d3dcb85",
+    "verified_at": "2026-08-22T08:42:20.976239Z"
+  },
+  "reasoning_observed": "NOT_SUPPORTED",
+  "reasoning_requested": "high",
+  "remote_branch": "cursor/po03-wa-006-b195-a02-1a9f",
+  "result_commit_id": "5af360b47f04e86c98a678a96a18ab185d3dcb85",
+  "result_slot": "workstreams/po03/wave-a/units/wa-006/result/",
+  "return_commit_id": null,
+  "return_commit_id_note": "Assigned when this document is committed; a file cannot contain the id of the commit that contains it. The immutable return commit is reported in the producer terminal response.",
+  "runner_id": "best-of-n-runner-bc-b1956656-wa-006-a02",
+  "runtime_binding": {
+    "auto_model_selection": false,
+    "clone_mode": "git clone --no-hardlinks --no-checkout",
+    "execution_environment": "isolated-git-clone",
+    "git": "2.43.0",
+    "note": "Runtime details are execution evidence only and grant no authority.",
+    "provider": "cursor-cloud-agent",
+    "provider_run_url": "https://cursor.com/agents/bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+    "python": "3.12.3",
+    "shared_workspace_branch_switched": false,
+    "shared_workspace_written": false,
+    "subagent_type": "best-of-n-runner"
+  },
+  "source_base": {
+    "commission_commit": "552b12eacee637716451492a98980fb0da19ff3e",
+    "minimum_protocol_ancestor": "100bc2079cedc193af3524234ab833cc9f9f4669",
+    "minimum_protocol_ancestor_is_ancestor_of_base": true,
+    "minimum_protocol_ancestor_resolved": true,
+    "producer_start_commit": "affc82b35e6205010fda90f9914a97e467294a44",
+    "repository": "github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+    "source_base_hash_mismatches": 0
+  },
+  "supersedes_attempt_id": "PO03-WA-006-A01",
+  "task_id": "PO03-WA-006",
+  "terminal_report": "READY_TO_COMMIT",
+  "tests": {
+    "cli_behaviour_checks": 2,
+    "details_path": "workstreams/po03/wave-a/units/wa-006/result/tests.json",
+    "errors": 0,
+    "failures": 0,
+    "first_pass_outcome": "FAIL",
+    "focused_tests": 21,
+    "immutable_po01_reproductions": 3,
+    "outcome": "PASS",
+    "recorded_output_path": "workstreams/po03/wave-a/units/wa-006/result/test-output.txt",
+    "sanitized_reproductions": 1,
+    "seeded_contract_tests": 37,
+    "skipped": 0,
+    "taxonomy_check": "PASS",
+    "total": 61
+  },
+  "total_bytes": 146801,
+  "transactional_result": {
+    "acceptance_contract_sha256": "b46620e26cec19872279f0a0ac9aefbc562436c808b1ebea8a078b58e2c8585a",
+    "artifacts": [
+      {
+        "artifact_id": "art-po03-wa-006-build_sanitized_fixture",
+        "bytes": 7271,
+        "content_uri": "workstreams/po03/wave-a/units/wa-006/result/build_sanitized_fixture.py",
+        "logical_name": "build_sanitized_fixture.py",
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:42:20.976239Z",
+        "sha256": "bb8c6c7c407da4e6e459ed95acb12bd5b44e9d41737f2e303d23f7da840a3c94"
+      },
+      {
+        "artifact_id": "art-po03-wa-006-compile_manifest",
+        "bytes": 7840,
+        "content_uri": "workstreams/po03/wave-a/units/wa-006/result/compile_manifest.py",
+        "logical_name": "compile_manifest.py",
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:42:20.976239Z",
+        "sha256": "8b60f33202356273a531e7117326eb62f307884bb936e27c8c6cf5ee81e8c453"
+      },
+      {
+        "artifact_id": "art-po03-wa-006-disposition",
+        "bytes": 9001,
+        "content_uri": "workstreams/po03/wave-a/units/wa-006/result/disposition.json",
+        "logical_name": "disposition.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:42:20.976239Z",
+        "sha256": "30eea4e4a97791daf6cb2d5e6acc0c8195da9caf385e2fa79166db22029fac7e"
+      },
+      {
+        "artifact_id": "art-po03-wa-006-fixtures-adversarial-fixture-spec",
+        "bytes": 4468,
+        "content_uri": "workstreams/po03/wave-a/units/wa-006/result/fixtures/adversarial-fixture-spec.json",
+        "logical_name": "fixtures/adversarial-fixture-spec.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:42:20.976239Z",
+        "sha256": "b40a9bb90c1c3009831347271bf34e53e06445324a1853a4a0ea9d1daded6f58"
+      },
+      {
+        "artifact_id": "art-po03-wa-006-frozen-discrepancy-report",
+        "bytes": 10726,
+        "content_uri": "workstreams/po03/wave-a/units/wa-006/result/frozen-discrepancy-report.json",
+        "logical_name": "frozen-discrepancy-report.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:42:20.976239Z",
+        "sha256": "8fa9dfcbeb2074ecdc02b0ffb265a21769c72734143eee270e67c934509fa55f"
+      },
+      {
+        "artifact_id": "art-po03-wa-006-hypotheses",
+        "bytes": 4938,
+        "content_uri": "workstreams/po03/wave-a/units/wa-006/result/hypotheses.json",
+        "logical_name": "hypotheses.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:42:20.976239Z",
+        "sha256": "8d46fa9c3c82848a63b1b377ff780f9f8dee9f796ab7db7496d1206a97af4f6a"
+      },
+      {
+        "artifact_id": "art-po03-wa-006-limitations",
+        "bytes": 7478,
+        "content_uri": "workstreams/po03/wave-a/units/wa-006/result/limitations.json",
+        "logical_name": "limitations.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:42:20.976239Z",
+        "sha256": "673021c5489414fab07e4cd0e8e7b5ddda0fddbaccccda32dd8b85254c0e10ec"
+      },
+      {
+        "artifact_id": "art-po03-wa-006-ownership-guard",
+        "bytes": 6918,
+        "content_uri": "workstreams/po03/wave-a/units/wa-006/result/ownership-guard.json",
+        "logical_name": "ownership-guard.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:42:20.976239Z",
+        "sha256": "257660e86635bc1352d57e3e84b30b44f391de87c049d7e9a648a7ed223bd00e"
+      },
+      {
+        "artifact_id": "art-po03-wa-006-pack_claim_reproducer",
+        "bytes": 21320,
+        "content_uri": "workstreams/po03/wave-a/units/wa-006/result/pack_claim_reproducer.py",
+        "logical_name": "pack_claim_reproducer.py",
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:42:20.976239Z",
+        "sha256": "5307f16f7041157216d73b2d5203267a1a177fccb29784ff690b0caaab5be215"
+      },
+      {
+        "artifact_id": "art-po03-wa-006-reproduction-po01-fleet",
+        "bytes": 3571,
+        "content_uri": "workstreams/po03/wave-a/units/wa-006/result/reproduction-po01-fleet.json",
+        "logical_name": "reproduction-po01-fleet.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:42:20.976239Z",
+        "sha256": "cc5e9f20b5284bb6b5620f0fd9f1ba20c493242e9742bc6152dd01fc22c84345"
+      },
+      {
+        "artifact_id": "art-po03-wa-006-reproduction-po01-packs",
+        "bytes": 11634,
+        "content_uri": "workstreams/po03/wave-a/units/wa-006/result/reproduction-po01-packs.json",
+        "logical_name": "reproduction-po01-packs.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:42:20.976239Z",
+        "sha256": "5627fb734d6e4719c46480ca2b9f7a35ec2398567d51bb17ecd21cb91a0fb0c7"
+      },
+      {
+        "artifact_id": "art-po03-wa-006-reproduction-result",
+        "bytes": 7545,
+        "content_uri": "workstreams/po03/wave-a/units/wa-006/result/reproduction-result.json",
+        "logical_name": "reproduction-result.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:42:20.976239Z",
+        "sha256": "e77b875895b5cfa309f58cdda3b5adb8be08d467fc514c800d6aa94f1ed5aef7"
+      },
+      {
+        "artifact_id": "art-po03-wa-006-result",
+        "bytes": 9596,
+        "content_uri": "workstreams/po03/wave-a/units/wa-006/result/result.json",
+        "logical_name": "result.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:42:20.976239Z",
+        "sha256": "ad7a4331c0249c0fbcd6189104f7411ec58f8276a5f43fc07bb2a354cf90c13b"
+      },
+      {
+        "artifact_id": "art-po03-wa-006-source-claims",
+        "bytes": 6859,
+        "content_uri": "workstreams/po03/wave-a/units/wa-006/result/source-claims.json",
+        "logical_name": "source-claims.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:42:20.976239Z",
+        "sha256": "1525f36c382c261d04a4e647ac77155c789a0539c054f309db624e380ac71df1"
+      },
+      {
+        "artifact_id": "art-po03-wa-006-strategy-proposals",
+        "bytes": 3001,
+        "content_uri": "workstreams/po03/wave-a/units/wa-006/result/strategy-proposals.json",
+        "logical_name": "strategy-proposals.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:42:20.976239Z",
+        "sha256": "07e73b10288a39ac3a64972f95b610e3ec51d006e73e055cb462de5e613808ba"
+      },
+      {
+        "artifact_id": "art-po03-wa-006-test-output",
+        "bytes": 4810,
+        "content_uri": "workstreams/po03/wave-a/units/wa-006/result/test-output.txt",
+        "logical_name": "test-output.txt",
+        "media_type": "text/plain; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:42:20.976239Z",
+        "sha256": "1292d0a0f65cafe8106201ef454a3b1d385c7638069c8587a05536fad400ca9c"
+      },
+      {
+        "artifact_id": "art-po03-wa-006-test_pack_claim_reproducer",
+        "bytes": 13608,
+        "content_uri": "workstreams/po03/wave-a/units/wa-006/result/test_pack_claim_reproducer.py",
+        "logical_name": "test_pack_claim_reproducer.py",
+        "media_type": "text/x-python; charset=utf-8",
+        "readback_verified_at": "2026-08-22T08:42:20.976239Z",
+        "sha256": "fa127bce91713dec1ec8aaabfcbaa89bdee18b8211d40a58aa5d52231ad0946a"
+      },
+      {
+        "artifact_id": "art-po03-wa-006-tests",
+        "bytes": 6217,
+        "content_uri": "workstreams/po03/wave-a/units/wa-006/result/tests.json",
+        "logical_name": "tests.json",
+        "media_type": "application/json",
+        "readback_verified_at": "2026-08-22T08:42:20.976239Z",
+        "sha256": "e664445053b0e0dcf1cc483d866d562c8cf514231aa4688a48e9c7c98615d91d"
+      }
+    ],
+    "attempt": {
+      "attempt_id": "PO03-WA-006-A02",
+      "checkpoint_seq": 3,
+      "fence_token": 2,
+      "heartbeat_at": "2026-08-22T08:42:20.976239Z",
+      "idempotency_key": "po03:100bc2079ced:wa-006:a02",
+      "lease_id": "lease-po03-wa-006-a02",
+      "provider_run_id": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+      "worker_id": "best-of-n-runner-bc-b1956656-wa-006-a02"
+    },
+    "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+    "completion_actor": null,
+    "immutable_input_manifest_sha256": "c881d2c18bbe8add72805e33440d57cbaca97e74a9960fa9ca3c79ae1ee5ebe0",
+    "independent_acceptance": {
+      "receipt_uri": null,
+      "reviewer_id": null,
+      "state": "NOT_TESTED"
+    },
+    "obzio_state": "RESULT_COMMITTED",
+    "protocol_version": "OBZIO-TRANSACTIONAL-RESULT-v1",
+    "provider_state": "RUNNING",
+    "result_transaction": {
+      "artifact_count": 18,
+      "committed_at": "2026-08-22T08:42:11+00:00",
+      "manifest_sha256": "723e3c8e16a57527a11d5872a1ed6196d1681cb0536315530e349938f9b63d38",
+      "manifest_uri": "workstreams/po03/wave-a/units/wa-006/result/artifact-manifest.json",
+      "parent_ingested_at": null,
+      "result_commit_id": "5af360b47f04e86c98a678a96a18ab185d3dcb85",
+      "result_txn_id": "txn-po03-wa-006-a02",
+      "state": "COMMITTED",
+      "total_bytes": 146801,
+      "verified_at": "2026-08-22T08:42:20.976239Z"
+    },
+    "task_id": "PO03-WA-006"
+  }
+}
