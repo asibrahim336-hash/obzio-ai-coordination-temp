@@ -120,6 +120,10 @@ def sha256_file(path: Path) -> str:
     return sha256_bytes(path.read_bytes())
 
 
+def _nonempty(value: Any) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
 def repo_relative(path: Path) -> str:
     return path.resolve().relative_to(REPO_ROOT.resolve()).as_posix()
 
