@@ -181,6 +181,19 @@ def replace_atomic(path: Path, payload: bytes) -> None:
         temporary.unlink(missing_ok=True)
 
 
+def append_jsonl(path: Path, document: dict[str, Any]) -> None:
+    """Append one fsynced controller record without rewriting prior ledger rows."""
+    assert_allowed_path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    payload = canonical_json(document)
+    descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o644)
+    try:
+        os.write(descriptor, payload)
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
 def git(*arguments: str) -> str:
     result = subprocess.run(
         ("git", *arguments),
@@ -444,6 +457,50 @@ def _lease_owner(events: list[dict[str, Any]]) -> str | None:
     return None
 
 
+def _update_recovery_projection(
+    task_id: str,
+    *,
+    state: str,
+    fence_token: int,
+    event_path: Path,
+    details: dict[str, Any],
+) -> None:
+    path = CONTROL_ROOT / "recovery-state.json"
+    if path.exists():
+        projection = read_json(path)
+    else:
+        projection = {
+            "recovery_version": "PO03-RECOVERY-STATE-v1",
+            "scan_state": "ACTIVE",
+            "units": {},
+            "false_completion_count": 0,
+            "orphan_count": 0,
+            "duplicate_callback_count": 0,
+            "collision_count": 0,
+            "decision_changed": [],
+        }
+    units = projection.setdefault("units", {})
+    provider_state = (
+        "COMPLETED"
+        if state == "PROVIDER_COMPLETED_UNCOMMITTED"
+        else ("NOT_DISPATCHED" if state == "CREATED" else "RUNNING")
+    )
+    units[task_id] = {
+        "obzio_state": state,
+        "provider_state": provider_state,
+        "latest_event_sequence": len(_event_files(task_id)),
+        "latest_event_sha256": sha256_file(event_path),
+        "fence_token": fence_token,
+        "result_commit_id": details.get("result_commit_id"),
+        "recovery_action": (
+            "RERUN_OR_RECONCILE"
+            if state in {"PROVIDER_COMPLETED_UNCOMMITTED", "RECOVERY_REQUIRED", "RETRY_SCHEDULED"}
+            else "MONITOR"
+        ),
+    }
+    replace_atomic(path, canonical_json(projection))
+
+
 def advance_task(
     task_id: str,
     *,
@@ -489,7 +546,27 @@ def advance_task(
     event_details = dict(details or {})
     event_details.setdefault("fence_token", fence_token)
     event_details.setdefault("prior_state", prior_state)
-    return hash_chain_event(task_id, state, actor=actor, details=event_details)
+    event_path = hash_chain_event(task_id, state, actor=actor, details=event_details)
+    append_jsonl(
+        CONTROL_ROOT / "work-unit-registry.jsonl",
+        {
+            "registry_event_version": "PO03-REGISTRY-EVENT-v1",
+            "task_id": task_id,
+            "state": state,
+            "event_path": repo_relative(event_path),
+            "event_sha256": sha256_file(event_path),
+            "fence_token": fence_token,
+            "recorded_at": utc_now(),
+        },
+    )
+    _update_recovery_projection(
+        task_id,
+        state=state,
+        fence_token=fence_token,
+        event_path=event_path,
+        details=event_details,
+    )
+    return event_path
 
 
 def recovery_scan() -> list[dict[str, Any]]:
