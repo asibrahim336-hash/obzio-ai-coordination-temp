@@ -1,0 +1,99 @@
+{
+  "actor_format": "role:identity",
+  "failure_mode": "FAIL_CLOSED",
+  "fence_rule": "event.fence_token == snapshot.current_fence",
+  "mechanism_version": "PO03-WA-012-STATE-MACHINE-v1",
+  "transitions": [
+    {
+      "allowed_actor_roles": [
+        "controller"
+      ],
+      "from_state": "CREATED",
+      "to_state": "LEASED"
+    },
+    {
+      "allowed_actor_roles": [
+        "worker"
+      ],
+      "from_state": "LEASED",
+      "to_state": "RUNNING"
+    },
+    {
+      "allowed_actor_roles": [
+        "worker"
+      ],
+      "from_state": "RUNNING",
+      "to_state": "CHECKPOINTED"
+    },
+    {
+      "allowed_actor_roles": [
+        "worker"
+      ],
+      "from_state": "RUNNING",
+      "to_state": "RESULT_STAGING"
+    },
+    {
+      "allowed_actor_roles": [
+        "worker"
+      ],
+      "from_state": "CHECKPOINTED",
+      "to_state": "CHECKPOINTED"
+    },
+    {
+      "allowed_actor_roles": [
+        "worker"
+      ],
+      "from_state": "CHECKPOINTED",
+      "to_state": "RESULT_STAGING"
+    },
+    {
+      "allowed_actor_roles": [
+        "worker"
+      ],
+      "from_state": "RESULT_STAGING",
+      "to_state": "RESULT_STAGED"
+    },
+    {
+      "allowed_actor_roles": [
+        "verifier"
+      ],
+      "from_state": "RESULT_STAGED",
+      "to_state": "RESULT_VERIFIED"
+    },
+    {
+      "allowed_actor_roles": [
+        "worker"
+      ],
+      "from_state": "RESULT_VERIFIED",
+      "to_state": "RESULT_COMMITTED"
+    },
+    {
+      "allowed_actor_roles": [
+        "coordinator"
+      ],
+      "from_state": "RESULT_COMMITTED",
+      "to_state": "PARENT_INGESTED"
+    },
+    {
+      "allowed_actor_roles": [
+        "coordinator"
+      ],
+      "from_state": "PARENT_INGESTED",
+      "to_state": "COMPLETED"
+    },
+    {
+      "allowed_actor_roles": [
+        "reviewer"
+      ],
+      "from_state": "COMPLETED",
+      "to_state": "ACCEPTED"
+    },
+    {
+      "allowed_actor_roles": [
+        "reviewer"
+      ],
+      "from_state": "COMPLETED",
+      "to_state": "REJECTED"
+    }
+  ]
+}
