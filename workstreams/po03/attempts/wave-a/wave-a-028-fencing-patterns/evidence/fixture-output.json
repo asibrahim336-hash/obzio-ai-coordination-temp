@@ -1,0 +1,75 @@
+{
+  "fixture_version": "PO03-FENCING-EDGE-CASES-v1",
+  "platform": {
+    "implementation": "CPython",
+    "python": "3.12.3",
+    "system": "Linux"
+  },
+  "results": [
+    {
+      "id": "split-validation-stale-write",
+      "observed": {
+        "captured_fence": 1,
+        "current_fence": 2,
+        "safe_path_error": "StaleOwnership",
+        "unsafe_entry_owner": "owner-a",
+        "unsafe_stale_write_accepted": true
+      },
+      "passed": true
+    },
+    {
+      "id": "ledger-sequence-not-fence",
+      "observed": {
+        "accepted_owner": "owner-b",
+        "accepted_sequence": 2,
+        "stale_error": "StaleOwnership",
+        "stale_used_next_sequence": 2
+      },
+      "passed": true
+    },
+    {
+      "id": "snapshot-not-ledger-sequence",
+      "observed": {
+        "current_snapshot_valid": true,
+        "ledger_entry_count": 1,
+        "sequence_error": "LedgerSequenceMismatch"
+      },
+      "passed": true
+    },
+    {
+      "id": "monotonic-transfer",
+      "observed": {
+        "equal_token_error": "FenceRegression",
+        "first_transfer_fence": 8,
+        "jumped_transfer_fence": 12,
+        "lower_token_error": "FenceRegression"
+      },
+      "passed": true
+    },
+    {
+      "id": "highest-seen-observation-gap",
+      "observed": {
+        "sink_highest_seen": 2,
+        "stale_after_observation_error": "StaleOwnership",
+        "stale_during_gap_accepted": true,
+        "write_count": 3
+      },
+      "passed": true
+    },
+    {
+      "id": "idempotent-replay-after-transfer",
+      "observed": {
+        "conflict_error": "IdempotencyConflict",
+        "entry_count": 1,
+        "replay_returned_original": true
+      },
+      "passed": true
+    }
+  ],
+  "summary": {
+    "failed": 0,
+    "failed_case_ids": [],
+    "passed": 6,
+    "total": 6
+  }
+}

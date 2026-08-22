@@ -6,6 +6,7 @@
     "controller_tip_at_admission": "ffb6bef150bbb9894ea6ba2bce290585b2e48d31",
     "dispatch_base": "e63fbae079774b151fd24a4132e4a5e571f75298",
     "dispatch_base_parent": "0221316d957f23ed1b22b04dabd719bcb5077b90",
+    "implementation_commit_before_tests": "fd52e641b4815ad915ffe19baf508d595cc22200",
     "post_historical_head_commit_count_at_admission": 50,
     "result_branch": "po03/wave-a-028-fencing-patterns",
     "result_head_at_manifest_generation": "PENDING",
@@ -85,6 +86,36 @@
       "command": "for path in workstreams/po03/control/tasks/wave-a-028-fencing-patterns/input.json workstreams/po03/control/tasks/wave-a-028-fencing-patterns/acceptance.json workstreams/po03/COMMISSION.md workstreams/po03/contracts/transactional-result.schema.json; do expected=$(git show \"9edfd8ed08e0d27727f66e128a87b24aa561432c:$path\" | sha256sum | cut -d' ' -f1); bytes=$(git show \"9edfd8ed08e0d27727f66e128a87b24aa561432c:$path\" | wc -c); blob=$(git rev-parse \"9edfd8ed08e0d27727f66e128a87b24aa561432c:$path\"); printf '%s sha256=%s bytes=%s blob=%s\\n' \"$path\" \"$expected\" \"$bytes\" \"$blob\"; done",
       "exit_code": 0,
       "purpose": "Verify all frozen capsule identities from immutable Git bytes."
+    },
+    {
+      "command": "git add -- \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns\" && git commit -m \"po03 wave-a-028: add fencing fault fixtures\" && git push -u origin \"po03/wave-a-028-fencing-patterns\"",
+      "exit_code": 0,
+      "purpose": "Commit and push implementation before beginning tests, producing fd52e641b4815ad915ffe19baf508d595cc22200."
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONHASHSEED=0 TZ=UTC LC_ALL=C.UTF-8 python3 \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/run_fixtures.py\" --output \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/evidence/fixture-output.json\" > \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/evidence/fixture-run.log\" 2>&1",
+      "exit_code": 0,
+      "purpose": "Execute all six frozen fencing fixtures."
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONHASHSEED=0 TZ=UTC LC_ALL=C.UTF-8 python3 -m unittest discover -s \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/tests\" -p \"test_*.py\" -v > \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/evidence/unittest.log\" 2>&1",
+      "exit_code": 0,
+      "purpose": "Run seven independent model and fixture-contract regression tests."
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 PYTHONHASHSEED=0 TZ=UTC LC_ALL=C.UTF-8 python3 \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/run_fixtures.py\" --output \"/tmp/wave-a-028-fixture-output-repeat.json\" > \"/tmp/wave-a-028-fixture-repeat.log\" 2>&1 && cmp \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/evidence/fixture-output.json\" \"/tmp/wave-a-028-fixture-output-repeat.json\" && sha256sum \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/evidence/fixture-output.json\" > \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/evidence/determinism.log\" && printf 'repeat_exit=0\\ncmp_exit=0\\nbyte_identical=true\\n' >> \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/evidence/determinism.log\"",
+      "exit_code": 0,
+      "purpose": "Repeat the fixture run and prove its JSON output is byte-identical."
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python3 \"scripts/check_operator_taxonomy.py\" > \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/evidence/taxonomy-check.log\" 2>&1",
+      "exit_code": 0,
+      "purpose": "Run the mandatory repository taxonomy currentness check."
+    },
+    {
+      "command": "python3 -c 'import json; from pathlib import Path; root=Path(\"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns\"); paths=sorted(root.rglob(\"*.json\")); [json.loads(path.read_text(encoding=\"utf-8\")) for path in paths]; print(f\"json_files_valid={len(paths)}\")' > \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/evidence/json-validation.log\" && git diff --check && printf 'git_diff_check_exit=0\\n' >> \"workstreams/po03/attempts/wave-a/wave-a-028-fencing-patterns/evidence/json-validation.log\"",
+      "exit_code": 0,
+      "purpose": "Validate all current JSON artifacts and changed-line whitespace."
     }
   ],
   "decision_changed": [],

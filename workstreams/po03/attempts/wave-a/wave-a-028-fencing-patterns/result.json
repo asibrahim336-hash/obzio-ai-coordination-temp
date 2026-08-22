@@ -1,0 +1,94 @@
+{
+  "boundary_compliance": {
+    "external_accounts_touched": false,
+    "merge_or_promotion_performed": false,
+    "po01_contact_or_mutation": false,
+    "pr_8_modified": false,
+    "protected_or_production_action": false,
+    "shared_control_or_workflow_modified": false,
+    "writes_outside_owned_result_slot": 0
+  },
+  "commission_id": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001",
+  "decision_changed": [],
+  "disposition": "RETAIN_ISOLATED_CANDIDATE_PENDING_INDEPENDENT_ACCEPTANCE",
+  "experiments": [
+    {
+      "id": "split-validation-stale-write",
+      "observed": "A snapshot validated before transfer did not protect a later sequence-only append; the stale write was admitted. The atomic current-snapshot path rejected it.",
+      "status": "PASS"
+    },
+    {
+      "id": "ledger-sequence-not-fence",
+      "observed": "The stale owner supplied the exact next sequence and was rejected with StaleOwnership; the current owner then used that sequence successfully.",
+      "status": "PASS"
+    },
+    {
+      "id": "snapshot-not-ledger-sequence",
+      "observed": "The current owner supplied an already-used sequence and was independently rejected with LedgerSequenceMismatch.",
+      "status": "PASS"
+    },
+    {
+      "id": "monotonic-transfer",
+      "observed": "Equal and lower transfer tokens were rejected with FenceRegression; a greater non-contiguous token was accepted.",
+      "status": "PASS"
+    },
+    {
+      "id": "highest-seen-observation-gap",
+      "observed": "A highest-seen sink accepted a distinct old-token write after authority transfer but before observing the new token, then rejected the old token after observing the new token.",
+      "status": "PASS_WITH_REFUTING_OUTCOME"
+    },
+    {
+      "id": "idempotent-replay-after-transfer",
+      "observed": "An exact retry returned the prior entry without another write; changed content under the same operation identifier was rejected.",
+      "status": "PASS"
+    }
+  ],
+  "hypothesis": {
+    "boundary": "A token allocator or max-observed-token check alone is not sufficient. Every side-effect target must participate, current ownership and ledger position are distinct checks, validation must be atomic with the write, and the token high-water must not regress.",
+    "outcome": "SUPPORTED_WITH_BOUNDARIES",
+    "refuted_claim": "A sink that remembers only its highest observed token does not reject every stale write immediately at ownership transfer; before the newer token arrives, an old equal token can still be accepted.",
+    "statement": "Fencing tokens have known edge cases that should appear in fault fixtures."
+  },
+  "independent_acceptance": {
+    "receipt_uri": null,
+    "reviewer_id": null,
+    "state": "PENDING"
+  },
+  "obzio_state_claim": null,
+  "obzio_state_note": "This producer does not set COMPLETED or ACCEPTED. Controller ingestion and independent acceptance remain pending.",
+  "result_version": "PO03-WAVE-A-RESULT-v1",
+  "runtime_evidence": {
+    "machine_observed_model": "gpt-5.6-sol-max-fast",
+    "machine_observed_reasoning_control": "NOT_SUPPORTED",
+    "provider": "Cursor",
+    "requested_exact_model": "gpt-5.6-sol-xhigh",
+    "requested_reasoning_control": "xhigh"
+  },
+  "task_id": "wave-a-028-fencing-patterns",
+  "tests": {
+    "deterministic_repeat": {
+      "byte_identical": true,
+      "exit_code": 0
+    },
+    "fixture_reproduction": {
+      "failed": 0,
+      "passed": 6,
+      "total": 6
+    },
+    "operator_taxonomy": {
+      "exit_code": 0,
+      "result": "PASS"
+    },
+    "unittest": {
+      "errors": 0,
+      "failures": 0,
+      "passed": 7
+    }
+  },
+  "transaction": {
+    "attempt_number": 1,
+    "fence_token": 1,
+    "idempotency_key": "COM-PO03-REPOSITORY-ENGINEERING-PORTABLE-RUNTIME-20260822-v001:wave-a-028-fencing-patterns:attempt-1",
+    "lease_id": "lease-wave-a-028-fencing-patterns-1"
+  }
+}
