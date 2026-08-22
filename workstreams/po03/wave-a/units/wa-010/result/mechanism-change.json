@@ -1,0 +1,121 @@
+{
+  "artifact": "mechanism-change.json",
+  "task_id": "PO03-WA-010",
+  "attempt_id": "PO03-WA-010-A02",
+  "hypothesis_id": "H-PO03-WA-010",
+  "purpose": "Changes made to the live mechanism during this attempt because execution refuted an earlier version of it, kept distinct from source claims, reproductions and strategy proposals.",
+  "mechanism_changes": [
+    {
+      "mechanism_change_id": "MC-PO03-WA-010-01",
+      "title": "A change that names no path is a malformed path, not an unknown status",
+      "found_by": "tests/test_adversarial.py::ChangeStatusEvasionTest::test_a_none_path_is_refused, on the first full run of the adversarial suite",
+      "observed_defect": "An ADD whose path was null was refused with DENY_UNKNOWN_STATUS. The refusal was correct but the reason code was wrong: the status was valid and the path was missing. A coordinator triaging that code would have looked for a git parsing fault instead of a malformed change record.",
+      "why_it_matters": "The reason code is the only machine-readable output a gate produces. A misleading code sends recovery down the wrong path, and the acceptance contract requires exact evidence for every non-PASS outcome.",
+      "change": "In OwnershipEngine._check_change, the fallback for a status-valid change that yields no checkable side now returns DENY_MALFORMED_PATH, attributed to the side the status would have written, with the offending path value in the detail.",
+      "recurrence_test": "tests/test_adversarial.py::ChangeStatusEvasionTest::test_a_none_path_is_refused",
+      "verified_by_recurrence": true,
+      "false_completion_risk_if_unfixed": "none: the write was refused either way",
+      "disposition": "RETAIN"
+    },
+    {
+      "mechanism_change_id": "MC-PO03-WA-010-02",
+      "title": "The deny-shadow advisory considers declared deny globs only",
+      "found_by": "Running the audit against the real 67-owner registry in workstreams/po03/control/path-ownership.json while generating result/registry-audit.json",
+      "observed_defect": "The audit emitted 144 DENY_SHADOWED_GRANT advisories and a 75753-byte artifact. Every one came from the implicit deny globs '**/.git/**' and '**/.gitmodules' intersecting a recursive 'dir/**' grant. That intersection is a theorem about the patterns, not a fact about the registry, so the advisory carried zero information and would have buried a real contradiction.",
+      "why_it_matters": "An audit whose output is dominated by unavoidable findings trains its reader to ignore it. Signal-to-noise is a correctness property of a gate, not a cosmetic one.",
+      "change": "detect_shadowed_grants now iterates declared_deny_globs rather than the full deny set, with the reasoning recorded in its docstring. Admission behaviour is unchanged: the implicit denies still refuse those paths.",
+      "measured_effect": {
+        "advisory_findings_before": 144,
+        "advisory_findings_after": 0,
+        "artifact_bytes_before": 75753,
+        "artifact_bytes_after": 1013,
+        "information_lost": "none: no advisory referenced a declared deny glob",
+        "admission_decisions_changed": 0
+      },
+      "recurrence_tests": [
+        "tests/test_ownership_engine.py::StaticOverlapTest::test_implicit_deny_globs_do_not_raise_a_shadow_advisory",
+        "tests/test_ownership_engine.py::StaticOverlapTest::test_the_seeded_registry_raises_no_shadow_advisory",
+        "tests/test_ownership_engine.py::StaticOverlapTest::test_deny_shadowed_grant_is_advisory_not_blocking"
+      ],
+      "verified_by_recurrence": true,
+      "disposition": "RETAIN"
+    },
+    {
+      "mechanism_change_id": "MC-PO03-WA-010-03",
+      "title": "A deny glob with no separator is flagged, because anchoring is fail-dangerous for denies",
+      "found_by": "Reasoning about the dialect decision while writing result/limitations.json, then confirmed by executing the engine",
+      "observed_defect": "Choosing the anchored pathspec dialect makes a grant narrower than a .gitignore-style author intends, which is safe because it authorises less. The same narrowing applied to a deny glob is unsafe: a bare 'secrets.json' deny protects only the repository root and silently permits 'units/a/secrets.json'. Nothing in the engine surfaced that asymmetry.",
+      "why_it_matters": "A deny list that reads as broader than it is produces exactly the silent-permission failure the collision boundary exists to prevent, and it would only be discovered by the leak.",
+      "change": "Added OwnershipEngine.detect_narrow_deny_patterns, included in audit(). It reports any declared deny glob containing no separator and not already starting with '**', naming the '**/<pattern>' repair. It is ADVISORY rather than blocking so it cannot fail an existing correct registry.",
+      "recurrence_tests": [
+        "tests/test_ownership_engine.py::StaticOverlapTest::test_a_bare_deny_glob_is_flagged_as_too_narrow",
+        "tests/test_ownership_engine.py::StaticOverlapTest::test_the_narrow_deny_reading_is_the_one_that_is_flagged",
+        "tests/test_ownership_engine.py::StaticOverlapTest::test_deny_globs_with_a_separator_are_not_flagged"
+      ],
+      "verified_by_recurrence": true,
+      "current_registry_effect": "none: every declared deny glob in path-ownership.json contains a separator, so the seeded registry raises no advisory",
+      "disposition": "RETAIN"
+    }
+  ],
+  "defects_and_rework": [
+    {
+      "defect_id": "DEF-PO03-WA-010-01",
+      "kind": "PRODUCER_TEST_EXPECTATION_WRONG",
+      "detail": "test_a_grant_of_everything_collides_with_every_other_owner preregistered 5 overlap findings for a greedy '**' grant against the disjoint fixture. The engine reported 6. The engine was right: findings are emitted per colliding glob pair, and the controller holds three grants, so it contributes three findings rather than one.",
+      "resolution": "Corrected the expectation to 6 and added an assertion that every finding involves the greedy owner, so the count is anchored to a stated rule rather than to a number.",
+      "mechanism_changed": false
+    },
+    {
+      "defect_id": "DEF-PO03-WA-010-02",
+      "kind": "PRODUCER_TEST_EXPECTATION_WRONG",
+      "detail": "During the initial smoke check of the intersection procedure, 'a/b/**' and 'a/**/b' were expected to be disjoint. They share 'a/b/b'. The witness the engine returned was matched by both patterns, which showed the expectation was wrong rather than the engine.",
+      "resolution": "No code change. The case is now asserted in the intended direction by test_double_star_crossing, and witness self-verification was kept as a standing property of every overlap finding.",
+      "mechanism_changed": false
+    },
+    {
+      "defect_id": "DEF-PO03-WA-010-03",
+      "kind": "PRODUCER_ARTIFACT_MISLABEL",
+      "detail": "source-claims.json first recorded the producer's own HEAD under the key 'immutable_controller_base_commit'.",
+      "resolution": "Split into immutable_controller_base_commit (the pinned f2bdb4908026f66e8450802bb15921be1f3c338d), an executed merge-base ancestry check, and producer_head_commit_at_generation.",
+      "mechanism_changed": false
+    }
+  ],
+  "design_decisions": [
+    {
+      "decision": "Implement the anchored ':(glob)' pathspec dialect and reject ambiguous patterns at compile time.",
+      "rejected_alternative": "Accept .gitignore semantics, where a separator-free pattern matches a basename at any depth.",
+      "reason": "The registry grants are root-relative. Supporting both dialects in one matcher would mean a grant's breadth depended on how it happened to be written."
+    },
+    {
+      "decision": "Trailing '**' matches one or more segments, so 'a/**' does not match a file named 'a'.",
+      "rejected_alternative": "Treat trailing '**' as zero or more.",
+      "reason": "Verified against git: 'abc/**' matches what is inside 'abc'. A file that shadows the subtree root is outside the grant, and tests/test_gitglob.py asserts git agrees."
+    },
+    {
+      "decision": "Refuse traversal, absolute, drive-letter, doubled-separator, backslash, quoted and control-character paths instead of normalising them.",
+      "rejected_alternative": "Resolve '..' and compare the resolved path.",
+      "reason": "Normalising makes the admitted path differ from the path the writer submitted. Refusing keeps the decision about exactly what was presented, and a git diff never reports these shapes anyway."
+    },
+    {
+      "decision": "Require 'git diff --name-status -z' and reject a quoted path.",
+      "rejected_alternative": "Parse tab-separated output.",
+      "reason": "Without -z git escapes unusual paths, and a quoted path matches no glob, which would turn an out-of-scope write into a silent pass."
+    },
+    {
+      "decision": "Return a witness path for every overlap rather than a boolean.",
+      "rejected_alternative": "Report only that two patterns intersect.",
+      "reason": "A witness makes the finding checkable by a third party and by the test suite, so the detector cannot quietly regress into always reporting overlap."
+    },
+    {
+      "decision": "Require the presented fence token to equal the registered one, refusing both lower and higher.",
+      "rejected_alternative": "Refuse only a lower token.",
+      "reason": "A token above the registry means the registry this gate is reading is stale, so the gate is not the authority it believes it is and must not admit the write."
+    },
+    {
+      "decision": "Check a rename on both sides and a copy only on its target.",
+      "rejected_alternative": "Check the new path only.",
+      "reason": "A rename deletes the source, so target-only checking would let a writer move a sibling's committed result away. A copy leaves the source intact, so requiring source ownership would wrongly forbid reading."
+    }
+  ],
+  "decision_changed": []
+}

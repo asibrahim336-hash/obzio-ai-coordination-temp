@@ -31,6 +31,7 @@ from typing import Any, Iterable, Sequence
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from gitglob import (  # type: ignore[no-redef]
+        SEPARATOR,
         GlobSyntaxError,
         PathGlob,
         PathSyntaxError,
@@ -41,6 +42,7 @@ if __package__ in (None, ""):
     )
 else:  # pragma: no cover - package-relative import is not used by the tests
     from .gitglob import (
+        SEPARATOR,
         GlobSyntaxError,
         PathGlob,
         PathSyntaxError,
@@ -520,15 +522,18 @@ class OwnershipEngine:
         return findings
 
     def detect_shadowed_grants(self) -> list[Finding]:
-        """Report grants that a deny glob partly cancels.
+        """Report grants that a *declared* deny glob partly cancels.
 
         The deny always wins at admission time, so this is an advisory about a
-        contradictory registry rather than a blocking defect.
+        contradictory registry rather than a blocking defect.  Only declared deny
+        globs are considered: the implicit ones are written to match at any depth,
+        so they intersect every recursive grant by construction and would bury the
+        real contradictions under one advisory per grant.
         """
         findings: list[Finding] = []
         for owner in self.owners:
             for owned in owner.owned_globs:
-                for deny in self.deny_globs:
+                for deny in self.declared_deny_globs:
                     witness = owned.intersection_witness(deny)
                     if witness is None:
                         continue
@@ -591,6 +596,34 @@ class OwnershipEngine:
                         )
         return findings
 
+    def detect_narrow_deny_patterns(self) -> list[Finding]:
+        """Report deny globs that the anchored dialect reads more narrowly than intended.
+
+        Anchoring is fail-safe for a grant, because a narrower grant authorises
+        less.  For a deny it is fail-dangerous: a bare ``secrets.json`` denies only
+        the repository-root file, while an author writing ``.gitignore`` habits
+        means every directory.  The asymmetry is invisible until something leaks,
+        so it is surfaced here with the repair spelled out.
+        """
+        findings: list[Finding] = []
+        for deny in self.declared_deny_globs:
+            if SEPARATOR in deny.pattern or deny.pattern.startswith(PathGlob.DOUBLE_STAR):
+                continue
+            findings.append(
+                Finding(
+                    kind="NARROW_DENY_PATTERN",
+                    severity="ADVISORY",
+                    detail=(
+                        f"deny glob {deny.pattern!r} is anchored at the repository root and does not "
+                        f"deny the same name in subdirectories; write '**/{deny.pattern}' to deny it "
+                        f"at every depth"
+                    ),
+                    right_owner="__deny__",
+                    right_glob=deny.pattern,
+                )
+            )
+        return findings
+
     def detect_non_nfc_patterns(self) -> list[Finding]:
         findings: list[Finding] = []
         for owner in self.owners:
@@ -617,6 +650,7 @@ class OwnershipEngine:
             + self.detect_grant_divergence()
             + self.detect_self_overlaps()
             + self.detect_shadowed_grants()
+            + self.detect_narrow_deny_patterns()
             + self.detect_case_insensitive_collisions()
             + self.detect_non_nfc_patterns()
         )

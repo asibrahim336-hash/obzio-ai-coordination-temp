@@ -1,0 +1,154 @@
+{
+  "enforcement_point": "git pre-commit hook invoking the engine on the staged index",
+  "external_effects": "none: temporary local repository, no network, no secrets",
+  "hypothesis_id": "H-PO03-WA-010",
+  "reproduction_id": "R-PO03-WA-010-001",
+  "steps": [
+    {
+      "expectation": "The overlap is reported from the patterns alone, before any file exists.",
+      "observed": {
+        "overlap_count": 1,
+        "repository_file_count": 0,
+        "witness_paths": [
+          "units/unit-a/result/shared-summary.json"
+        ],
+        "witness_paths_present_in_tree": []
+      },
+      "outcome": "OVERLAP_DETECTED",
+      "step": "R1_static_audit_of_the_proposed_registry"
+    },
+    {
+      "expectation": "Removing the shared slice makes the grants provably disjoint.",
+      "observed": {
+        "blocking_finding_count": 0,
+        "overlap_count": 0
+      },
+      "outcome": "DISJOINT",
+      "step": "R2_static_audit_of_the_repaired_registry"
+    },
+    {
+      "expectation": "The gate admits the write and git records the commit.",
+      "observed": {
+        "commit_exit_code": 0,
+        "committed": true,
+        "committed_bytes": "written by unit-a\n",
+        "fence": 2,
+        "gate_denied_sides": 0,
+        "gate_outcome": "ADMITTED",
+        "gate_reasons": {
+          "ALLOWED": 1
+        },
+        "head_moved": true,
+        "writer": "lease-sanitized-unit-a-a02"
+      },
+      "outcome": "ADMITTED",
+      "step": "R3_owner_writes_inside_its_grant"
+    },
+    {
+      "expectation": "The gate refuses before the commit object exists, so HEAD does not move and the owner's committed bytes survive.",
+      "observed": {
+        "bytes_preserved": true,
+        "commit_exit_code": 1,
+        "committed": false,
+        "committed_bytes": "written by unit-a\n",
+        "fence": 2,
+        "gate_denied_sides": 1,
+        "gate_outcome": "BLOCKED",
+        "gate_reasons": {
+          "DENY_FOREIGN_OWNER": 1
+        },
+        "head_moved": false,
+        "writer": "lease-sanitized-unit-b-a02"
+      },
+      "outcome": "BLOCKED",
+      "step": "R4_foreign_writer_overwrites_the_owner"
+    },
+    {
+      "expectation": "The refusal is scoped to the path, not a blanket ban on the writer.",
+      "observed": {
+        "commit_exit_code": 0,
+        "committed": true,
+        "fence": 2,
+        "gate_denied_sides": 0,
+        "gate_outcome": "ADMITTED",
+        "gate_reasons": {
+          "ALLOWED": 1
+        },
+        "writer": "lease-sanitized-unit-b-a02"
+      },
+      "outcome": "ADMITTED",
+      "step": "R5_refused_writer_still_owns_its_own_subtree"
+    },
+    {
+      "expectation": "A writer whose lease was superseded is refused inside its own subtree.",
+      "observed": {
+        "commit_exit_code": 1,
+        "committed": false,
+        "fence": 1,
+        "gate_denied_sides": 1,
+        "gate_outcome": "BLOCKED",
+        "gate_reasons": {
+          "DENY_STALE_FENCE": 1
+        },
+        "head_moved": false,
+        "writer": "lease-sanitized-unit-a-a02"
+      },
+      "outcome": "BLOCKED",
+      "step": "R6_stale_fence_token_cannot_commit"
+    },
+    {
+      "expectation": "A rename is refused on its source side, so the owner keeps the file.",
+      "observed": {
+        "commit_exit_code": 1,
+        "committed": false,
+        "fence": 2,
+        "gate_denied_sides": 1,
+        "gate_outcome": "BLOCKED",
+        "gate_reasons": {
+          "ALLOWED": 1,
+          "DENY_RENAME_SOURCE_NOT_OWNED": 1
+        },
+        "head_moved": false,
+        "owner_bytes_intact": true,
+        "writer": "lease-sanitized-unit-b-a02"
+      },
+      "outcome": "BLOCKED",
+      "step": "R7_rename_cannot_carry_a_foreign_file_away"
+    },
+    {
+      "expectation": "A deny glob refuses a path no grant covers, independently of ownership.",
+      "observed": {
+        "commit_exit_code": 1,
+        "committed": false,
+        "fence": 2,
+        "gate_denied_sides": 1,
+        "gate_outcome": "BLOCKED",
+        "gate_reasons": {
+          "DENY_PROHIBITED_PATH": 1
+        },
+        "head_moved": false,
+        "writer": "lease-sanitized-unit-a-a02"
+      },
+      "outcome": "BLOCKED",
+      "step": "R8_deny_glob_stops_a_shared_state_write"
+    },
+    {
+      "expectation": "With the hook bypassed the same overwrite succeeds, so the earlier refusals are attributable to the engine rather than to git.",
+      "observed": {
+        "commit_exit_code": 0,
+        "committed": true,
+        "committed_bytes": "overwritten by unit-b\n",
+        "head_moved": true
+      },
+      "outcome": "ADMITTED",
+      "step": "R9_negative_control_without_the_gate"
+    }
+  ],
+  "summary": {
+    "negative_control_confirms_attribution": true,
+    "owner_writes_admitted": true,
+    "prevented_before_commit": true,
+    "static_overlap_detected_before_any_write": true
+  },
+  "workload": "sanitized repository-native ownership registry with two subordinate writers"
+}

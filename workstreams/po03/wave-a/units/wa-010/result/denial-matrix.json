@@ -1,0 +1,898 @@
+{
+  "artifact": "denial-matrix.json",
+  "engine_source": "workstreams/po03/control/path-ownership.json+workstreams/po03/control/inputs/wave-a/wa-010-a02.json",
+  "fence_token": 2,
+  "outcome": "ALL_REASONS_AS_PREREGISTERED",
+  "preregistration_mismatch_count": 0,
+  "purpose": "Every fixture change decided by the composed registry plus task-input view, with the preregistered reason code compared against the observed one.",
+  "sections": {
+    "changes-admitted.json": {
+      "expected_outcome": "ADMITTED",
+      "fixture_id": "FX-PO03-WA-010-CHANGES-ADMITTED",
+      "observed_outcomes": [
+        "ADMITTED"
+      ],
+      "preregistration_mismatch_count": 0,
+      "purpose": "Control fixture: every change is inside the wa-010 grant and must be admitted.",
+      "row_count": 6,
+      "rows": [
+        {
+          "decisions": [
+            {
+              "decision": "ALLOW",
+              "detail": "admitted by grant 'workstreams/po03/wave-a/units/wa-010/**'",
+              "reason": "ALLOWED",
+              "side": "target"
+            }
+          ],
+          "old_path": null,
+          "outcome": "ADMITTED",
+          "path": "workstreams/po03/wave-a/units/wa-010/engine/ownership.py",
+          "status": "ADD"
+        },
+        {
+          "decisions": [
+            {
+              "decision": "ALLOW",
+              "detail": "admitted by grant 'workstreams/po03/wave-a/units/wa-010/**'",
+              "reason": "ALLOWED",
+              "side": "target"
+            }
+          ],
+          "old_path": null,
+          "outcome": "ADMITTED",
+          "path": "workstreams/po03/wave-a/units/wa-010/README.md",
+          "status": "MODIFY"
+        },
+        {
+          "decisions": [
+            {
+              "decision": "ALLOW",
+              "detail": "admitted by grant 'workstreams/po03/wave-a/units/wa-010/**'",
+              "reason": "ALLOWED",
+              "side": "source"
+            }
+          ],
+          "old_path": null,
+          "outcome": "ADMITTED",
+          "path": "workstreams/po03/wave-a/units/wa-010/fixtures/scratch.json",
+          "status": "DELETE"
+        },
+        {
+          "decisions": [
+            {
+              "decision": "ALLOW",
+              "detail": "admitted by grant 'workstreams/po03/wave-a/units/wa-010/**'",
+              "reason": "ALLOWED",
+              "side": "source"
+            },
+            {
+              "decision": "ALLOW",
+              "detail": "admitted by grant 'workstreams/po03/wave-a/units/wa-010/**'",
+              "reason": "ALLOWED",
+              "side": "target"
+            }
+          ],
+          "old_path": "workstreams/po03/wave-a/units/wa-010/draft.py",
+          "outcome": "ADMITTED",
+          "path": "workstreams/po03/wave-a/units/wa-010/engine/gitglob.py",
+          "status": "RENAME"
+        },
+        {
+          "decisions": [
+            {
+              "decision": "ALLOW",
+              "detail": "admitted by grant 'workstreams/po03/wave-a/units/wa-010/**'",
+              "reason": "ALLOWED",
+              "side": "target"
+            }
+          ],
+          "old_path": null,
+          "outcome": "ADMITTED",
+          "path": "workstreams/po03/wave-a/units/wa-010/result/test-output.txt",
+          "status": "TYPECHANGE"
+        },
+        {
+          "decisions": [
+            {
+              "decision": "ALLOW",
+              "detail": "admitted by grant 'workstreams/po03/wave-a/units/wa-010/**'",
+              "reason": "ALLOWED",
+              "side": "target"
+            }
+          ],
+          "old_path": "workstreams/po03/wave-a/units/wa-010/fixtures/registry-disjoint.json",
+          "outcome": "ADMITTED",
+          "path": "workstreams/po03/wave-a/units/wa-010/fixtures/copy.json",
+          "status": "COPY"
+        }
+      ]
+    },
+    "changes-adversarial.json": {
+      "expected_outcome": "BLOCKED",
+      "fixture_id": "FX-PO03-WA-010-CHANGES-ADVERSARIAL",
+      "observed_outcomes": [
+        "BLOCKED"
+      ],
+      "preregistration_mismatch_count": 0,
+      "purpose": "Path shapes crafted to slip past a naive comparison. Every one must be refused, and none may be silently normalised into an admitted path.",
+      "row_count": 15,
+      "rows": [
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path contains a '..' traversal segment",
+              "reason": "DENY_MALFORMED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_MALFORMED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/wave-a/units/wa-010/../wa-011/result.json",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "Traversal must be refused rather than resolved, because resolving it would land in a sibling grant."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path contains a '.' segment",
+              "reason": "DENY_MALFORMED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_MALFORMED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/wave-a/units/wa-010/./result.json",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "A '.' segment is not a path git would report and hides the real target."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path is absolute",
+              "reason": "DENY_MALFORMED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_MALFORMED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "/workstreams/po03/wave-a/units/wa-010/result.json",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "An absolute path escapes the repository entirely."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path contains an empty segment",
+              "reason": "DENY_MALFORMED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_MALFORMED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams//po03/wave-a/units/wa-010/result.json",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "A doubled separator produces an empty segment that some matchers skip."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path contains a backslash; only '/' separates changed paths",
+              "reason": "DENY_MALFORMED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_MALFORMED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams\\po03\\wave-a\\units\\wa-010\\result.json",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "Backslash separators would be one opaque segment, and treating them as separators would widen the grant."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path carries a drive letter",
+              "reason": "DENY_MALFORMED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_MALFORMED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "C:/workstreams/po03/wave-a/units/wa-010/result.json",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "A drive-letter path is not repository-relative."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path ends with a separator and so names a directory",
+              "reason": "DENY_MALFORMED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_MALFORMED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/wave-a/units/wa-010/result.json/",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "A trailing separator names a directory; git reports files."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path contains a backslash; only '/' separates changed paths",
+              "reason": "DENY_MALFORMED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_MALFORMED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "\"workstreams/po03/wave-a/units/wa-010/r\\303\\251sult.json\"",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "A git-quoted path means the caller forgot -z; the quotes would defeat every glob."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path contains a NUL byte",
+              "reason": "DENY_MALFORMED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_MALFORMED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/wave-a/units/wa-010/res\u0000ult.json",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "A NUL byte truncates the path in any C-level consumer."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path contains control character 0x0a",
+              "reason": "DENY_MALFORMED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_MALFORMED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/wave-a/units/wa-010/res\nult.json",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "A newline splits the path in line-oriented tooling."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "no grant of 'lease-po03-wa-010-a02' admits this path",
+              "reason": "DENY_UNOWNED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_UNOWNED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/wave-a/units/WA-010/result.json",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "Git pathspecs are case-sensitive, so a case variant is a different path and is not granted."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "no grant of 'lease-po03-wa-010-a02' admits this path",
+              "reason": "DENY_UNOWNED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_UNOWNED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/wave-a/units/wa-010x/result.json",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "A suffixed sibling directory must not inherit the grant."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "no grant of 'lease-po03-wa-010-a02' admits this path",
+              "reason": "DENY_UNOWNED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_UNOWNED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/wave-a/units/wa-01*/result.json",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "A literal '*' in a changed path must be matched as a character, never expanded as a wildcard."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "no grant of 'lease-po03-wa-010-a02' admits this path",
+              "reason": "DENY_UNOWNED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_UNOWNED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/wave-a/units/wa-010​/result.json",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "A zero-width space makes the segment visually identical to the granted one."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path is denied to every writer by '**/.git/**'",
+              "reason": "DENY_PROHIBITED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_PROHIBITED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/wave-a/units/wa-010/.git/config",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "A nested repository inside the owned subtree is still repository internals."
+        }
+      ]
+    },
+    "changes-prohibited.json": {
+      "expected_outcome": "BLOCKED",
+      "fixture_id": "FX-PO03-WA-010-CHANGES-PROHIBITED",
+      "observed_outcomes": [
+        "BLOCKED"
+      ],
+      "preregistration_mismatch_count": 0,
+      "purpose": "Deliberately prohibited writes. Each entry must be refused, and the reason code is preregistered so a permissive engine cannot pass by denying for the wrong cause.",
+      "row_count": 16,
+      "rows": [
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path is denied to every writer by 'state/**'",
+              "reason": "DENY_PROHIBITED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_PROHIBITED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+          "reason_matches_preregistration": true,
+          "status": "MODIFY",
+          "why": "Shared current-pointer state is denied to every writer."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path is denied to every writer by 'dispatch/**'",
+              "reason": "DENY_PROHIBITED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_PROHIBITED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "dispatch/queue/wave-a.json",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "Dispatch surfaces are denied to every writer."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path is denied to every writer by '.cursor/environment.json'",
+              "reason": "DENY_PROHIBITED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_PROHIBITED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": ".cursor/environment.json",
+          "reason_matches_preregistration": true,
+          "status": "MODIFY",
+          "why": "The runtime environment file is denied to every writer."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path is denied to every writer by 'workstreams/po01/**'",
+              "reason": "DENY_PROHIBITED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_PROHIBITED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po01/plan.md",
+          "reason_matches_preregistration": true,
+          "status": "MODIFY",
+          "why": "PO-01 non-interference is absolute."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path is denied to every writer by 'receipts/po01/**'",
+              "reason": "DENY_PROHIBITED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_PROHIBITED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "receipts/po01/2026-08-22/pack.json",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "PO-01 receipts are immutable to PO-03."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path is denied to every writer by '.git/**'",
+              "reason": "DENY_PROHIBITED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_PROHIBITED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": ".git/config",
+          "reason_matches_preregistration": true,
+          "status": "MODIFY",
+          "why": "Repository internals are denied implicitly, without needing a registry entry."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path is denied to every writer by '**/.gitmodules'",
+              "reason": "DENY_PROHIBITED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_PROHIBITED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": ".gitmodules",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "A submodule declaration can import arbitrary external code."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path is read-only for 'lease-po03-wa-010-a02' by 'workstreams/po03/control/**'",
+              "reason": "DENY_READ_ONLY_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_READ_ONLY_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/control/path-ownership.json",
+          "reason_matches_preregistration": true,
+          "status": "MODIFY",
+          "why": "A subordinate must not rewrite the registry that grants it authority."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path is read-only for 'lease-po03-wa-010-a02' by 'workstreams/po03/COMMISSION.md'",
+              "reason": "DENY_READ_ONLY_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_READ_ONLY_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/COMMISSION.md",
+          "reason_matches_preregistration": true,
+          "status": "MODIFY",
+          "why": "The commission is read-only to its own producer."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path is read-only for 'lease-po03-wa-010-a02' by 'workstreams/po03/tools/**'",
+              "reason": "DENY_READ_ONLY_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_READ_ONLY_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/tools/validate_contracts.py",
+          "reason_matches_preregistration": true,
+          "status": "MODIFY",
+          "why": "Seeded controls may be strengthened only by the controller, never bypassed here."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path is denied to every writer by 'packs/**'",
+              "reason": "DENY_PROHIBITED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_PROHIBITED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "packs/operator/pack.json",
+          "reason_matches_preregistration": true,
+          "status": "MODIFY",
+          "why": "Pack surfaces appear in the registry deny list, which outranks the read-only list naming them too."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path belongs to 'cursor/po03-wave-a-b195-1a9f' via '.github/workflows/po03-*.yml', not to 'lease-po03-wa-010-a02'",
+              "reason": "DENY_FOREIGN_OWNER",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_FOREIGN_OWNER",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": ".github/workflows/po03-contracts.yml",
+          "reason_matches_preregistration": true,
+          "status": "MODIFY",
+          "why": "The workflow belongs to the integration controller, not to a subordinate."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path belongs to 'lease-po03-wa-011-a02' via 'workstreams/po03/wave-a/units/wa-011/**', not to 'lease-po03-wa-010-a02'",
+              "reason": "DENY_FOREIGN_OWNER",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_FOREIGN_OWNER",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/wave-a/units/wa-011/result/result.json",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "This is the exact overlapping-subordinate-write case the hypothesis targets."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "no grant of 'lease-po03-wa-010-a02' admits this path",
+              "reason": "DENY_UNOWNED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_UNOWNED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/wave-a/units/wa-0100/result.json",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "A prefix-string comparison would wrongly admit wa-0100 under the wa-010 grant."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "no grant of 'lease-po03-wa-010-a02' admits this path",
+              "reason": "DENY_UNOWNED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_UNOWNED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "README.md",
+          "reason_matches_preregistration": true,
+          "status": "MODIFY",
+          "why": "Repository-root files are outside every wave-one grant."
+        },
+        {
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "no grant of 'lease-po03-wa-010-a02' admits this path",
+              "reason": "DENY_UNOWNED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_reason": "DENY_UNOWNED_PATH",
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/wave-a/units/wa-010",
+          "reason_matches_preregistration": true,
+          "status": "ADD",
+          "why": "The grant owns paths inside the subtree, not a file that shadows the subtree root."
+        }
+      ]
+    },
+    "changes-rename-and-delete.json": {
+      "expected_outcome": "BLOCKED",
+      "fixture_id": "FX-PO03-WA-010-CHANGES-RENAME-AND-DELETE",
+      "observed_outcomes": [
+        "ADMITTED",
+        "BLOCKED"
+      ],
+      "preregistration_mismatch_count": 0,
+      "purpose": "Renames and deletes are two-sided writes. A rename that reaches across an ownership boundary must be refused on the side that escapes, and a delete must be refused unless the removed path is owned.",
+      "row_count": 10,
+      "rows": [
+        {
+          "case": "rename inside the grant",
+          "decisions": [
+            {
+              "decision": "ALLOW",
+              "detail": "admitted by grant 'workstreams/po03/wave-a/units/wa-010/**'",
+              "reason": "ALLOWED",
+              "side": "source"
+            },
+            {
+              "decision": "ALLOW",
+              "detail": "admitted by grant 'workstreams/po03/wave-a/units/wa-010/**'",
+              "reason": "ALLOWED",
+              "side": "target"
+            }
+          ],
+          "expected_source_reason": "ALLOWED",
+          "expected_target_reason": "ALLOWED",
+          "old_path": "workstreams/po03/wave-a/units/wa-010/a.json",
+          "outcome": "ADMITTED",
+          "path": "workstreams/po03/wave-a/units/wa-010/result/a.json",
+          "reason_matches_preregistration": true,
+          "status": "RENAME",
+          "why": null
+        },
+        {
+          "case": "rename carries a file out of the grant",
+          "decisions": [
+            {
+              "decision": "ALLOW",
+              "detail": "admitted by grant 'workstreams/po03/wave-a/units/wa-010/**'",
+              "reason": "ALLOWED",
+              "side": "source"
+            },
+            {
+              "decision": "DENY",
+              "detail": "path belongs to 'lease-po03-wa-011-a02' via 'workstreams/po03/wave-a/units/wa-011/**', not to 'lease-po03-wa-010-a02'",
+              "reason": "DENY_RENAME_TARGET_NOT_OWNED",
+              "side": "target"
+            }
+          ],
+          "expected_source_reason": "ALLOWED",
+          "expected_target_reason": "DENY_RENAME_TARGET_NOT_OWNED",
+          "old_path": "workstreams/po03/wave-a/units/wa-010/a.json",
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/wave-a/units/wa-011/a.json",
+          "reason_matches_preregistration": true,
+          "status": "RENAME",
+          "why": null
+        },
+        {
+          "case": "rename drags a foreign file into the grant",
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path belongs to 'lease-po03-wa-011-a02' via 'workstreams/po03/wave-a/units/wa-011/**', not to 'lease-po03-wa-010-a02'",
+              "reason": "DENY_RENAME_SOURCE_NOT_OWNED",
+              "side": "source"
+            },
+            {
+              "decision": "ALLOW",
+              "detail": "admitted by grant 'workstreams/po03/wave-a/units/wa-010/**'",
+              "reason": "ALLOWED",
+              "side": "target"
+            }
+          ],
+          "expected_source_reason": "DENY_RENAME_SOURCE_NOT_OWNED",
+          "expected_target_reason": "ALLOWED",
+          "old_path": "workstreams/po03/wave-a/units/wa-011/a.json",
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/wave-a/units/wa-010/a.json",
+          "reason_matches_preregistration": true,
+          "status": "RENAME",
+          "why": null
+        },
+        {
+          "case": "rename escapes into denied state",
+          "decisions": [
+            {
+              "decision": "ALLOW",
+              "detail": "admitted by grant 'workstreams/po03/wave-a/units/wa-010/**'",
+              "reason": "ALLOWED",
+              "side": "source"
+            },
+            {
+              "decision": "DENY",
+              "detail": "path is denied to every writer by 'state/**'",
+              "reason": "DENY_PROHIBITED_PATH",
+              "side": "target"
+            }
+          ],
+          "expected_source_reason": "ALLOWED",
+          "expected_target_reason": "DENY_PROHIBITED_PATH",
+          "old_path": "workstreams/po03/wave-a/units/wa-010/a.json",
+          "outcome": "BLOCKED",
+          "path": "state/a.json",
+          "reason_matches_preregistration": true,
+          "status": "RENAME",
+          "why": null
+        },
+        {
+          "case": "rename launders a denied file into the grant",
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path is denied to every writer by 'state/**'",
+              "reason": "DENY_PROHIBITED_PATH",
+              "side": "source"
+            },
+            {
+              "decision": "ALLOW",
+              "detail": "admitted by grant 'workstreams/po03/wave-a/units/wa-010/**'",
+              "reason": "ALLOWED",
+              "side": "target"
+            }
+          ],
+          "expected_source_reason": "DENY_PROHIBITED_PATH",
+          "expected_target_reason": "ALLOWED",
+          "old_path": "state/ACTIVE_CONTROL_POINTER_CURRENT.json",
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/wave-a/units/wa-010/pointer.json",
+          "reason_matches_preregistration": true,
+          "status": "RENAME",
+          "why": null
+        },
+        {
+          "case": "delete inside the grant",
+          "decisions": [
+            {
+              "decision": "ALLOW",
+              "detail": "admitted by grant 'workstreams/po03/wave-a/units/wa-010/**'",
+              "reason": "ALLOWED",
+              "side": "source"
+            }
+          ],
+          "expected_source_reason": "ALLOWED",
+          "expected_target_reason": null,
+          "old_path": null,
+          "outcome": "ADMITTED",
+          "path": "workstreams/po03/wave-a/units/wa-010/scratch.json",
+          "reason_matches_preregistration": true,
+          "status": "DELETE",
+          "why": null
+        },
+        {
+          "case": "delete of a sibling unit's committed result",
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path belongs to 'lease-po03-wa-012-a01' via 'workstreams/po03/wave-a/units/wa-012/**', not to 'lease-po03-wa-010-a02'",
+              "reason": "DENY_DELETE_NOT_OWNED",
+              "side": "source"
+            }
+          ],
+          "expected_source_reason": "DENY_DELETE_NOT_OWNED",
+          "expected_target_reason": null,
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/wave-a/units/wa-012/result.json",
+          "reason_matches_preregistration": true,
+          "status": "DELETE",
+          "why": null
+        },
+        {
+          "case": "delete of depended-upon controller state",
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "path is read-only for 'lease-po03-wa-010-a02' by 'workstreams/po03/control/**'",
+              "reason": "DENY_READ_ONLY_PATH",
+              "side": "source"
+            }
+          ],
+          "expected_source_reason": "DENY_READ_ONLY_PATH",
+          "expected_target_reason": null,
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/control/path-ownership.json",
+          "reason_matches_preregistration": true,
+          "status": "DELETE",
+          "why": null
+        },
+        {
+          "case": "copy only writes its target, so a foreign source is readable",
+          "decisions": [
+            {
+              "decision": "ALLOW",
+              "detail": "admitted by grant 'workstreams/po03/wave-a/units/wa-010/**'",
+              "reason": "ALLOWED",
+              "side": "target"
+            }
+          ],
+          "expected_source_reason": null,
+          "expected_target_reason": "ALLOWED",
+          "old_path": "workstreams/po03/control/path-ownership.json",
+          "outcome": "ADMITTED",
+          "path": "workstreams/po03/wave-a/units/wa-010/fixtures/registry-copy.json",
+          "reason_matches_preregistration": true,
+          "status": "COPY",
+          "why": null
+        },
+        {
+          "case": "a rename that reports no source is not admissible",
+          "decisions": [
+            {
+              "decision": "DENY",
+              "detail": "a rename must report the path it moved away from",
+              "reason": "DENY_MISSING_RENAME_SOURCE",
+              "side": "source"
+            }
+          ],
+          "expected_source_reason": "DENY_MISSING_RENAME_SOURCE",
+          "expected_target_reason": null,
+          "old_path": null,
+          "outcome": "BLOCKED",
+          "path": "workstreams/po03/wave-a/units/wa-010/a.json",
+          "reason_matches_preregistration": true,
+          "status": "RENAME",
+          "why": null
+        }
+      ]
+    }
+  },
+  "total_rows": 47,
+  "writer": "lease-po03-wa-010-a02"
+}

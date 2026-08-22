@@ -1,0 +1,114 @@
+{
+  "artifact": "limitations.json",
+  "task_id": "PO03-WA-010",
+  "attempt_id": "PO03-WA-010-A02",
+  "hypothesis_id": "H-PO03-WA-010",
+  "purpose": "What this engine does not establish. Stated so an independent reviewer does not have to infer the boundary from what the tests happen to cover.",
+  "hypothesis_scope_note": "The frozen hypothesis says grants plus deny globs *can* prevent overlapping subordinate writes before commit. The reproduction shows they do when the gate is invoked. It does not show they cannot be circumvented, which is limitation L1.",
+  "limitations": [
+    {
+      "id": "L1",
+      "severity": "MATERIAL",
+      "title": "The gate binds only a writer that invokes it",
+      "detail": "Prevention was demonstrated through a client-side pre-commit hook. Client-side hooks are advisory: 'git commit --no-verify' skips them, a hook is not cloned with the repository, and a writer can push a commit built elsewhere. The reproduction's own R9 negative control exercises exactly this bypass to attribute the refusals to the engine, so the bypass is demonstrated rather than hypothetical.",
+      "what_would_close_it": "A server-side pre-receive hook, a required status check, or branch protection that rejects a push whose changed paths fail the audit. The engine already exits non-zero and emits a machine-readable report, so it is usable in all three.",
+      "state": "OWNER_BLOCKED",
+      "blocked_because": "Installing a pre-receive hook, a required check or branch protection is a protected repository-administration act outside this attempt's authority envelope. It was not attempted."
+    },
+    {
+      "id": "L2",
+      "severity": "MATERIAL",
+      "title": "Paths are authorised, content is not",
+      "detail": "Every decision is a function of the changed path, its status and the writer's grant. A write that stays inside the owned subtree is admitted regardless of what it contains, so the engine cannot detect a semantically damaging in-scope write, a secret committed into an owned file, or a test weakened to pass.",
+      "what_would_close_it": "A separate content control: secret scanning, manifest hash verification and an independent reviewer. Those are different units and are not claimed here.",
+      "state": "NOT_SUPPORTED"
+    },
+    {
+      "id": "L3",
+      "severity": "MATERIAL",
+      "title": "Symlinks are treated as ordinary paths",
+      "detail": "A symlink inside the owned subtree whose target points outside it is admitted, because the path being written is the link and the engine does not resolve or read link targets. Git records the mode change as 'T', which is checked as a path only.",
+      "what_would_close_it": "Reading the staged blob mode and target for entries with mode 120000 and refusing a target that escapes the grant. Deliberately out of scope for a changed-path engine; recorded rather than silently omitted.",
+      "state": "NOT_SUPPORTED"
+    },
+    {
+      "id": "L4",
+      "severity": "MODERATE",
+      "title": "Case-insensitive collision detection is a heuristic",
+      "detail": "detect_case_insensitive_collisions casefolds the pattern text and retests intersection. Casefolding a character class can perturb its meaning, so the check can in principle report a collision that a real case-insensitive checkout would not produce, or miss one involving exotic case-folding. It is reported as ADVISORY and never blocks.",
+      "what_would_close_it": "Compiling a genuinely case-insensitive matcher rather than folding the pattern source text.",
+      "state": "PARTIAL"
+    },
+    {
+      "id": "L5",
+      "severity": "MODERATE",
+      "title": "Unicode normalisation is advisory, not enforced",
+      "detail": "Matching is exact codepoint comparison, so a decomposed path does not match a composed grant. That is correct for a case-sensitive Linux checkout and is asserted by test_decomposed_unicode_does_not_match_a_composed_grant, but a filesystem that normalises on write (macOS HFS+) could present a path the grant does not admit. Only a NON_NFC_GRANT advisory is raised.",
+      "what_would_close_it": "Normalising both grant and path to NFC before matching, which would need agreement with whatever git does on the target platform. Not tested on a normalising filesystem here.",
+      "state": "PARTIAL"
+    },
+    {
+      "id": "L6",
+      "severity": "MODERATE",
+      "title": "The dialect oracle is one git version on one platform",
+      "detail": "The differential test compares against git version 2.43.0 as present in this runtime. It establishes agreement with that implementation, not with every git version, and it skips entirely if git is absent.",
+      "what_would_close_it": "Running the differential test in CI across several git versions and platforms.",
+      "state": "PARTIAL"
+    },
+    {
+      "id": "L7",
+      "severity": "MINOR",
+      "title": "Witness completeness rests on a stated argument, not a proof",
+      "detail": "Character-level intersection searches a candidate alphabet of the mentioned endpoints, their immediate neighbours and fixed sentinels. The docstring argues this cannot miss a non-empty intersection because these predicates denote finite unions of codepoint intervals and their complements. The argument is supported by a brute-force cross-check over 100000+ pattern pairs on a small alphabet, not by a machine-checked proof.",
+      "what_would_close_it": "A formal proof, or exhaustive verification over a larger alphabet.",
+      "state": "PARTIAL"
+    },
+    {
+      "id": "L8",
+      "severity": "MINOR",
+      "title": "Overlap detection is pairwise and quadratic",
+      "detail": "detect_grant_overlaps compares every pair of grants. On the real 67-owner registry this completes in well under a second, but the cost grows quadratically in grants and the engine has not been measured at the Wave B scale of 128+ attempts.",
+      "what_would_close_it": "Measuring the audit at Wave B scale and, if needed, indexing grants by literal path prefix before pairwise comparison.",
+      "state": "PARTIAL"
+    },
+    {
+      "id": "L9",
+      "severity": "MINOR",
+      "title": "The reproduction is one workload with two writers",
+      "detail": "R-PO03-WA-010-001 uses two subordinate writers and one controller on a sanitized registry. It does not exercise concurrent commits racing for the same path, and the engine does no locking: it reads the registry at gate time, so a registry edited mid-commit is a race it would not detect.",
+      "what_would_close_it": "A concurrency reproduction with simultaneous writers, and reading the registry at a pinned immutable commit rather than from the worktree.",
+      "state": "PARTIAL"
+    },
+    {
+      "id": "L10",
+      "severity": "MINOR",
+      "title": "Reasoning-effort exposure is not independently attestable",
+      "detail": "The immutable input requests model claude-opus-5-thinking-high with reasoning 'high'. The runtime reports a model identity but exposes no separate attestation of the reasoning setting actually applied, so it cannot be evidenced.",
+      "state": "NOT_SUPPORTED"
+    },
+    {
+      "id": "L11",
+      "severity": "MINOR",
+      "title": "The producer did not and cannot accept this result",
+      "detail": "This return reports READY_TO_COMMIT only. Obzio state is RESULT_COMMITTED, completion_actor is null and independent_acceptance.state is NOT_TESTED. No coordinator ingestion and no independent disposition exist yet.",
+      "state": "NOT_TESTED"
+    },
+    {
+      "id": "L12",
+      "severity": "MINOR",
+      "title": "Deterministic regeneration excludes one artifact",
+      "detail": "result/build_evidence.py regenerates every JSON artifact byte-identically, but test-output.txt embeds unittest's wall-clock duration line and so differs between runs. The pass/fail content and test count are stable.",
+      "state": "PARTIAL"
+    }
+  ],
+  "counts": {
+    "total": 12,
+    "material": 3,
+    "moderate": 4,
+    "minor": 5,
+    "owner_blocked": 1,
+    "not_supported": 3
+  },
+  "no_invented_values_attestation": "Every unavailable fact above is marked NOT_SUPPORTED, OWNER_BLOCKED, NOT_TESTED or PARTIAL rather than estimated.",
+  "decision_changed": []
+}

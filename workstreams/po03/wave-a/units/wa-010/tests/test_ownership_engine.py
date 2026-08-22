@@ -119,6 +119,56 @@ class StaticOverlapTest(unittest.TestCase):
         self.assertIn("DENY_SHADOWED_GRANT", kinds)
         self.assertEqual(engine.blocking_findings(), [])
 
+    def test_implicit_deny_globs_do_not_raise_a_shadow_advisory(self):
+        """A recursive grant always intersects '**/.git/**', which says nothing."""
+        engine = OwnershipEngine.from_ownership_document(load_fixture("registry-disjoint.json"))
+        self.assertEqual(engine.detect_shadowed_grants(), [])
+        implicit = [glob for glob in engine.implicit_deny_globs if glob.pattern == "**/.git/**"]
+        self.assertTrue(implicit)
+        grant = engine.owners[-1].owned_globs[0]
+        self.assertIsNotNone(grant.intersection_witness(implicit[0]))
+
+    def test_the_seeded_registry_raises_no_shadow_advisory(self):
+        engine = composed_engine()
+        self.assertEqual(engine.detect_shadowed_grants(), [])
+        self.assertEqual(engine.audit(), [])
+
+    def test_a_bare_deny_glob_is_flagged_as_too_narrow(self):
+        document = load_fixture("registry-disjoint.json")
+        document["global_deny_globs"].append("secrets.json")
+        engine = OwnershipEngine.from_ownership_document(document)
+        findings = engine.detect_narrow_deny_patterns()
+        self.assertEqual([finding.kind for finding in findings], ["NARROW_DENY_PATTERN"])
+        self.assertIn("**/secrets.json", findings[0].detail)
+        self.assertEqual(engine.blocking_findings(), [])
+
+    def test_the_narrow_deny_reading_is_the_one_that_is_flagged(self):
+        """The advisory describes real behaviour: the bare pattern misses subdirectories."""
+        engine = OwnershipEngine.from_ownership_document(
+            {
+                "controller": {"branch": "c", "run_id": "r", "owned_globs": ["control/**"]},
+                "global_deny_globs": ["secrets.json"],
+                "subordinate_owners": [
+                    {
+                        "task_id": "T",
+                        "lease_id": "lease-t",
+                        "fence_token": 1,
+                        "write_mode": "BEST_OF_N_ISOLATED_WORKTREE_ONLY",
+                        "owned_globs": ["units/**"],
+                    }
+                ],
+            }
+        )
+        nested = engine.check_changes(
+            "lease-t", [Change(status="ADD", path="units/a/secrets.json")], declared_fence=1
+        )
+        self.assertFalse(nested.blocked)
+        self.assertTrue(engine.detect_narrow_deny_patterns())
+
+    def test_deny_globs_with_a_separator_are_not_flagged(self):
+        engine = composed_engine()
+        self.assertEqual(engine.detect_narrow_deny_patterns(), [])
+
     def test_case_only_difference_is_reported_as_an_advisory_collision(self):
         document = load_fixture("registry-disjoint.json")
         document["subordinate_owners"][1]["owned_globs"] = [
