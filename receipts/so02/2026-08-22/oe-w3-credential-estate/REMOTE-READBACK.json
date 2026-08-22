@@ -4,14 +4,18 @@
   "method": "For each file, the blob was read back from the fetched remote commit with `git cat-file blob <remote_sha>:<path>` and re-hashed, then compared against the working tree. This is verification by recomputation from remote objects, not an assertion that the push succeeded.",
   "why_this_check_exists": "`git push` can print 'Everything up-to-date' and exit 0 against a stale ref, so exit status is not evidence of publication. Only a read-back of remote objects is.",
   "remote_ref": "origin/cursor/oe-w3-credential-estate-696d",
-  "remote_commit_sha": "c10d9cfe09d2e6b4413374b78cd7e20609f81573",
-  "local_commit_sha": "c10d9cfe09d2e6b4413374b78cd7e20609f81573",
+  "remote_commit_sha": "959227c2ade44f6621d7ad0a7a5c1b7aae6e88a3",
+  "local_commit_sha": "959227c2ade44f6621d7ad0a7a5c1b7aae6e88a3",
   "commits_equal": true,
-  "files_checked": 20,
+  "files_checked": 23,
   "files_missing_on_remote": [],
   "files_with_digest_mismatch": [],
   "verified": true,
-  "scope_note": "This record covers every bundle file present on the remote at the commit named above. MANIFEST.json and this record are themselves written afterwards and published in the following commit; an acceptor confirms those two with `build-manifest.py verify` plus `git ls-remote`, which is the terminating step of the chain.",
+  "deferred_from_this_check": [
+    "receipts/so02/2026-08-22/oe-w3-credential-estate/MANIFEST.json",
+    "receipts/so02/2026-08-22/oe-w3-credential-estate/REMOTE-READBACK.json"
+  ],
+  "scope_note": "This record covers every content file published at the commit named above. MANIFEST.json and this record are deliberately deferred: both are written AFTER that commit and published in the next one, so comparing them here would report a false failure rather than a real one. They are covered by the terminating step \u2014 `build-manifest.py readback-check`, run after the final push, which excludes nothing and re-hashes every file including these two \u2014 together with `git ls-remote` confirming the published ref.",
   "entries": [
     {
       "path": "receipts/so02/2026-08-22/oe-w3-credential-estate/raw/api-cursor-baseline.txt",
@@ -41,6 +45,18 @@
       "path": "receipts/so02/2026-08-22/oe-w3-credential-estate/raw/github-credentials.txt",
       "local_sha256": "d95e381943686be6af175c917394c5ef5d94c293fb4be01828e2bb27cca5af6a",
       "remote_sha256": "d95e381943686be6af175c917394c5ef5d94c293fb4be01828e2bb27cca5af6a",
+      "match": true
+    },
+    {
+      "path": "receipts/so02/2026-08-22/oe-w3-credential-estate/raw/github-token-rotation.txt",
+      "local_sha256": "1e1fe86447597f9c71570b803fc0a2f9c6a0e6c1495b79e00adba80e98cc3bc7",
+      "remote_sha256": "1e1fe86447597f9c71570b803fc0a2f9c6a0e6c1495b79e00adba80e98cc3bc7",
+      "match": true
+    },
+    {
+      "path": "receipts/so02/2026-08-22/oe-w3-credential-estate/raw/hermetic-bundle-verification.txt",
+      "local_sha256": "d40361e66b3abdf7391e520e8bf4245056ca5240ab16849752cf54def72309d4",
+      "remote_sha256": "d40361e66b3abdf7391e520e8bf4245056ca5240ab16849752cf54def72309d4",
       "match": true
     },
     {
@@ -75,8 +91,8 @@
     },
     {
       "path": "workstreams/so02/control-plane/operating-environment/w3-credential-estate/FINDINGS.md",
-      "local_sha256": "ccad94c1f35d98fc57d9f9468423411bb5ca1da2eee68c4292819387a520aa25",
-      "remote_sha256": "ccad94c1f35d98fc57d9f9468423411bb5ca1da2eee68c4292819387a520aa25",
+      "local_sha256": "c7e6a0da6173181d6cdaa671d97a85b8d2086f7e2946c4cd303ef7eb41bbe89f",
+      "remote_sha256": "c7e6a0da6173181d6cdaa671d97a85b8d2086f7e2946c4cd303ef7eb41bbe89f",
       "match": true
     },
     {
@@ -93,14 +109,14 @@
     },
     {
       "path": "workstreams/so02/control-plane/operating-environment/w3-credential-estate/RUNTIME-CREDENTIAL-INVENTORY.json",
-      "local_sha256": "f75afa36b0375971126a23da38e156aa6952011a1f55ef0c28960dc6ef89c247",
-      "remote_sha256": "f75afa36b0375971126a23da38e156aa6952011a1f55ef0c28960dc6ef89c247",
+      "local_sha256": "291ad0c738298e73adc4cfe96aa5d7826b87347012bafbcd8c4c6871e8db55e0",
+      "remote_sha256": "291ad0c738298e73adc4cfe96aa5d7826b87347012bafbcd8c4c6871e8db55e0",
       "match": true
     },
     {
       "path": "workstreams/so02/control-plane/operating-environment/w3-credential-estate/tools/build-manifest.py",
-      "local_sha256": "3844d3f8de33344cd4937846a926bb781b65a95e2999924e51c5b43fd1c00fc7",
-      "remote_sha256": "3844d3f8de33344cd4937846a926bb781b65a95e2999924e51c5b43fd1c00fc7",
+      "local_sha256": "2801e2039f11de6ee9d53b75f97e7c0ee0ece87945731fb0df847de27574435c",
+      "remote_sha256": "2801e2039f11de6ee9d53b75f97e7c0ee0ece87945731fb0df847de27574435c",
       "match": true
     },
     {
@@ -125,6 +141,12 @@
       "path": "workstreams/so02/control-plane/operating-environment/w3-credential-estate/tools/scan-for-credentials.py",
       "local_sha256": "cf3b2470daef51846ef1dfad0212e591d324ea3fda9379fcd084f3955c6439fd",
       "remote_sha256": "cf3b2470daef51846ef1dfad0212e591d324ea3fda9379fcd084f3955c6439fd",
+      "match": true
+    },
+    {
+      "path": "workstreams/so02/control-plane/operating-environment/w3-credential-estate/tools/verify-bundle-hermetic.sh",
+      "local_sha256": "52e1a1f228c7b53f7bedc2fdb96955a6baf993a923257977936ca9ff65079014",
+      "remote_sha256": "52e1a1f228c7b53f7bedc2fdb96955a6baf993a923257977936ca9ff65079014",
       "match": true
     },
     {
