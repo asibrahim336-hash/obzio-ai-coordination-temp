@@ -1,0 +1,95 @@
+{
+  "evidence_id": "EV-PO03-CRITERIA-FREEZE-WAVE-A-20260822-v001",
+  "frozen_at": "2026-08-22T07:00:24Z",
+  "frozen_by_function": "obzio.function.repository-engineering-portable-runtime",
+  "appointment": "PO-03",
+  "wave": "WAVE-A",
+  "branch": "cursor/po03-wave-a-transactional-factory-5086",
+  "freeze_rule": "These criteria were recorded before any deliverable in this Wave was written or declared DONE. They are not edited retroactively; failures are reported against this frozen list.",
+  "commission_source": {
+    "path": "workstreams/po03/COMMISSION.md",
+    "commit": "f36bbefcb4a24eb8e4f55090ea03aaa48f1dbb7a",
+    "sha256": "b6dff810facb443c7f081b98a3b578f6ad8521a1e79f13c3b862f527504b968d",
+    "bytes": 16030,
+    "commission_revision": "v002"
+  },
+  "frozen_engineering_criteria": [
+    {
+      "id": "FC-01",
+      "requirement": "workstreams/po03/.gitignore excludes __pycache__/ without any write outside the PO-03 allowlist.",
+      "verification": "file exists; git status stays clean after running the test suite"
+    },
+    {
+      "id": "FC-02",
+      "requirement": "workstreams/po03/tools/path_scope_guard.py reads newline-separated changed paths from argv or stdin, exits non-zero listing every path outside the allowlist (workstreams/po03/, receipts/po03/, .github/workflows/po03-*.yml), exits 0 otherwise, with no third-party imports.",
+      "verification": "workstreams/po03/tests/test_path_scope_guard.py, including at least one synthetic out-of-allowlist rejection case"
+    },
+    {
+      "id": "FC-03",
+      "requirement": "The out-of-allowlist rejection fixture uses synthetic path strings and a throwaway /tmp git repository only. No real mutation of this repository's tracked tree outside the allowlist is performed to demonstrate rejection.",
+      "verification": "test source review plus final git diff --name-only containment check"
+    },
+    {
+      "id": "FC-04",
+      "requirement": ".github/workflows/po03-contracts.yml fails the build when the changed-path set contains any out-of-allowlist path, for both pull_request and push-to-po03 triggers, and retains the existing unittest discovery step.",
+      "verification": "workflow file content; CI result is PENDING_PUSH until Actions runs on the pushed branch"
+    },
+    {
+      "id": "FC-05",
+      "requirement": "workstreams/po03/tools/manifest.py writes a sorted path<TAB>sha256 manifest over tracked files under workstreams/po03/, excluding MANIFEST.sha256 itself and __pycache__, and --verify recomputes and exits non-zero with a diff on mismatch.",
+      "verification": "workstreams/po03/tests/test_manifest.py plus a CI --verify step"
+    },
+    {
+      "id": "FC-06",
+      "requirement": "workstreams/po03/tools/repository_disposition.py reads (never writes) operations/, state/, dispatch/, commissions/, handover/, handoff/, templates/ and classifies every scanned file CURRENT | SUPERSEDED | UNCLASSIFIED with real counts written to workstreams/po03/evidence/repository-disposition.json.",
+      "verification": "workstreams/po03/tests/test_repository_disposition.py asserting classified counts sum to the scanned total against this real repository"
+    },
+    {
+      "id": "FC-07",
+      "requirement": "validate_contracts.py gains a validate-dir <kind> <directory> mode reporting valid/invalid counts and the first error per invalid file, exiting non-zero if any file is invalid, with all 23 pre-existing tests still passing and no existing invariant weakened.",
+      "verification": "python3 -m unittest discover -s workstreams/po03/tests -p 'test_*.py'"
+    },
+    {
+      "id": "FC-08",
+      "requirement": "workstreams/po03/evidence/wave-a-compounding-receipt.json validates under python3 workstreams/po03/tools/validate_contracts.py wave <path> and prints VALID wave sha256=..., with decision_changed: [].",
+      "verification": "recorded command output in workstreams/po03/evidence/compounding-results.json"
+    },
+    {
+      "id": "FC-09",
+      "requirement": "python3 scripts/check_operator_taxonomy.py prints PASS immediately before every commit in this Wave.",
+      "verification": "receipts/po03/2026-08-22/producer-execution.json gate log"
+    },
+    {
+      "id": "FC-10",
+      "requirement": "Every SHA-256, timestamp and PASS recorded in this Wave was computed or observed from a real command in this session. Anything not genuinely observed is NOT_YET, NOT_SUPPORTED, NOT_APPLICABLE or OWNER_BLOCKED with a concrete reason.",
+      "verification": "receipts/po03/2026-08-22/independent-acceptance-request.json"
+    },
+    {
+      "id": "FC-11",
+      "requirement": "Every changed path in this Wave lies inside workstreams/po03/**, receipts/po03/**, or .github/workflows/po03-*.yml.",
+      "verification": "git diff --name-only 552b12eacee637716451492a98980fb0da19ff3e...HEAD piped through the path-scope guard"
+    },
+    {
+      "id": "FC-12",
+      "requirement": "No PO-01 branch, path, PR or artifact is read for narrative evidence, contacted or mutated; PR #8, PR #9, cursor/setup-dev-environment-b5ce and main are untouched.",
+      "verification": "workstreams/po03/evidence/reproduction-results.json plus final git branch/push evidence"
+    }
+  ],
+  "frozen_acceptance_candidate_controls": [
+    "the preserved v001 mission has substantive code, tests and CI effects",
+    "account-observed strongest-model use and heterogeneous allocation are evidenced",
+    "Wave A has 64 substantive durable results or an exact provider ceiling was observed and fully saturated in queued cohorts",
+    "every counted unit has a terminal durable disposition and immutable locator",
+    "strategy, research, reproduction, evaluation, OS and successor functions produced tested material effects",
+    "transactional recovery and fault injection pass",
+    "OS metrics cover every counted unit without invented values",
+    "G0/G1/G2 and holdout evidence establish or refuse the claimed lift",
+    "a fresh checkout reproduces the complete suite",
+    "all changed paths remain inside the original allowlist",
+    "PO-01 non-interference is evidenced",
+    "an independent acceptance request is issued"
+  ],
+  "self_acceptance_prohibited": true,
+  "independent_acceptance": "NOT_TESTED",
+  "decision_changed": []
+}
