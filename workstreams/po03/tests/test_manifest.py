@@ -180,6 +180,64 @@ class WriteAndVerifyTests(unittest.TestCase):
             self.assertEqual(1, result.returncode)
             self.assertIn("MANIFEST VERIFY: FAIL", result.stdout)
 
+    def test_tracked_symlink_is_refused(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.build_repo(root)
+            outside = root / "state" / "secret.txt"
+            outside.write_text("outside content\n", encoding="utf-8")
+            link = root / MODULE.SUBTREE / "link.txt"
+            link.symlink_to(Path("..") / ".." / "state" / "secret.txt")
+            self.git(root, "add", "-A")
+            with self.assertRaises(MODULE.ManifestError) as caught:
+                MODULE.build(root)
+            self.assertIn("link.txt", str(caught.exception))
+            self.assertIn("120000", str(caught.exception))
+
+    def test_symlink_content_is_never_hashed_into_the_manifest(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.build_repo(root)
+            outside = root / "state" / "secret.txt"
+            payload = b"outside content\n"
+            outside.write_bytes(payload)
+            link = root / MODULE.SUBTREE / "link.txt"
+            link.symlink_to(Path("..") / ".." / "state" / "secret.txt")
+            self.git(root, "add", "-A")
+            result = subprocess.run(
+                [sys.executable, "-I", str(MODULE_PATH), "--root", str(root)],
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(2, result.returncode, result.stdout)
+            self.assertIn("MANIFEST ERROR", result.stdout)
+            manifest = root / MODULE.MANIFEST_RELATIVE_PATH
+            if manifest.exists():
+                self.assertNotIn(
+                    hashlib.sha256(payload).hexdigest(),
+                    manifest.read_text(encoding="utf-8"),
+                )
+
+    def test_manifest_text_refuses_a_symlink_directly(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            subtree = root / MODULE.SUBTREE
+            subtree.mkdir(parents=True)
+            (root / "target.txt").write_text("x\n", encoding="utf-8")
+            (subtree / "link.txt").symlink_to(Path("..") / ".." / "target.txt")
+            with self.assertRaises(MODULE.ManifestError):
+                MODULE.manifest_text(root, [f"{MODULE.SUBTREE}/link.txt"])
+
+    def test_tracked_entries_report_modes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.build_repo(root)
+            entries = dict(
+                (relative, mode) for mode, relative in MODULE.tracked_entries(root)
+            )
+            self.assertEqual("100644", entries[f"{MODULE.SUBTREE}/COMMISSION.md"])
+            self.assertNotIn("state/unrelated.json", entries)
+
     def test_write_is_deterministic(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

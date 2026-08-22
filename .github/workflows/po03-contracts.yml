@@ -64,8 +64,8 @@ jobs:
           }
           BASE="$(resolve_base)"
           echo "changed-path base: ${BASE}"
-          git diff --name-only "${BASE}...HEAD"
-          git diff --name-only -z "${BASE}...HEAD" \
+          git diff --name-only --no-renames "${BASE}...HEAD"
+          git diff --name-only --no-renames -z "${BASE}...HEAD" \
             | python -I workstreams/po03/tools/path_scope_guard.py --null --stdin
       - name: Run dependency-free contract tests
         run: python -I -m unittest discover -s workstreams/po03/tests -p 'test_*.py' -v

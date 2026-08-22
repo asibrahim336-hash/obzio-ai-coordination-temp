@@ -286,6 +286,44 @@ class DeliberateOutOfAllowlistFixtureTests(unittest.TestCase):
             self.assertEqual(1, result.returncode, result.stdout + result.stderr)
             self.assertIn("OUT-OF-ALLOWLIST: AGENTS.md", result.stdout)
 
+    def test_rename_out_of_the_allowlist_is_caught_without_rename_detection(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self.git(root, "init", "-q", "-b", "main")
+            governed = root / "state" / "governed.json"
+            governed.parent.mkdir(parents=True)
+            governed.write_text("{}\n", encoding="utf-8")
+            seed = root / "workstreams" / "po03" / "seed.json"
+            seed.parent.mkdir(parents=True)
+            seed.write_text("{}\n", encoding="utf-8")
+            self.git(root, "add", "-A")
+            self.git(root, "commit", "-q", "-m", "seed")
+            base = self.git(root, "rev-parse", "HEAD").stdout.strip()
+            self.git(root, "mv", "state/governed.json", "workstreams/po03/governed.json")
+            self.git(root, "commit", "-q", "-m", "rename into the allowlist")
+
+            with_detection = self.git(
+                root, "diff", "--name-only", f"{base}...HEAD"
+            ).stdout
+            self.assertNotIn("state/governed.json", with_detection)
+            self.assertEqual(0, self.guard(with_detection).returncode)
+
+            without_detection = self.git(
+                root, "diff", "--name-only", "--no-renames", f"{base}...HEAD"
+            ).stdout
+            self.assertIn("state/governed.json", without_detection)
+            result = self.guard(without_detection)
+            self.assertEqual(1, result.returncode, result.stdout)
+            self.assertIn("OUT-OF-ALLOWLIST: state/governed.json", result.stdout)
+
+    def test_ci_workflow_disables_rename_detection(self):
+        workflow = Path(__file__).parents[3] / ".github" / "workflows" / "po03-contracts.yml"
+        text = workflow.read_text(encoding="utf-8")
+        diff_lines = [line for line in text.splitlines() if "git diff --name-only" in line]
+        self.assertTrue(diff_lines)
+        for line in diff_lines:
+            self.assertIn("--no-renames", line, line)
+
     def test_guard_runs_without_third_party_imports(self):
         result = subprocess.run(
             [sys.executable, "-I", str(MODULE_PATH), "workstreams/po03/a.json"],
