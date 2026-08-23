@@ -1,52 +1,56 @@
 {
-  "_comment": "Declarative configuration for .cursor/hooks/guard_write_scope.py. Editing this file changes what the guard refuses. Keep it the single place where protected surfaces are named, so a boundary is never restated in prose in two places that can drift apart.",
-  "protected_branch_globs": [
-    "main",
-    "so02/*",
-    "po03/*",
-    "soo/*",
-    "packs/*",
-    "cursor/po03-*",
-    "cursor/setup-dev-environment-*",
-    "cursor/so02-cur-orch-qual-01",
-    "cursor/operating-environment-return-*"
-  ],
-  "protected_path_globs": [
-    "workstreams/po03/**",
-    "state/**",
-    ".github/workflows/**",
-    ".cursor/**"
-  ],
+  "_comment": "Declarative configuration for .cursor/hooks/guard_write_scope.py. Editing this file changes what the guard refuses. Every key below states the provenance class of the constraint it configures, because the founder's standing amendment of 2026-08-23 requires it: 'any lane proposing a constraint states its provenance class in the same breath. An unclassified constraint is not in force.'",
+  "_amendment_20260823": "The 'protected surface' category is VOID by founder instruction. 'protected_branch_globs' and 'protected_path_globs' have been REMOVED from this file, not shortened. No key here names a target that may not be written. Ahmed Sadek: 'Every surface in the Ahmed/Obzio-controlled estate is writable under my authority [...] No surface is off-limits because of a name on a list.' Do not reintroduce either key. If a future run finds a branch it believes must not be written, the answer is a write declaration whose concurrency, reversibility or evidence gate refuses it \u2014 not a list.",
+  "_retired_keys": {
+    "protected_branch_globs": "REMOVED 2026-08-23. Provenance ASSISTANT_AUTHORED; voided by the founder. It refused PROTECTED-BRANCH-PUSH and PROTECTED-BRANCH-COMMIT on names he never designated.",
+    "protected_path_globs": "REMOVED 2026-08-23. Provenance ASSISTANT_AUTHORED, and it was already inert: a prior lane established that no code read it. A key that looks like a boundary and refuses nothing is the same defect as a rule written in prose and enforced by nothing, so it is deleted rather than left as decoration."
+  },
+  "_comment_write_declaration": "FOUNDER_AUTHORED. Ahmed Sadek, 2026-08-23: 'the write-scope guard now checks that a write was declared and reasoned, not that its target avoided a forbidden list.' When require_write_declaration is true, a push must be covered by a declaration in write_declarations_dir that write_admission_tool admits. The target's name is never consulted. Default false: a guard that begins refusing every push the moment it is installed is the over-broad guard that blocks legitimate work, so switching it on is an explicit operator act rather than a side effect of this lane landing.",
+  "require_write_declaration": false,
+  "write_declarations_dir": ".cursor/write-declarations",
+  "write_admission_tool": "workstreams/so02/control-plane/operating-environment/tools/write_admission.py",
+  "rehearse_reversal_in_hook": true,
+  "admission_timeout": 120,
   "refused_commands": [
     {
       "id": "PR-WRITE",
+      "provenance": "EARNED",
+      "defect_cited": "In this estate a PR is a projection, never an acceptance. Lanes that opened or moved pull requests produced merge state that no acceptance record backed.",
       "pattern": "^gh\\s+pr\\s+(create|merge|close|reopen|edit|review|comment|ready)\\b",
-      "reason": "Pull-request writes are not a lane capability. In this estate a PR is a projection, never an acceptance, and lanes return branches rather than opening or moving pull requests."
+      "reason": "Pull-request writes are not a lane capability. Lanes return branches rather than opening or moving pull requests."
     },
     {
       "id": "ISSUE-WRITE",
+      "provenance": "EARNED",
+      "defect_cited": "This route's GitHub credential is read-only for everything except git contents, so the write fails at GitHub with a confusing 403. Refusing locally makes an existing boundary legible instead of inventing one.",
       "pattern": "^gh\\s+(issue|release|secret|variable|workflow)\\b|^gh\\s+api\\b[^|;&]*(?:-X|--method)[= ]\\s*(?i:POST|PATCH|PUT|DELETE)\\b",
-      "reason": "This route's GitHub credential is read-only for everything except git contents. A write attempt here fails at GitHub anyway; refusing locally makes the boundary explicit instead of producing a confusing 403. Both -X and --method are matched, in either case, because a boundary that only catches one spelling is not a boundary."
+      "reason": "The credential cannot perform these writes. Both -X and --method are matched, in either case, because a boundary that catches one spelling is not a boundary."
     },
     {
       "id": "FORCE-PUSH",
+      "provenance": "EARNED",
+      "defect_cited": "Force push destroys the immutable-SHA custody every read-back and manifest in this estate depends on. This is mechanism, not authority: the founder removed an authority restriction and explicitly did not ask for unrecoverable writes.",
       "pattern": "git\\s+push\\b.*(--force(?!-with-lease)|(^|\\s)-f(\\s|$))",
-      "reason": "Force push destroys the immutable-SHA custody the whole evidence ladder depends on. Use --force-with-lease only after an explicit instruction."
+      "reason": "Use --force-with-lease, which refuses when someone else has moved the ref. A reversal constructed by reversal_rehearsal.py already uses the leased form."
     },
     {
       "id": "HISTORY-REWRITE",
+      "provenance": "EARNED",
+      "defect_cited": "History rewriting breaks byte-for-byte read-back by immutable SHA, which is the property that makes produced evidence independently checkable.",
       "pattern": "git\\s+(rebase|filter-branch|reset\\s+--hard|commit\\s+--amend)\\b",
-      "reason": "History rewriting breaks byte-for-byte read-back by immutable SHA, which is the property that makes produced evidence independently checkable."
+      "reason": "Recorded custody stops meaning anything once the commits it names can be rewritten underneath it."
     }
   ],
+  "_comment_currentness": "EARNED. Defect cited: committing over a failing currentness check is what produced two files that each claimed to be current. AGENTS.md instruction 10 requires the check to pass before commit.",
   "require_currentness_check_before_commit": true,
-  "currentness_command": ["python3", "scripts/check_operator_taxonomy.py"],
-
-  "_comment_detached_head": "Refuse `git commit` while HEAD is detached. A commit on a detached HEAD advances no branch, which is how a lane's branch ref silently stays at the base while the lane believes it has committed.",
+  "currentness_command": [
+    "python3",
+    "scripts/check_operator_taxonomy.py"
+  ],
+  "_comment_detached_head": "EARNED. Defect cited and reproduced live: sibling lanes sharing one /workspace checkout committed onto a detached HEAD, so their branch refs stayed at the base commit. The later `git push -u origin <lane-branch>` pushed the stale ref, printed 'Everything up-to-date' and exited 0. A lane trusting that exit code reports work it never published.",
   "refuse_detached_head": true,
-
-  "_comment_stale_ref_push": "Refuse `git push <branch>` when that branch sits on HEAD's own lineage and behind it. That is the exact signature of the silent no-op: git prints 'Everything up-to-date' and exits 0, so the exit code stops meaning the work was published. A divergent or unrelated branch is not refused, because pushing a different branch on purpose is legitimate.",
+  "_comment_stale_ref_push": "EARNED, same defect, other half. Refuse `git push <branch>` when that branch sits on HEAD's own lineage and behind it, which is the exact signature of the silent no-op. A divergent or unrelated branch is not refused, because pushing a different branch on purpose is legitimate.",
   "refuse_stale_ref_push": true,
-
-  "audit_log": ".cursor/.run/write-scope-audit.jsonl"
+  "audit_log": ".cursor/.run/write-scope-audit.jsonl",
+  "_staged_copy_note": "This staged copy is kept byte-identical to the live .cursor/write-scope.json so that applying it can never resurrect a rule the live file already retired. Divergence between a staged file and its live target is how a voided category comes back."
 }
