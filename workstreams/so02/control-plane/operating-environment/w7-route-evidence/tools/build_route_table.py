@@ -1682,8 +1682,18 @@ def main() -> int:
                 "http_200_count": gap.get("http_200_count"),
                 "byte_identical_to_w6": gap.get("verified_identical_to_w6_count"),
                 "changed_since_w6": gap.get("changed_since_w6"),
+                "non_200": gap.get("non_200"),
                 "authenticated_requests": gap.get("authenticated_requests"),
                 "credential_used": gap.get("credential_used"),
+                "sources_cited_by_a_claim": len(cited),
+                "fetched_but_not_cited": sorted(set(gap["sources"]) - set(cited)),
+                "note_on_the_404": (
+                    "developers.openai.com/api/docs/guides/tools-remote-mcp.md returns "
+                    "404: the .md convention that resolves elsewhere on that host does "
+                    "not resolve for this path. No claim in this table cites it. The "
+                    "claims it was meant to support were established from "
+                    "api-secure-mcp-tunnels and chatgpt-extend-mcp instead, both 200."
+                ),
             },
             "cross_harvest_corroboration": (
                 "Twenty-six URLs were fetched independently by OE-L5 at 20:36Z and "
