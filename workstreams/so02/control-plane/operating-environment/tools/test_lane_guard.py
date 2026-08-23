@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import importlib.util
 import unittest
 from pathlib import Path
@@ -100,26 +101,73 @@ class ReportedHeadTests(unittest.TestCase):
         self.assertTrue(result["matches"])
 
 
-class ProtectedRefTests(unittest.TestCase):
-    def test_protected_branches_are_recognised(self) -> None:
-        for branch in (
-            "main",
-            "so02/strategic-control-plane-migration-20260822-v001",
-            "cursor/so02-cur-orch-qual-01",
-            "cursor/operating-environment-return-20260822-v001",
-            "cursor/po03-wave-a-factory-6e19",
-            "po03/repository-engineering-portable-runtime-20260822-v001",
-            "soo/v003-currentness-repair-20260820",
-            "packs/operator-fleet-v1-20260820",
-        ):
-            self.assertTrue(lane_guard.guard_ref_is_protected(branch), branch)
+class RetiredProtectedRefTests(unittest.TestCase):
+    """The founder voided the category on 2026-08-23; this keeps it retired.
 
-    def test_lane_branches_are_not_protected(self) -> None:
-        for branch in (
-            "cursor/oe-l1-cursor-baseline-696d",
-            "cursor/oe-l3-independent-acceptance-696d",
-        ):
-            self.assertFalse(lane_guard.guard_ref_is_protected(branch), branch)
+    These tests replace `ProtectedRefTests`, which asserted that `main`, PO-03,
+    SO-02 and `soo/` refs were recognised as protected. That expectation is now
+    the defect, so asserting the machinery is absent is the correct successor to
+    asserting it worked.
+    """
+
+    def test_the_protected_ref_machinery_is_gone_from_the_module(self) -> None:
+        for retired in ("PROTECTED_REFS", "PROTECTED_PREFIXES", "guard_ref_is_protected",
+                        "verify_protected_refs"):
+            self.assertFalse(hasattr(lane_guard, retired),
+                             f"{retired} still exists; the voided category has survived")
+
+    def test_no_verdict_or_report_key_names_protected_refs(self) -> None:
+        # The retirement is documented in the module docstring, which necessarily
+        # names what was removed. What must not survive is executable use of it,
+        # so the docstring is stripped and the remaining code is what is checked.
+        tree = ast.parse((Path(__file__).resolve().parent / "lane_guard.py").read_text(encoding="utf-8"))
+        if (tree.body and isinstance(tree.body[0], ast.Expr)
+                and isinstance(tree.body[0].value, ast.Constant)
+                and isinstance(tree.body[0].value.value, str)):
+            tree.body.pop(0)
+        code_only = ast.unparse(tree)
+        for retired in ("protected_ref_drift", "PROTECTED_REF_DRIFT_FAIL",
+                        "protected_surfaces_declared_untouchable", "PROTECTED_REFS",
+                        "guard_ref_is_protected"):
+            self.assertNotIn(retired, code_only, retired)
+
+    def test_a_previously_protected_ref_is_now_an_ordinary_lane_branch(self) -> None:
+        """No surface is off-limits because of a name on a list."""
+        owned = ["workstreams/so02/control-plane/operating-environment/l1-cursor-baseline/**"]
+        path = "workstreams/so02/control-plane/operating-environment/l1-cursor-baseline/X.json"
+        # Containment is about which paths a lane owns, and it never consulted a
+        # branch name; that separation is why removing the branch list changes
+        # nothing about the control that actually caught a defect.
+        self.assertTrue(lane_guard.namespace_matches(path, owned))
+
+
+class LaneConcurrencyTests(unittest.TestCase):
+    """The replacement for the drift check: is a lane branch still being written?"""
+
+    RESULTS = [
+        {"parent_id": "OE-L1", "branch": "cursor/oe-l1-cursor-baseline-696d"},
+        {"parent_id": "OE-L2", "branch": "cursor/oe-l2-capability-research-696d"},
+    ]
+
+    def test_a_lane_branch_held_by_a_live_run_is_reported_in_flight(self) -> None:
+        observation = {"observed_at": "2026-08-23T04:00:00Z", "agents": [
+            {"bcId": "bc-live", "branchName": "cursor/oe-l1-cursor-baseline-696d", "status": "RUNNING"},
+        ]}
+        notes = lane_guard.lanes_in_flight(self.RESULTS, observation)
+        self.assertEqual(1, len(notes))
+        self.assertIn("OE-L1", notes[0])
+        self.assertIn("would disturb work in flight", notes[0])
+
+    def test_a_settled_run_leaves_the_lane_integrable(self) -> None:
+        observation = {"observed_at": "2026-08-23T04:00:00Z", "agents": [
+            {"bcId": "bc-done", "branchName": "cursor/oe-l1-cursor-baseline-696d", "status": "IDLE"},
+        ]}
+        self.assertEqual([], lane_guard.lanes_in_flight(self.RESULTS, observation))
+
+    def test_no_observation_invents_no_refusal(self) -> None:
+        """Missing data is not a finding; inventing one would be assistant-authored."""
+        self.assertEqual([], lane_guard.lanes_in_flight(self.RESULTS, None))
+        self.assertEqual([], lane_guard.lanes_in_flight(self.RESULTS, {}))
 
 
 class LaneVerdictTests(unittest.TestCase):

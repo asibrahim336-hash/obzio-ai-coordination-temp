@@ -10,12 +10,44 @@ Written after a live SHARED_WORKTREE_COLLISION reproduction: lanes dispatched
 into one shared working directory can commit onto the wrong branch or capture
 another lane's files. Instruction did not prevent that, so containment is
 enforced here as an executable check instead.
+
+## Retired 2026-08-23 — the protected-ref machinery
+
+Ahmed Sadek, standing amendment 2026-08-23:
+
+    "'Protected surfaces' is not a founder-established category. I never
+    designated main, PO-03, PR #9, any cursor/po03-* branch, PO-01, PR #6, PR #7
+    or any SO-02 source branch as protected. [...] It is void as a category."
+
+    "Never report 'protected surfaces verified unchanged.' [...] Untouched is not
+    a virtue. Correct is."
+
+So `PROTECTED_REFS`, `PROTECTED_PREFIXES`, `guard_ref_is_protected`,
+`verify_protected_refs` and the `PROTECTED_REF_DRIFT_FAIL` verdict are gone, and
+`protected_ref_drift` no longer appears in the report. They are not replaced by a
+shorter list. Write admissibility now lives in `write_admission.py`, which asks
+whether a write was declared and reasoned.
+
+Two things worth recording about what was removed, because they show the
+category was decorative as well as unfounded:
+
+- `verify_protected_refs` was called with a HARDCODED dict of three refs. The
+  manifest key `protected_surfaces_declared_untouchable` was read into a local
+  named `expected` and then never used. The file that appeared to declare the
+  boundary was not the file the check consulted.
+- The check compared refs this lane group never wrote to, so it could only ever
+  report "unchanged". That is the inaction-as-success the founder struck out.
+
+What is kept here is kept as EARNED mechanism, each citing the defect it caught:
+namespace containment, the reported-head check, path-collision detection, and
+the distinction between a lane that has not delivered and one that was refused.
 """
 
 from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import subprocess
 import sys
@@ -23,22 +55,20 @@ from pathlib import Path
 from typing import Any
 
 
+def _load(name: str):
+    spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parent / f"{name}.py")
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+concurrency_observer = _load("concurrency_observer")
+
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST_PATH = ROOT / "GROUP-MANIFEST-OE-20260822-v001.json"
 REPO = Path(__file__).resolve().parents[5]
-
-PROTECTED_REFS = {
-    "main",
-    "so02/strategic-control-plane-migration-20260822-v001",
-    "po03/repository-engineering-portable-runtime-20260822-v001",
-    "cursor/setup-dev-environment-b5ce",
-    "soo/v003-currentness-repair-20260820",
-    "soo/v003-controlling-pointer-and-part-manifest-repair-20260820",
-    "cursor/so02-cur-orch-qual-01",
-    "cursor/operating-environment-return-20260822-v001",
-}
-PROTECTED_PREFIXES = ("cursor/po03-", "po03/", "soo/", "packs/")
-
 
 def run(args: list[str], cwd: Path = REPO) -> tuple[int, str, str]:
     done = subprocess.run(args, cwd=cwd, capture_output=True, text=True)
@@ -169,24 +199,38 @@ def detect_path_collisions(results: list[dict[str, Any]]) -> list[str]:
     ]
 
 
-def verify_protected_refs(expected: dict[str, str]) -> list[str]:
-    drift: list[str] = []
-    for ref, sha in expected.items():
-        code, out, _ = run(["git", "ls-remote", "--heads", "origin", f"refs/heads/{ref}"])
-        if code != 0 or not out.strip():
-            drift.append(f"{ref}: could not resolve")
+def lanes_in_flight(results: list[dict[str, Any]], observation: dict[str, Any] | None) -> list[str]:
+    """Which candidate lanes are still being written, per the founder's first gate.
+
+    This replaces the retired drift check, and it is a different question. The
+    old one asked whether refs on a list had moved, which this group never wrote
+    and so could only answer "unchanged". This one asks whether a lane branch is
+    held by a live run right now — the only concurrency fact that bears on
+    integrating it. It gates on the world, not on a name, and it expires when
+    the run does.
+
+    An absent observation yields no findings and says so: this function is not
+    the place that decides admissibility, `write_admission` is, and inventing a
+    refusal here from missing data would be the assistant-authored class.
+    """
+    if not observation:
+        return []
+    agents = observation.get("agents") or []
+    in_flight: list[str] = []
+    for result in results:
+        branch = result.get("branch")
+        if not branch:
             continue
-        observed = out.split()[0]
-        if observed != sha:
-            drift.append(f"{ref}: expected {sha} observed {observed}")
-    return drift
+        holders = concurrency_observer.live_agents_holding(branch, agents)
+        for holder in holders:
+            in_flight.append(
+                f"{result['parent_id']} branch {branch} is held by run {holder.get('bcId')} "
+                f"in state {holder.get('status')}; integrating it now would disturb work in flight"
+            )
+    return in_flight
 
 
-def guard_ref_is_protected(branch: str) -> bool:
-    return branch in PROTECTED_REFS or branch.startswith(PROTECTED_PREFIXES)
-
-
-def evaluate() -> dict[str, Any]:
+def evaluate(observation: dict[str, Any] | None = None) -> dict[str, Any]:
     manifest = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
     base_sha = manifest["immutable_source"]["immutable_sha"]
     parents = manifest["parents"]
@@ -203,15 +247,16 @@ def evaluate() -> dict[str, Any]:
                     result["integrable"] = False
                     result.setdefault("findings", []).append(f"contested path: {path}")
 
-    expected = manifest["protected_surfaces_declared_untouchable"]
-    drift = verify_protected_refs({
-        "main": "37943ec2ff9f6702d72e127a3c8e56c81b0c3812",
-        "so02/strategic-control-plane-migration-20260822-v001": base_sha,
-        "cursor/so02-cur-orch-qual-01": "11a60dcf6dbc2eac4e6d975efab5d985ebbabd62",
-    })
+    in_flight = lanes_in_flight(results, observation)
+    for result in results:
+        for note in in_flight:
+            if note.startswith(f"{result['parent_id']} "):
+                result["state"] = "IN_FLIGHT_LIVE_RUN_HOLDS_BRANCH"
+                result["integrable"] = False
+                result.setdefault("findings", []).append(note)
 
     declared = manifest["declared_parent_denominator"]
-    undelivered = {"NOT_RETURNED", "IN_FLIGHT_NO_CONTENT_YET"}
+    undelivered = {"NOT_RETURNED", "IN_FLIGHT_NO_CONTENT_YET", "IN_FLIGHT_LIVE_RUN_HOLDS_BRANCH"}
     returned = sum(1 for r in results if r["state"] not in undelivered)
     integrable = sum(1 for r in results if r["integrable"])
     rejected = sum(1 for r in results if r["state"] == "REJECTED_FAIL_CLOSED")
@@ -227,13 +272,17 @@ def evaluate() -> dict[str, Any]:
         "undelivered_lane_count": len(results) - returned,
         "denominator_reconciles": len(results) == declared,
         "path_collisions": collisions,
-        "protected_ref_drift": drift,
+        "lanes_in_flight": in_flight,
+        "concurrency_observed": observation is not None,
         "lanes": results,
         "verdict": (
-            "PROTECTED_REF_DRIFT_FAIL" if drift
-            else "ALL_RETURNED_LANES_INTEGRABLE" if returned and integrable == returned
+            "ALL_RETURNED_LANES_INTEGRABLE" if returned and integrable == returned
             else "PARTIAL" if returned
             else "NO_LANE_RETURNED"
+        ),
+        "write_admissibility_is_decided_by": (
+            "write_admission.py — declared and reasoned, not target avoidance. The "
+            "protected-surface category was voided by the founder on 2026-08-23."
         ),
         "founder_is_comparison_retrieval_or_merge_layer": False,
     }
@@ -242,9 +291,20 @@ def evaluate() -> dict[str, Any]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="CUR-ENV-01 pre-integration lane guard")
     parser.add_argument("--json", action="store_true", help="emit the full report as JSON")
+    parser.add_argument("--observation", default=None,
+                        help="JSON from list-cloud-agents, to check whether a lane branch is still live")
     args = parser.parse_args(argv)
 
-    report = evaluate()
+    observation = None
+    if args.observation:
+        try:
+            observation = concurrency_observer.normalise_observation(
+                json.loads(Path(args.observation).read_text(encoding="utf-8")))
+        except (OSError, json.JSONDecodeError) as exc:
+            print(f"could not read observation: {exc}", file=sys.stderr)
+            return 2
+
+    report = evaluate(observation)
     if args.json:
         print(json.dumps(report, indent=2, sort_keys=True))
     else:
@@ -260,12 +320,12 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"      - {finding}")
         for collision in report["path_collisions"]:
             print(f"  COLLISION: {collision}")
-        for item in report["protected_ref_drift"]:
-            print(f"  PROTECTED REF DRIFT: {item}")
+        for item in report["lanes_in_flight"]:
+            print(f"  IN FLIGHT: {item}")
+        if not report["concurrency_observed"]:
+            print("  note: no agent observation supplied, so lane concurrency was not checked")
         print(f"verdict: {report['verdict']}")
 
-    if report["protected_ref_drift"]:
-        return 2
     return 0 if report["verdict"] in {"ALL_RETURNED_LANES_INTEGRABLE", "NO_LANE_RETURNED"} else 1
 
 
