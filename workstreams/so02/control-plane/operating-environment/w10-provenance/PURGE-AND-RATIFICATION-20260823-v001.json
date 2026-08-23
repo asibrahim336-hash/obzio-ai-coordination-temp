@@ -1,0 +1,427 @@
+{
+  "artifact_id": "OE-W10-PURGE-AND-RATIFICATION-20260823-v001",
+  "derived_from": "workstreams/so02/control-plane/operating-environment/w10-provenance/PROVENANCE-REGISTER-20260823-v001.json",
+  "derived_by": "provctl.py lists",
+  "is_a_proposal_not_a_binding": true,
+  "binds_company_strategy": false,
+  "decision_changed": [],
+  "who_applies_this": "The root controller, not this lane. A lane that purged the constraints it classified would be a producer accepting its own verdict, which EC-16 forbids and which the founder's independent-acceptance clause names directly. Nothing here is applied; nothing is deleted.",
+  "what_purge_means": "The constraint stops routing. Its source document is untouched and remains evidence. Removal is a change to what is in force, never a deletion of the record - which is also why derestrictctl.py's re-inheritance probes stay useful after a purge.",
+  "what_seek_ratification_means": "The constraint is in the third class and is therefore void unless the founder ratifies it. It is listed here rather than purged because it is genuinely useful and only its provenance is missing. Each carries one binary question, never a reading assignment. Under the estate's conflict rule an unresolved question never blocks work, so none of these ten gates anything while it waits.",
+  "what_surplus_flagged_means": "A clause that rode into force attached to a constraint whose evidence covers only the rest of it. Flagged rather than silently carried, because a rule riding on another rule's receipt is the pattern this whole exercise is about.",
+  "purge_count": 26,
+  "ratification_count": 10,
+  "surplus_flagged_count": 3,
+  "purge_list": [
+    {
+      "constraint_id": "FB-11",
+      "statement": "Protected surfaces are untouchable: PO-01, PO-03, MANUS, main, the SO-02 source branch, and PRs #6, #7 and #9.",
+      "class_of_limit": "scope",
+      "prior_verdict": "FOUNDER_BOUND",
+      "what_it_constrains": "Writing to nine named surfaces, and by inheritance any surface a later commission added to the list. In practice it constrained far more than it named: L1 declined to call batch-fetch-details at all rather than call it carefully, which is a read operation refused on account of a write prohibition.",
+      "removal_unlocks": "Everything the founder enumerates: write to main, write to a PO-03 branch once it is not running, merge where merging is right, delete where deletion is right and snapshotted. Concretely for the live estate, it unblocks FB-24's pointer conflict between PR #6 and PR #7, which has held global currentness unresolved across eight branches with four competing claims, and it removes the reason the last several returns led with an inaction report.",
+      "justification": "Confirmed defective by the founder in his own words, and the reason this lane exists. The mechanism of the original error is worth preserving: the constraint entered through assistant-drafted commission text in commit 9887f33e, which carries the founder's git identity and also carries 286 lines of Python. The classifier read the identity, found the founder, and certified. Its replacement is FA-01 plus the three gates at FA-02, FB-23 and FA-03.",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "founder_void_quote": "\"Protected surfaces\" is not a founder-established category. I never designated main, PO-03, PR #9, any cursor/po03-* branch, PO-01, PR #6, PR #7 or any SO-02 source branch as protected.",
+      "expressly_voided_by_founder": true
+    },
+    {
+      "constraint_id": "FB-18",
+      "statement": "The Claude browser-extension route is unavailable for the current run. Do not infer that the Claude model or the SW platform is low quality, and do not make a quota refill the default next action.",
+      "class_of_limit": "tooling",
+      "prior_verdict": "FOUNDER_BOUND",
+      "what_it_constrains": "Treating the Claude browser-extension route as a live candidate, and proposing a quota refill.",
+      "removal_unlocks": "The route can be re-tested rather than assumed dead. A token-capacity exhaustion is temporary by construction, and 'the current run' expired when that run did - it is dated 2026-08-22 and this is the following day. The estate needs a plane that reaches the founder's authenticated browser session, and this is one of two candidates; the other, FB-02, is also frozen.",
+      "justification": "A dated runtime observation recorded as a standing constraint. It is not founder-authored - no corpus sentence mentions it - and it caught no defect. Its two anti-inference clauses are good reasoning hygiene and bind nothing. Purged rather than ratification-listed because a stale capacity reading is not a constraint at all, and asking the founder to ratify one wastes the ratification channel.",
+      "evidence_label": "DOCUMENTED",
+      "safety_note": "Purging it does not licence a quota-refill request. FB-27 is founder-authored and forbids sending him any action resting on an unverified account fact, which is exactly what a refill request would be until the route is retested."
+    },
+    {
+      "constraint_id": "FB-24",
+      "statement": "Choosing between the competing pointer claims in PR #6 and PR #7 is a founder-bound act, not a compilation result.",
+      "class_of_limit": "scope",
+      "prior_verdict": "FOUNDER_BOUND",
+      "what_it_constrains": "Resolution of the estate's central currentness conflict. Two open PRs rewrite the same pointer files with different bytes, and whichever merges first silently sets currentness for the other.",
+      "removal_unlocks": "The conflict can be resolved by the lane holding the evidence, under the three write gates: wait if a lane is running, snapshot both pointer states as tags before writing, and carry the evidence for whichever claim is chosen. This is the estate's most consequential single unblock - currentctl reports four competing currentness claims across eight branches and refuses to resolve pointer.operator-system, and nothing anywhere reaches DURABLE while it stands.",
+      "justification": "Its cited founder source is an assistant lane's own diagnosis document, which is the clearest instance in the register of a lane's conclusion being recorded as the founder's. The founder's amendment contradicts it directly on two axes: merging does not need his permission, and a write is gated by reason and rollback rather than by whose decision it is. The underlying observation - that picking wrong sets currentness silently - is real and is fully handled by the evidence gate.",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "founder_contradiction_quote": "You do not need my permission for any of it - you need a reason and a rollback.",
+      "replacement_retained": "EC-12 is untouched. A resolver still refuses to answer while competing claims exist, because agreement by copying is not authority. What changes is that resolving the conflict with evidence and a snapshot is now an available act rather than a founder turn nobody has taken."
+    },
+    {
+      "constraint_id": "EC-13",
+      "statement": "state/**, operations/**, dispatch/** and modules/work_unit_contract/** are prohibited paths on this branch lineage until pointer reconciliation lands.",
+      "class_of_limit": "scope",
+      "prior_verdict": "EARNED_CONTROL",
+      "what_it_constrains": "Four path globs, on every lane in this lineage, indefinitely - 'until pointer reconciliation lands' has no owner and no date.",
+      "removal_unlocks": "Pointer reconciliation itself. The paths this forbids are the paths reconciliation must write, so the control forbids the work whose completion is its own expiry condition. With it gone, a lane can reconcile currentness under the three gates: wait for a running reconciliation lane, snapshot the prior pointer state as a tag, and carry the evidence for the claim it writes.",
+      "justification": "A named-target prohibition list - the exact shape the founder voided - sitting inside the EARNED class, where a de-restriction lane looking for invented limits would not think to look. Its cited defect does not belong to it: four competing currentness claims are a condition of the estate that this control did not catch and does not fix. What it does is prevent writes to the paths where the condition lives. That is a target-based gate, and the founder replaced target-based gating with reason-based gating in terms that reach it directly.",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "founder_void_quote": "No surface is off-limits because of a name on a list.",
+      "replacement_retained": "EC-12's refusal and FA-03's evidence gate together do the real work: a write to a pointer path must carry the evidence for the currentness it asserts, and a resolver must still refuse to guess between competing claims. Neither requires a path list."
+    },
+    {
+      "constraint_id": "AI-01",
+      "statement": "Nothing beyond founder tranche 01 may be prescribed until tranche 01 is evaluated.",
+      "class_of_limit": "sequencing",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "All tranche-02-class work, gated on an unrelated evaluation.",
+      "removal_unlocks": "The platform role architecture, the acceptance constitution, the salvage design and the Cursor configuration application all stop waiting on an unrelated credential answer.",
+      "justification": "Unquotable and defect-free, and additionally now contradicted by FC-03's 'A run that touched nothing and produced nothing has passed nothing.' Verdict unchanged from the prior register, which reached the right answer here by a method that happened to work on this class.",
+      "evidence_label": "DOCUMENTED"
+    },
+    {
+      "constraint_id": "AI-02",
+      "statement": "The founder must issue a new Cursor API key at cursor.com/dashboard/api and store it as a repository-scoped secret.",
+      "class_of_limit": "credential",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "It is a founder action rather than a limit, and it constrains the estate by consuming a founder turn on a credential that already exists.",
+      "removal_unlocks": "The founder action shrinks from creating and scoping a new credential to authorising one already-configured integration, and the Cursor Agent API route becomes reachable through a credential Obzio already controls.",
+      "justification": "Unquotable and defect-free. It is now doubly condemned: it is the named defect that earns FB-19, and it is an instance of the class FB-27 forbids, since it rested on an unverified account fact. Verdict unchanged.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "constraint_id": "AI-03",
+      "statement": "A per-wave founder touch-point budget sizes tranches, and F-LOAD may reject an over-budget design.",
+      "class_of_limit": "touchpoint",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "The number of founder decisions a design may require.",
+      "removal_unlocks": "High-leverage founder decisions stop being rationed against a budget, and a design is no longer rejected for asking too much of the founder when what it asks is genuinely his.",
+      "justification": "Unquotable and defect-free, and now positively contradicted: FB-06 is founder-authored and states that a request to him is an authorised reply. The replacement F-LOAD detector remains sound - it refuses a design whose return route makes him relay, which is FB-05's evidenced prohibition mechanised. Verdict unchanged.",
+      "evidence_label": "DOCUMENTED"
+    },
+    {
+      "constraint_id": "AI-04",
+      "statement": "The staged Cursor configuration is held outside .cursor/ and remains inert pending an explicit founder act.",
+      "class_of_limit": "sequencing",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "Application of hooks, rules, skills and the write-scope guard.",
+      "removal_unlocks": "The enforcement surface itself. L1 reproduced that hooks are the only enforcement surface in this runtime and that the repository has none, so every governance rule in the estate is currently prose enforced by nothing - including every constraint in this register.",
+      "justification": "Unquotable and defect-free. Verdict unchanged, and its urgency has increased: the founder has now directed a change to the write-scope guard's predicate, and a guard that is inert cannot be changed in any way that matters.",
+      "evidence_label": "DOCUMENTED"
+    },
+    {
+      "constraint_id": "AI-05",
+      "statement": "MCP integrations are left unauthenticated and treated as out of scope; state the policy now and connect nothing.",
+      "class_of_limit": "tool_exclusion",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "Five reachable MCP namespaces that report needsAuth.",
+      "removal_unlocks": "Supabase, Vercel and three Cloudflare namespaces become candidate authorised access. Supabase is on the critical path, because it is the route to the Cursor API key that already exists.",
+      "justification": "Unquotable and defect-free. Verdict unchanged. The one genuine risk L1 identified is retained as a design constraint rather than a gate: a Slack or Linear connector would create a second place where currentness can be asserted, and that connector class waits for pointer reconciliation.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "constraint_id": "AI-06",
+      "statement": "ChatGPT/SO-02 is a supporting function, stated without scope.",
+      "class_of_limit": "role",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "ChatGPT's whole operating width, by generalising a scoped correction into an unqualified status claim.",
+      "removal_unlocks": "ChatGPT operates at platform scale across projects, models, Work agents, connectors, skills and scheduled cadence, with functions that own decision classes rather than only supplying evidence.",
+      "justification": "Verdict unchanged, and the basis is now stronger than the prior register could make it: FC-02 is founder text and says use the account broadly. The prior register argued from a scoping inference; the corpus supplies a direct contradiction.",
+      "evidence_label": "DOCUMENTED",
+      "founder_contradiction_quote": "Use this capability broadly while preserving provenance"
+    },
+    {
+      "constraint_id": "AI-07",
+      "statement": "ChatGPT's operating function is evidence review, verification and a founder interface.",
+      "class_of_limit": "role",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "ChatGPT's function set, capping it at review and interface work.",
+      "removal_unlocks": "ChatGPT takes the estate's discovery and integration function, which is the only function in the architecture that matches its actual asymmetry: it is the only surface holding the founder's authenticated context and connected tools, and no Cursor agent can reach any of it.",
+      "justification": "Verdict unchanged, now with a founder sentence against it rather than an inference. Recorded positively as FA-07.",
+      "evidence_label": "DOCUMENTED",
+      "founder_contradiction_quote": "The entire authorised ChatGPT account-not only active threads-may be used to recover relevant context, initiate follow-ups and message its LLMs for Obzio's intended purposes."
+    },
+    {
+      "constraint_id": "AI-08",
+      "statement": "One top-level agent, no subagents.",
+      "class_of_limit": "agent",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "Execution topology.",
+      "removal_unlocks": "Already exercised - five isolated lanes ran as subagents under one root controller and this is a later one. What the removal adds is the re-inheritance probe, because the rule was superseded in three separate documents and can be re-read out of any of them.",
+      "justification": "Unquotable and defect-free. Verdict unchanged. The controls that make multi-agent operation safe are separately classified and all retained: EC-01, EC-09, EC-10, EC-11.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "constraint_id": "AI-09",
+      "statement": "Two independent routes must be qualified before useful work proceeds.",
+      "class_of_limit": "sequencing",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "All strategic development work, gated on route qualification.",
+      "removal_unlocks": "Work proceeds on the one route that survived independent challenge, which is R1 GitHub immutable-SHA custody and is usable now.",
+      "justification": "Unquotable and defect-free as a gate. Verdict unchanged. EC-27 retains the identical requirement as a claim standard, which is the distinction that matters: qualifying a route and gating work on route qualification are different acts.",
+      "evidence_label": "DOCUMENTED"
+    },
+    {
+      "constraint_id": "AI-10",
+      "statement": "Until one non-founder return route is qualified end to end, no wave-one function may produce anything.",
+      "class_of_limit": "sequencing",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "All wave-one production.",
+      "removal_unlocks": "Wave one produces from the first day, with route qualification running beside it. The risk it guarded is handled by labelling: a function whose only return route is the founder is marked R0-DEGRADED and reported as such rather than prevented from starting.",
+      "justification": "Verdict unchanged, and now directly contradicted by founder text. A stop-the-world gate is the purest form of the thing his amendment refuses to accept as a deliverable.",
+      "evidence_label": "DOCUMENTED",
+      "founder_contradiction_quote": "A run that touched nothing and produced nothing has passed nothing."
+    },
+    {
+      "constraint_id": "AI-11",
+      "statement": "The five mutating cursor-cloud tools, including trigger-environment-build, are excluded from use.",
+      "class_of_limit": "tool_exclusion",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "Five tools, on the basis of a lane brief rather than a boundary.",
+      "removal_unlocks": "The single most consequential unverified finding in L1 becomes testable in one call: whether the repository's environment.json can take effect, which decides whether this estate keeps paying a cold start on every agent run.",
+      "justification": "Unquotable and defect-free. Verdict unchanged, and FA-09 now names its class directly: the exclusion is a caution habit of the product in use, and product caution habits do not define Obzio's boundaries.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "constraint_id": "AI-12",
+      "statement": "Grant nothing new on GitHub; the agent's read-only installation is the right shape and widening it should probably never happen.",
+      "class_of_limit": "scope",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "Three foreclosed options, pre-emptively, so that asking about them was not worth doing.",
+      "removal_unlocks": "Issues as a coordination substrate, currently 403 and the obvious substrate for the conflict objects this architecture needs; Actions secrets verification; and branch protection, which no agent can currently even read.",
+      "justification": "A standing recommendation against an option, carrying no defect evidence. Verdict unchanged. The decision itself stays with the founder under FB-21, which is on the ratification list - so what is removed is the pre-emptive recommendation, not the reservation.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "constraint_id": "AI-13",
+      "statement": "Ask the founder which ChatGPT plan the account holds.",
+      "class_of_limit": "touchpoint",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "It consumes a founder turn on a fact the platform holds.",
+      "removal_unlocks": "The fact is retrieved by the platform that already has it, and everything branching on it resolves without a founder turn.",
+      "justification": "Verdict unchanged, with a sharper basis: FC-03 names 'a GitHub connector I never confirmed' as an instance of the error class, and an unverified plan fact is the same shape. Retained only as a fallback - if ChatGPT's discovery function reports the fact as not visible to it, the question returns to him with that failure attached.",
+      "evidence_label": "DOCUMENTED"
+    },
+    {
+      "constraint_id": "AI-14",
+      "statement": "The ChatGPT estate is eleven operating project slots plus one frozen evidence container.",
+      "class_of_limit": "topology",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "Project topology, anchored to an observed inventory count.",
+      "removal_unlocks": "Project count follows function demand and separation requirements rather than the current inventory. More than twelve is permitted, and a census returning a different number changes the migration rather than the topology.",
+      "justification": "Unquotable and defect-free. Verdict unchanged. The separation requirements that generated the slot types are retained in full, including EC-16; it is the arithmetic anchor to eleven that goes. Note the pairing with FB-04, now on the ratification list: a floor of ten and a ceiling of eleven were both derived from inventory rather than from demand.",
+      "evidence_label": "DOCUMENTED"
+    },
+    {
+      "constraint_id": "AI-15",
+      "statement": "The salvage function retires when the unswept backlog is zero and new chats arrive already bound.",
+      "class_of_limit": "scope",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "It disguises a permanent function as a temporary one by giving it an unreachable exit.",
+      "removal_unlocks": "Salvage becomes an inexpensive recurring sweep with a rate target, and its cost is budgeted as ongoing rather than discovered later as an overrun.",
+      "justification": "Unquotable and defect-free, and it fails EC-17's own requirement rather than satisfying it: a founder thinking out loud in a new sidebar chat creates an unbound chat, which is normal and desirable, so the backlog never reaches zero. Verdict unchanged.",
+      "evidence_label": "DOCUMENTED"
+    },
+    {
+      "constraint_id": "AI-16",
+      "statement": "The adapter boundary and the evaluation suite have to exist before the second execution plane is worth having.",
+      "class_of_limit": "sequencing",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "Plane B design work.",
+      "removal_unlocks": "Plane B design proceeds in parallel with adapter work, which matters because Plane B is the only plane that can supply authenticated-session operation - the capability FB-02 and FB-18 have both frozen.",
+      "justification": "A sequencing preference presented as a precondition. Verdict unchanged. The substantive point is retained as an admission rule: a plane is not qualified until it passes the shared evaluation suite. Specifying a plane and qualifying it are different acts.",
+      "evidence_label": "DOCUMENTED"
+    },
+    {
+      "constraint_id": "AI-17",
+      "statement": "The Cursor CLI and ACP route is deferred to later.",
+      "class_of_limit": "sequencing",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "Specification and dry-qualification of the Agent Client Protocol route.",
+      "removal_unlocks": "The ACP escape hatch can be specified and dry-qualified now. That matters disproportionately for FB-09, because ACP is the documented interface that would let a different agent runtime drive the same work if Cursor were removed - the concrete form of substitutability rather than an aspiration.",
+      "justification": "Its stated reasons are a credential dependency dissolved by AI-02 and a spend concern not engaged by design, specification or a dry run. Verdict unchanged.",
+      "evidence_label": "DOCUMENTED"
+    },
+    {
+      "constraint_id": "AI-18",
+      "statement": "Independent acceptance, evaluation and red-teaming are housed in ChatGPT assurance projects.",
+      "class_of_limit": "topology",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "Where the acceptance decision class lives, and therefore when acceptance can run at all.",
+      "removal_unlocks": "Acceptance runs today, multi-lane, at zero new credential cost: isolated worktree, criteria committed earlier than the verdict, a distinct exact model configuration from the two families already live in this account, container replay with no network, and a write scope fenced to the verdict path.",
+      "justification": "Placement contradicted by reproduced evidence: acceptance ran inside Cursor, on a distinct model family, with no founder in the loop, and refused the root controller's own evidence. Meanwhile the founder's ChatGPT account is the context most saturated with founder-visible history, which reduces context isolation rather than increasing it. Verdict unchanged. ChatGPT keeps adversarial review as a contributing function, which is different from holding the decision class.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "constraint_id": "AI-19",
+      "statement": "Cursor is bound as a single operator interface, addressed through one entry agent.",
+      "class_of_limit": "agent",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "The unit of dispatch.",
+      "removal_unlocks": "The unit of dispatch becomes an agent group rather than an agent. The platform is already operating that way: nine top-level cloud agents on this repository, four distinct exact model configurations across two families, with subagents and isolated worktrees beneath them.",
+      "justification": "Unquotable and defect-free. Verdict unchanged, and it is worth separating from FB-22, which is founder-authored and constrains Cursor's permanence rather than its scale. The two were easy to conflate and the corpus separates them cleanly.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "constraint_id": "AI-20",
+      "statement": "A founder follow-up submission is required to deliver the operating-environment scope to Cursor, blocked by a cloud-browser security verification loop.",
+      "class_of_limit": "touchpoint",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "It occupies a slot in the founder action queue for a purpose already achieved by another path.",
+      "removal_unlocks": "One item leaves the founder action queue, after which the queue's remaining entries are all genuine owner acts - which is what makes the queue readable as a signal rather than as a backlog.",
+      "justification": "Stale. The commission is running: lanes have returned, a synthesis was integrated, and this lane exists. Verdict unchanged. The closure is a disposition rather than a deletion, and the underlying finding - an authenticated provider UI is not reachable from a cloud agent - is a structural property of the topology and belongs in the plane analysis.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "constraint_id": "AI-21",
+      "statement": "Do not make consequential account changes, read as a bar on inspecting and configuring Ahmed/Obzio-owned surfaces.",
+      "class_of_limit": "scope",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "Configuration work across the estate, by being read far wider than its own words.",
+      "removal_unlocks": "Configuration, connection and optimisation proceed across verified in-scope surfaces without a founder turn for each one. This is what makes AI-04, AI-05 and AI-11 actionable rather than merely reclassified.",
+      "justification": "Unquotable and defect-free as read. Verdict unchanged, with one correction to the prior reasoning: the prior register said the operative boundary is FB-25's stop list retained verbatim, and FB-25 is now itself on the ratification list. The boundary that holds in the interim is the three founder-authored write gates.",
+      "evidence_label": "DOCUMENTED"
+    },
+    {
+      "constraint_id": "AI-22",
+      "statement": "The quota function fails closed: unknown runtime headroom is treated as zero headroom for new work.",
+      "class_of_limit": "pace",
+      "prior_verdict": "ASSISTANT_IMPOSED",
+      "what_it_constrains": "All new work, permanently, because headroom is structurally unknown in this environment rather than temporarily unknown.",
+      "removal_unlocks": "Work proceeds against the layer that is actually observable - top-level run status - with a declared stop condition instead of a permanent stop.",
+      "justification": "Fail-closed is the right default for evidence and the wrong one here, because a rule reading structurally-unknown as zero halts everything forever. Verdict unchanged. The blind spot is not swept away: it is recorded as a dated non-assessability record with a retry route and a risk-conversion date.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    }
+  ],
+  "ratification_list": [
+    {
+      "constraint_id": "FB-01",
+      "statement": "SW remains paused: not messaged, operated, configured, commissioned or made central without a separate founder reactivation.",
+      "class_of_limit": "role",
+      "prior_verdict": "FOUNDER_BOUND",
+      "what_it_constrains": "Contacting, commissioning or configuring the SW platform, and treating it as an execution plane at all. It removes an entire second runtime from the architecture.",
+      "removal_unlocks": "SW returns as a repository-connected discovery and synthesis factory beside Cursor, which is the estate's only candidate for a second execution plane that is neither a cloud agent nor the founder's own browser. The founder-directed capability loop - discover, real-operation test, validate, extract, package, redeploy - has no second platform to run against while this holds.",
+      "justification": "No founder sentence in the corpus mentions SW. The pause is reported only in an assistant summary written in the third person ('the founder paused it before its first message'). It is exactly the shape the amendment describes: a routing decision attributed to him and inherited unexamined. It is on the ratification list rather than the purge list because unpausing is a first contact with a third party, which is irreversible and unsnapshottable, so the founder's own reversibility gate FB-23 holds it in the interim regardless of who authored the pause.",
+      "evidence_label": "DOCUMENTED",
+      "recommended_narrowing": "If ratified, restate as a reactivation-decision reservation rather than a prohibition on evaluation: Cursor already reads the reactivation mechanism as in scope, and nothing in the pause requires the platform to stay unassessed.",
+      "ratification_question": "Is SW's pause your decision, or was it recorded for you? (yes = your decision, it stands / no = Cursor may commission it under the three write gates)"
+    },
+    {
+      "constraint_id": "FB-02",
+      "statement": "The SO-02 founder browser/setup batch is halted and preserved as historical candidate evidence only.",
+      "class_of_limit": "tooling",
+      "prior_verdict": "FOUNDER_BOUND",
+      "what_it_constrains": "Specifying, qualifying or dry-running any browser or computer-control stack - Playwright, Goose, or a successor - for the founder operating environment.",
+      "removal_unlocks": "Browser and computer-control capability can be re-specified and dry-qualified. This is the estate's most consequential blocked capability: a cloud VM has no route to the founder's authenticated browser session, which is why ChatGPT project discovery, provider UI verification and the Cursor authenticator loop have all failed from inside an agent. Halting the batch removed the only plane that reaches those surfaces.",
+      "justification": "No founder sentence halts it. The halt appears in an assistant-authored role-correction receipt carrying an authority label and no words. The founder does speak to an adjacent point - he names 'a desktop app my Chromebook cannot run' as an instance of the error class he is correcting - but that is a rule about what may be sent to him, not a decision to stop the capability. Distinguishing the two is the whole point: the batch was halted as a founder decision when what the evidence supports is that sending him a desktop stack was a bad action.",
+      "evidence_label": "DOCUMENTED",
+      "recommended_narrowing": "If ratified, narrow it to the founder-action half: no browser stack is proposed as a founder installation task until his device can run it. Specification and dry-qualification inside the estate proceed either way, since neither touches his device.",
+      "ratification_question": "Did you halt the browser/setup capability itself, or only the request that you install it? (capability = it stands / request = Cursor resumes specifying and qualifying it without sending you anything)"
+    },
+    {
+      "constraint_id": "FB-03",
+      "statement": "For the founder operating environment scope specifically, ChatGPT does not select architecture, prescribe a named stack, or issue a founder setup batch.",
+      "class_of_limit": "role",
+      "prior_verdict": "FOUNDER_BOUND",
+      "what_it_constrains": "ChatGPT's decision classes inside one scope. It is the load-bearing partition under the W8 ChatGPT constitution and the W4 role architecture.",
+      "removal_unlocks": "ChatGPT may propose architecture and named stacks for the founder operating environment. The binding-prevention that matters survives without it, because FB-13 reserves model and runtime binding to the founder and FA-10 records that a ChatGPT-issued limitation on Cursor's role does not bind.",
+      "justification": "No founder sentence states it. The nearest corpus material runs the other way: FC-02 says use the account broadly, and FC-01 criticises ChatGPT for over-limiting the plan rather than for over-prescribing. The prior register was right to scope this narrowly and wrong about why - it read the scoping out of an assistant summary and recorded the summary's width as the founder's.",
+      "evidence_label": "DOCUMENTED",
+      "recommended_narrowing": "If ratified, express it as an authority rule rather than a capability rule: ChatGPT's architectural proposals are advisory and do not bind, which is how the founder himself handled the one ChatGPT proposal in the corpus. That costs nothing and forecloses nothing.",
+      "ratification_question": "Should ChatGPT's architecture proposals be prohibited, or merely non-binding? (prohibited = FB-03 stands / non-binding = it is replaced by an advisory rule)"
+    },
+    {
+      "constraint_id": "FB-04",
+      "statement": "Maintain at least ten working ChatGPT projects as supporting research, assurance and continuity lanes with durable return routes.",
+      "class_of_limit": "scope",
+      "prior_verdict": "FOUNDER_BOUND",
+      "what_it_constrains": "The floor on ChatGPT project count, and through it the migration arithmetic in the scale programme.",
+      "removal_unlocks": "Project count follows function demand and separation requirements rather than an inherited number. It also removes the failure mode a floor invites, which is satisfying the count with empty projects: the number ten is checkable and 'ten projects that each own a decision class' is not, so the cheap reading wins under pressure.",
+      "justification": "The number ten appears in no founder sentence. It reaches the register through an assistant summary. The founder does speak to scale - 'at the scale I expect' - which supports an expectation of many projects and supports no particular number. A floor whose value cannot be quoted is an assistant-authored number wearing a founder's expectation.",
+      "evidence_label": "DOCUMENTED",
+      "recommended_narrowing": "If ratified, restate as a demand-derived floor: one project per admitted function with a durable return route, no fewer than the function register requires. That keeps the ambition and drops the arithmetic.",
+      "ratification_question": "Is ten your number, or a placeholder? (yours = it stands / placeholder = project count follows the function register)"
+    },
+    {
+      "constraint_id": "FB-08",
+      "statement": "Provider memory is never constitutional authority.",
+      "class_of_limit": "topology",
+      "prior_verdict": "FOUNDER_BOUND",
+      "what_it_constrains": "Whether a provider-side memory, project instruction or retained thread can be cited as governing. It is load-bearing for the ChatGPT constitution and for the cold-instance replay test.",
+      "removal_unlocks": "Provider-resident memory could be cited as authority, which is a bad outcome and is why this is on the ratification list rather than the purge list. The honest unlock is narrower: the cold-instance replay test currently exists to enforce a rule with no receipt, so it is defending a position no defect has attacked.",
+      "justification": "No founder sentence states it. The nearest is FC-02's closing clause, and it is materially narrower: never treating one thread as the complete founder intent is a completeness rule, not an authority rule. That clause is recorded separately as FA-07 where it belongs. No named defect exists in which provider memory was cited as authority and something broke - the adjacent reproduced defects, EC-18 and EC-21, are about durability of storage rather than authority of memory.",
+      "evidence_label": "DOCUMENTED",
+      "recommended_narrowing": "If ratified, keep it. If not, FA-07 already prevents the specific failure the estate has actually seen, which is a persuasive old thread read as current intent.",
+      "ratification_question": "May a ChatGPT memory or project instruction ever be cited as governing authority? (no = FB-08 stands / yes-with-provenance = FA-07 alone governs)"
+    },
+    {
+      "constraint_id": "FB-12",
+      "statement": "No merge, promotion or company-strategy binding follows from operating work.",
+      "class_of_limit": "scope",
+      "prior_verdict": "FOUNDER_BOUND",
+      "what_it_constrains": "Three different acts bundled into one rule: merging a branch, promoting a pointer, and binding company strategy. The first two are operational; the third is not.",
+      "removal_unlocks": "Merging, which the founder has now expressly authorised in four words. The estate has eight branches carrying competing currentness claims and two open PRs rewriting the same pointer files, and this rule is why none of them has been resolved by the lanes that hold the evidence.",
+      "justification": "Its merge clause is contradicted by founder text, not merely unsupported by it - that alone disqualifies the FOUNDER_BOUND verdict. Its strategy clause is unquotable but is the one part worth keeping, so the record is SEEK_RATIFICATION rather than PURGE. Bundling an operational prohibition with a strategy reservation is what let the operational half ride on the strategic half's obvious rightness for as long as it did.",
+      "evidence_label": "DOCUMENTED",
+      "founder_contradiction_quote": "Merge where merging is right.",
+      "recommended_narrowing": "Split it. Retain 'operating work binds no company strategy' as the ratifiable half. Delete the merge and promotion prohibitions outright: they are governed by the three write gates, which give a merge a concurrency check, a snapshot and an evidence requirement without forbidding it.",
+      "ratification_question": "Should 'operating work binds no company strategy' stand on its own, with the merge and promotion prohibitions dropped? (yes = split as recommended / no = tell me which part you authored)"
+    },
+    {
+      "constraint_id": "FB-14",
+      "statement": "The founder interface is voice-first: speech intake, semantic strengthening, read-back of consequential interpretation, intent/authority confirmation, typed durable event, delegated execution, consolidated evidence return.",
+      "class_of_limit": "topology",
+      "prior_verdict": "FOUNDER_BOUND",
+      "what_it_constrains": "The whole design of founder-intent capture, and through it the assignment of that function to the platform the founder speaks to rather than the one holding the repository. It is load-bearing for the W4 role architecture.",
+      "removal_unlocks": "The founder interface is designed from how he demonstrably communicates rather than from an assumed modality. Every founder utterance recorded in this estate is text: the W8 utterance ledger records capture_mode TEXT for all of them, and the three corpus segments are typed instructions of 2124, 420 and 5652 bytes. A seven-stage speech pipeline has been the architecture's centre of gravity for a modality with no recorded instance.",
+      "justification": "No founder sentence in the corpus mentions voice, speech or read-back of speech. One stage of the pipeline is independently earned - read-back of an unconfirmed transcription, which caught the Aircrift/Aircraft referent and is already classified as EC-23 - and the other six are unevidenced. This is not a claim that the founder does not use voice; it is a claim that nothing in the record shows he asked for this, and a seven-stage pipeline is a large structure to rest on an inference.",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "recommended_narrowing": "If ratified, keep it whole. If not, retain EC-23's read-back gate, which is the only stage with a receipt, and let the intake modality follow evidence of use.",
+      "ratification_question": "Is voice-first your requirement for the founder interface? (yes = FB-14 stands whole / no = read-back is retained and the modality follows observed use)"
+    },
+    {
+      "constraint_id": "FB-21",
+      "statement": "Spend commitment, identity and secrets, third-party outreach, SW reactivation and programme shape remain founder-held decision classes.",
+      "class_of_limit": "scope",
+      "prior_verdict": "FOUNDER_BOUND",
+      "what_it_constrains": "Five decision classes, and with FB-25 it is the boundary every lane in this programme halts at.",
+      "removal_unlocks": "Nothing that should be unlocked casually, which is why this is the most important entry on the ratification list rather than the purge list. Stated plainly: no sentence the founder has written reserves spend, identity, outreach or programme shape to him. The reservations are almost certainly right and they are entirely untraceable, and an untraceable boundary is precisely what the protected-surface label was.",
+      "justification": "Sourced to AGENTS.md#7, which is repository operator instruction written in the estate's own imperative voice with no attributed founder utterance anywhere in it. The founder does reference AGENTS.md - he instructs that his amendment be appended to it - which establishes that he treats it as a surface he writes onto, not as a record of what he has said. The corpus runs mildly the other way on permission generally: 'You do not need my permission for any of it - you need a reason and a rollback' is scoped to writes, but it is the only thing in the corpus about needing his permission at all.",
+      "evidence_label": "DOCUMENTED",
+      "recommended_narrowing": "Re-found the list on the three write gates, which are founder-authored. Spend and new obligation fail the reversibility gate; identity and secret acts fail it too; third-party outreach fails it hardest, since a sent message cannot be snapshotted. Programme shape is the one item the gates do not reach and the one most worth his explicit word.",
+      "ratification_question": "Do you reserve spend, identity/secrets, third-party outreach, SW reactivation and programme shape to yourself? (yes = the list stands as founder-authored / partly = name which)"
+    },
+    {
+      "constraint_id": "FB-25",
+      "statement": "Stop for explicit boundaries only: third-party outreach, new spend or obligation, secrets or owner identity acts, new external OAuth or account permissions, protected production/security/DNS/deployment mutation, depended-upon permanent deletion, and substantive strategy binding.",
+      "class_of_limit": "scope",
+      "prior_verdict": "FOUNDER_BOUND",
+      "what_it_constrains": "Every lane's stop conditions. It is the operative boundary list in this programme and is quoted in the always-applied rule and in this lane's own commission.",
+      "removal_unlocks": "As with FB-21, not something to unlock casually. The finding is the point: the list is sourced entirely to AGENTS.md#7 and no founder sentence contains it. Two of its seven items are additionally in tension with founder text - 'protected production/security/DNS/deployment mutation' carries the voided word, and 'depended-upon permanent deletion' sits against 'Delete where deletion is right and snapshotted'.",
+      "justification": "The prior register called this 'the authoritative boundary list' and used it to justify removing several other constraints for inventing stops not on it. A list used as the authority for what counts as founder-bound must itself be founder-traceable, and this one is not. Nothing about that makes the list wrong; it makes it unratified.",
+      "evidence_label": "DOCUMENTED",
+      "recommended_narrowing": "Re-derive it from the three founder-authored gates and keep only what they do not already cover. Concurrency, reversibility and evidence between them cover irreversible mutation, deletion and outreach without naming a single target. What survives as genuinely separate is substantive strategy binding, which is a question of authority rather than of recoverability, and new spend, which is an obligation to a third party rather than a write.",
+      "ratification_question": "Should the stop list be re-founded on your three write gates, keeping only spend and strategy binding as separate items? (yes = re-derive it / no = confirm the seven-item list as yours)"
+    },
+    {
+      "constraint_id": "EC-08",
+      "statement": "A verdict must not be rewritten after commit. A changed assessment is an additive superseding record that preserves the original.",
+      "class_of_limit": "evidence",
+      "prior_verdict": "EARNED_CONTROL",
+      "what_it_constrains": "Amendment of a committed verdict, and by extension of any committed assessment.",
+      "removal_unlocks": "Nothing worth having, which is why this is on the ratification list. It is here because of how its evidence was written, not because the rule is bad.",
+      "justification": "It is the one prior EARNED_CONTROL whose cited evidence is counterfactual. The register's own words are that 'without it the refusal recorded above could have been amended by the party it refused' - a description of what the control prevents, not of a defect it caught. No instance of post-commit verdict mutation is recorded anywhere in this estate. It carried the label DIRECTLY_REPRODUCED while reproducing nothing, which is a second-order instance of the same failure the amendment describes: a control that looked evidenced because it sat among evidenced ones.",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "recommended_narrowing": "Ratify it as written. It costs nothing, it is the reason a refusal survives being inconvenient, and FB-23's snapshot requirement gives it a founder-authored cousin. What should not survive is its evidence label.",
+      "ratification_question": "Should a committed verdict be unamendable, with changes recorded as additive supersessions? (yes = ratified as founder-authored / no = it is void)"
+    }
+  ],
+  "surplus_flagged_for_ratification": [
+    {
+      "constraint_id": "FB-05",
+      "class": "EARNED",
+      "surplus_flagged_for_ratification": "The monitoring and comparison clauses have no receipt. They are plausible and unevidenced; they are carried in FB-06's founder-authored positive rule rather than as a prohibition."
+    },
+    {
+      "constraint_id": "FB-13",
+      "class": "FOUNDER_AUTHORED",
+      "surplus_flagged_for_ratification": "Whether architecture binding is also his - a real question, not a formality, since FA-06 preserves the instruments he commissioned and an architecture decision is close to that line."
+    },
+    {
+      "constraint_id": "FB-19",
+      "class": "EARNED",
+      "surplus_flagged_for_ratification": "The non-disclosure half - secrets are never printed, echoed into argument vectors or requested in chat - has no receipt in this estate and no founder sentence. It is retained in practice by every lane and by this one, and it is flagged here rather than silently carried, because a security property riding on another rule's evidence is the pattern this whole exercise is about. It belongs on the ratification list as a one-line confirmation, not as an inherited assumption."
+    }
+  ]
+}

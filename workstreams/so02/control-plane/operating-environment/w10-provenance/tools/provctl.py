@@ -448,6 +448,101 @@ def cmd_diff(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_lists(args: argparse.Namespace) -> int:
+    """Emit the purge and ratification lists derived from the register.
+
+    Derived rather than retyped, for the same reason the corpus is extracted
+    rather than retyped: a hand-kept second copy of a decision drifts from the
+    first, and then two artifacts disagree about what is in force.
+    """
+    reg = _load(args.register)
+    purge, ratify = [], []
+    for c in reg.get("constraints", []):
+        if c.get("provenance_class") != "ASSISTANT_AUTHORED":
+            continue
+        row = {
+            "constraint_id": c["constraint_id"],
+            "statement": c.get("statement"),
+            "class_of_limit": c.get("class_of_limit"),
+            "prior_verdict": c.get("prior_verdict"),
+            "what_it_constrains": c.get("what_it_constrains"),
+            "removal_unlocks": c.get("removal_unlocks"),
+            "justification": c.get("justification"),
+            "evidence_label": c.get("evidence_label"),
+        }
+        for opt in ("founder_void_quote", "founder_contradiction_quote",
+                    "expressly_voided_by_founder", "replacement_retained",
+                    "safety_note"):
+            if c.get(opt) is not None:
+                row[opt] = c[opt]
+        if c.get("recommended_disposition") == "PURGE":
+            purge.append(row)
+        else:
+            row["recommended_narrowing"] = c.get("recommended_narrowing")
+            row["ratification_question"] = c.get("ratification_question")
+            ratify.append(row)
+
+    surplus = [
+        {
+            "constraint_id": c["constraint_id"],
+            "class": c["provenance_class"],
+            "surplus_flagged_for_ratification": c["surplus_flagged_for_ratification"],
+        }
+        for c in reg.get("constraints", [])
+        if c.get("surplus_flagged_for_ratification")
+    ]
+
+    out = {
+        "artifact_id": args.artifact_id,
+        "derived_from": args.register,
+        "derived_by": "provctl.py lists",
+        "is_a_proposal_not_a_binding": True,
+        "binds_company_strategy": False,
+        "decision_changed": [],
+        "who_applies_this": (
+            "The root controller, not this lane. A lane that purged the "
+            "constraints it classified would be a producer accepting its own "
+            "verdict, which EC-16 forbids and which the founder's "
+            "independent-acceptance clause names directly. Nothing here is "
+            "applied; nothing is deleted."
+        ),
+        "what_purge_means": (
+            "The constraint stops routing. Its source document is untouched and "
+            "remains evidence. Removal is a change to what is in force, never a "
+            "deletion of the record - which is also why derestrictctl.py's "
+            "re-inheritance probes stay useful after a purge."
+        ),
+        "what_seek_ratification_means": (
+            "The constraint is in the third class and is therefore void unless "
+            "the founder ratifies it. It is listed here rather than purged "
+            "because it is genuinely useful and only its provenance is missing. "
+            "Each carries one binary question, never a reading assignment. "
+            "Under the estate's conflict rule an unresolved question never "
+            "blocks work, so none of these ten gates anything while it waits."
+        ),
+        "what_surplus_flagged_means": (
+            "A clause that rode into force attached to a constraint whose "
+            "evidence covers only the rest of it. Flagged rather than silently "
+            "carried, because a rule riding on another rule's receipt is the "
+            "pattern this whole exercise is about."
+        ),
+        "purge_count": len(purge),
+        "ratification_count": len(ratify),
+        "surplus_flagged_count": len(surplus),
+        "purge_list": purge,
+        "ratification_list": ratify,
+        "surplus_flagged_for_ratification": surplus,
+    }
+    with open(args.out, "w", encoding="utf-8") as fh:
+        json.dump(out, fh, indent=2, ensure_ascii=False)
+        fh.write("\n")
+    print(f"written: {args.out}")
+    print(f"  purge            : {len(purge)}")
+    print(f"  seek ratification: {len(ratify)}")
+    print(f"  surplus flagged  : {len(surplus)}")
+    return 0
+
+
 def cmd_counts(args: argparse.Namespace) -> int:
     reg = _load(args.register)
     tally: dict[str, int] = {}
@@ -488,6 +583,12 @@ def main(argv: list[str] | None = None) -> int:
     d.add_argument("prior")
     d.add_argument("register")
     d.set_defaults(fn=cmd_diff)
+
+    l = sub.add_parser("lists")
+    l.add_argument("register")
+    l.add_argument("out")
+    l.add_argument("--artifact-id", default="OE-W10-PURGE-AND-RATIFICATION-20260823-v001")
+    l.set_defaults(fn=cmd_lists)
 
     n = sub.add_parser("counts")
     n.add_argument("register")
