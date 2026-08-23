@@ -1,0 +1,92 @@
+# OE-W10 manifest build with declared closure - DIRECTLY_REPRODUCED
+# lane: OE-W10-PROVENANCE-REDERIVATION
+
+Why this transcript does not print a bundle_sha256
+--------------------------------------------------
+This file is inside the bundle the manifest closes over. Any digest printed here
+would be the digest of a file set that does not yet include this file, so it
+would be wrong the moment it was written. The authoritative entry_count and
+bundle_sha256 live in MANIFEST.json, which is built last and is the only file
+excluded from its own entry set.
+
+This is the same bootstrap that REMOTE-READBACK.json declares, one level down. It
+is recorded rather than papered over, because a transcript carrying a stale
+digest beside a manifest carrying the real one is exactly the kind of near-miss
+inconsistency an independent acceptor is supposed to refuse.
+
+Method
+------
+  $ python3 .../tools/build_manifest.py <repo_root> \
+        receipts/so02/2026-08-23/oe-w10-provenance/MANIFEST.json \
+        workstreams/so02/control-plane/operating-environment/w10-provenance \
+        receipts/so02/2026-08-23/oe-w10-provenance
+
+Ordering, which is the whole control
+------------------------------------
+L3 refused a bundle partly because its manifest omitted the bundle's own remote
+read-back record (AC-03 FAIL), and the omission recurred across later lanes. The
+cause is structural rather than careless: a builder that walks a directory writes
+the manifest last, so it never sees a record written after it.
+
+This lane fixes it by ordering, not by care:
+
+  1. push the artifacts                     -> 7dbc7177c544cc2f9ac5e9d0f8e0ed8ffab346fb
+  2. clone that commit from GitHub into an empty directory, recompute every
+     digest there, and re-run the classifier from the clone
+  3. write REMOTE-READBACK.json and raw/remote-readback.txt
+  4. write this transcript
+  5. build MANIFEST.json, which walks over all of the above
+
+Closure claimed
+---------------
+  FULL over both bundle roots.
+  Excluded: receipts/so02/2026-08-23/oe-w10-provenance/MANIFEST.json - and only
+  that, because a file cannot contain its own sha256. The exclusion is written
+  into the manifest's `closure.excluded` array rather than left to be inferred.
+  read_back_record_is_manifested: true
+
+Stability check
+---------------
+The builder was run against the final file set both with and without its own
+output present. If the manifest's own presence moved the digest, closure would be
+undecidable - a verifier could not tell a complete bundle from an incomplete one.
+
+  run A (MANIFEST.json on disk) : 18 entries, excluded [MANIFEST.json]
+  run B (MANIFEST.json absent)  : 18 entries, excluded []
+  entries arrays compared element-by-element: identical
+  bundle_sha256 compared                    : identical
+
+Only `closure.excluded` differs, and it differs correctly: the array names what
+the builder actually skipped, so it is empty when there was nothing to skip. The
+published manifest is run A's, the one that declares the exclusion.
+
+The digest itself is deliberately not reproduced in this file. This transcript is
+inside the entry set, so any digest written here would be superseded by the
+rebuild that takes this very edit into account. Read bundle_sha256 from
+MANIFEST.json, which is the only file entitled to state it.
+
+A verifier does not have to trust that ordering. Walking both bundle roots and
+subtracting the manifested paths and the declared exclusion should leave the
+empty set; that check is independent of the order anything was written in.
+
+Material claim inputs outside the bundle
+----------------------------------------
+Hashed inside MANIFEST.json under `closure.material_claim_inputs_outside_the_bundle`
+rather than manifested, because they belong to other lanes and this lane does not
+write them:
+
+  workstreams/so02/control-plane/operating-environment/FOUNDER-STANDING-INSTRUCTION-20260822.md
+      the founder corpus is extracted from it; if it changes, every quotation in
+      the register is unverified
+  workstreams/so02/control-plane/operating-environment/w4-platform-roles/DE-RESTRICTION-REGISTER-20260822-v001.json
+      the prior classification the diff is computed against
+
+How a verifier closes the loop
+------------------------------
+  git ls-remote origin cursor/oe-w10-provenance-696d
+  git clone --branch cursor/oe-w10-provenance-696d <remote> <empty dir>
+  recompute sha256 for every entry in MANIFEST.json
+  recompute sha256 of json.dumps(entries, sort_keys=True, separators=(",",":"))
+      and compare to bundle_sha256
+  python3 .../tools/provctl.py check   <corpus> <register> --repo-root .
+  python3 .../tools/negative_tests_provctl.py
