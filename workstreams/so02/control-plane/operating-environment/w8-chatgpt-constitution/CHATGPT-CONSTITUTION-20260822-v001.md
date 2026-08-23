@@ -782,3 +782,153 @@ order, because a chat's correct disposition depends on whether its container
 survives. Sweeping first and dispositioning containers afterwards produces
 correctly-classified chats inside frozen projects, which is a second migration
 nobody planned.
+
+---
+
+# Part D — Ordered founder actions
+
+Eight actions, ordered by capability unlocked per founder minute, with a hard
+preference for actions that create no credential. Each carries all ten required
+fields in `FOUNDER-ACTIONS-20260822-v001.json`, which governs; this section is
+the reading order and the reasoning behind it.
+
+Nothing here asks him to paste a secret into chat. Nothing here proposes minting
+a new Cursor API key — one already exists and is mirrored by hand. Nothing
+proposes creating an OpenAI key before checking whether one is already in the
+same place. **No lane idles pending any of these.**
+
+## The single action that unlocks the most
+
+**`FA-W8-01` — attach a local clone of this repository as a folder in a ChatGPT
+desktop project.**
+
+The arithmetic is simple. Five retained ChatGPT functions have no custody route
+without it: capture, read-back, the discovery census, context recovery and the
+framing challenge. With it, a ChatGPT-resident function commits its own return.
+Without it, all five produce `RECOVERED_UNCOMMITTED` candidates and this
+constitution is a document.
+
+`DIRECTLY_REPRODUCED` (`https://learn.chatgpt.com/docs/projects.md`, fetched
+2026-08-23): the desktop app supports local projects where "ChatGPT can read and
+change files in every attached folder", uses the primary folder as "the default
+for Git operations and automatic discovery of `AGENTS.md`", and supports
+worktrees and pull-request actions against the primary repository. That last
+detail is quietly significant — the repository's own `AGENTS.md` is
+auto-discovered, so the same operator rules that govern Cursor would govern this
+surface too.
+
+**Its viability is a `HYPOTHESIS` and this lane will not dress it up.** That the
+feature exists is documented. That it works on this account's plan, on this
+machine, against this repository, with its branch protections, is untested and no
+lane will authenticate to find out. The test is minutes: ask a chat in that
+project to create a branch, commit a file and push, then run `git ls-remote`
+from anywhere. A remote read-back, not a screenshot, because a push can exit zero
+against a stale ref.
+
+**A failed test is not a wasted action.** It converts the open question of
+whether a ChatGPT connector may hold repository write from "should we?" into "we
+must, and here is the evidence", backed by a ten-minute experiment instead of an
+argument. The fallback is already specified and nothing waits on it.
+
+Two honest notes. This is the disclosure half of that same open question:
+repository contents attached to a project become model context in that project.
+The repository holds operational records and no credential values — a prior
+lane's scanner refused a draft that contained one — but the disclosure decision
+is real and is his. And it does **not** make him the relay: he supplies hardware
+and an authenticated session once, and thereafter the agent writes and pushes
+and he reads nothing. Device dependency, not relay dependency.
+
+**Compared honestly against the estate-wide leader:** `FA-W8-02`, mirroring the
+existing Cursor API key, is the higher-leverage action for the operation as a
+whole, and a prior lane already established it and put it in front of him. It
+ranks second here only because this deliverable is the ChatGPT constitution. If
+he does two things, do both.
+
+## The order
+
+| | Action | Creates a credential? | When |
+|---|---|---|---|
+| 1 | Attach a local repository folder to a ChatGPT desktop project | no | **now** |
+| 2 | Mirror the existing Cursor API key into Cloud Agent Secrets | no | now |
+| 3 | On the same screen, check whether an OpenAI key is already there | no | now, folded into 2 |
+| 4 | *Conditional:* create a scoped OpenAI key | **yes** | only if 3 is negative **and** a function needs it |
+| 5 | Set the two triage numbers | no | now |
+| 6 | Turn on voice, set the hotkey, adopt read-back | no | now |
+| 7 | Decide the memory posture | no | later |
+| 8 | Produce the owner data export, once located | no | now, once located — and locating it is not his job |
+
+Three of these deserve a note beyond their record.
+
+**`FA-W8-03` is the required check, not a courtesy.** The founder's own
+derestriction record establishes that an existing credential is reused rather
+than duplicated, and it establishes that rule for the Cursor key by name. Applying
+the same rule to a second provider before creating anything is the whole reason
+`FA-W8-04` is gated rather than scheduled. `DIRECTLY_REPRODUCED` as of
+2026-08-23: `OPENAI_API_KEY` is absent from this runtime and the only four Cloud
+Agent secrets are the dead `AUREA_E2E_*` set — so the key is certainly not
+reachable by an agent today. Whether one sits in Supabase is not observable from
+here, which is exactly why it is a founder action and why it costs seconds on a
+visit he is already making.
+
+**`FA-W8-07` ranks seventh on purpose.** The memory posture feels like a
+constitutional question and is not one, because Part B already makes provider
+memory constitutionally inert: an assistant utterance is `S1` and cannot change a
+decision class whatever the model recalls. So this is a convenience and
+disclosure decision, and it should be priced as the smaller thing it is rather
+than escalated because it sounds important.
+
+**`FA-W8-08`'s location is unknown and that is recorded rather than guessed.**
+`DIRECTLY_REPRODUCED` 2026-08-23: `help.openai.com` returns HTTP 403 to an
+unauthenticated fetch, so the export article could not be read. Inventing a
+settings path would be exactly the "never invent a locator" failure this
+repository already forbids. Establishing it costs zero founder actions, because
+finding out what the account offers is the discovery function's job.
+
+## What is deliberately not asked
+
+- **Which plan the account holds.** A fact the platform retrieves about itself.
+  It determines whether the Compliance API and Workspace Agents exist at all, so
+  it matters — and it is still the discovery function's first task, not his.
+- **Confirmation of any sweep sample.** Reading a sample is evidence comparison.
+- **A new Cursor API key.** One exists.
+- **Any secret value, in chat or anywhere else.**
+- **Approval for anything the standing authority already covers.**
+
+## What genuinely needs his judgment
+
+Three things, and none of them is retrieval, monitoring, comparison, merging or
+coordination.
+
+1. **Whether the disclosure in `FA-W8-01` is acceptable.** The test settles the
+   technical half. The disclosure half cannot be delegated.
+2. **Whether an existing OpenAI key, if `FA-W8-03` finds one, may be reused for
+   programme work** or is reserved for something else.
+3. **The two numbers in `FA-W8-05`.** There is no technically correct answer.
+   The tool reports what each choice implies rather than choosing for him — and
+   on the illustrative counts, a 1% tolerance turns out to mean "audit
+   everything", which is a fine answer as long as it is chosen rather than
+   stumbled into.
+
+---
+
+# What this constitution does not settle
+
+Three things, stated so they are not mistaken for settled.
+
+**The route table.** A sibling lane owns what each route between a ChatGPT
+account and Cursor actually reaches and whether results return without the
+founder touching them. This document names routes, states whether each is
+established, and gives fallbacks. It does not certify any of them, and where a
+function's home depends on a route the dependency is written into the function's
+record rather than assumed away.
+
+**Whether the constitution's central custody route works.** `FA-W8-01` is a
+`HYPOTHESIS` with a ten-minute test. Every ChatGPT-resident function in Part A
+runs either way; the difference is whether it produces evidence or candidates.
+
+**What the founder's account actually contains.** No lane has authenticated to
+it and none will. The eleven projects, sixty-one project chats and one hundred
+and twenty-one sidebar chats are founder-reported. Part C is written so that a
+different census changes the migration arithmetic and not the design, and so
+that a surface which cannot be read lowers a coverage number rather than
+vanishing from the denominator.
