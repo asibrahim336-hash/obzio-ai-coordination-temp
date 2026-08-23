@@ -72,6 +72,11 @@ _QUOTE_LINE = re.compile(r"^>\s?(.*)$")
 _NOT_FOUNDER_MARKERS = ("advisory", "chatgpt advisory proposal", "recommendation")
 
 
+def _load(path: str) -> dict:
+    with open(path, encoding="utf-8") as fh:
+        return json.load(fh)
+
+
 def sha256_bytes(b: bytes) -> str:
     return hashlib.sha256(b).hexdigest()
 
@@ -151,7 +156,8 @@ def extract_segments(src_text: str) -> list[dict]:
 
 
 def cmd_build_corpus(args: argparse.Namespace) -> int:
-    raw = open(args.src, "rb").read()
+    with open(args.src, "rb") as fh:
+        raw = fh.read()
     segments = extract_segments(raw.decode("utf-8"))
     founder = [s for s in segments if s["is_founder_corpus"]]
     excluded = [s for s in segments if not s["is_founder_corpus"]]
@@ -194,8 +200,9 @@ def cmd_build_corpus(args: argparse.Namespace) -> int:
 
 
 def cmd_verify_corpus(args: argparse.Namespace) -> int:
-    raw = open(args.src, "rb").read()
-    corpus = json.load(open(args.corpus, encoding="utf-8"))
+    with open(args.src, "rb") as fh:
+        raw = fh.read()
+    corpus = _load(args.corpus)
     failures: list[str] = []
     if corpus["source"]["sha256"] != sha256_bytes(raw):
         failures.append(
@@ -233,10 +240,39 @@ def _corpus_haystacks(corpus: dict) -> list[tuple[str, str]]:
     ]
 
 
+# Every field in this map holds founder words and is substring-checked against the
+# corpus exactly as a FOUNDER_AUTHORED quotation is. A quote that voids a
+# constraint has to be as real as a quote that authors one.
+SINGLE_QUOTE_FIELDS = (
+    "founder_ratification_quote",
+    "founder_void_quote",
+    "founder_contradiction_quote",
+)
+
+
+def _find_quote(haystacks: list[tuple[str, str]], quote: str) -> list[str]:
+    text = normalise(quote)
+    if not text:
+        return []
+    return [h for h, hay in haystacks if text in hay]
+
+
 def check_register(corpus: dict, register: dict, repo_root: str) -> list[str]:
     failures: list[str] = []
     haystacks = _corpus_haystacks(corpus)
     seen: set[str] = set()
+
+    for c in register.get("constraints", []):
+        cid = c.get("constraint_id", "<no id>")
+        for field in SINGLE_QUOTE_FIELDS:
+            q = c.get(field)
+            if q is None:
+                continue
+            if not _find_quote(haystacks, q):
+                failures.append(
+                    f"{cid}: {field.upper()}_NOT_IN_CORPUS - {q[:70]!r} appears "
+                    f"in no founder segment"
+                )
 
     for c in register.get("constraints", []):
         cid = c.get("constraint_id", "<no id>")
@@ -266,11 +302,10 @@ def check_register(corpus: dict, register: dict, repo_root: str) -> list[str]:
                     f"defect the lane exists to fix"
                 )
             for q in quotes:
-                text = normalise(q.get("quote", ""))
-                if not text:
+                if not normalise(q.get("quote", "")):
                     failures.append(f"{cid}: EMPTY_QUOTATION")
                     continue
-                where = [h for h, hay in haystacks if text in hay]
+                where = _find_quote(haystacks, q.get("quote", ""))
                 if not where:
                     failures.append(
                         f"{cid}: QUOTATION_NOT_IN_CORPUS - "
@@ -312,6 +347,13 @@ def check_register(corpus: dict, register: dict, repo_root: str) -> list[str]:
                     f"{cid}: ASSISTANT_AUTHORED_WITH_FOUNDER_QUOTATION - if it is "
                     f"quotable it is not in this class"
                 )
+            # "Void unless I ratify it." A ratification request the founder cannot
+            # answer in one word is a reading assignment, which the estate's
+            # conflict rule already forbids.
+            if disp == "SEEK_RATIFICATION" and not c.get("ratification_question"):
+                failures.append(f"{cid}: SEEK_RATIFICATION_WITHOUT_BINARY_QUESTION")
+            if disp == "PURGE" and c.get("ratification_question"):
+                failures.append(f"{cid}: PURGE_WITH_RATIFICATION_QUESTION")
 
         if c.get("evidence_label") not in ("DIRECTLY_REPRODUCED", "DOCUMENTED", "HYPOTHESIS"):
             failures.append(f"{cid}: BAD_EVIDENCE_LABEL {c.get('evidence_label')!r}")
@@ -333,8 +375,8 @@ def check_register(corpus: dict, register: dict, repo_root: str) -> list[str]:
 
 
 def cmd_check(args: argparse.Namespace) -> int:
-    corpus = json.load(open(args.corpus, encoding="utf-8"))
-    register = json.load(open(args.register, encoding="utf-8"))
+    corpus = _load(args.corpus)
+    register = _load(args.register)
     failures = check_register(corpus, register, args.repo_root)
     for f in failures:
         print(f"FAIL {f}")
@@ -359,12 +401,12 @@ PRIOR_TO_NEW = {
 
 
 def cmd_diff(args: argparse.Namespace) -> int:
-    prior = json.load(open(args.prior, encoding="utf-8"))
-    new = json.load(open(args.register, encoding="utf-8"))
+    prior = _load(args.prior)
+    new = _load(args.register)
     prior_by_id = {c["constraint_id"]: c for c in prior.get("constraints", [])}
     new_by_id = {c["constraint_id"]: c for c in new.get("constraints", [])}
 
-    changed, unchanged, added, dropped = [], [], [], []
+    changed, unchanged, added, dropped, restated = [], [], [], [], []
     for cid, pc in prior_by_id.items():
         nc = new_by_id.get(cid)
         if nc is None:
@@ -372,26 +414,42 @@ def cmd_diff(args: argparse.Namespace) -> int:
             continue
         was = PRIOR_TO_NEW.get(pc.get("verdict"), pc.get("verdict"))
         now = nc.get("provenance_class")
-        (changed if was != now else unchanged).append((cid, was, now))
+        if was != now:
+            changed.append((cid, was, now))
+        else:
+            unchanged.append((cid, was, now))
+            # A class that survives while the constraint's text is rewritten is
+            # still a changed verdict. Reporting only class movement would hide
+            # every constraint narrowed to the width its quotation supports.
+            if nc.get("restated"):
+                restated.append((cid, now))
     for cid in new_by_id:
         if cid not in prior_by_id:
             added.append(cid)
 
-    print(f"prior constraints : {len(prior_by_id)}")
-    print(f"new constraints   : {len(new_by_id)}")
-    print(f"verdicts changed  : {len(changed)}")
-    print(f"verdicts unchanged: {len(unchanged)}")
-    if added:
-        print(f"added             : {added}")
+    print(f"prior constraints        : {len(prior_by_id)}")
+    print(f"new constraints          : {len(new_by_id)}")
+    print(f"class changed            : {len(changed)}")
+    print(f"class held, text restated: {len(restated)}")
+    print(f"wholly unchanged         : {len(unchanged) - len(restated)}")
+    print(f"added by this lane       : {len(added)}")
     if dropped:
-        print(f"dropped           : {dropped}")
+        print(f"dropped                  : {dropped}")
+    print("\n-- class changed --")
     for cid, was, now in sorted(changed):
         print(f"  {cid:<6} {was:<18} -> {now}")
+    print("\n-- class held, restated to the width the evidence supports --")
+    for cid, now in sorted(restated):
+        print(f"  {cid:<6} {now}")
+    if added:
+        print("\n-- added (founder-authored constraints no prior entry captured) --")
+        for cid in sorted(added):
+            print(f"  {cid}")
     return 0
 
 
 def cmd_counts(args: argparse.Namespace) -> int:
-    reg = json.load(open(args.register, encoding="utf-8"))
+    reg = _load(args.register)
     tally: dict[str, int] = {}
     disp: dict[str, int] = {}
     for c in reg.get("constraints", []):

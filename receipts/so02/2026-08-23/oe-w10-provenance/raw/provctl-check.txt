@@ -1,0 +1,27 @@
+# OE-W10 provctl check + negative tests - DIRECTLY_REPRODUCED
+# reproduced at: 2026-08-23T04:04:23Z
+# python: Python 3.12.3
+
+$ provctl.py check FOUNDER-CORPUS PROVENANCE-REGISTER --repo-root .
+PASS: 86 constraints, each classified, each citation checkable
+exit=0
+
+$ provctl.py counts PROVENANCE-REGISTER
+{
+  "by_class": {
+    "ASSISTANT_AUTHORED": 36,
+    "EARNED": 30,
+    "FOUNDER_AUTHORED": 20
+  },
+  "by_disposition": {
+    "PURGE": 26,
+    "RETAIN_EARNED": 30,
+    "RETAIN_FOUNDER_AUTHORED": 20,
+    "SEEK_RATIFICATION": 10
+  },
+  "total": 86
+}
+
+$ negative_tests_provctl.py
+Ran 27 tests in 0.011s
+OK
