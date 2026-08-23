@@ -1,0 +1,352 @@
+{
+  "artifact_id": "OE-W8-FUNCTION-ADJUDICATION-20260822-v001",
+  "lane": "OE-W8-CHATGPT-CONSTITUTION",
+  "commission": "COM-CUR-ENV-01-20260822-v001",
+  "base_commit": "5a8923ab3f8b13b3ac80ee747d9a2aad3d756382",
+  "state": "READY_TO_COMMIT",
+  "decision_changed": [],
+  "strategy_binding": "none",
+  "governs": "This register governs where it differs from the prose in CHATGPT-CONSTITUTION-20260822-v001.md.",
+
+  "subject": {
+    "what": "The ChatGPT advisory proposal recorded verbatim in FOUNDER-STANDING-INSTRUCTION-20260822.md",
+    "standing_of_subject": "ADVISORY. The founder labelled it explicitly not a founder ruling and not a replacement for his established intent.",
+    "instruction": "Assess against the wider operation, retain what is strategically useful, identify the strongest practical way to constitute and connect these functions.",
+    "authorisation_to_disagree": "Explicit. Assessment was requested, not endorsement."
+  },
+
+  "decomposition_finding": {
+    "clauses_as_written": 7,
+    "functions_after_decomposition": 12,
+    "why_it_matters": "Two clauses bundle a function that should be retained with one that should not. 'Interpretation' bundles interpretation-in-the-moment (ChatGPT) with interpretation-of-record (Cursor). 'Research and strategic challenge' bundles a capability with no asymmetry with one that has a real and unique asymmetry. Admitted as written, each clause admits both halves.",
+    "not_a_criticism": "The proposal describes a conversation, in which these things genuinely do occur together. A conversation is not a topology."
+  },
+
+  "verdict_vocabulary": {
+    "RETAIN": "The function is real, ChatGPT is the right home, and it is admitted with the stated conditions.",
+    "RELOCATE": "The function is real and ChatGPT is not the right home. The register names where it goes and why.",
+    "REJECT": "The function as proposed should not exist in that form anywhere. Any salvageable fragment is named and relocated separately."
+  },
+
+  "functions": [
+    {
+      "id": "P1",
+      "name": "Voice capture",
+      "clause_as_written": "voice capture, read-back, interpretation and decision support",
+      "verdict": "RETAIN",
+      "home": "ChatGPT, desktop app, voice mode",
+      "is_it_real": "Yes. Founder intent is generated in speech and currently survives only if he later types it.",
+      "asymmetry_test": {
+        "question": "What can ChatGPT do here that no other platform in this estate can?",
+        "answer": "Receive speech at the moment of utterance, in the surface the founder is already in, and be interrupted mid-response.",
+        "verdict": "GENUINE_ASYMMETRY"
+      },
+      "evidence": [
+        {
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "A Cursor cloud agent runtime has no audio device, no audio capture tooling on PATH, and a non-interactive stdin, so it can neither hear the founder nor be interrupted mid-turn.",
+          "how": "ls /dev/snd -> No such file or directory; command -v aplay arecord pactl pw-cli -> no output; test -t 0 -> false",
+          "receipt": "receipts/so02/2026-08-22/oe-w8-chatgpt-constitution/raw/runtime-capability-probe.txt",
+          "date": "2026-08-23"
+        },
+        {
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "ChatGPT Voice runs in the ChatGPT desktop app on Plus, Pro, Business, Edu and Enterprise, supports natural turn-taking including interrupting a response, and can start separate threads, check existing threads and send follow-up instructions, bringing progress, blockers and results back into the voice conversation.",
+          "source": "https://learn.chatgpt.com/docs/features/voice.md",
+          "sha256_recorded_in": "receipts/so02/2026-08-22/oe-w8-chatgpt-constitution/raw/claim-source-fetch-log.json",
+          "date": "2026-08-23"
+        },
+        {
+          "label": "DOCUMENTED",
+          "claim": "Capture belongs where the founder is, and Cursor cloud agents structurally cannot do read-back in the moment.",
+          "source": "workstreams/so02/control-plane/operating-environment/w4-platform-roles/PLATFORM-ROLE-ARCHITECTURE-20260822-v001.md section 3"
+        }
+      ],
+      "what_it_displaces": "Founder verbs removed: remember, retype. Intent currently degrades between utterance and record, and the degradation is invisible because nobody compares the two.",
+      "conditions": [
+        "Capture is not complete when ChatGPT holds it. It is complete when the utterance record is in git. Until then its state is RECOVERED_UNCOMMITTED, not evidence.",
+        "Capture must record the founder's words verbatim. A capture that stores only a summary is inadmissible above S1 under the Part B rule, regardless of who summarised."
+      ],
+      "return_route_dependency": "Required. Without a custody route this function produces candidates, not records. It is not blocked by the absence; it is unadmitted.",
+      "substitution_route": "Founder types into any surface that can commit. Strictly worse (loses the read-back exchange) but never unavailable.",
+      "pre_registered_falsifier": "If, across a declared number of waves, no captured utterance ever reaches git, the function is producing memory rather than record and must be suspended rather than reported as running.",
+      "proposal_underestimates_it": "Yes. The proposal frames voice as capture. The documented capability is a dispatch and status console operated by speech."
+    },
+
+    {
+      "id": "P2",
+      "name": "Read-back",
+      "clause_as_written": "voice capture, read-back, interpretation and decision support",
+      "verdict": "RETAIN_AND_PROMOTE",
+      "home": "ChatGPT, as an admission gate rather than a feature",
+      "is_it_real": "Yes, and it is the highest-value item in the proposal per unit of effort.",
+      "asymmetry_test": {
+        "question": "What can ChatGPT do here that no other platform can?",
+        "answer": "State an interpretation back inside the same exchange, while the founder is still present and can refuse it for free.",
+        "verdict": "GENUINE_ASYMMETRY"
+      },
+      "evidence": [
+        {
+          "label": "DOCUMENTED",
+          "claim": "The estate's recorded failure mode is assistant summaries quietly displacing founder intent; the founder instructed that summaries and defaults must never distort founder intent and authority.",
+          "source": "workstreams/so02/control-plane/operating-environment/FOUNDER-STANDING-INSTRUCTION-20260822.md"
+        },
+        {
+          "label": "DIRECTLY_REPRODUCED",
+          "claim": "Voice supports interruption mid-response, which is the mechanism a same-exchange refusal requires.",
+          "source": "https://learn.chatgpt.com/docs/features/voice.md",
+          "date": "2026-08-23"
+        }
+      ],
+      "why_promoted": "Every refusal that does not happen at read-back happens later as a supersession, which costs a record, a conflict object and the risk that the wrong reading propagated first. Read-back is the only zero-cost refusal point in the whole pipeline.",
+      "the_gate": "No captured intent rises above CAPTURED_UNCONFIRMED unless a read-back was performed AND the recorded interpretation is the exact wording that was read back. A later paraphrase of a confirmed read-back is a new, unconfirmed interpretation.",
+      "what_it_displaces": "Founder verbs removed: correct, re-explain, supersede.",
+      "return_route_dependency": "Same as P1.",
+      "substitution_route": "Written read-back in any text surface. Slower and easier to skip, which is why the gate is on the record rather than on the medium.",
+      "pre_registered_falsifier": "If supersessions correcting misread intent continue at the pre-capture rate after the gate is in force, the gate is being satisfied formally and not substantively."
+    },
+
+    {
+      "id": "P3a",
+      "name": "Interpretation in the moment",
+      "clause_as_written": "voice capture, read-back, interpretation and decision support",
+      "verdict": "RETAIN_BOUNDED",
+      "home": "ChatGPT",
+      "is_it_real": "Yes, but only as the thing read-back reads back.",
+      "asymmetry_test": {
+        "answer": "Inseparable from P2. Cannot be performed by an asynchronous surface.",
+        "verdict": "DERIVED_FROM_P2"
+      },
+      "bound": "Disambiguation and typing of what was just said. It may ask which decision class an utterance touches. It may not decide what the estate's position now is.",
+      "drift_risk": "High. Interpretation-in-the-moment becomes interpretation-of-record by nothing more than nobody noticing. The boundary is enforced by the Part B lattice: an assistant utterance is S1 CONTEXT and can never change a decision class no matter how confident it sounds.",
+      "evidence": [{"label": "DOCUMENTED", "claim": "Interpretation-of-record must be checkable against the whole estate and enforced by mechanisms.", "source": "w4-platform-roles/PLATFORM-ROLE-ARCHITECTURE-20260822-v001.md section 3"}],
+      "return_route_dependency": "Same as P1.",
+      "substitution_route": "Any surface, degraded.",
+      "pre_registered_falsifier": "An interpretation authored by ChatGPT appearing in the repository at standing above S1 without a founder utterance behind it."
+    },
+
+    {
+      "id": "P3b",
+      "name": "Interpretation of record",
+      "clause_as_written": "voice capture, read-back, interpretation and decision support",
+      "verdict": "RELOCATE",
+      "relocated_to": "Cursor",
+      "is_it_real": "Yes, and it is essential.",
+      "asymmetry_test": {
+        "answer": "None for ChatGPT. The required capabilities are reading the whole estate at once and enforcing the reading by a mechanism, which is Cursor's asymmetry, not ChatGPT's.",
+        "verdict": "NO_ASYMMETRY"
+      },
+      "why_not_chatgpt": [
+        "Interpretation of record must survive the thread ending. A thread is a container that closes.",
+        "It must be checkable against every other branch and claim at once. No conversational surface holds that view.",
+        "Part B's conflict ranking needs an arbiter that can see all threads simultaneously. If ChatGPT holds interpretation-of-record, the admission rule has no arbiter."
+      ],
+      "cost_of_the_placement": "Latency. The record lags the conversation. Accepted, because a fast wrong record is the failure this estate already had.",
+      "substitution_route": "Any surface that writes the canonical store and can be validated by a committed checker."
+    },
+
+    {
+      "id": "P3c",
+      "name": "Decision support",
+      "clause_as_written": "voice capture, read-back, interpretation and decision support",
+      "verdict": "RETAIN_FENCED",
+      "home": "ChatGPT",
+      "is_it_real": "Yes.",
+      "asymmetry_test": {
+        "answer": "Partial. Any surface can lay out options; only this one can do it in the founder's live exchange with his own prior context available.",
+        "verdict": "PARTIAL_ASYMMETRY"
+      },
+      "the_fence": "Support is not decision. ChatGPT may present options, costs, precedent and its own recommendation on any decision class. Where it does not hold the class, its position enters the contribution ledger as an agree/dissent row and changes nothing by itself.",
+      "why_the_fence_is_checkable": "The decision-class partition already exists and is machine-checked; a non-holder contribution is an existing object type, not a new one.",
+      "absorbs": "The retained residue of P9: rendering an already-committed founder action into the live voice exchange on request. It fails the null test as its own function, so it is absorbed rather than registered.",
+      "evidence": [{"label": "DOCUMENTED", "claim": "Every decision class has exactly one holder; a non-holder touching a held class files a contribution row.", "source": "w4-platform-roles/PLATFORM-ROLE-ARCHITECTURE-20260822-v001.md section 5"}],
+      "return_route_dependency": "Low. Support that changes nothing needs no custody. A dissent row does, and degrades to RECOVERED_UNCOMMITTED without it.",
+      "substitution_route": "Any lane can produce options; it loses the live exchange.",
+      "pre_registered_falsifier": "A decision class changing holder or value with no founder utterance and no ledger row behind it."
+    },
+
+    {
+      "id": "P4",
+      "name": "Authenticated discovery of projects, Library, integrations, plugins and connected accounts",
+      "clause_as_written": "authenticated discovery of ChatGPT projects, Library, integrations, plugins and connected accounts",
+      "verdict": "RETAIN",
+      "home": "ChatGPT — this is its home function",
+      "is_it_real": "Yes, and it is the strongest item in the proposal.",
+      "asymmetry_test": {
+        "question": "What can ChatGPT do here that no other platform can?",
+        "answer": "Reach an authenticated estate no cloud agent can reach. This is the only asymmetry the platform has, and this is the only proposed function that spends it.",
+        "verdict": "GENUINE_ASYMMETRY_AND_EXCLUSIVE"
+      },
+      "evidence": [
+        {"label": "DOCUMENTED", "claim": "ChatGPT's asymmetry is access, not reasoning and not evidence review; every credential-blocked route in this estate is blocked on something discoverable inside ChatGPT's reach.", "source": "w4-platform-roles/PLATFORM-ROLE-ARCHITECTURE-20260822-v001.md section 2"},
+        {"label": "DOCUMENTED", "claim": "The founder's own recorded immediate_useful_role for ChatGPT is discovering and verifying existing accounts, integrations, plugins, connectors, tools and context and aligning them so Cursor receives maximum useful authorised access.", "source": "workstreams/so02/control-plane/operating-environment/FOUNDER-AUTHORITY-20260822T2225Z.json"},
+        {"label": "DIRECTLY_REPRODUCED", "claim": "Plugin and connector availability, app access and per-action permissions are workspace-admin-gated and enumerable from inside the account; eligible Enterprise owners and admins can export the available public plugins as CSV.", "source": "https://learn.chatgpt.com/docs/enterprise/apps-and-connectors.md", "date": "2026-08-23"}
+      ],
+      "how_the_proposal_undersells_it": [
+        "It asks for discovery as an answer in a conversation. The output must be a census artifact with stable locators, because an answer cannot be diffed against next month's answer and a locator that reads 'the project where we discussed pricing' is rejected by the estate's existing locator discipline.",
+        "It treats discovery as an opening move. A census is perishable: it is true on the day it runs. Discovery is recurring, and its value is the delta."
+      ],
+      "absorbs": "The plan question. Which ChatGPT plan the account holds, and whether an admin-enabled workspace exists, determines whether the Compliance API and Workspace Agents exist at all. A prior lane correctly removed this from the founder-question list because it is a fact the platform can retrieve about itself. It is therefore discovery's first task and costs zero founder actions.",
+      "what_it_displaces": "Founder verbs removed: retrieve, inventory, remember what is connected. It also removes the estate's habit of treating an unknown as a boundary.",
+      "return_route_dependency": "Required for the census to become evidence. Without it the census is a candidate the founder would have to carry, which is the relay.",
+      "substitution_route": "None inside the estate. This is the definition of an asymmetry, and it is why P4 also carries the highest concentration risk: if this function is unavailable, nothing substitutes for it.",
+      "pre_registered_falsifier": "Two consecutive censuses producing no delta and no newly resolved blocked route, which would mean the estate is already fully known and the function has finished its exhaustive phase."
+    },
+
+    {
+      "id": "P5",
+      "name": "Recovery of relevant prior context",
+      "clause_as_written": "recovery of relevant prior context",
+      "verdict": "RETAIN_CONDITIONAL",
+      "condition": "Admitted only through the intent admission rule in Part B. Without that rule this verdict would be wrong and the function would be a hazard.",
+      "home": "ChatGPT",
+      "is_it_real": "Yes. The founder states directly that his ChatGPT capability comes from extensive direct dialogue with him and that the entire authorised account may be used to recover relevant context.",
+      "asymmetry_test": {"answer": "Exclusive. Nothing else can read those threads.", "verdict": "GENUINE_ASYMMETRY"},
+      "why_it_is_dangerous": "Recovered context arrives with the rhetorical force of the founder's own voice and none of its currency. A well-argued eighteen-month-old exploration reads exactly like a current directive, and the estate's recorded failure mode is competing claims about what is current.",
+      "evidence": [
+        {"label": "DOCUMENTED", "claim": "No single thread is the complete founder intent; the whole account may be used while preserving provenance.", "source": "workstreams/so02/control-plane/operating-environment/FOUNDER-STANDING-INSTRUCTION-20260822.md"},
+        {"label": "DOCUMENTED", "claim": "The currentness resolver refuses to take the newest, nearest or majority claim; agreement by copying is not authority.", "source": "workstreams/so02/control-plane/operating-environment/l4-currentness-recovery/README.md"}
+      ],
+      "what_it_displaces": "Founder verbs removed: remember, re-explain, arbitrate between his own past positions.",
+      "return_route_dependency": "Required.",
+      "substitution_route": "The owner data export, processed in Cursor. Slower, snapshot-only, and it cannot answer a question in a live exchange — but it is a genuine substitute for the bulk case and it is what the Part C sweep runs on.",
+      "pre_registered_falsifier": "A recovered utterance changing a decision class while failing the Part B admission test, detectable by the checker."
+    },
+
+    {
+      "id": "P6a",
+      "name": "Research",
+      "clause_as_written": "research and strategic challenge",
+      "verdict": "RELOCATE",
+      "relocated_to": "Cursor, except research over the authenticated estate, which is P4 and stays",
+      "is_it_real": "Yes, but it is not differentiated.",
+      "asymmetry_test": {
+        "answer": "None. Cursor has unrestricted egress, reproduced multi-source harvests with per-source sha256, and lands research where it can be checked and re-derived.",
+        "verdict": "NO_ASYMMETRY"
+      },
+      "evidence": [
+        {"label": "DOCUMENTED", "claim": "A Cursor lane harvested 59 official documentation URLs at HTTP 200 with sha256 per source and rebuilt every excerpt from the fetched body at build time.", "source": "workstreams/so02/control-plane/operating-environment/l5-chatgpt-scale/OPENAI-API-SURFACE-FINDINGS-20260822-v001.md"},
+        {"label": "DIRECTLY_REPRODUCED", "claim": "This lane fetched 10 of 11 official sources at HTTP 200 from a cloud agent with no credential, recording sha256 for each.", "receipt": "receipts/so02/2026-08-22/oe-w8-chatgpt-constitution/raw/claim-source-fetch-log.json", "date": "2026-08-23"}
+      ],
+      "carve_out": "Research whose sources are inside the authenticated account is not general research; it is discovery, and it stays with P4.",
+      "cost_of_the_placement": "It splits a habit the founder currently exercises in one place. Real, and worth naming, because the constitution should not pretend a correct topology is frictionless.",
+      "substitution_route": "Any lane; the function is deliberately commodity."
+    },
+
+    {
+      "id": "P6b",
+      "name": "Strategic challenge",
+      "clause_as_written": "research and strategic challenge",
+      "verdict": "RETAIN_NARROWED",
+      "home": "ChatGPT, holding DC-FRAMING-CHALLENGE",
+      "narrowing": "Challenge to the founder's framing and to a commission's premise, live. Challenge to a produced artifact is red-teaming and belongs with the adversarial function in Cursor, which is separated from acceptance by incentive and container.",
+      "asymmetry_test": {
+        "question": "What can ChatGPT do here that no other platform can?",
+        "answer": "Object from criteria that did not originate in the dispatch lineage, in an exchange the founder can answer immediately.",
+        "verdict": "GENUINE_ASYMMETRY_MISSED_BY_PRIOR_WORK"
+      },
+      "the_gap_this_fills": "Every Cursor lane reads the same always-applied rule file, the same AGENTS.md, the same commission text and a dispatch written by the same root controller. Model-family diversity does not break shared instruction lineage. An in-Cursor acceptor can refuse the producer's evidence; it cannot refuse 'this commission is aimed at the wrong problem', because that judgment is not in its criteria and its criteria came from the same source.",
+      "evidence": [{"label": "DOCUMENTED", "claim": "The six properties of independence enumerated by the prior lane are all properties of the verdict process; none is a property of the criteria's origin.", "source": "w4-platform-roles/PLATFORM-ROLE-ARCHITECTURE-20260822-v001.md section 4"}],
+      "blocking_power": "None. It files a dissent row; an unresolved conflict attaches to the work as a standing dissent and no lane idles.",
+      "return_route_dependency": "Low, and deliberately so. A challenge is a paragraph and rides the capture route. A verdict would need a route strong enough to bind, which is exactly why P8 fails and P6b does not.",
+      "substitution_route": "A Cursor lane dispatched with deliberately inverted framing. Weaker, because the inversion is still authored by the same lineage, but real.",
+      "pre_registered_falsifier": "If across a declared number of waves no challenge is ever upheld and none changes a commission, the function is decorative and retires."
+    },
+
+    {
+      "id": "P7",
+      "name": "Specialist parallel work",
+      "clause_as_written": "specialist parallel work",
+      "verdict": "RELOCATE",
+      "relocated_to": "Cursor, with a named exception",
+      "is_it_real": "Yes.",
+      "asymmetry_test": {
+        "answer": "Inverted. Parallelism is Cursor's demonstrated asymmetry: nine top-level cloud agents on one repository, four distinct exact model configurations, two model families, one account, each lane in its own worktree and branch.",
+        "verdict": "ASYMMETRY_BELONGS_TO_THE_OTHER_PLATFORM"
+      },
+      "evidence": [{"label": "DOCUMENTED", "claim": "Cursor is already a multi-agent platform at that scale, reproduced.", "source": "w4-platform-roles/PLATFORM-ROLE-ARCHITECTURE-20260822-v001.md section 2"}],
+      "the_decisive_argument": "Parallel work without a return route does not remove founder load. It multiplies the number of results he must carry. Parallelism scales the relay rather than replacing it, so the proposal's most scale-oriented item is the one that most increases founder load if adopted as written.",
+      "named_exception": "Work that structurally requires the authenticated estate — a specialist reading a connected account, a project's Sources, or the Library — cannot relocate. It stays in ChatGPT, bound to a project slot, and must name its return route at admission or it is not admitted.",
+      "substitution_route": "Cursor lanes, which is the relocation target."
+    },
+
+    {
+      "id": "P8",
+      "name": "Independent evaluation",
+      "clause_as_written": "independent evaluation",
+      "verdict": "REJECT_AS_ACCEPTANCE_RELOCATE_FRAGMENT",
+      "plain_statement": "ChatGPT does not hold DC-ACCEPTANCE and does not issue admissible acceptance verdicts. The retained fragment is a differently-sourced question, not a verdict, and it is registered as DC-FRAMING-CHALLENGE under P6b.",
+      "the_strongest_argument_for_the_proposal_stated_fairly": "The prior decomposition of independence has a gap. It enumerates six properties, all of them properties of the verdict process, and shows none needs a second provider. It does not enumerate the origin of the criteria. Every Cursor lane shares instruction lineage with its producer, so no in-Cursor arrangement detects a framing error. The founder's account genuinely breaks that lineage, because it holds his own prior thinking, which no root controller authored. That is a real independence property Cursor cannot manufacture.",
+      "why_it_is_still_rejected": [
+        {
+          "rank": 1,
+          "reason": "A verdict is the highest-consequence artifact in the estate and would have the weakest available transport. Acceptance moves a subject up the admission ladder. If a verdict's only route to custody is the founder carrying it, the acceptance gate runs at founder bandwidth, which the non-negotiable forbids. A verdict a third party cannot re-derive from committed evidence is an opinion with a timestamp."
+        },
+        {
+          "rank": 2,
+          "reason": "Context saturation is anti-correlated with the property acceptance most needs. The acceptance container is specified to read committed artifacts only and never a producing chat. The founder's account is the one surface where an acceptor would sit inside 182 chats of producing context with no mechanical way to show it read only the artifact. The cold-instance replay test would be run by the surface it is testing, which displaces the self-acceptance prohibition rather than satisfying it."
+        },
+        {
+          "rank": 3,
+          "reason": "It spends the one asymmetry on a task with no asymmetry. Evidence review uses none of the authenticated access that is the only thing this platform uniquely has."
+        },
+        {
+          "rank": 4,
+          "reason": "This one survives even if the first three were solved. Acceptance derives its value from being boring, mechanical, cheap and frequent. Housed where the founder is present, every refusal becomes a conversation with him. A gate that must be discussed is a negotiation, and a negotiated gate is not a gate. Founder-facing is the correct design for capture and the disqualifying design for refusal."
+        }
+      ],
+      "the_demonstrated_counterfactual": {
+        "label": "DOCUMENTED",
+        "claim": "An acceptance lane ran inside Cursor on a different model family from its producer, with criteria committed beforehand at 9a390df3, refused the root controller's own evidence, and had two findings reproduced against the producer's own tooling.",
+        "source": "workstreams/so02/control-plane/operating-environment/l3-independent-acceptance/VERDICT.json"
+      },
+      "the_residual_class": "Claims about Cursor's own runtime behaviour are correlated across every lane inside it and no in-Cursor arrangement is independent of them. ChatGPT is not the answer to that either: GitHub Actions is a cheaper second execution domain and a hosted open-weight route is a cheaper second cognition domain, and both have return routes. ChatGPT would be a third option, worse on both axes.",
+      "relocated_fragment": {
+        "new_decision_class": "DC-FRAMING-CHALLENGE",
+        "holder": "ChatGPT",
+        "subject": "the commission, not the artifact",
+        "output": "a challenge object entering the contribution ledger as a dissent row, never a verdict",
+        "distinct_from": ["DC-ADVERSARIAL-FINDING (Cursor red team, attacks the artifact)", "DC-EVAL-DEFINITION (Cursor, defines the measure)", "DC-ACCEPTANCE (Cursor, applies the measure)"],
+        "registered_under": "P6b"
+      }
+    },
+
+    {
+      "id": "P9",
+      "name": "Translation of agent returns into precise founder actions",
+      "clause_as_written": "translation of agent returns into precise founder actions",
+      "verdict": "REJECT_AS_STATED",
+      "pattern_named": "FOUNDER_AS_RELAY",
+      "the_mechanism": "Agent returns already live in git. Either ChatGPT reads git, in which case the translation runs against an artifact a Cursor lane already produced and that lane could have produced the founder action directly — W3 and L5 already do, ten fields per action — or the founder carries the returns into ChatGPT, which is the relay. No amount of ChatGPT capability changes what he is doing in that loop.",
+      "why_the_disguise_works": "The founder's side of the loop is conversational, so every individual exchange is pleasant and fast. What is hidden is that his attention sits on the critical path of every item, so total throughput is bounded by his available hours. No measurement of how easy the exchange felt will ever reveal that.",
+      "where_else_the_pattern_appears_in_the_proposal": [
+        "P8 explicitly: a verdict that must be spoken to the founder to reach anything is a relayed verdict.",
+        "P7 latently: parallel work with no return route multiplies the results he must carry."
+      ],
+      "distinction_that_prevents_over_application": {
+        "rule": "Founder-device dependency is not founder-relay dependency.",
+        "explanation": "A route running on Ahmed's machine has him supplying hardware and an authenticated session, not attention per item. He authorises once; thereafter the agent writes and pushes and he reads nothing. The test is whether his attention is on the critical path of each item, not whether his hardware is.",
+        "why_it_matters_here": "A constitution that conflated the two would reject the most promising custody route in Part D for the wrong reason."
+      },
+      "retained_residue": "Rendering an already-committed, already-specified founder action into the live voice exchange when he asks what is needed from him. It is a read over an artifact, it changes nothing, and it fails the null test as its own function. Absorbed into P3c.",
+      "evidence": [{"label": "DOCUMENTED", "claim": "R0-founder-relay is classified as a defect and budgeted at zero for routine work; any function whose only route is R0 fails the displacement test at admission.", "source": "workstreams/so02/control-plane/operating-environment/l5-chatgpt-scale/CHATGPT-SCALE-OPERATING-PROGRAMME-20260822-v001.md section 9"}]
+    }
+  ],
+
+  "tally": {
+    "RETAIN": ["P1", "P4"],
+    "RETAIN_WITH_PROMOTION_OR_BOUND": ["P2", "P3a", "P3c", "P6b"],
+    "RETAIN_CONDITIONAL": ["P5"],
+    "RELOCATE": ["P3b", "P6a", "P7"],
+    "REJECT": ["P8", "P9"],
+    "note": "P8 and P9 each carry a relocated fragment. A rejection that salvages nothing and a rejection that salvages a fragment are different verdicts and are recorded differently.",
+    "count_is_derived_not_chosen": "Twelve is what seven clauses decompose into when each is split at the point where its home changes. It is not a target and it is not a claim that twelve is the right number of ChatGPT functions; the operating register of functions is a separate, larger object owned by a prior lane."
+  },
+
+  "what_this_register_does_not_do": [
+    "It does not build the route evidence table. That is a sibling lane's deliverable, and two tables that can disagree is worse than one.",
+    "It does not bind a model, tool, plan or architecture.",
+    "It does not impose a number of projects, agents or functions. Nine is the count the proposal decomposes into, not a target.",
+    "It does not treat any count as success. Only independently accepted output counts."
+  ]
+}

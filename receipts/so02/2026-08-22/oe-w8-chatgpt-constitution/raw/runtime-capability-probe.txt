@@ -1,0 +1,25 @@
+OE-W8 runtime capability probe
+recorded_at_utc: 2026-08-23T00:58:35Z
+lane: OE-W8-CHATGPT-CONSTITUTION
+purpose: ground the capture asymmetry in this runtime rather than in an assumption
+
+$ ls /dev/snd
+ls: cannot access '/dev/snd': No such file or directory
+
+$ command -v aplay arecord pactl pw-cli
+(no output above = none present on PATH)
+
+$ test -t 0
+stdin is NOT a tty -> the turn cannot be interrupted mid-response by a human
+
+$ printenv CLOUD_AGENT_ALL_SECRET_NAMES
+AUREA_E2E_SUPABASE_PUBLISHABLE_KEY,AUREA_E2E_SUPABASE_URL,AUREA_E2E_USER_EMAIL,AUREA_E2E_USER_PASSWORD
+
+$ for n in OPENAI_API_KEY CURSOR_API_KEY ANTHROPIC_API_KEY SUPABASE_ACCESS_TOKEN; do presence check by name only, no value printed
+  OPENAI_API_KEY: ABSENT
+  CURSOR_API_KEY: ABSENT
+  ANTHROPIC_API_KEY: ABSENT
+  SUPABASE_ACCESS_TOKEN: ABSENT
+
+$ git rev-parse HEAD
+5a8923ab3f8b13b3ac80ee747d9a2aad3d756382
