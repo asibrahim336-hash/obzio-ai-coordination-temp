@@ -1,0 +1,259 @@
+{
+  "schema_version": "1.0",
+  "document_id": "OE-W9-PROVENANCE-CLASSIFICATION",
+  "lane": "OE-W9-REASON-GATED-WRITES",
+  "commission": "COM-CUR-ENV-01-20260822-v001",
+  "produced_at": "2026-08-23T04:05:00Z",
+  "decision_changed": [],
+
+  "governing_instruction": {
+    "speaker": "Ahmed Sadek, founder of Obzio",
+    "instrument": "STANDING AMENDMENT 2026-08-23 — the 'protected surface' category is VOID",
+    "verbatim_record": "workstreams/so02/control-plane/operating-environment/FOUNDER-STANDING-INSTRUCTION-20260822.md",
+    "rule_applied_verbatim": "any lane proposing a constraint states its provenance class in the same breath. An unclassified constraint is not in force."
+  },
+
+  "classification_method": {
+    "valid_founder_signal": "a quoted founder utterance in the verbatim record",
+    "invalid_founder_signal": "git commit authorship",
+    "why_the_invalid_signal_matters_here": "The founder's own amendment and the provenance finding beneath it establish that assistant lanes commit under his git identity as a matter of course. Commit 9887f33e, which introduced the 'Do not touch PR #9' language, is authored by asibrahim336-hash but carried an assistant lane's drafted commission text. The classifier that certified FB-11 as FOUNDER_BOUND read commit authorship — a signal identical for every commit in this repository and therefore carrying no per-item information at all. Every classification below is derived from quoted founder text or from a named, reproduced defect, and never from a commit header.",
+    "how_assistant_authored_is_handled_in_code": "write_declaration.Finding carries a provenance field, and BLOCKING_PROVENANCE contains only FOUNDER_AUTHORED and EARNED. An ASSISTANT_AUTHORED check is reported and never refuses a write. Ratification is possible through the explicit ratified_assistant_checks argument, which converts a named check to binding; it is an act, not a default."
+  },
+
+  "retired": [
+    {
+      "constraint": "PROTECTED_REFS / PROTECTED_PREFIXES / guard_ref_is_protected / verify_protected_refs / PROTECTED_REF_DRIFT_FAIL",
+      "location": "workstreams/so02/control-plane/operating-environment/tools/lane_guard.py",
+      "prior_class_asserted": "FOUNDER_BOUND",
+      "true_class": "ASSISTANT_AUTHORED",
+      "basis": "Ahmed Sadek: 'I never designated main, PO-03, PR #9, any cursor/po03-* branch, PO-01, PR #6, PR #7 or any SO-02 source branch as protected.'",
+      "status": "REMOVED",
+      "additional_finding_by_this_lane": "verify_protected_refs was invoked with a hardcoded dict of three refs, while the manifest key protected_surfaces_declared_untouchable was read into a local named `expected` that was never used. The file that appeared to declare the boundary was not the file the check consulted. The check also compared refs this lane group never wrote, so it could only ever report 'unchanged'.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "constraint": "protected_branch_globs and the PROTECTED-BRANCH-PUSH / PROTECTED-BRANCH-COMMIT refusals",
+      "location": ".cursor/write-scope.json and .cursor/hooks/guard_write_scope.py",
+      "true_class": "ASSISTANT_AUTHORED",
+      "basis": "Ahmed Sadek: 'the write-scope guard now checks that a write was declared and reasoned, not that its target avoided a forbidden list.'",
+      "status": "REMOVED",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "constraint": "protected_path_globs",
+      "location": ".cursor/write-scope.json",
+      "true_class": "ASSISTANT_AUTHORED",
+      "basis": "Voided with the category. It was additionally inert: a prior lane established that no code read the key, and the file said so itself.",
+      "status": "REMOVED",
+      "note": "Deleted rather than left as a labelled comment. A key that looks like a boundary and refuses nothing is the same defect as a rule written in prose and enforced by nothing.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "constraint": "'protected surfaces verified unchanged' as a reported success criterion",
+      "location": "lane return format",
+      "true_class": "ASSISTANT_AUTHORED",
+      "basis": "Ahmed Sadek: 'Remove it as a success criterion [...] Untouched is not a virtue. Correct is. A run that touched nothing and produced nothing has passed nothing.'",
+      "status": "REMOVED",
+      "evidence_label": "DOCUMENTED"
+    }
+  ],
+
+  "founder_authored": [
+    {
+      "constraint": "A write must be declared before it is admissible.",
+      "quote": "the write-scope guard now checks that a write was **declared and reasoned**, not that its target avoided a forbidden list.",
+      "enforced_by": "write_declaration.validate_declaration NO_DECLARATION; guard_write_scope UNDECLARED-WRITE",
+      "blocking": true
+    },
+    {
+      "constraint": "A write must carry a live operational reason and a rollback.",
+      "quote": "You do not need my permission for any of it — you need a reason and a rollback.",
+      "enforced_by": "REASON_MISSING, REASON_STATEMENT_EMPTY, REVERSAL_MISSING, REVERSAL_CUSTODY_MISSING",
+      "blocking": true
+    },
+    {
+      "constraint": "Each gate expires when its reason does; a reason code therefore carries obligations that can become false.",
+      "quote": "A write is gated only by a live operational reason, and each gate expires when its reason does",
+      "enforced_by": "REASON_CODE_NOT_IN_VOCABULARY, REASON_OBLIGATIONS_UNMET, ReasonCode.expires_when",
+      "blocking": true
+    },
+    {
+      "constraint": "Do not corrupt work in flight; the gate is the run finishing, not permission.",
+      "quote": "Concurrency. Do not corrupt work in flight. PO-03 has live top-level runs; a write that would disturb a running lane waits for that lane to finish — not forever. When it completes, the gate is gone.",
+      "enforced_by": "concurrency_observer IN_FLIGHT_LIVE_AGENT_HOLDS_TARGET, CONCURRENCY_OBSERVATION_MISSING, CONCURRENCY_OBSERVATION_UNTIMED",
+      "blocking": true
+    },
+    {
+      "constraint": "Snapshot before an irreversible write; custody is a named artifact, not a promise.",
+      "quote": "Reversibility. Snapshot before an irreversible write: tag, archive, recorded SHA. That is custody, not protection.",
+      "enforced_by": "REVERSAL_METHOD_NOT_IN_VOCABULARY, REVERSAL_CUSTODY_MISSING",
+      "blocking": true
+    },
+    {
+      "constraint": "A write asserting a result carries the evidence for it.",
+      "quote": "Evidence. A write that asserts a result carries the evidence for that result. The problem was never the target of a write; it was unverified writes.",
+      "enforced_by": "EVIDENCE_MISSING, EVIDENCE_KIND_NOT_IN_VOCABULARY, write_admission evidence gate",
+      "blocking": true,
+      "note": "The reason code decides whether a result is asserted, not the declarer. Allowing a write to self-certify that it asserts nothing would make the gate optional."
+    },
+    {
+      "constraint": "No surface is refused for its name.",
+      "quote": "Every surface in the Ahmed/Obzio-controlled estate is writable under my authority [...] No surface is off-limits because of a name on a list.",
+      "enforced_by": "tests asserting the same declaration is admitted against main, cursor/po03-*, so02/*, po03/* and a scratch branch; tests asserting no module holds PROTECTED_REFS, PROTECTED_PREFIXES or protected_branch_globs",
+      "blocking": true
+    },
+    {
+      "constraint": "An unclassified constraint is not in force; assistant-authored constraints are void unless ratified.",
+      "quote": "any lane proposing a constraint states its provenance class in the same breath. An unclassified constraint is not in force.",
+      "enforced_by": "Finding.provenance and Finding.basis are required fields; BLOCKING_PROVENANCE excludes ASSISTANT_AUTHORED; a test asserts every finding carries both",
+      "blocking": true
+    }
+  ],
+
+  "earned": [
+    {
+      "constraint": "Read-back by recomputation, not by shape.",
+      "defect_caught": "verify_readback validated the SHAPE of a read-back record and never its TRUTH, so a wholly fabricated record naming commit 000...0 with invented transports passed verification. Found by an independent acceptor on a different model family, then reproduced.",
+      "kept_as": "evidence_integrity.verify_readback_truth, reused by write_admission rather than reimplemented",
+      "applied_newly_by_this_lane_to": "the declaration's own claims — a declaration asserting its reversal was rehearsed has that rehearsal re-executed, and its reversal command re-derived from the constructor",
+      "blocking": true
+    },
+    {
+      "constraint": "Allowlist benign states; never denylist harmful ones.",
+      "defect_caught": "capacity_verdict used a DENYLIST of interference statuses, so any status not enumerated — including ERROR and FAILED — passed silently. A denylist of bad states fails open on every state nobody thought of.",
+      "kept_as": "concurrency_observer.SETTLED_STATUSES is an allowlist; is_settled fails closed on an unrecognised status",
+      "live_confirmation": "In the 2026-08-23T03:40Z capture no agent was RUNNING, but the root controller was WAITING_FOR_BACKGROUND_WORK on cursor/so02-cur-orch-qual-01. A denylist naming only RUNNING would have admitted a write to a branch whose subagents were still writing.",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "blocking": true
+    },
+    {
+      "constraint": "Manifest closure: every material file covered, bundle_sha256 binding the entry list.",
+      "defect_caught": "an excluded file is an unbound file; a bundle digest that does not bind its entries permits silent entry substitution",
+      "kept_as": "evidence_integrity.verify_manifest_closure, reused as the MANIFEST_CLOSURE evidence route",
+      "blocking": true
+    },
+    {
+      "constraint": "Worktree isolation per lane.",
+      "defect_caught": "live SHARED_WORKTREE_COLLISION reproduction: lanes dispatched into one shared working directory committed onto a detached HEAD and captured each other's files",
+      "kept_as": "lane_guard.namespace_matches; guard_write_scope DETACHED-HEAD; target.paths is a required declaration field so a write states its own extent in advance",
+      "blocking": true
+    },
+    {
+      "constraint": "A zero exit from git push is not evidence of publication.",
+      "defect_caught": "a lane on a detached HEAD pushed a branch ref that never moved; git printed 'Everything up-to-date' and exited 0",
+      "kept_as": "lane_guard.verify_reported_head; guard_write_scope PUSH-REF-BEHIND-HEAD; reversal verdicts recomputed from the tree rather than from an exit code",
+      "blocking": true
+    },
+    {
+      "constraint": "NOT_RETURNED rather than assumed success; a check that could not run is not a check that passed.",
+      "defect_caught": "conflating a lane that had not delivered with a lane that delivered something disallowed",
+      "kept_as": "lane_guard NOT_RETURNED and IN_FLIGHT_NO_CONTENT_YET; write_admission NOT_EVALUATED for gates after a refusal; EVIDENCE_UNVERIFIABLE_HERE fails closed; CONCURRENCY_UNOBSERVABLE fails closed",
+      "blocking": true
+    },
+    {
+      "constraint": "A reversal must be executed before it is offered.",
+      "defect_caught": "a prior lane published a documented revert procedure that did not work when it was executed. Reproduced again inside this lane: the first REVERT_COMMIT_RANGE constructor used 'git revert --no-commit', which stages the revert without committing, so the follow-up push republished the unchanged post-write commit, exited 0 and restored nothing. The rehearsal reported REVERSAL_DID_NOT_RESTORE.",
+      "kept_as": "reversal_rehearsal.rehearse_reversal; write_admission re-executes rather than trusting the receipt",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "blocking": true
+    },
+    {
+      "constraint": "A reversal is verified by tree, not by commit SHA.",
+      "defect_caught": "a correct forward revert produces a NEW commit with the SAME tree. Comparing commit SHAs would fail every correct REVERT_COMMIT_RANGE reversal — a wrong test that looks strict.",
+      "kept_as": "reversal_rehearsal compares git tree objects; a test asserts commit_restored is false while tree_restored is true for a forward revert",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "blocking": true
+    },
+    {
+      "constraint": "A rehearsal whose write changed nothing proves nothing.",
+      "defect_caught": "a reversal passes trivially when there was nothing to reverse, which would make the whole gate ceremonial",
+      "kept_as": "REHEARSAL_PROVED_NOTHING when the rehearsed write did not move the tree",
+      "blocking": true
+    },
+    {
+      "constraint": "A reason statement must name its own target.",
+      "defect_caught": "the FB-11 mis-certification. The provenance classifier read commit authorship, a signal identical for every commit in this repository, and certified a constraint as FOUNDER_BOUND on evidence carrying no per-item information. A reason statement identical for every write is the same defect: it cannot expire with anything specific to the write it is supposed to justify.",
+      "kept_as": "REASON_NOT_ANCHORED_TO_TARGET",
+      "blocking": true
+    },
+    {
+      "constraint": "The rehearsed command and the recorded command must be the same command.",
+      "defect_caught": "without this a declaration can carry a rehearsed constructor output in one field and a hand-written command in another, so the rehearsal proves something other than what will run",
+      "kept_as": "reversal_rehearsal.command_matches_constructor",
+      "blocking": true
+    },
+    {
+      "constraint": "Force push and history rewriting stay refused.",
+      "defect_caught": "both destroy the immutable-SHA custody every read-back and manifest depends on",
+      "kept_as": "write-scope.json FORCE-PUSH and HISTORY-REWRITE",
+      "founder_alignment": "This is the mechanism half of the founder's own distinction: 'I am removing an authority restriction I never issued. I am not asking for unverified or unrecoverable writes.' --force-with-lease remains permitted and is what the reversal constructor emits.",
+      "blocking": true
+    },
+    {
+      "constraint": "Currentness must hold before a commit.",
+      "defect_caught": "committing over a failing currentness check is what produces two files that each claim to be current",
+      "kept_as": "write-scope.json require_currentness_check_before_commit; AGENTS.md instruction 10",
+      "blocking": true
+    },
+    {
+      "constraint": "PR and issue writes are refused from a lane.",
+      "defect_caught": "in this estate a PR is a projection, never an acceptance; the route's credential is read-only for these, so the refusal makes an existing boundary legible rather than inventing one",
+      "kept_as": "write-scope.json PR-WRITE and ISSUE-WRITE",
+      "blocking": true
+    }
+  ],
+
+  "assistant_authored_void_unless_ratified": [
+    {
+      "constraint": "Boilerplate phrase detection in a reason statement.",
+      "code": "REASON_READS_AS_BOILERPLATE",
+      "why_this_class": "A list of filler phrases is assistant taste. No founder utterance names it and no recorded defect in this estate was caught by it.",
+      "in_force": false,
+      "behaviour": "reported as an advisory; never refuses",
+      "ratifiable_by": "passing REASON_READS_AS_BOILERPLATE to ratified_assistant_checks"
+    },
+    {
+      "constraint": "Minimum reason-statement length of 40 characters.",
+      "code": "REASON_STATEMENT_TERSE",
+      "why_this_class": "Any specific number is invented. A short true reason is better than a long vacuous one.",
+      "in_force": false,
+      "behaviour": "reported as an advisory; never refuses"
+    },
+    {
+      "constraint": "Concurrency observations older than 900 seconds are stale.",
+      "code": "concurrency_observer advisories",
+      "why_this_class": "The requirement that an observation be timestamped and not from the future is founder-derived, because his gate is about now. The particular threshold that makes an old observation useless is not.",
+      "in_force": false,
+      "behaviour": "advisory by default; an operator who sets max_observation_age_seconds makes it binding for that invocation, which is an explicit act"
+    },
+    {
+      "constraint": "require_write_declaration defaults to false.",
+      "why_this_class": "This lane's judgement about rollout risk, not a founder instruction. Switching it on is an operator decision.",
+      "in_force": "the default is a default, not a constraint",
+      "needs_founder_or_operator_decision": true
+    }
+  ],
+
+  "open_for_founder_judgement": [
+    {
+      "item": "Turning require_write_declaration on.",
+      "detail": "The mechanism is built, tested and inert. Enabling it makes every push in this repository require a declaration file that passes admission. This lane did not enable it, because the brief separates building the mechanism from exercising it.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "item": "A second copy of the voided category still exists outside this lane's namespace.",
+      "detail": "workstreams/so02/control-plane/operating-environment/l1-cursor-baseline/proposed-cursor-config/dot-cursor/ contains its own write-scope.json and guard_write_scope.py carrying protected_branch_globs and protected_path_globs. That is lane OE-L1's namespace and writing it would be a concurrency violation, not a protection one, so it is reported rather than edited. GROUP-MANIFEST-OE-20260822-v001.json also still carries protected_surfaces_declared_untouchable, which lane_guard no longer reads.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "item": "The residual concurrency blind spot.",
+      "detail": "A writer that is live but has not yet pushed is invisible to both the agent-layer signal and the ref-movement signal. Closing it would need a lease or claim protocol that writers take before writing, which is a design decision rather than a defect fix.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "item": "Re-deriving every other FOUNDER_BOUND verdict in the programme.",
+      "detail": "The provenance finding in the founder record states that the classifier used commit authorship as a proxy for founder authorship, so every verdict reached through it is suspect. This lane re-derived only the constraints it touched. The rest of the classification is still standing on the invalid proxy.",
+      "evidence_label": "DOCUMENTED"
+    }
+  ]
+}

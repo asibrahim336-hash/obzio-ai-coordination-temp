@@ -98,12 +98,20 @@ def check_concurrency_gate(declaration: dict[str, Any], repo: Path | None,
                            check_ref_movement: bool = True,
                            max_observation_age_seconds: int | None = None) -> dict[str, Any]:
     target = declaration.get("target") or {}
+    concurrency = declaration.get("concurrency") or {}
     reversal = declaration.get("reversal") or {}
+    # Two different SHAs that were briefly conflated here. The reversal's
+    # recorded_sha is custody — where the ref must be put back to. The movement
+    # check needs where the ref WAS when the observation was taken, so that a
+    # difference means somebody else moved it. They coincide for a simple ref
+    # update and diverge for a branch the declaring lane created, so the
+    # concurrency field is preferred and the custody SHA is only a fallback.
+    observed_sha = concurrency.get("ref_sha_at_observation") or reversal.get("recorded_sha")
     result = concurrency_observer.concurrency_verdict(
         str(target.get("ref") or ""),
         declaration.get("concurrency"),
         repo=repo,
-        recorded_sha=reversal.get("recorded_sha"),
+        recorded_sha=observed_sha,
         check_ref_movement=check_ref_movement,
         max_observation_age_seconds=max_observation_age_seconds,
     )
