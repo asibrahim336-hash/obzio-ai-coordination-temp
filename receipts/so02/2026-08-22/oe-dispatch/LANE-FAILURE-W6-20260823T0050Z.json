@@ -1,0 +1,69 @@
+{
+  "record_id": "OE-LANE-FAILURE-W6-20260823T0050Z",
+  "decision_changed": [],
+  "recorded_at": "2026-08-23T00:50:00Z",
+  "recorded_by": "root controller bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+
+  "lane": {
+    "parent_id": "OE-W6-CHATGPT-CONNECTION",
+    "provider_id": "bc-3cc25012-4770-5deb-b207-7d4ee809dcd1",
+    "branch": "cursor/oe-w6-chatgpt-connection-696d",
+    "published_head": "2d2b346cd90e4059e26f2d3238f702a582943c32"
+  },
+
+  "outcome": {
+    "state": "FAILED_INCOMPLETE",
+    "provider_error": "Activity task timed out",
+    "not": "READY_TO_COMMIT",
+    "rule_applied": "A lane that did not deliver is never assumed successful. It is recorded as failed, its partial output is assessed on its own merits, and no claim it was working toward is inherited as though it had been established."
+  },
+
+  "what_was_published_before_the_timeout": {
+    "commits": 1,
+    "files": [
+      "receipts/so02/2026-08-22/oe-w6-chatgpt-connection/raw/doc-fetch-log.json",
+      "receipts/so02/2026-08-22/oe-w6-chatgpt-connection/raw/runtime-facts.txt",
+      "workstreams/so02/control-plane/operating-environment/w6-chatgpt-connection/tools/harvest_connection_docs.py"
+    ],
+    "containment": "PASS — nothing outside the lane's declared namespace",
+    "manifest": "ABSENT — the bundle is therefore incomplete and inadmissible as delivered"
+  },
+
+  "salvage_assessment": {
+    "verdict": "SUBSTANTIALLY_SALVAGEABLE",
+    "asset": "A live documentation harvest of 79 official sources, 75 returning HTTP 200, built at 2026-08-23T00:03:58Z with zero authenticated requests and no credential used.",
+    "why_it_matters": "The harvest is the expensive, slow, network-bound half of the work and it completed. The lane timed out during analysis, not collection. Discarding it and re-fetching would repeat the exact cost that caused the failure.",
+    "notable_gaps_in_the_harvest_itself": {
+      "cursor-api-agents": 404,
+      "openai-data-controls-faq": 403,
+      "openai-export-data": 403,
+      "openai-privacy-portal": 403,
+      "consequence": "The OpenAI data-export route — a strong candidate for reading the full account with provenance — could not be documented from an unauthenticated fetch. Any successor must treat its viability as unestablished rather than assumed, and say so."
+    },
+    "admissibility": "The harvest may be used as evidence input. It may NOT be counted as a delivered lane, and the absent manifest is not waived."
+  },
+
+  "root_cause": {
+    "diagnosis": "Dispatch scope, not lane capability.",
+    "detail": "The lane was asked to harvest and verify five distinct route families, assess an eight-function advisory proposal, adjudicate where independent evaluation lives, design a constitution with a provenance-preserving admission rule, produce a triage plan for eleven projects and one hundred and twenty-one chats, and specify a ten-field founder action list. That is several deliverables in one activity budget.",
+    "controller_responsibility": "This is the root controller's error in sizing the dispatch. The four other lanes dispatched at the same time each carried one deliverable and all four returned.",
+    "control_that_worked": "The lane guard reported the branch as carrying no manifest and the group status did not silently absorb a failed lane as delivered."
+  },
+
+  "recovery": {
+    "action": "Re-dispatch as two tighter lanes, each with one deliverable, both reusing the published harvest instead of re-fetching it.",
+    "lanes": [
+      {"parent_id": "OE-W7-CHATGPT-ROUTE-EVIDENCE", "deliverable": "the route table: what each route between a ChatGPT account and Cursor actually reaches, what it cannot, and whether results return without the founder touching them"},
+      {"parent_id": "OE-W8-CHATGPT-CONSTITUTION", "deliverable": "adjudication of the advisory proposal, where each function lives, the provenance-preserving admission rule, the triage plan, and the ordered founder actions"}
+    ],
+    "harvest_reuse_locator": "2d2b346cd90e4059e26f2d3238f702a582943c32",
+    "no_founder_action_required_for_this_recovery": true,
+    "founder_impact": "None. No founder action was pending on this lane and nothing else was gated on it."
+  },
+
+  "what_is_not_claimed": [
+    "No conclusion about ChatGPT connection routes is inherited from this lane. It reached none.",
+    "The advisory proposal remains unassessed until a successor lane delivers.",
+    "The harvest establishes that sources were fetched. It does not establish what they say."
+  ]
+}
