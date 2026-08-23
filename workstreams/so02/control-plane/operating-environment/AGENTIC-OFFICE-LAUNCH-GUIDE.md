@@ -831,6 +831,17 @@ an owner act or a risk-appetite question with no technically correct answer.
 
 ### Check this guide rather than trusting it
 
+Start with the manifest. It re-derives every delivered file's hash from disk,
+recomputes `bundle_sha256`, and fails if anything in this bundle was added,
+removed or altered after the fact:
+
+```bash
+python3 workstreams/so02/control-plane/operating-environment/w5-agentic-office/tools/build_manifest.py \
+  --check receipts/so02/2026-08-22/oe-w5-agentic-office/MANIFEST.json
+```
+
+Then the rest:
+
 ```bash
 cd workstreams/so02/control-plane/operating-environment/w5-agentic-office
 python3 tools/officectl.py check          # 14 invariants over the seats
@@ -840,6 +851,20 @@ bash    tools/refetch_docs.sh             # re-fetch and re-hash every cited pag
 bash    tools/capture_run_evidence.sh "$(git rev-parse --show-toplevel)"
 cd ../w4-platform-roles && python3 tools/rolectl.py check && python3 tools/negative_tests.py
 ```
+
+And the figure behind the first ranked ceiling in section 7, which comes from a
+different instrument than the seat validators:
+
+```bash
+python3 workstreams/so02/control-plane/operating-environment/l4-currentness-recovery/tools/currentctl.py \
+  compile --repo-root . --out /tmp/projection.json     # read the findings line
+```
+
+`DIRECTLY_REPRODUCED`: all of the above exit 0 today, **including `currentctl
+compile`**. Note the distinction, because it matters when you read a report: the
+compiler reports the estate's findings on stdout and still exits 0. Its `ERROR:`
+lines are findings about the estate, not failures of the command. Read the
+`findings` line, not the exit code.
 
 ### What this guide folds in rather than restates
 
