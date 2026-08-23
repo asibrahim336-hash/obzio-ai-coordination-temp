@@ -1,0 +1,29 @@
+OE-W8 remote read-back by recomputation
+recorded_at_utc: 2026-08-23T01:24:50Z
+method: fresh clone from the remote, then recompute every hash and re-run every tool there.
+why: a push can exit zero against a stale ref, and a tool that only runs in the worktree that wrote it has not been shown to run.
+
+$ git clone --branch cursor/oe-w8-chatgpt-constitution-696d --single-branch <remote> /tmp/w8-readback
+cloned HEAD: 793e0dc180286c41c2fa2a185f54602677f168dc
+
+$ python3 tools/build_manifest.py --repo-root /tmp/w8-readback --check
+PASS manifest matches: 24 entries, bundle_sha256 ba8b0b70612dcc59d97fc272465098d69238cfb162d253f361bf06f619a8f233
+
+$ python3 tools/intentctl.py validate           (from the clone)
+PASS: 4 utterance(s), schema and locator discipline hold
+
+$ python3 tools/intentctl.py conflicts          (from the clone)
+PASS: no contested class is unresolved
+  DC-CHATGPT-FUNCTIONS  candidates=0  <- the advisory proposal is S1 and contests nothing
+  DC-OPERATING-AUTHORITY candidates=2 by=FOUNDER_PRECEDENCE_RECENCY
+
+$ python3 tools/negative_tests_intentctl.py     (from the clone)
+PASS: all 16 failure modes rejected by the rule
+
+$ python3 tools/triagectl.py exit-check --consecutive 3   (from the clone)
+exit=1  <- correct: the illustrative last three sweeps are not all zero
+
+NOTE ON ORDERING: this receipt records the read-back of 793e0dc1. Committing
+it changes the tree, so the manifest is rebuilt to cover it and the terminal
+read-back of the final commit is reported in the lane return rather than in a
+file, because a file recording its own hash cannot exist.
