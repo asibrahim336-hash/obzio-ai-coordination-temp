@@ -1,0 +1,162 @@
+{
+  "all_as_expected": true,
+  "decision_changed": [],
+  "evidence_label": "DIRECTLY_REPRODUCED",
+  "generated_not_asserted": "Each row is the verdict write_admission.admit actually returned for that declaration, recorded whatever it was.",
+  "how_to_reproduce": "python3 produce_injection_receipt.py",
+  "produced_at": "2026-08-23T04:11:56Z",
+  "receipt_id": "OE-W9-FAILURE-INJECTIONS",
+  "results": [
+    {
+      "as_expected": true,
+      "contract_name": "a fully declared write to main",
+      "expected": "ADMITTED",
+      "failed_gates": [],
+      "id": "CONTROL",
+      "verdict": "WRITE_ADMITTED",
+      "why_it_matters": "A guard that refused everything would pass all six injections while being useless, and would have reinstated the voided category by other means. main is an ordinary target and must be admitted when declared."
+    },
+    {
+      "as_expected": true,
+      "contract_name": "an undeclared write",
+      "expected": "REFUSED",
+      "failed_gates": [
+        "declaration",
+        "concurrency",
+        "reversibility",
+        "evidence"
+      ],
+      "id": "INJ-1",
+      "refusals": [
+        "NO_DECLARATION: no write declaration was supplied; an undeclared write is refused regardless of its target",
+        "not evaluated: the declaration gate refused first",
+        "not evaluated: the declaration gate refused first",
+        "not evaluated: the declaration gate refused first"
+      ],
+      "verdict": "WRITE_REFUSED",
+      "what_was_broken": "no declaration supplied at all"
+    },
+    {
+      "as_expected": true,
+      "contract_name": "a write with an empty reason",
+      "expected": "REFUSED",
+      "failed_gates": [
+        "declaration",
+        "concurrency",
+        "reversibility",
+        "evidence"
+      ],
+      "id": "INJ-2A",
+      "refusals": [
+        "REASON_STATEMENT_EMPTY: reason.statement is empty; the code CORRECT_PUBLISHED_ERROR asserts an obligation that nothing states",
+        "not evaluated: the declaration gate refused first",
+        "not evaluated: the declaration gate refused first",
+        "not evaluated: the declaration gate refused first"
+      ],
+      "verdict": "WRITE_REFUSED",
+      "what_was_broken": "reason.statement is whitespace"
+    },
+    {
+      "as_expected": true,
+      "contract_name": "a write with a vacuous reason",
+      "expected": "REFUSED",
+      "failed_gates": [
+        "declaration",
+        "concurrency",
+        "reversibility",
+        "evidence"
+      ],
+      "id": "INJ-2B",
+      "refusals": [
+        "REASON_OBLIGATIONS_UNMET: reason.code CORRECT_PUBLISHED_ERROR requires ['defect_reference', 'defect_observed_at']; missing or empty: ['defect_reference', 'defect_observed_at']. This reason is live only while: the named defect no longer reproduces",
+        "REASON_NOT_ANCHORED_TO_TARGET: reason.statement names neither target.ref nor any declared path, so it is equally true of every write in the estate and cannot expire with anything specific to this one",
+        "not evaluated: the declaration gate refused first",
+        "not evaluated: the declaration gate refused first"
+      ],
+      "verdict": "WRITE_REFUSED",
+      "what_was_broken": "reason.statement is portable boilerplate naming no target, and the reason code's required fields are absent"
+    },
+    {
+      "as_expected": true,
+      "contract_name": "a write with no reversal",
+      "expected": "REFUSED",
+      "failed_gates": [
+        "declaration",
+        "concurrency",
+        "reversibility",
+        "evidence"
+      ],
+      "id": "INJ-3",
+      "refusals": [
+        "REVERSAL_MISSING: the declaration carries no reversal",
+        "not evaluated: the declaration gate refused first",
+        "not evaluated: the declaration gate refused first",
+        "not evaluated: the declaration gate refused first"
+      ],
+      "verdict": "WRITE_REFUSED",
+      "what_was_broken": "the reversal block is absent"
+    },
+    {
+      "as_expected": true,
+      "contract_name": "a reversal that does not actually reverse",
+      "expected": "REFUSED",
+      "failed_gates": [
+        "reversibility"
+      ],
+      "id": "INJ-4",
+      "refusals": [
+        "reversal.command is not what the constructor produces for these parameters; declared ['git', 'push', 'origin', 'main'], constructor ['git', 'push', '--force-with-lease=main:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', 'origin', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa:refs/heads/main']. A hand-edited command was never the command that was rehearsed."
+      ],
+      "verdict": "WRITE_REFUSED",
+      "what_was_broken": "the command is hand-edited away from the constructor and the declaration claims it was rehearsed successfully"
+    },
+    {
+      "as_expected": true,
+      "contract_name": "a write to a branch with a live run",
+      "expected": "REFUSED",
+      "failed_gates": [
+        "concurrency"
+      ],
+      "id": "INJ-5",
+      "refusals": [
+        "run bc-live is RUNNING on this ref; the gate is this run finishing, not permission"
+      ],
+      "verdict": "WRITE_REFUSED",
+      "what_was_broken": "an agent in a non-settled state holds the target ref"
+    },
+    {
+      "as_expected": true,
+      "contract_name": "a result-asserting write with no evidence",
+      "expected": "REFUSED",
+      "failed_gates": [
+        "declaration",
+        "concurrency",
+        "reversibility",
+        "evidence"
+      ],
+      "id": "INJ-6A",
+      "refusals": [
+        "EVIDENCE_MISSING: reason.code CORRECT_PUBLISHED_ERROR asserts a result, so this write must carry the evidence for that result; the declaration carries none",
+        "not evaluated: the declaration gate refused first",
+        "not evaluated: the declaration gate refused first",
+        "not evaluated: the declaration gate refused first"
+      ],
+      "verdict": "WRITE_REFUSED",
+      "what_was_broken": "the reason code asserts a result and the evidence block is absent"
+    },
+    {
+      "as_expected": true,
+      "contract_name": "a result-asserting write whose evidence fails recomputation",
+      "expected": "REFUSED",
+      "failed_gates": [
+        "evidence"
+      ],
+      "id": "INJ-6B",
+      "refusals": [
+        "manifest: bundle_sha256 does not bind the entry list"
+      ],
+      "verdict": "WRITE_REFUSED",
+      "what_was_broken": "the manifest's bundle_sha256 does not bind its entries"
+    }
+  ]
+}
