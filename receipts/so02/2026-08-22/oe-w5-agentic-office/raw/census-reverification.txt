@@ -1,0 +1,56 @@
+# OE-W5 census re-verification — captured 2026-08-23T00:31Z
+# Instrument: cursor-cloud list-cloud-agents (limit=200, includeArchived=true), read-only.
+# Purpose: re-run the census the guide's concurrency figures rest on, after the
+# figures were first computed at 00:06, and check whether they still hold.
+
+## Scan completeness
+    agentCount   -> 11
+    returned     -> 11
+    hasMore      -> false
+    totalMatched -> 11
+# The scan is complete, so `scan_complete: true` in CONCURRENCY-EVIDENCE is exact
+# rather than a floor.
+
+## The 804 ms burst, recomputed from raw createdAtMs
+# Eight agents named "Po-03 wave a attempts", one repository, one account:
+
+    1787381280078  bc-e92c4fa6  claude-opus-5-thinking-max     <- earliest
+    1787381280106  bc-7137a066  gpt-5.6-terra-max-fast
+    1787381280133  bc-b1956656  gpt-5.6-sol-max-fast
+    1787381280135  bc-94cf37fd  gpt-5.6-sol-max-fast
+    1787381280139  bc-ecd55d9e  claude-sonnet-5-thinking-max
+    1787381280222  bc-2bb75c2e  claude-opus-5-thinking-max
+    1787381280239  bc-13b664e4  gpt-5.6-sol-max-fast
+    1787381280882  bc-aa38db59  gpt-5.6-sol-max-fast           <- latest
+
+    1787381280882 - 1787381280078 = 804 ms for 8 agents.
+
+# CONFIRMED, DIRECTLY_REPRODUCED: 8 agents dispatched inside 804 ms.
+
+## Distinct exact model configurations across the account
+    claude-opus-5-thinking-max     (3 runs)
+    claude-sonnet-5-thinking-max   (1 run)
+    gpt-5.6-sol-max-fast           (4 runs)
+    gpt-5.6-terra-max-fast         (1 run)
+    -> 4 exact configurations, 2 families (claude, gpt).  CONFIRMED.
+
+## Lifecycle and source distribution
+    RUNNING 2 | WAITING_FOR_BACKGROUND_WORK 1 | IDLE 7 | ERROR 1   = 11  CONFIRMED
+    internal 2 | web 9                                             = 11  CONFIRMED
+
+## The throttling question, stated precisely
+    setupStatus across the 8-agent burst -> INSTALL_SUCCEEDED for all 8
+    agents in NOT_YET_STARTED            -> 0
+    agents in EXPIRED                    -> 0
+
+# All eight agents in the burst started and completed install. None was parked in
+# NOT_YET_STARTED. This is what "nothing was throttled, queued or refused in any
+# way this instrument can see" means, and it is the exact signal that would
+# reveal a concurrency cap if one existed.
+#
+# It still does not establish a ceiling. Eight is the largest burst anyone on
+# this account has attempted; a census of what did run is not a measurement of
+# what may run. The probe for the ceiling is to dispatch a wave larger than any
+# so far and read the lifecycle statuses for NOT_YET_STARTED.
+
+# end

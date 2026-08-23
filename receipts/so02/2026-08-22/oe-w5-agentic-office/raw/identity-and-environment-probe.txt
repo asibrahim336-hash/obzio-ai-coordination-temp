@@ -1,0 +1,67 @@
+# OE-W5 identity and environment probe — captured 2026-08-23T00:29Z
+# Source: read-only cursor-cloud MCP tools (run-info, environment-info).
+# No secret value appears here. No write tool was called.
+
+## Q1  Does /cursor/stores/self belong to this run, or to its parent?
+#
+# This lane runs as a subagent. If the durable store were scoped per subagent,
+# the store directory name would equal this run's own bcId. It does not.
+
+    this run's own bcId          -> bc-42b8be39-e5be-5400-8535-019c4d9f13e1
+      (from cursor-cloud run-info; run URL
+       https://cursor.com/agents/bc-42b8be39-e5be-5400-8535-019c4d9f13e1)
+
+    /cursor/stores/self resolves -> /cursor/stores/bc-c6f63d58-9611-495a-96f6-2f2dcbef696d
+      (from `readlink -f /cursor/stores/self`, receipt raw/run-evidence.txt P3)
+
+    identical?                   -> NO
+                                    ...019c4d9f13e1  (this subagent)
+                                    ...2f2dcbef696d  (the store it is given)
+
+# CONCLUSION, DIRECTLY_REPRODUCED: the durable store is scoped to the top-level
+# run and shared with every subagent under it. A subagent does not get a private
+# store. Anything a lane writes there is visible to, and overwritable by, its
+# siblings. This is the same shared-substrate property as the shared /workspace
+# checkout, and it is why lane isolation is taken in git, not in the filesystem.
+
+## Q2  Is the repository's .cursor/environment.json actually in force?  (blocker B2)
+
+    environment.source            -> Team
+    environment.name              -> null
+    environment.environmentJson   -> null
+    environment.environmentJsonNote
+        -> "environment.json was found but contained no recognized configuration fields."
+    environment.environmentJsonPath -> null
+    environment.environmentPublicId -> 69dbfc52-9df5-11f1-a7d1-d6b4613131ce
+    environment.url
+        -> https://cursor.com/dashboard/cloud-agents/environments/e/69dbfc52-9df5-11f1-a7d1-d6b4613131ce
+    environment.repos             -> github.com/asibrahim336-hash/obzio-ai-coordination-temp
+    environmentDeleted            -> false
+
+    build                         -> null
+
+# CONCLUSION, DIRECTLY_REPRODUCED: two independent confirmations of B2.
+#
+#   (a) The saved environment record carries no configuration. The repository
+#       file is present but contributes nothing, so `install`, `start` and the
+#       validators terminal declared in it do not run. The environment is
+#       database-managed and the saved record is its configuration source.
+#
+#   (b) `build: null` means this pod did not boot from a prebuilt environment
+#       build at all — it started just-in-time. That is the cold start B2
+#       describes, observed rather than inferred.
+#
+# The environment.url above is the exact page to fix it on, and is preferable to
+# the generic #environments anchor because it needs no searching.
+
+## Q3  Egress policy
+
+    egress.note -> "This run's agent state could not be loaded, so the enforced
+                    egress policy is unknown."
+
+# NOT VERIFIED, recorded as such: the effective network allowlist for this run
+# could not be read. Network access was not blocked in practice — 61 documentation
+# pages and api.cursor.com were reachable from this pod — but the enforced policy
+# itself is unread. Stated rather than smoothed over.
+
+# end
