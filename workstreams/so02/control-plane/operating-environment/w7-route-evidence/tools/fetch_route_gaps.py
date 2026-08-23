@@ -106,6 +106,34 @@ GAPS: list[tuple[str, str, str]] = [
     ("cursor-cloud-agents", "https://cursor.com/docs/cloud-agent.md",
      "what reaches a Cursor cloud agent, and what it can be triggered by"),
 
+    # --- the Cursor inbound API. W6 recorded 404 for
+    # cursor.com/docs/background-agent/api/overview.md, which is a guessed path
+    # that does not exist. The real paths were read out of the published docs
+    # sitemap rather than guessed again, which is why they answer.
+    ("cursor-docs-sitemap", "https://cursor.com/docs/sitemap.xml",
+     "the published path index that located the API docs W6 recorded as 404"),
+    ("cursor-api-endpoints", "https://cursor.com/docs/cloud-agent/api/endpoints.md",
+     "whether an external system can start Cursor work without a person"),
+    ("cursor-api-webhooks", "https://cursor.com/docs/cloud-agent/api/webhooks.md",
+     "whether Cursor completion can announce itself to a machine"),
+    ("cursor-agent-browser", "https://cursor.com/docs/agent/tools/browser.md",
+     "the agent-facing browser tool: the real constraint, not rendering"),
+
+    # --- Secure MCP Tunnel. Not harvested by W6 at all; found by following a
+    # link out of the connectors guide. It bears directly on the return-route
+    # question, because the prior lane's blocker was the absence of a durable
+    # public HTTPS endpoint in this runtime.
+    ("api-secure-mcp-tunnels", "https://developers.openai.com/api/docs/guides/secure-mcp-tunnels.md",
+     "whether a private MCP server can be reached without a public endpoint"),
+    ("api-tools-remote-mcp", "https://developers.openai.com/api/docs/guides/tools-remote-mcp.md",
+     "which OpenAI products a remote MCP server and its connectors reach"),
+
+    # --- the platform/UI boundary, checked for any mention of ChatGPT content
+    ("api-conversations-overview", "https://developers.openai.com/api/reference/resources/conversations.md",
+     "whether the Conversations API references ChatGPT UI content at all"),
+    ("api-responses-create", "https://developers.openai.com/api/reference/resources/responses/methods/create.md",
+     "whether the Responses API references ChatGPT UI content at all"),
+
     # --- data export: W6 got 403 on all three. Re-established, not assumed.
     ("openai-export-data", "https://help.openai.com/en/articles/7260999-how-do-i-export-my-chatgpt-history-and-data",
      "the owner's own export: viability could not be documented for W6"),
