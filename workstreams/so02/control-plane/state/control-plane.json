@@ -114,13 +114,29 @@
   "global_pointer_state": {
     "state": "RECONCILIATION_PENDING",
     "reason": "The repository default branch retains an older active-control lineage and PR #7 contains proposed-not-adopted pointer repairs. This branch must not silently overwrite global state pointers.",
-    "prohibited_paths": [
-      "state/**",
-      "operations/**",
-      "dispatch/**",
-      "modules/work_unit_contract/**"
-    ],
-    "closure": "Reconcile through a later independent pointer-integration branch based on the accepted currentness lineage."
+    "closure": "Reconcile through a later independent pointer-integration branch based on the accepted currentness lineage.",
+    "write_gating": {
+      "model": "REASON_AND_ROLLBACK",
+      "authority": "founder standing amendment 2026-08-23; the protected-surface category is void",
+      "gates": [
+        "concurrency",
+        "reversibility",
+        "evidence"
+      ],
+      "mechanism": "workstreams/so02/control-plane/operating-environment/tools/write_admission.py"
+    },
+    "superseded_prohibited_paths": {
+      "status": "VOID",
+      "constraint_id": "EC-13",
+      "original_content_preserved": [
+        "state/**",
+        "operations/**",
+        "dispatch/**",
+        "modules/work_unit_contract/**"
+      ],
+      "why_voided": "A named-target prohibition list, which is the exact shape the founder voided. It also forbade state/** while this same record sits at RECONCILIATION_PENDING, so it forbade the very work whose completion is its own expiry condition. A control that cannot be satisfied without violating itself is a deadlock, not a safeguard.",
+      "replaced_by": "the three write gates above"
+    }
   },
   "canonical_store": {
     "kind": "git_repository",

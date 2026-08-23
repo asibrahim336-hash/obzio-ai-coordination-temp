@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import importlib.util
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -116,6 +117,45 @@ class AllowlistCapacityTests(unittest.TestCase):
         obs = self.observation("IDLE")
         obs["capacity_observation_state"] = "CAPACITY_OBSERVATION_UNAVAILABLE"
         self.assertEqual("CAPACITY_OBSERVATION_UNAVAILABLE", ei.capacity_verdict(obs)[0])
+
+
+class ArtifactValidityTests(unittest.TestCase):
+    """A perfect digest over unparseable bytes is not evidence."""
+
+    def setUp(self) -> None:
+        self._dir = tempfile.TemporaryDirectory()
+        self.repo = Path(self._dir.name)
+
+    def tearDown(self) -> None:
+        self._dir.cleanup()
+
+    def write(self, name: str, text: str) -> str:
+        (self.repo / name).write_text(text, encoding="utf-8")
+        return name
+
+    def test_valid_json_passes(self) -> None:
+        p = self.write("ok.json", '{"a": 1}')
+        self.assertEqual([], ei.verify_artifact_validity([p], self.repo))
+
+    def test_truncated_json_is_rejected(self) -> None:
+        """The exact live failure: one unclosed brace, digest perfectly intact."""
+        p = self.write("truncated.json", '{"a": {"b": 1}\n')
+        errors = ei.verify_artifact_validity([p], self.repo)
+        self.assertTrue(any("does not parse as JSON" in e for e in errors))
+
+    def test_a_correct_digest_does_not_rescue_invalid_content(self) -> None:
+        text = '{"a": {"b": 1}\n'
+        p = self.write("truncated2.json", text)
+        digest = ei.sha256_bytes(text.encode())
+        self.assertEqual(digest, ei.sha256_bytes((self.repo / p).read_bytes()))
+        self.assertTrue(ei.verify_artifact_validity([p], self.repo))
+
+    def test_non_json_files_are_not_parsed(self) -> None:
+        p = self.write("notes.md", "{ this is prose, not json")
+        self.assertEqual([], ei.verify_artifact_validity([p], self.repo))
+
+    def test_absent_file_is_not_a_validity_error(self) -> None:
+        self.assertEqual([], ei.verify_artifact_validity(["nope.json"], self.repo))
 
 
 class ManifestClosureTests(unittest.TestCase):

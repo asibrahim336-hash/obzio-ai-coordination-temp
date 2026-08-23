@@ -151,6 +151,30 @@ def capacity_verdict(observation: dict[str, Any], benign: Iterable[str] = BENIGN
 # Correction 3: manifest closure
 # ---------------------------------------------------------------------------
 
+def verify_artifact_validity(paths: Iterable[str], repo: Path) -> list[str]:
+    """A hash-bound artifact can still be unparseable.
+
+    Found live: a lane published a truncated JSON file whose digest matched its
+    manifest exactly and whose closure check passed. Byte integrity says the
+    bytes are the ones that were committed; it says nothing about whether they
+    mean anything. A structured artifact nobody can load is not evidence.
+    """
+    errors: list[str] = []
+    for relative in sorted(set(paths)):
+        if not relative.endswith(".json"):
+            continue
+        target = repo / relative
+        if not target.is_file():
+            continue
+        try:
+            json.loads(target.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as exc:
+            errors.append(f"validity: {relative} is hash-bound but does not parse as JSON ({exc.msg} at line {exc.lineno})")
+        except UnicodeDecodeError as exc:
+            errors.append(f"validity: {relative} is not decodable as UTF-8 ({exc})")
+    return errors
+
+
 def verify_manifest_closure(manifest: dict[str, Any], present_paths: Iterable[str]) -> list[str]:
     """Every material file must be covered. An excluded file is an unbound file."""
     errors: list[str] = []

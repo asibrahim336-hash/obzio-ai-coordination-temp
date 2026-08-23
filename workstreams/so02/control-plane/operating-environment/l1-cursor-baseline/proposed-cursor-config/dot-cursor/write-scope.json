@@ -6,7 +6,7 @@
     "protected_path_globs": "REMOVED 2026-08-23. Provenance ASSISTANT_AUTHORED, and it was already inert: a prior lane established that no code read it. A key that looks like a boundary and refuses nothing is the same defect as a rule written in prose and enforced by nothing, so it is deleted rather than left as decoration."
   },
   "_comment_write_declaration": "FOUNDER_AUTHORED. Ahmed Sadek, 2026-08-23: 'the write-scope guard now checks that a write was declared and reasoned, not that its target avoided a forbidden list.' When require_write_declaration is true, a push must be covered by a declaration in write_declarations_dir that write_admission_tool admits. The target's name is never consulted. Default false: a guard that begins refusing every push the moment it is installed is the over-broad guard that blocks legitimate work, so switching it on is an explicit operator act rather than a side effect of this lane landing.",
-  "require_write_declaration": false,
+  "require_write_declaration": true,
   "write_declarations_dir": ".cursor/write-declarations",
   "write_admission_tool": "workstreams/so02/control-plane/operating-environment/tools/write_admission.py",
   "rehearse_reversal_in_hook": true,
@@ -52,5 +52,6 @@
   "_comment_stale_ref_push": "EARNED, same defect, other half. Refuse `git push <branch>` when that branch sits on HEAD's own lineage and behind it, which is the exact signature of the silent no-op. A divergent or unrelated branch is not refused, because pushing a different branch on purpose is legitimate.",
   "refuse_stale_ref_push": true,
   "audit_log": ".cursor/.run/write-scope-audit.jsonl",
-  "_staged_copy_note": "This staged copy is kept byte-identical to the live .cursor/write-scope.json so that applying it can never resurrect a rule the live file already retired. Divergence between a staged file and its live target is how a voided category comes back."
+  "_staged_copy_note": "This staged copy is kept byte-identical to the live .cursor/write-scope.json so that applying it can never resurrect a rule the live file already retired. Divergence between a staged file and its live target is how a voided category comes back.",
+  "_enabled_20260823": "Enabled 2026-08-23T04:24:12Z. The mechanism was built, tested and left off because enabling it while lanes were running would have blocked them \u2014 that is the concurrency gate, and it expired when the last lane returned. Enabling is not an extension of authority: the founder's rule is that a write needs a reason and a rollback, and this is that rule made executable rather than described."
 }
