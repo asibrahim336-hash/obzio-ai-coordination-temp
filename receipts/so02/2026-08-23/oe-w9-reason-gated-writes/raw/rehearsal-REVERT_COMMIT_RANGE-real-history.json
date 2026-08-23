@@ -1,0 +1,63 @@
+{
+  "commit_restored": false,
+  "detail": "the tree is restored under a different commit SHA, which is correct for a forward revert and is why the verdict compares trees rather than commits",
+  "execution": [
+    {
+      "command": [
+        "git",
+        "revert",
+        "--no-edit",
+        "37943ec2ff9f6702d72e127a3c8e56c81b0c3812..7fcea5a43c7831ff1bb3cdf0f37434c3e7a52665"
+      ],
+      "exit_code": 0,
+      "stderr_tail": ""
+    },
+    {
+      "command": [
+        "git",
+        "push",
+        "origin",
+        "HEAD:refs/heads/main"
+      ],
+      "exit_code": 0,
+      "stderr_tail": "To /tmp/reversal-rehearsal-v5qh1fce/origin.git\n   7fcea5a..a25ceeb  HEAD -> main"
+    }
+  ],
+  "fixture_kind": "seeded_from_real_history",
+  "fixture_remote": "/tmp/reversal-rehearsal-v5qh1fce/origin.git",
+  "method": "REVERT_COMMIT_RANGE",
+  "post_reversal": {
+    "commit": "a25ceeb7f4db9131b904659e834de43f50da13bd",
+    "tree": "ec321948b4a5955d75c6890691593c4386255cd7"
+  },
+  "post_write": {
+    "commit": "7fcea5a43c7831ff1bb3cdf0f37434c3e7a52665",
+    "tree": "a0873b717450958ff84e821080857cdc170e3035"
+  },
+  "pre_write": {
+    "commit": "37943ec2ff9f6702d72e127a3c8e56c81b0c3812",
+    "tree": "ec321948b4a5955d75c6890691593c4386255cd7"
+  },
+  "ref": "main",
+  "rehearsed_at": "2026-08-23T03:54:12Z",
+  "result": "REVERSAL_EXECUTED_AND_VERIFIED",
+  "reversal_commands": [
+    [
+      "git",
+      "revert",
+      "--no-edit",
+      "37943ec2ff9f6702d72e127a3c8e56c81b0c3812..7fcea5a43c7831ff1bb3cdf0f37434c3e7a52665"
+    ],
+    [
+      "git",
+      "push",
+      "origin",
+      "HEAD:refs/heads/main"
+    ]
+  ],
+  "sabotage": null,
+  "touches_origin": false,
+  "tree_restored": true,
+  "verified_by": "recomputation of the git tree object served by the fixture remote after the reversal ran; the reversal command's exit code is recorded but is not the verdict",
+  "write_changed_the_tree": true
+}
