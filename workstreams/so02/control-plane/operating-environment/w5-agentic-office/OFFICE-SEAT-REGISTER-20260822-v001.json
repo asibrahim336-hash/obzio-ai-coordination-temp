@@ -1,0 +1,388 @@
+{
+  "register_id": "OE-W5-OFFICE-SEAT-REGISTER-20260822-v001",
+  "lane": "OE-W5-AGENTIC-OFFICE-GUIDE",
+  "commission_id": "COM-CUR-ENV-01-20260822-v001",
+  "declares_commission": false,
+  "governing_authority": "FOUNDER-AUTHORITY-DERESTRICTION-20260822T2225Z and the founder standing instruction of 2026-08-22",
+  "derived_from": "w4-platform-roles/PLATFORM-ROLE-REGISTER-20260822-v001.json",
+  "state": "READY_TO_COMMIT",
+  "is_a_proposal_not_a_binding": true,
+  "binds_company_strategy": false,
+  "named_model_or_architecture_bound": false,
+  "seat_is_not_an_agent": {
+    "rule": "A seat is a unit of authority. An agent is a unit of dispatch. One seat may be filled by one agent or by fifty; the agent count carries no authority and is chosen from capacity, cost and the shape of the work.",
+    "why_it_matters": "This is what lets the office scale without ever creating a second holder for a decision. The failure mode the partition exists to prevent \u2014 several agents holding overlapping whole-operation mandates \u2014 is a property of authority, not of headcount.",
+    "no_fixed_agent_count": true
+  },
+  "overlap_policy": {
+    "permitted": "Seats may overlap and collaborate wherever that produces a stronger result.",
+    "forbidden": "Silent overlap. A non-holder touching a held class files a contribution row.",
+    "contribution_row_fields": [
+      "decision_class",
+      "holder_seat",
+      "contributing_seat",
+      "wave",
+      "evidence_label",
+      "position",
+      "disposition",
+      "conflict_id"
+    ],
+    "positions": [
+      "agree",
+      "dissent",
+      "abstain"
+    ],
+    "conflict_states": [
+      "OPEN",
+      "RESOLVED_BY_EVIDENCE",
+      "RESOLVED_BY_FOUNDER",
+      "STANDING_DISSENT"
+    ],
+    "evidence_outranks_ownership": "A holder whose position is HYPOTHESIS may not close a conflict against a contributor whose position is DIRECTLY_REPRODUCED.",
+    "unresolved_never_blocks": "An open conflict attaches to the work as a standing dissent. No seat idles waiting for a founder reply."
+  },
+  "founder_reserved_classes": [
+    "DC-COMPANY-STRATEGY",
+    "DC-DISCLOSURE-POLICY",
+    "DC-EXTERNAL-AUTHORISATION",
+    "DC-IDENTITY-AND-SECRETS",
+    "DC-MODEL-ALLOCATION-BINDING",
+    "DC-POINTER-SUPERSESSION",
+    "DC-PROGRAMME-SHAPE",
+    "DC-SPEND-COMMITMENT",
+    "DC-SW-REACTIVATION",
+    "DC-THIRD-PARTY-OUTREACH"
+  ],
+  "founder_reserved_count": 10,
+  "unclaimable_rule": "A founder-reserved class cannot be claimed by any seat. Because the reserved set includes programme shape and company strategy, a 'whole-operation' seat is structurally impossible: any seat wide enough to be one would have to claim a reserved class and would fail admission.",
+  "seats": [
+    {
+      "seat_id": "S-CHIEF",
+      "name": "Chief of staff",
+      "one_line": "Runs the office: decides who holds what, dispatches waves, and keeps the founder out of routine work.",
+      "w4_functions": [
+        "F-CLEARING",
+        "F-LOAD",
+        "F-WAVE",
+        "F-QUESTIONS"
+      ],
+      "mandate": "Hold the office's own operating decisions. Assign decision classes to seats, dispatch and re-dispatch waves, detect and remove founder-relay steps, carry the open-question register, and change the office's mechanisms when a wave teaches something. This seat coordinates work; it never rules on whether work is good.",
+      "can_change": [
+        "which seat holds which decision class, inside the w4 partition",
+        "how many agents fill a seat, and on what models",
+        "the shape, size and sequencing of a wave",
+        "which steps are routed to the founder and which are absorbed by the office",
+        "the office's own mechanisms, when a wave produces evidence that one failed"
+      ],
+      "must_not_change": [
+        "whether any produced work is accepted",
+        "any founder-reserved class",
+        "the admission ladder's thresholds"
+      ],
+      "return_route": "R1-repo-native",
+      "returns": "A wave record on a branch: what was dispatched, to which seat, with which locator, and what came back.",
+      "acceptance_method": "Accepted by S-ACCEPT against criteria committed before the wave ran.",
+      "acceptance_owner_seat": "S-ACCEPT",
+      "runtime_binding": "One long-lived Cursor cloud agent run, model chosen per wave. The binding records where it executes and grants it nothing.",
+      "substitution_route": "Any other Cursor run reading the same committed wave record can resume this seat; the seat's state is in git, not in the run.",
+      "fill_policy": "Exactly one agent at a time holds this seat, because two dispatchers produce the undifferentiated-mandate failure this register exists to prevent. Its subagents are unlimited.",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "decides": [
+        "DC-DECISION-RIGHTS",
+        "DC-FOUNDER-LOAD",
+        "DC-OPEN-QUESTIONS",
+        "DC-WAVE-LEARNING"
+      ],
+      "w4_function_names": {
+        "F-CLEARING": "Decision-rights registrar",
+        "F-LOAD": "Founder-load routine-verb detector",
+        "F-WAVE": "Wave learning and mechanism change",
+        "F-QUESTIONS": "Open-question custody"
+      }
+    },
+    {
+      "seat_id": "S-REGISTRAR",
+      "name": "Registrar",
+      "one_line": "Owns what is current, what supersedes what, what has been admitted to which rung, and where the bytes live.",
+      "w4_functions": [
+        "F-CURRENT",
+        "F-SUPERSEDE",
+        "F-ADMIT",
+        "F-CUSTODY"
+      ],
+      "mandate": "Compile the estate's current state from repository evidence rather than from claims. Record supersession edges instead of deleting superseded material. Place every subject on the admission ladder using only admissible evidence classes. Hold custody: the commit, the hash, and the read-back that proves the write survived the transport.",
+      "can_change": [
+        "the recorded admission state of any subject, up or down, from evidence",
+        "which document supersedes which, when a supersession edge is evidenced",
+        "the canonical projection of current state",
+        "what counts as custody for a given artefact"
+      ],
+      "must_not_change": [
+        "which competing pointer claim wins where the choice is an authority act rather than a compilation result",
+        "the admissible and non-admissible evidence classes themselves, which are founder-bound",
+        "any verdict issued by S-ACCEPT"
+      ],
+      "return_route": "R1-repo-native",
+      "returns": "A recomputed state projection plus a ledger diff, both reproducible by command.",
+      "acceptance_method": "Accepted by S-ACCEPT, which re-runs the compiler from a fresh clone rather than reading the projection.",
+      "acceptance_owner_seat": "S-ACCEPT",
+      "runtime_binding": "One Cursor cloud agent run per compilation, or a scheduled automation on a cron trigger.",
+      "substitution_route": "The compiler is a committed Python program with tests; any runtime that can run Python reproduces it, including GitHub Actions.",
+      "fill_policy": "One agent per compilation pass. Several passes may run concurrently on disjoint scopes.",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "decides": [
+        "DC-ADMISSION",
+        "DC-CURRENTNESS",
+        "DC-CUSTODY",
+        "DC-SUPERSESSION"
+      ],
+      "w4_function_names": {
+        "F-CURRENT": "Portfolio currentness",
+        "F-SUPERSEDE": "Supersession and contradiction custody",
+        "F-ADMIT": "Admission ladder",
+        "F-CUSTODY": "Result custody and canonical store"
+      }
+    },
+    {
+      "seat_id": "S-BUILD",
+      "name": "Builder",
+      "one_line": "Produces the operating environment and the capabilities that run on it, and fixes reproduced defects.",
+      "w4_functions": [
+        "F-CAPDEV",
+        "F-REMEDIATE",
+        "F-OPENV",
+        "F-GUIDE"
+      ],
+      "mandate": "Design and build the operating environment, extract and package capability, write the staged human-facing guidance for it, and remediate defects that were reproduced rather than asserted. This is the seat that writes most of the code and most of the documents.",
+      "can_change": [
+        "the architecture of the operating environment, as a recommendation carrying its evidence",
+        "any capability the office builds, and how it is packaged",
+        "the staged guidance a human follows to operate it",
+        "the fix for any defect that has a reproduction"
+      ],
+      "must_not_change": [
+        "whether its own output is accepted",
+        "the criteria it will be judged against",
+        "any protected branch, secret, or production surface"
+      ],
+      "return_route": "R1-repo-native",
+      "returns": "A branch with committed artefacts, each with a path, a sha256, and a command a third party can re-run.",
+      "acceptance_method": "Accepted by S-ACCEPT; defect fixes are additionally checked by S-ADVERSARY, which is rewarded for finding the fix incomplete.",
+      "acceptance_owner_seat": "S-ACCEPT",
+      "runtime_binding": "As many concurrent Cursor cloud agent runs as the wave needs, each on its own branch and its own git worktree.",
+      "substitution_route": "Any model family available in the account can fill this seat; the seat is defined by its output contract, not by its model.",
+      "fill_policy": "Unbounded. This is the seat that scales with capacity, and it is the reason the office has no fixed agent count.",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "decides": [
+        "DC-CAPABILITY-DEVELOPMENT",
+        "DC-OPENV-ARCHITECTURE",
+        "DC-OPENV-STAGED-GUIDANCE",
+        "DC-REMEDIATION"
+      ],
+      "w4_function_names": {
+        "F-CAPDEV": "Capability development, extraction and packaging",
+        "F-REMEDIATE": "Reproduced-defect remediation",
+        "F-OPENV": "Operating-environment architecture",
+        "F-GUIDE": "Staged human implementation guidance"
+      }
+    },
+    {
+      "seat_id": "S-ACCEPT",
+      "name": "Acceptor",
+      "one_line": "The only seat that can say a claim is independently validated, and it can never be filled by the producer.",
+      "w4_functions": [
+        "F-ACCEPT",
+        "F-EVAL"
+      ],
+      "mandate": "Define the evaluation criteria before reading any result, then re-run the producer's claim from a fresh clone with its own tooling and issue a verdict. Independence here is a property of the arrangement \u2014 isolated context, criteria committed first, distinct model identity, evidence custody in the repository, and write-scope fencing that stops the verdict being edited after the fact.",
+      "can_change": [
+        "the criteria a claim will be judged against, before the claim is read",
+        "the admission state of a claim at the INDEPENDENTLY_VALIDATED rung",
+        "whether a verdict is PASS, REFUSE or INCONCLUSIVE"
+      ],
+      "must_not_change": [
+        "anything it is judging",
+        "its own verdict after it is committed",
+        "the ACCEPTED rung, which requires a founder-bound decision record on top of validation"
+      ],
+      "return_route": "R1-repo-native",
+      "returns": "A criteria commit that precedes a verdict commit, with the ordering itself checkable by git.",
+      "acceptance_method": "Checked by S-ADVERSARY, whose success criterion is finding the acceptor wrong. The acceptor is not its own acceptance owner.",
+      "acceptance_owner_seat": "S-ADVERSARY",
+      "runtime_binding": "A Cursor cloud agent run on a different exact model configuration from the producer it is judging, ideally a different family.",
+      "substitution_route": "For claims about Cursor's own behaviour, GitHub Actions supplies a second execution domain that is not correlated with a Cursor runtime defect.",
+      "fill_policy": "Several acceptors may run and be compared. Verdicts are tallied by a rule declared in advance \u2014 any REFUSE stands \u2014 so comparison never becomes a new arbitration seat.",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "decides": [
+        "DC-ACCEPTANCE",
+        "DC-EVAL-DEFINITION"
+      ],
+      "w4_function_names": {
+        "F-ACCEPT": "Independent acceptance",
+        "F-EVAL": "Evaluation definition"
+      }
+    },
+    {
+      "seat_id": "S-ADVERSARY",
+      "name": "Adversary",
+      "one_line": "Paid, in effect, to break things: forges evidence, audits provider claims, and checks the acceptor.",
+      "w4_functions": [
+        "F-REDTEAM",
+        "F-PROVAUDIT"
+      ],
+      "mandate": "Attack the office's own machinery. Construct evidence that should be rejected and confirm it is. Audit every provider status claim against an independent observation, because a provider saying 'completed' is a status and never an Obzio lifecycle state. Check the acceptor's verdicts.",
+      "can_change": [
+        "the recorded status of any adversarial finding",
+        "whether a provider claim is corroborated or contradicted",
+        "whether an acceptor's verdict stands"
+      ],
+      "must_not_change": [
+        "the artefacts it attacks",
+        "the acceptance criteria, which belong to S-ACCEPT"
+      ],
+      "return_route": "R1-repo-native",
+      "returns": "A negative-test suite committed as executable code, with each forgery preserved as a regression test.",
+      "acceptance_method": "Accepted by S-ACCEPT. The adversary and the acceptor check each other; neither accepts itself.",
+      "acceptance_owner_seat": "S-ACCEPT",
+      "runtime_binding": "A Cursor cloud agent run, or a container on the agent VM with no network and no inherited credentials for hermetic replay.",
+      "substitution_route": "GitHub Actions, which genuinely executes the bytes on a machine no agent in this account controls.",
+      "fill_policy": "At least one per wave that produces a claim above OBSERVED. More is better and costs little.",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "decides": [
+        "DC-ADVERSARIAL-FINDING",
+        "DC-PROVIDER-CLAIM-AUDIT"
+      ],
+      "w4_function_names": {
+        "F-REDTEAM": "Adversarial finding",
+        "F-PROVAUDIT": "Provider-claim audit"
+      }
+    },
+    {
+      "seat_id": "S-RUNTIME",
+      "name": "Runtime steward",
+      "one_line": "Owns which routes work, how much headroom exists, and whether the estate could survive losing a provider.",
+      "w4_functions": [
+        "F-ROUTE",
+        "F-QUOTA",
+        "F-PORT"
+      ],
+      "mandate": "Qualify every control route and record its degradation, so a route that quietly stopped working is discovered by the office rather than by a failed wave. Measure runtime headroom and declare the stop conditions. Verify provider independence by actually running on a substitute rather than asserting that one exists.",
+      "can_change": [
+        "whether a route is qualified, degraded or dead",
+        "the stop conditions for a wave",
+        "the recorded substitution route for any function"
+      ],
+      "must_not_change": [
+        "which models the estate is allocated, which is founder-reserved",
+        "spend commitments"
+      ],
+      "return_route": "R1-repo-native",
+      "returns": "A route qualification table with, per route, the probe command and the observed response.",
+      "acceptance_method": "Accepted by S-ACCEPT.",
+      "acceptance_owner_seat": "S-ACCEPT",
+      "runtime_binding": "A Cursor cloud agent run with network access, plus the cursor-cloud diagnostics tools for the run layer.",
+      "substitution_route": "The probe commands are plain curl and git; any shell reproduces them.",
+      "fill_policy": "One per wave is sufficient; headroom observations are cheap and should be taken every wave.",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "decides": [
+        "DC-PORTABILITY",
+        "DC-QUOTA-HEADROOM",
+        "DC-ROUTE-QUALIFICATION"
+      ],
+      "w4_function_names": {
+        "F-ROUTE": "Route qualification and degradation",
+        "F-QUOTA": "Runtime headroom and stop conditions",
+        "F-PORT": "Provider-independence verification"
+      }
+    },
+    {
+      "seat_id": "S-SCOUT",
+      "name": "Scout",
+      "one_line": "Brings in what exists outside the estate, as candidates with evidence, never as decisions.",
+      "w4_functions": [
+        "F-RESEARCH"
+      ],
+      "mandate": "Survey the frontier \u2014 models, tools, mechanisms, published practice \u2014 and return candidates with their evidence and their risk. A scout never binds a tool, a model or an architecture; binding one is a founder act and the scout's output is an input to it.",
+      "can_change": [
+        "the candidate register and each candidate's assessment",
+        "which candidates are recommended and on what evidence"
+      ],
+      "must_not_change": [
+        "which model or architecture the estate uses",
+        "any spend commitment implied by a candidate"
+      ],
+      "return_route": "R1-repo-native",
+      "returns": "A candidate register where every entry names a source URL, a fetch date and a hash.",
+      "acceptance_method": "Accepted by S-ACCEPT, which spot-checks sources by refetching them.",
+      "acceptance_owner_seat": "S-ACCEPT",
+      "runtime_binding": "A Cursor cloud agent run, cheaper model, high parallelism.",
+      "substitution_route": "Any runtime with egress; the work is retrieval and assessment, not privileged access.",
+      "fill_policy": "Unbounded and cheap. This is the seat to over-provision when there is spare capacity.",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "decides": [
+        "DC-RESEARCH-FRONTIER"
+      ],
+      "w4_function_names": {
+        "F-RESEARCH": "Frontier research and candidate intake"
+      }
+    },
+    {
+      "seat_id": "S-ESTATE",
+      "name": "Estate liaison",
+      "one_line": "The only seat whose asymmetry is authenticated access to the founder's own accounts, and it runs outside Cursor.",
+      "w4_functions": [
+        "F-ESTATE",
+        "F-ALIGN",
+        "F-INTAKE",
+        "F-INTENT",
+        "F-SALVAGE",
+        "F-BLINDSPOT"
+      ],
+      "mandate": "Discover and verify what the founder's accounts, integrations, connectors and prior context already contain, and align them so Cursor receives maximum useful authorised access. Capture founder intent where the founder actually is, with read-back of any consequential interpretation in the same exchange. Sweep the back catalogue. Track what nobody can currently assess.",
+      "can_change": [
+        "the estate inventory and every locator in it",
+        "which integrations are aligned to Cursor and how",
+        "the captured form of a founder intent, before it becomes durable",
+        "the disposition of any prior surface: keep, supersede or retire",
+        "the recorded status of a blind spot"
+      ],
+      "must_not_change": [
+        "the durable record of founder intent, which is held by the repository and not by any provider's memory",
+        "any Cursor-side acceptance",
+        "the interpretation of record, which belongs to the seat that can check it against the whole estate"
+      ],
+      "return_route": "R6-owner-export for the back catalogue; R1-repo-native once a Cursor-side route exists to carry captured intent into custody",
+      "returns": "An inventory and an intent record, each with provenance, that a Cursor seat commits to the canonical store.",
+      "acceptance_method": "Accepted by S-ACCEPT, in Cursor. Capture happens outside Cursor; acceptance does not.",
+      "acceptance_owner_seat": "S-ACCEPT",
+      "runtime_binding": "The founder's authorised ChatGPT account \u2014 projects, connectors and scheduled cadence \u2014 not a single thread.",
+      "substitution_route": "None qualified today. This is the seat's honest weakness and it is named in the guide's blocker list rather than papered over.",
+      "fill_policy": "Platform-scale: multiple projects and models rather than one chat. No single thread is the complete founder intent.",
+      "evidence_label": "FOUNDER_SUPPLIED",
+      "decides": [
+        "DC-BLINDSPOT-STATUS",
+        "DC-ESTATE-INVENTORY",
+        "DC-INTEGRATION-ALIGNMENT",
+        "DC-INTENT-CAPTURE",
+        "DC-INTENT-CORPUS",
+        "DC-SURFACE-DISPOSITION"
+      ],
+      "w4_function_names": {
+        "F-ESTATE": "Estate inventory and locator custody",
+        "F-ALIGN": "Integration alignment for maximum authorised access",
+        "F-INTAKE": "Founder intake, disambiguation and read-back",
+        "F-INTENT": "Intent corpus recovery and reconciliation",
+        "F-SALVAGE": "Back-catalogue sweep and disposition",
+        "F-BLINDSPOT": "Non-assessability management"
+      }
+    }
+  ],
+  "partition_check": {
+    "non_founder_classes": 26,
+    "classes_covered_by_seats": 26,
+    "complete": true,
+    "missing": [],
+    "extra": []
+  },
+  "counting_rule": "The only throughput number that means anything is ACCEPTED, issued by S-ACCEPT. Agent counts, branch counts, file counts and PR counts are inventory and are reported as inventory."
+}
