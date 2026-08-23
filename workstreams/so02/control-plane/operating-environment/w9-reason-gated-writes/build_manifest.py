@@ -59,6 +59,16 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+#: Build artifacts are regenerated from the sources already covered, so hashing
+#: them would bind a byte sequence that differs by interpreter version while
+#: adding nothing a reviewer can check. Excluded here and declared in the output.
+ARTIFACT_MARKERS = ("__pycache__/", ".pyc", ".pyo", ".cursor/.run/")
+
+
+def is_artifact(path: str) -> bool:
+    return any(marker in path or path.endswith(marker) for marker in ARTIFACT_MARKERS)
+
+
 def in_namespace(path: str) -> bool:
     return any(path == ns or path.startswith(ns) for ns in LANE_NAMESPACES)
 
@@ -68,7 +78,7 @@ def collect(base: str) -> tuple[list[str], list[str]]:
     untracked = [p for p in run(["git", "ls-files", "--others", "--exclude-standard"]).splitlines()
                  if p.strip() and in_namespace(p)]
     staged = [p for p in run(["git", "diff", "--name-only", "--cached"]).splitlines() if p.strip()]
-    every = sorted({*changed, *untracked, *staged})
+    every = sorted(p for p in {*changed, *untracked, *staged} if not is_artifact(p))
     outside = [p for p in every if not in_namespace(p)]
     return every, outside
 
@@ -108,6 +118,10 @@ def build(base: str) -> dict:
             "namespaces — not a hand-written list, so it cannot omit a file and still look complete"
         ),
         "manifest_self_excluded_from_entries": True,
+        "build_artifacts_excluded": list(ARTIFACT_MARKERS),
+        "why_artifacts_excluded": ("regenerated from sources already covered here, and their bytes "
+                                   "differ by interpreter version, so hashing them binds nothing a "
+                                   "reviewer can check"),
         "manifest_self_path": MANIFEST_PATH,
         "files_outside_lane_namespace": outside,
         "files_listed_but_absent_from_the_tree": missing,
