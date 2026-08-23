@@ -1,0 +1,199 @@
+{
+  "record_id": "OE-W5-BLOCKERS-20260822-v001",
+  "lane": "OE-W5-AGENTIC-OFFICE-GUIDE",
+  "commission_id": "COM-CUR-ENV-01-20260822-v001",
+  "state": "READY_TO_COMMIT",
+  "rule": "Every entry names the exact unblocking action and who can perform it. Nothing here asks the founder to paste a secret into chat, and nothing here is retrieval, monitoring, comparison, merging or coordination — those are the office's work and appear in this list only as defects to remove.",
+  "no_lane_waits": "A blocker never idles a lane. Each entry names what proceeds without it.",
+
+  "blockers": [
+    {
+      "id": "B1",
+      "title": "The office cannot dispatch itself: Cursor's Agent API is credential-blocked",
+      "severity": "highest — this is the single largest remaining founder-relay step",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "evidence": "GET https://api.cursor.com/v1/me, /v1/agents, /v1/models and /v1/repositories all return HTTP 401 {\"code\":\"error\",\"message\":\"Invalid User API Key\"}, while GET /v1/nonexistent-route-oew5 returns HTTP 404 with a different body shape. The routes exist and are gated. CLOUD_AGENT_ALL_SECRET_NAMES lists four names, none of which is CURSOR_API_KEY.",
+      "receipt": "receipts/so02/2026-08-22/oe-w5-agentic-office/raw/run-evidence.txt sections P1 and P2",
+      "consequence": "POST /v1/agents is the endpoint that lets one agent create and steer another. Without it, every wave needs a human to press a button, which is the founder-relay pattern the standing instruction forbids.",
+      "unblocking_action": {
+        "who": "account owner",
+        "what": "Mirror the key that already exists in Supabase Edge Secrets into a repository-scoped Cursor Cloud Agent secret named exactly CURSOR_API_KEY. Open https://supabase.com/dashboard, select the project holding it, Edge Functions > Secrets, reveal. Then open https://cursor.com/dashboard/cloud-agents, Secrets, add CURSOR_API_KEY scoped to asibrahim336-hash/obzio-ai-coordination-temp.",
+        "explicitly_not": "Do not issue a new Cursor API key. That request was superseded and withdrawn: a second key doubles the revocation surface for no gain.",
+        "cost": "Two authenticated dashboard visits and one copy-paste. No credential is created, rotated or deleted. The value never enters a chat, a prompt or an agent transcript.",
+        "verification": "Start a NEW cloud agent run (secrets are injected at pod start, so the run that stores it cannot see it) and run workstreams/so02/control-plane/operating-environment/w3-credential-estate/tools/verify-cursor-api-key.sh. Expect VERIFIED and exit 0. Confirm presence without reading the value: echo \"$CLOUD_AGENT_ALL_SECRET_NAMES\" | tr ',' '\\n' | grep -x CURSOR_API_KEY",
+        "failure_looks_like": "Still 401 after a fresh run means the secret name is wrong or the scope excludes this repository. A 200 on /v1/me confirms it."
+      },
+      "what_proceeds_without_it": "Everything except self-dispatch. Waves are launched from cursor.com/agents by hand, or from one orchestrator using cloud subagents, and the office runs at full size — just with a human starting each wave.",
+      "supersedes": "FA-CUR-API-01 in CONTROL-SURFACE-ACTIVATION-PROGRAMME.json, which asked for a new key"
+    },
+    {
+      "id": "B2",
+      "title": "The repository's .cursor/environment.json is valid and has no effect",
+      "severity": "high — every agent pays a cold start and the validators terminal never runs",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "evidence": "cursor-cloud environment-info reports source: Team, environmentJson: null, name: null, environmentJsonPath: null, and the note 'environment.json was found but contained no recognized configuration fields.' The applied file sets name, install, start, terminals and disableAllMcpServers and validates against the live schema. A draft build separately accepted an environmentJson override, which a repo-file-managed environment rejects — so this environment is database-managed and the saved record, not the repository file, is its configuration source.",
+      "receipt": "cursor-cloud environment-info in this run; w2-cursor-config/W2-FINDINGS-20260822-v001.md finding 4",
+      "consequence": "install, start and terminals in the repository file are inert. The office's own validators-watch terminal, which would surface a currentness break to an agent instead of to CI after the fact, does not run.",
+      "unblocking_action": {
+        "who": "account owner, or any agent authorised to call propose-environment-json",
+        "what": "Open https://cursor.com/dashboard/cloud-agents/environments/e/69dbfc52-9df5-11f1-a7d1-d6b4613131ce and either paste the repository file's fields into the saved environment, or use 'Update with Agent' to have Cursor inspect and propose a new setup, or 'New Setup Run' to start fresh.",
+        "cost": "One dashboard visit. Reversible: version history keeps prior environment versions and 'Restore' makes one active again, and a failed Build never replaces the active Build.",
+        "verification": "Start a new agent and call environment-info. environmentJson should be non-null and name should read 'Obzio AI Coordination'. Then check that /tmp/cursor/start-user/ exists, which proves the start phase ran.",
+        "failure_looks_like": "environmentJson still null means the save did not take. A failed Build leaves the previous Build active and agents keep starting, so this cannot break the office."
+      },
+      "what_proceeds_without_it": "Everything. A cold start is slower, not broken. Lanes run their own validators explicitly instead of relying on the terminal."
+    },
+    {
+      "id": "B3",
+      "title": "The write-scope guard does not govern lanes that work in worktrees",
+      "severity": "high — a control that is believed to be in force and is not is worse than no control",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "evidence": "Cursor loads project hooks from <project-root>/.cursor/hooks.json. The project root in this runtime is /workspace: core.hooksPath resolves to /home/ubuntu/.cursor/agent-hooks/L3dvcmtzcGFjZQ, which base64-decodes to /workspace. A lane working in /tmp/<lane> has its hooks somewhere Cursor never reads. Four probes agreed: a benign git status produced no audit line although the guard audits allow decisions too, git rebase --abort executed rather than being refused, gh workflow list executed rather than being refused, and a control run first proved the installed guard refuses both of those exact commands when fed the same payload by hand.",
+      "receipt": "w2-cursor-config/W2-FINDINGS-20260822-v001.md finding 1",
+      "consequence": "Two of the estate's own gaps conflict. Lane isolation requires a worktree; hook enforcement requires the project root. As currently dispatched, both cannot hold, and anyone reading write-scope.json and concluding main is protected client-side is wrong.",
+      "unblocking_action": {
+        "who": "the office itself — this is a design decision, not a founder act",
+        "what": "Scale by top-level cloud agents rather than by subagents in worktrees. A top-level cloud agent clones into /workspace, so its project root IS its checkout and .cursor/hooks.json sits exactly where Cursor reads it. Then prove it rather than assume it: run .cursor/hooks/probe_hook_firing.py --arm, run the two inert commands it prints, then --check.",
+        "cost": "None in money. It changes the dispatch topology from one-run-many-subagents to many-runs.",
+        "verification": "probe_hook_firing.py --check reports a positive witness from a benign git status and refusals on the two deny-path commands.",
+        "failure_looks_like": "No audit line from the benign command means the hooks still are not firing, and the guard must be treated as advisory until they do.",
+        "do_not": "Do not test the guard by running git push origin main. That instruction exists in APPLY.md and is unsafe by construction: the branch of the test where the answer is 'no guard' is the branch where the damage happens."
+      },
+      "what_proceeds_without_it": "Everything, with the boundary enforced by the lane brief and checked after the fact by the adversary seat instead of before the fact by a hook.",
+      "hypothesis_flag": "That hooks fire for a top-level cloud agent whose project root is a checkout carrying .cursor/hooks.json is DOCUMENTED from the loading rule and HYPOTHESIS for this account until the probe runs."
+    },
+    {
+      "id": "B4",
+      "title": "No agent can read or set branch protection",
+      "severity": "medium — the protected-branch rule has no server-side enforcement",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "evidence": "The gh CLI holds a ghs_-prefixed GitHub App installation token. Probed endpoint by endpoint it is read-only: metadata, contents, pull requests, Actions workflows, environments and collaborators return 200; issues, Actions secrets and variables, branch protection, webhooks, deployments, code scanning and Dependabot all return 403. git push uses a different credential entirely, injected via url.<...>.insteadOf rewrites, and it carries write.",
+      "receipt": "l1-cursor-baseline/BASELINE-FINDINGS.md finding 5",
+      "consequence": "'Never write these branches' is enforced by lane briefs and by a client-side guard that does not currently fire. Nothing at GitHub refuses it.",
+      "unblocking_action": {
+        "who": "account owner, in GitHub",
+        "what": "Set branch protection directly on main, so02/*, po03/*, soo/* and packs/*. Do not widen the agent's GitHub permissions to make protection readable — protection works without the agent being able to read it, and widening adds authority for no reproduced need.",
+        "cost": "Free, immediate, reversible.",
+        "verification": "Any agent attempting a push to a protected branch is refused by GitHub with a protection error rather than succeeding.",
+        "failure_looks_like": "A push to a protected branch succeeding."
+      },
+      "what_proceeds_without_it": "Everything. Lanes have not written a protected branch; the risk is that nothing but discipline stops one."
+    },
+    {
+      "id": "B5",
+      "title": "Slack and Linear event returns are unavailable",
+      "severity": "low — and deliberately ranked low",
+      "evidence_label": "DOCUMENTED",
+      "evidence": "Automation triggers and agent subscriptions for Slack and Linear both require the corresponding account-level Cursor integration. https://cursor.com/docs/cloud-agent/automations.md and https://cursor.com/docs/cloud-agent/capabilities.md, fetched 2026-08-23.",
+      "consequence": "The office cannot wake on a Slack reply or a Linear issue. It can still wake on GitHub pull-request activity, CI results and timers, which covers the routes it actually uses.",
+      "unblocking_action": {
+        "who": "account owner",
+        "what": "Connect the integrations at https://cursor.com/dashboard/integrations if and when they are wanted.",
+        "cost": "One OAuth consent each.",
+        "verification": "The corresponding trigger types appear when creating an automation.",
+        "caution": "This is the lowest-value and highest-risk item on the list. Connecting a second surface where 'what is current' can be asserted, before the git pointer chain is unambiguously canonical, would reintroduce this estate's signature failure. Recommended: not yet."
+      },
+      "what_proceeds_without_it": "Everything. GitHub and timer subscriptions cover the office's return routes."
+    },
+    {
+      "id": "B6",
+      "title": "The estate liaison seat has no qualified route into custody",
+      "severity": "high for that seat, zero for the rest of the office",
+      "evidence_label": "DOCUMENTED",
+      "evidence": "Capture happens in ChatGPT, which is the only surface holding the founder's authenticated context and the only one that can read back a consequential interpretation in the same exchange. Custody must be the repository, because provider memory is never constitutional authority. No qualified ChatGPT-to-repository write route exists today.",
+      "receipt": "w4-platform-roles/PLATFORM-ROLE-ARCHITECTURE-20260822-v001.md section 3",
+      "consequence": "A captured intent is not binding until it is a typed, durable event in git. Today the only thing that carries it there is the founder, which is the exact pattern the non-negotiables forbid.",
+      "unblocking_action": {
+        "who": "the estate liaison seat first, then possibly the account owner",
+        "what": "Settle the cheap possibility by discovery before escalating it as a decision: check whether a GitHub connector is already available on the account's ChatGPT plan. If it is, the existing repository route carries captured intent with no new install and no new authority. Only if it is not does this become a founder disclosure-and-install decision.",
+        "cost": "Discovery costs nothing and is the liaison seat's own job. The escalation, if needed, is one install and one authorisation.",
+        "verification": "A captured intent appears as a commit in the canonical store without the founder having transcribed it.",
+        "hypothesis_flag": "That a GitHub connector is already available on this account's plan is a HYPOTHESIS. It is exactly the kind of fact the platform can retrieve about itself, so it must be settled by discovery rather than asked."
+      },
+      "what_proceeds_without_it": "Every Cursor-resident seat. Only the estate liaison is affected, and its discovery and alignment work proceeds regardless — only the write-back is blocked."
+    },
+    {
+      "id": "B7",
+      "title": "MCP integrations sit unauthenticated",
+      "severity": "medium — and it is a blocker to remove, not a boundary to respect",
+      "evidence_label": "DIRECTLY_REPRODUCED for the state, DOCUMENTED for the remedy",
+      "evidence": "Several MCP namespaces are in needsAuth; while a namespace is in that state its tools are not registered at all. The repository's .cursor/mcp.json declares an empty mcpServers object by decision, because the two servers this estate depends on are Cursor built-ins a project file cannot add and the rest cannot be authenticated from inside a pod.",
+      "consequence": "Authenticated tool surfaces that the office could use are absent, and the absence looks like a design choice rather than a missing consent.",
+      "unblocking_action": {
+        "who": "account owner",
+        "what": "Add and enable servers through the MCP dropdown at https://cursor.com/agents. OAuth for MCP is per-user and Cursor registers a web callback at https://www.cursor.com/agents/mcp/oauth/callback for the web and Cursor Agents surfaces, so this can be done entirely in a browser. The desktop app uses http://localhost:8787/callback and is not required.",
+        "cost": "One OAuth consent per server.",
+        "verification": "The namespace leaves needsAuth and its tools register. A failed authentication surfaces as an mcp_auth_error run event rather than as a silent absence.",
+        "recommendation": "Prefer HTTP transport over stdio. With HTTP the server configuration is never present in the agent VM and the agent never sees refresh tokens or headers; with stdio the server runs inside the VM and the agent can read its environment."
+      },
+      "what_proceeds_without_it": "Everything the office does today, which uses git, curl, the GitHub CLI and the built-in Cursor Cloud diagnostics server."
+    },
+    {
+      "id": "B8",
+      "title": "Computer use exists in the VM but no agent-facing tool is present",
+      "severity": "low for the office as designed",
+      "evidence_label": "DIRECTLY_REPRODUCED for the absence, DOCUMENTED for the capability",
+      "evidence": "Chrome 148 runs headless in this VM and a VNC display server is live, but no browser, computer-control, web-search or web-fetch tool appears in this agent's tool list or in either MCP catalogue — every documentation claim in this lane had to be established with curl. Cursor documents computer use as a cloud-agent capability, documents it as included by default for automations, and separately documents the team-level Computer use toggle as available to enterprise teams only.",
+      "consequence": "The office cannot drive a browser through a controlled, tool-mediated surface, which is what the halted browser batch would have needed.",
+      "unblocking_action": {
+        "who": "account owner, and it starts as a question the platform can answer about itself",
+        "what": "Open https://cursor.com/dashboard/cloud-agents and read whether Computer use is present and enabled for this account. The documentation is not internally consistent about which plans get it, so read the account rather than the docs.",
+        "cost": "One dashboard visit.",
+        "verification": "A computer-use or browser tool appearing in a new agent's tool list.",
+        "note": "The enabling path is not the repository file. The live environment schema rejects the chromeExecutablePath field that the bundled skill associates with computer use."
+      },
+      "what_proceeds_without_it": "All of it. Nothing in the office's launch sequence needs a browser tool."
+    },
+    {
+      "id": "B9",
+      "title": "Four dead secrets are injected into every agent run",
+      "severity": "low, permanent, and cheap to fix",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "evidence": "The four AUREA_E2E_* secrets are the entire secret-name census for this scope. The Supabase hostname that AUREA_E2E_SUPABASE_URL encodes does not resolve: local resolution fails and DNS-over-HTTPS returns NXDOMAIN with zero answers, while supabase.co itself responds from this runtime, so it is specific to that host and not a network-policy artefact.",
+      "receipt": "w3-credential-estate/CURSOR-API-KEY-RECOVERY-ROUTES.json; run-evidence.txt section P2",
+      "consequence": "Any lane or test depending on that credential set is depending on something dead. It is a small permanent tax on every run and a live trap for a future lane.",
+      "unblocking_action": {
+        "who": "account owner",
+        "what": "Confirm whether the AUREA_E2E_* set is still meaningful and remove it at https://cursor.com/dashboard/cloud-agents if it is not.",
+        "cost": "One dashboard visit.",
+        "verification": "The secret-name census no longer lists them.",
+        "explicitly_not_claimed": "This does not claim the Supabase project was deleted. It claims, and has reproduced, that the hostname does not resolve."
+      },
+      "what_proceeds_without_it": "Everything."
+    }
+  ],
+
+  "genuinely_needs_founder_judgment": [
+    {
+      "id": "FJ-A",
+      "question": "How large should a wave be, in money?",
+      "why_it_cannot_be_delegated": "It is a risk-appetite and spend decision, and spend is founder-reserved. The office can price a wave precisely once one has run; it cannot decide what the right number is.",
+      "what_would_help": "A standing per-month ceiling and a per-wave ceiling, set once. Then the office sizes waves against it and never asks again."
+    },
+    {
+      "id": "FJ-B",
+      "question": "Which competing pointer claim wins, PR #6 or PR #7?",
+      "why_it_cannot_be_delegated": "It is an authority act, not a compilation result. The resolver correctly refuses to decide it, and that refusal is the right behaviour rather than a gap."
+    },
+    {
+      "id": "FJ-C",
+      "question": "Is indefinite provider-side retention of founder-intent material acceptable?",
+      "why_it_cannot_be_delegated": "Risk appetite, not a technical question."
+    },
+    {
+      "id": "FJ-D",
+      "question": "Is the requirement open weights, or runnable by us?",
+      "why_it_cannot_be_delegated": "These are different properties with different architectures behind them, and only the second delivers sovereignty. Neither silently dropping the earlier model allocation nor newly binding one is the office's call."
+    },
+    {
+      "id": "FJ-E",
+      "question": "Is GitHub acceptable as the sole host of canonical state?",
+      "why_it_cannot_be_delegated": "A concentration risk the founder should price. GitHub is simultaneously canonical state, primary execution and the corroborating execution domain. A periodic git bundle is the zero-cost interim and needs no new account and no founder act, so the office will do that regardless."
+    },
+    {
+      "id": "FJ-F",
+      "question": "Should the acceptance threshold for a delegated sweep be set once, in advance?",
+      "why_it_cannot_be_delegated": "Accepting a body of work at a stated confidence level is a risk-appetite decision. But it can be decided once rather than per sweep: declare the acceptable error rate and the office self-accepts under the rule when a stratified sample comes in under it, and re-runs when it does not."
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+{
+  "record_id": "OE-W5-SCALE-AND-CEILING-20260822-v001",
+  "lane": "OE-W5-AGENTIC-OFFICE-GUIDE",
+  "commission_id": "COM-CUR-ENV-01-20260822-v001",
+  "state": "READY_TO_COMMIT",
+  "purpose": "State what actually limits the size of the office, separating what was measured here from what is documented by the platform from what is inferred.",
+
+  "the_honest_summary": "There is no documented cap on how many cloud agents one account may run in parallel, and none was hit here. The binding constraints are money, the number of genuinely disjoint work partitions available, and — for subagents of a single run — one VM and one git repository. Agent count was never the scarce resource in this estate; disjoint work and independent acceptance were.",
+
+  "measured_here": {
+    "evidence_label": "DIRECTLY_REPRODUCED",
+    "instrument": "cursor-cloud list-cloud-agents, limit 200, includeArchived true, complete scan",
+    "receipt": "receipts/so02/2026-08-22/oe-w5-agentic-office/raw/list-cloud-agents-census.json",
+    "derived": "workstreams/so02/control-plane/operating-environment/w5-agentic-office/CONCURRENCY-EVIDENCE-20260822-v001.json",
+    "facts": [
+      "11 top-level cloud agents existed on one repository under one account.",
+      "8 of them were created inside an 804 ms window, which is a single dispatch action rather than eight separate ones.",
+      "4 distinct exact model configurations ran: claude-opus-5-thinking-max, claude-sonnet-5-thinking-max, gpt-5.6-sol-max-fast, gpt-5.6-terra-max-fast.",
+      "2 model families ran concurrently in the same account, which is what makes distinct-identity acceptance available without a second vendor.",
+      "9 of the 11 were started from the web surface and 2 were started internally by a parent run.",
+      "No agent was refused, throttled or queued in any way visible to this instrument."
+    ],
+    "what_it_does_not_prove": [
+      "That 11 is a ceiling. Nobody tried 30. A census of what did run is not a measurement of what may run.",
+      "Anything about compute or rate-limit contention. Only the visible run layer is observable from inside a pod; contention below it is not.",
+      "Any cost figure. Token consumption is not exposed to an agent by any instrument found here."
+    ]
+  },
+
+  "documented_by_the_platform": {
+    "evidence_label": "DOCUMENTED",
+    "fetched": "2026-08-23",
+    "claims": [
+      {
+        "claim": "You can run as many agents as you want in parallel, and they do not require your local machine to be connected to the internet.",
+        "source": "https://cursor.com/docs/cloud-agent.md"
+      },
+      {
+        "claim": "Each cloud agent runs in its own isolated VM with a full desktop environment.",
+        "source": "https://cursor.com/docs/cloud-agent/capabilities.md"
+      },
+      {
+        "claim": "Each cloud agent runs on a default VM profile with limited memory and CPU. Enterprise plans can request higher limits; self-serve custom resource configuration is described as coming soon.",
+        "source": "https://cursor.com/docs/cloud-agent/setup.md"
+      },
+      {
+        "claim": "Cloud Agents are charged at API pricing for the selected model. A larger context window can increase token usage and cost. You are asked to set a spend limit when you first start using them.",
+        "source": "https://cursor.com/docs/cloud-agent.md"
+      },
+      {
+        "claim": "Running five subagents in parallel uses roughly five times the tokens of a single agent, because each has its own context window.",
+        "source": "https://cursor.com/docs/subagents.md"
+      },
+      {
+        "claim": "Automations run at each model's maximum supported context window, with no context-window toggle.",
+        "source": "https://cursor.com/docs/cloud-agent/automations.md"
+      },
+      {
+        "claim": "Plan inclusions: Pro $20/mo includes $20 of third-party model usage; Pro Plus $60/mo includes $70; Ultra $200/mo includes $400. Cursor Models (Grok 4.6, Grok 4.5, Composer 2.5) draw from a separate pool with generous included usage.",
+        "source": "https://cursor.com/docs/models-and-pricing.md"
+      },
+      {
+        "claim": "Power users running multiple agents and automations often reach $200+/month of total usage.",
+        "source": "https://cursor.com/docs/models-and-pricing.md"
+      },
+      {
+        "claim": "A service account can hold at most four concurrent pool-watch streams. This is a limit on orchestration streams, not on agents.",
+        "source": "https://cursor.com/docs/cloud-agent/api/endpoints.md"
+      },
+      {
+        "claim": "Cloud agent creation accepts at most 20 repositories per agent and at most 50 inline MCP servers.",
+        "source": "https://cursor.com/docs/cloud-agent/api/endpoints.md"
+      },
+      {
+        "claim": "Cursor keeps at most 25 local worktrees per machine by default and cleans up older ones, including worktrees created outside its manager.",
+        "source": "https://cursor.com/docs/configuration/worktrees.md"
+      }
+    ]
+  },
+
+  "the_real_ceilings_in_order": [
+    {
+      "rank": 1,
+      "ceiling": "Disjoint work",
+      "binding": true,
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "statement": "The office can only usefully run as many agents as there are non-overlapping partitions of work. Run live against this estate, the w4 partition rule found 7 undifferentiated commission overlaps and 1 commission-id collision, including two commissions asserting whole-operation authority over the same scope. Adding agents to an estate that cannot tell two mandates apart multiplies the collision, not the output.",
+      "how_to_lift_it": "Partition by decision class before dispatch, not by topic. The seat register is that partition and officectl.py refuses a wave that breaks it."
+    },
+    {
+      "rank": 2,
+      "ceiling": "Independent acceptance capacity",
+      "binding": true,
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "statement": "Only accepted output counts. An acceptance lane already refused this estate's own root controller's evidence, and two of its findings were then reproduced. Producers scale cheaply; acceptors are the throughput limit, because a wave of 20 builders that nothing checks lands the whole wave at OBSERVED.",
+      "how_to_lift_it": "Acceptance is multi-lane, not multi-vendor, so it scales the same way building does — with one exception: claims about Cursor's own behaviour need a second execution domain, and GitHub Actions is the cheapest one already reproduced here."
+    },
+    {
+      "rank": 3,
+      "ceiling": "Money",
+      "binding": true,
+      "evidence_label": "DOCUMENTED",
+      "statement": "Cloud agents bill at the selected model's API rate. Model choice moves the bill by more than an order of magnitude for the same wave shape: on identical assumed token volumes, 8 agents cost roughly $172 on Claude Opus 5, $74 on GPT-5.6 Terra and $27 on Composer 2.5 — and only the last draws from the included Cursor Models pool.",
+      "how_to_lift_it": "Cast the wave by model rather than running everything on the most expensive one: cheap high-parallelism models for scouting and search, expensive models for the seats where judgment is the product. Set the spend limit deliberately rather than accepting the default prompt."
+    },
+    {
+      "rank": 4,
+      "ceiling": "One VM and one git HEAD, for subagents of a single run",
+      "binding": true,
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "statement": "In this account's observed dispatch pattern, subagents of one top-level run shared one VM: sibling lanes' worktrees are visible from inside this lane, and /cursor/stores/self resolves to the parent run's id rather than this lane's own. Sharing a VM means sharing one git repository, and a shared checkout means a shared HEAD. That is a reproduced failure, not a hypothetical: two lanes previously interleaved commits on one detached HEAD, both branch refs stayed at the base, and git push printed 'Everything up-to-date' and exited 0.",
+      "how_to_lift_it": "Give every lane its own git worktree at dispatch, and scale beyond one VM by using top-level cloud agents, each of which gets its own isolated VM, rather than more subagents of one run."
+    },
+    {
+      "rank": 5,
+      "ceiling": "Founder attention",
+      "binding": false,
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "statement": "This is the ceiling that binds in the default arrangement and is removed by design in this one. If results return by the founder carrying them, the office cannot be larger than his afternoon. Every seat here returns to the repository instead, and the return route classified as a defect is named explicitly so a seat cannot quietly adopt it.",
+      "how_to_lift_it": "Already lifted structurally. The residual is the small set of acts only an account owner can perform, listed as blockers with their exact unblocking action."
+    },
+    {
+      "rank": 6,
+      "ceiling": "A platform concurrency cap",
+      "binding": false,
+      "evidence_label": "HYPOTHESIS",
+      "statement": "No such cap is documented, and none was observed. It is listed only so that its absence is a recorded observation rather than an assumption nobody checked. If one exists it will appear as agents queueing rather than starting, which list-cloud-agents would show as NOT_YET_STARTED.",
+      "how_to_lift_it": "Not applicable until observed. The probe is to dispatch a wave larger than any run so far and read the lifecycle statuses."
+    }
+  ],
+
+  "cost_scenarios_assumptions_visible": {
+    "warning": "Token volumes below are supplied, not measured. Nothing in an agent pod exposes token consumption. They are here to show the shape of the arithmetic and the size of the model-choice effect, not to predict a bill.",
+    "assumed_per_agent": {"uncached_input_mtok": 2.0, "output_mtok": 0.3, "cache_read_mtok": 8.0},
+    "wave_size_agents": 8,
+    "waves_per_month": 8,
+    "scenarios": [
+      {"model": "claude-opus-5", "pool": "Other Models", "per_agent_usd": 21.5, "per_wave_usd": 172.0, "per_month_usd": 1376.0},
+      {"model": "gpt-5.6-terra", "pool": "Other Models", "per_agent_usd": 9.2, "per_wave_usd": 73.6, "per_month_usd": 588.8},
+      {"model": "composer-2.5", "pool": "Cursor Models", "per_agent_usd": 3.35, "per_wave_usd": 26.8, "per_month_usd": 214.4}
+    ],
+    "reproduce": "python3 tools/cost_model.py --agents 8 --model <id> --input-mtok 2 --output-mtok 0.3 --cache-read-mtok 8 --waves-per-month 8",
+    "where_the_real_number_is": "https://cursor.com/dashboard/usage, the Spending tab, after one real wave. That figure supersedes every number in this block."
+  },
+
+  "what_is_measured_versus_inferred": {
+    "measured_in_this_account": [
+      "top-level agent count, model configurations, families, dispatch burst window, lifecycle statuses",
+      "that the Cursor Agent API is credential-blocked rather than unsupported",
+      "that no CURSOR_API_KEY exists in this runtime's secret-name census",
+      "that subagents of one run share a VM, a filesystem and a git repository",
+      "that the applied .cursor/environment.json is inert because this environment is database-managed"
+    ],
+    "documented_by_cursor_not_measured": [
+      "that parallelism is uncapped",
+      "every price in the table",
+      "every plan inclusion figure",
+      "that each top-level cloud agent gets its own isolated VM"
+    ],
+    "inferred_and_labelled_as_such": [
+      "that no platform concurrency cap exists — absence of an observed cap is not proof of no cap",
+      "any token volume used in the cost scenarios"
+    ]
+  }
+}
