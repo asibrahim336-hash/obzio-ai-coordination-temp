@@ -1,0 +1,153 @@
+{
+  "artifact_id": "OE-W10-CORPUS-ADMISSION-20260823-v001",
+  "lane": "OE-W10-PROVENANCE-REDERIVATION",
+  "commission": "COM-CUR-ENV-01-20260822-v001",
+  "declares_commission": false,
+  "is_a_proposal_not_a_binding": true,
+  "binds_company_strategy": false,
+  "decision_changed": [],
+  "base_commit": "21c8ef88d01cccf419036d9fdcc164a8769ddf05",
+  "governs": "Which documents in this repository are founder text for the purpose of a FOUNDER_AUTHORED provenance verdict, and which are documents about founder authority. A document about his authority is not his authority.",
+
+  "admission_test": {
+    "rule": "A document is admitted to the founder corpus only if it presents the founder's own words as a quotation attributable to him. Everything else is a record about him.",
+    "positive_markers": [
+      "first person singular referring to the founder ('I am Ahmed Sadek', 'my authority', 'I never designated')",
+      "the document itself declares the passage verbatim and marks it off from surrounding analysis",
+      "a stable repository locator with a commit, resolvable by a third party"
+    ],
+    "negative_markers": [
+      "third-person reference to the founder throughout ('the founder paused it', 'the founder states') - the voice of a recorder, not a speaker",
+      "machine-readable schema keys carrying directive content - a founder does not speak in JSON field names",
+      "a title declaring the content recovered, reconstructed or recoverable rather than spoken",
+      "an authority_basis label such as FOUNDER-EXPRESSED asserting standing instead of exhibiting words"
+    ],
+    "why_git_authorship_is_not_a_marker": "DIRECTLY_REPRODUCED. Commit 9887f33e is authored by asibrahim336-hash <asibrahim336@gmail.com>, the founder's own git identity. That single commit simultaneously created workstreams/so02/control-plane/commissions/CURSOR-OPERATING-ENVIRONMENT-01.md (+151 lines), rewrote workstreams/so02/control-plane/state/FOUNDER-OPERATING-DIRECTIVES-20260822.md (117 lines changed), and added 181 lines to workstreams/so02/control-plane/tools/scctl.py with 105 lines to workstreams/so02/control-plane/tests/test_scctl.py. A founder does not hand-write a Python test suite in the same keystroke as a standing instruction. Across all refs in this repository, 781 commits carry that identity against 1325 carrying Cursor Agent <cursoragent@cursor.com>, so the identity is shared infrastructure rather than a signature. Reproduced by `git log --format=... 9887f33e` and `git log --all --format='%an <%ae>' | sort | uniq -c`; transcripts at receipts/so02/2026-08-23/oe-w10-provenance/raw/git-authorship-census.txt.",
+
+  "admitted": [
+    {
+      "corpus_id": "FC-01",
+      "path": "workstreams/so02/control-plane/operating-environment/FOUNDER-STANDING-INSTRUCTION-20260822.md",
+      "section": "Verbatim — standing instruction, 2026-08-22",
+      "lines": "19-25",
+      "segment_sha256": "5bf968fb2b7c7ef4c51a16f7af58c32484355b43d79d714e46fefcb500586879",
+      "speaker_class": "FOUNDER_DIRECT",
+      "uttered_at": "2026-08-22T23:55:00Z",
+      "why_admitted": "Opens 'I am Ahmed Sadek, founder of Obzio, speaking directly and exercising founder authority.' First person throughout, marked verbatim by a file whose own preservation rule states 'Nothing in this file paraphrases, compresses or interprets them.'",
+      "evidence_label": "DOCUMENTED"
+    },
+    {
+      "corpus_id": "FC-02",
+      "path": "workstreams/so02/control-plane/operating-environment/FOUNDER-STANDING-INSTRUCTION-20260822.md",
+      "section": "Verbatim — founder clarification on the ChatGPT account",
+      "lines": "29",
+      "segment_sha256": "1fb59f9023012c772ebf2cd9d31bdccbfb846d330d85f1fb0bc92a50f3c9d139",
+      "speaker_class": "FOUNDER_DIRECT",
+      "uttered_at": "2026-08-22",
+      "why_admitted": "First person ('joint thinking with me, Ahmed'), marked verbatim, one utterance with one scope.",
+      "evidence_label": "DOCUMENTED"
+    },
+    {
+      "corpus_id": "FC-03",
+      "path": "workstreams/so02/control-plane/operating-environment/FOUNDER-STANDING-INSTRUCTION-20260822.md",
+      "section": "STANDING AMENDMENT — 2026-08-23T03:34Z — Verbatim",
+      "lines": "101-159",
+      "segment_sha256": "9ee2ac2593cb44acf73b03b158ab74e80f09cbe0e4eed4783a40f30dbe6a905c",
+      "speaker_class": "FOUNDER_DIRECT",
+      "uttered_at": "2026-08-23T03:34:00Z",
+      "why_admitted": "First person throughout ('I never designated', 'I am removing an authority restriction I never issued', 'Model and runtime choice is mine'). It is the utterance that establishes the classification rule this lane executes, so admitting it is a precondition of the lane existing at all.",
+      "evidence_label": "DOCUMENTED"
+    }
+  ],
+
+  "excluded_from_corpus": [
+    {
+      "path": "workstreams/so02/control-plane/operating-environment/FOUNDER-STANDING-INSTRUCTION-20260822.md",
+      "section": "Verbatim — the ChatGPT advisory proposal, recorded as advisory only",
+      "lines": "36-40",
+      "speaker_class": "FOUNDER_QUOTING_OTHER",
+      "verdict": "NOT_FOUNDER_SPEAKER",
+      "why_excluded": "It sits under a `## Verbatim` heading in the same file as the founder's own words and is the single most dangerous object in the corpus: it reads as authoritative prose and carries none of his authority. Its own opening sentence disclaims it - 'This is ChatGPT's recommendation, not a founder ruling or a replacement for Ahmed's established intent.' The extractor classifies it by heading marker rather than by reading, so it cannot be admitted by an inattentive rebuild.",
+      "evidence_label": "DOCUMENTED"
+    },
+    {
+      "path": "workstreams/so02/control-plane/state/FOUNDER-OPERATING-DIRECTIVES-20260822.md",
+      "verdict": "NOT_VERBATIM_SUMMARY",
+      "supplied_prior_verdicts": ["FB-01", "FB-02", "FB-03", "FB-04", "FB-07", "FB-08", "FB-09", "FB-10", "FB-12", "FB-14", "FB-15", "FB-16", "FB-17", "FB-18", "FB-22", "FB-27"],
+      "why_excluded": "Its own title is 'Founder operating directives recoverable from the repository' - recoverable, that is, reconstructed. It refers to the founder in the third person throughout ('the founder paused it before its first message', \"The founder's standing role-specific identity\"), which is the voice of a recorder rather than a speaker. Sixteen of the prior register's twenty-seven FOUNDER_BOUND verdicts rest on it. Under the founder's own taxonomy a summary written by an AI lane speaking for him is the third class, and under the W8 admission rule CAP-PARAPHRASE it is capped at S1 regardless of who wrote it.",
+      "not_therefore_worthless": "Excluding it from the corpus does not delete it or deny that it reflects real founder decisions. It means a constraint cannot reach FOUNDER_AUTHORED by pointing at it. Several constraints it carries are recoverable from the verbatim corpus at a narrower width, and several others are on the ratification list precisely because this document is the only trace of them.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "path": "workstreams/so02/control-plane/operating-environment/FOUNDER-AUTHORITY-20260822T2225Z.json",
+      "verdict": "NOT_VERBATIM_SUMMARY",
+      "supplied_prior_verdicts": ["FB-05", "FB-06", "FB-11", "FB-19", "FB-20"],
+      "why_excluded": "Ruled an assistant-authored summary by the provenance finding recorded in the founder record itself: 'the only place the word appears in a record purporting to carry founder authority is FOUNDER-AUTHORITY-20260822T2225Z.json, which is itself an assistant-authored summary of his authority, not his words.' Its structure confirms it: directive content lives in JSON keys such as `restrictions_removed.specific_derestrictions_applied_now`, and the founder appears in the third person ('The founder states a Cursor API key already exists'). It is the document that carried the protected-surface designation the founder has since voided, so treating it as founder text is the exact error under repair.",
+      "downstream_defect_found": "workstreams/so02/control-plane/operating-environment/w8-chatgpt-constitution/ledger/utterances/004-founder-derestriction.json records this same file with is_verbatim true and speaker_class FOUNDER_DIRECT, which would admit it at S4. That is a live disagreement with the founder record's own finding. It is reported, not edited - the file belongs to another lane's namespace.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "path": "AGENTS.md",
+      "verdict": "NOT_VERBATIM_SUMMARY",
+      "supplied_prior_verdicts": ["FB-21", "FB-23", "FB-25"],
+      "why_excluded": "Repository-wide operator instructions written in the imperative voice of the estate, not the founder's. It contains no attributed founder utterance. The founder does reference it - 'Append this to the durable instruction surface - the always-applied rule, AGENTS.md instruction 0, and the verbatim founder record' - which establishes that he treats it as a projection surface he writes onto, not as a source of his words.",
+      "evidence_label": "DOCUMENTED"
+    },
+    {
+      "path": ".cursor/rules/00-founder-standing-authority.mdc",
+      "verdict": "NOT_VERBATIM_SUMMARY",
+      "supplied_prior_verdicts": [],
+      "why_excluded": "It names itself a projection: 'Full record with the founder's messages preserved verbatim: workstreams/.../FOUNDER-STANDING-INSTRUCTION-20260822.md'. A projection of founder text is an assistant utterance about founder text. It is operationally governing as a rule; it is not a quotation source. Where its wording differs from the verbatim record the record governs, by its own terms.",
+      "evidence_label": "DOCUMENTED"
+    },
+    {
+      "path": "workstreams/so02/control-plane/commissions/CURSOR-OPERATING-ENVIRONMENT-01.md",
+      "verdict": "NOT_VERBATIM_SUMMARY",
+      "supplied_prior_verdicts": ["FB-13", "FB-26"],
+      "why_excluded": "Assistant-drafted commission text. It is one of the files created by commit 9887f33e under the founder's git identity alongside 286 lines of Python, which is the concrete instance the founder's amendment describes as 'assistant-generated commission text, ... inherited unexamined from run to run'.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "path": "workstreams/so02/control-plane/operating-environment/l4-currentness-recovery/diagnosis/DIAGNOSIS-L4-20260822-v001.md",
+      "verdict": "NOT_FOUNDER_SPEAKER",
+      "supplied_prior_verdicts": ["FB-24"],
+      "why_excluded": "An assistant lane's diagnosis document. The prior register cited a lane's own finding as a founder source, which is the clearest single instance of the classifier measuring the wrong thing: a lane concluded that a decision was founder-bound and its conclusion was then recorded as the founder's.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "path": "receipts/so02/2026-08-22/founder-operating-environment-role-correction-20260822T173520Z.json",
+      "verdict": "NOT_VERBATIM_SUMMARY",
+      "supplied_prior_verdicts": [],
+      "why_excluded": "A receipt carrying authority.basis 'FOUNDER-EXPRESSED' and a decision_changed array, with no founder words anywhere in it. Asserting standing is not exhibiting it. Same finding for founder-execution-correction-20260822T0932Z.json and founder-disclosure-scope-correction-20260822T095642Z.json, both of which record changed_operations and no utterance.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "path": "state/FOUNDER_*.md (the 2026-08-18 and 2026-08-19 vintage, 21 files)",
+      "verdict": "NOT_VERBATIM_SUMMARY",
+      "supplied_prior_verdicts": [],
+      "why_excluded": "Institutional dispatch prose in the third person ('Strategic Control must produce the exact ready-to-send launch prompt'), headed with status labels such as 'CURRENT FOUNDER-EXPRESSED CONTROL'. They predate this programme and supply none of the 76 constraints, but they are assessed here so a later lane does not mistake the FOUNDER_ prefix for founder authorship. Same conclusion for dispatch/FOUNDER_INTENT_*.md and receipts/FOUNDER_INTENT_*.md.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    }
+  ],
+
+  "corpus_size_finding": {
+    "statement": "The verbatim founder corpus for this programme is three utterances totalling 8196 bytes. The prior register sourced 27 FOUNDER_BOUND verdicts across five documents and cited this corpus zero times.",
+    "prior_founder_source_census": {
+      "workstreams/so02/control-plane/state/FOUNDER-OPERATING-DIRECTIVES-20260822.md": 16,
+      "FOUNDER-AUTHORITY-20260822T2225Z.json": 5,
+      "AGENTS.md": 3,
+      "workstreams/so02/control-plane/commissions/CURSOR-OPERATING-ENVIRONMENT-01.md": 2,
+      "workstreams/so02/control-plane/operating-environment/l4-currentness-recovery/diagnosis/DIAGNOSIS-L4-20260822-v001.md": 1
+    },
+    "evidence_label": "DIRECTLY_REPRODUCED",
+    "how_reproduced": "Sum of the three admitted segment byte counts from FOUNDER-CORPUS-20260823-v001.json, against a scan of every `founder_source` value in DE-RESTRICTION-REGISTER-20260822-v001.json. Zero constraints in that register mention FOUNDER-STANDING-INSTRUCTION in any field."
+  },
+
+  "exculpation_the_prior_lane_is_owed": {
+    "finding": "At the prior register's declared base_commit 3f3ee110 (2026-08-22T22:27:38Z) the file FOUNDER-STANDING-INSTRUCTION-20260822.md did not exist. It was created 90 minutes later at ef0a74e5 (23:58:06Z), which is not an ancestor of 3f3ee110. The standing amendment FC-03 postdates the prior register by roughly five hours.",
+    "evidence_label": "DIRECTLY_REPRODUCED",
+    "how_reproduced": "git cat-file -e 3f3ee110:<path> returns non-zero; git merge-base --is-ancestor ef0a74e5 3f3ee110 returns non-zero. Transcript at receipts/so02/2026-08-23/oe-w10-provenance/raw/corpus-chronology.txt.",
+    "what_this_does_not_excuse": "The verbatim corpus available to the prior lane was empty, so no constraint could have been shown founder-authored by quotation. The correct output was therefore 'no constraint is classifiable as founder-authored; the corpus is empty', which is a fail-closed result the estate's own controls would have recognised. Instead the classifier substituted the best available proxy - commit authorship and documents titled FOUNDER-* - and returned 27 confident verdicts. The defect is not that it lacked evidence. It is that it failed open when it lacked evidence, and produced a rigorous-looking instrument measuring the wrong thing.",
+    "why_this_matters_for_the_repair": "A checker that refuses is worth more than a checker that substitutes. provctl.py fails closed on a FOUNDER_AUTHORED verdict with no corpus match, so the same scarcity now produces a refusal rather than a certification."
+  }
+}
