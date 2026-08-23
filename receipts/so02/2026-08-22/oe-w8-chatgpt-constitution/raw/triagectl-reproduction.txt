@@ -1,0 +1,170 @@
+OE-W8 triagectl reproduction
+recorded_at_utc: 2026-08-23T01:15:45Z
+note: every input under ledger/fixtures/ is ILLUSTRATIVE. No real sweep has been run and no chat has been read.
+
+$ python3 tools/triagectl.py plan --tolerance 0.01 --strata ledger/fixtures/strata-founder-reported.json
+{
+  "acceptance_rule_declared_in_advance": {
+    "accept_if": "observed consequential errors <= floor(tolerance * allocated_size)",
+    "max_consequential_errors": 1,
+    "on_reject": "the whole sweep is rejected and re-run with corrected claim predicates; it is never patched item by item",
+    "retry_budget": 2,
+    "terminal_fallback": "after the retry budget is exhausted the sweep does not run again. Every unresolved item is dispositioned FREEZE_AS_EVIDENCE, which is reversible and loses no information, and the repeated failure is recorded as a finding about the claim predicates rather than carried as a backlog.",
+    "why_a_fallback_exists": "reject-and-re-run with no bound has no termination guarantee; three failed sweeps cost more than the review they replaced"
+  },
+  "artifact": "OE-W8-TRIAGE-SAMPLE-PLAN",
+  "auditor_independence": {
+    "reads": "committed artifacts only",
+    "reason": "a sweep grading its own sample is self-acceptance one level up",
+    "requirement": "the lane computing the sample verdict must not be the lane that wrote the claim predicates"
+  },
+  "founder_input": {
+    "consequential_misclassification_tolerance": 0.01,
+    "count_of_founder_decisions_required": 1,
+    "founder_reads_the_sample": false,
+    "why": "reading a sample is evidence comparison, which the standing non-negotiable puts off-limits"
+  },
+  "instrument_check": {
+    "reason": "the tolerance demands 300 items and only 167 are readable, so the 'sample' is the population. Sampling buys nothing here and costs the caveats.",
+    "recommendation": "audit every readable item; the measured rate is then exact rather than bounded",
+    "tightest_tolerance_a_sample_could_support": 0.018,
+    "verdict": "FULL_AUDIT_RECOMMENDED",
+    "why_this_is_acceptable": "the reviewer is an agent, not the founder. Full audit of a small population is cheap for a batch job and impossible for a person."
+  },
+  "nuisance_rate": "measured and reported alongside, never gated on. Wrongly archiving thirty chit-chat threads costs nothing; wrongly archiving one founder decision costs the estate its memory. One number from the founder, two rates measured.",
+  "population": {
+    "cannot_assess": 15,
+    "coverage_denominator_includes_cannot_assess": true,
+    "coverage_if_sweep_completes": 0.9176,
+    "sampleable": 167,
+    "total_items": 182
+  },
+  "sample": {
+    "allocated_size": 159,
+    "allocation_by_disposition": {
+      "ARCHIVE_UNCLAIMED": 96,
+      "FREEZE_AS_EVIDENCE": 31,
+      "OPERATE": 11,
+      "QUARANTINE": 4,
+      "SALVAGE": 17
+    },
+    "allocation_rule": "by cost of error, not in proportion to volume",
+    "sizing_rule": "n = ceil(3.0 / tolerance); zero consequential errors in n bounds the true rate above by about 3.0/n at ~95% one-sided",
+    "target_size": 300
+  }
+}
+exit=0
+
+$ python3 tools/triagectl.py plan --tolerance 0.05 --strata ledger/fixtures/strata-founder-reported.json   # a looser number, to show the instrument check flip
+{
+  "acceptance_rule_declared_in_advance": {
+    "accept_if": "observed consequential errors <= floor(tolerance * allocated_size)",
+    "max_consequential_errors": 2,
+    "on_reject": "the whole sweep is rejected and re-run with corrected claim predicates; it is never patched item by item",
+    "retry_budget": 2,
+    "terminal_fallback": "after the retry budget is exhausted the sweep does not run again. Every unresolved item is dispositioned FREEZE_AS_EVIDENCE, which is reversible and loses no information, and the repeated failure is recorded as a finding about the claim predicates rather than carried as a backlog.",
+    "why_a_fallback_exists": "reject-and-re-run with no bound has no termination guarantee; three failed sweeps cost more than the review they replaced"
+  },
+  "artifact": "OE-W8-TRIAGE-SAMPLE-PLAN",
+  "auditor_independence": {
+    "reads": "committed artifacts only",
+    "reason": "a sweep grading its own sample is self-acceptance one level up",
+    "requirement": "the lane computing the sample verdict must not be the lane that wrote the claim predicates"
+  },
+  "founder_input": {
+    "consequential_misclassification_tolerance": 0.05,
+    "count_of_founder_decisions_required": 1,
+    "founder_reads_the_sample": false,
+    "why": "reading a sample is evidence comparison, which the standing non-negotiable puts off-limits"
+  },
+  "instrument_check": {
+    "fraction_of_population_reviewed": 0.3593,
+    "tightest_tolerance_a_sample_could_support": 0.018,
+    "verdict": "SAMPLE_IS_APPROPRIATE"
+  },
+  "nuisance_rate": "measured and reported alongside, never gated on. Wrongly archiving thirty chit-chat threads costs nothing; wrongly archiving one founder decision costs the estate its memory. One number from the founder, two rates measured.",
+  "population": {
+    "cannot_assess": 15,
+    "coverage_denominator_includes_cannot_assess": true,
+    "coverage_if_sweep_completes": 0.9176,
+    "sampleable": 167,
+    "total_items": 182
+  },
+  "sample": {
+    "allocated_size": 59,
+    "allocation_by_disposition": {
+      "ARCHIVE_UNCLAIMED": 46,
+      "FREEZE_AS_EVIDENCE": 7,
+      "OPERATE": 2,
+      "QUARANTINE": 1,
+      "SALVAGE": 3
+    },
+    "allocation_rule": "by cost of error, not in proportion to volume",
+    "sizing_rule": "n = ceil(3.0 / tolerance); zero consequential errors in n bounds the true rate above by about 3.0/n at ~95% one-sided",
+    "target_size": 60
+  }
+}
+exit=0
+
+$ python3 tools/triagectl.py judge --plan /tmp/plan5.json --observed ledger/fixtures/observed-sweep-01.json
+{
+  "artifact": "OE-W8-TRIAGE-SWEEP-VERDICT",
+  "attempt": 1,
+  "consequential_errors": 2,
+  "consequential_rate": 0.0339,
+  "founder_involvement_this_cycle": "informed, not asked",
+  "max_permitted": 2,
+  "nuisance_rate": 0.322,
+  "retry_budget": 2,
+  "reviewed": 59,
+  "self_accepts_under": "the rule the founder declared before the sweep ran",
+  "verdict": "ACCEPT"
+}
+exit=0
+
+$ python3 tools/triagectl.py judge  # auditor == sweeper, must be refused
+{
+  "errors": [
+    "AUDITOR_IS_SWEEPER \u2014 a sweep may not grade its own sample"
+  ],
+  "verdict": "INADMISSIBLE"
+}
+exit=1
+
+$ python3 tools/triagectl.py exit-check --history ledger/fixtures/yield-history.json --consecutive 3
+{
+  "artifact": "OE-W8-SALVAGE-EXIT-CHECK",
+  "consecutive_required": 3,
+  "cost_shape": "indexed to what the sweep finds, rather than a fixed rate paid whether or not it finds anything",
+  "dual_use": "a persistently non-zero yield is the pre-registered falsifier for the capture function: intent is still being formed outside capture and the sweep is the only thing catching it.",
+  "exit_condition": "novel decision-bearing yield is zero across N consecutive sweeps",
+  "series": [
+    {
+      "items_swept": 182,
+      "novel_decision_bearing": 23,
+      "novel_yield": 0.1264,
+      "sweep_id": "S1"
+    },
+    {
+      "items_swept": 34,
+      "novel_decision_bearing": 4,
+      "novel_yield": 0.1176,
+      "sweep_id": "S2"
+    },
+    {
+      "items_swept": 29,
+      "novel_decision_bearing": 0,
+      "novel_yield": 0.0,
+      "sweep_id": "S3"
+    },
+    {
+      "items_swept": 31,
+      "novel_decision_bearing": 1,
+      "novel_yield": 0.0323,
+      "sweep_id": "S4"
+    }
+  ],
+  "state": "CONTINUE_EXHAUSTIVE",
+  "why_this_exit_is_reachable": "it does not require unbound chats to stop existing. It requires them to stop containing anything the ledger does not already hold, which is what a working capture route produces."
+}
+exit=1

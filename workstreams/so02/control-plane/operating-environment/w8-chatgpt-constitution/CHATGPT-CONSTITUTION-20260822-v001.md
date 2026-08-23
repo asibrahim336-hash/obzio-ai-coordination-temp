@@ -570,3 +570,215 @@ is the correct failure. And `record_kind` is carried on every record so a fixtur
 can never be mistaken for a real founder utterance: the four in the live ledger
 are `REAL` and transcribed from committed files, and every synthetic record used
 in testing is constructed inside the test file and marked `ILLUSTRATIVE`.
+
+---
+
+# Part C — Triage without the founder
+
+Eleven projects, sixty-one chats in one of them, one hundred and twenty-one
+ordinary sidebar chats, and some surfaces that would not render. All figures are
+founder-reported and unverified by any lane; establishing them is the census in
+`P4`. The question is how this gets triaged without Ahmed doing it by hand.
+
+Prior work proposed disposition-by-default with a stratified audit sample and a
+pre-declared error threshold, so the sweep self-accepts and the founder sets one
+number rather than confirming each item. **The core is right and is kept.** Five
+things about it are wrong, and one of them only became visible on running the
+arithmetic rather than describing it.
+
+## C.1 What is kept
+
+Disposition-by-default, unchanged. Every item gets a disposition from a claim
+predicate with no founder decision: `OPERATE`, `SALVAGE`, `FREEZE_AS_EVIDENCE`,
+`ARCHIVE_UNCLAIMED`, `QUARANTINE`. **Nothing is deleted** — deletion is a
+separate, later, explicitly authorised act, consistent with the repository's own
+rule that superseded material remains evidence.
+
+Three outcomes still need attention rather than disposition, and the middle one
+is the most valuable thing the sweep produces: `CONTESTED` (two functions claim
+it, neither owns the class), `DECISION_BEARING_BUT_UNOWNED` (**this is a warrant
+seed — the back catalogue telling the register what it is missing**), and
+`SENSITIVE`.
+
+Pre-declaring the acceptance rule is also kept, and it is the right shape: a
+risk-appetite decision the founder makes once, in advance, instead of a
+confirmation he makes every time.
+
+## C.2 Five corrections
+
+### C.2.1 The founder does not read the sample
+
+Prior work has him seeing "a fixed-size stratified sample, not 182 items" and
+confirming or rejecting the sweep as a whole. That is a large improvement on
+per-item review and it still violates the non-negotiable, which puts **evidence
+comparison** off-limits alongside retrieval, monitoring, merging and
+coordination. Reading thirty items and judging whether they were classified
+correctly *is* evidence comparison. Making it thirty instead of one hundred and
+eighty-two reduces it; it does not remove it.
+
+So: **the audit lane reads the sample. The founder sets the number and receives
+the verdict.** His total involvement in the entire triage programme is one
+number, once, in advance.
+
+The obvious objection is who audits the auditor. The answer is not "trust the
+agent"; it is that the audit is an acceptance act and the estate already has
+machinery for those — a different run, criteria committed before the sweep runs,
+a different exact model configuration, committed artifacts only, and a hermetic
+container with no network and no inherited credentials available for replay.
+That arrangement has already refused this controller's own evidence once.
+
+### C.2.2 The auditor may not be the sweeper
+
+Prior work has the sweep grading its own sample. `triagectl judge` refuses when
+`auditor_lane == sweeper_lane`, and refuses when either is undeclared.
+`DIRECTLY_REPRODUCED`, receipt `raw/triagectl-reproduction.txt`: the same
+observation that returns `ACCEPT` with distinct lanes returns `INADMISSIBLE`
+with `AUDITOR_IS_SWEEPER` when they are the same.
+
+### C.2.3 Measure the error that matters, still from one number
+
+"Misclassification rate" treats two very different errors as one. Wrongly
+archiving thirty chit-chat threads costs nothing. Wrongly archiving one thread
+containing a founder decision costs the estate its memory.
+
+So two rates are measured and only one is gated. The founder sets the tolerable
+rate of **consequential** misclassification — a decision-bearing item sent
+somewhere it cannot be found again. The nuisance rate is measured and reported,
+never gated. He still sets exactly one number; the sweep now measures the error
+that number was meant to be about.
+
+This also fixes the sample allocation. A proportional stratified sample
+under-samples the expensive stratum exactly when it is largest. `triagectl plan`
+allocates **by cost of error**, so `ARCHIVE_UNCLAIMED` — the only disposition
+where an item leaves the visible set — is weighted heaviest.
+
+### C.2.4 Bound the retries, and pre-declare the fallback
+
+Prior work rejects a failed sweep and re-runs it with corrected rules, never
+patching item by item. That rule is right and it has **no termination
+guarantee**. Three failed sweeps cost more than the review they replaced, and
+nothing in the design notices.
+
+So the retry budget is declared with the threshold, in the same act. When it is
+exhausted the sweep does not run again: every unresolved item is dispositioned
+`FREEZE_AS_EVIDENCE` — reversible, information-preserving, no decision implied —
+and the repeated failure is recorded as a finding about the claim predicates
+rather than carried forward as a backlog. Cost is bounded by construction rather
+than by hoping the second attempt works.
+
+### C.2.5 At this population size, sampling is the wrong instrument
+
+This one only appeared on running the numbers.
+
+`DIRECTLY_REPRODUCED`, receipt `raw/triagectl-reproduction.txt`. Sizing by the
+rule of three — zero consequential errors in *n* bounds the true rate above by
+about `3/n` at roughly 95% one-sided — a 1% tolerance demands 300 items. The
+readable population in the worked stratum set is 167. The tool returns:
+
+```
+"instrument_check": {
+  "verdict": "FULL_AUDIT_RECOMMENDED",
+  "reason": "the tolerance demands 300 items and only 167 are readable, so the
+             'sample' is the population. Sampling buys nothing here and costs the caveats.",
+  "tightest_tolerance_a_sample_could_support": 0.018
+}
+```
+
+At 5% it flips to `SAMPLE_IS_APPROPRIATE` with 60 items, 36% of the population.
+
+The consequence is worth stating plainly, because it inverts the prior design's
+instinct: **for the first sweep, audit everything readable.** Sampling exists to
+reduce review effort, and review effort is only scarce when a person is doing the
+reviewing. An agent auditing 167 items is a cheap batch job, and the measured
+rate is then exact rather than bounded. The sampling machinery stays for
+recurring sweeps and for a population that turns out larger than the
+founder-reported counts — but it should not be applied to the first sweep out of
+a habit borrowed from human review.
+
+## C.3 The exit condition, made reachable
+
+Prior work retires salvage when the unswept backlog is zero and new chats arrive
+pre-bound. A later lane found that unreachable and re-specified it as a
+permanent recurring sweep with a rate target. The diagnosis is right; the fix
+accepts a permanent cost rather than removing it.
+
+**Why it is unreachable, with evidence rather than assertion.** A chat-opening
+contract binds chats spawned by bound functions. Chats started outside any
+project are not a lapse — they are a supported first-class flow.
+`DIRECTLY_REPRODUCED` (`https://learn.chatgpt.com/docs/projects.md`, fetched
+2026-08-23): "Start a chat from ChatGPT Home when the chat doesn't need shared
+project files, instructions, or sources." So unbound chats keep arriving by
+construction, the backlog never reaches zero, and the condition can never fire.
+
+**The reachable exit is a different quantity.** The right target is not "no
+unbound chats exist" but **"unbound chats no longer carry anything the ledger
+does not already hold."** That is measurable: each sweep reports its **novel
+decision-bearing yield** — items containing a decision not already admitted.
+When that yield is zero across a declared number of consecutive sweeps, salvage
+downgrades from `EXHAUSTIVE` to `SPOT_CHECK`.
+
+Three things make this better than a fixed rate target.
+
+It is **reachable**, because it depends on capture working rather than on the
+product changing. Once `P1`/`P2` have a custody route, a decision reaches git at
+the moment it is made, and a later unbound chat holds at most a duplicate.
+
+It is **dual-use**. A persistently non-zero yield is the pre-registered falsifier
+for the capture function: intent is still forming outside capture, and the sweep
+is the only thing catching it. Two functions check each other, and neither can
+report success while the other is failing.
+
+Its **cost is indexed to what it finds**. A fixed rate target pays the same
+whether the sweep is finding decisions or nothing. This pays in proportion to
+what it recovers, which is the correct shape for a function whose value is
+unknown in advance.
+
+`DIRECTLY_REPRODUCED`: `triagectl exit-check --consecutive 3` over an
+illustrative series with yields of 23, 4, 0, 1 returns `CONTINUE_EXHAUSTIVE` and
+exits 1 — the last three sweeps are not all zero. It is a check, not a report.
+
+## C.4 Getting the content in, and what is unestablished
+
+The sweep needs the chats. The primary route is the owner data export: one owner
+action produces it, and everything after it is delegable to Cursor, which can
+process it in a container at essentially zero further founder cost. A snapshot is
+the *correct* instrument for a one-time back-catalogue sweep, even though it is a
+poor instrument for anything ongoing.
+
+**Its viability is unestablished and this lane will not pretend otherwise.**
+`DIRECTLY_REPRODUCED`, 2026-08-23: `help.openai.com` returns HTTP 403 to an
+unauthenticated fetch, so the export article could not be read — the same result
+a prior lane recorded. What the export contains, whether it includes
+project-scoped chats, and whether it carries per-message timestamps (which Part
+B needs for `TRUSTED` recency) are all `HYPOTHESIS`.
+
+**The fallback, in order.** If the export omits project chats, the sweep runs
+over what it does contain and reports the missing stratum inside the
+denominator as `CANNOT_ASSESS`. It never reports coverage of what it could see
+as though it were coverage of what exists — `triagectl plan` puts
+`CANNOT_ASSESS` in the population and computes
+`coverage_if_sweep_completes` against the full total, so a blind spot lowers a
+number rather than disappearing. If the export route does not exist at all, the
+`P4` discovery function is the correct instrument to establish that, and it costs
+zero founder actions to ask it. If neither works, the back catalogue stays
+unswept and is recorded as an owned blind spot with a risk-conversion date, which
+is a worse outcome than a sweep and a much better one than an assumed-clean
+estate.
+
+Non-rendering surfaces follow the same rule: recorded per surface with the client
+and route used, resolved by trying a *different* client or route rather than
+retrying the same one, and **never counted as swept**.
+
+## C.5 The eleven projects
+
+The projects are dispositioned by the existing assignment procedure — reuse,
+repurpose, split, freeze, or create — driven by the census rather than by a
+target count. Nothing here imposes a number of projects: the count follows
+separation requirements, and a census returning something other than eleven
+changes the migration rather than the design.
+
+One addition. The assignment procedure and the chat sweep must run in that
+order, because a chat's correct disposition depends on whether its container
+survives. Sweeping first and dispositioning containers afterwards produces
+correctly-classified chats inside frozen projects, which is a second migration
+nobody planned.
