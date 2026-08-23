@@ -324,3 +324,249 @@ evidence. It is not blocked; it is unadmitted. This is the same distinction
 L5's displacement test and W4's `V7` substitution requirement, applied here. It
 is why `P7` relocates and why `P8`'s fragment is a paragraph rather than a
 verdict.
+
+---
+
+# Part B — The intent admission rule
+
+The founder's account contains threads of wildly varying authority, and he is
+explicit that no single thread is the complete founder intent. `P5` recovers
+context from those threads. This part specifies how that context is admitted, at
+what standing, and what stops a persuasive old thread being mistaken for current
+intent.
+
+It is executable. `tools/intentctl.py` derives standing, resolves contested
+decision classes and fails closed, and `tools/negative_tests_intentctl.py`
+injects sixteen ways the rule could be defeated and requires each to be caught.
+Everything below is what those two files do; if the prose and the code disagree,
+the code is the rule and the prose is the defect.
+
+## B.1 The unit of admission is the utterance, not the thread
+
+This is the whole move, and everything else follows from it.
+
+A thread is a container of utterances of mixed standing: the founder's own
+words, an assistant's paraphrase of them, the assistant's own proposals, and the
+founder acknowledging an assistant proposal — which is not the same as the
+founder authoring it. Treating the thread as the atom forces one standing onto
+all four.
+
+And that is exactly how "a persuasive old thread is mistaken for current intent"
+happens. **Persuasiveness is a property of prose. Standing is a property of an
+utterance's speaker and speech act.** They are independent, so a thread can be
+overwhelmingly persuasive and contain no founder decision at all. A rule that
+ranks threads is ranking the wrong thing.
+
+The estate already proves the point, in a file it wrote by hand.
+`FOUNDER-STANDING-INSTRUCTION-20260822.md` contains, in one commit, three
+utterances of three different standings: the founder's standing instruction
+(controlling), his clarification on the account (a decision), and the ChatGPT
+advisory proposal he quoted (explicitly not binding). Admitted as one object at
+one standing, **the advisory proposal would have inherited founder authority
+from the file that quotes it.** The founder prevented that himself, by labelling
+it. The rule reaches the same verdict without needing him to.
+
+`DIRECTLY_REPRODUCED`, receipt `raw/intentctl-reproduction.txt`:
+
+```
+$ python3 tools/intentctl.py standing --id urn:obzio:w8:utterance:chatgpt-advisory-proposal-20260822
+  "standing": "S1", "standing_name": "CONTEXT", "admitted": false
+  "derivation": ["table[FOUNDER_QUOTING_OTHER][QUOTATION] = S1"]
+```
+
+Same file, same commit, same author, quoted in the founder's own voice — and the
+class it touches, `DC-CHATGPT-FUNCTIONS`, resolves to `NO_ADMITTED_CLAIM`. The
+proposal contests nothing. That is the correct result, and it is the result this
+lane's own Part A depends on being true.
+
+## B.2 The standing lattice
+
+Five rungs, because collapsing authority to a scalar is what produces "this
+sounds important, so treat it as binding".
+
+| | Name | May | May not |
+|---|---|---|---|
+| `S0` | `INADMISSIBLE` | — | anything |
+| `S1` | `CONTEXT` | inform | change any decision class |
+| `S2` | `FOUNDER_SIGNAL` | inform, raise an open question, seed a warrant | decide |
+| `S3` | `FOUNDER_DECISION` | decide within its declared scope | stand over future operations |
+| `S4` | `FOUNDER_CONTROLLING` | decide, and stand until directly amended | — |
+
+**Most of the back catalogue lands at `S1`, and that is the correct outcome, not
+a failure of recovery.** A rule whose output is mostly "this is context" is
+doing its job; a rule that finds binding intent everywhere has found none.
+
+Standing is derived from a table indexed by speaker class and speech act — never
+from how the text reads. `FOUNDER_DIRECT` × `DIRECTIVE` is `S3`. `FOUNDER_DIRECT`
+× `EXPLORATION` is `S1`, because the founder thinking aloud is not the founder
+deciding. Anything absent from the table is an error, never a default.
+
+Four caps and one promotion sit on top of the table:
+
+- **`CAP-PARAPHRASE`** — an utterance not recorded verbatim is capped at `S1`,
+  whoever paraphrased it. A summary of a founder directive is an assistant
+  utterance *about* a directive. This is the founder's own instruction that
+  summaries must never distort intent, made mechanical.
+- **`CAP-ALIAS-LOCATOR`** — "the chat where we discussed the roadmap" is `S0`.
+  An alias resolves to whatever the reader happens to be looking at.
+- **`CAP-UNCONFIRMED-VOICE`** — a voice capture with no confirmed read-back is
+  capped at `S2` and labelled `CAPTURED_UNCONFIRMED`. This is Part A's promotion
+  of read-back from a feature to a gate, expressed as an arithmetic consequence
+  rather than a policy.
+- **`CAP-ACKNOWLEDGEMENT`** — see B.3.
+- **`PROMOTE-DESIGNATED`** — an `S3` becomes `S4` when the founder designated it
+  as standing. Designation is a founder act, never an inference from tone.
+
+## B.3 The laundering path, closed
+
+The single most likely way an advisory proposal becomes founder intent is not
+forgery. It is assent. The founder says "yes, do that" to an assistant proposal,
+and the *proposal* is then recorded as founder intent because a founder utterance
+is attached to it.
+
+**`CAP-ACKNOWLEDGEMENT`**: an acknowledgement's effective standing for a scope is
+the lesser of its own standing and the standing of what it acknowledges. What the
+founder authored was the assent. The assent is genuinely his and genuinely `S3`;
+the proposal is still `S1`.
+
+The rule has to cut both ways or it is a veto rather than a rule, so: if he
+restates the content himself, the restatement is his utterance and carries his
+standing in full. `restates_content_verbatim` is the discriminator, and both
+directions are tested (`NT1`, `NT1b`).
+
+This matters here specifically. The founder's own diagnosis of the prior error
+was that "ChatGPT mistakenly limited Obzio's plan to you acting primarily as a
+planner" — a case of an assistant's framing having acquired more standing than it
+earned. `CAP-ACKNOWLEDGEMENT` is the mechanical form of that correction.
+
+## B.4 Custody is a different axis from standing
+
+An uncommitted founder directive genuinely is a founder directive. It is simply
+not yet admissible.
+
+- **Standing** = how much authority the utterance carries.
+- **Custody** = `COMMITTED` or `RECOVERED_UNCOMMITTED`.
+- **Admitted** iff `custody == COMMITTED and standing >= S2`.
+
+Collapsing these would force a choice between admitting content that is still
+sitting in a provider and denying that the founder said something. `NT9` holds
+the line: a recovered `S4` directive with `RECOVERED_UNCOMMITTED` custody derives
+`S4` correctly and contributes zero admitted candidates. This is the same
+distinction the estate already draws when a provider reports completion with no
+committed artifact.
+
+## B.5 Ranking two conflicting threads
+
+An admission rule that cannot rank two conflicting threads has not solved
+anything, because competing claims of what is current is this estate's recorded
+failure mode. The resolution order is fixed, declared in advance, and executed
+by `intentctl.py resolve`.
+
+| Step | Test | If it decides |
+|---|---|---|
+| 1 | Filter to admitted utterances whose **declared scope** contains the contested class | candidate set |
+| 2 | Is the maximum standing held by exactly one candidate? | `STANDING` |
+| 3 | Among those tied at the top, does exactly one supersede all others **by name**? | `NAMED_SUPERSESSION` |
+| 4 | Are all remaining candidates direct founder utterances, at equal standing, with **trusted** timestamps that strictly order them? | `FOUNDER_PRECEDENCE_RECENCY` |
+| 5 | Otherwise | `UNRESOLVED` — fail closed |
+
+**Step 4 is the founder's own precedence clause**, which reads "Direct founder
+intent, most recent first". It is honoured exactly where he stated it and
+extended nowhere. It never applies across standings, never to an assistant
+utterance, and never where scope overlap was inferred from topic keywords.
+
+**Step 4 also requires knowing which utterance is more recent, and most recovered
+context does not establish that.** A conversation URL identifies a conversation,
+not when a message inside it was made. So `timestamp_trust` is `TRUSTED` only for
+a repository locator pinned to a commit, or an export record carrying a message
+timestamp — and an untrusted timestamp does not lower standing, it removes one
+resolution path. This is the load-bearing subtlety of the whole rule: **the
+founder authorised recency, and the rule refuses to fake the input recency
+needs.**
+
+**Step 5 is where the failure mode is actually caught.** `UNRESOLVED` fires on
+equal standing, overlapping declared scope, no named supersession, and at least
+one untrustworthy timestamp — which is precisely the shape of a persuasive old
+thread recovered from the account. It does not win. It also does not silently
+lose. The contested class retains its previously admitted value, no lane is
+blocked, and the founder receives **one binary question** naming both locators
+rather than two documents to read.
+
+Scope discipline does more work than it appears to. Scope is a set of declared
+decision-class identifiers, never inferred from topic. Most apparent conflicts
+are two utterances about the same subject touching different classes — not
+conflicts at all. Keyword matching would manufacture them, and manufactured
+conflicts consume the one resource this entire design exists to protect.
+
+## B.6 What the rule forbids, stated plainly
+
+**Recovering context by reading a thread and reporting what it means is
+inadmissible above `S1`, however accurate it is.** That is the single most
+natural way to use the account, and it is exactly what the rule refuses, because
+accuracy that cannot be checked is indistinguishable from confidence.
+
+The recovery protocol instead returns *utterance records*: verbatim text, a
+stable locator, speaker class, speech act, declared scope. Fields it cannot
+establish are left absent, never guessed — and an absent speaker class is
+`UNATTRIBUTED`, which is `S0`. Then the records land in git, and only then are
+they evidence.
+
+## B.7 Is it executable? Yes, and here is what it catches
+
+`DIRECTLY_REPRODUCED`, 2026-08-23, receipt `raw/intentctl-reproduction.txt`:
+
+```bash
+cd workstreams/so02/control-plane/operating-environment/w8-chatgpt-constitution
+python3 tools/intentctl.py validate                 # PASS: 4 utterances, schema and locator discipline hold
+python3 tools/intentctl.py conflicts                # PASS: no contested class unresolved (exit 0)
+python3 tools/intentctl.py resolve --scope DC-OPERATING-AUTHORITY
+python3 tools/negative_tests_intentctl.py           # PASS: all 16 failure modes rejected
+```
+
+The live ledger holds four real utterances transcribed from repository files with
+pinned commits. It resolves `DC-OPERATING-AUTHORITY` between two `S4` founder
+utterances by `FOUNDER_PRECEDENCE_RECENCY` — the correct step, on a real pair —
+and it resolves `DC-CHATGPT-FUNCTIONS` to `NO_ADMITTED_CLAIM` because the only
+utterance touching it is the advisory proposal at `S1`.
+
+The sixteen rejected failure modes, each an actual way this could go wrong:
+
+| | Injected | Caught by |
+|---|---|---|
+| `NT1` | assent to an assistant proposal claimed as founder intent | `CAP-ACKNOWLEDGEMENT` |
+| `NT1b` | the founder restating content himself, which must **not** be suppressed | the discriminator both ways |
+| `NT2` | a recovered directive stored as a paraphrase, claiming standing | `CAP-PARAPHRASE` |
+| `NT3` | a founder directive whose only locator is a display alias | `CAP-ALIAS-LOCATOR` |
+| `NT4` | a recovered thread with no verifiable time contesting a current statement | step 5, fail closed |
+| `NT4b` | the conflict arriving as reading material rather than one question | the question is generated |
+| `NT5` | a newer assistant utterance beating an older founder directive | step 2 |
+| `NT6` | supersession claimed against a target not in the ledger | named, never inferred |
+| `NT7` | scope given as a topic keyword | scope discipline |
+| `NT8` | voice capture with no confirmed read-back, claiming standing | `CAP-UNCONFIRMED-VOICE` |
+| `NT9` | a recovered directive still in the provider, settling a class | the custody axis |
+| `NT10` | an utterance with no established speaker claiming founder standing | `UNATTRIBUTED` → `S0` |
+| `NT11` | the founder thinking aloud, admitted as a decision | the standing table |
+| `NT12` | a repository locator naming no commit | locator discipline |
+| `NT13` | the rule refusing to decide where the founder authorised recency | step 4 must still fire |
+| `NT14` | date order overriding a named supersession | step 3 precedes step 4 |
+
+`NT13` is there deliberately. A rule that refuses every conflict would pass every
+other test on this list and be useless. The rule has to decide where the founder
+said to decide, and fail closed only where deciding would mean inventing the
+input.
+
+## B.8 Where this connects, and what it does not claim
+
+It plugs into the estate's existing admission ladder rather than competing with
+it: standing answers *how much authority does this carry*, the ladder answers
+*how far up may this subject move*, and both must pass. A recovered utterance at
+`S4` still cannot lift a subject above `PROPOSED` on its own.
+
+Two honest limits. The rule assumes utterance records can be produced with
+verbatim text and stable locators — which depends on the recovery route, and
+**`P5`'s route is not established by this lane**. If no route produces verbatim
+text with locators, the rule still runs; it simply admits almost nothing, which
+is the correct failure. And `record_kind` is carried on every record so a fixture
+can never be mistaken for a real founder utterance: the four in the live ledger
+are `REAL` and transcribed from committed files, and every synthetic record used
+in testing is constructed inside the test file and marked `ILLUSTRATIVE`.
