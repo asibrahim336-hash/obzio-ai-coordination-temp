@@ -1,0 +1,46 @@
+{
+  "declaration_version": "1.0",
+  "declared_by": "SCP-SI-01 Lane I (bc-7bf69d98-1940-551a-85e7-dd657431d52f)",
+  "declared_at": "2026-08-27T06:10:00Z",
+  "target": {
+    "ref": "cursor/scp-i-effective-controls-696d",
+    "paths": [
+      "workstreams/so02/control-plane/operating-environment/scp-si-01/lane-i/**",
+      "receipts/so02/2026-08-27/scp-i/**",
+      "workstreams/so02/control-plane/operating-environment/tools/**",
+      "workstreams/so02/control-plane/operating-environment/write-declarations/WRITE-DECLARATION-SCP-I.json"
+    ],
+    "operation": "COMMIT_AND_PUSH"
+  },
+  "reason": {
+    "code": "PUBLISH_LANE_DELIVERABLE",
+    "statement": "Lane I publishes its own commissioned SCP-SI-01 deliverable — the explicit push_with_admission.py wrapper, the generalised effectiveness_prober.py, the per-control effectiveness sweep, and the INSTALLED_NOT_EFFECTIVE regression — onto cursor/scp-i-effective-controls-696d, entirely inside its own owned namespace (lane-i/**, receipts/2026-08-27/scp-i/**, tools/** additions, and this declaration).",
+    "lane_id": "SCP-SI-01-LANE-I",
+    "commission_id": "SCP-SI-01"
+  },
+  "reversal": {
+    "method": "DELETE_CREATED_REF",
+    "created_ref": "cursor/scp-i-effective-controls-696d",
+    "custody_ref": "custody/scp-i-lane-branch-20260827",
+    "command": ["git", "push", "origin", "--delete", "cursor/scp-i-effective-controls-696d"]
+  },
+  "evidence": {
+    "asserts_result": false,
+    "note": "PUBLISH_LANE_DELIVERABLE does not assert a result (asserts_result=false in the reason vocabulary); the delivered claims are instead independently checkable in receipts/so02/2026-08-27/scp-i/MANIFEST.json, which every push after closure keeps hash-bound and parsed. This declaration is re-admitted, with evidence attached, before the final push once that manifest exists."
+  },
+  "concurrency": {
+    "observed_at": "2026-08-27T06:07:00Z",
+    "instrument": "cursor-cloud list-cloud-agents, read-only",
+    "agents": [
+      {"bcId": "bc-7bf69d98-1940-551a-85e7-dd657431d52f", "name": "Lane I: effective-control wrapper and prober", "branchName": null, "status": "RUNNING"},
+      {"bcId": "bc-3d7e54e1-452d-5069-8f46-80d399c529b6", "name": "Lane G: accepted-unit economics", "branchName": null, "status": "IDLE"},
+      {"bcId": "bc-5f6e325d-fdb2-533d-9401-3b64fea0a953", "name": "Lane E: held-out route qualification", "branchName": null, "status": "IDLE"},
+      {"bcId": "bc-1c0486c5-f59f-5aed-9490-4bcb33d6b0e3", "name": "Lane B: extend the self-improvement chain", "branchName": null, "status": "IDLE"},
+      {"bcId": "bc-bd66ebcf-87a3-5291-8628-3c52f93351a9", "name": "Lane D: regressions and 117-finding triage", "branchName": null, "status": "RUNNING"},
+      {"bcId": "bc-479fe73d-737d-50f2-bca8-6dcd8eec9eca", "name": "Lane C: authorship sidecar real worker", "branchName": null, "status": "IDLE"},
+      {"bcId": "bc-ad6634d3-37ca-58f6-a071-cddbf1983fc4", "name": "Lane A: CUR-ORCH-QUAL refusal repair", "branchName": null, "status": "IDLE"},
+      {"bcId": "bc-c6f63d58-9611-495a-96f6-2f2dcbef696d", "name": "Primary orchestration route qualification", "branchName": "cursor/so02-cur-orch-qual-01", "status": "RUNNING"}
+    ],
+    "note": "No accessible agent names branchName cursor/scp-i-effective-controls-696d. Lanes B, C, D are in flight on their own branches (B owns the canonical chain/currentness promotion link; D owns the regression harness triage; C owns the authorship sidecar) and this declaration's target and paths do not intersect any of theirs. Signal-1 limit applies (list-cloud-agents does not show subagent lanes); the ref-movement check in write_admission is also run against the live remote at admission time as signal 2."
+  }
+}
