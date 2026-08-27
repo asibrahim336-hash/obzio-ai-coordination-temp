@@ -190,9 +190,17 @@ def main() -> int:
         "branch": BRANCH,
         "base_commit": BASE,
         "integration_commit_audited_against": INTEGRATION_AUDITED,
-        "local_head": local_head,
+        "bundle_head": local_head,
         "remote_head_via_ls_remote": remote_head,
-        "remote_matches_local": remote_head == local_head,
+        "bundle_is_published": remote_head == local_head,
+        "manifest_commit_follows": (
+            "This manifest is sealed against the head that is already on the remote, then "
+            "committed and pushed as one further commit. So the branch tip after delivery "
+            "is one commit ahead of bundle_head, and that commit adds only this file — "
+            "which is the single declared exclusion. Saying the remote equals the tip "
+            "after pushing the manifest would require the manifest to contain its own "
+            "digest."
+        ),
         "remote_read_method": (
             "git ls-remote origin refs/heads/<branch>. Not the push exit code and not "
             "the push transcript: ICH-04 is a push that printed success and published "
