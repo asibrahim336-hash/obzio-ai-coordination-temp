@@ -18,6 +18,17 @@ extend, plus every other test file already living under `workstreams/so02/contro
 Measured after merging the integration branch's mid-run advance
 (`f0fb3f51` -> `379712b3`; see `DEFECTS.md`'s reconciliation notes on Defects 2 and 4).
 
+A second, later re-fetch at delivery time (`DIRECTLY_REPRODUCED`, `git -C /workspace fetch
+origin cursor/operating-environment-return-20260822-v001`) found the integration branch had
+advanced again, `379712b3` -> `f88d42d0` (three more commits: `0c6081d0`, `c6d5f844`,
+`f88d42d0`). `git diff 379712b3..f88d42d0 --stat` shows this advance is entirely Lane I's own
+namespace (`workstreams/.../scp-si-01/lane-i/**` and `receipts/so02/2026-08-27/scp-i/**`) —
+13 files, all additions, none of them a file this lane reads, extends or depends on
+(`currentctl.py`, `write_admission.py`, `evidence_integrity.py`, `gate_claim_state.py`,
+`provctl.py`, and the `po03` tree are untouched by that diff). No merge was required to keep
+this lane's totals current; the numbers above already reflect that later fetch. Audited
+integration commit for this delivery: **`f88d42d0`**.
+
 | Harness | Command | Result |
 |---|---|---|
 | `pytest`-collectible `test_*.py` files (13 files under `workstreams/so02/control-plane`, includes this lane's `test_def05_def16_supersession.py`, this lane's additions to `test_write_admission.py` and `test_currentctl.py`, and the coordinator's new `test_evidence_integrity.py`) | `python3 -m pytest workstreams/so02/control-plane -q` | **290 passed**, 0 failed |
@@ -53,7 +64,7 @@ lane will not conflate:
 
 1. The `po03` portability gate reports 6 genuine, unfixed findings, routed in
    `triage/ROUTED-FINDINGS.json` — outside this lane's write access.
-2. This lane's own harness area (`so02/control-plane`) is **414/419 passing**; the 5
+2. This lane's own harness area (`so02/control-plane`) is **424/429 passing**; the 5
    failures are pre-existing, named, and outside this lane's defects.
 
 Neither number is papered over into the other.

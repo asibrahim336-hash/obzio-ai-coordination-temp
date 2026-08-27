@@ -114,6 +114,22 @@ unaffected.
 **Canonical patch proposed, not applied in place:**
 `workstreams/so02/control-plane/operating-environment/scp-si-01/lane-d/patches/write_admission.py.patch`.
 
+**Note on a now-removed fixture (`DIRECTLY_REPRODUCED`, delivery time):** an earlier draft
+of this defect's evidence kept a checked-in copy of the truncated artifact at
+`fixtures/defect-2-repo/truncated-evidence.json`. The test itself was later rewritten to
+generate that fixture inline in a temp directory instead (`test_write_admission.py`'s own
+comment: "these fixtures previously encoded the blind behaviour... the honest repair is to
+make the fixture write real bytes, not to relax the gate"), leaving the checked-in copy
+referenced by nothing. Running this delivery's own write declaration through
+`write_admission.py`'s `MANIFEST_CLOSURE` evidence gate — the exact gate this defect fixes —
+correctly flagged that orphaned file: a hash-valid, deliberately truncated JSON artifact
+inside this lane's own manifest closure trips `verify_artifact_validity` precisely as
+designed. Rather than special-case the gate, the dead fixture was deleted
+(`fixtures/defect-2-repo/` no longer exists in this delivery); the live fixture generation
+in `test_write_admission.py` is unaffected and is what the passing rerun above actually
+exercises. This is the fixed gate catching a real instance of the exact defect it fixes,
+including against its own author's delivery.
+
 **DEF-05/DEF-16 honoured here too:** `evidence_gate_wiring.compare_to_branch_tip` is the
 same function `test_def05_def16_supersession.py` exercises directly (§ below) and that
 `currentctl_supersession_split.py` reuses for Defect 4 — one implementation, three
@@ -248,3 +264,15 @@ B. Folded into the same canonical patch:
 - DEF-05/DEF-16 and DEF-21 framing: `DOCUMENTED` (`SCP-SI-01-SYSTEM-MAP.md:46-47`); DEF-21's
   applicability to this delivery's four mechanisms is audited separately in
   `DEF-21-APPLICABILITY-AUDIT.md`.
+
+## Final re-fetch before delivery (`DIRECTLY_REPRODUCED`)
+
+A last `git -C /workspace fetch origin cursor/operating-environment-return-20260822-v001`
+before assembling the manifest found the integration branch had advanced once more,
+`379712b3` -> `f88d42d0` (three commits: `0c6081d0`, `c6d5f844`, `f88d42d0`, all Lane I).
+`git diff 379712b3..f88d42d0 --stat` confirms every changed path is under
+`.../scp-si-01/lane-i/**` or `receipts/so02/2026-08-27/scp-i/**` — none of this lane's four
+target files (`provctl.py`, `write_admission.py`, `evidence_integrity.py`,
+`gate_claim_state.py`, `currentctl.py`) or the `po03` tree this delivery's triage covers.
+No further merge was needed for correctness. **Integration commit audited against for this
+delivery: `f88d42d0`.**
