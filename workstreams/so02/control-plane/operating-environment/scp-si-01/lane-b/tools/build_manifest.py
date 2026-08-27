@@ -257,6 +257,7 @@ def main() -> int:
         "verdict": "READY_TO_COMMIT" if not (
             failures or closure_errors or validity_errors or hash_chain_errors
             or summary["refused"] or remote_head != local_head
+        
         ) else "NOT_READY",
         "failures": failures,
         "provenance_class": "EARNED",
@@ -284,7 +285,7 @@ def main() -> int:
         "manifest_sha256": sha256_bytes(written),
         "local_head": local_head,
         "remote_head": remote_head,
-        "remote_matches_local": manifest["remote_matches_local"],
+        "bundle_is_published": manifest["bundle_is_published"],
         "chains": summary["chain_count"],
         "chain_refused": summary["refused"],
         "closure_errors": closure_errors,
