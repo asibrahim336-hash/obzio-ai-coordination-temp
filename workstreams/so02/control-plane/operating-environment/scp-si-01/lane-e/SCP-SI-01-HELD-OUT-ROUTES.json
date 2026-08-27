@@ -3,8 +3,9 @@
   "schema_version": "1.0",
   "commission": "SCP-SI-01",
   "lane": "E",
-  "phase": "HELD_OUT_SET_CONSTRUCTED",
-  "terminal_state": "MEASUREMENT_PENDING",
+  "built_at_utc": "2026-08-27T05:22:00Z",
+  "phase": "MEASUREMENT_COMPLETE",
+  "terminal_state": "RECEIPT_CLOSURE_PENDING",
   "canonical_record_extended": {
     "artifact_id": "OE-W7-ROUTE-EVIDENCE-TABLE-20260822-v001",
     "path": "workstreams/so02/control-plane/operating-environment/w7-route-evidence/ROUTE-EVIDENCE-TABLE-20260822-v001.json",
@@ -26,6 +27,25 @@
     "audited_commit": "7f29043eece45f42f018d841718a257cfd18739b",
     "evidence_label": "DIRECTLY_REPRODUCED",
     "observation": "A mid-run fetch resolved the remote integration branch to the same immutable commit as the Lane E base."
+  },
+  "source_integrity": {
+    "canonical_route_table": {
+      "path": "workstreams/so02/control-plane/operating-environment/w7-route-evidence/ROUTE-EVIDENCE-TABLE-20260822-v001.json",
+      "size_bytes": 141442,
+      "sha256": "6b3c945b20b8945f2815df43aa91e20196d2088485589124d5efda5fb6adae1a",
+      "parse_result": "JSON_OBJECT_PARSED",
+      "route_count_recomputed": 27,
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    "construction_readback": {
+      "path": "workstreams/so02/control-plane/operating-environment/scp-si-01/lane-e/SCP-SI-01-HELD-OUT-ROUTES.json",
+      "size_bytes": 13991,
+      "sha256": "9bfd708f7207516ec1b7bac5c4024792b211919fc69f6a7b8eafb10b217f622c",
+      "parse_result": "JSON_OBJECT_PARSED",
+      "held_out_count_recomputed": 8,
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "note": "This hash covers the first remotely pushed construction phase, before measurement fields were added."
+    }
   },
   "partition": {
     "authoring_cutoff": {
@@ -252,9 +272,337 @@
     }
   ],
   "measurement": {
-    "status": "PENDING",
-    "per_route": [],
-    "aggregate": null
+    "status": "COMPLETE_WITH_RATES_NOT_ESTABLISHED",
+    "activated_held_out_tasks": 6,
+    "completed_held_out_returns_observed": 2,
+    "per_route_count_schema": {
+      "cases": "activated held-out task/profile pairs",
+      "abstained": "profile declined because direction, fidelity or a stated precondition was not established",
+      "routed_correct": "exact canonical route was exercised and delivered all required properties",
+      "routed_wrong": "exact canonical route was exercised, selected and wrong",
+      "evidence_loss_events": "exercised route omitted a property a consumer demonstrably needed",
+      "recovery_events": "observed correction after routed_wrong",
+      "retries": "same exact route attempted again after an initial attempt",
+      "currentness_propagations": "result reached the audited integration/currentness projection"
+    },
+    "per_route": [
+      {
+        "route_id": "R01",
+        "prior_return_claim": "YES",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "The OpenAI Responses API cannot read the SCP repository or commit its artifacts without a separate caller/return route; no Platform API-key route was observed.",
+        "evidence_label": "DOCUMENTED"
+      },
+      {
+        "route_id": "R02",
+        "prior_return_claim": "YES",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "API-native conversation containers preserve API calls, not repository work nodes or ChatGPT UI context, and the required Platform key was not established.",
+        "evidence_label": "DOCUMENTED"
+      },
+      {
+        "route_id": "R03",
+        "prior_return_claim": "YES",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "The profile's enumerated service connectors contain no GitHub connector, so they cannot return these repository-native tasks.",
+        "evidence_label": "DOCUMENTED"
+      },
+      {
+        "route_id": "R04",
+        "prior_return_claim": "CONDITIONAL",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "No admitted ChatGPT connector writing into this repository, founder session or per-service authorization was observed.",
+        "evidence_label": "DOCUMENTED"
+      },
+      {
+        "route_id": "R05",
+        "prior_return_claim": "CONDITIONAL",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "No ChatGPT developer-mode app or repository-writing remote MCP endpoint was present.",
+        "evidence_label": "DOCUMENTED"
+      },
+      {
+        "route_id": "R06",
+        "prior_return_claim": "CONDITIONAL",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "No tunnel id, tunnel client, durable host or tunnel credential was observed.",
+        "evidence_label": "DOCUMENTED"
+      },
+      {
+        "route_id": "R07",
+        "prior_return_claim": "NO",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "The profile explicitly says Workspace Agent trigger returns a conversation URL but not answer content; it cannot return any required artifact.",
+        "evidence_label": "DOCUMENTED"
+      },
+      {
+        "route_id": "R08",
+        "prior_return_claim": "NO",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "The profile returns status only and explicitly no content, so it correctly declines every held-out artifact task.",
+        "evidence_label": "DOCUMENTED"
+      },
+      {
+        "route_id": "R09",
+        "prior_return_claim": "CONDITIONAL",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "The default destination is a human inbox and no outward-writing connector or MCP app was observed.",
+        "evidence_label": "DOCUMENTED"
+      },
+      {
+        "route_id": "R10",
+        "prior_return_claim": "CONDITIONAL",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "Founder hardware, desktop-app, local-project and push preconditions were not observed; the cohort used isolated cloud worktrees instead.",
+        "evidence_label": "DIRECTLY_REPRODUCED"
+      },
+      {
+        "route_id": "R11",
+        "prior_return_claim": "CONDITIONAL",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "Plan eligibility, admin authentication and the private contract were not established; an audit export is also not a repository result-return path by itself.",
+        "evidence_label": "DOCUMENTED"
+      },
+      {
+        "route_id": "R12",
+        "prior_return_claim": "YES",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "Codex Analytics returns aggregate metrics, not task content, executable artifacts, hashes or verdicts.",
+        "evidence_label": "DOCUMENTED"
+      },
+      {
+        "route_id": "R13",
+        "prior_return_claim": "NO",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "The canonical profile itself is UNESTABLISHED and the export is an owner act rather than a recurring machine route.",
+        "evidence_label": "DOCUMENTED"
+      },
+      {
+        "route_id": "R14",
+        "prior_return_claim": "YES",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "No Codex-to-GitHub connection or Codex environment was observed. GitHub branches returned by Cursor are not evidence that Codex R14 ran.",
+        "evidence_label": "DIRECTLY_REPRODUCED"
+      },
+      {
+        "route_id": "R15",
+        "prior_return_claim": "YES",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "No Codex GitHub integration, automatic review or Codex-authored PR review was observed; no pull request was created for the observed returns.",
+        "evidence_label": "DIRECTLY_REPRODUCED"
+      },
+      {
+        "route_id": "R16",
+        "prior_return_claim": "YES",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "No Codex GitHub Action workflow or authorized Platform-key invocation was observed.",
+        "evidence_label": "DIRECTLY_REPRODUCED"
+      },
+      {
+        "route_id": "R17",
+        "prior_return_claim": "YES",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "Plan eligibility and a Codex access token were not established; the observed workers were Cursor Cloud Agents.",
+        "evidence_label": "DIRECTLY_REPRODUCED"
+      },
+      {
+        "route_id": "R18",
+        "prior_return_claim": "YES",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "No ChatGPT service account, pay-as-you-go entitlement or service-account token was observed.",
+        "evidence_label": "DOCUMENTED"
+      },
+      {
+        "route_id": "R19",
+        "prior_return_claim": "NOT_APPLICABLE",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "The route runs from Cursor into ChatGPT and carries no result toward the repository; it correctly abstains.",
+        "evidence_label": "DOCUMENTED"
+      },
+      {
+        "route_id": "R20",
+        "prior_return_claim": "NO",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "The founder's Chrome session was not involved and results would terminate in chat content rather than repository custody.",
+        "evidence_label": "DIRECTLY_REPRODUCED"
+      },
+      {
+        "route_id": "R21",
+        "prior_return_claim": "NO",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "The profile is platform-incompatible with this Linux cloud runtime and returns chat-resident output, not structured repository artifacts.",
+        "evidence_label": "DOCUMENTED"
+      },
+      {
+        "route_id": "R22",
+        "prior_return_claim": "CONDITIONAL",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "No authenticated ChatGPT browser session or agent-facing Browser tool was exposed, and the held-out tasks did not require ChatGPT UI content.",
+        "evidence_label": "DIRECTLY_REPRODUCED"
+      },
+      {
+        "route_id": "R23",
+        "prior_return_claim": "YES",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "The cohort source was internal and no Cursor REST API invocation or API key was observed. Internal Cursor MCP control is adjacent but is not the R23 REST route.",
+        "evidence_label": "DIRECTLY_REPRODUCED"
+      },
+      {
+        "route_id": "R24",
+        "prior_return_claim": "YES",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "No GitHub @cursor comment, Slack trigger or Linear trigger was observed; internal cohort dispatch is not one of the profiled triggers.",
+        "evidence_label": "DIRECTLY_REPRODUCED"
+      },
+      {
+        "route_id": "R25",
+        "prior_return_claim": "YES",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "No v0 webhook endpoint, signing secret or statusChange delivery was observed; direct MCP status reads are not webhook delivery.",
+        "evidence_label": "DIRECTLY_REPRODUCED"
+      },
+      {
+        "route_id": "R26",
+        "prior_return_claim": "CONDITIONAL",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "No durable OpenAI webhook endpoint, event subscription or signing secret was observed; the route concerns Platform objects, not these repository tasks.",
+        "evidence_label": "DOCUMENTED"
+      },
+      {
+        "route_id": "R27",
+        "prior_return_claim": "YES",
+        "counts": {"cases": 6, "abstained": 6, "routed_correct": 0, "routed_wrong": 0, "evidence_loss_events": 0, "recovery_events": 0, "retries": 0, "currentness_propagations": 0},
+        "exercise_state": "UNESTABLISHED_NOT_EXERCISED",
+        "why": "Cursor consumed MCP control tools, but R27 profiles calls to external tools, not a standalone task-result return. No external MCP server carrying a held-out result was exercised.",
+        "evidence_label": "DIRECTLY_REPRODUCED"
+      }
+    ],
+    "aggregate": {
+      "profile_task_cases": 162,
+      "abstentions": {
+        "numerator": 162,
+        "denominator": 162,
+        "rate": null,
+        "rate_status": "NOT_ESTABLISHED",
+        "why": "Six task definitions share one repository-native return topology and are not 162 independent trials. A percentage would imply evidence the design does not contain."
+      },
+      "wrong_routes": {
+        "numerator": 0,
+        "denominator_routed": 0,
+        "rate": null,
+        "rate_status": "NOT_ESTABLISHED_NO_ROUTED_CANONICAL_CASES"
+      },
+      "evidence_loss_events": 0,
+      "recovery_events_after_wrong_route": 0,
+      "wrong_route_events_requiring_recovery": 0,
+      "same_route_retries": 0,
+      "currentness_propagations": {
+        "numerator": 0,
+        "denominator_completed_returns": 2,
+        "rate": null,
+        "rate_status": "NOT_ESTABLISHED"
+      },
+      "canonical_route_failures": 0,
+      "canonical_routes_not_exercised": 27,
+      "interpretation": "Every canonical profile abstained under explicit direction/fidelity/precondition checks. Abstention is the correct conservative result, not a failure. Because no exact canonical route was selected, wrong-route performance and recovery are unestablished."
+    },
+    "prior_claim_check": {
+      "YES": {"route_count": 13, "held_out_abstentions": 78, "routed_cases": 0, "verdict": "NOT_VALIDATED_OUT_OF_SAMPLE"},
+      "NO": {"route_count": 5, "held_out_abstentions": 30, "routed_cases": 0, "verdict": "CONSISTENT_WITH_HELD_OUT_DECLINES_NOT_EXERCISED"},
+      "CONDITIONAL": {"route_count": 8, "held_out_abstentions": 48, "routed_cases": 0, "verdict": "PRECONDITIONS_NOT_OBSERVED"},
+      "NOT_APPLICABLE": {"route_count": 1, "held_out_abstentions": 6, "routed_cases": 0, "verdict": "CONSISTENT_WITH_DIRECTION"}
+    }
+  },
+  "operational_control_route_observations": {
+    "scope_note": "These observations extend the preserved qualification context; they do not add route ids to the canonical 27-route table.",
+    "R1-GITHUB-IMMUTABLE-EXCHANGE": {
+      "held_out_returns_observed": 2,
+      "correct_route_returns": 2,
+      "wrong_route_returns": 0,
+      "evidence_loss_events": 0,
+      "same_route_retries_observed": 0,
+      "currentness_propagations": 0,
+      "rate_status": "NOT_ESTABLISHED_SMALL_N",
+      "evidence": [
+        "HO-A remote head 1d6fe0fe461431e24f1262335f8e8c1664c623f9",
+        "HO-E construction head 214570d22ace23abc0dd029ca8cc8665b3850d67"
+      ],
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "verdict": "HELD_OUT_CUSTODY_WORKED_TWICE_NOT_GENERAL_PROOF"
+    },
+    "R2-CURSOR-AGENT-CONTROL-MCP": {
+      "held_out_metadata_retrievals": 1,
+      "content_returns_established": 0,
+      "wrong_route_returns": 0,
+      "evidence_loss_events": 1,
+      "lost_evidence": [
+        "branchName was null",
+        "filesChanged was null",
+        "linesAdded was null",
+        "linesRemoved was null",
+        "artifact content was not returned by the exercised metadata call"
+      ],
+      "consumer_need": "HO-A required its structured remediation artifact and immutable return, not only an IDLE status.",
+      "recovery": {
+        "route_switches": 1,
+        "recovered_by": "R1-GITHUB-IMMUTABLE-EXCHANGE",
+        "self_corrected": true,
+        "same_route_retries": 0
+      },
+      "currentness_propagations": 0,
+      "exercise_state": "UNESTABLISHED_NOT_FAILED",
+      "why_not_failure": "The exercised batch-details call returned metadata as specified, but did not establish the artifact/content retrieval half. No transcript was fetched because this Lane E run may not spawn the subagent required by the tool's transcript-reading discipline.",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    "unprofiled_ingress_observation": {
+      "observation": "The six activated SCP-SI-01 workers report source=internal and branchName=null. This runtime binding is not the REST, @cursor, Slack or Linear ingress described by R23/R24.",
+      "treatment": "GAP_OBSERVED_NO_NEW_ROUTE_REGISTER_CREATED",
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    }
+  },
+  "admission": {
+    "verdict": "WRITE_ADMITTED",
+    "evaluated_target": "cursor/scp-e-heldout-routes-696d",
+    "gates": {
+      "declaration": "DECLARED_AND_REASONED",
+      "concurrency": "SETTLED_SUBJECT_TO_TOP_LAYER_LIMIT",
+      "reversibility": "REVERSAL_RE_EXECUTED_AND_VERIFIED",
+      "evidence": "NO_RESULT_ASSERTED"
+    },
+    "evidence_label": "DIRECTLY_REPRODUCED",
+    "command": "python3 workstreams/so02/control-plane/operating-environment/tools/write_admission.py workstreams/so02/control-plane/operating-environment/write-declarations/WRITE-DECLARATION-SCP-E.json"
+  },
+  "conclusion": {
+    "in_sample_success_held_up_out_of_sample": false,
+    "precise_reading": "The 13 YES claims did not fail; none became an operationally selectable exact route for these held-out nodes. The held-out run therefore does not validate general routing proof. It validates conservative abstention and two uses of the separately qualified GitHub custody route, while the MCP metadata route lost consumer-needed detail and recovered through GitHub.",
+    "claim_status": "GENERAL_ROUTING_PROOF_NOT_ESTABLISHED",
+    "evidence_label": "DIRECTLY_REPRODUCED"
   },
   "claims": [
     {
