@@ -51,6 +51,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import sys
 import unicodedata
@@ -118,16 +119,26 @@ def bundle_sha256(entries: Sequence[dict]) -> str:
 
 
 def normalise(text: str) -> str:
-    """Fold case, whitespace and Unicode form for *matching only*.
+    """Fold case, whitespace, dashes, quotes and markdown emphasis for *matching only*.
 
     Never used to rewrite stored content. Offsets and hashes always refer to the
     unmodified source bytes.
+
+    The emphasis fold is deliberate parity with `w10-provenance/tools/provctl.py`.
+    Without it, a register citation of a sentence the founder wrote with a bolded
+    word inside it reads as absent, and this lane would report a false
+    disagreement with the register — a defect this lane hit and corrected in
+    development rather than shipping.
     """
     text = unicodedata.normalize("NFKC", text)
-    text = text.replace("\u2019", "'").replace("\u2018", "'")
-    text = text.replace("\u201c", '"').replace("\u201d", '"')
-    text = text.replace("\u2014", "-").replace("\u2013", "-").replace("\u2212", "-")
-    text = text.replace("\u00a0", " ")
+    for src, dst in (
+        ("\u2014", "-"), ("\u2013", "-"), ("\u2012", "-"), ("\u2010", "-"),
+        ("\u2212", "-"),
+        ("\u2018", "'"), ("\u2019", "'"), ("\u201c", '"'), ("\u201d", '"'),
+        ("\u00a0", " "),
+    ):
+        text = text.replace(src, dst)
+    text = text.replace("`", "").replace("*", "")
     return re.sub(r"\s+", " ", text).strip().lower()
 
 
@@ -300,9 +311,10 @@ SIGNALS: tuple[Signal, ...] = (
     ),
     Signal(
         "RECORDER_METADATA_LABEL", REPRESENTATION, STRONG,
-        r"^\s*\*\*(?:speaker|recorded|recorded by|status|authority_basis|standing|"
-        r"always-applied projection|decision_changed)\b[:\s]*\*\*"
-        r"|^\s*(?:speaker|recorded by|status):\s",
+        # `normalise` strips markdown emphasis before matching, so the pattern is
+        # written against the folded text: `**Speaker:**` arrives as `speaker:`.
+        r"^\s*(?:speaker|recorded|recorded by|status|authority_basis|standing|"
+        r"always-applied projection|decision_changed|verdict|evidence_label)\s*:",
         _EARNED,
         "A field label asserting who spoke is the recorder's assertion, not the "
         "speaker's utterance. Trusting it is the positional error one step removed.",
@@ -354,11 +366,21 @@ class Segment:
 def segment_text(text: str) -> list[Segment]:
     """Split one item's text into paragraph-scale segments with exact offsets.
 
-    Boundaries: markdown headings (own segment), horizontal rules (own segment),
-    fenced blocks (atomic), blank lines, and any change of blockquote depth.
+    Segment boundaries: markdown headings (own segment), horizontal rules (own
+    segment), fenced blocks (atomic), blank lines, and any change of blockquote
+    depth.
 
-    Structure decides *where* a boundary falls. It never decides authorship: see
-    `classify_segments`, where every class comes from a textual signal.
+    *Scope* boundaries, which bound how far textual evidence propagates, are
+    coarser: a level-1 heading, a horizontal rule, or a change of blockquote
+    depth. Sub-headings do not reset scope, because one founder utterance
+    routinely carries its own `##` subheads and resetting at each of them
+    discards his authorship three sentences after he asserted it. A change of
+    blockquote depth does reset, which is what keeps an assistant's unquoted
+    commentary from inheriting the authorship of the quotation above it.
+
+    Structure decides *where* a boundary falls and how far evidence carries. It
+    never decides authorship: see `classify_segments`, where every class comes
+    from a textual signal.
     """
     if not text:
         return []
@@ -421,9 +443,11 @@ def segment_text(text: str) -> list[Segment]:
             flush()
             continue
 
-        if _HEADING.match(body):
+        heading = _HEADING.match(body)
+        if heading:
             flush()
-            scope_id += 1
+            if len(heading.group(1)) == 1 or depth != buf_depth:
+                scope_id += 1
             buf_depth, buf_kind = depth, "heading"
             buf.append((i, raw))
             flush()
@@ -439,6 +463,9 @@ def segment_text(text: str) -> list[Segment]:
 
         if buf and depth != buf_depth:
             flush()
+
+        if depth != buf_depth and (segments or buf):
+            scope_id += 1
 
         if not buf:
             buf_depth, buf_kind = depth, "prose"
@@ -625,17 +652,28 @@ class IndexItem:
 
     `legacy` is copied through byte-for-byte and hashed. The sidecar never edits
     it and never writes back to the source artifact.
+
+    `resolver` says how to recover this item's text from the pinned artifact, so
+    that spans stay verifiable without the sidecar storing any content:
+
+    * `{"kind": "file"}`                     — the item text is the whole file
+    * `{"kind": "json_segment_text", "index": n}`
+                                             — the item text is
+                                               `segments[n]["text"]` of the file's
+                                               JSON
     """
 
-    __slots__ = ("item_id", "role", "text", "legacy", "locator")
+    __slots__ = ("item_id", "role", "text", "legacy", "locator", "resolver")
 
     def __init__(self, item_id: str, role: str, text: str,
-                 legacy: dict | None = None, locator: dict | None = None) -> None:
+                 legacy: dict | None = None, locator: dict | None = None,
+                 resolver: dict | None = None) -> None:
         self.item_id = item_id
         self.role = role
         self.text = text
         self.legacy = dict(legacy or {})
         self.locator = dict(locator or {})
+        self.resolver = dict(resolver or {"kind": "file"})
 
 
 class IndexView:
@@ -654,6 +692,51 @@ class IndexView:
 # --------------------------------------------------------------------------
 # Sidecar construction
 # --------------------------------------------------------------------------
+
+def span_base_key(artifact_path: str, resolver: dict) -> str:
+    """The key under which this item's span base text is supplied.
+
+    Spans are offsets into a *span base*. For a whole-file item that is the file;
+    for an item lifted out of a JSON array it is that array element's string.
+    Making the distinction explicit is what stopped spans being resolved against
+    the wrong text.
+    """
+    if resolver.get("kind") == "json_segment_text":
+        return f"{artifact_path}#/segments/{resolver.get('index')}/text"
+    return artifact_path
+
+
+def load_span_bases(sidecar: dict, repo_root: str = ".") -> dict[str, str]:
+    """Rebuild the span base texts a sidecar needs, by re-reading the artifacts."""
+    out: dict[str, str] = {}
+    cache: dict[str, str] = {}
+    for rec in sidecar.get("items", []):
+        base = rec.get("span_base") or {}
+        resolver = base.get("resolver") or {"kind": "file"}
+        artifact = rec.get("source_artifact_path") or base.get("artifact_path")
+        if not artifact:
+            continue
+        path = artifact if os.path.isabs(artifact) else os.path.join(repo_root, artifact)
+        if path not in cache:
+            try:
+                with open(path, encoding="utf-8") as fh:
+                    cache[path] = fh.read()
+            except OSError:
+                continue
+        raw = cache[path]
+        # The artifact itself is always supplied, so the artifact-level pin in
+        # `sources` can be checked as well as each item's span base.
+        out.setdefault(artifact, raw)
+        key = base.get("key") or span_base_key(artifact, resolver)
+        if resolver.get("kind") == "json_segment_text":
+            try:
+                out[key] = json.loads(raw)["segments"][int(resolver["index"])]["text"]
+            except (KeyError, IndexError, ValueError, TypeError, json.JSONDecodeError):
+                continue
+        else:
+            out[key] = raw
+    return out
+
 
 def build_item_record(item: IndexItem) -> dict:
     classified = classify_segments(segment_text(item.text))
@@ -682,6 +765,20 @@ def build_item_record(item: IndexItem) -> dict:
         })
 
     present = sorted({s["authorship_class"] for s in segs})
+    # An adoption marker and an adopted segment are different things. The founder
+    # saying "instruments I commissioned are first-class founder material" is his
+    # own words; FOUNDER_ADOPTED belongs to the material he took, not to that
+    # sentence. Reporting both stops a zero in one column reading as an absence.
+    adoption_markers = [
+        {"segment_id": s["segment_id"], "lines": [s["line_start"], s["line_end"]],
+         "segment_class": s["authorship_class"], "matched": sig["matched"]}
+        for s in segs for sig in s["signals"] if sig["kind"] == ADOPTION
+    ]
+    disavowals = [
+        {"segment_id": s["segment_id"], "lines": [s["line_start"], s["line_end"]],
+         "matched": sig["matched"]}
+        for s in segs for sig in s["signals"] if sig["kind"] == DISAVOWAL
+    ]
     return {
         "item_id": item.item_id,
         "role": item.role,
@@ -692,6 +789,11 @@ def build_item_record(item: IndexItem) -> dict:
         "item_text_sha256": sha256_text(item.text),
         "item_bytes": len(item.text.encode("utf-8")),
         "locator": item.locator,
+        "span_base": {
+            "key": None,  # filled in by build_sidecar, which knows the artifact
+            "sha256": sha256_text(item.text),
+            "resolver": item.resolver,
+        },
         "legacy": {
             "fields": item.legacy,
             "legacy_sha256": sha256_text(canonical_json(item.legacy)),
@@ -700,6 +802,10 @@ def build_item_record(item: IndexItem) -> dict:
         "segment_count": len(segs),
         "classes_present": present,
         "is_mixed_authorship": len(present) > 1,
+        "adoption_markers": adoption_markers,
+        "disavowal_markers": disavowals,
+        "adopted_segment_count": sum(1 for s in segs
+                                     if s["authorship_class"] == FOUNDER_ADOPTED),
         "segments": segs,
     }
 
@@ -720,6 +826,8 @@ def build_sidecar(views: Sequence[IndexView], *, sidecar_id: str,
             rec = build_item_record(item)
             rec["source_artifact_path"] = view.artifact_path
             rec["source_artifact_sha256"] = view.artifact_sha256
+            rec["span_base"]["key"] = span_base_key(view.artifact_path, item.resolver)
+            rec["span_base"]["artifact_path"] = view.artifact_path
             records.append(rec)
 
     tally: dict[str, int] = {c: 0 for c in CLASSES}
@@ -819,32 +927,50 @@ _VERDICT_FOR_CLASS = {
 }
 
 
-def locate_quote(sidecar: dict, sources: dict[str, str], quote: str) -> list[dict]:
+def locate_quote(sidecar: dict, sources: dict[str, str], quote: str, *,
+                 item_ids: Iterable[str] | None = None,
+                 artifact_paths: Iterable[str] | None = None) -> list[dict]:
     """Where a quotation lands, and what the landing segment's class is.
 
     A substring match is a *locator*. It answers "where is this text" and never
     "is this founder text". The verdict is the landing segment's class. That
     separation is the fix for the reproduced defect, in which a literal match
     inside a coarsely founder-marked block was itself treated as the verdict.
+
+    `item_ids` and `artifact_paths` scope the search. Scoping matters more than it
+    looks: sentences in this estate's founder record are copied verbatim into
+    agent-authored projections of that record, so an unscoped substring hit
+    cannot say which of the two it found. Leaving the scope open is the honest
+    default and produces an ambiguous verdict that fails closed; naming the
+    governing corpus is what a caller does when it knows which corpus governs.
     """
     needle = normalise(quote)
     landings: list[dict] = []
     if not needle:
         return landings
 
+    wanted_items = set(item_ids) if item_ids is not None else None
+    wanted_paths = set(artifact_paths) if artifact_paths is not None else None
+
     for rec in sidecar["items"]:
-        path = rec["source_artifact_path"]
-        raw = sources.get(path)
+        if wanted_items is not None and rec["item_id"] not in wanted_items:
+            continue
+        if wanted_paths is not None and rec["source_artifact_path"] not in wanted_paths:
+            continue
+        base = rec.get("span_base") or {}
+        key = base.get("key") or rec["source_artifact_path"]
+        expected = base.get("sha256") or rec["source_artifact_sha256"]
+        raw = sources.get(key)
         if raw is None:
             continue
-        if sha256_text(raw) != rec["source_artifact_sha256"]:
+        if sha256_text(raw) != expected:
             landings.append({
                 "item_id": rec["item_id"],
                 "segment_id": None,
                 "authorship_class": None,
                 "verdict": REFUSED_SOURCE_CHANGED,
                 "detail": (
-                    f"{path} no longer hashes to the value the sidecar was pinned "
+                    f"{key} no longer hashes to the value the sidecar was pinned "
                     "to; every span over it is unverified until the sidecar is rebuilt"
                 ),
             })
@@ -875,7 +1001,9 @@ def locate_quote(sidecar: dict, sources: dict[str, str], quote: str) -> list[dic
 
 
 def verdict_for_quote(sidecar: dict, sources: dict[str, str], quote: str, *,
-                      include: Iterable[str] = ()) -> dict:
+                      include: Iterable[str] = (),
+                      item_ids: Iterable[str] | None = None,
+                      artifact_paths: Iterable[str] | None = None) -> dict:
     """One verdict for one quotation, refusing when any landing is excluded.
 
     Fails closed on ambiguity. A quotation that lands in both a founder segment
@@ -884,12 +1012,22 @@ def verdict_for_quote(sidecar: dict, sources: dict[str, str], quote: str, *,
     not evidence of authority.
     """
     opted = {c for c in include if c in DEFAULT_EXCLUDED}
-    landings = locate_quote(sidecar, sources, quote)
+    scope = {
+        "item_ids": sorted(item_ids) if item_ids is not None else None,
+        "artifact_paths": sorted(artifact_paths) if artifact_paths is not None else None,
+        "scoped": item_ids is not None or artifact_paths is not None,
+    }
+    landings = locate_quote(sidecar, sources, quote, item_ids=item_ids,
+                            artifact_paths=artifact_paths)
     if not landings:
         return {
             "quote": quote,
             "verdict": REFUSED_NOT_PRESENT,
+            "landing_count": 0,
+            "classes_landed_in": [],
+            "ambiguous": False,
             "landings": [],
+            "scope": scope,
             "explicitly_opted_in": sorted(opted),
         }
     classes = {l.get("authorship_class") for l in landings}
@@ -907,6 +1045,7 @@ def verdict_for_quote(sidecar: dict, sources: dict[str, str], quote: str, *,
         "landing_count": len(landings),
         "classes_landed_in": sorted(c for c in classes if c),
         "ambiguous": len(classes) > 1,
+        "scope": scope,
         "explicitly_opted_in": sorted(opted),
         "landings": landings,
     }
@@ -930,9 +1069,14 @@ def verify_sidecar(sidecar: dict, sources: dict[str, str]) -> list[str]:
             failures.append(f"SOURCE_CHANGED: {src['artifact_path']}")
     tally: dict[str, int] = {c: 0 for c in CLASSES}
     for rec in sidecar.get("items", []):
-        raw = sources.get(rec["source_artifact_path"])
+        base = rec.get("span_base") or {}
+        key = base.get("key") or rec["source_artifact_path"]
+        raw = sources.get(key)
         if raw is None:
+            failures.append(f"SPAN_BASE_ABSENT: {key}")
             continue
+        if base.get("sha256") and sha256_text(raw) != base["sha256"]:
+            failures.append(f"SPAN_BASE_CHANGED: {key}")
         for seg in rec["segments"]:
             span = raw[seg["char_start"]:seg["char_end"]]
             if sha256_text(span) != seg["text_sha256"]:
@@ -981,28 +1125,34 @@ def _read(path: str) -> tuple[str, str, int]:
 
 
 def adapter_markdown_record(path: str, *, item_id: str, role: str = "founder_record",
-                            legacy: dict | None = None) -> IndexView:
-    """Treat one markdown authority record as a single item, segmented within."""
-    text, digest, nbytes = _read(path)
+                            legacy: dict | None = None,
+                            repo_root: str = "") -> IndexView:
+    """Treat one markdown authority record as a single item, segmented within.
+
+    `path` is recorded as given, so passing a repository-relative path with
+    `repo_root` keeps the sidecar portable between checkouts.
+    """
+    text, digest, nbytes = _read(os.path.join(repo_root, path) if repo_root else path)
     return IndexView(
         artifact_path=path,
         artifact_sha256=digest,
         artifact_bytes=nbytes,
         items=[IndexItem(item_id=item_id, role=role, text=text, legacy=legacy or {},
-                         locator={"whole_file": True})],
+                         locator={"whole_file": True},
+                         resolver={"kind": "file"})],
         notes=("One item, the whole record. Segmentation happens below message "
                "granularity, which is the point."),
     )
 
 
-def adapter_founder_corpus(path: str) -> IndexView:
+def adapter_founder_corpus(path: str, *, repo_root: str = "") -> IndexView:
     """Adapt `FOUNDER-CORPUS-*.json`, preserving each segment's legacy fields.
 
     The corpus assigns one `speaker_class` per heading-delimited block. Those
     values are carried through untouched as `legacy.fields` so the two answers
     can be compared instead of one silently replacing the other.
     """
-    text, digest, nbytes = _read(path)
+    text, digest, nbytes = _read(os.path.join(repo_root, path) if repo_root else path)
     corpus = json.loads(text)
     items = []
     for i, seg in enumerate(corpus.get("segments", [])):
@@ -1017,14 +1167,13 @@ def adapter_founder_corpus(path: str) -> IndexView:
                 "heading": seg.get("heading"),
                 "source_line_range": [seg.get("first_line"), seg.get("last_line")],
             },
+            resolver={"kind": "json_segment_text", "index": i},
         ))
-    # Items index the corpus JSON's own segment strings, so spans are relative to
-    # each item's text rather than to the file. Pin the file too: a changed file
-    # invalidates the item hashes recorded alongside.
-    view = IndexView(path, digest, nbytes, items,
-                     notes=("Items are the corpus's own segment strings. Spans are "
-                            "relative to item text; item_text_sha256 pins each one."))
-    return view
+    return IndexView(
+        path, digest, nbytes, items,
+        notes=("Items are the corpus's own segment strings. Each item's span base "
+               "is that string, resolved back out of the pinned JSON; the file is "
+               "pinned as well, so a change to either refuses."))
 
 
 def load_provenance_quotations(path: str) -> list[dict]:
@@ -1069,12 +1218,7 @@ def _cmd_verify(args: argparse.Namespace) -> int:
         for p in problems:
             print(f"FAIL {p}")
         return 1
-    sources = {}
-    for src in sidecar.get("sources", []):
-        try:
-            sources[src["artifact_path"]] = _read(src["artifact_path"])[0]
-        except OSError:
-            pass
+    sources = load_span_bases(sidecar, args.repo_root)
     failures = problems + verify_sidecar(sidecar, sources)
     for f in failures:
         print(f"FAIL {f}")
@@ -1112,6 +1256,7 @@ def main(argv: list[str] | None = None) -> int:
 
     p = sub.add_parser("verify", help="recompute a sidecar against its pinned sources")
     p.add_argument("sidecar")
+    p.add_argument("--repo-root", default=".")
     p.set_defaults(func=_cmd_verify)
 
     p = sub.add_parser("query", help="run a default-excluding authority query")
