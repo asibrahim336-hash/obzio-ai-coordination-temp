@@ -168,6 +168,7 @@ ATTRIBUTION = "ATTRIBUTION"
 ADOPTION = "ADOPTION"
 REPRESENTATION = "REPRESENTATION"
 DISAVOWAL = "DISAVOWAL"
+DISAVOWAL_FIRST_PERSON = "DISAVOWAL_FIRST_PERSON"
 RESUMPTION = "RESUMPTION"
 
 STRONG = "STRONG"
@@ -269,17 +270,26 @@ SIGNALS: tuple[Signal, ...] = (
         "definitions I have commissioned - are first-class founder material.'",
     ),
     Signal(
-        "EXPLICIT_DISAVOWAL", DISAVOWAL, STRONG,
+        "EXPLICIT_FIRST_PERSON_DISAVOWAL", DISAVOWAL_FIRST_PERSON, STRONG,
         r"\bi (?:have )?not (?:agreed|adopted|approved|ratified)\b"
         r"|\bi (?:do not|don't) adopt\b|\bi am not adopting\b"
-        r"|\bi disagree with (?:that|this|it)\b"
-        r"|\bnot a (?:founder ruling|replacement for)\b"
+        r"|\bi (?:disagree|disagreed) with (?:that|this|it)\b"
+        r"|\bi reject (?:that|this|it|the following)\b",
+        _FQ,
+        "A first-person refusal is itself his utterance: 'I never designated main, "
+        "PO-03... as protected.' It both closes a pasted scope and is founder "
+        "speech in its own right.",
+    ),
+    Signal(
+        "THIRD_PARTY_LABELLING_DISAVOWAL", DISAVOWAL, STRONG,
+        r"\bnot a (?:founder ruling|replacement for)\b"
         r"|\brecorded as advisory only\b|\badvisory only\b"
         r"|\bvoid unless (?:i|he|the founder) ratif",
         _FQ,
-        "He states the refusal: 'This is ChatGPT's recommendation, not a founder "
-        "ruling or a replacement for Ahmed's established intent.' A disavowal "
-        "defeats an adoption marker in the same scope.",
+        "He labels the material as not his ruling: 'This is ChatGPT's "
+        "recommendation, not a founder ruling or a replacement for Ahmed's "
+        "established intent.' This defeats an adoption marker but confers nothing: "
+        "an agent recording a section as advisory writes the same words.",
     ),
     Signal(
         "FOUNDER_RESUMPTION", RESUMPTION, STRONG,
@@ -546,10 +556,14 @@ def classify_segments(segments: Sequence[Segment]) -> list[Classified]:
     2. STRONG attribution                    -> NONFOUNDER_PASTED
     3. STRONG representation                 -> FOUNDER_REPRESENTED
     4. STRONG self-identification            -> FOUNDER_DIRECT
-    5. inherited class from the nearest preceding segment in the same scope that
+    5. STRONG first-person disavowal         -> FOUNDER_DIRECT, and the pasted
+       scope it refuses is closed. A third-person labelling disavowal
+       ("recorded as advisory only") closes the scope but confers nothing,
+       because an agent writing the record writes the same words.
+    6. inherited class from the nearest preceding segment in the same scope that
        had local evidence                    -> that class, confidence
                                                 SCOPE_INHERITED
-    6. nothing                               -> UNRESOLVED_USER_ROLE
+    7. nothing                               -> UNRESOLVED_USER_ROLE
 
     Two asymmetries, both EARNED, both naming the reproduced misattribution:
 
@@ -574,8 +588,9 @@ def classify_segments(segments: Sequence[Segment]) -> list[Classified]:
         adoption = _kinds(signals, ADOPTION, STRONG)
         representation = _kinds(signals, REPRESENTATION, STRONG)
         self_id = _kinds(signals, SELF_ID, STRONG)
-        disavowal = _kinds(signals, DISAVOWAL, STRONG)
-        resumption = _kinds(signals, RESUMPTION, STRONG)
+        first_person_disavowal = _kinds(signals, DISAVOWAL_FIRST_PERSON, STRONG)
+        disavowal = _kinds(signals, DISAVOWAL, STRONG) + first_person_disavowal
+        resumption = _kinds(signals, RESUMPTION, STRONG) + first_person_disavowal
 
         cls: str | None = None
         confidence = LOCAL_EVIDENCE
@@ -602,6 +617,12 @@ def classify_segments(segments: Sequence[Segment]) -> list[Classified]:
         elif self_id:
             cls = FOUNDER_DIRECT
             basis = f"first-hand founder self-identification: {self_id[0]['signal']}"
+        elif first_person_disavowal:
+            cls = FOUNDER_DIRECT
+            basis = (
+                "a first-person refusal of other material is his own utterance: "
+                f"{first_person_disavowal[0]['signal']}"
+            )
 
         if cls is not None:
             # An adoption marker inside founder-direct speech is recorded, but the
@@ -776,8 +797,9 @@ def build_item_record(item: IndexItem) -> dict:
     ]
     disavowals = [
         {"segment_id": s["segment_id"], "lines": [s["line_start"], s["line_end"]],
-         "matched": sig["matched"]}
-        for s in segs for sig in s["signals"] if sig["kind"] == DISAVOWAL
+         "kind": sig["kind"], "matched": sig["matched"]}
+        for s in segs for sig in s["signals"]
+        if sig["kind"] in (DISAVOWAL, DISAVOWAL_FIRST_PERSON)
     ]
     return {
         "item_id": item.item_id,

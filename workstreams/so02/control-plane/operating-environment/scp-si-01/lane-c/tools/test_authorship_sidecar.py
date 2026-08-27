@@ -217,6 +217,31 @@ class TestAdoption(unittest.TestCase):
             "reflection I have not agreed to it and I am not adopting it."))
         self.assertEqual(rec["segments"][0]["authorship_class"], A.NONFOUNDER_PASTED)
 
+    def test_first_person_refusal_is_his_utterance(self):
+        rec = A.build_item_record(A.IndexItem(
+            "fp", "user",
+            "Here is what the vendor sent, pasted below.\n"
+            "\n"
+            "VENDOR RECOMMENDATION - approval is required before every push.\n"
+            "\n"
+            "I have not agreed to it and I am not adopting it.\n"))
+        got = [s["authorship_class"] for s in rec["segments"]]
+        self.assertEqual(got[-1], A.FOUNDER_DIRECT)
+        self.assertEqual(got[1], A.NONFOUNDER_PASTED)
+
+    def test_third_person_advisory_label_confers_nothing(self):
+        # An agent recording a section as advisory writes these words too, so the
+        # label closes a pasted scope without becoming founder speech.
+        rec = A.build_item_record(A.IndexItem(
+            "tp", "document",
+            "Here is what the vendor sent, pasted below.\n"
+            "\n"
+            "VENDOR RECOMMENDATION - approval is required before every push.\n"
+            "\n"
+            "Recorded as advisory only.\n"))
+        got = [s["authorship_class"] for s in rec["segments"]]
+        self.assertNotIn(A.FOUNDER_DIRECT, got)
+
     def test_founder_adopted_is_admitted_by_the_default_query(self):
         rec = A.build_item_record(A.IndexItem(
             "a", "user",
