@@ -4,8 +4,13 @@ A non-destructive query layer that answers **who authored this** for the estate'
 authority-bearing artifacts, at a granularity finer than one message.
 
 **State** `READY_TO_COMMIT`
-**Integration commit audited against** `7f29043eece45f42f018d841718a257cfd18739b`
-on `cursor/operating-environment-return-20260822-v001`, re-fetched during this run
+**Integration commit audited against** `f0fb3f51a25db67b33bdd558c73055f3d02ddb60`
+on `cursor/operating-environment-return-20260822-v001`, re-fetched during this run.
+This branch was cut at `7f29043eece45f42f018d841718a257cfd18739b`; integration then
+advanced one commit, so the slice was rebuilt against the newer head. All three
+pinned source artifacts are byte-identical at both commits and the rebuild changed
+exactly two leaves — the recorded commit and the timestamp. Every one of the 136
+segment classifications and every tally is unchanged. `DIRECTLY_REPRODUCED`
 **Runtime** Python 3 standard library only. No third-party imports, no pytest.
 Everything below runs under `python3 -I`.
 **This is a proposal, not a binding.** `decision_changed: []`. It classifies; it
@@ -19,6 +24,11 @@ removes nothing and rewrites nothing.
 | `tools/test_authorship_sidecar.py` | 60 `unittest` cases |
 | `tools/run_slice.py` | runs the sidecar over the bounded real slice and writes the report |
 | `tools/reproduce_prior_defect.py` | reproduces the prior defect against the estate's live `provctl.py` |
+| `tools/build_receipts.py` | the two receipt stages — read-back, then manifest closure |
+| `tools/build_declaration.py` | generates the write declaration with its hashes taken from disk |
+| `tools/verify_declaration_evidence.py` | checks the declaration against the bytes on disk, which the admission gate does not |
+| `tools/reproduce_gate_blindness.py` | reproduces that gap against the estate's live gate |
+| `tools/release.sh` | runs all nine steps in the one order that is acyclic |
 | `fixtures/mixed-message-founder-and-pasted.md` | founder words + pasted third-party block + refusal, in one message |
 | `fixtures/adopted-and-disavowed.md` | adoption, adoption-inside-attribution, and disavowal defeating adoption |
 | `fixtures/position-without-evidence.md` | the positional trap: founder-titled headings over text with no founder evidence |
@@ -27,6 +37,7 @@ removes nothing and rewrites nothing.
 | `sidecar/SLICE-REPORT-20260827-v001.json` | what it found, with every disagreement |
 | `findings/INDEX-LOCATION-FINDING.md` | `NOT_FOUND` for the 928-item index, and what was searched |
 | `findings/DEFECT-REPRODUCTION.md` | the reproduced prior defect |
+| `findings/GATE-EVIDENCE-BLINDNESS.md` | a defect found in the admission gate itself, reproduced |
 
 ## Exact test commands
 
@@ -55,11 +66,64 @@ python3 -I workstreams/so02/control-plane/operating-environment/scp-si-01/lane-c
 # 6. classify any markdown record ad hoc
 python3 -I workstreams/so02/control-plane/operating-environment/scp-si-01/lane-c/tools/authorship_sidecar.py \
     classify workstreams/so02/control-plane/operating-environment/FOUNDER-STANDING-INSTRUCTION-20260822.md
+
+# 7. is the write declaration's evidence true of the files on disk
+python3 -I workstreams/so02/control-plane/operating-environment/scp-si-01/lane-c/tools/verify_declaration_evidence.py \
+    --repo-root .
+
+# 8. reproduce the gap in the admission gate's evidence check
+python3 -I workstreams/so02/control-plane/operating-environment/scp-si-01/lane-c/tools/reproduce_gate_blindness.py \
+    --repo-root .
 ```
 
 Command 3 rewrites the two files under `sidecar/`. It is deterministic: the same
 inputs produce byte-identical output, which is what makes the manifest hashes in
-`receipts/so02/2026-08-27/scp-c/MANIFEST.json` reproducible.
+`receipts/so02/2026-08-27/scp-c/MANIFEST.json` reproducible. Re-running it
+against a moved integration head changed exactly two leaves, the recorded commit
+and the timestamp; all 136 classifications were identical. `DIRECTLY_REPRODUCED`
+
+To rebuild every artifact and receipt in one step, including the declaration and
+the admission verdict:
+
+```bash
+bash workstreams/so02/control-plane/operating-environment/scp-si-01/lane-c/tools/release.sh \
+    "$(git rev-parse origin/cursor/operating-environment-return-20260822-v001)"
+```
+
+That is the same nine steps, in the one order that is acyclic. Four artifacts
+here hash each other — the declaration's evidence covers `READ-BACK.json`,
+`ADMISSION.json` is the verdict on the declaration, and `MANIFEST.json` covers
+all three — so the receipt builder is staged rather than single-pass, and
+rebuilding out of order leaves the declaration asserting hashes that are no
+longer true. `release.sh` exits non-zero if the gate refuses, so a refusal
+cannot be read as an admission.
+
+### Why `verify_declaration_evidence.py` exists
+
+`EARNED`, and the defect is in the gate this lane was told to invoke. The
+admission gate's evidence check delegates to
+`evidence_integrity.verify_manifest_closure`, which asks whether every
+`present_paths` entry is covered and whether `bundle_sha256` binds the entry
+list. Both are answerable without opening a single declared file, so **a
+declaration whose recorded hashes are stale, or invented, passes the gate.**
+That is the shape of the `verify_readback_truth` defect this estate already
+recorded — shape checked, truth never — one layer out.
+
+`DIRECTLY_REPRODUCED`, without tampering, on this lane's own declaration: three
+deliverable files were edited and one added after the declaration was generated,
+and re-running the gate returned `WRITE_ADMITTED` with `EVIDENCE_RECOMPUTED`
+while two of the eighteen recorded hashes were wrong and a fourth file was
+covered by nothing. Verbatim output in
+`receipts/so02/2026-08-27/scp-c/raw/gate-blindness-observed.txt`, written up in
+`findings/GATE-EVIDENCE-BLINDNESS.md`, and reproducible on demand with
+`tools/reproduce_gate_blindness.py`.
+
+So the hashes are generated from disk by `build_declaration.py` in the same run
+as the push, and `verify_declaration_evidence.py` asks the question the gate
+cannot — do these hashes describe the files that are actually there. It runs as
+step 7 of `release.sh`, before the gate. It binds this lane's own release path
+and proposes nothing for anyone else's; `write_admission.py` is outside lane C's
+write scope and was not touched.
 
 ## The five authorship classes
 
@@ -94,6 +158,7 @@ Per the standing discipline, an unclassified constraint is not in force.
 | 9 | Default authority queries exclude `NONFOUNDER_PASTED` and `UNRESOLVED_USER_ROLE`; opting either in is explicit and is recorded in the result. | `ASSISTANT_AUTHORED` | Directly instructed by the SCP-SI-01 lane C commission. Inert unless ratified; implemented because the commission is the operative instruction for this lane, and stated as assistant-authored rather than dressed as founder intent. |
 | 10 | Every structured artifact is hash-checked **and parsed** after read-back. | `EARNED` | A hash-valid unparsable artifact is already in this estate's record; commit `3b97d6ff` repaired a truncated one. |
 | 11 | `normalise` folds markdown emphasis at exact parity with `provctl.normalise`. | `EARNED` | Without it this lane produced a false disagreement with the register on `FA-06`. See `findings/DEFECT-REPRODUCTION.md`. |
+| 12 | This lane's write declaration is generated from disk in the same run as the push, and its hashes are recomputed against disk before the gate is invoked. Binds lane C's release path only. | `EARNED` | The admission gate's evidence check never opens a declared file, so it returned `WRITE_ADMITTED` / `EVIDENCE_RECOMPUTED` on this lane's own declaration while two of its eighteen hashes were wrong. Reproduced in this run; see `findings/GATE-EVIDENCE-BLINDNESS.md`. |
 
 ## What the bounded slice found
 
