@@ -1,0 +1,118 @@
+{
+  "all_defects_reproduced_and_caught": true,
+  "decision_changed": [],
+  "produced_at": "2026-08-27T05:09:16Z",
+  "purpose": "Direct reproduction of the defects this lane seeds into the improvement chain, so each seeded link cites a reproduction rather than a quotation.",
+  "report_id": "SCP-B-SEEDED-DEFECT-REPRODUCTIONS",
+  "reproductions": [
+    {
+      "artifact_bytes_sha256": "b23aadf651600ee7e6447f9da723ac0fec92ef8351ef71e6d8b28678ec15cb73",
+      "artifact_validity_errors": [
+        "validity: truncated.json is hash-bound but does not parse as JSON (Expecting ',' delimiter at line 1)"
+      ],
+      "artifact_validity_verdict": "FAIL",
+      "defect_shown": "byte integrity and manifest closure both pass on an artifact that cannot be loaded; closure proves the bytes are the committed bytes and says nothing about whether they mean anything",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "manifest_closure_errors": [],
+      "manifest_closure_verdict": "PASS",
+      "mechanism_catches_it": true,
+      "reproduction_id": "REPRO-A-HASH-VALID-BUT-UNPARSEABLE"
+    },
+    {
+      "defect_shown": "a fabricated record naming commit 000...0 with invented transports is indistinguishable from a real one to a verifier that checks shape",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "mechanism_catches_it": true,
+      "remote_head": "25f4596f08c5b9925c7208a88e8f98e79d77fd1b",
+      "reproduction_id": "REPRO-B-FORGED-READBACK",
+      "shape_check_accepts_the_forgery": true,
+      "truth_check_on_forged_record_errors": [
+        "readback: commit 0000000000000000000000000000000000000000 is not retrievable from the remote; the claim is unfounded"
+      ],
+      "truth_check_on_forged_record_verdict": "REFUSED",
+      "truth_check_on_truthful_record_errors": [],
+      "truth_check_on_truthful_record_verdict": "PASS"
+    },
+    {
+      "allowlist_in_force": [
+        "COMPLETED",
+        "FINISHED",
+        "IDLE",
+        "RUNNING"
+      ],
+      "defect_shown": "a denylist of harmful statuses returns ZERO_PO03_CAPACITY_INTERFERENCE for every status nobody enumerated, including ERROR, FAILED and any status not yet invented",
+      "denylist_under_test": [
+        "ADMISSION_REFUSED",
+        "EVICTED",
+        "KILLED",
+        "PAUSED",
+        "PENDING",
+        "QUEUED"
+      ],
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "mechanism_catches_it": true,
+      "reproduction_id": "REPRO-C-DENYLIST-FAILS-OPEN",
+      "transitions": [
+        {
+          "allowlist_detector_verdict": "CAPACITY_INTERFERENCE_FAIL",
+          "allowlist_findings": [
+            "mid: task bc-pre-existing moved IDLE -> ERROR, which is not an asserted-benign state",
+            "after: task bc-pre-existing moved IDLE -> ERROR, which is not an asserted-benign state"
+          ],
+          "denylist_detector_verdict": "ZERO_PO03_CAPACITY_INTERFERENCE",
+          "denylist_failed_open": true,
+          "transition": "IDLE -> ERROR"
+        },
+        {
+          "allowlist_detector_verdict": "CAPACITY_INTERFERENCE_FAIL",
+          "allowlist_findings": [
+            "mid: task bc-pre-existing moved IDLE -> FAILED, which is not an asserted-benign state",
+            "after: task bc-pre-existing moved IDLE -> FAILED, which is not an asserted-benign state"
+          ],
+          "denylist_detector_verdict": "ZERO_PO03_CAPACITY_INTERFERENCE",
+          "denylist_failed_open": true,
+          "transition": "IDLE -> FAILED"
+        },
+        {
+          "allowlist_detector_verdict": "CAPACITY_INTERFERENCE_FAIL",
+          "allowlist_findings": [
+            "mid: task bc-pre-existing moved IDLE -> QUEUED, which is not an asserted-benign state",
+            "after: task bc-pre-existing moved IDLE -> QUEUED, which is not an asserted-benign state"
+          ],
+          "denylist_detector_verdict": "CAPACITY_INTERFERENCE_FAIL",
+          "denylist_failed_open": false,
+          "transition": "IDLE -> QUEUED"
+        },
+        {
+          "allowlist_detector_verdict": "ZERO_PO03_CAPACITY_INTERFERENCE",
+          "allowlist_findings": [],
+          "denylist_detector_verdict": "ZERO_PO03_CAPACITY_INTERFERENCE",
+          "denylist_failed_open": false,
+          "transition": "IDLE -> RUNNING"
+        },
+        {
+          "allowlist_detector_verdict": "CAPACITY_INTERFERENCE_FAIL",
+          "allowlist_findings": [
+            "mid: task bc-pre-existing moved IDLE -> SOME_STATUS_NOBODY_HAS_INVENTED_YET, which is not an asserted-benign state",
+            "after: task bc-pre-existing moved IDLE -> SOME_STATUS_NOBODY_HAS_INVENTED_YET, which is not an asserted-benign state"
+          ],
+          "denylist_detector_verdict": "ZERO_PO03_CAPACITY_INTERFERENCE",
+          "denylist_failed_open": true,
+          "transition": "IDLE -> SOME_STATUS_NOBODY_HAS_INVENTED_YET"
+        }
+      ]
+    },
+    {
+      "commit_made_locally": "e81c95ee8ffa44b775e68650654e547f3cee409e",
+      "defect_shown": "git push printed 'Everything up-to-date' and exited 0 while the commit was never published; a zero exit is not evidence of publication",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "mechanism": "lane_guard.verify_reported_head compares the reported SHA to git ls-remote",
+      "mechanism_catches_it": true,
+      "push_exit_code": 0,
+      "push_output": "Everything up-to-date",
+      "remote_ref_after_push": "e965acd4a7fc2d453c66b78517af403de8f7a3e7",
+      "remote_ref_before_push": "e965acd4a7fc2d453c66b78517af403de8f7a3e7",
+      "remote_serves_the_new_commit": false,
+      "reproduction_id": "REPRO-D-SILENT-PUSH-NO-OP"
+    }
+  ]
+}

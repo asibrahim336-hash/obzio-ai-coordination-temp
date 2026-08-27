@@ -1,0 +1,901 @@
+{
+  "seed_id": "SCP-B-CHAIN-SEED-20260827-v001",
+  "decision_changed": [],
+  "purpose": "Source for the typed improvement links appended to workstreams/so02/control-plane/state/events.jsonl. This file is a build input, not a store: once the events are appended, the canonical record is the hash-chained event log and this file is reproduction material. Deleting it loses no evidence.",
+  "integration_commit_audited_against": "7f29043eece45f42f018d841718a257cfd18739b",
+  "actor": {
+    "function_id": "SCF-01",
+    "runtime_instance_id": "SCF-01/CUR-01",
+    "appointment_id": "SO-02"
+  },
+  "authority": {
+    "class": "FOUNDER_DELEGATED_OPERATING_AUTHORITY",
+    "scope": "internal_reversible_coordination; improvement-chain projection over existing evidence only",
+    "source_ref": "SRC-FOUNDER-STANDING-AUTHORITY-20260823-CONTROLS-THAT-ARE-OBZIOS-OWN"
+  },
+  "no_chain_reaches_an_acceptance_class_promotion": true,
+  "why": "Applying the independence rule to the estate's real history returns the same answer for all five closed chains: no independent acceptor has re-examined any of these fixes. The acceptor that found the defects refused the producer's claim; it did not re-accept the corrections. Every VERDICT node below therefore records independent: false, and every promotion is a mechanism-live promotion rather than an acceptance. That is a finding, not a formatting choice.",
+
+  "chains": [
+    {
+      "chain_id": "ICH-01-FORGED-READBACK",
+      "title": "A forged read-back passed a shape-checking verifier",
+      "nodes": [
+        {
+          "node_id": "ICH-01-OBS",
+          "node_kind": "OBSERVATION",
+          "occurred_at": "2026-08-22T20:23:55Z",
+          "derives_from": [],
+          "title": "A wholly fabricated read-back record made producer verification exit 0",
+          "statement": "The independent acceptor replaced REMOTE-READBACK.json with a no-network synthetic record naming an all-zero commit, invented transports and a non-manifest path. Unmodified producer orchqual.py verify still returned PASS with exit code 0.",
+          "evidence_label": "DOCUMENTED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "AC-05 of the independent acceptance, the criterion that failed and produced the refusal.",
+          "evidence_citations": [
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/l3-independent-acceptance/VERDICT.json",
+              "sha256": "87e3a255733ac5aeae6dff0d7e5bb32b22f193ccf774a20aa031fae9c721537b",
+              "commit": "541eff445f2acd3cabea91b54c53afae237b9d59",
+              "field": "criterion_findings[AC-05].exact_failing_check",
+              "quote": "Replacing REMOTE-READBACK.json with a no-network synthetic record naming an all-zero commit, invented transports and a non-manifest path still makes unmodified producer orchqual.py verify exit 0."
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-01-DEF",
+          "node_kind": "DEFECT",
+          "occurred_at": "2026-08-22T20:26:40Z",
+          "derives_from": ["ICH-01-OBS"],
+          "title": "DEF-01-READBACK-SHAPE-NOT-TRUTH",
+          "statement": "verify_readback asserted the internal self-consistency of a read-back claim rather than re-deriving it from the remote. Self-consistency is not custody. The remote read-back control was decorative under adversarial conditions even though the read-back itself was genuinely performed.",
+          "evidence_label": "DOCUMENTED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-01-READBACK-SHAPE-NOT-TRUTH, reproduced by the root controller in a throwaway clone at 11a60dcf and recorded as DIRECTLY_REPRODUCED there; re-reproduced end to end by lane B against a real bare remote.",
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-22/oe-dispatch/CUR01-REFUSAL-INGESTION.json",
+              "sha256": "c4f28fe03e3ee8296cbb3065cae375d111f02381b8e95efba5715b2d10b43dd6",
+              "field": "root_controller_independent_reproduction_of_findings.defects_confirmed[0]",
+              "quote": "verify_readback asserted the internal self-consistency of a claim rather than re-deriving it from the remote. Self-consistency is not custody."
+            },
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/SEEDED-DEFECT-REPRODUCTIONS.json",
+              "sha256": "6639ee79dacb918d952359bced989fb554ee77749b97440bd0fada28ed905eb6",
+              "field": "reproductions[REPRO-B-FORGED-READBACK]",
+              "note": "Lane B built a real bare remote, produced a truthful record and a forgery naming 000...0, and confirmed the shape check cannot tell them apart while verify_readback_truth refuses the forgery."
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-01-MEC",
+          "node_kind": "MECHANISM_CHANGE",
+          "occurred_at": "2026-08-23T04:24:52Z",
+          "derives_from": ["ICH-01-DEF"],
+          "title": "evidence_integrity.verify_readback_truth",
+          "statement": "The verifier now clones the remote, fetches the claimed commit, and recomputes every claimed digest from the bytes the remote actually serves. A record that cannot be re-derived is rejected even when it is internally perfectly consistent. Recompute instead of trust.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-01-READBACK-SHAPE-NOT-TRUTH.",
+          "evidence_citations": [
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/tools/evidence_integrity.py",
+              "sha256": "9fe9315b847dd4045fc47928ab15ce1c359d5b9c69d82f9ee33ef6127d976ba2",
+              "commit": "3b97d6ff5ed732c796adc0fd091f0125916079bd",
+              "symbol": "verify_readback_truth"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-01-TST",
+          "node_kind": "REGRESSION_TEST",
+          "occurred_at": "2026-08-23T04:24:52Z",
+          "derives_from": ["ICH-01-MEC"],
+          "title": "The acceptor's own forgery is now a failing test",
+          "statement": "test_forged_readback_naming_a_nonexistent_commit_is_rejected, test_a_non_sha_commit_reference_is_rejected_without_network and test_internal_self_consistency_alone_does_not_pass pin the old behaviour as refused.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-01-READBACK-SHAPE-NOT-TRUTH; the test names the exact forgery that defeated the predecessor.",
+          "evidence_citations": [
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/tools/test_evidence_integrity.py",
+              "sha256": "ad7147ea2175fb54fd1d47422f6577a25c5c21b124ce326fac311319f79f9f43",
+              "commit": "3b97d6ff5ed732c796adc0fd091f0125916079bd",
+              "symbol": "test_forged_readback_naming_a_nonexistent_commit_is_rejected"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-01-RUN",
+          "node_kind": "RERUN",
+          "occurred_at": "2026-08-27T05:07:00Z",
+          "derives_from": ["ICH-01-TST"],
+          "title": "SUITE-EVIDENCE-INTEGRITY re-executed, 19 tests, exit 0",
+          "statement": "python3 -I test_evidence_integrity.py re-executed in this run at integration commit 7f29043e. 19 tests, exit code 0, result OK.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-01-READBACK-SHAPE-NOT-TRUTH; a regression test that is never re-run is a description of a control.",
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/REGRESSION-RERUN.json",
+              "sha256": "52ade181fbd1d4a969d789818c018a5c7ea75c3bd02b3f96cbd4f4d810271d50",
+              "field": "suites[SUITE-EVIDENCE-INTEGRITY]"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-01-VER",
+          "node_kind": "VERDICT",
+          "occurred_at": "2026-08-27T05:12:00Z",
+          "derives_from": ["ICH-01-RUN"],
+          "title": "Producer-side verdict: the mechanism holds under rerun",
+          "statement": "The mechanism refuses the exact forgery that defeated its predecessor, and the truthful record it was compared against still passes. No independent acceptor has re-examined verify_readback_truth. The acceptor that found DEF-01 refused the producer's claim; it did not accept the correction.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-01-READBACK-SHAPE-NOT-TRUTH.",
+          "verdict": {
+            "verdict_value": "MECHANISM_HOLDS_UNDER_RERUN",
+            "independent": false,
+            "issued_by": "lane B, cohort SCP-SI-01",
+            "independence_note": "Producer-side. Lane B is inside the same programme as the mechanism's author, so this verdict cannot carry an acceptance-class promotion and is not offered as one."
+          },
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/SEEDED-DEFECT-REPRODUCTIONS.json",
+              "sha256": "6639ee79dacb918d952359bced989fb554ee77749b97440bd0fada28ed905eb6",
+              "field": "reproductions[REPRO-B-FORGED-READBACK].mechanism_catches_it"
+            },
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/REGRESSION-RERUN.json",
+              "sha256": "52ade181fbd1d4a969d789818c018a5c7ea75c3bd02b3f96cbd4f4d810271d50"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-01-PRO",
+          "node_kind": "CURRENTNESS_PROMOTION",
+          "occurred_at": "2026-08-27T05:14:00Z",
+          "derives_from": ["ICH-01-VER"],
+          "title": "Read-back by recomputation is the current control for route qualification",
+          "statement": "The refusal ingestion already bound downstream work to this mechanism, and the SCP-SI-01 system map already carries the evidence-integrity row as live. This link records that promotion as a projection of the chain rather than as a separate assertion.",
+          "evidence_label": "DOCUMENTED",
+          "provenance_class": "FOUNDER_AUTHORED",
+          "provenance_basis": "The founder's standing authority names read-back by recomputation among the controls that are Obzio's own because each caught a real defect in this estate.",
+          "founder_quote": "These stay, because each caught a real defect in this estate: remote read-back by recomputation rather than trusting a claim; manifest closure; the allowlist capacity detector; lane isolation by worktree; the write-scope guard; the admission ladder; and independent acceptance where the producer cannot issue its own verdict.",
+          "promotion": {
+            "promoted_subject": "SCF-01/EVIDENCE-INTEGRITY/READBACK-TRUTH",
+            "promoted_state": "MECHANISM_LIVE_BINDING_ON_DOWNSTREAM_ROUTE_QUALIFICATION",
+            "promoted_from_verdict_value": "MECHANISM_HOLDS_UNDER_RERUN",
+            "acceptance_class": false,
+            "why_not_acceptance_class": "Nothing independent has accepted the fix. The promotion records that the control is live and binding, which is what the estate has actually done, and stops there."
+          },
+          "evidence_citations": [
+            {
+              "artifact_path": ".cursor/rules/00-founder-standing-authority.mdc",
+              "sha256": "5152f1dca1efddb48a95c28afeeb62a94179c8e4757051fc335b04693ce388f3",
+              "field": "Controls that are Obzio's own, not assistant impositions"
+            },
+            {
+              "artifact_path": "receipts/so02/2026-08-22/oe-dispatch/CUR01-REFUSAL-INGESTION.json",
+              "sha256": "c4f28fe03e3ee8296cbb3065cae375d111f02381b8e95efba5715b2d10b43dd6",
+              "field": "programme_impact.changes_to_downstream_work",
+              "quote": "Any future route qualification must use evidence_integrity.verify_readback_truth rather than a shape check."
+            },
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/scp-si-01/SCP-SI-01-SYSTEM-MAP.md",
+              "sha256": "d48ccc8b7e67a249e132c77a0672979e37b59a641c8ef002a5288458d50bd5f4",
+              "field": "Evidence integrity row: live; read-back truth, allowlist capacity, manifest closure, artifact validity"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "chain_id": "ICH-02-DENYLIST-CAPACITY",
+      "title": "IDLE to ERROR passed a denylist capacity detector",
+      "nodes": [
+        {
+          "node_id": "ICH-02-OBS",
+          "node_kind": "OBSERVATION",
+          "occurred_at": "2026-08-22T20:23:55Z",
+          "derives_from": [],
+          "title": "A synthetic IDLE to ERROR regression silently passed the producer detector",
+          "statement": "The supplied snapshots recomputed to zero observed interference and a QUEUED regression was detected, but a synthetic IDLE-to-ERROR transition returned ZERO_PO03_CAPACITY_INTERFERENCE while independent strict recomputation returned CAPACITY_INTERFERENCE_FAIL.",
+          "evidence_label": "DOCUMENTED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "AC-08 of the independent acceptance.",
+          "evidence_citations": [
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/l3-independent-acceptance/VERDICT.json",
+              "sha256": "87e3a255733ac5aeae6dff0d7e5bb32b22f193ccf774a20aa031fae9c721537b",
+              "commit": "541eff445f2acd3cabea91b54c53afae237b9d59",
+              "field": "criterion_findings[AC-08].exact_failing_check",
+              "quote": "capacity_producer_detector_adversarial_only.ERROR.verdict=ZERO_PO03_CAPACITY_INTERFERENCE while independent strict recomputation returns CAPACITY_INTERFERENCE_FAIL."
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-02-DEF",
+          "node_kind": "DEFECT",
+          "occurred_at": "2026-08-22T20:26:40Z",
+          "derives_from": ["ICH-02-OBS"],
+          "title": "DEF-02-DENYLIST-FAILS-OPEN",
+          "statement": "INTERFERENCE_STATUSES enumerated only QUEUED, PAUSED, EVICTED, ADMISSION_REFUSED, KILLED and PENDING. A denylist of harmful states fails open on every state nobody enumerated. A pre-existing PO-03 task crashing during the observation window would not have been reported as interference.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-02-DENYLIST-FAILS-OPEN. Lane B rebuilt the refused denylist from the ingestion record and confirmed it returns ZERO_PO03_CAPACITY_INTERFERENCE for ERROR, FAILED and a status nobody has invented yet.",
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/SEEDED-DEFECT-REPRODUCTIONS.json",
+              "sha256": "6639ee79dacb918d952359bced989fb554ee77749b97440bd0fada28ed905eb6",
+              "field": "reproductions[REPRO-C-DENYLIST-FAILS-OPEN].transitions"
+            },
+            {
+              "artifact_path": "receipts/so02/2026-08-22/oe-dispatch/CUR01-REFUSAL-INGESTION.json",
+              "sha256": "c4f28fe03e3ee8296cbb3065cae375d111f02381b8e95efba5715b2d10b43dd6",
+              "field": "root_controller_independent_reproduction_of_findings.defects_confirmed[1]",
+              "quote": "A denylist of harmful states fails open on every state nobody enumerated."
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-02-MEC",
+          "node_kind": "MECHANISM_CHANGE",
+          "occurred_at": "2026-08-23T04:24:52Z",
+          "derives_from": ["ICH-02-DEF"],
+          "title": "Allowlist inversion: BENIGN_STATUSES",
+          "statement": "capacity_verdict now asserts a closed set of benign statuses, RUNNING, IDLE, COMPLETED and FINISHED, and treats every other transition, known or not yet invented, as possible interference to be adjudicated explicitly. Allowlist benign states instead of denylisting harmful ones.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-02-DENYLIST-FAILS-OPEN.",
+          "evidence_citations": [
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/tools/evidence_integrity.py",
+              "sha256": "9fe9315b847dd4045fc47928ab15ce1c359d5b9c69d82f9ee33ef6127d976ba2",
+              "commit": "3b97d6ff5ed732c796adc0fd091f0125916079bd",
+              "symbol": "BENIGN_STATUSES, capacity_verdict"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-02-TST",
+          "node_kind": "REGRESSION_TEST",
+          "occurred_at": "2026-08-23T04:24:52Z",
+          "derives_from": ["ICH-02-MEC"],
+          "title": "An unheard-of future status fails closed",
+          "statement": "test_an_unheard_of_future_status_fails_closed is the test the defect demands: not a test for ERROR, which would only re-close the one hole that was found, but a test that a status nobody has enumerated is caught. test_error_transition_now_fails, test_failed_transition_now_fails and test_previously_enumerated_states_still_fail cover the rest.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-02-DENYLIST-FAILS-OPEN; the test asserts the property, not the instance.",
+          "evidence_citations": [
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/tools/test_evidence_integrity.py",
+              "sha256": "ad7147ea2175fb54fd1d47422f6577a25c5c21b124ce326fac311319f79f9f43",
+              "commit": "3b97d6ff5ed732c796adc0fd091f0125916079bd",
+              "symbol": "test_an_unheard_of_future_status_fails_closed"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-02-RUN",
+          "node_kind": "RERUN",
+          "occurred_at": "2026-08-27T05:07:00Z",
+          "derives_from": ["ICH-02-TST"],
+          "title": "SUITE-EVIDENCE-INTEGRITY re-executed, 19 tests, exit 0",
+          "statement": "The same re-execution that covers ICH-01 also covers this chain; the suite is shared and the rerun is one event, not two.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-02-DENYLIST-FAILS-OPEN.",
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/REGRESSION-RERUN.json",
+              "sha256": "52ade181fbd1d4a969d789818c018a5c7ea75c3bd02b3f96cbd4f4d810271d50",
+              "field": "suites[SUITE-EVIDENCE-INTEGRITY]"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-02-VER",
+          "node_kind": "VERDICT",
+          "occurred_at": "2026-08-27T05:12:00Z",
+          "derives_from": ["ICH-02-RUN"],
+          "title": "Producer-side verdict: the inversion holds, including on an uninvented status",
+          "statement": "Lane B confirmed the refused denylist and the live allowlist disagree on exactly the transitions the acceptor named, and additionally on SOME_STATUS_NOBODY_HAS_INVENTED_YET. No independent acceptor has re-examined the inversion.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-02-DENYLIST-FAILS-OPEN.",
+          "verdict": {
+            "verdict_value": "MECHANISM_HOLDS_UNDER_RERUN",
+            "independent": false,
+            "issued_by": "lane B, cohort SCP-SI-01",
+            "independence_note": "Producer-side; not offered as acceptance."
+          },
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/SEEDED-DEFECT-REPRODUCTIONS.json",
+              "sha256": "6639ee79dacb918d952359bced989fb554ee77749b97440bd0fada28ed905eb6",
+              "field": "reproductions[REPRO-C-DENYLIST-FAILS-OPEN]"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-02-PRO",
+          "node_kind": "CURRENTNESS_PROMOTION",
+          "occurred_at": "2026-08-27T05:14:00Z",
+          "derives_from": ["ICH-02-VER"],
+          "title": "The allowlist detector is the current control for capacity claims",
+          "statement": "The refusal ingestion already bound every future capacity claim to the allowlist detector. This link records that promotion inside the chain so the binding is reachable from the defect that produced it.",
+          "evidence_label": "DOCUMENTED",
+          "provenance_class": "FOUNDER_AUTHORED",
+          "provenance_basis": "The founder's standing authority names the allowlist capacity detector among the controls that are Obzio's own.",
+          "founder_quote": "These stay, because each caught a real defect in this estate: remote read-back by recomputation rather than trusting a claim; manifest closure; the allowlist capacity detector; lane isolation by worktree; the write-scope guard; the admission ladder; and independent acceptance where the producer cannot issue its own verdict.",
+          "promotion": {
+            "promoted_subject": "SCF-01/EVIDENCE-INTEGRITY/CAPACITY-ALLOWLIST",
+            "promoted_state": "MECHANISM_LIVE_BINDING_ON_DOWNSTREAM_CAPACITY_CLAIMS",
+            "promoted_from_verdict_value": "MECHANISM_HOLDS_UNDER_RERUN",
+            "acceptance_class": false,
+            "why_not_acceptance_class": "No independent verdict on the inversion exists."
+          },
+          "evidence_citations": [
+            {
+              "artifact_path": ".cursor/rules/00-founder-standing-authority.mdc",
+              "sha256": "5152f1dca1efddb48a95c28afeeb62a94179c8e4757051fc335b04693ce388f3",
+              "field": "Controls that are Obzio's own, not assistant impositions"
+            },
+            {
+              "artifact_path": "receipts/so02/2026-08-22/oe-dispatch/CUR01-REFUSAL-INGESTION.json",
+              "sha256": "c4f28fe03e3ee8296cbb3065cae375d111f02381b8e95efba5715b2d10b43dd6",
+              "field": "programme_impact.changes_to_downstream_work",
+              "quote": "Any future capacity claim must use the allowlist detector."
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "chain_id": "ICH-03-SHARED-WORKTREE-COLLISION",
+      "title": "A shared-worktree collision reproduced live during wave-A dispatch",
+      "nodes": [
+        {
+          "node_id": "ICH-03-OBS",
+          "node_kind": "OBSERVATION",
+          "occurred_at": "2026-08-22T07:43:56Z",
+          "derives_from": [],
+          "title": "Concurrent lanes in one shared git worktree collided on the index and the checked-out branch",
+          "statement": "PO-03 wave-A dispatch through the shared route produced CONCURRENT_SHARED_GIT_WORKTREE_INDEX_AND_CHECKED_OUT_BRANCH_COLLISION with registry_collision_count 1. Shared-route dispatch was suspended and drained. The recovery receipt records recovery_erases_collision: false.",
+          "evidence_label": "DOCUMENTED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "The wave-A shared-worktree collision, recorded as a durable state transition in the canonical event log rather than as a lesson.",
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-22/po03-reconciliation-20260822T074356Z.json",
+              "sha256": "15d74eded2e0d838797a3b9503d6e766e0c2fbad92965e5d511d95857d7739e8",
+              "field": "coordination_defect_and_recovery.defect"
+            },
+            {
+              "locator": "event:SCF01-EVT-0008",
+              "commit": "9887f33ee3df88eee6f9f936ecf7ce0a187e7df0",
+              "field": "payload.new_state contains SHARED_WORKTREE_COLLISION_SHARED_ROUTE_DISPATCH_SUSPENDED",
+              "note": "Cited by event id rather than by file hash: state/events.jsonl is the file this chain appends to, so a working-tree digest of it would be self-referential and would go stale on the next append. The event's own event_sha256 is the immutable address."
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-03-DEF",
+          "node_kind": "DEFECT",
+          "occurred_at": "2026-08-22T07:43:56Z",
+          "derives_from": ["ICH-03-OBS"],
+          "title": "DEF-SHARED-WORKTREE-NOT-ISOLATED",
+          "statement": "Lanes dispatched into one shared working directory can commit onto the wrong branch or capture another lane's files. Instruction did not prevent it: the shared route was documented as single-writer and collided anyway.",
+          "evidence_label": "DOCUMENTED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "The wave-A collision. lane_guard.py records the same defect as its reason for existing.",
+          "evidence_citations": [
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/tools/lane_guard.py",
+              "sha256": "c5530cf9fff6c02aed010d0b25e5c82f3bcff1823bddf71bd104d4820ee8d82e",
+              "field": "module docstring",
+              "quote": "Written after a live SHARED_WORKTREE_COLLISION reproduction: lanes dispatched into one shared working directory can commit onto the wrong branch or capture another lane's files. Instruction did not prevent that, so containment is enforced here as an executable check instead."
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-03-MEC",
+          "node_kind": "MECHANISM_CHANGE",
+          "occurred_at": "2026-08-22T08:01:30Z",
+          "derives_from": ["ICH-03-DEF"],
+          "title": "Isolated clones only, and executable namespace containment",
+          "statement": "The shared route was reactivated for isolated clones only with a ceiling of two, the multi-parent contract made isolated_parent_branch_and_namespace_required mandatory, and lane_guard.namespace_matches turned containment into a check that runs rather than a rule that is written down.",
+          "evidence_label": "DOCUMENTED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-SHARED-WORKTREE-NOT-ISOLATED.",
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-22/po03-reconciliation-20260822T080130Z.json",
+              "sha256": "01816b3e0f737a8b8d8e1853d3f694f4180b3cc5e38e4e8687359e0cea877c09",
+              "field": "shared route reactivated, isolated clones only, ceiling two"
+            },
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/tools/lane_guard.py",
+              "sha256": "c5530cf9fff6c02aed010d0b25e5c82f3bcff1823bddf71bd104d4820ee8d82e",
+              "symbol": "namespace_matches, evaluate_lane, detect_path_collisions"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-03-TST",
+          "node_kind": "REGRESSION_TEST",
+          "occurred_at": "2026-08-23T04:05:44Z",
+          "derives_from": ["ICH-03-MEC"],
+          "title": "Cross-contamination and contested paths are rejected by test",
+          "statement": "test_another_lanes_path_is_rejected, test_shared_projection_state_is_rejected, test_sibling_prefix_is_not_treated_as_owned and test_two_lanes_claiming_one_path_is_detected pin the collision shape as refused. The sibling-prefix test matters most: it is the near-miss that a naive prefix match would pass.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-SHARED-WORKTREE-NOT-ISOLATED.",
+          "evidence_citations": [
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/tools/test_lane_guard.py",
+              "sha256": "2134aaf960bec4e0740e00cba7966ca634e548c74514a1bcceea9953f26e96e7",
+              "commit": "834b2cd6ba3a497d994bfbef9fc33cb749c49fce",
+              "symbol": "test_two_lanes_claiming_one_path_is_detected"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-03-RUN",
+          "node_kind": "RERUN",
+          "occurred_at": "2026-08-27T05:07:00Z",
+          "derives_from": ["ICH-03-TST"],
+          "title": "SUITE-LANE-GUARD re-executed, 20 tests, exit 0",
+          "statement": "python3 -I test_lane_guard.py re-executed in this run at integration commit 7f29043e. 20 tests, exit code 0, result OK.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-SHARED-WORKTREE-NOT-ISOLATED.",
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/REGRESSION-RERUN.json",
+              "sha256": "52ade181fbd1d4a969d789818c018a5c7ea75c3bd02b3f96cbd4f4d810271d50",
+              "field": "suites[SUITE-LANE-GUARD]"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-03-VER",
+          "node_kind": "VERDICT",
+          "occurred_at": "2026-08-27T05:12:00Z",
+          "derives_from": ["ICH-03-RUN"],
+          "title": "Producer-side verdict, with an independent verification on the record but not upgraded",
+          "statement": "An independent verification of the route-isolation canary was observed on 2026-08-22 at SCF01-EVT-0013 and accepted bounded route evidence. Lane B does not upgrade this verdict to independent on that basis: the same estate's later independent acceptance found that programme's route-independence claims overstated for a neighbouring subject, and one observation of independence does not transfer. The verdict is recorded as producer-side and the independent verification is recorded as a citation.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-SHARED-WORKTREE-NOT-ISOLATED.",
+          "verdict": {
+            "verdict_value": "MECHANISM_HOLDS_UNDER_RERUN",
+            "independent": false,
+            "issued_by": "lane B, cohort SCP-SI-01",
+            "independence_note": "An independent verification exists on the record at SCF01-EVT-0013 for the route-isolation canary, but it verified the canary rather than the containment check, and the later independent acceptance refused this programme's broader independence claims. Not upgraded."
+          },
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-22/po03-reconciliation-20260822T080830Z.json",
+              "sha256": "045c6b56e36673cfe7d588a04e27924df6c3fb4f5c4711765e06c2067eb44d51",
+              "field": "independent verification of the route-isolation canary"
+            },
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/REGRESSION-RERUN.json",
+              "sha256": "52ade181fbd1d4a969d789818c018a5c7ea75c3bd02b3f96cbd4f4d810271d50",
+              "field": "suites[SUITE-LANE-GUARD]"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-03-PRO",
+          "node_kind": "CURRENTNESS_PROMOTION",
+          "occurred_at": "2026-08-27T05:14:00Z",
+          "derives_from": ["ICH-03-VER"],
+          "title": "Lane isolation by worktree is the current dispatch contract",
+          "statement": "Every lane in this cohort, including this one, was dispatched into its own git worktree on its own branch. The control is live, founder-named, and was exercised by lane B's own setup.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "FOUNDER_AUTHORED",
+          "provenance_basis": "The founder's standing authority names lane isolation by worktree among the controls that are Obzio's own.",
+          "founder_quote": "These stay, because each caught a real defect in this estate: remote read-back by recomputation rather than trusting a claim; manifest closure; the allowlist capacity detector; lane isolation by worktree; the write-scope guard; the admission ladder; and independent acceptance where the producer cannot issue its own verdict.",
+          "promotion": {
+            "promoted_subject": "SCF-01/LANE-ISOLATION-BY-WORKTREE",
+            "promoted_state": "MECHANISM_LIVE_AND_REQUIRED_FOR_EVERY_LANE_DISPATCH",
+            "promoted_from_verdict_value": "MECHANISM_HOLDS_UNDER_RERUN",
+            "acceptance_class": false,
+            "why_not_acceptance_class": "The verdict on the containment check is producer-side."
+          },
+          "evidence_citations": [
+            {
+              "artifact_path": ".cursor/rules/00-founder-standing-authority.mdc",
+              "sha256": "5152f1dca1efddb48a95c28afeeb62a94179c8e4757051fc335b04693ce388f3",
+              "field": "Controls that are Obzio's own, not assistant impositions"
+            },
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/scp-si-01/SCP-SI-01-SYSTEM-MAP.md",
+              "sha256": "d48ccc8b7e67a249e132c77a0672979e37b59a641c8ef002a5288458d50bd5f4",
+              "field": "Lane integration guard row: live; protected-ref code retired"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "chain_id": "ICH-04-SILENT-PUSH-NO-OP",
+      "title": "git push printed Everything up-to-date and exited 0 while publishing nothing",
+      "nodes": [
+        {
+          "node_id": "ICH-04-OBS",
+          "node_kind": "OBSERVATION",
+          "occurred_at": "2026-08-27T05:05:00Z",
+          "derives_from": [],
+          "title": "A detached HEAD committed, the branch ref never moved, and push exited 0",
+          "statement": "Lane B built a bare remote and a working clone, published a branch, detached HEAD as a shared worktree does, committed, then pushed the branch. git printed 'Everything up-to-date' and exited 0. The remote continued to serve the pre-push commit; the new commit was never published.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "The silent-push no-op that made a lane's reported head unpublishable. Reproduced end to end by lane B in this run rather than quoted.",
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/SEEDED-DEFECT-REPRODUCTIONS.json",
+              "sha256": "6639ee79dacb918d952359bced989fb554ee77749b97440bd0fada28ed905eb6",
+              "field": "reproductions[REPRO-D-SILENT-PUSH-NO-OP]"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-04-DEF",
+          "node_kind": "DEFECT",
+          "occurred_at": "2026-08-27T05:05:30Z",
+          "derives_from": ["ICH-04-OBS"],
+          "title": "DEF-ZERO-EXIT-IS-NOT-PUBLICATION",
+          "statement": "A zero exit code from git push is not evidence of publication. A lane can report a commit it never published, and every downstream check that trusts the report inherits a head that does not exist on the remote.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-ZERO-EXIT-IS-NOT-PUBLICATION, reproduced above.",
+          "evidence_citations": [
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/tools/lane_guard.py",
+              "sha256": "c5530cf9fff6c02aed010d0b25e5c82f3bcff1823bddf71bd104d4820ee8d82e",
+              "field": "verify_reported_head docstring",
+              "quote": "A lane sharing a detached HEAD can commit, then `git push` a branch ref that never moved. Git prints \"Everything up-to-date\" and exits 0, so a zero exit is not evidence of publication. Only the remote ref is evidence."
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-04-MEC",
+          "node_kind": "MECHANISM_CHANGE",
+          "occurred_at": "2026-08-23T04:05:44Z",
+          "derives_from": ["ICH-04-DEF"],
+          "title": "lane_guard.verify_reported_head",
+          "statement": "The reported SHA is compared against git ls-remote. A branch the remote does not hold yields REPORTED_BUT_ABSENT; a mismatch yields SILENT_PUSH_DIVERGENCE. Only the remote ref is evidence.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-ZERO-EXIT-IS-NOT-PUBLICATION.",
+          "non_chronological_reason": "The mechanism was written on 2026-08-23 from an earlier live occurrence of this defect. Lane B's reproduction on 2026-08-27 is a fresh direct reproduction of the same defect against a disposable remote, recorded because the lane needed the defect in hand rather than quoted. The mechanism therefore predates this chain's observation node; the observation is not the first occurrence and does not claim to be.",
+          "evidence_citations": [
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/tools/lane_guard.py",
+              "sha256": "c5530cf9fff6c02aed010d0b25e5c82f3bcff1823bddf71bd104d4820ee8d82e",
+              "commit": "834b2cd6ba3a497d994bfbef9fc33cb749c49fce",
+              "symbol": "verify_reported_head"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-04-TST",
+          "node_kind": "REGRESSION_TEST",
+          "occurred_at": "2026-08-23T04:05:44Z",
+          "derives_from": ["ICH-04-MEC"],
+          "title": "Absent branch and wrong reported SHA are both flagged",
+          "statement": "test_absent_branch_with_a_reported_sha_is_flagged, test_a_wrong_reported_sha_is_flagged_as_silent_push_divergence and test_a_correct_reported_sha_confirms_publication cover the refusal and the pass.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-ZERO-EXIT-IS-NOT-PUBLICATION.",
+          "evidence_citations": [
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/tools/test_lane_guard.py",
+              "sha256": "2134aaf960bec4e0740e00cba7966ca634e548c74514a1bcceea9953f26e96e7",
+              "commit": "834b2cd6ba3a497d994bfbef9fc33cb749c49fce",
+              "symbol": "test_a_wrong_reported_sha_is_flagged_as_silent_push_divergence"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-04-RUN",
+          "node_kind": "RERUN",
+          "occurred_at": "2026-08-27T05:07:00Z",
+          "derives_from": ["ICH-04-TST"],
+          "title": "SUITE-LANE-GUARD re-executed, 20 tests, exit 0",
+          "statement": "Shared with ICH-03; one re-execution, cited by both chains.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-ZERO-EXIT-IS-NOT-PUBLICATION.",
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/REGRESSION-RERUN.json",
+              "sha256": "52ade181fbd1d4a969d789818c018a5c7ea75c3bd02b3f96cbd4f4d810271d50",
+              "field": "suites[SUITE-LANE-GUARD]"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-04-VER",
+          "node_kind": "VERDICT",
+          "occurred_at": "2026-08-27T05:12:00Z",
+          "derives_from": ["ICH-04-RUN"],
+          "title": "Producer-side verdict: the mechanism holds, and lane B used it on itself",
+          "statement": "The defect was reproduced fresh, the mechanism's tests re-ran clean, and lane B confirmed its own published head with git ls-remote rather than with a push exit code.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-ZERO-EXIT-IS-NOT-PUBLICATION.",
+          "verdict": {
+            "verdict_value": "MECHANISM_HOLDS_UNDER_RERUN",
+            "independent": false,
+            "issued_by": "lane B, cohort SCP-SI-01",
+            "independence_note": "Producer-side; not offered as acceptance."
+          },
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/SEEDED-DEFECT-REPRODUCTIONS.json",
+              "sha256": "6639ee79dacb918d952359bced989fb554ee77749b97440bd0fada28ed905eb6",
+              "field": "reproductions[REPRO-D-SILENT-PUSH-NO-OP].mechanism_catches_it"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-04-PRO",
+          "node_kind": "CURRENTNESS_PROMOTION",
+          "occurred_at": "2026-08-27T05:14:00Z",
+          "derives_from": ["ICH-04-VER"],
+          "title": "Remote-ref confirmation is mandatory for every lane return",
+          "statement": "A lane's published head is established by git ls-remote, never by a push exit code. The SCP-SI-01 cohort instruction carries the same requirement, and lane B's own return is evidenced that way.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-ZERO-EXIT-IS-NOT-PUBLICATION.",
+          "promotion": {
+            "promoted_subject": "SCF-01/LANE-RETURN/REPORTED-HEAD-VERIFICATION",
+            "promoted_state": "MECHANISM_LIVE_AND_MANDATORY_FOR_LANE_RETURNS",
+            "promoted_from_verdict_value": "MECHANISM_HOLDS_UNDER_RERUN",
+            "acceptance_class": false,
+            "why_not_acceptance_class": "Producer-side verdict."
+          },
+          "evidence_citations": [
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/scp-si-01/SCP-SI-01-SYSTEM-MAP.md",
+              "sha256": "d48ccc8b7e67a249e132c77a0672979e37b59a641c8ef002a5288458d50bd5f4",
+              "field": "Lane integration guard row"
+            },
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/SEEDED-DEFECT-REPRODUCTIONS.json",
+              "sha256": "6639ee79dacb918d952359bced989fb554ee77749b97440bd0fada28ed905eb6",
+              "field": "reproductions[REPRO-D-SILENT-PUSH-NO-OP]"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "chain_id": "ICH-05-UNPARSEABLE-ARTIFACT",
+      "title": "A hash-valid truncated JSON artifact passed manifest closure",
+      "nodes": [
+        {
+          "node_id": "ICH-05-OBS",
+          "node_kind": "OBSERVATION",
+          "occurred_at": "2026-08-27T05:05:00Z",
+          "derives_from": [],
+          "title": "Closure passed on a file that cannot be loaded",
+          "statement": "Lane B wrote a truncated JSON artifact, hashed its bytes, entered it in a manifest with a correct bundle digest, and ran verify_manifest_closure. Closure passed. verify_artifact_validity refused the same artifact for not parsing. Byte integrity says the bytes are the committed bytes and says nothing about whether they mean anything.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "The live occurrence recorded in verify_artifact_validity: a lane published a truncated JSON file whose digest matched its manifest exactly and whose closure check passed. Reproduced by lane B against the live modules.",
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/SEEDED-DEFECT-REPRODUCTIONS.json",
+              "sha256": "6639ee79dacb918d952359bced989fb554ee77749b97440bd0fada28ed905eb6",
+              "field": "reproductions[REPRO-A-HASH-VALID-BUT-UNPARSEABLE]"
+            },
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/tools/evidence_integrity.py",
+              "sha256": "9fe9315b847dd4045fc47928ab15ce1c359d5b9c69d82f9ee33ef6127d976ba2",
+              "field": "verify_artifact_validity docstring",
+              "quote": "Found live: a lane published a truncated JSON file whose digest matched its manifest exactly and whose closure check passed."
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-05-DEF",
+          "node_kind": "DEFECT",
+          "occurred_at": "2026-08-27T05:05:30Z",
+          "derives_from": ["ICH-05-OBS"],
+          "title": "DEF-BYTE-INTEGRITY-IS-NOT-SEMANTIC-VALIDITY",
+          "statement": "Manifest closure and hash binding are transport controls. A structured artifact nobody can load is not evidence, and no digest can rescue it, because the digest is of the broken bytes.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-BYTE-INTEGRITY-IS-NOT-SEMANTIC-VALIDITY, reproduced above.",
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/SEEDED-DEFECT-REPRODUCTIONS.json",
+              "sha256": "6639ee79dacb918d952359bced989fb554ee77749b97440bd0fada28ed905eb6",
+              "field": "reproductions[REPRO-A-HASH-VALID-BUT-UNPARSEABLE].manifest_closure_verdict"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-05-MEC",
+          "node_kind": "MECHANISM_CHANGE",
+          "occurred_at": "2026-08-23T04:24:52Z",
+          "derives_from": ["ICH-05-DEF"],
+          "title": "evidence_integrity.verify_artifact_validity",
+          "statement": "Every hash-bound .json artifact is parsed after read-back. A file that does not load, or does not decode as UTF-8, is an error regardless of its digest.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-BYTE-INTEGRITY-IS-NOT-SEMANTIC-VALIDITY.",
+          "non_chronological_reason": "The mechanism was written on 2026-08-23 from the original live occurrence. Lane B's observation node is a fresh reproduction dated 2026-08-27 and does not claim to be the first occurrence; the original is cited alongside it.",
+          "evidence_citations": [
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/tools/evidence_integrity.py",
+              "sha256": "9fe9315b847dd4045fc47928ab15ce1c359d5b9c69d82f9ee33ef6127d976ba2",
+              "commit": "3b97d6ff5ed732c796adc0fd091f0125916079bd",
+              "symbol": "verify_artifact_validity"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-05-TST",
+          "node_kind": "REGRESSION_TEST",
+          "occurred_at": "2026-08-23T04:24:52Z",
+          "derives_from": ["ICH-05-MEC"],
+          "title": "A correct digest does not rescue invalid content",
+          "statement": "test_truncated_json_is_rejected, test_a_correct_digest_does_not_rescue_invalid_content, test_non_json_files_are_not_parsed and test_absent_file_is_not_a_validity_error. The last two matter as much as the first: a validity check that reports on files it was never given is a different defect.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-BYTE-INTEGRITY-IS-NOT-SEMANTIC-VALIDITY.",
+          "evidence_citations": [
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/tools/test_evidence_integrity.py",
+              "sha256": "ad7147ea2175fb54fd1d47422f6577a25c5c21b124ce326fac311319f79f9f43",
+              "commit": "3b97d6ff5ed732c796adc0fd091f0125916079bd",
+              "symbol": "test_a_correct_digest_does_not_rescue_invalid_content"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-05-RUN",
+          "node_kind": "RERUN",
+          "occurred_at": "2026-08-27T05:07:00Z",
+          "derives_from": ["ICH-05-TST"],
+          "title": "SUITE-EVIDENCE-INTEGRITY re-executed, 19 tests, exit 0",
+          "statement": "Shared with ICH-01 and ICH-02.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-BYTE-INTEGRITY-IS-NOT-SEMANTIC-VALIDITY.",
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/REGRESSION-RERUN.json",
+              "sha256": "52ade181fbd1d4a969d789818c018a5c7ea75c3bd02b3f96cbd4f4d810271d50",
+              "field": "suites[SUITE-EVIDENCE-INTEGRITY]"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-05-VER",
+          "node_kind": "VERDICT",
+          "occurred_at": "2026-08-27T05:12:00Z",
+          "derives_from": ["ICH-05-RUN"],
+          "title": "Producer-side verdict: closure and validity are two different checks and both are needed",
+          "statement": "The reproduction shows closure passing and validity refusing on the same artifact, which is the property the mechanism was written to have.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-BYTE-INTEGRITY-IS-NOT-SEMANTIC-VALIDITY.",
+          "verdict": {
+            "verdict_value": "MECHANISM_HOLDS_UNDER_RERUN",
+            "independent": false,
+            "issued_by": "lane B, cohort SCP-SI-01",
+            "independence_note": "Producer-side; not offered as acceptance."
+          },
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/SEEDED-DEFECT-REPRODUCTIONS.json",
+              "sha256": "6639ee79dacb918d952359bced989fb554ee77749b97440bd0fada28ed905eb6",
+              "field": "reproductions[REPRO-A-HASH-VALID-BUT-UNPARSEABLE]"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-05-PRO",
+          "node_kind": "CURRENTNESS_PROMOTION",
+          "occurred_at": "2026-08-27T05:14:00Z",
+          "derives_from": ["ICH-05-VER"],
+          "title": "Every structured artifact is hash-checked and parsed after read-back",
+          "statement": "Lane B's own delivery applies it: the manifest for this lane is verified for closure and every JSON entry is parsed after read-back, with the result recorded rather than asserted.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-BYTE-INTEGRITY-IS-NOT-SEMANTIC-VALIDITY.",
+          "promotion": {
+            "promoted_subject": "SCF-01/EVIDENCE-INTEGRITY/ARTIFACT-VALIDITY",
+            "promoted_state": "MECHANISM_LIVE_AND_MANDATORY_FOR_RECEIPT_CLOSURE",
+            "promoted_from_verdict_value": "MECHANISM_HOLDS_UNDER_RERUN",
+            "acceptance_class": false,
+            "why_not_acceptance_class": "Producer-side verdict."
+          },
+          "evidence_citations": [
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/scp-si-01/SCP-SI-01-SYSTEM-MAP.md",
+              "sha256": "d48ccc8b7e67a249e132c77a0672979e37b59a641c8ef002a5288458d50bd5f4",
+              "field": "Evidence integrity row lists artifact validity as live"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "chain_id": "ICH-06-HOOKS-NOT-FIRING",
+      "title": "Project hooks are not firing, and the mechanism change is pending",
+      "note": "The newest link, and the reason the schema had to be able to represent an unfinished story. A chain that can only carry closed cases would have forced this lane either to omit the live finding or to invent a mechanism it did not ship.",
+      "nodes": [
+        {
+          "node_id": "ICH-06-OBS",
+          "node_kind": "OBSERVATION",
+          "occurred_at": "2026-08-27T05:10:00Z",
+          "derives_from": [],
+          "title": "Two commands the guard refuses executed, and the audit log gained no line",
+          "statement": "The project root is /workspace, whose .cursor directory contains only environment.json: hooks.json is not there at all. git rebase --abort and gh workflow list, both matched by the hooks.json 'git|gh ' matcher, executed through the agent shell tool. The single write-scope audit log on the filesystem stayed at 3 lines and no audit file was created in the lane worktree.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "The hook-firing defect, re-reproduced independently by lane B and strengthened: the coordinator established that hooks are read from a root the lanes are not in; this run establishes that the root's checkout does not carry the hook definitions at all.",
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/HOOK-FIRING-PROBE.json",
+              "sha256": "757b33810cd991db0f8d13ae9914dd6708ed8b392b805b09c17f6a1927d0fee3"
+            },
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/scp-si-01/SCP-SI-01-BASELINE.yaml",
+              "sha256": "eaa3a513dd5667926c2398fefdc0a15e389d7c17574166f22b766c9a6a44799c",
+              "field": "hook_firing_verdict"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-06-DEF",
+          "node_kind": "DEFECT",
+          "occurred_at": "2026-08-27T05:11:00Z",
+          "derives_from": ["ICH-06-OBS"],
+          "title": "DEF-WRITE-SCOPE-GUARD-UNREACHED-FROM-WORKTREE",
+          "statement": "Every boundary in .cursor/write-scope.json is documentation in this runtime. require_write_declaration: true cannot auto-refuse anything, because the hook that would refuse is never reached. write_admission.py still refuses correctly when invoked by hand, so enforcement is voluntary and lane-side, and a lane that skips it is stopped by nothing.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-WRITE-SCOPE-GUARD-UNREACHED-FROM-WORKTREE. This is the third time this estate has hit the same class: a rule written in prose and enforced by nothing.",
+          "pending_successor": {
+            "node_kind": "MECHANISM_CHANGE",
+            "state": "PENDING",
+            "owner": "SCP-SI-01 coordinator bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+            "reason": "The fix belongs to whoever owns the binding between the Cursor project root and the lane worktrees, not to a lane writing inside one worktree. Lane B will not close this chain on a mechanism it did not ship, and will not invent one to make the chain look finished.",
+            "candidate_mechanisms": [
+              "Carry .cursor/hooks.json and .cursor/hooks/** onto the ref the project root checks out, so the only path Cursor consults is populated.",
+              "Install a per-worktree git pre-push hook calling write_admission.py, which fires where the write happens and does not depend on the provider reading a project root.",
+              "Make lane_guard.py refuse at integration any lane branch with no admitted write declaration recorded for its head, keeping enforcement lane-side but non-optional."
+            ],
+            "expires_when": "a mechanism change link derives from this defect"
+          },
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/HOOK-FIRING-PROBE.json",
+              "sha256": "757b33810cd991db0f8d13ae9914dd6708ed8b392b805b09c17f6a1927d0fee3",
+              "field": "consequence_stated_plainly"
+            },
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/scp-si-01/SCP-SI-01-SYSTEM-MAP.md",
+              "sha256": "d48ccc8b7e67a249e132c77a0672979e37b59a641c8ef002a5288458d50bd5f4",
+              "field": "The finding that governs how every lane must work"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,49 @@
+{
+  "report_id": "SCP-B-HOOK-FIRING-PROBE-20260827T0510Z",
+  "decision_changed": [],
+  "probed_at": "2026-08-27T05:10:00Z",
+  "probed_by": "lane B, cohort SCP-SI-01, worktree /tmp/lane-b",
+  "verdict": "NOT_FIRING",
+  "evidence_label": "DIRECTLY_REPRODUCED",
+  "confirms_prior_verdict": {
+    "source": "workstreams/so02/control-plane/operating-environment/scp-si-01/SCP-SI-01-BASELINE.yaml",
+    "field": "hook_firing_verdict",
+    "coordinator_verdict": "NOT_FIRING",
+    "coordinator_checked_at": "2026-08-27T04:57:11Z",
+    "independently_re_reproduced_by_lane_b": true
+  },
+  "method": [
+    "Read .cursor/write-scope.json in the lane worktree to recover the audit-log path it declares: .cursor/.run/write-scope-audit.jsonl, relative to the hook process working directory.",
+    "Located every write-scope audit log on the filesystem. Exactly one exists, in the retired coordinator worktree /tmp/oe-root, last written 2026-08-27T04:56 by the coordinator's own probe.",
+    "Recorded its line count, then issued git status --porcelain, git rebase --abort and gh workflow list through the agent shell tool, covering both halves of the hooks.json matcher 'git|gh '.",
+    "Re-read the line count and searched the lane worktree for any audit file the hook would have created there."
+  ],
+  "observations": {
+    "project_root": "/workspace",
+    "project_root_cursor_directory_contents": ["environment.json"],
+    "project_root_hooks_json_present": false,
+    "lane_worktree": "/tmp/lane-b",
+    "lane_worktree_hooks_json_present": true,
+    "audit_log_line_count_before": 3,
+    "audit_log_line_count_after": 3,
+    "audit_lines_added": 0,
+    "commands_issued_through_the_agent_shell_tool": [
+      {"command": "git status --porcelain", "outcome": "EXECUTED"},
+      {"command": "git rebase --abort", "outcome": "EXECUTED, returned 'fatal: No rebase in progress?'"},
+      {"command": "gh workflow list", "outcome": "EXECUTED, listed live workflows"}
+    ],
+    "audit_file_created_in_lane_worktree": false
+  },
+  "root_cause": "Cursor reads project hooks from the project root. The project root here is /workspace, whose checkout is the preserved CUR-01 evidence branch at 11a60dcf and does not contain .cursor/hooks.json at all. Every lane works in a git worktree under /tmp where hooks.json does exist and is never read. The hook scripts are correct and unreached.",
+  "stronger_than_the_coordinator_finding": "The coordinator recorded that the hooks are read from the project root and the lanes are elsewhere. This run additionally establishes that the project-root checkout does not carry the hook definitions at all, so there is nothing at the only path Cursor consults. The failure is not a path mismatch that a cwd change would fix; the definitions are absent from the ref that is checked out there.",
+  "consequence_stated_plainly": "Every boundary in .cursor/write-scope.json is documentation in this runtime. require_write_declaration: true cannot auto-refuse anything. Enforcement is voluntary and lane-side: write_admission.py refuses correctly when invoked by hand, and nothing invokes it.",
+  "mechanism_state": "PENDING",
+  "why_no_mechanism_is_shipped_here": "A fix belongs to whoever owns the runtime binding between the Cursor project root and the lane worktrees, not to a lane writing inside one worktree. Candidate mechanisms are recorded rather than invented: bind hooks at the project root ref that Cursor actually reads; or move lane execution into the project root; or replace the hook with a pre-push git hook installed per worktree, which fires where the write happens. Lane B declares this successor PENDING rather than closing the chain on a mechanism it did not ship.",
+  "candidate_mechanisms": [
+    "Carry .cursor/hooks.json and .cursor/hooks/** onto whatever ref the Cursor project root checks out, so the only path Cursor consults is populated.",
+    "Install a per-worktree git pre-push hook that calls write_admission.py, which fires in the worktree where the push actually happens and does not depend on the provider reading a project root.",
+    "Keep enforcement lane-side but make it non-optional by having lane_guard.py refuse at integration any lane branch with no admitted write declaration recorded for its head."
+  ],
+  "reproduction_is_read_only": true,
+  "nothing_was_written_to_enforce_or_disable_a_hook": true
+}
