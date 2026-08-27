@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import copy
 import hashlib
+import importlib.util
 import json
 import re
 import sys
@@ -14,6 +15,24 @@ from typing import Any, Iterable
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def _load_sibling(name: str):
+    """Load a module from this directory by path.
+
+    `python3 -I` implies `-P`, so the script's own directory is not on
+    `sys.path` and a plain import of a sibling module fails. Every tool in this
+    estate that composes modules loads them this way for that reason.
+    """
+    spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parent / f"{name}.py")
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+improvement_chain = _load_sibling("improvement_chain")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 ROLE_SCOPE_DECISION = [
     "SO-02 founder browser/setup batch HALTED; strategic development and human-operator implementation guidance for this capability moves to Cursor"
@@ -528,6 +547,41 @@ def validate_events(events: list[dict[str, Any]], errors: list[str]) -> None:
         previous = str(event.get("event_sha256"))
 
 
+def validate_improvement_chains(root: Path, control: dict[str, Any],
+                                events: list[dict[str, Any]], errors: list[str]) -> None:
+    """Validate the typed improvement links carried by the event log.
+
+    Both halves are optional by design, which is what makes this a
+    backward-compatible extension rather than a new requirement:
+
+    * a control-plane document with no `improvement_chain_contract` is not
+      penalised, and
+    * an event log with no `improvement_link` payloads projects zero chains and
+      produces zero errors.
+
+    When the contract *is* recorded it is compared against the rules
+    `improvement_chain` actually enforces, so a contract that drifts from the
+    code is caught rather than read as a description of it. That is the same
+    defect shape as `verify_protected_refs` reading a manifest key into a local
+    it never used.
+    """
+    contract = control.get("improvement_chain_contract")
+    if contract is not None:
+        errors.extend(improvement_chain.validate_contract(contract))
+
+    chains, findings = improvement_chain.check_all(events, root.parents[2])
+    for finding in findings:
+        if finding.severity == improvement_chain.ERROR:
+            errors.append(
+                f"improvement-chain {finding.chain_id}/{finding.node_id}: "
+                f"[{finding.code}] {finding.detail}"
+            )
+
+    if contract is not None and chains:
+        add(errors, contract.get("new_store_created") is False,
+            "improvement-chain contract: a competing store cannot be declared here")
+
+
 def validate(root: Path = ROOT) -> list[str]:
     errors: list[str] = []
     control = read_json(root / "state/control-plane.json")
@@ -547,6 +601,7 @@ def validate(root: Path = ROOT) -> list[str]:
     role_scope_receipt = read_json(root.parent.parent.parent / "receipts/so02/2026-08-22/founder-operating-environment-role-correction-20260822T173520Z.json")
     validate_role_scope_receipt(root, role_scope_receipt, errors)
     validate_events(events, errors)
+    validate_improvement_chains(root, control, events, errors)
     validate_instruction_contracts(root, errors)
     return errors
 
@@ -561,11 +616,15 @@ def project(root: Path = ROOT) -> dict[str, Any]:
             "event_sha256": event["event_sha256"],
             "sequence": event["sequence"]
         }
+    chains, findings = improvement_chain.check_all(events)
     return {
         "aggregate_id": "SCF-01",
         "event_head": events[-1]["event_sha256"] if events else None,
         "event_count": len(events),
-        "subjects": subjects
+        "subjects": subjects,
+        # A projection of the same events, not a second register. An event log
+        # carrying no improvement links yields an empty summary here.
+        "improvement_chains": improvement_chain.summarise(chains, findings)
     }
 
 

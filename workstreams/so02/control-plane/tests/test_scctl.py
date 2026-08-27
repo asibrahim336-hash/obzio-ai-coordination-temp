@@ -29,8 +29,17 @@ class ControlPlaneTests(unittest.TestCase):
         self.assertEqual([], scctl.validate(self.root))
 
     def test_project_rebuilds_from_event_head(self) -> None:
+        # The count is read from the log rather than pinned to a literal. A
+        # literal here made the assertion "the ledger has never been appended
+        # to", which is the opposite of what an append-only log is for: the
+        # first genuine append failed the test that was supposed to protect it.
+        # What is worth asserting is that the projection is complete, that it
+        # ends where the log ends, and that a known subject still resolves.
+        events = scctl.read_jsonl(self.root / "state/events.jsonl")
         projection = scctl.project(self.root)
-        self.assertEqual(21, projection["event_count"])
+        self.assertEqual(len(events), projection["event_count"])
+        self.assertGreaterEqual(projection["event_count"], 21)
+        self.assertEqual(events[-1]["event_sha256"], projection["event_head"])
         self.assertEqual("ACTIVE_INTERIM", projection["subjects"]["SCF-01/CGPT-01"]["state"])
 
     def test_event_chain_is_valid(self) -> None:
@@ -359,21 +368,32 @@ class ControlPlaneTests(unittest.TestCase):
         scctl.validate_durable_directives(self.root, errors)
         self.assertEqual([], errors)
 
+    # These two located the founder role/scope event at events[-1]. That held
+    # only while nothing had ever been appended after it, so the position was
+    # standing in for the identity. The event is now found by its type, which
+    # is what the rule under test is actually about.
+    def role_scope_event_index(self, events: list[dict]) -> int:
+        matches = [position for position, event in enumerate(events)
+                   if event["event_type"] == "FOUNDER_ROLE_SCOPE_CORRECTION_APPLIED"]
+        self.assertEqual(1, len(matches), "exactly one founder role/scope correction is expected")
+        return matches[0]
+
     def test_founder_role_scope_event_requires_exact_authority(self) -> None:
         events = scctl.read_jsonl(self.root / "state/events.jsonl")
-        self.assertEqual("FOUNDER_ROLE_SCOPE_CORRECTION_APPLIED", events[-1]["event_type"])
+        index = self.role_scope_event_index(events)
         changed = copy.deepcopy(events)
-        changed[-1]["authority"]["class"] = "FOUNDER_DELEGATED_OPERATING_AUTHORITY"
-        changed[-1]["event_sha256"] = scctl.canonical_event_hash(changed[-1])
+        changed[index]["authority"]["class"] = "FOUNDER_DELEGATED_OPERATING_AUTHORITY"
+        changed[index]["event_sha256"] = scctl.canonical_event_hash(changed[index])
         errors: list[str] = []
         scctl.validate_events(changed, errors)
         self.assertTrue(any("founder role/scope correction lacks exact authority" in item for item in errors))
 
     def test_founder_role_scope_event_cannot_flatten_decision_to_empty(self) -> None:
         events = scctl.read_jsonl(self.root / "state/events.jsonl")
+        index = self.role_scope_event_index(events)
         changed = copy.deepcopy(events)
-        changed[-1]["payload"]["decision_changed"] = []
-        changed[-1]["event_sha256"] = scctl.canonical_event_hash(changed[-1])
+        changed[index]["payload"]["decision_changed"] = []
+        changed[index]["event_sha256"] = scctl.canonical_event_hash(changed[index])
         errors: list[str] = []
         scctl.validate_events(changed, errors)
         self.assertTrue(any("founder role/scope decision incomplete" in item for item in errors))

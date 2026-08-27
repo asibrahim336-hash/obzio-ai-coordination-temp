@@ -166,6 +166,75 @@
     "founder_is_comparison_retrieval_or_merge_layer": false,
     "failure_mode_without_single_writer": "ISOLATED_WORK_CONTINUES_SHARED_WRITES_FAIL_CLOSED"
   },
+  "improvement_chain_contract": {
+    "contract_id": "SCP-B-IMPROVEMENT-CHAIN-20260827-v001",
+    "schema_id": "SCP-B-IMPROVEMENT-CHAIN",
+    "schema_version": "1.0",
+    "state": "LIVE_PROJECTION_OVER_EXISTING_EVENT_LOG",
+    "purpose": "Connect an observation to the mechanism that answered it, so that the LESSON_DOCUMENTED failure the admission ladder already names becomes findable instead of merely stated.",
+    "canonical_store": "workstreams/so02/control-plane/state/events.jsonl",
+    "new_store_created": false,
+    "no_new_store_rationale": "A link is one ordinary event in the existing hash-chained log, carrying one new optional payload key. The registry view is scctl.py project, the currentness and recovery views are currentctl.py compile. All three are pure projections of the same events. Deleting the projector loses no evidence.",
+    "enforced_by": "workstreams/so02/control-plane/tools/improvement_chain.py",
+    "tested_by": "workstreams/so02/control-plane/operating-environment/scp-si-01/lane-b/tests/test_improvement_chain.py",
+    "link_event_type": "IMPROVEMENT_LINK_RECORDED",
+    "contract_event_type": "IMPROVEMENT_CHAIN_CONTRACT_RECORDED",
+    "link_payload_key": "improvement_link",
+    "node_kinds": [
+      "OBSERVATION",
+      "DEFECT",
+      "MECHANISM_CHANGE",
+      "REGRESSION_TEST",
+      "RERUN",
+      "VERDICT",
+      "CURRENTNESS_PROMOTION"
+    ],
+    "evidence_labels": ["DIRECTLY_REPRODUCED", "DOCUMENTED", "HYPOTHESIS"],
+    "provenance_classes": ["FOUNDER_AUTHORED", "EARNED", "ASSISTANT_AUTHORED"],
+    "allowed_edges": {
+      "OBSERVATION": ["DEFECT"],
+      "DEFECT": ["MECHANISM_CHANGE"],
+      "MECHANISM_CHANGE": ["REGRESSION_TEST"],
+      "REGRESSION_TEST": ["RERUN"],
+      "RERUN": ["VERDICT"],
+      "VERDICT": ["CURRENTNESS_PROMOTION"],
+      "CURRENTNESS_PROMOTION": []
+    },
+    "required_predecessor": {
+      "DEFECT": "OBSERVATION",
+      "MECHANISM_CHANGE": "DEFECT",
+      "REGRESSION_TEST": "MECHANISM_CHANGE",
+      "RERUN": "REGRESSION_TEST",
+      "VERDICT": "RERUN",
+      "CURRENTNESS_PROMOTION": "VERDICT"
+    },
+    "required_successor": {
+      "DEFECT": "MECHANISM_CHANGE",
+      "REGRESSION_TEST": "RERUN",
+      "MECHANISM_CHANGE": "REGRESSION_TEST"
+    },
+    "successor_waivable_by_declared_pending": true,
+    "predecessor_waivable": false,
+    "asymmetry_rationale": "A missing successor may be waived by a declared pending_successor naming the kind, a reason and an owner, because admitting that a mechanism is not written yet is an honest state and a chain that can only carry finished stories does not model this estate. A missing predecessor may never be waived: a verdict with no rerun, or a promotion with no verdict, is a claim resting on nothing, and a declaration cannot supply the foundation it admits is absent.",
+    "acceptance_class_promotions": [
+      "ACCEPTED",
+      "FOUNDER_ACCEPTED",
+      "INDEPENDENTLY_ACCEPTED",
+      "INDEPENDENTLY_VALIDATED",
+      "QUALIFIED"
+    ],
+    "acceptance_requires_independent_verdict": true,
+    "acceptance_rule_rationale": "An acceptance-class promotion requires a VERDICT with independent: true. A promotion that only records a refusal or a mechanism going live may rest on a producer-side verdict, because independence gates upward promotion and never gates recording that something failed.",
+    "provenance": "EARNED",
+    "provenance_basis": "The estate's own recorded failure mode, named in l4-currentness-recovery/ledger/admission-ladder.json as the non-admissible class LESSON_DOCUMENTED: 'A recorded lesson that changes no executable gate leaves the failure available.' Five of the six seeded chains exist because a control was described before it was executable, and the sixth is the same defect class found again in this run.",
+    "backward_compatibility": {
+      "this_key_is_optional": true,
+      "a_control_plane_document_without_it_validates_unchanged": true,
+      "events_without_an_improvement_link_project_zero_chains": true,
+      "no_existing_event_type_admission_state_or_ladder_requirement_changed": true,
+      "asserted_by_test": "test_improvement_chain.BackwardCompatibilityTests"
+    }
+  },
   "runtime_bindings": [
     {
       "binding_id": "SCF-01/CUR-01",

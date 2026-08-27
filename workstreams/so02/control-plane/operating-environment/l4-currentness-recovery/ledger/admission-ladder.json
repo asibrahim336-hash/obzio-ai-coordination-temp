@@ -71,7 +71,8 @@
     "REMOTE_READBACK_HASH": "A hash re-read from the remote ref after the write, proving the write survived the transport.",
     "REPRODUCIBLE_COMMAND": "An argv plus an expected exit code that a third party can re-run without provider access.",
     "INDEPENDENT_EVALUATION": "A verdict recorded by an evaluator identity distinct from the producer identity.",
-    "FOUNDER_BOUND_ACCEPTANCE": "A founder-bound decision record carrying the exact decision text."
+    "FOUNDER_BOUND_ACCEPTANCE": "A founder-bound decision record carrying the exact decision text.",
+    "CLOSED_IMPROVEMENT_CHAIN": "A named chain in workstreams/so02/control-plane/state/events.jsonl that runs observation -> defect -> mechanism change -> regression test -> rerun -> verdict -> currentness promotion, with every link citing an artifact. This is the admissible counterpart of the non-admissible LESSON_DOCUMENTED: the same subject matter, distinguished by whether an executable gate actually changed and was re-run."
   },
   "non_admissible_evidence_classes": {
     "PULL_REQUEST_EXISTS": "A PR is a proposal for integration. An open PR is not merged work and merged work is not accepted capability.",
@@ -92,6 +93,15 @@
     "artifact_classes": ["COMMITTED_ARTIFACT_HASH", "REMOTE_READBACK_HASH"],
     "command_classes": ["REPRODUCIBLE_COMMAND"],
     "unbacked_is_error": true
+  },
+  "improvement_chain_rule": {
+    "rule": "An entry of class CLOSED_IMPROVEMENT_CHAIN must carry a chain_id that resolves, in the canonical event log, to a chain in state CLOSED_THROUGH_PROMOTION. An unresolvable or still-open chain offered as a closed one is an error, not a weaker piece of evidence.",
+    "enforced_by": "currentctl.check_chain_backed_claims",
+    "chain_rules_enforced_by": "workstreams/so02/control-plane/tools/improvement_chain.py",
+    "state_requirements_unchanged": true,
+    "why_no_rung_requires_it": "Adding CLOSED_IMPROVEMENT_CHAIN to a requires_all_of list would retroactively demote every subject already admitted under this ladder, which is a breaking change disguised as a strengthening. The class is admissible and checkable; whether a rung should ever require it is a separate decision and is not taken here.",
+    "provenance": "EARNED",
+    "provenance_basis": "The LESSON_DOCUMENTED class already in this file names the failure but cannot find an instance of it, because nothing connected an observation to the mechanism that answered it."
   },
   "differentiation_rule": {
     "rule": "Two active commissions may not both claim whole-operation authority over an overlapping namespace without a recorded supersession edge or disjoint scope keys.",

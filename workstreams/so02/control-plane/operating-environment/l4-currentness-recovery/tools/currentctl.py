@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import re
 import subprocess
@@ -38,6 +39,28 @@ TOOL_VERSION = "20260822-v001"
 LANE_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = Path(__file__).resolve().parents[6]
 LEDGER_DIR = LANE_ROOT / "ledger"
+
+EVENTS_RELATIVE_PATH = "workstreams/so02/control-plane/state/events.jsonl"
+
+
+def _load_by_path(name: str, path: Path):
+    """`python3 -I` implies `-P`, so a sibling or cousin module must be loaded by path."""
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+# Reused rather than reimplemented. The chain rules have exactly one
+# implementation; re-deriving them here would fork the corrections, which is the
+# mistake `write_admission.py` explicitly declined to make with
+# `evidence_integrity`.
+improvement_chain = _load_by_path(
+    "improvement_chain",
+    REPO_ROOT / "workstreams/so02/control-plane/tools/improvement_chain.py",
+)
 
 DIRECTLY_REPRODUCED = "DIRECTLY_REPRODUCED"
 DOCUMENTED = "DOCUMENTED"
@@ -1025,6 +1048,99 @@ def check_integration_reality(graph: dict[str, Any], pull_requests: list[dict[st
 
 
 # --------------------------------------------------------------------------
+# improvement chains
+# --------------------------------------------------------------------------
+
+
+CLOSED_CHAIN_EVIDENCE_CLASS = "CLOSED_IMPROVEMENT_CHAIN"
+
+
+def compile_improvement_chains(repo_root: Path) -> tuple[dict[str, Any], list[Finding]]:
+    """Project the typed improvement links out of the canonical event log.
+
+    This is the currentness and recovery view of the chain, and it is the same
+    events `scctl.py project` reads. Nothing here holds state: an event log
+    with no `improvement_link` payloads, or no log at all, yields no chains and
+    no findings, which is how this gate stays silent on every fixture repository
+    the rest of this suite builds.
+
+    Two questions are answered, and they are the two the estate keeps failing:
+
+    *currentness* — is any subject being carried as current on a chain that is
+    broken? A broken chain is an ERROR and every consumer must fail closed.
+
+    *recovery* — what does each unfinished chain owe next, and who owns it? A
+    declared pending successor is a WARNING with a named owner, because an open
+    improvement is a recovery item rather than a defect in the record.
+    """
+    events = improvement_chain.read_events(repo_root / EVENTS_RELATIVE_PATH)
+    chains, chain_findings = improvement_chain.check_all(events, repo_root)
+
+    findings: list[Finding] = []
+    for chain_finding in chain_findings:
+        findings.append(Finding(
+            code=chain_finding.code,
+            severity=chain_finding.severity,
+            subject=urn("chain", f"{chain_finding.chain_id}:{chain_finding.node_id}"
+                        if chain_finding.node_id else chain_finding.chain_id),
+            detail=chain_finding.detail,
+            evidence={
+                **chain_finding.evidence,
+                "provenance": provenance(
+                    DIRECTLY_REPRODUCED,
+                    method=f"improvement_chain.check_all over {EVENTS_RELATIVE_PATH}",
+                ),
+            },
+        ))
+    return chains, findings
+
+
+def check_chain_backed_claims(chains: dict[str, Any],
+                              ledger: dict[str, Any]) -> list[Finding]:
+    """A workstream offering a closed chain as evidence must name one that closed.
+
+    `CLOSED_IMPROVEMENT_CHAIN` is an admissible class, so it has to be
+    checkable. The failure this forecloses is the one the retired
+    `verify_protected_refs` had: a check that reads an identifier and never
+    resolves it, so the register appears to bind something it does not.
+    """
+    findings: list[Finding] = []
+    for workstream in ledger.get("workstreams", []):
+        subject = workstream["workstream_id"]
+        for entry in workstream.get("evidence", []):
+            if entry.get("evidence_class") != CLOSED_CHAIN_EVIDENCE_CLASS:
+                continue
+            chain_id = entry.get("chain_id")
+            chain = chains.get(str(chain_id))
+            if chain is None:
+                findings.append(Finding(
+                    code="CHAIN_EVIDENCE_NAMES_NO_CHAIN",
+                    severity=ERROR,
+                    subject=urn("workstream", subject),
+                    detail=(
+                        f"{CLOSED_CHAIN_EVIDENCE_CLASS} names chain {chain_id!r}, which the event "
+                        "log does not contain; an identifier that resolves to nothing is not evidence"
+                    ),
+                    evidence={"entry": entry},
+                ))
+                continue
+            if chain["chain_state"] != "CLOSED_THROUGH_PROMOTION":
+                findings.append(Finding(
+                    code="CHAIN_EVIDENCE_CHAIN_NOT_CLOSED",
+                    severity=ERROR,
+                    subject=urn("workstream", subject),
+                    detail=(
+                        f"{CLOSED_CHAIN_EVIDENCE_CLASS} names chain {chain_id}, which is "
+                        f"{chain['chain_state']} and owes {chain['next_required_node_kind']}; an "
+                        "open chain cannot be offered as a closed one"
+                    ),
+                    evidence={"entry": entry, "chain_state": chain["chain_state"],
+                              "next_required_node_kind": chain["next_required_node_kind"]},
+                ))
+    return findings
+
+
+# --------------------------------------------------------------------------
 # compilation entry point
 # --------------------------------------------------------------------------
 
@@ -1117,6 +1233,9 @@ class Compiler:
         findings.extend(check_commission_resolution(self.ledger.get("commissions", []), register_ids))
         findings.extend(check_integration_reality(graph, self.ledger.get("pull_requests", []),
                                                   self.ladder))
+        chains, chain_findings = compile_improvement_chains(self.repo_root)
+        findings.extend(chain_findings)
+        findings.extend(check_chain_backed_claims(chains, self.ledger))
 
         workstreams: dict[str, Any] = {}
         for workstream in self.ledger.get("workstreams", []):
@@ -1164,6 +1283,17 @@ class Compiler:
             "refs": graph["nodes"],
             "currentness_scopes": currentness,
             "version_lineage": lineage,
+            # A projection of the same event log, not a second register.
+            "improvement_chains": improvement_chain.summarise(chains, []),
+            "improvement_chain_recovery": {
+                chain_id: {
+                    "chain_state": chain["chain_state"],
+                    "next_required_node_kind": chain["next_required_node_kind"],
+                    "pending": chain["pending"],
+                    "promoted_states": chain["promoted_states"],
+                }
+                for chain_id, chain in chains.items()
+            },
             "workstreams": workstreams,
             "admission_counts": _admission_counts(workstreams),
             "findings": [f.as_dict() for f in findings],
