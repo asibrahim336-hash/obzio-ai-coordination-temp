@@ -158,6 +158,56 @@ class ArtifactValidityTests(unittest.TestCase):
         self.assertEqual([], ei.verify_artifact_validity(["nope.json"], self.repo))
 
 
+class ManifestTruthTests(unittest.TestCase):
+    """Closure is a shape check. A forged record is internally consistent by construction."""
+
+    def setUp(self) -> None:
+        self._dir = tempfile.TemporaryDirectory()
+        self.repo = Path(self._dir.name)
+
+    def tearDown(self) -> None:
+        self._dir.cleanup()
+
+    def manifest_for(self, name: str, text: str, claimed: str | None = None) -> dict:
+        (self.repo / name).write_text(text, encoding="utf-8")
+        digest = claimed or ei.sha256_bytes(text.encode())
+        entries = [{"path": name, "size_bytes": len(text.encode()), "sha256": digest}]
+        return {
+            "entries": entries,
+            "bundle_sha256": ei.sha256_bytes(
+                __import__("json").dumps(entries, sort_keys=True, separators=(",", ":")).encode()
+            ),
+        }
+
+    def test_honest_manifest_passes_truth(self) -> None:
+        self.assertEqual([], ei.verify_manifest_truth(self.manifest_for("a.json", '{"a":1}'), self.repo))
+
+    def test_the_live_forgery_is_caught(self) -> None:
+        """Sixty-four zeroes, with bundle_sha256 recomputed so the shape is consistent."""
+        m = self.manifest_for("a.json", '{"a":1}', claimed="0" * 64)
+        errors = ei.verify_manifest_truth(m, self.repo)
+        self.assertTrue(any("actually hashes to" in e for e in errors))
+
+    def test_closure_alone_would_have_passed_that_forgery(self) -> None:
+        """Why truth-checking had to be added: closure cannot see it."""
+        m = self.manifest_for("a.json", '{"a":1}', claimed="0" * 64)
+        self.assertEqual([], ei.verify_manifest_closure(m, ["a.json"]))
+        self.assertTrue(ei.verify_manifest_truth(m, self.repo))
+
+    def test_a_recorded_file_absent_from_disk_is_caught(self) -> None:
+        m = self.manifest_for("a.json", '{"a":1}')
+        (self.repo / "a.json").unlink()
+        self.assertTrue(any("absent from disk" in e for e in ei.verify_manifest_truth(m, self.repo)))
+
+    def test_size_disagreement_is_caught(self) -> None:
+        m = self.manifest_for("a.json", '{"a":1}')
+        m["entries"][0]["size_bytes"] = 99999
+        self.assertTrue(any("bytes but the file is" in e for e in ei.verify_manifest_truth(m, self.repo)))
+
+    def test_empty_record_cannot_evidence_anything(self) -> None:
+        self.assertTrue(ei.verify_manifest_truth({"entries": []}, self.repo))
+
+
 class ManifestClosureTests(unittest.TestCase):
     """An excluded file is an unbound file, however good the reason for excluding it."""
 
