@@ -107,6 +107,21 @@ def check_concurrency_gate(declaration: dict[str, Any], repo: Path | None,
     # update and diverge for a branch the declaring lane created, so the
     # concurrency field is preferred and the custody SHA is only a fallback.
     observed_sha = concurrency.get("ref_sha_at_observation") or reversal.get("recorded_sha")
+
+    # ICH-08, found by Lane B by tripping it: with no observation recorded the
+    # movement check was SKIPPED rather than failed, so a declaration could state
+    # something false about the world and be admitted for saying nothing checkable.
+    # A gate that passes by not running is the INSTALLED_NOT_EFFECTIVE class the
+    # founder named, and the third instance of it in this gate today. An absent
+    # observation is now a refusal: asserting idleness is not observing it.
+    if check_ref_movement and not str(observed_sha or "").strip():
+        return _gate(
+            GATE_CONCURRENCY, False, "CONCURRENCY_NOT_OBSERVED",
+            ["concurrency.ref_sha_at_observation is absent and no custody SHA stands in for it, "
+             "so the movement check has nothing to compare against. An unobserved ref is refused "
+             "rather than skipped — the gate must fail closed when it cannot run."],
+        )
+
     result = concurrency_observer.concurrency_verdict(
         str(target.get("ref") or ""),
         declaration.get("concurrency"),

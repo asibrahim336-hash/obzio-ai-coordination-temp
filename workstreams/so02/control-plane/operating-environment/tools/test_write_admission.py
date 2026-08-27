@@ -370,3 +370,41 @@ class AdvisoryVersusRefusalTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class ConcurrencyFailOpenTests(unittest.TestCase):
+    """ICH-08, found by Lane B by tripping it, not by reading the code.
+
+    A gate that passes because it could not run is the INSTALLED_NOT_EFFECTIVE
+    class. It was the third instance in this gate in one session: closure asking
+    the record about itself, obligation truthiness swallowing a true zero, and
+    this — an absent observation skipping the movement check instead of failing it.
+    """
+
+    def _decl(self, **concurrency):
+        return {
+            "target": {"ref": "cursor/operating-environment-return-20260822-v001"},
+            "concurrency": {"observed_at": _ago(60), "agents": [], **concurrency},
+            "reversal": {},
+        }
+
+    def test_an_absent_observation_is_refused_not_skipped(self) -> None:
+        gate = wa.check_concurrency_gate(self._decl(), None)
+        self.assertFalse(gate["passed"])
+        self.assertEqual("CONCURRENCY_NOT_OBSERVED", gate["verdict"])
+
+    def test_an_empty_observation_string_is_also_refused(self) -> None:
+        gate = wa.check_concurrency_gate(self._decl(ref_sha_at_observation="   "), None)
+        self.assertFalse(gate["passed"])
+        self.assertEqual("CONCURRENCY_NOT_OBSERVED", gate["verdict"])
+
+    def test_asserting_idleness_is_not_observing_it(self) -> None:
+        """An agents list plus a confident note is not an observation of the ref."""
+        gate = wa.check_concurrency_gate(
+            self._decl(note="no lane holds this ref"), None)
+        self.assertFalse(gate["passed"])
+
+    def test_the_gate_never_passes_by_being_unable_to_run(self) -> None:
+        for decl in (self._decl(), self._decl(ref_sha_at_observation=""),
+                     self._decl(ref_sha_at_observation=None)):
+            self.assertFalse(wa.check_concurrency_gate(decl, None)["passed"])
