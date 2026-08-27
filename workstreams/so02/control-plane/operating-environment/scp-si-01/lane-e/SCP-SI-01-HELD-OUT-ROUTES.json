@@ -1,0 +1,281 @@
+{
+  "artifact_id": "SCP-SI-01-HELD-OUT-ROUTES",
+  "schema_version": "1.0",
+  "commission": "SCP-SI-01",
+  "lane": "E",
+  "phase": "HELD_OUT_SET_CONSTRUCTED",
+  "terminal_state": "MEASUREMENT_PENDING",
+  "canonical_record_extended": {
+    "artifact_id": "OE-W7-ROUTE-EVIDENCE-TABLE-20260822-v001",
+    "path": "workstreams/so02/control-plane/operating-environment/w7-route-evidence/ROUTE-EVIDENCE-TABLE-20260822-v001.json",
+    "relationship": "EVALUATION_EXTENSION_ONLY",
+    "preservation": "The canonical 27-route record is not modified or replaced."
+  },
+  "qualification_context_preserved": {
+    "qualification_id": "CUR-ORCH-QUAL-01",
+    "path_on_preserved_branch": "workstreams/so02/control-plane/state/CUR-ORCH-QUAL-01.json",
+    "preserved_branch": "cursor/so02-cur-orch-qual-01",
+    "register_commit": "11a60dcf6dbc2eac4e6d975efab5d985ebbabd62",
+    "treatment": "IN_SAMPLE_OR_CONTAMINATED_CONTEXT_NOT_A_HELD_OUT_CASE",
+    "current_disposition_source": "receipts/so02/2026-08-22/oe-dispatch/CUR01-REFUSAL-INGESTION.json",
+    "current_disposition": "REFUSED; R1 GitHub immutable-SHA custody survived challenge and R2 did not. The preserved register's producer classification is not treated as acceptance."
+  },
+  "integration_audit": {
+    "branch": "cursor/operating-environment-return-20260822-v001",
+    "fetched_at_utc": "2026-08-27T05:17:00Z",
+    "audited_commit": "7f29043eece45f42f018d841718a257cfd18739b",
+    "evidence_label": "DIRECTLY_REPRODUCED",
+    "observation": "A mid-run fetch resolved the remote integration branch to the same immutable commit as the Lane E base."
+  },
+  "partition": {
+    "authoring_cutoff": {
+      "route_table_last_authoring_commit": "e23c8bf50b29b79c87aeb9ace4ccb71786d94cde",
+      "committed_at_utc": "2026-08-23T01:15:01Z",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "source": "git log for the canonical route-table path"
+    },
+    "in_sample": {
+      "profile_count": 27,
+      "task_case_count": null,
+      "task_case_count_status": "UNESTABLISHED",
+      "why_not_counted": "The canonical table identifies 27 route profiles and one OE-W7 scope question, but it does not publish a task-case corpus or profile-authoring membership labels. Counting source excerpts or profiles as tasks would manufacture a denominator.",
+      "known_material": [
+        "OE-W7's route-table scope and evidence",
+        "OE-L5 claims explicitly reused by OE-W7",
+        "OE-W6 harvest explicitly reused by OE-W7",
+        "CUR-ORCH-QUAL-01, which predates the route table and therefore cannot be proved absent from authoring context"
+      ],
+      "evidence_label": "DOCUMENTED",
+      "source": "workstreams/so02/control-plane/operating-environment/w7-route-evidence/ROUTE-EVIDENCE-TABLE-20260822-v001.json"
+    },
+    "held_out": {
+      "defined_count": 8,
+      "activated_count_at_construction": 6,
+      "completed_return_count_at_construction": 1,
+      "separation_rule": "A work node is held out only if it belongs to SCP-SI-01, whose 2026-08-27 frozen baseline states that no SCP-SI-01 output pre-existed. This cohort begins more than four days after the route table's last authoring commit. Earlier OE-W8/W9/W10 material is excluded even when its commit timestamp is later than the table, because commit order alone cannot prove that concurrently prepared work was absent from the author's context.",
+      "evidence_label": "DOCUMENTED",
+      "sources": [
+        "workstreams/so02/control-plane/operating-environment/scp-si-01/SCP-SI-01-BASELINE.yaml",
+        "workstreams/so02/control-plane/operating-environment/scp-si-01/SCP-SI-01-SYSTEM-MAP.md"
+      ],
+      "tasks": [
+        {
+          "task_id": "HO-A",
+          "lane": "A",
+          "work_node": "Repair the governing CUR-ORCH-QUAL refusal record without creating a second acceptance track.",
+          "extends": "CUR-ORCH-QUAL refusal record",
+          "required_return_properties": [
+            "repository-native structured artifact",
+            "immutable commit and remote read-back",
+            "producer cannot self-accept",
+            "current refusal disposition preserved"
+          ],
+          "construction_state": "COMPLETED_RETURN_OBSERVED",
+          "activation_evidence": {
+            "evidence_label": "DIRECTLY_REPRODUCED",
+            "remote_branch": "cursor/scp-a-refusal-repair-696d",
+            "observed_head": "1d6fe0fe461431e24f1262335f8e8c1664c623f9",
+            "artifact_path": "workstreams/so02/control-plane/operating-environment/scp-si-01/lane-a/CUR-ORCH-QUAL-REMEDIATION-RESUBMISSION.json"
+          }
+        },
+        {
+          "task_id": "HO-B",
+          "lane": "B",
+          "work_node": "Extend the hash-chained event log and currentness projections without creating a competing ledger.",
+          "extends": "events.jsonl and currentness projections",
+          "required_return_properties": [
+            "chain-valid event",
+            "currentness projection update",
+            "repository-native evidence",
+            "immutable return"
+          ],
+          "construction_state": "RUNNING",
+          "activation_evidence": {
+            "evidence_label": "DIRECTLY_REPRODUCED",
+            "agent_id": "bc-1c0486c5-f59f-5aed-9490-4bcb33d6b0e3",
+            "observed_status": "RUNNING"
+          }
+        },
+        {
+          "task_id": "HO-C",
+          "lane": "C",
+          "work_node": "Exercise the authority/authorship corpus with a real sidecar worker without replacing the authority index.",
+          "extends": "authority index",
+          "required_return_properties": [
+            "executable worker",
+            "fixtures",
+            "tests",
+            "repository-native evidence"
+          ],
+          "construction_state": "RUNNING",
+          "activation_evidence": {
+            "evidence_label": "DIRECTLY_REPRODUCED",
+            "agent_id": "bc-479fe73d-737d-50f2-bca8-6dcd8eec9eca",
+            "observed_status": "RUNNING"
+          }
+        },
+        {
+          "task_id": "HO-D",
+          "lane": "D",
+          "work_node": "Triage the integrated regression harness and 117 portability findings without creating a parallel test suite.",
+          "extends": "existing regression harness",
+          "required_return_properties": [
+            "raw pass/fail counts",
+            "failure classification",
+            "test evidence",
+            "repository-native return"
+          ],
+          "construction_state": "RUNNING",
+          "activation_evidence": {
+            "evidence_label": "DIRECTLY_REPRODUCED",
+            "agent_id": "bc-bd66ebcf-87a3-5291-8628-3c52f93351a9",
+            "observed_status": "RUNNING"
+          }
+        },
+        {
+          "task_id": "HO-E",
+          "lane": "E",
+          "work_node": "Evaluate the 27 route profiles on held-out work without creating a route registry.",
+          "extends": "ROUTE-EVIDENCE-TABLE",
+          "required_return_properties": [
+            "per-route raw counts",
+            "abstentions distinguished from failures",
+            "evidence-loss and recovery observations",
+            "currentness propagation",
+            "parsed hash closure"
+          ],
+          "construction_state": "RUNNING",
+          "activation_evidence": {
+            "evidence_label": "DIRECTLY_REPRODUCED",
+            "agent_id": "bc-5f6e325d-fdb2-533d-9401-3b64fea0a953",
+            "observed_status": "RUNNING"
+          }
+        },
+        {
+          "task_id": "HO-F",
+          "lane": "F",
+          "work_node": "Extend the authorship worker contract without creating a second adapter layer.",
+          "extends": "authorship worker contract",
+          "required_return_properties": [
+            "contract-compatible implementation evidence",
+            "tests",
+            "repository-native return"
+          ],
+          "construction_state": "DEFINED_NOT_ACTIVATED_AT_CONSTRUCTION",
+          "activation_evidence": {
+            "evidence_label": "DOCUMENTED",
+            "source": "workstreams/so02/control-plane/operating-environment/scp-si-01/SCP-SI-01-SYSTEM-MAP.md"
+          }
+        },
+        {
+          "task_id": "HO-G",
+          "lane": "G",
+          "work_node": "Derive accepted-unit economics from cohort history without creating a ceremonial Cycle 0.",
+          "extends": "cohort history",
+          "required_return_properties": [
+            "raw counts and denominators",
+            "accepted-unit distinction",
+            "repository-native evidence",
+            "immutable return"
+          ],
+          "construction_state": "RUNNING",
+          "activation_evidence": {
+            "evidence_label": "DIRECTLY_REPRODUCED",
+            "agent_id": "bc-3d7e54e1-452d-5069-8f46-80d399c529b6",
+            "observed_status": "RUNNING"
+          }
+        },
+        {
+          "task_id": "HO-H",
+          "lane": "H",
+          "work_node": "Apply the existing independent-acceptance machinery without allowing a producer-authored verdict.",
+          "extends": "independent acceptance machinery",
+          "required_return_properties": [
+            "independent verdict",
+            "criteria fixed before evaluation",
+            "replayable evidence",
+            "currentness projection"
+          ],
+          "construction_state": "DEFINED_NOT_ACTIVATED_AT_CONSTRUCTION",
+          "activation_evidence": {
+            "evidence_label": "DOCUMENTED",
+            "source": "workstreams/so02/control-plane/operating-environment/scp-si-01/SCP-SI-01-SYSTEM-MAP.md"
+          }
+        }
+      ]
+    }
+  },
+  "evaluation_contract": {
+    "unit": "one canonical route profile applied to one activated held-out task",
+    "selector": "Route only when the profile itself establishes compatible direction, required content fidelity, a machine-readable return into repository custody, and every stated precondition in the observed held-out run. Otherwise abstain. A same-provider or same-product family is not the same route.",
+    "outcome_states": [
+      "ABSTAINED",
+      "ROUTED_CORRECT",
+      "ROUTED_WRONG",
+      "UNESTABLISHED_NOT_EXERCISED"
+    ],
+    "rate_rule": "Rates are reported only with numerator and denominator. With fewer than 30 independent exercised decisions, the rate is explicitly NOT_ESTABLISHED and the percentage is omitted.",
+    "evidence_loss_rule": "Count a loss only when an exercised route omitted a property listed in that task's required_return_properties and a downstream consumer demonstrably needed it.",
+    "recovery_rule": "Recovery requires an observed corrective route or retry after a wrong route. A documented fallback that was not invoked is not recovery.",
+    "currentness_rule": "Propagation succeeds only when the result reaches the audited integration/currentness projection. A lane-local commit is durable custody but not currentness propagation."
+  },
+  "constraints": [
+    {
+      "constraint_id": "C-HOLDOUT-CUTOFF",
+      "statement": "Exclude every case that cannot be proved absent from profile authoring context.",
+      "provenance": "EARNED",
+      "defect_caught": "CUR-ORCH-QUAL's producer register reported two qualified routes, but independent challenge later refused the aggregate and only R1 survived. Reusing qualification-era cases as held-out would repeat producer evidence as independent proof."
+    },
+    {
+      "constraint_id": "C-EXPLICIT-PRECONDITIONS",
+      "statement": "A route profile abstains unless its own direction, fidelity and preconditions match the held-out work node.",
+      "provenance": "EARNED",
+      "defect_caught": "The R23 evidence records that OE-W6 called the Cursor route absent after probing a guessed 404 path; explicit published-route evidence corrected that false absence."
+    },
+    {
+      "constraint_id": "C-SMALL-N",
+      "statement": "Do not report an established rate over this eight-node set.",
+      "provenance": "FOUNDER_AUTHORED",
+      "quote": "if your held-out set is too small to support a rate, report the raw counts and say the rate is not established — a percentage over four samples is theatre"
+    },
+    {
+      "constraint_id": "C-UNEXERCISED",
+      "statement": "Keep route failure separate from inability to exercise a route.",
+      "provenance": "FOUNDER_AUTHORED",
+      "quote": "distinguish a route that failed from a route you could not exercise; UNESTABLISHED is a legitimate and useful finding"
+    },
+    {
+      "constraint_id": "C-CURRENTNESS",
+      "statement": "A local lane result does not count as currentness propagation until the audited integration projection contains it.",
+      "provenance": "EARNED",
+      "defect_caught": "The SCP-SI-01 baseline's first stale-base map produced five false NOT_FOUND results before the correct return-branch ref was restored."
+    }
+  ],
+  "measurement": {
+    "status": "PENDING",
+    "per_route": [],
+    "aggregate": null
+  },
+  "claims": [
+    {
+      "claim": "The canonical table contains 27 route profiles.",
+      "evidence_label": "DOCUMENTED",
+      "source": "workstreams/so02/control-plane/operating-environment/w7-route-evidence/ROUTE-EVIDENCE-TABLE-20260822-v001.json"
+    },
+    {
+      "claim": "No SCP-SI-01 output pre-existed at the 2026-08-27 baseline freeze.",
+      "evidence_label": "DOCUMENTED",
+      "source": "workstreams/so02/control-plane/operating-environment/scp-si-01/SCP-SI-01-BASELINE.yaml"
+    },
+    {
+      "claim": "The eight Lane A-H work nodes are separated from the 2026-08-23 profile authoring by the frozen SCP-SI-01 baseline.",
+      "evidence_label": "DOCUMENTED",
+      "source": "workstreams/so02/control-plane/operating-environment/scp-si-01/SCP-SI-01-SYSTEM-MAP.md"
+    },
+    {
+      "claim": "The route table is descriptive evidence, not an executable task router.",
+      "evidence_label": "DOCUMENTED",
+      "source": "The canonical artifact publishes route capability fields and reproduction commands but no task-classifier, selection function or held-out corpus."
+    }
+  ]
+}

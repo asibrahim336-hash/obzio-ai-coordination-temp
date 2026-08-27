@@ -1,0 +1,94 @@
+{
+  "declaration_version": "1.0",
+  "declaration_id": "WRITE-DECLARATION-SCP-E",
+  "declared_by": "Lane E bc-5f6e325d-fdb2-533d-9401-3b64fea0a953; obzio.function.strategic-operations-orchestration",
+  "declared_at": "2026-08-27T05:18:31Z",
+  "target": {
+    "ref": "cursor/scp-e-heldout-routes-696d",
+    "paths": [
+      "workstreams/so02/control-plane/operating-environment/scp-si-01/lane-e/**",
+      "receipts/so02/2026-08-27/scp-e/**",
+      "workstreams/so02/control-plane/operating-environment/write-declarations/WRITE-DECLARATION-SCP-E.json"
+    ],
+    "operation": "COMMIT_AND_PUSH"
+  },
+  "reason": {
+    "code": "PUBLISH_LANE_DELIVERABLE",
+    "statement": "Publish SCP-SI-01 Lane E's held-out route evaluation and closure receipts on cursor/scp-e-heldout-routes-696d inside workstreams/so02/control-plane/operating-environment/scp-si-01/lane-e/** and receipts/so02/2026-08-27/scp-e/**.",
+    "lane_id": "SCP-SI-01-LANE-E",
+    "commission_id": "SCP-SI-01",
+    "expires_when": "Lane E has emitted and remotely read back the commissioned evaluation bundle"
+  },
+  "reversal": {
+    "method": "DELETE_CREATED_REF",
+    "created_ref": "cursor/scp-e-heldout-routes-696d",
+    "command": [
+      "git",
+      "push",
+      "origin",
+      "--delete",
+      "cursor/scp-e-heldout-routes-696d"
+    ],
+    "custody_note": "The remote ref did not exist at declaration time. Deleting the created ref restores that pre-write state; the integration branch remains at the separately audited immutable commit."
+  },
+  "evidence": {
+    "asserts_result": false,
+    "note": "PUBLISH_LANE_DELIVERABLE publishes a producer return and does not claim independent acceptance. The final bundle carries its own parsed hash closure."
+  },
+  "concurrency": {
+    "observed_at": "2026-08-27T05:18:31Z",
+    "instrument": "cursor-cloud list-cloud-agents, read-only, createdAfter 2026-08-27T04:50:00Z, limit 200; plus git ls-remote for the target ref",
+    "ref_sha_at_observation": null,
+    "agents": [
+      {
+        "bcId": "bc-3d7e54e1-452d-5069-8f46-80d399c529b6",
+        "name": "Lane G: accepted-unit economics",
+        "branchName": null,
+        "status": "RUNNING"
+      },
+      {
+        "bcId": "bc-5f6e325d-fdb2-533d-9401-3b64fea0a953",
+        "name": "Lane E: held-out route qualification",
+        "branchName": null,
+        "status": "RUNNING"
+      },
+      {
+        "bcId": "bc-1c0486c5-f59f-5aed-9490-4bcb33d6b0e3",
+        "name": "Lane B: extend the self-improvement chain",
+        "branchName": null,
+        "status": "RUNNING"
+      },
+      {
+        "bcId": "bc-bd66ebcf-87a3-5291-8628-3c52f93351a9",
+        "name": "Lane D: regressions and 117-finding triage",
+        "branchName": null,
+        "status": "RUNNING"
+      },
+      {
+        "bcId": "bc-479fe73d-737d-50f2-bca8-6dcd8eec9eca",
+        "name": "Lane C: authorship sidecar real worker",
+        "branchName": null,
+        "status": "RUNNING"
+      },
+      {
+        "bcId": "bc-ad6634d3-37ca-58f6-a071-cddbf1983fc4",
+        "name": "Lane A: CUR-ORCH-QUAL refusal repair",
+        "branchName": null,
+        "status": "IDLE"
+      }
+    ],
+    "limit": "The top-level observation reports no branchName for this lane or siblings. Remote ref absence is the movement signal; an unpushed invisible writer remains outside the observation."
+  },
+  "constraint_provenance": [
+    {
+      "constraint": "Declare and gate the write before pushing.",
+      "classification": "FOUNDER_AUTHORED",
+      "quote": "the write-scope guard now checks that a write was declared and reasoned, not that its target avoided a forbidden list"
+    },
+    {
+      "constraint": "Write only in the commissioned Lane E namespaces and this declaration.",
+      "classification": "FOUNDER_AUTHORED",
+      "quote": "Write ONLY on your branch, inside workstreams/so02/control-plane/operating-environment/scp-si-01/lane-e/** and receipts/so02/2026-08-27/scp-e/**, plus your one write declaration."
+    }
+  ]
+}
