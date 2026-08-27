@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0",
+  "record_type": "CUR_ORCH_QUAL_CONTROL_REPLAY",
+  "commission_id": "COM-CUR-ENV-01-20260822-v001",
+  "lane_id": "SCP-SI-01/A",
+  "evidence_label": "DIRECTLY_REPRODUCED",
+  "replays": [
+    {
+      "id": "EVIDENCE-INTEGRITY-UNIT-TESTS-INITIAL-INVOCATION",
+      "command": "python3 -I -m unittest workstreams/so02/control-plane/operating-environment/tools/test_evidence_integrity.py -v",
+      "exit_code": 1,
+      "result": "INVOCATION_ERROR",
+      "output_summary": "Isolated mode removed the repository import root, so unittest could not import a module named workstreams. No product check ran."
+    },
+    {
+      "id": "EVIDENCE-INTEGRITY-UNIT-TESTS-CORRECTED-INVOCATION",
+      "command": "python3 -I workstreams/so02/control-plane/operating-environment/tools/test_evidence_integrity.py -v",
+      "exit_code": 0,
+      "tests_run": 19,
+      "result": "OK",
+      "output_summary": "All 19 tests passed, including exact forged-readback rejection, ERROR and FAILED capacity transitions, unknown-future-status rejection and manifest omission rejection."
+    },
+    {
+      "id": "GENUINE-REMOTE-READBACK-RECOMPUTATION",
+      "command_summary": "Load REMOTE-READBACK.json from producer commit 11a60dcf and call evidence_integrity.verify_readback_truth against the public GitHub remote.",
+      "exit_code": 0,
+      "record_commit": "04001dba1c689c90041ea383f3092213756c7ead",
+      "errors": [],
+      "result": "PASS"
+    },
+    {
+      "id": "EXACT-FORGED-READBACK-REJECTION",
+      "command_summary": "Call evidence_integrity.verify_readback_truth with an all-zero immutable commit, invented transports and an invented path.",
+      "exit_code": 0,
+      "errors": [
+        "readback: commit 0000000000000000000000000000000000000000 is not retrievable from the remote; the claim is unfounded"
+      ],
+      "rejected": true,
+      "result": "PASS"
+    },
+    {
+      "id": "CAPACITY-ALLOWLIST-ADVERSARIAL-REPLAY",
+      "command_summary": "Apply IDLE transitions to ERROR, FAILED and THROTTLED_BY_SOME_FUTURE_MECHANISM to a three-snapshot synthetic observation.",
+      "exit_code": 0,
+      "results": {
+        "ERROR": "CAPACITY_INTERFERENCE_FAIL",
+        "FAILED": "CAPACITY_INTERFERENCE_FAIL",
+        "THROTTLED_BY_SOME_FUTURE_MECHANISM": "CAPACITY_INTERFERENCE_FAIL"
+      },
+      "result": "PASS"
+    },
+    {
+      "id": "OPERATOR-TAXONOMY-CURRENTNESS",
+      "command": "python3 scripts/check_operator_taxonomy.py",
+      "exit_code": 0,
+      "result": "PASS",
+      "output_summary": "OPERATOR TAXONOMY CHECK: PASS; active function obzio.function.strategic-operations-orchestration; active appointment obzio.appointment.strategic-operations-orchestration.20260819.001; classified aliases 9."
+    }
+  ],
+  "conclusions": [
+    {
+      "claim": "The exact forged-readback defect caught under AC-05 no longer reproduces in the current evidence-integrity mechanism.",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "evidence": "EXACT-FORGED-READBACK-REJECTION and GENUINE-REMOTE-READBACK-RECOMPUTATION"
+    },
+    {
+      "claim": "The exact ERROR detector failure caught under AC-08 no longer reproduces, and the allowlist also fails closed on FAILED and an unknown future status.",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "evidence": "CAPACITY-ALLOWLIST-ADVERSARIAL-REPLAY"
+    },
+    {
+      "claim": "This replay verifies the two coordinator-shipped mechanism corrections, not the full original AC-05 phase-state criterion and not R2 independence.",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "evidence": "Only evidence_integrity.py and its regression tests were invoked; the preserved producer orchqual.py was not rewritten."
+    }
+  ],
+  "decision_changed": []
+}

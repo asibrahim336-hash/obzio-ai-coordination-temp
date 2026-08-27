@@ -40,10 +40,10 @@
     {
       "criterion_id": "AC-05",
       "refusal_defect": "The old producer verifier accepted a forged read-back naming an all-zero commit.",
-      "disposition": "MECHANISM_REPAIR_PRESENT_CONTROL_REPLAY_PENDING",
-      "evidence_label": "DOCUMENTED",
-      "evidence": "workstreams/so02/control-plane/operating-environment/tools/evidence_integrity.py recomputes remote commit and path bytes; its exact-forgery regression is in tools/test_evidence_integrity.py.",
-      "limitation": "The preserved producer branch still contains the refused verifier and is not rewritten or admissible as the current gate."
+      "disposition": "EXACT_DEFECT_REPAIRED_AND_DIRECTLY_REPRODUCED",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "evidence": "receipts/so02/2026-08-27/scp-a/CONTROL-REPLAY.json records rejection of the all-zero forged proof and successful recomputation of the genuine historical read-back against the remote.",
+      "limitation": "This proves the coordinator-shipped evidence-integrity repair, not every clause of AC-05. The preserved producer branch still contains the refused verifier and is not rewritten or admissible as the current gate."
     },
     {
       "criterion_id": "AC-06",
@@ -74,9 +74,9 @@
     {
       "criterion_id": "AC-08",
       "refusal_defect": "The denylist detector allowed an IDLE to ERROR transition to pass.",
-      "disposition": "MECHANISM_REPAIR_PRESENT_CONTROL_REPLAY_PENDING",
-      "evidence_label": "DOCUMENTED",
-      "evidence": "evidence_integrity.capacity_verdict allowlists benign states and has regression cases for ERROR, FAILED and an unknown future status.",
+      "disposition": "REPAIRED_AND_DIRECTLY_REPRODUCED",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "evidence": "receipts/so02/2026-08-27/scp-a/CONTROL-REPLAY.json records CAPACITY_INTERFERENCE_FAIL for ERROR, FAILED and THROTTLED_BY_SOME_FUTURE_MECHANISM, and all 19 evidence-integrity tests pass.",
       "limitation": "The actual historical no-change observation remains factual; the repair concerns detector sensitivity."
     },
     {

@@ -1,10 +1,11 @@
 {
   "declaration_version": "1.0",
   "declared_by": "SCP-SI-01 Lane A bc-ad6634d3-37ca-58f6-a071-cddbf1983fc4",
-  "declared_at": "2026-08-27T05:05:54Z",
+  "declared_at": "2026-08-27T05:10:07Z",
   "target": {
     "ref": "cursor/scp-a-refusal-repair-696d",
     "paths": [
+      "receipts/so02/2026-08-27/scp-a/CONTROL-REPLAY.json",
       "receipts/so02/2026-08-27/scp-a/MANIFEST.json",
       "receipts/so02/2026-08-27/scp-a/RAW-PROVIDER-RETRIEVAL.json",
       "receipts/so02/2026-08-27/scp-a/SOURCE-VERIFICATION.json",
@@ -26,20 +27,22 @@
     "expires_when": "Lane A's commissioned package is published and returned for independent evaluation"
   },
   "reversal": {
-    "method": "DELETE_CREATED_REF",
-    "created_ref": "cursor/scp-a-refusal-repair-696d",
+    "method": "RESTORE_REF_TO_RECORDED_SHA",
+    "recorded_sha": "57b2e29760ea7740089236decb91bc986e452308",
+    "custody_ref": "origin/cursor/scp-a-refusal-repair-696d@57b2e29760ea7740089236decb91bc986e452308",
     "command": [
       "git",
       "push",
+      "--force-with-lease",
       "origin",
-      "--delete",
-      "cursor/scp-a-refusal-repair-696d"
+      "57b2e29760ea7740089236decb91bc986e452308:refs/heads/cursor/scp-a-refusal-repair-696d"
     ]
   },
   "evidence": {
     "asserts_result": true,
     "kind": "MANIFEST_CLOSURE",
     "present_paths": [
+      "receipts/so02/2026-08-27/scp-a/CONTROL-REPLAY.json",
       "receipts/so02/2026-08-27/scp-a/RAW-PROVIDER-RETRIEVAL.json",
       "receipts/so02/2026-08-27/scp-a/SOURCE-VERIFICATION.json",
       "receipts/so02/2026-08-27/scp-a/WRITE-ADMISSION.json",
@@ -51,6 +54,11 @@
     ],
     "record": {
       "entries": [
+        {
+          "path": "receipts/so02/2026-08-27/scp-a/CONTROL-REPLAY.json",
+          "size_bytes": 3750,
+          "sha256": "467eb17161a167a5993fc75f8c8b2456eda48368145cfa3fd70319886880c552"
+        },
         {
           "path": "receipts/so02/2026-08-27/scp-a/RAW-PROVIDER-RETRIEVAL.json",
           "size_bytes": 3650,
@@ -88,19 +96,19 @@
         },
         {
           "path": "workstreams/so02/control-plane/operating-environment/scp-si-01/lane-a/CUR-ORCH-QUAL-REMEDIATION-RESUBMISSION.json",
-          "size_bytes": 8331,
-          "sha256": "9d52205533032f11b96a711a91160e290a260b397da0cec0d77d0199e22b621b"
+          "size_bytes": 8466,
+          "sha256": "d79221f0677260f0af04da57b137e166539077566ef2758580d3f2b0803850b5"
         }
       ],
-      "entry_count": 8,
-      "bundle_sha256": "6cbc650dba332ead24c61ae279aa530148a33993add466fe96d32d9cda84ba06",
+      "entry_count": 9,
+      "bundle_sha256": "c478fc476120f90640dda99a369ade9b9674b74fbdb469f97e6f8391055fcfb8",
       "closure_note": "Closure over the assertion-bearing package before the manifest and declaration are added; the final MANIFEST covers the declaration, and excludes only itself to avoid a self-hash cycle."
     }
   },
   "concurrency": {
-    "observed_at": "2026-08-27T05:05:54Z",
-    "ref_sha_at_observation": null,
-    "ref_exists_at_observation": false,
+    "observed_at": "2026-08-27T05:10:07Z",
+    "ref_sha_at_observation": "57b2e29760ea7740089236decb91bc986e452308",
+    "ref_exists_at_observation": true,
     "instrument": "cursor-cloud list-cloud-agents plus git ls-remote",
     "agents": [
       {
