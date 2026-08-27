@@ -1,9 +1,17 @@
 {
   "all_passed": true,
+  "cited_by": "the RERUN links of ICH-01 through ICH-04",
   "decision_changed": [],
+  "deterministic": true,
+  "deterministic_note": "This file carries no wall-clock instant and no elapsed time, so re-running the suites with the same code and the same results produces the same bytes. It is cited by RERUN links in an append-only event log, and a citation can only stay valid if the artifact it addresses is content-addressable. The instants and output tails for a particular run are in the sibling run log, which nothing cites.",
+  "excluded_suites": [
+    "SUITE-IMPROVEMENT-CHAIN",
+    "SUITE-SCCTL"
+  ],
   "invocation_note": "python3 -I implies -P, so `python3 -I -m unittest <module>` cannot import a suite from the current directory and reports a load error. Each suite is run as a script.",
-  "produced_at": "2026-08-27T05:55:57Z",
   "report_id": "SCP-B-REGRESSION-RERUN",
+  "run_log": "receipts/so02/2026-08-27/scp-b/reproductions/REGRESSION-RERUN-RUNLOG.json",
+  "self_test_report": "receipts/so02/2026-08-27/scp-b/reproductions/REGRESSION-RERUN-SELF-TEST.json",
   "suites": [
     {
       "argv": [
@@ -18,7 +26,7 @@
       "path": "workstreams/so02/control-plane/operating-environment/tools/test_evidence_integrity.py",
       "result": "OK",
       "suite_id": "SUITE-EVIDENCE-INTEGRITY",
-      "summary_tail": "OK",
+      "suite_sha256": "ad7147ea2175fb54fd1d47422f6577a25c5c21b124ce326fac311319f79f9f43",
       "tests_run": 19
     },
     {
@@ -34,41 +42,10 @@
       "path": "workstreams/so02/control-plane/operating-environment/tools/test_lane_guard.py",
       "result": "OK",
       "suite_id": "SUITE-LANE-GUARD",
-      "summary_tail": "OK",
+      "suite_sha256": "2134aaf960bec4e0740e00cba7966ca634e548c74514a1bcceea9953f26e96e7",
       "tests_run": 20
-    },
-    {
-      "argv": [
-        "python3",
-        "-I",
-        "workstreams/so02/control-plane/operating-environment/scp-si-01/lane-b/tests/test_improvement_chain.py"
-      ],
-      "covers_chains": "the chain mechanism itself, and the seeded state of all eight",
-      "cwd": "workstreams/so02/control-plane/operating-environment/scp-si-01/lane-b/tests",
-      "evidence_label": "DIRECTLY_REPRODUCED",
-      "exit_code": 0,
-      "path": "workstreams/so02/control-plane/operating-environment/scp-si-01/lane-b/tests/test_improvement_chain.py",
-      "result": "OK",
-      "suite_id": "SUITE-IMPROVEMENT-CHAIN",
-      "summary_tail": "OK",
-      "tests_run": 70
-    },
-    {
-      "argv": [
-        "python3",
-        "-I",
-        "workstreams/so02/control-plane/tests/test_scctl.py"
-      ],
-      "covers_chains": "the canonical seed validator, which is what catches a broken hash chain after the append",
-      "cwd": "workstreams/so02/control-plane/tests",
-      "evidence_label": "DIRECTLY_REPRODUCED",
-      "exit_code": 0,
-      "path": "workstreams/so02/control-plane/tests/test_scctl.py",
-      "result": "OK",
-      "suite_id": "SUITE-SCCTL",
-      "summary_tail": "OK",
-      "tests_run": 55
     }
   ],
-  "total_tests_run": 164
+  "total_tests_run": 39,
+  "why_those_are_excluded": "They test the chain mechanism itself. A RERUN link citing the verdict of the suite that tests that link is circular: the artifact's contents depend on the link being valid, and the link's validity depends on the artifact's digest. Re-anchoring under that arrangement oscillates between a passing and a failing digest and never settles. Their results are in the sibling self-test report, which nothing cites."
 }

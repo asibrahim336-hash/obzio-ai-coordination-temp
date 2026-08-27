@@ -615,6 +615,77 @@ class SeededHistoryTests(unittest.TestCase):
     def test_the_real_seeded_chains_are_not_refused(self) -> None:
         self.assertEqual([], errors(self.findings))
 
+    def test_every_citation_digest_matches_the_checkout(self) -> None:
+        # The whole point of a digest on a citation. Kept as its own test so a
+        # failure names the cause instead of arriving as a generic refusal.
+        stale = [finding for finding in self.findings
+                 if finding.code == "CHAIN_CITATION_HASH_MISMATCH"]
+        self.assertEqual([], [finding.detail for finding in stale])
+
+    def test_no_link_cites_a_report_that_grades_the_chain_itself(self) -> None:
+        """Circular evidence: a link citing the verdict of the suite that tests it.
+
+        Found by hitting it. Adding the chain's own suites to the cited regression
+        report made the artifact's bytes depend on whether the chain validated,
+        while the chain's validity depended on that artifact's digest. Re-anchor
+        and rebuild then oscillate between a passing and a failing digest and
+        never settle. The fix was to keep the chain's own suites out of the cited
+        report; this test is what stops them being put back.
+        """
+        self_grading = {"SUITE-IMPROVEMENT-CHAIN", "SUITE-SCCTL"}
+        for chain_id, chain in self.chains.items():
+            for node_id, node in chain["nodes"].items():
+                for citation in node.get("evidence_citations", []):
+                    path = citation.get("artifact_path")
+                    if not path or not path.endswith(".json"):
+                        continue
+                    target = REPO_ROOT / path
+                    if not target.is_file():
+                        continue
+                    try:
+                        parsed = json.loads(target.read_text(encoding="utf-8"))
+                    except (json.JSONDecodeError, UnicodeDecodeError):
+                        continue
+                    if not isinstance(parsed, dict):
+                        continue
+                    cited_suites = {suite.get("suite_id")
+                                    for suite in parsed.get("suites", [])
+                                    if isinstance(suite, dict)}
+                    self.assertEqual(
+                        set(), cited_suites & self_grading,
+                        f"{chain_id}/{node_id} cites {path}, which reports the verdict of "
+                        "the suite that tests this very link")
+
+    def test_a_cited_artifact_is_byte_stable_when_regenerated(self) -> None:
+        """The cited regression report must not move when re-run.
+
+        A citation is a digest. An artifact whose bytes change every time it is
+        produced cannot be cited by an append-only log at all: the citation goes
+        stale on the next run and the only way to keep it valid is to never
+        re-run the suites. So the cited report carries no wall-clock instant and
+        no elapsed time, and this test asserts that property directly rather than
+        trusting the comment that says so.
+        """
+        cited = REPO_ROOT / "receipts/so02/2026-08-27/scp-b/reproductions/REGRESSION-RERUN.json"
+        parsed = json.loads(cited.read_text(encoding="utf-8"))
+
+        # Keys, not prose. An earlier version of this test scanned the raw text
+        # and failed on the report's own explanation of why it has no timestamps.
+        volatile = ("produced_at", "recorded_at", "observed_at", "started_at",
+                    "finished_at", "duration", "duration_seconds", "elapsed",
+                    "elapsed_seconds", "summary_tail")
+
+        def walk(node: Any, trail: str) -> None:
+            if isinstance(node, dict):
+                for key, value in node.items():
+                    self.assertNotIn(key, volatile, f"{trail}.{key} is volatile")
+                    walk(value, f"{trail}.{key}")
+            elif isinstance(node, list):
+                for index, value in enumerate(node):
+                    walk(value, f"{trail}[{index}]")
+
+        walk(parsed, "REGRESSION-RERUN")
+
     def test_every_seeded_chain_reaches_the_projection(self) -> None:
         # Derived from the seed, not pinned. Counting literals here is what broke
         # three tests in test_scctl.py and two of these when history grew.

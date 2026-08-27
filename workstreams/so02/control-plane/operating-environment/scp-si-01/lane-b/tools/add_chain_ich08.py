@@ -65,9 +65,20 @@ CHAIN = {
             "evidence_citations": [
                 {"artifact_path": SUPERSEDED_ADMISSION, "sha256": sha256_of(SUPERSEDED_ADMISSION),
                  "field": "the retained WRITE_ADMITTED obtained on the false observation"},
-                {"artifact_path": OBSERVATION, "sha256": sha256_of(OBSERVATION),
-                 "field": "correction"},
+                {"artifact_path": REPRO, "sha256": sha256_of(REPRO),
+                 "field": "how_it_was_found"},
             ],
+            "not_cited_deliberately": {
+                "artifact_path": OBSERVATION,
+                "why": (
+                    "The concurrency observation is rewritten on every declaration build, "
+                    "because observed_at and the ref SHA are read from the clock and the "
+                    "remote rather than typed. Citing it by digest would guarantee a "
+                    "stale citation on the next build. A citation must address immutable "
+                    "evidence, not live state; the correction it records is also carried "
+                    "in the reproduction receipt, which is written once."
+                ),
+            },
         },
         {
             "node_id": "ICH-08-DEF",

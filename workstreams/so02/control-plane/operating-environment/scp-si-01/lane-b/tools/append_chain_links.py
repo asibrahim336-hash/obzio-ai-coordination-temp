@@ -170,14 +170,49 @@ def build_events(seed: dict[str, Any], existing: list[dict[str, Any]]) -> list[d
     return appended
 
 
+CHAIN_EVENT_TYPES = (improvement_chain.LINK_EVENT_TYPE, improvement_chain.CONTRACT_EVENT_TYPE)
+
+
+def split_chain_tail(events: list[dict[str, Any]]) -> tuple[list[dict[str, Any]], int]:
+    """Separate the pre-existing log from this lane's appended chain events.
+
+    Refuses if a chain event is not in the tail. Every chain event was appended
+    after the pre-existing head, so a chain event with a non-chain event after it
+    would mean somebody else has written since, and rewriting the tail would then
+    drop their work.
+    """
+    kept = [event for event in events if event.get("event_type") not in CHAIN_EVENT_TYPES]
+    dropped = len(events) - len(kept)
+    if dropped and events[len(kept):] != events[-dropped:]:
+        raise SystemExit("refusing to rebuild: chain events are not a contiguous tail")
+    for event in events[len(kept):]:
+        if event.get("event_type") not in CHAIN_EVENT_TYPES:
+            raise SystemExit("refusing to rebuild: a non-chain event sits inside the tail")
+    return kept, dropped
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--apply", action="store_true",
                         help="write the appended events; without it, report only")
+    parser.add_argument("--rebuild", action="store_true",
+                        help=("drop this lane's own chain events and re-emit them from the "
+                              "seed, recomputing the hash chain from the pre-existing head. "
+                              "Needed when a citation digest is re-anchored, because an "
+                              "appended event cannot be edited in place without breaking "
+                              "the chain. Refuses if the chain events are not the tail."))
     args = parser.parse_args(argv)
 
     seed = json.loads(SEED_PATH.read_text(encoding="utf-8"))
     existing = scctl.read_jsonl(EVENTS_PATH)
+
+    rebuilt_from = None
+    if args.rebuild:
+        existing, dropped = split_chain_tail(existing)
+        rebuilt_from = dropped
+        print(f"rebuild           : dropped {dropped} chain event(s) from the tail")
+        print(f"pre-existing log  : {len(existing)} event(s) retained untouched")
+
     appended = build_events(seed, existing)
 
     print(f"existing events   : {len(existing)}")
@@ -210,10 +245,18 @@ def main(argv: list[str] | None = None) -> int:
         print("dry run; pass --apply to write")
         return 0
 
-    with EVENTS_PATH.open("a", encoding="utf-8") as handle:
-        for event in appended:
-            handle.write(json.dumps(event, separators=(",", ":")) + "\n")
-    print(f"appended {len(appended)} events to {EVENTS_PATH.relative_to(REPO_ROOT)}")
+    if rebuilt_from is None:
+        with EVENTS_PATH.open("a", encoding="utf-8") as handle:
+            for event in appended:
+                handle.write(json.dumps(event, separators=(",", ":")) + "\n")
+        print(f"appended {len(appended)} events to {EVENTS_PATH.relative_to(REPO_ROOT)}")
+    else:
+        EVENTS_PATH.write_text(
+            "".join(json.dumps(event, separators=(",", ":")) + "\n" for event in combined),
+            encoding="utf-8")
+        print(f"rewrote {EVENTS_PATH.relative_to(REPO_ROOT)}: "
+              f"{len(combined)} events, {rebuilt_from} chain event(s) replaced by "
+              f"{len(appended)}")
     print(f"new head: {appended[-1]['event_sha256']}")
     return 0
 
