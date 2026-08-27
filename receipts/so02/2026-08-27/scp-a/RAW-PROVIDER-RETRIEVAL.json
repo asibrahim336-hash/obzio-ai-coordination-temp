@@ -1,0 +1,81 @@
+{
+  "schema_version": "1.0",
+  "record_type": "R2_RAW_PROVIDER_RETRIEVAL",
+  "commission_id": "COM-CUR-ENV-01-20260822-v001",
+  "lane_id": "SCP-SI-01/A",
+  "retrieved_at": "2026-08-27T05:01:49Z",
+  "retrieving_run": {
+    "bc_id": "bc-ad6634d3-37ca-58f6-a071-cddbf1983fc4",
+    "name": "Lane A: CUR-ORCH-QUAL refusal repair",
+    "runtime_family": "gpt-5.6-sol",
+    "evidence_label": "DOCUMENTED",
+    "source": "commission runtime binding and cursor-cloud run-info"
+  },
+  "retrieved_run": {
+    "bc_id": "bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+    "name": "Primary orchestration route qualification",
+    "runtime_family": "claude-opus-5-thinking-max-fast",
+    "evidence_label": "DIRECTLY_REPRODUCED",
+    "source": "raw-provider/index.json"
+  },
+  "retrieval": {
+    "evidence_label": "DIRECTLY_REPRODUCED",
+    "instrument": "cursor-cloud batch-fetch-details",
+    "request": {
+      "bc_ids": [
+        "bc-c6f63d58-9611-495a-96f6-2f2dcbef696d"
+      ],
+      "include_diff_metadata": true,
+      "include_environment": true,
+      "include_events": true,
+      "include_transcripts": false
+    },
+    "provider_result": "Fetched 1 available cloud agent; wrote index.json, events.json, diff-metadata.json and environment-info.json.",
+    "temporary_run_directory": "/tmp/cursor/cloud-agent-transcripts/2026-08-27T05-01-49Z-4443"
+  },
+  "raw_artifacts": [
+    {
+      "path": "receipts/so02/2026-08-27/scp-a/raw-provider/index.json",
+      "sha256": "46a0c6fcd756fa8279217830ab758d0a9ca7039319d928c1b92046e5a94382ce",
+      "copy_result": "BYTE_IDENTICAL_TO_PROVIDER_OUTPUT"
+    },
+    {
+      "path": "receipts/so02/2026-08-27/scp-a/raw-provider/events.json",
+      "sha256": "b39e33884c842958fb0c738ff6a703328f71d10314d6b47dedae050a75799504",
+      "copy_result": "BYTE_IDENTICAL_TO_PROVIDER_OUTPUT"
+    },
+    {
+      "path": "receipts/so02/2026-08-27/scp-a/raw-provider/diff-metadata.json",
+      "sha256": "a94dbcafeaddf9812ff93f1afd3f16906d995ba895b755b2a90237e5eba44e09",
+      "copy_result": "BYTE_IDENTICAL_TO_PROVIDER_OUTPUT"
+    },
+    {
+      "path": "receipts/so02/2026-08-27/scp-a/raw-provider/environment-info.json",
+      "sha256": "3c962f95e54fde1ff02b7df63785cc014acb063119487a6378592f5bf370fe93",
+      "copy_result": "BYTE_IDENTICAL_TO_PROVIDER_OUTPUT"
+    }
+  ],
+  "claims": [
+    {
+      "claim": "A run distinct from the original producer directly addressed and retrieved the original producer run by provider bcId.",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "evidence": "retrieving bc-ad6634d3-37ca-58f6-a071-cddbf1983fc4 differs from retrieved bc-c6f63d58-9611-495a-96f6-2f2dcbef696d; raw-provider/index.json returns the latter."
+    },
+    {
+      "claim": "The current retrieval returned raw provider artifacts rather than only a derived summary.",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "evidence": "The four byte-identical files above are committed in this package."
+    },
+    {
+      "claim": "These are not the missing historical 2026-08-22 bytes and cannot prove their content.",
+      "evidence_label": "DOCUMENTED",
+      "evidence": "The refusal verdict's could_not_verify record states the two historical VM-local artifacts were not committed; this retrieval occurred on 2026-08-27 and reports the run's then-current state."
+    },
+    {
+      "claim": "This retrieval proves observation and retrieval only; it does not prove provider-side run creation or follow-up submission.",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "evidence": "The invoked surface exposes batch retrieval and returned no creation or follow-up operation."
+    }
+  ],
+  "decision_changed": []
+}

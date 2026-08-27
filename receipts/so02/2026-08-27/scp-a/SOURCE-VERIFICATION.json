@@ -1,0 +1,97 @@
+{
+  "schema_version": "1.0",
+  "record_type": "CUR_ORCH_QUAL_SOURCE_VERIFICATION",
+  "commission_id": "COM-CUR-ENV-01-20260822-v001",
+  "lane_id": "SCP-SI-01/A",
+  "recorded_at": "2026-08-27T05:03:13Z",
+  "audited_integration": {
+    "branch": "cursor/operating-environment-return-20260822-v001",
+    "commit": "7f29043eece45f42f018d841718a257cfd18739b",
+    "evidence_label": "DIRECTLY_REPRODUCED",
+    "command": "git fetch origin cursor/operating-environment-return-20260822-v001 && git rev-parse origin/cursor/operating-environment-return-20260822-v001 && git ls-remote origin refs/heads/cursor/operating-environment-return-20260822-v001",
+    "output": "rev-parse and ls-remote both returned 7f29043eece45f42f018d841718a257cfd18739b"
+  },
+  "artifacts": [
+    {
+      "artifact_role": "EARLIER_PRODUCER_REQUEST_STATE",
+      "path": "workstreams/so02/control-plane/state/CUR-ORCH-QUAL-01.json",
+      "commit": "11a60dcf6dbc2eac4e6d975efab5d985ebbabd62",
+      "git_blob_sha1": "ea0f94d9e63b9c7d40eb7d57a7382fe268a9dbad",
+      "size_bytes": 19103,
+      "sha256": "0b428c191c8d8826760d45d2bd83c324b86490feb11ac667f6777ef7ec8bc0b1",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "command": "git show 11a60dcf6dbc2eac4e6d975efab5d985ebbabd62:workstreams/so02/control-plane/state/CUR-ORCH-QUAL-01.json",
+      "observed_fields": {
+        "independent_acceptance.state": "REQUESTED_NOT_GRANTED",
+        "aggregate_classification": "PASS_TWO_OR_MORE_ROUTES",
+        "state": "TWO_INDEPENDENT_ROUTES_QUALIFIED_END_TO_END_WITH_IMMUTABLE_REMOTE_CUSTODY_AND_ZERO_PO03_INTERFERENCE"
+      },
+      "interpretation": "This is the producer's frozen request state. REQUESTED_NOT_GRANTED is not a refusal and is not the current governing verdict."
+    },
+    {
+      "artifact_role": "PRECOMMITTED_INDEPENDENT_CRITERIA",
+      "path": "workstreams/so02/control-plane/operating-environment/l3-independent-acceptance/ACCEPTANCE-CRITERIA.json",
+      "commit": "9a390df3ebdd19e1403317be24c74e6abc249415",
+      "git_blob_sha1": "54f966ae7ab6e115299db9f28aa47adb5dd6fc24",
+      "size_bytes": 9990,
+      "sha256": "2ec2b9bb95bdc1b272ebee1146d971344ea7a306c79e656240b02e407d0e0715",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "command": "git show 9a390df3ebdd19e1403317be24c74e6abc249415:workstreams/so02/control-plane/operating-environment/l3-independent-acceptance/ACCEPTANCE-CRITERIA.json",
+      "observed_fields": {
+        "criteria_fixed_before_evidence_review": true,
+        "criterion_count": 13
+      }
+    },
+    {
+      "artifact_role": "INDEPENDENT_REFUSAL_VERDICT",
+      "path": "workstreams/so02/control-plane/operating-environment/l3-independent-acceptance/VERDICT.json",
+      "commit": "541eff445f2acd3cabea91b54c53afae237b9d59",
+      "git_blob_sha1": "cd8f9a7d2366a1dc942f3f6a97af64122a205d65",
+      "size_bytes": 9617,
+      "sha256": "87e3a255733ac5aeae6dff0d7e5bb32b22f193ccf774a20aa031fae9c721537b",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "command": "git show 541eff445f2acd3cabea91b54c53afae237b9d59:workstreams/so02/control-plane/operating-environment/l3-independent-acceptance/VERDICT.json",
+      "observed_fields": {
+        "verdict": "REFUSED",
+        "criteria_commit_sha": "9a390df3ebdd19e1403317be24c74e6abc249415",
+        "failed_criteria": [
+          "AC-03",
+          "AC-05",
+          "AC-06",
+          "AC-07",
+          "AC-08",
+          "AC-12"
+        ]
+      }
+    },
+    {
+      "artifact_role": "GOVERNING_INGESTION",
+      "path": "receipts/so02/2026-08-22/oe-dispatch/CUR01-REFUSAL-INGESTION.json",
+      "commit": "7f29043eece45f42f018d841718a257cfd18739b",
+      "git_blob_sha1": "3c57a364767c06581e49bda1a7f9acc8a5c3e1ab",
+      "size_bytes": 9291,
+      "sha256": "c4f28fe03e3ee8296cbb3065cae375d111f02381b8e95efba5715b2d10b43dd6",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "command": "git show 7f29043eece45f42f018d841718a257cfd18739b:receipts/so02/2026-08-22/oe-dispatch/CUR01-REFUSAL-INGESTION.json",
+      "observed_fields": {
+        "governing_verdict": "REFUSED",
+        "verdict_is_governing_over_producer_claim": true,
+        "producer_may_overturn": false
+      }
+    }
+  ],
+  "criteria_chronology": {
+    "evidence_label": "DIRECTLY_REPRODUCED",
+    "command": "git merge-base --is-ancestor 9a390df3ebdd19e1403317be24c74e6abc249415 541eff445f2acd3cabea91b54c53afae237b9d59",
+    "exit_code": 0,
+    "criteria_commit_timestamp": "2026-08-22T20:14:33+00:00",
+    "verdict_commit_timestamp": "2026-08-22T20:23:55+00:00",
+    "conclusion": "The criteria commit is an ancestor of and predates the verdict commit."
+  },
+  "resolved_current_state": {
+    "state": "REFUSED",
+    "evidence_label": "DIRECTLY_REPRODUCED",
+    "reason": "The later independent verdict and its governing ingestion supersede the earlier REQUESTED_NOT_GRANTED request state without rewriting that evidence."
+  },
+  "decision_changed": []
+}

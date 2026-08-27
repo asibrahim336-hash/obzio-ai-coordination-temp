@@ -1,0 +1,132 @@
+{
+  "schema_version": "1.0",
+  "record_type": "CUR_ORCH_QUAL_REMEDIATION_RESUBMISSION",
+  "commission_id": "COM-CUR-ENV-01-20260822-v001",
+  "cohort": "SCP-SI-01",
+  "lane": "A",
+  "producer_run": "bc-ad6634d3-37ca-58f6-a071-cddbf1983fc4",
+  "terminal_state": "READY_TO_COMMIT",
+  "candidate_verdict": null,
+  "self_acceptance_performed": false,
+  "current_governing_state": {
+    "state": "REFUSED",
+    "evidence_label": "DIRECTLY_REPRODUCED",
+    "evidence": "receipts/so02/2026-08-27/scp-a/SOURCE-VERIFICATION.json",
+    "note": "The refusal remains governing unless and until an independent acceptor issues an additive superseding verdict. This producer does not issue that verdict."
+  },
+  "audited_integration": {
+    "branch": "cursor/operating-environment-return-20260822-v001",
+    "commit": "7f29043eece45f42f018d841718a257cfd18739b",
+    "evidence_label": "DIRECTLY_REPRODUCED",
+    "evidence": "receipts/so02/2026-08-27/scp-a/SOURCE-VERIFICATION.json"
+  },
+  "resubmission_criteria": {
+    "same_as_refusal": true,
+    "commit": "9a390df3ebdd19e1403317be24c74e6abc249415",
+    "path": "workstreams/so02/control-plane/operating-environment/l3-independent-acceptance/ACCEPTANCE-CRITERIA.json",
+    "criterion_count": 13,
+    "evidence_label": "DIRECTLY_REPRODUCED",
+    "evidence": "receipts/so02/2026-08-27/scp-a/SOURCE-VERIFICATION.json"
+  },
+  "failed_criterion_disposition": [
+    {
+      "criterion_id": "AC-03",
+      "refusal_defect": "The original manifest omitted REMOTE-READBACK.json and material workflow/state inputs.",
+      "disposition": "REPAIRED_ADDITIVELY_FOR_THIS_RESUBMISSION",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "evidence": "receipts/so02/2026-08-27/scp-a/MANIFEST.json covers every file in the Lane A package except itself, and declares that sole exclusion explicitly. The original defective manifest remains preserved rather than rewritten.",
+      "limitation": "This additive closure does not make the historical manifest complete retroactively."
+    },
+    {
+      "criterion_id": "AC-05",
+      "refusal_defect": "The old producer verifier accepted a forged read-back naming an all-zero commit.",
+      "disposition": "MECHANISM_REPAIR_PRESENT_CONTROL_REPLAY_PENDING",
+      "evidence_label": "DOCUMENTED",
+      "evidence": "workstreams/so02/control-plane/operating-environment/tools/evidence_integrity.py recomputes remote commit and path bytes; its exact-forgery regression is in tools/test_evidence_integrity.py.",
+      "limitation": "The preserved producer branch still contains the refused verifier and is not rewritten or admissible as the current gate."
+    },
+    {
+      "criterion_id": "AC-06",
+      "refusal_defect": "R2 observed the producer itself while running, retained only summaries and hashes, returned zero events, and proved no run creation or follow-up.",
+      "disposition": "PARTIALLY_REPAIRED_CRITERION_UNMET_FOR_ADVERTISED_END_TO_END_ROUTE",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "evidence": "Lane A, a distinct run and model family, retrieved the producer by bcId and committed the raw index, events, diff and environment provider outputs under receipts/so02/2026-08-27/scp-a/raw-provider/.",
+      "repaired_parts": [
+        "Current observation is by a run distinct from the observed producer.",
+        "Current retrieved provider artifacts are committed byte-for-byte rather than represented only by derived summaries."
+      ],
+      "unrepaired_parts": [
+        "The missing 2026-08-22 raw bytes cannot be reconstructed from the 2026-08-27 retrieval.",
+        "The route exposes observation and retrieval, not a separately launched work unit, run creation or follow-up submission.",
+        "Provider state at a later time cannot retroactively prove the original RUNNING/zero-event retrieval as an end-to-end orchestration result."
+      ],
+      "required_honest_treatment": "R2 remains an observation-and-retrieval convenience. It cannot be counted as the advertised end-to-end independent route."
+    },
+    {
+      "criterion_id": "AC-07",
+      "refusal_defect": "R1 and R2 shared the producing controller, assertions and final GitHub custody dependency.",
+      "disposition": "STRUCTURALLY_UNREPAIRABLE_FOR_R2_AS_CLAIMED",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "evidence": "The current raw retrieval can separate the observing run from the observed run, but durable publication still terminates in this GitHub repository. A Cursor-provider observation committed to R1 is not a separate custody failure domain.",
+      "why_evidence_cannot_cure_it": "More hashes or another retrieval can prove what Cursor returned; they cannot make GitHub-independent custody exist. A qualifying second route requires a separate controller and durable store whose availability and integrity do not terminate in R1.",
+      "required_honest_treatment": "The two-independent-routes claim remains withdrawn. The routes may be described only as transport-diverse observations."
+    },
+    {
+      "criterion_id": "AC-08",
+      "refusal_defect": "The denylist detector allowed an IDLE to ERROR transition to pass.",
+      "disposition": "MECHANISM_REPAIR_PRESENT_CONTROL_REPLAY_PENDING",
+      "evidence_label": "DOCUMENTED",
+      "evidence": "evidence_integrity.capacity_verdict allowlists benign states and has regression cases for ERROR, FAILED and an unknown future status.",
+      "limitation": "The actual historical no-change observation remains factual; the repair concerns detector sensitivity."
+    },
+    {
+      "criterion_id": "AC-12",
+      "refusal_defect": "Producer-authored CI assertions were described as independent corroboration.",
+      "disposition": "REPAIRED_BY_CLAIM_DOWNGRADE_NOT_BY_NEW_CI",
+      "evidence_label": "DOCUMENTED",
+      "evidence": "The independent verdict traces the workflow, verifier and assertions to the producer. This resubmission assigns that run reproducibility value only and does not rely on it for independent acceptance.",
+      "limitation": "No independently fixed CI acceptance assertions were executed. CI therefore remains non-independent."
+    }
+  ],
+  "aggregate_claim": {
+    "withdrawn": "PASS_TWO_OR_MORE_ROUTES",
+    "replacement": "ONE_CUSTODY_ROUTE_INDEPENDENTLY_VERIFIED_R2_OBSERVATION_RETRIEVAL_ONLY",
+    "evidence_label": "DOCUMENTED",
+    "evidence": "receipts/so02/2026-08-22/oe-dispatch/CUR01-REFUSAL-INGESTION.json and the AC-06/AC-07 findings above"
+  },
+  "constraints": [
+    {
+      "constraint": "Use the exact 13 criteria committed at 9a390df3 without relaxing failed checks.",
+      "provenance": "EARNED",
+      "defect_caught": "Those criteria exposed manifest omission, forged read-back acceptance, route misclassification, shared custody, detector fail-open and CI circularity."
+    },
+    {
+      "constraint": "Lane A cannot issue the verdict on its own remediation.",
+      "provenance": "EARNED",
+      "defect_caught": "The refusal distinguished reproducibility and producer assertions from independent acceptance."
+    },
+    {
+      "constraint": "Do not count R2 as an independent custody route while its durable evidence terminates in R1/GitHub.",
+      "provenance": "EARNED",
+      "defect_caught": "AC-07 identified a single producer/custody failure domain capable of manufacturing or suppressing both route records."
+    },
+    {
+      "constraint": "Treat the historical GitHub Actions run as reproducibility evidence only.",
+      "provenance": "EARNED",
+      "defect_caught": "AC-12 showed that producer-authored workflow assertions repeat the producer's success rule rather than independently test truth."
+    }
+  ],
+  "acceptor_request": {
+    "eligible_lane": "Lane H or a later actor from a model family that did not produce this candidate and does not share Lane A context",
+    "requested_action": "Evaluate this additive repair package under the unchanged 13 criteria and issue an additive verdict. Preserve the 541eff44 refusal regardless of outcome.",
+    "requested_outcome": null,
+    "evidence_label": "DOCUMENTED",
+    "source": "COM-CUR-ENV-01-20260822-v001 commission"
+  },
+  "programme_effect": {
+    "unrelated_work_blocked": false,
+    "evidence_label": "DOCUMENTED",
+    "source": "The governing ingestion limits refusal impact to the two-route redundancy claim."
+  },
+  "decision_changed": []
+}
