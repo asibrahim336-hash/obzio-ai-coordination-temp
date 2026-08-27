@@ -1,0 +1,59 @@
+{
+  "record_id": "SCP-SI-01-PROPAGATION-REFUSAL-20260827T0605Z",
+  "classification": "REFUSAL",
+  "not": "PROGRESS",
+  "decision_changed": [],
+  "measured_at": "2026-08-27T06:05:00Z",
+  "measured_by": "coordinator bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+  "evidence_label": "DIRECTLY_REPRODUCED",
+  "founder_instruction": "Emit an explicit count in Checkpoint 2: returns completed, returns propagated. If the second number is still below the first, say so as a refusal, not as progress.",
+
+  "count": {
+    "returns_completed_and_custody_verified": 3,
+    "returns_propagated_to_currentness_projection": 0,
+    "verdict": "REFUSED — the factory is not compounding"
+  },
+
+  "detail": {
+    "completed_and_verified": [
+      {"lane": "A", "head": "1d6fe0fe461431e24f1262335f8e8c1664c623f9", "propagated": false},
+      {"lane": "E", "head": "b2c02a553198a116aa89089e989129588e5f3a38", "propagated": false},
+      {"lane": "G", "head": "356f69b0416689abc41ffe14e816313086067e7d", "propagated": false}
+    ],
+    "published_but_not_yet_returned": [
+      {"lane": "B", "head": "f1372aa00f74"},
+      {"lane": "C", "head": "d773ecbb63c8"}
+    ],
+    "instrument": "workstreams/so02/control-plane/operating-environment/l4-currentness-recovery/ledger/workstream-ledger.json",
+    "ledger_workstream_entries": 16,
+    "ledger_mentions_this_cohort": false,
+    "probe": "Searched the ledger blob for SCP-SI-01, scp-a, scp-e, scp-g, lane-a, lane-e, lane-g in both cases. Zero matches.",
+    "worse_than_the_checkpoint_figure": "Lane E reported 0 of 2. Measured across the whole cohort it is 0 of 3, and the cohort has no ledger identity at all — not a partial propagation but an absent one."
+  },
+
+  "root_cause": {
+    "statement": "There is no step between a lane pushing and the ledger knowing.",
+    "detail": "Lane admission verifies custody: digests recomputed from remote bytes, closure, namespace containment, parse validity. It answers 'is this artifact intact and contained'. Nothing answers 'does this unit exist in the current-state graph'. Those are different questions and only the first has a mechanism.",
+    "consequence": "A return can be perfectly custody-sound and completely invisible to currentness. Every one of this cohort's returns is exactly that."
+  },
+
+  "why_this_is_the_most_serious_finding_of_the_run": {
+    "founder_reasoning_adopted": "The commission's core claim is that one incremental cohort performs better under an accepted measure. Promotion is what converts a return into compounding. While the last link is broken that claim is unprovable, not merely unproven.",
+    "coordinator_addition": "It also explains the Lane G result rather than being separate from it. Zero accepted units in the estate's history and zero propagated returns are the same gap seen from two ends: work is produced and custody-verified, then stops. Acceptance and promotion are both downstream of a link that does not exist.",
+    "what_it_invalidates": "No throughput figure this programme has reported — 13 of 14 delivered, all gates green, custody verified — speaks to compounding. They measure production. They were accurate and they were answering a question nobody should have been satisfied by."
+  },
+
+  "not_repaired_in_this_record": {
+    "reason": "Lane B is in flight and owns the canonical chain, whose final link is currentness promotion. Writing the ledger from here would collide with a running lane on the shared canonical files — concurrency, not protection.",
+    "gate": "concurrency; expires when Lane B returns",
+    "if_lane_b_does_not_deliver_it": "The coordinator lands the promotion step at integration and says so explicitly rather than carrying the gap into Checkpoint 2 as an open item."
+  },
+
+  "required_mechanism_change": {
+    "statement": "Custody verification must be followed by a registration step, and a return that is custody-verified but unregistered must be reported as INCOMPLETE rather than as delivered.",
+    "probe_requirement": "Per the founder's INSTALLED_NOT_EFFECTIVE standing requirement, the registration step ships with an inert probe proving it fires. A propagation mechanism that is installed and unreached would be the same class of defect this cohort has now hit three times.",
+    "regression": "A lane return with verified custody and no ledger entry must fail a test. Today it passes every check the estate has."
+  },
+
+  "honest_limit": "This measures presence in the ledger, which is the projection's input. It does not measure whether a propagated entry would then be admitted at the correct rung; the admission ladder is a separate control that currently has nothing from this cohort to judge."
+}
