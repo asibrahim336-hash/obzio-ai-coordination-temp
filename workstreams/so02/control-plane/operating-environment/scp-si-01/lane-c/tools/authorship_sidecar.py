@@ -24,9 +24,10 @@ classifier reached FOUNDER verdicts from *position* (a block quotation sitting
 under a heading whose title began "Verbatim") and from *exact substring match*
 (a quotation counted as verified because it appeared literally somewhere inside a
 segment already marked founder). Both were reproduced against
-`w10-provenance/tools/provctl.py` at integration commit
-7f29043eece45f42f018d841718a257cfd18739b; see
-`findings/DEFECT-REPRODUCTION.md`.
+`w10-provenance/tools/provctl.py`, which is byte-identical
+(sha256 94eeb51fd8e3e57df6a6c1ba28c79132c9eadcccc9df2d0394fbda72aea2456b) at both
+the commit this branch was cut from and the integration head it was re-audited
+against; see `findings/DEFECT-REPRODUCTION.md`.
 
 So this module holds two hard invariants, both EARNED (each names that defect):
 

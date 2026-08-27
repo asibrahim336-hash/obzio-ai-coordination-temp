@@ -1,7 +1,11 @@
 # The prior authorship defect, reproduced
 
 **Evidence label** `DIRECTLY_REPRODUCED`
-**Integration commit audited against** `7f29043eece45f42f018d841718a257cfd18739b`
+**Integration commit audited against** `f0fb3f51a25db67b33bdd558c73055f3d02ddb60`
+**Subject under test** `w10-provenance/tools/provctl.py`, sha256
+`94eeb51fd8e3e57df6a6c1ba28c79132c9eadcccc9df2d0394fbda72aea2456b` — byte-identical
+at that head and at `7f29043eece45f42f018d841718a257cfd18739b`, the commit this
+branch was cut from, so both reproductions below hold at either
 **Reproduce it yourself**
 
 ```bash

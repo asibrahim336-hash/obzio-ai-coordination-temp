@@ -1,8 +1,11 @@
 # Where the 928-item authority index is — `NOT_FOUND`
 
 **Lane** SCP-SI-01 lane C
-**Integration commit audited against** `7f29043eece45f42f018d841718a257cfd18739b`
-on `cursor/operating-environment-return-20260822-v001`, re-fetched during this run
+**Integration commit audited against** `f0fb3f51a25db67b33bdd558c73055f3d02ddb60`
+on `cursor/operating-environment-return-20260822-v001`, re-fetched during this run.
+The ref-wide search below was run at `7f29043eece45f42f018d841718a257cfd18739b`;
+integration then advanced by one commit adding two files, neither of them an index,
+so the `NOT_FOUND` verdict is unchanged at the newer head
 **Evidence label** `DIRECTLY_REPRODUCED` for every count below; each was recomputed
 in this run, not carried forward
 
