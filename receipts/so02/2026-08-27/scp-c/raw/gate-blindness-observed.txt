@@ -1,0 +1,20 @@
+# The gate's verdict on a declaration that was genuinely stale
+#
+# No tampering. The declaration was generated at step 6 of release.sh, then three
+# files under lane-c/ were edited and one was added. The gate was then run on it
+# unmodified. Recorded verbatim.
+
+$ python3 -I .../tools/write_admission.py .../WRITE-DECLARATION-SCP-C.json --repo /tmp/lane-c
+WRITE_ADMITTED  target='cursor/scp-c-authorship-sidecar-696d' operation='COMMIT_AND_PUSH'
+  [pass] declaration    DECLARED_AND_REASONED
+  [pass] concurrency    SETTLED_SUBJECT_TO_TOP_LAYER_LIMIT
+  [pass] reversibility  REVERSAL_RE_EXECUTED_AND_VERIFIED
+  [pass] evidence       EVIDENCE_RECOMPUTED
+
+$ python3 -I .../tools/verify_declaration_evidence.py --repo-root .
+FAIL HASH_MISMATCH workstreams/so02/control-plane/operating-environment/scp-si-01/lane-c/README.md: on disk 16c9df6de89b4210102232fd5b4be890fc27c55c22fa5dc7929051bbd2d5e07e, declared 4f757f4d7e5adc7b257db1ece7946db9f7fdf45b7d90835ec6ff497bb2c9f0d7
+FAIL SIZE_MISMATCH workstreams/so02/control-plane/operating-environment/scp-si-01/lane-c/README.md: on disk 19967, declared 17517
+FAIL HASH_MISMATCH workstreams/so02/control-plane/operating-environment/scp-si-01/lane-c/tools/verify_declaration_evidence.py: on disk 8cc725d97fdd8b79d3c94ce1f6a129f0d8831f0e646ba49a39df9820b66cc56d, declared 593bfcf76fc770869a783583265a9d86a708446b3976aeb2d934d0407a19bc9d
+FAIL SIZE_MISMATCH workstreams/so02/control-plane/operating-environment/scp-si-01/lane-c/tools/verify_declaration_evidence.py: on disk 7582, declared 7181
+FAIL UNCOVERED_FILE_PRESENT workstreams/so02/control-plane/operating-environment/scp-si-01/lane-c/tools/reproduce_gate_blindness.py exists but no entry hashes it
+declaration_evidence = FAILED (5 findings)

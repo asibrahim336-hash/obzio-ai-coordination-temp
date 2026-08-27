@@ -1,0 +1,86 @@
+{
+  "receipt_id": "SCP-C-READ-BACK-20260827-v001",
+  "lane": "SCP-SI-01 lane C",
+  "generated_at": "2026-08-27T05:57:57Z",
+  "audited_against_integration_commit": "f0fb3f51a25db67b33bdd558c73055f3d02ddb60",
+  "pushed_sha": null,
+  "evidence_label": "DIRECTLY_REPRODUCED",
+  "method": "Every structured artifact is re-read from disk, its sha256 recomputed, and its content parsed. Hash validity alone is not accepted: a hash-valid unparsable artifact is a defect in this estate's record, repaired at commit 3b97d6ff, and shape verification that never checks truth is the defect evidence_integrity.verify_readback_truth exists to catch.",
+  "artifact_count": 3,
+  "parsed_count": 3,
+  "unparsable_count": 0,
+  "artifacts": [
+    {
+      "path": "receipts/so02/2026-08-27/scp-c/raw/concurrency-observation.json",
+      "size_bytes": 4717,
+      "sha256": "da5b2bce9e17fb6c6b2eeb8db7c1fb1986383a25979535180f99b3c6e9fb11d4",
+      "hash_recomputed": true,
+      "parsed": true,
+      "parse_problems": [],
+      "top_level_keys_sample": [
+        "agent_count",
+        "agents",
+        "agents_holding_ref_of_interest",
+        "evidence_label",
+        "has_more",
+        "instrument"
+      ]
+    },
+    {
+      "path": "workstreams/so02/control-plane/operating-environment/scp-si-01/lane-c/sidecar/AUTHORSHIP-SIDECAR-SLICE-20260827-v001.json",
+      "size_bytes": 154324,
+      "sha256": "73378285dc3fe2b32ab95dae4a947561a20da436678d7fe3c74f81dfc30f024f",
+      "hash_recomputed": true,
+      "parsed": true,
+      "parse_problems": [],
+      "top_level_keys_sample": [
+        "built_against_commit",
+        "class_meanings",
+        "class_tally",
+        "decision_changed",
+        "default_authority_query_excludes",
+        "is_a_proposal_not_a_binding"
+      ]
+    },
+    {
+      "path": "workstreams/so02/control-plane/operating-environment/scp-si-01/lane-c/sidecar/SLICE-REPORT-20260827-v001.json",
+      "size_bytes": 63026,
+      "sha256": "96375cfd19886e6e901638616b4545dfb8f171c6a2b705e546f67984682d0afa",
+      "hash_recomputed": true,
+      "parsed": true,
+      "parse_problems": [],
+      "top_level_keys_sample": [
+        "adoption_finding",
+        "audited_against_integration_commit",
+        "decision_changed",
+        "derestriction_register_prior_founder_bound",
+        "disagreements_with_estate_claims_about_artifacts",
+        "disagreements_with_existing_corpus_classification"
+      ]
+    }
+  ],
+  "not_covered_here": {
+    "paths": [
+      "workstreams/so02/control-plane/operating-environment/write-declarations/WRITE-DECLARATION-SCP-C.json",
+      "receipts/so02/2026-08-27/scp-c/ADMISSION.json",
+      "receipts/so02/2026-08-27/scp-c/MANIFEST.json",
+      "receipts/so02/2026-08-27/scp-c/READ-BACK.json"
+    ],
+    "reason": "The declaration hashes this file as its evidence, so this file cannot hash the declaration. ADMISSION.json and MANIFEST.json are written after it for the same reason. The cycle is broken here and declared; the declaration is hash-and-parse verified by verify_declaration_evidence.py against the disk and by ADMISSION.json against the gates, and all four are hash-covered by MANIFEST.json."
+  },
+  "sidecar_recomputation": {
+    "path": "workstreams/so02/control-plane/operating-environment/scp-si-01/lane-c/sidecar/AUTHORSHIP-SIDECAR-SLICE-20260827-v001.json",
+    "item_count": 6,
+    "segment_count": 136,
+    "class_tally": {
+      "FOUNDER_DIRECT": 65,
+      "FOUNDER_ADOPTED": 0,
+      "FOUNDER_REPRESENTED": 8,
+      "NONFOUNDER_PASTED": 13,
+      "UNRESOLVED_USER_ROLE": 50
+    },
+    "recomputation_failures": [],
+    "verdict": "SIDECAR_VERIFIED"
+  },
+  "limitation": "This is a local read-back. It proves the committed bytes hash and parse in this working tree. It does not prove the remote holds them; that is what the git ls-remote confirmation in the lane return covers."
+}
