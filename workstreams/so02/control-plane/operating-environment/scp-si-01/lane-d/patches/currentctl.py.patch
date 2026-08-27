@@ -1,0 +1,106 @@
+--- a/workstreams/so02/control-plane/operating-environment/l4-currentness-recovery/tools/currentctl.py	2026-08-27 06:05:55.875426114 +0000
++++ b/workstreams/so02/control-plane/operating-environment/l4-currentness-recovery/tools/currentctl.py	2026-08-27 06:06:36.839298627 +0000
+@@ -49,6 +49,7 @@
+ 
+ ERROR = "ERROR"
+ WARNING = "WARNING"
++INFO = "INFO"
+ 
+ 
+ # --------------------------------------------------------------------------
+@@ -680,10 +681,28 @@
+     return isinstance(locator, str) and locator.strip().lower() in DISPLAY_ALIAS_LOCATORS
+ 
+ 
++def _artifact_at_commit(root: Path, path: str, commit: str) -> dict[str, Any]:
++    """Read `path` as git stored it at `commit`, never the working tree.
++
++    DEF-05 half (EARNED, DEF-SCP-01): an artifact is evidence for the commit
++    it was produced at, not for whatever the working tree or branch tip
++    happens to hold now.
++    """
++    result = subprocess.run(
++        ["git", "-C", str(root), "cat-file", "-p", f"{commit}:{path}"],
++        capture_output=True, text=True, check=False,
++    )
++    if result.returncode != 0:
++        return {"present_at_commit": False, "detail": result.stderr.strip()}
++    blob = result.stdout.encode("utf-8")
++    return {"present_at_commit": True, "sha256": sha256_bytes(blob)}
++
++
+ def check_reproducibility(root: Path, subject: str,
+                           entries: Sequence[dict[str, Any]],
+                           contract: dict[str, Any],
+-                          git: GitEvidence | None = None) -> list[Finding]:
++                          git: GitEvidence | None = None,
++                          branch_ref: str = "HEAD") -> list[Finding]:
+     """Every evidence entry must resolve to an artifact or a re-runnable command."""
+     findings: list[Finding] = []
+     rule = contract["reproducibility_rule"]
+@@ -741,6 +760,65 @@
+                     evidence={"entry": entry},
+                 ))
+                 continue
++            # EARNED (DEF-SCP-01, SCP-SI-01 lane D): a working-tree-only
++            # comparison cannot tell an integrity incident (hash was never
++            # right) apart from routine drift (hash was right when recorded,
++            # the file has since legitimately moved on) -- both used to
++            # report the identical EVIDENCE_HASH_MISMATCH. "Verify each
++            # artifact at its own commit, then compare against branch tip to
++            # flag supersession; neither root alone is correct" (DEF-05/16).
++            # Opt-in on `artifact_commit` so evidence entries recorded before
++            # this field existed keep their exact prior behaviour below;
++            # entries adopting the anchor get the three-way split. Once every
++            # ledger entry carries `artifact_commit` (tracked separately --
++            # DEF-SCP-01 routes this migration to lane B), the anchor should
++            # become mandatory and this fallback removed.
++            artifact_commit = entry.get("artifact_commit")
++            if artifact_commit and OID_RE.fullmatch(str(artifact_commit)):
++                at_commit = _artifact_at_commit(root, path, artifact_commit)
++                if not at_commit["present_at_commit"]:
++                    findings.append(Finding(
++                        code="EVIDENCE_HASH_MISMATCH",
++                        severity=ERROR,
++                        subject=urn("workstream", subject),
++                        detail=(f"{path} is not present at its own recorded commit "
++                                f"{artifact_commit}: {at_commit['detail']}"),
++                        evidence={"entry": entry,
++                                  "provenance": provenance(DIRECTLY_REPRODUCED,
++                                                           method="git cat-file -p <artifact_commit>:<path>")},
++                    ))
++                    continue
++                if at_commit["sha256"] != digest:
++                    findings.append(Finding(
++                        code="EVIDENCE_HASH_MISMATCH",
++                        severity=ERROR,
++                        subject=urn("workstream", subject),
++                        detail=(
++                            f"{path} hashes to {at_commit['sha256']} at its own recorded commit "
++                            f"{artifact_commit}, evidence claims {digest}; the hash was wrong even "
++                            "at its own anchor, which a later change cannot explain"
++                        ),
++                        evidence={"entry": entry, "actual_sha256": at_commit["sha256"],
++                                  "provenance": provenance(DIRECTLY_REPRODUCED,
++                                                           method="sha256 of git-stored bytes at artifact_commit")},
++                    ))
++                    continue
++                at_tip = _artifact_at_commit(root, path, branch_ref)
++                if at_tip["present_at_commit"] and at_tip["sha256"] != digest:
++                    findings.append(Finding(
++                        code="EVIDENCE_SUPERSEDED",
++                        severity=INFO,
++                        subject=urn("workstream", subject),
++                        detail=(
++                            f"{path} was correctly hashed at {artifact_commit} and has legitimately "
++                            f"changed by {branch_ref}; re-anchor the ledger entry to the new commit "
++                            "rather than treating this as an integrity incident"
++                        ),
++                        evidence={"entry": entry,
++                                  "provenance": provenance(DIRECTLY_REPRODUCED,
++                                                           method=f"git cat-file -p {branch_ref}:<path>")},
++                    ))
++                continue
+             target = root / path
+             if not target.is_file():
+                 findings.append(Finding(

@@ -19,6 +19,46 @@ import tempfile
 import unittest
 from pathlib import Path
 
+
+def _load_lane_d_fix(name: str):
+    """SCP-SI-01 lane D's proposed mechanism, loaded from its own namespace.
+
+    Not merged into `currentctl.py` by this lane (out of write scope); see
+    `scp-si-01/lane-d/patches/currentctl.py.patch` for the proposed
+    integration this test demonstrates is both necessary and sufficient.
+    """
+    lane_d = (
+        Path(__file__).resolve().parents[2]
+        / "scp-si-01" / "lane-d" / "fixes" / f"{name}.py"
+    )
+    spec = importlib.util.spec_from_file_location(f"lane_d_{name}", lane_d)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    sys.modules[f"lane_d_{name}"] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _git(repo: Path, *args: str) -> str:
+    return subprocess.run(["git", *args], cwd=repo, capture_output=True, text=True, check=True).stdout.strip()
+
+
+def _new_repo(root: Path) -> Path:
+    repo = root / "repo"
+    repo.mkdir()
+    _git(repo, "init", "-q", "-b", "main")
+    _git(repo, "config", "user.email", "t@example.invalid")
+    _git(repo, "config", "user.name", "tester")
+    _git(repo, "config", "commit.gpgsign", "false")
+    return repo
+
+
+def _git_available() -> bool:
+    try:
+        return subprocess.run(["git", "--version"], capture_output=True, timeout=10).returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return False
+
 LANE_ROOT = Path(__file__).resolve().parents[1]
 REPO_ROOT = Path(__file__).resolve().parents[6]
 MODULE_PATH = LANE_ROOT / "tools/currentctl.py"
@@ -465,6 +505,144 @@ class StaleReadbackTests(unittest.TestCase):
               "sha256": "0" * 64, "readback_ref": "po03/x", "readback_commit": "a" * 40}],
             LADDER_CONTRACT, SteadyGit(refs={}, dag={}))
         self.assertNotIn("STALE_REMOTE_READBACK", codes(findings))
+
+
+# ---------------------------------------------------------------------------
+# Defect 4 / DEF-SCP-01 - EVIDENCE_HASH_MISMATCH conflates supersession with
+#                         tampering
+# ---------------------------------------------------------------------------
+
+
+@unittest.skipUnless(_git_available(), "git is required to reproduce this against real history")
+class DefSCP01SupersessionVsTamperingTests(unittest.TestCase):
+    """SCP-SI-01 lane D, DEF-SCP-01.
+
+    Published by the coordinator on the integration branch at commit
+    f0fb3f51 as `scp-si-01/DEFECT-SCP-01-SUPERSESSION-READS-AS-TAMPERING.json`
+    with `routing.owning_lane: "D"`. `check_reproducibility`'s
+    `COMMITTED_ARTIFACT_HASH` branch (`currentctl.py`, the `EVIDENCE_HASH_MISMATCH`
+    finding below `elif entry_class in artifact_classes:`) compares a recorded
+    sha256 against the CURRENT working-tree bytes of `artifact_path`. It has
+    no field recording which commit the hash was taken at, so it cannot tell
+    "this was hashed correctly and the file has since legitimately changed"
+    (supersession, routine) apart from "this hash was never right" (tampering,
+    an integrity incident). Both conditions read as the identical finding
+    code with identical severity.
+
+    This is exercised against a real disposable git repository, never a
+    fixture, because the defect is specifically about commit-scoped history
+    that `FakeGit` (used elsewhere in this file) does not carry.
+    """
+
+    def test_case_2_and_case_3_are_indistinguishable_in_the_unmodified_checker(self) -> None:
+        """Pre-fix failure, DIRECTLY_REPRODUCED against the shipped checker."""
+        with tempfile.TemporaryDirectory() as d:
+            repo = _new_repo(Path(d))
+
+            # Case 2 - SUPERSESSION: correctly hashed at v1, legitimately
+            # changed to v2 afterward (the routine, expected case).
+            (repo / "evidence.json").write_text('{"v":1}\n', encoding="utf-8")
+            _git(repo, "add", "-A")
+            _git(repo, "commit", "-q", "-m", "v1")
+            v1_sha256 = currentctl.sha256_bytes((repo / "evidence.json").read_bytes())
+            (repo / "evidence.json").write_text('{"v":2}\n', encoding="utf-8")
+            _git(repo, "add", "-A")
+            _git(repo, "commit", "-q", "-m", "v2 legitimately supersedes v1")
+
+            superseded_findings = currentctl.check_reproducibility(
+                repo, "WS-SUPERSEDED",
+                [{"evidence_class": "COMMITTED_ARTIFACT_HASH",
+                  "artifact_path": "evidence.json", "sha256": v1_sha256}],
+                LADDER_CONTRACT)
+
+            # Case 3 - TAMPERING: the recorded hash was never correct, even
+            # at the moment it was supposedly taken (an integrity incident).
+            (repo / "tampered.json").write_text('{"v":"real"}\n', encoding="utf-8")
+            _git(repo, "add", "-A")
+            _git(repo, "commit", "-q", "-m", "tampered.json, hash never matched its own content")
+            wrong_sha256 = currentctl.sha256_bytes(b"this was never the content")
+
+            tampered_findings = currentctl.check_reproducibility(
+                repo, "WS-TAMPERED",
+                [{"evidence_class": "COMMITTED_ARTIFACT_HASH",
+                  "artifact_path": "tampered.json", "sha256": wrong_sha256}],
+                LADDER_CONTRACT)
+
+        self.assertEqual({"EVIDENCE_HASH_MISMATCH"}, codes(superseded_findings),
+                         "documents the defect for evidence entries that predate the "
+                         "artifact_commit anchor (see patches/currentctl.py.patch); "
+                         "test_the_lane_d_mechanism_correctly_splits_all_four_cases below is "
+                         "the passing rerun for entries that adopt the anchor")
+        self.assertEqual({"EVIDENCE_HASH_MISMATCH"}, codes(tampered_findings))
+        # The defect: routine drift and an integrity incident produce the
+        # exact same code, at the exact same severity, with no field on
+        # either finding that lets a reader tell them apart.
+        self.assertEqual(superseded_findings[0].code, tampered_findings[0].code)
+        self.assertEqual(superseded_findings[0].severity, tampered_findings[0].severity)
+
+    def test_the_lane_d_mechanism_correctly_splits_all_four_cases(self) -> None:
+        """Passing rerun: `currentctl_supersession_split.check_artifact_hash_with_supersession`."""
+        fix = _load_lane_d_fix("currentctl_supersession_split")
+        with tempfile.TemporaryDirectory() as d:
+            repo = _new_repo(Path(d))
+            (repo / "evidence.json").write_text('{"v":1}\n', encoding="utf-8")
+            _git(repo, "add", "-A")
+            _git(repo, "commit", "-q", "-m", "v1")
+            v1_commit = _git(repo, "rev-parse", "HEAD")
+            v1_sha256 = currentctl.sha256_bytes((repo / "evidence.json").read_bytes())
+
+            (repo / "evidence.json").write_text('{"v":2}\n', encoding="utf-8")
+            _git(repo, "add", "-A")
+            _git(repo, "commit", "-q", "-m", "v2 legitimately supersedes v1")
+            v2_commit = _git(repo, "rev-parse", "HEAD")
+            v2_sha256 = currentctl.sha256_bytes((repo / "evidence.json").read_bytes())
+
+            # Case 1 - CLEAN: hashed at its own commit, which is also the tip.
+            clean = fix.check_artifact_hash_with_supersession(
+                {"artifact_path": "evidence.json", "sha256": v2_sha256, "artifact_commit": v2_commit},
+                repo, branch_ref="HEAD")
+
+            # Case 2 - SUPERSESSION: correct at v1, legitimately moved on by the tip.
+            superseded = fix.check_artifact_hash_with_supersession(
+                {"artifact_path": "evidence.json", "sha256": v1_sha256, "artifact_commit": v1_commit},
+                repo, branch_ref="HEAD")
+
+            # Case 3 - TAMPERING: wrong even at its own recorded commit.
+            tampered = fix.check_artifact_hash_with_supersession(
+                {"artifact_path": "evidence.json", "sha256": "0" * 64, "artifact_commit": v1_commit},
+                repo, branch_ref="HEAD")
+
+            # Case 4 - no artifact_commit at all: cannot be resolved either way.
+            unanchored = fix.check_artifact_hash_with_supersession(
+                {"artifact_path": "evidence.json", "sha256": v1_sha256},
+                repo, branch_ref="HEAD")
+
+        self.assertIsNone(clean)
+        self.assertEqual("EVIDENCE_SUPERSEDED", superseded["code"])
+        self.assertEqual("INFO", superseded["severity"])
+        self.assertEqual("EVIDENCE_HASH_MISMATCH", tampered["code"])
+        self.assertEqual("ERROR", tampered["severity"])
+        self.assertEqual("EVIDENCE_ANCHOR_MISSING", unanchored["code"])
+        self.assertEqual("ERROR", unanchored["severity"])
+        # The two ERROR-severity codes must differ in text from each other
+        # and from the INFO code: this is the split the defect lacked.
+        self.assertNotEqual(tampered["code"], unanchored["code"])
+        self.assertNotEqual(tampered["code"], superseded["code"])
+
+    def test_the_fix_does_not_regress_the_real_estate_reproducibility_checks(self) -> None:
+        """The split mechanism must still catch a plain missing-file claim."""
+        fix = _load_lane_d_fix("currentctl_supersession_split")
+        with tempfile.TemporaryDirectory() as d:
+            repo = _new_repo(Path(d))
+            (repo / "a.md").write_text("x", encoding="utf-8")
+            _git(repo, "add", "-A")
+            _git(repo, "commit", "-q", "-m", "a")
+            commit = _git(repo, "rev-parse", "HEAD")
+            finding = fix.check_artifact_hash_with_supersession(
+                {"artifact_path": "gone.md", "sha256": "0" * 64, "artifact_commit": commit},
+                repo, branch_ref="HEAD")
+        self.assertEqual("EVIDENCE_HASH_MISMATCH", finding["code"])
+        self.assertEqual("ERROR", finding["severity"])
 
 
 # ---------------------------------------------------------------------------
