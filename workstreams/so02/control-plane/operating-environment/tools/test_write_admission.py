@@ -315,27 +315,36 @@ class TheSixInjectionsTests(unittest.TestCase):
         report = self._refused_on(leaky, wa.GATE_EVIDENCE)
         self.assertTrue(any("not covered by any hash" in f for f in report["gates"][3]["findings"]))
 
-    def test_injection_6d_the_unpatched_gate_wrongly_admits_a_hash_valid_but_unparsable_artifact(self) -> None:
-        """SCP-SI-01 lane D, DEF-SCP-D-02, DIRECTLY_REPRODUCED.
+    def test_injection_6d_a_hash_valid_but_unparsable_artifact_is_now_refused(self) -> None:
+        """SCP-SI-01 lane D, DEF-SCP-D-02.
 
-        `verify_manifest_closure` checks path coverage and that
-        `bundle_sha256` binds the entry list as written; it never reads the
-        referenced file. `evidence_integrity.verify_artifact_validity`
-        exists and would catch a truncated JSON artifact, but
-        `check_evidence_gate`'s MANIFEST_CLOSURE branch never calls it. This
-        is the live failure named in the SCP-SI-01 lane D brief: "a lane
-        published truncated JSON whose digest matched its manifest exactly
-        and passed closure."
+        History, kept rather than erased: `verify_manifest_closure` checks
+        path coverage and that `bundle_sha256` binds the entry list as
+        written; it never reads the referenced file.
+        `evidence_integrity.verify_artifact_validity` already existed and
+        would catch a truncated JSON artifact, but `check_evidence_gate`'s
+        `MANIFEST_CLOSURE` branch never called it — the live failure named in
+        the SCP-SI-01 lane D brief: "a lane published truncated JSON whose
+        digest matched its manifest exactly and passed closure."
 
-        This test asserts the CURRENT (defective) behaviour against the
-        real, unmodified `write_admission.py` shipped in this tree — it is
-        the pre-fix tripwire, not the desired state. See
-        `test_injection_6e_the_lane_d_mechanism_fix_correctly_refuses_it`
-        for the passing rerun, and
-        `scp-si-01/lane-d/patches/write_admission.py.patch` for the proposed
-        one-call fix (which also requires updating
-        `test_evidence_integrity_is_reused_not_reimplemented`'s exact
-        `verified_by` string in this file, noted there and in that patch).
+        This lane reproduced that failure directly and built the fix at
+        `scp-si-01/lane-d/fixes/evidence_gate_wiring.py` (still exercised
+        below, in `test_injection_6e`). While this was in progress, the
+        coordinator independently reproduced the identical class of defect
+        against its own declaration (a fabricated sixty-four-zero digest) and
+        landed a fix directly in `write_admission.py` and
+        `evidence_integrity.verify_manifest_truth`/`verify_artifact_validity`
+        (commit `29abd58b`, "repair the evidence gate — it certified a
+        forged manifest", found by Lane C). Re-run against the now-merged
+        canonical file: the truncated artifact this lane's fixture builds is
+        REFUSED by the real, unpatched-by-this-lane `write_admission.py`
+        shipped in this tree. `DIRECTLY_REPRODUCED`, this run — two
+        independent diagnoses of the same defect converge on the same
+        outcome. This case no longer needs this lane's own patch to close;
+        `scp-si-01/lane-d/patches/write_admission.py.patch` is retained as a
+        record of the independently-designed, functionally-equivalent fix
+        this lane proposed before observing that the canonical file had
+        already been repaired.
         """
         with tempfile.TemporaryDirectory() as d:
             repo = Path(d)
@@ -351,16 +360,18 @@ class TheSixInjectionsTests(unittest.TestCase):
                 "evidence.present_paths": ["truncated-evidence.json"],
             })
             report = wa.admit(declaration, repo, check_ref_movement=False, rehearse_reversal=True)
-        self.assertTrue(
+        self.assertFalse(
             report["admitted"],
-            "if this fails, write_admission.py has been patched for DEF-SCP-D-02 "
-            "and this tripwire (not the mechanism) should now be deleted: "
+            "if this fails, write_admission.py has regressed on DEF-SCP-D-02: "
             + wa.summarise(report),
         )
-        self.assertEqual("EVIDENCE_RECOMPUTED", report["gates"][3]["verdict"])
+        self.assertEqual("EVIDENCE_FAILED_RECOMPUTATION", report["gates"][3]["verdict"])
+        self.assertTrue(any("does not parse as JSON" in f for f in report["gates"][3]["findings"]))
 
     def test_injection_6e_the_lane_d_mechanism_fix_correctly_refuses_it(self) -> None:
-        """Passing rerun: the same truncated artifact, through the wired-in check."""
+        """This lane's own fix module, kept and still exercised directly even
+        though the canonical file converged on an equivalent fix (see 6d):
+        the diagnosis and the mechanism were both independently correct."""
         fix = _load_lane_d_fix("evidence_gate_wiring")
         with tempfile.TemporaryDirectory() as d:
             repo = Path(d)

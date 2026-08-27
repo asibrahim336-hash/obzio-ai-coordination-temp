@@ -60,6 +60,23 @@ guarded checker identically (`test_the_fix_does_not_regress_the_real_86_constrai
 
 ## Defect 2 — hash-valid but unparsable artifact
 
+**Reconciliation, recorded rather than smoothed over (`DIRECTLY_REPRODUCED`, this
+session):** mid-delivery, this lane re-fetched the integration branch (per the setup
+instructions) and found it had advanced three commits, one of which —
+`29abd58b`, "repair the evidence gate — it certified a forged manifest", credited to Lane
+C's independent discovery — landed a fix in the canonical `write_admission.py` and
+`evidence_integrity.py` that is functionally equivalent to this lane's own diagnosis and
+fix below (wiring artifact-content verification into `check_evidence_gate`'s
+`MANIFEST_CLOSURE` branch, and additionally adding byte-level size checking this lane's
+design did not). After merging that commit into this branch, this lane's own **pre-fix
+tripwire test started failing** — correctly, because the canonical file is no longer
+defective. The tripwire was rewritten into a regression-confirmation test
+(`test_injection_6d_a_hash_valid_but_unparsable_artifact_is_now_refused`) that asserts the
+now-fixed behaviour against the real file, and the history is kept in the test's own
+docstring rather than deleted. This lane's independent fix module
+(`evidence_gate_wiring.py`) and patch are retained as evidence that the diagnosis was
+independently correct, not as the operative fix — the canonical file no longer needs it.
+
 **Class:** `EARNED`, named `DEF-SCP-D-02`. Already reproduced live by the commission
 before this lane started (a lane published truncated JSON whose digest matched its
 manifest exactly and passed closure); this lane's job was to check whether
@@ -189,6 +206,23 @@ Full file: 74/74 tests pass.
 `artifact_commit`; entries without it keep prior behaviour unchanged, verified directly
 against the file's own pre-existing `ReproducibilityTests` (still 100% passing with the
 patch's logic exercised via the lane-d module).
+
+**Reconciliation, checked directly (`DIRECTLY_REPRODUCED`, this session):** the same
+integration-branch re-fetch that surfaced Defect 2's convergence (above) also carries a
+DEF-SCP-01 fix — but in a different file. Commit `29abd58b` adds
+`evidence_integrity.audit_manifest_truth`, which applies the identical at-commit-then-tip
+split to `write_admission`'s own historical-declaration audit trail ("Two showed apparent
+failures; anchoring each to its own commit showed both were EVIDENCE_SUPERSEDED... because
+reporting supersession as tampering is DEF-SCP-01"). Commit `379712b3` further notes ledger
+entries now "carry their anchor commit, per DEF-SCP-01." Checked directly:
+`git log -- .../l4-currentness-recovery/tools/currentctl.py` shows no commit after this
+lane's baseline, and `git diff` against this lane's original base is empty for that file.
+**`currentctl.py`'s `check_reproducibility` — the exact file the coordinator's own defect
+record names (`"published_error_ref": "currentctl EVIDENCE_HASH_MISMATCH on
+WS-SO02-CONTROL-PLANE"`) — remains unfixed upstream.** This lane's regression and fix
+target the file DEF-SCP-01 was actually filed against; the two upstream commits fix the
+same defect *pattern* in a different, complementary subsystem (the write-admission audit
+trail, not the currentness compiler), and do not make this lane's work redundant.
 
 **Bonus regression found and fixed in the same hook while working Defect 3 — same "one
 finding code silently covers two different cases" shape:** `gate_claim_state.py`'s

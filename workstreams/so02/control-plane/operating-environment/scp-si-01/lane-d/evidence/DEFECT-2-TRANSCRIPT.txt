@@ -32,3 +32,23 @@ workstreams/so02/control-plane/operating-environment/tools/test_write_admission.
 workstreams/so02/control-plane/operating-environment/tools/test_write_admission.py::AdvisoryVersusRefusalTests::test_the_summary_marks_advisories_as_not_in_force PASSED [100%]
 
 ============================== 26 passed in 1.29s ==============================
+
+=== RECONCILIATION, after re-fetching the integration branch mid-run ===
+The integration branch advanced (f0fb3f51 -> 379712b3) while this defect was in
+progress. Commit 29abd58b independently repaired the same class of defect directly in
+write_admission.py / evidence_integrity.py (credited to Lane C's discovery). After
+merging that commit into this branch, the original pre-fix tripwire
+(test_injection_6d_the_unpatched_gate_wrongly_admits_a_hash_valid_but_unparsable_artifact)
+started FAILING, per its own docstring instruction ("if this fails ... this tripwire
+should now be deleted"). Rewritten into a regression-confirmation test:
+
+workstreams/so02/control-plane/operating-environment/tools/test_write_admission.py::TheSixInjectionsTests::test_injection_6_a_result_asserting_write_with_no_evidence_is_refused PASSED
+workstreams/so02/control-plane/operating-environment/tools/test_write_admission.py::TheSixInjectionsTests::test_injection_6b_evidence_that_fails_recomputation_is_refused PASSED
+workstreams/so02/control-plane/operating-environment/tools/test_write_admission.py::TheSixInjectionsTests::test_injection_6c_an_uncovered_file_breaks_manifest_closure PASSED
+workstreams/so02/control-plane/operating-environment/tools/test_write_admission.py::TheSixInjectionsTests::test_injection_6d_a_hash_valid_but_unparsable_artifact_is_now_refused PASSED
+workstreams/so02/control-plane/operating-environment/tools/test_write_admission.py::TheSixInjectionsTests::test_injection_6e_the_lane_d_mechanism_fix_correctly_refuses_it PASSED
+workstreams/so02/control-plane/operating-environment/tools/test_write_admission.py::TheSixInjectionsTests::test_injection_6f_the_fix_does_not_regress_a_genuinely_valid_manifest PASSED
+
+Full file, post-merge: 290 collected under workstreams/so02/control-plane (pytest -q),
+all passed. See DEFECTS.md, Defect 2 reconciliation note, for the full account.
+Evidence label: DIRECTLY_REPRODUCED (this run, this session, post-merge).
