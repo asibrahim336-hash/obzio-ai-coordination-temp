@@ -500,6 +500,26 @@ def sweep(repo_root: Path = REPO_ROOT_DEFAULT,
     results: list[ProbeResult] = [probe(repo_root) for probe in PROGRAMMATIC_PROBES.values()]
     if ambient_hook_result is not None:
         results.insert(0, ambient_hook_result)
+    else:
+        # Omitting the one control that cannot self-probe made a default sweep
+        # read as all-clear — the prober overstating its own coverage, which is
+        # the INSTALLED_NOT_EFFECTIVE class it exists to catch. An unsupplied
+        # ambient probe is now reported UNPROBEABLE, never dropped: a control
+        # nobody measured is not a control that passed.
+        results.insert(0, ProbeResult(
+            control_id="WRITE-SCOPE AMBIENT HOOK (.cursor/hooks/guard_write_scope.py via beforeShellExecution)",
+            verdict=UNPROBEABLE,
+            evidence_label="HYPOTHESIS",
+            method=("no manual arm/check cycle was supplied via --ambient-hook-probe-json; an ambient "
+                    "hook can only be exercised by a real agent tool call, so it cannot be probed "
+                    "from inside a script"),
+            detail=("Absence of a probe is absence of evidence, not a pass. Run "
+                    ".cursor/hooks/probe_hook_firing.py --arm, send the printed inert commands through "
+                    "the agent shell tool, then --check, and pass the observed numbers back via "
+                    "--ambient-hook-probe-json. This estate has already mistaken installed for firing "
+                    "once; a default sweep must never read as all-clear by dropping the control that "
+                    "cannot measure itself."),
+        ))
 
     counts: dict[str, int] = {}
     for result in results:

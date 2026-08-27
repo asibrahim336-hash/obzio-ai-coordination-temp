@@ -164,9 +164,23 @@ class PerControlProbesAreInertTests(unittest.TestCase):
 class SweepShapeTests(unittest.TestCase):
     def test_sweep_without_ambient_hook_runs_only_programmatic_probes(self) -> None:
         report = prober.sweep(REPO_ROOT)
-        self.assertEqual(len(prober.PROGRAMMATIC_PROBES), report["controls_probed"])
+        # Changed deliberately. Dropping the one control that cannot self-probe made
+        # a default sweep read as all-clear — the prober overstating its own coverage,
+        # which is the INSTALLED_NOT_EFFECTIVE class it exists to catch. An unsupplied
+        # ambient probe is now reported UNPROBEABLE, never omitted.
+        self.assertEqual(len(prober.PROGRAMMATIC_PROBES) + 1, report["controls_probed"])
+        verdicts = [r["verdict"] for r in report["results"]]
+        self.assertIn(prober.UNPROBEABLE, verdicts)
+        self.assertNotIn(prober.EFFECTIVE, verdicts[:1],
+                         "the unprobed ambient control must never be reported EFFECTIVE")
         ids = [r["control_id"] for r in report["results"]]
-        self.assertNotIn("WRITE-SCOPE AMBIENT HOOK (.cursor/hooks/guard_write_scope.py via beforeShellExecution)", ids)
+        # The ambient control IS present now, reported UNPROBEABLE. What must never
+        # happen is it being present and claimed effective without a probe.
+        ambient = "WRITE-SCOPE AMBIENT HOOK (.cursor/hooks/guard_write_scope.py via beforeShellExecution)"
+        self.assertIn(ambient, ids)
+        entry = next(r for r in report["results"] if r["control_id"] == ambient)
+        self.assertEqual(prober.UNPROBEABLE, entry["verdict"])
+        self.assertEqual("HYPOTHESIS", entry["evidence_label"])
 
     def test_sweep_with_ambient_hook_includes_it_first(self) -> None:
         ambient = prober.ambient_hook_result_from_manual_probe(
