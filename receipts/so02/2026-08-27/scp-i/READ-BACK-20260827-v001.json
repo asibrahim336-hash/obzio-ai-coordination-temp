@@ -1,0 +1,77 @@
+{
+  "record_id": "SCP-SI-01-LANE-I-READ-BACK-20260827-v001",
+  "lane": "SCP-SI-01-LANE-I",
+  "commission_id": "SCP-SI-01",
+  "state": "READY_TO_COMMIT",
+  "evidence_label": "DIRECTLY_REPRODUCED",
+  "captured_at": "2026-08-27T06:45Z",
+
+  "why_this_record_exists": [
+    "A zero exit from `git push` is not evidence of publication. DIRECTLY_REPRODUCED elsewhere in this estate: two lanes committed on a shared /workspace checkout's detached HEAD, so their branch refs never advanced, and `git push -u origin <branch>` pushed the stale ref while printing 'Everything up-to-date' and exiting 0. This lane's own brief warns of exactly this: 'git push can silently no-op while exiting 0 -- confirm with git ls-remote.'",
+    "A read-back that merely names a commit is also not enough -- a fabricated read-back naming a nonexistent commit is INSTALLED_NOT_EFFECTIVE in exactly this record's own shape: a claim that passes its own check while checking nothing. So this record does not rest on asserting a SHA: it re-derives file hashes from bytes fetched back out of the remote by a clone that never saw this lane's own working tree."
+  ],
+
+  "method": {
+    "step_1": "git clone --no-checkout --depth 1 --branch cursor/scp-i-effective-controls-696d <remote-url> /tmp/scp-i-readback",
+    "step_2": "git checkout cursor/scp-i-effective-controls-696d in the fresh clone",
+    "step_3": "sha256 every file listed in receipts/so02/2026-08-27/scp-i/MANIFEST.json, read from the fresh clone, compared against the same path's recorded sha256/size_bytes",
+    "step_4": "for every entry whose path ends .json, also json.loads() the bytes read from the fresh clone -- hash match alone does not prove the bytes parse",
+    "independence_note": "/tmp/scp-i-readback shares no object store, index, or working tree with /tmp/lane-i. The comparison is between bytes the remote served and bytes this lane wrote, not between a file and itself."
+  },
+
+  "observation_1_publication_is_real": {
+    "branch": "cursor/scp-i-effective-controls-696d",
+    "local_head": "1cb33a23cbe4dc8eb60cf84a1f2d90c23ee09233",
+    "fresh_clone_head": "1cb33a23cbe4dc8eb60cf84a1f2d90c23ee09233",
+    "ls_remote": "1cb33a23cbe4dc8eb60cf84a1f2d90c23ee09233\trefs/heads/cursor/scp-i-effective-controls-696d",
+    "all_three_agree": true,
+    "what_this_rules_out": "The exit-zero-on-a-stale-ref failure. A fresh clone reached this commit from the remote, so the ref genuinely advanced rather than the push silently no-opping."
+  },
+
+  "observation_2_bytes_survive_the_round_trip": {
+    "files_checked": 9,
+    "match": 9,
+    "mismatch": 0,
+    "absent_on_remote": 0,
+    "verdict": "PASS",
+    "scope": "Every file in receipts/so02/2026-08-27/scp-i/MANIFEST.json as of commit 1cb33a23: the ambient-hook probe input, the effectiveness sweep, the lane report, this lane's manifest builder, the one write declaration, and the four shared-tools files."
+  },
+
+  "observation_3_every_json_entry_parses_from_the_fresh_clone": {
+    "json_entries_checked": 4,
+    "parsed_ok": 4,
+    "parse_failures": 0,
+    "checked_paths": [
+      "workstreams/so02/control-plane/operating-environment/scp-si-01/lane-i/AMBIENT-HOOK-PROBE-INPUT-20260827.json",
+      "workstreams/so02/control-plane/operating-environment/scp-si-01/lane-i/EFFECTIVENESS-SWEEP-20260827-v001.json",
+      "workstreams/so02/control-plane/operating-environment/write-declarations/WRITE-DECLARATION-SCP-I.json",
+      "receipts/so02/2026-08-27/scp-i/MANIFEST.json (recorded self-referentially: not itself an entry, but is also read back and parsed as part of this same procedure)"
+    ],
+    "why_this_matters": "This lane's own brief names 'manifest closure mistaken for parse validity' as one of the three founding instances of INSTALLED_NOT_EFFECTIVE. Closure (path/size/hash present) is a shape check; a byte-truncated file can still close. Every structured artifact this lane delivers is therefore hash-checked AND parsed, from the fresh clone, not just from the local working tree that produced it."
+  },
+
+  "why_no_per_file_hash_list_is_duplicated_here": {
+    "statement": "Per-file hashes live in MANIFEST.json and are deliberately not copied into this record.",
+    "reason": "This record is written after MANIFEST.json's first build but before the final manifest rebuild that includes this record itself. Copying a hash list here would go stale the moment this record is added as a manifest entry in the next commit.",
+    "single_authority": "MANIFEST.json holds path, size_bytes and sha256 for every delivered file, including this record once the manifest is rebuilt to cover it, plus entry_count and a bundle_sha256 a third party recomputes independently."
+  },
+
+  "this_record_is_a_manifest_entry_not_an_exception": "Per this lane's own MANIFEST.json (closure.read_back_record_is_covered), this file is included the next time build_manifest.py runs, exactly as receipts/so02/2026-08-22/oe-w5-agentic-office/MANIFEST.json covers its own READ-BACK-20260822-v001.json. It is not declared as an excluded file.",
+
+  "the_closing_check_a_reviewer_should_run": {
+    "statement": "This record and the final MANIFEST.json cannot appear in a clone taken before the commit that carries them. The regress is closed by running the check against the final branch head, where every file including this one is present.",
+    "commands": [
+      "git ls-remote origin cursor/scp-i-effective-controls-696d",
+      "git clone --branch cursor/scp-i-effective-controls-696d <remote-url> /tmp/verify-scp-i",
+      "cd /tmp/verify-scp-i && python3 -I workstreams/so02/control-plane/operating-environment/scp-si-01/lane-i/tools/build_manifest.py --check receipts/so02/2026-08-27/scp-i/MANIFEST.json"
+    ],
+    "expected": "PASS, with entry_count and bundle_sha256 recomputed from the remote's own bytes. That single command supersedes this record: it verifies every delivered file, including this one, from a clone that never saw the producing runtime.",
+    "expected_exit_code": 0
+  },
+
+  "what_this_record_does_not_establish": [
+    "That the wrapper, the prober, or the regression are correct in some absolute sense -- only that the bytes delivered are the bytes this record and the test runs in LANE-I-REPORT.md describe, byte-identically, from an independent clone.",
+    "That any claim in LANE-I-REPORT.md was independently validated by a party other than this lane.",
+    "That the manifest's own bytes are verified by this record. The manifest is verified by the commit that carries it and by its own --check, run here from the fresh clone as observation 2 and 3 above."
+  ]
+}

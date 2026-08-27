@@ -1,0 +1,19 @@
+{
+  "_provenance": "DIRECTLY_REPRODUCED by SCP-SI-01 Lane I, independently of the coordinator's own 2026-08-27T04:56-04:57Z run recorded in SCP-SI-01-BASELINE.yaml. Same method, same verdict, different topology instance (/tmp/lane-i, this lane's own worktree), different wall-clock run.",
+  "armed_at": "2026-08-27T06:23:35Z",
+  "checked_at": "2026-08-27T06:24:01Z",
+  "audit_lines_before": 3,
+  "audit_lines_after": 3,
+  "control_passed_at_arm": true,
+  "commands_sent_through_shell_tool": [
+    "git status --porcelain",
+    "git rebase --abort",
+    "gh workflow list"
+  ],
+  "raw_check_output": "armed at   : 2026-08-27T06:23:35Z\ncheckedat : 2026-08-27T06:24:01Z\naudit log  : .cursor/.run/write-scope-audit.jsonl\nlines      : 3 -> 3  (added 0)\n\nVERDICT: project hooks are NOT firing in this runtime.\nThe guard refuses these commands when run by hand -- that control passed\nat arm time -- and recorded nothing when the same commands went through\nthe agent's shell tool. So the scripts are correct and unreached.\n\n  working tree root : /tmp/lane-i\n  hooks.json present: True\n  NOTE: this working tree is not /workspace. If the agent run booted with /workspace as its project root, Cursor reads project hooks from there and the hooks in this tree cannot fire, however correct they are.\n\nDo not treat any boundary in write-scope.json as enforced here.\nUntil this probe returns the other verdict, the guard is documentation.",
+  "individual_command_observations": {
+    "git status --porcelain": "exit 0, ran normally (would have added an audited line if the hook fired)",
+    "git rebase --abort": "exit 128, 'fatal: No rebase in progress?' -- git itself ran and errored naturally; a firing hook would have refused this BEFORE git ran at all, with permission=deny and no git error text",
+    "gh workflow list": "exit 0, printed six real workflow rows -- executed rather than refused"
+  }
+}
