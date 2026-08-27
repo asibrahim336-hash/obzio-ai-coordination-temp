@@ -71,6 +71,17 @@ def git(args: list[str]) -> str:
     return done.stdout.strip()
 
 
+#: Written after this declaration is admitted, so their bytes cannot exist when
+#: the closure is computed. They are declared in `target.paths` — the write is
+#: authorised — and excluded from the asserted closure, because a digest for a
+#: file that does not exist yet would have to be fabricated. The manifest, not
+#: this declaration, is what closes over them.
+WRITTEN_AFTER_ADMISSION = (
+    "receipts/so02/2026-08-27/scp-b/admission/WRITE-ADMISSION-SCP-B.json",
+    "receipts/so02/2026-08-27/scp-b/MANIFEST.json",
+)
+
+
 def changed_paths() -> list[str]:
     out = git(["diff", "--name-only", BASE, "HEAD"])
     paths = [p for p in out.splitlines() if p]
@@ -79,6 +90,7 @@ def changed_paths() -> list[str]:
     ours = [p for p in paths
             if p not in NOT_OURS
             and not p.endswith("WRITE-DECLARATION-SCP-B.json")
+            and p not in WRITTEN_AFTER_ADMISSION
             and "__pycache__" not in p]
     return sorted(ours)
 
@@ -121,15 +133,17 @@ def main() -> int:
         "declared_at": now,
         "target": {
             "ref": BRANCH,
-            "paths": paths,
+            "paths": sorted([*paths, *WRITTEN_AFTER_ADMISSION]),
             "operation": "COMMIT_AND_PUSH",
         },
         "reason": {
             "code": "PUBLISH_LANE_DELIVERABLE",
             "statement": (
                 "Publish lane B's commissioned deliverable — a typed improvement link "
-                "chain projected from the existing hash-chained event log — onto lane "
-                "B's own branch. No other lane's namespace and no shared ref is written."
+                f"chain appended to workstreams/so02/control-plane/state/events.jsonl and "
+                f"projected by tools/scctl.py and currentctl.py — onto {BRANCH}, which "
+                "this lane created and no other run holds. No other lane's namespace and "
+                "no shared ref is written."
             ),
             "lane_id": LANE_ID,
             "commission_id": COMMISSION_ID,
@@ -141,6 +155,7 @@ def main() -> int:
             "command": reversal["command"],
             "restores": reversal["restores"],
             "custody_required": reversal["custody_required"],
+            "created_ref": BRANCH,
             "custody_note": (
                 "The ref is created by this lane and did not exist on the remote before "
                 "this write, so the pre-write state is its absence and deleting it is "
@@ -152,6 +167,16 @@ def main() -> int:
             "asserts_result": True,
             "kind": "MANIFEST_CLOSURE",
             "record": record,
+            "present_paths": paths,
+            "declared_paths_outside_this_closure": list(WRITTEN_AFTER_ADMISSION),
+            "why_they_are_outside": (
+                "Both are produced after this declaration is admitted: the admission "
+                "report is the gate's own output and the manifest closes over the "
+                "finished bundle. Their bytes do not exist when this closure is "
+                "computed, so a digest for them here would be fabricated. They are "
+                "declared in target.paths so the write is authorised, and the manifest "
+                "carries their digests. The manifest excludes only itself."
+            ),
         },
         "concurrency": observation,
         "scope_attestation": {
