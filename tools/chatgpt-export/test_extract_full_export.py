@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import zipfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -70,6 +71,108 @@ def run(tmp):
         raise SystemExit("extractor exited %d" % proc.returncode)
     with open(os.path.join(out, "coverage-metrics.json"), encoding="utf-8") as fh:
         return out, json.load(fh)
+
+
+def edge_cases(tmp):
+    """Shapes a real export contains that the main fixture does not.
+
+    A parser that only ever meets well-formed input will meet these on the
+    laptop instead, where there is no chance to iterate.
+    """
+    inp = os.path.join(tmp, "edge", "input")
+    os.makedirs(inp)
+
+    def m(role, text, ctype="text"):
+        content = {"content_type": ctype}
+        if ctype == "multimodal_text":
+            content["parts"] = [text, {"content_type": "image_asset_pointer",
+                                       "asset_pointer": "file-service://x"}]
+        else:
+            content["parts"] = [text]
+        return {"id": "m", "author": {"role": role}, "create_time": 1781049600,
+                "content": content, "metadata": {}}
+
+    def n(message):
+        return {"id": "x", "message": message, "parent": None, "children": []}
+
+    # A conversations.json whose root is an object rather than an array.
+    with zipfile.ZipFile(os.path.join(inp, "dictroot.zip"), "w") as zf:
+        zf.writestr("conversations.json", json.dumps({
+            "conversation_id": "dict-root-1", "title": "dict root",
+            "create_time": 1781049600,
+            "mapping": {"a": n(m("user", "root-is-a-dict payload"))}}))
+
+    # Null mapping, absent id, multimodal parts, and malformed nodes.
+    with zipfile.ZipFile(os.path.join(inp, "weird.zip"), "w") as zf:
+        zf.writestr("conversations.json", json.dumps([
+            {"conversation_id": "null-map", "mapping": None,
+             "create_time": 1781049600},
+            {"title": "no id at all", "create_time": 1781049600,
+             "mapping": {"z": n(m("user", "message in a conversation with no id"))}},
+            {"conversation_id": "multimodal", "create_time": 1781049600,
+             "mapping": {"q": n(m("user", "image plus text",
+                                  ctype="multimodal_text"))}},
+            {"conversation_id": "badnode", "create_time": 1781049600,
+             "mapping": {"b1": "not-a-dict", "b2": n(None),
+                         "b3": n(m("user", "ok after bad nodes"))}},
+        ]))
+        zf.writestr("chat.html", "<html><body>" + "x" * 5000 + "</body></html>")
+        zf.writestr("truncated.json", '{"broken": ')
+        zf.writestr("subdir/nested/deep.json", '{"deep": true}')
+
+    with zipfile.ZipFile(os.path.join(inp, "empty-convs.zip"), "w") as zf:
+        zf.writestr("conversations.json", "[]")
+
+    # zipfile cannot write encrypted archives; skip this case where the zip
+    # CLI is absent rather than fail for a reason unrelated to the extractor.
+    plain = os.path.join(tmp, "edge", "plain.zip")
+    with zipfile.ZipFile(plain, "w") as zf:
+        zf.writestr("secret.json", '{"a":1}')
+    encrypted = os.path.join(inp, "encrypted.zip")
+    if shutil.which("zip"):
+        subprocess.run(["zip", "-q", "-P", "hunter2", encrypted, plain],
+                       check=False)
+
+    # The hash-named Drive object may not be an archive at all.
+    with open(os.path.join(inp, "9c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f60718293"),
+              "wb") as fh:
+        fh.write(b"\x00\x00\x00\x18ftypmp42" + b"\x00" * 4096)
+
+    out = os.path.join(tmp, "edge", "out")
+    proc = subprocess.run([sys.executable,
+                           os.path.join(HERE, "extract_full_export.py"),
+                           "--input", inp, "--out", out],
+                          capture_output=True, text=True)
+    check("survives every malformed input", proc.returncode, 0)
+    with open(os.path.join(out, "coverage-metrics.json"), encoding="utf-8") as fh:
+        m2 = json.load(fh)
+
+    hashed = [r for r in m2["inventory"] if r["path"].startswith("9c1d")][0]
+    check("non-archive identified by offset magic", hashed["identified_as"],
+          "mp4/mov/m4a container")
+    check("object-rooted conversations.json parsed",
+          m2["denominators"]["conversations"] >= 5, True)
+    check("malformed nodes skipped without loss",
+          m2["authorship"]["addressable"], 4)
+    blocked = {b["asset"] for b in m2["blockers"]}
+    if os.path.exists(encrypted):
+        check("encrypted archive named as a blocker",
+              any("encrypted" in b for b in blocked), True)
+    else:
+        print("  skip encrypted-archive case: no zip CLI on this host")
+    check("unparseable json named as a blocker",
+          any("truncated.json" in b for b in blocked), True)
+    lines = []
+    for s in m2["shards"]:
+        with open(os.path.join(out, s["file"]), encoding="utf-8") as fh:
+            lines += [json.loads(x) for x in fh if x.strip()]
+    texts = {x["text"] for x in lines}
+    check("multimodal text part recovered", "image plus text" in texts, True)
+    check("message recovered after malformed sibling nodes",
+          "ok after bad nodes" in texts, True)
+    check("conversation with no id still gets a stable key",
+          any(str(x["conversation_id"]).startswith("unidentified:")
+              for x in lines), True)
 
 
 def main():
@@ -210,6 +313,9 @@ def main():
               sum(s["lines"] for s in m2["shards"]), EXPECTED["founder"])
         check("every shard under the limit",
               all(s["bytes"] <= 1000 or s["lines"] == 1 for s in m2["shards"]), True)
+
+        print("\n-- malformed and unexpected inputs --")
+        edge_cases(tmp)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

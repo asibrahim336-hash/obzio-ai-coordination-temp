@@ -62,7 +62,15 @@ MAGIC = [
     (b"\x7fELF", "elf executable"),
     (b"MZ", "dos/pe executable"),
     (b"!<arch>", "ar archive"),
-    (b"ustar", "tar (offset magic)"),
+    (b"\x1a\x45\xdf\xa3", "matroska/webm video"),
+    (b"RIFF", "riff container (avi/wav)"),
+]
+
+# (offset, signature, label) for formats whose magic is not at byte zero.
+MAGIC_AT_OFFSET = [
+    (4, b"ftyp", "mp4/mov/m4a container"),
+    (257, b"ustar", "tar"),
+    (32769, b"CD001", "iso9660 image"),
 ]
 
 
@@ -104,14 +112,17 @@ def sniff(path):
     """Return (kind, detail) determined from bytes, not from the extension."""
     try:
         with open(path, "rb") as fh:
-            head = fh.read(4096)
+            head = fh.read(40960)
     except OSError as exc:
         return "unreadable", str(exc)
     if not head:
         return "empty", "zero bytes"
     for sig, name in MAGIC:
-        if head.startswith(sig) or (name.startswith("tar") and sig in head[:512]):
-            return name, "magic %s" % binascii.hexlify(sig[:8]).decode()
+        if head.startswith(sig):
+            return name, "magic %s at 0" % binascii.hexlify(sig[:8]).decode()
+    for off, sig, name in MAGIC_AT_OFFSET:
+        if head[off:off + len(sig)] == sig:
+            return name, "magic %s at %d" % (sig.decode("latin-1"), off)
     stripped = head.lstrip()
     if stripped[:1] in (b"{", b"["):
         return "json", "leading %s" % stripped[:1].decode()
@@ -139,7 +150,7 @@ def probe_container(path, kind):
                 }
         except Exception as exc:
             return {"opens": False, "error": "%s: %s" % (type(exc).__name__, exc)}
-    if kind in ("gzip", "bzip2", "xz", "tar (offset magic)"):
+    if kind in ("gzip", "bzip2", "xz", "tar"):
         try:
             with tarfile.open(path) as tf:
                 names = tf.getnames()
@@ -1009,6 +1020,9 @@ def main(argv=None):
     log("stage 5/7 profile memories/projects and other JSON")
     other_json = profile_non_conversation_files(work_dir, conv_files,
                                                 not args.no_samples)
+    for r in other_json:
+        if r["status"] == "FAILED":
+            blockers.append({"asset": r["path"], "error": r["error"]})
 
     log("stage 6/7 write portable JSONL")
     shard_bytes = int(args.shard_mb * 1000 * 1000)

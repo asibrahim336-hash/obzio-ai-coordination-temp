@@ -89,10 +89,10 @@ full export open on a laptop.
 python3 test_extract_full_export.py
 ```
 
-This builds a synthetic export whose true counts were worked out by hand, runs
-the extractor against it, and compares. The expected values are literals in the
-test, so the check is independent of the extractor's own logic rather than the
-tool agreeing with itself.
+63 checks. This builds a synthetic export whose true counts were worked out by
+hand, runs the extractor against it, and compares. The expected values are
+literals in the test, so the check is independent of the extractor's own logic
+rather than the tool agreeing with itself.
 
 The fixture deliberately includes the awkward cases: a root node carrying no
 message, a custom-instructions envelope wearing `author.role == "user"`, a
@@ -100,6 +100,14 @@ hidden user node, an empty user node, one conversation present in two archives
 at different completeness, a template repeated across three conversations, an
 archive whose filename says nothing about its type, a nested archive, and one
 corrupt archive that must surface as a named blocker rather than silence.
+
+A second phase covers malformed input, because a parser that only ever meets
+well-formed data will meet the rest on the laptop where there is no chance to
+iterate: a `conversations.json` whose root is an object rather than an array, a
+null `mapping`, a conversation with no id, `multimodal_text` parts mixing text
+with image pointers, non-dict nodes, an encrypted archive, an unparseable JSON
+companion file, and a non-archive binary standing in for the hash-named Drive
+object. Each must be either counted or named, never silently dropped.
 
 Hand-derived expected values:
 

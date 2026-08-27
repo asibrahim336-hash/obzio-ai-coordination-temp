@@ -110,13 +110,18 @@ the 928-act index.
 
 Verified by content, not by length (R4). `test_extract_full_export.py` builds a
 synthetic export whose counts were derived by hand, runs the extractor, and
-compares against literals held in the test — **54 of 54 checks pass**. The
+compares against literals held in the test — **63 of 63 checks pass**. The
 fixture carries the cases that break naive parsers: a root node with no
 message, a custom-instructions envelope wearing `author.role == "user"`, a
 hidden user node, an empty user node, one conversation present in two archives
 at different completeness, a template repeated across three conversations, an
 archive whose filename states nothing about its type, a nested archive, and a
-corrupt archive that must surface as a named blocker rather than silence.
+corrupt archive that must surface as a named blocker rather than silence. A
+second phase covers malformed input — object-rooted payloads, null mappings,
+conversations with no id, multimodal parts, non-dict nodes, an encrypted
+archive, unparseable JSON, and a non-archive binary standing in for the
+hash-named Drive object. Each must be counted or named, never silently
+dropped.
 
 Measured at realistic scale, denominator one 600.0 MB `conversations.json`:
 
