@@ -22,6 +22,7 @@ import importlib.util
 import json
 import subprocess
 import sys
+import tempfile
 import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -30,6 +31,25 @@ from pathlib import Path
 def _load(name: str):
     path = Path(__file__).resolve().parent / f"{name}.py"
     spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    sys.modules[name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_lane_d_fix(name: str):
+    """SCP-SI-01 lane D's proposed mechanism, loaded from its own namespace.
+
+    Not merged into `write_admission.py` by this lane (out of write scope);
+    see `scp-si-01/lane-d/patches/write_admission.py.patch` for the proposed
+    one-call fix this test demonstrates is both necessary and sufficient.
+    """
+    lane_d = (
+        Path(__file__).resolve().parents[1]
+        / "scp-si-01" / "lane-d" / "fixes" / f"{name}.py"
+    )
+    spec = importlib.util.spec_from_file_location(name, lane_d)
     module = importlib.util.module_from_spec(spec)
     assert spec.loader is not None
     sys.modules[name] = module
@@ -279,6 +299,76 @@ class TheSixInjectionsTests(unittest.TestCase):
         leaky["evidence"]["present_paths"] = leaky["evidence"]["present_paths"] + ["an/uncovered/file.json"]
         report = self._refused_on(leaky, wa.GATE_EVIDENCE)
         self.assertTrue(any("not covered by any hash" in f for f in report["gates"][3]["findings"]))
+
+    def test_injection_6d_the_unpatched_gate_wrongly_admits_a_hash_valid_but_unparsable_artifact(self) -> None:
+        """SCP-SI-01 lane D, DEF-SCP-D-02, DIRECTLY_REPRODUCED.
+
+        `verify_manifest_closure` checks path coverage and that
+        `bundle_sha256` binds the entry list as written; it never reads the
+        referenced file. `evidence_integrity.verify_artifact_validity`
+        exists and would catch a truncated JSON artifact, but
+        `check_evidence_gate`'s MANIFEST_CLOSURE branch never calls it. This
+        is the live failure named in the SCP-SI-01 lane D brief: "a lane
+        published truncated JSON whose digest matched its manifest exactly
+        and passed closure."
+
+        This test asserts the CURRENT (defective) behaviour against the
+        real, unmodified `write_admission.py` shipped in this tree — it is
+        the pre-fix tripwire, not the desired state. See
+        `test_injection_6e_the_lane_d_mechanism_fix_correctly_refuses_it`
+        for the passing rerun, and
+        `scp-si-01/lane-d/patches/write_admission.py.patch` for the proposed
+        one-call fix (which also requires updating
+        `test_evidence_integrity_is_reused_not_reimplemented`'s exact
+        `verified_by` string in this file, noted there and in that patch).
+        """
+        with tempfile.TemporaryDirectory() as d:
+            repo = Path(d)
+            truncated = b'{"artifact_id": "DEFECT-2-TRUNCATED", "entries": [1, 2, 3'
+            (repo / "truncated-evidence.json").write_bytes(truncated)
+            digest = hashlib.sha256(truncated).hexdigest()
+            entries = [{"path": "truncated-evidence.json", "size_bytes": len(truncated), "sha256": digest}]
+            bundle = hashlib.sha256(
+                json.dumps(entries, sort_keys=True, separators=(",", ":")).encode("utf-8")
+            ).hexdigest()
+            declaration = variant(**{
+                "evidence.record": {"entries": entries, "bundle_sha256": bundle},
+                "evidence.present_paths": ["truncated-evidence.json"],
+            })
+            report = wa.admit(declaration, repo, check_ref_movement=False, rehearse_reversal=True)
+        self.assertTrue(
+            report["admitted"],
+            "if this fails, write_admission.py has been patched for DEF-SCP-D-02 "
+            "and this tripwire (not the mechanism) should now be deleted: "
+            + wa.summarise(report),
+        )
+        self.assertEqual("EVIDENCE_RECOMPUTED", report["gates"][3]["verdict"])
+
+    def test_injection_6e_the_lane_d_mechanism_fix_correctly_refuses_it(self) -> None:
+        """Passing rerun: the same truncated artifact, through the wired-in check."""
+        fix = _load_lane_d_fix("evidence_gate_wiring")
+        with tempfile.TemporaryDirectory() as d:
+            repo = Path(d)
+            truncated = b'{"artifact_id": "DEFECT-2-TRUNCATED", "entries": [1, 2, 3'
+            (repo / "truncated-evidence.json").write_bytes(truncated)
+            digest = hashlib.sha256(truncated).hexdigest()
+            entries = [{"path": "truncated-evidence.json", "size_bytes": len(truncated), "sha256": digest}]
+            bundle = hashlib.sha256(
+                json.dumps(entries, sort_keys=True, separators=(",", ":")).encode("utf-8")
+            ).hexdigest()
+            declaration = variant(**{
+                "evidence.record": {"entries": entries, "bundle_sha256": bundle},
+                "evidence.present_paths": ["truncated-evidence.json"],
+            })
+            gate = fix.check_evidence_gate_with_artifact_validity(declaration, repo)
+        self.assertFalse(gate["passed"], gate)
+        self.assertEqual("EVIDENCE_FAILED_RECOMPUTATION", gate["verdict"])
+        self.assertTrue(any("does not parse as JSON" in f for f in gate["findings"]), gate["findings"])
+
+    def test_injection_6f_the_fix_does_not_regress_a_genuinely_valid_manifest(self) -> None:
+        fix = _load_lane_d_fix("evidence_gate_wiring")
+        gate = fix.check_evidence_gate_with_artifact_validity(ADMISSIBLE, Path("."))
+        self.assertTrue(gate["passed"], gate)
 
 
 @unittest.skipUnless(_git_available(), "git is required to re-execute the rollback")
