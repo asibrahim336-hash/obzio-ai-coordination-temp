@@ -178,11 +178,21 @@ def check_evidence_gate(declaration: dict[str, Any], repo: Path | None,
                      [f"reason {reason.get('code')} asserts a result but carries no record to recompute"])
 
     if kind == "MANIFEST_CLOSURE":
+        # Closure alone is a shape check. When present_paths is derived from the
+        # record's own entries it asks the record about itself and every forged
+        # record passes. Truth-checking opens each declared file; without it the
+        # gate certified a sixty-four-zero digest as EVIDENCE_RECOMPUTED.
         present = evidence.get("present_paths") or [e.get("path") for e in record.get("entries", [])]
         errors = evidence_integrity.verify_manifest_closure(record, present)
+        errors += evidence_integrity.verify_manifest_truth(record, repo or Path("."))
+        errors += evidence_integrity.verify_artifact_validity(
+            [e.get("path", "") for e in record.get("entries", []) if isinstance(e, dict)],
+            repo or Path("."),
+        )
         return _gate(GATE_EVIDENCE, not errors,
                      "EVIDENCE_RECOMPUTED" if not errors else "EVIDENCE_FAILED_RECOMPUTATION",
-                     errors, verified_by="evidence_integrity.verify_manifest_closure")
+                     errors,
+                     verified_by="evidence_integrity.verify_manifest_closure + verify_manifest_truth + verify_artifact_validity")
 
     if kind == "READBACK":
         if not remote_url:

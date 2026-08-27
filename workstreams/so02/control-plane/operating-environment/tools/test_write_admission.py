@@ -21,6 +21,7 @@ import hashlib
 import importlib.util
 import json
 import subprocess
+import tempfile
 import sys
 import unittest
 from datetime import datetime, timedelta, timezone
@@ -39,6 +40,7 @@ def _load(name: str):
 
 wa = _load("write_admission")
 rr = _load("reversal_rehearsal")
+ei_module = _load("evidence_integrity")
 
 
 def _git_available() -> bool:
@@ -48,11 +50,24 @@ def _git_available() -> bool:
         return False
 
 
+# The gate now OPENS every declared file rather than asking the record about
+# itself, so a fixture that names a path which does not exist is refused — and
+# should be. These fixtures previously encoded the blind behaviour. The honest
+# repair is to make the fixture write real bytes, not to relax the gate.
+_FIXTURE_REPO_HANDLE = tempfile.TemporaryDirectory()
+FIXTURE_REPO = Path(_FIXTURE_REPO_HANDLE.name)
+_FIXTURE_REL = "receipts/so02/2026-08-23/oe-w9-reason-gated-writes/EXAMPLE.json"
+
+
 def _manifest_evidence():
-    """A real, recomputable manifest closure record."""
-    payload = b"deliverable bytes"
+    """A real, recomputable manifest closure record backed by bytes on disk."""
+    # A file named .json must contain JSON. The gate parses as well as hashes.
+    payload = b'{"deliverable": "bytes"}'
+    target = FIXTURE_REPO / _FIXTURE_REL
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_bytes(payload)
     entries = [{
-        "path": "receipts/so02/2026-08-23/oe-w9-reason-gated-writes/EXAMPLE.json",
+        "path": _FIXTURE_REL,
         "size_bytes": len(payload),
         "sha256": hashlib.sha256(payload).hexdigest(),
     }]
@@ -144,7 +159,7 @@ _DELETE = _Delete()
 def decide(declaration, **kwargs):
     kwargs.setdefault("check_ref_movement", False)
     kwargs.setdefault("rehearse_reversal", True)
-    return wa.admit(declaration, Path("."), **kwargs)
+    return wa.admit(declaration, FIXTURE_REPO, **kwargs)
 
 
 @unittest.skipUnless(_git_available(), "git is required to re-execute the rollback")
@@ -317,7 +332,18 @@ class NothingIsTrustedTests(unittest.TestCase):
 
     def test_evidence_integrity_is_reused_not_reimplemented(self) -> None:
         report = decide(ADMISSIBLE)
-        self.assertEqual("evidence_integrity.verify_manifest_closure", report["gates"][3]["verified_by"])
+        # The gate now names three verifiers, not one: closure is a shape check and
+        # was passing forged records, so truth and validity were added beside it.
+        # What this test guards is that every verifier is borrowed from
+        # evidence_integrity rather than reimplemented here — assert the intent,
+        # not a literal that changes whenever a real check is added.
+        verified_by = report["gates"][3]["verified_by"]
+        named = [n.strip() for n in verified_by.replace("evidence_integrity.", "").split("+")]
+        self.assertIn("verify_manifest_closure", named)
+        self.assertIn("verify_manifest_truth", named)
+        self.assertTrue(verified_by.startswith("evidence_integrity."))
+        for fn in named:
+            self.assertTrue(hasattr(ei_module, fn), f"{fn} is not an evidence_integrity function")
         source = (Path(__file__).resolve().parent / "write_admission.py").read_text(encoding="utf-8")
         self.assertIn('_load("evidence_integrity")', source)
         for reimplemented in ("def verify_manifest_closure", "def verify_readback_truth"):

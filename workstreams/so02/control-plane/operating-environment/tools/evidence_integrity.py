@@ -151,6 +151,99 @@ def capacity_verdict(observation: dict[str, Any], benign: Iterable[str] = BENIGN
 # Correction 3: manifest closure
 # ---------------------------------------------------------------------------
 
+def verify_manifest_truth(manifest: dict[str, Any], repo: Path) -> list[str]:
+    """Open every manifested file and compare its real digest to the recorded one.
+
+    Closure and bundle-binding are SHAPE checks: they ask whether the record is
+    internally consistent, and a forged record is internally consistent by
+    construction. Neither opens a file.
+
+    Found live by Lane C and reproduced by the coordinator against its own
+    declaration: an entry whose recorded sha256 was sixty-four zeroes, with
+    bundle_sha256 recomputed over the corrupted list, passed the evidence gate
+    as EVIDENCE_RECOMPUTED. This is the verify_readback_truth defect — shape
+    checked, truth never — in the other evidence kind, inside the very gate
+    built as that defect's remedy.
+    """
+    return _manifest_truth(manifest, repo, anchor_commit=None)[0]
+
+
+def audit_manifest_truth(manifest: dict[str, Any], repo: Path,
+                         anchor_commit: str) -> tuple[list[str], list[str]]:
+    """Retrospective audit that separates a tampered record from a superseded one.
+
+    At admission time the working tree IS the thing being declared, so
+    verify_manifest_truth is correct. Re-auditing an old declaration later is a
+    different question, and answering it with the same check manufactures an
+    alarm every time an authorised change lands.
+
+    DEF-SCP-01: supersession and tampering demand opposite responses. A hash
+    that was correct at its own commit and has since changed is routine. A hash
+    that was wrong even at its own commit is an incident. Returns
+    (mismatches, superseded).
+    """
+    return _manifest_truth(manifest, repo, anchor_commit=anchor_commit)
+
+
+def _manifest_truth(manifest: dict[str, Any], repo: Path,
+                    anchor_commit: str | None) -> tuple[list[str], list[str]]:
+    errors: list[str] = []
+    superseded: list[str] = []
+    entries = manifest.get("entries")
+    if not isinstance(entries, list) or not entries:
+        return (["manifest truth: no entries to verify; an empty record cannot evidence anything"], [])
+
+    if anchor_commit is not None:
+        for entry in entries:
+            if not isinstance(entry, dict):
+                errors.append("manifest truth: entry is not an object")
+                continue
+            relative = str(entry.get("path", ""))
+            done = subprocess.run(["git", "cat-file", "-p", f"{anchor_commit}:{relative}"],
+                                  cwd=repo, capture_output=True)
+            if done.returncode != 0:
+                errors.append(f"manifest truth: {relative} is absent from anchor commit {anchor_commit}")
+                continue
+            at_anchor = sha256_bytes(done.stdout)
+            if at_anchor != entry.get("sha256"):
+                errors.append(
+                    f"manifest truth: {relative} records {entry.get('sha256')} but hashed "
+                    f"{at_anchor} at its own commit {anchor_commit} — wrong when written"
+                )
+                continue
+            target = repo / relative
+            if target.is_file() and sha256_bytes(target.read_bytes()) != at_anchor:
+                superseded.append(
+                    f"evidence superseded: {relative} was correct at {anchor_commit} and has changed since"
+                )
+        return (errors, superseded)
+
+    for entry in entries:
+        if not isinstance(entry, dict):
+            errors.append("manifest truth: entry is not an object")
+            continue
+        relative = str(entry.get("path", ""))
+        if not relative:
+            errors.append("manifest truth: entry carries no path")
+            continue
+        target = repo / relative
+        if not target.is_file():
+            errors.append(f"manifest truth: {relative} is recorded but absent from disk")
+            continue
+        actual = sha256_bytes(target.read_bytes())
+        claimed = entry.get("sha256")
+        if claimed != actual:
+            errors.append(
+                f"manifest truth: {relative} records {claimed} but the file actually hashes to {actual}"
+            )
+        size = entry.get("size_bytes")
+        if size is not None and size != target.stat().st_size:
+            errors.append(
+                f"manifest truth: {relative} records {size} bytes but the file is {target.stat().st_size}"
+            )
+    return (errors, superseded)
+
+
 def verify_artifact_validity(paths: Iterable[str], repo: Path) -> list[str]:
     """A hash-bound artifact can still be unparseable.
 

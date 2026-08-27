@@ -333,7 +333,14 @@ def _check_reason(declaration: dict[str, Any], add) -> None:
             _quote("You do not need my permission for any of it — you need a reason and a rollback"),
         )
 
-    missing = [f for f in spec.required_fields if not str(reason.get(f) or "").strip()]
+    # Presence, not truthiness. `or ""` collapses 0 and False into absent, and
+    # zero is a legitimate — sometimes the only meaningful — value: an
+    # observed_exit_code of 0 on a forged record IS the defect being repaired.
+    # A checker that cannot express a true zero forces the declarer to lie.
+    missing = [
+        f for f in spec.required_fields
+        if reason.get(f) is None or (isinstance(reason.get(f), str) and not reason[f].strip())
+    ]
     if missing:
         add(
             "REASON_OBLIGATIONS_UNMET",

@@ -1,0 +1,166 @@
+{
+  "declaration_version": "1.0",
+  "declared_by": "coordinator bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+  "declared_at": "2026-08-27T06:11:37Z",
+  "target": {
+    "ref": "cursor/operating-environment-return-20260822-v001",
+    "paths": [
+      "workstreams/so02/control-plane/operating-environment/tools/evidence_integrity.py",
+      "workstreams/so02/control-plane/operating-environment/tools/test_evidence_integrity.py",
+      "workstreams/so02/control-plane/operating-environment/tools/test_write_admission.py",
+      "workstreams/so02/control-plane/operating-environment/tools/write_admission.py",
+      "workstreams/so02/control-plane/tests/__pycache__/test_scctl.cpython-312.pyc",
+      "workstreams/so02/control-plane/tools/__pycache__/scctl.cpython-312.pyc"
+    ],
+    "operation": "COMMIT_AND_PUSH"
+  },
+  "reason": {
+    "code": "REPAIR_BROKEN_CONTRACT",
+    "statement": "Repair the write-admission evidence gate on ref cursor/operating-environment-return-20260822-v001: it certified EVIDENCE_RECOMPUTED for a manifest whose recorded digest matched nothing on disk, because closure asks the record about itself and never opens a file.",
+    "broken_contract": "write_admission.check_evidence_gate MANIFEST_CLOSURE branch",
+    "custody_ref": "custody/scp-si-01-gatefix-20260827T0625Z",
+    "expires_when": "the gate opens every declared file and a regression covers the forgery",
+    "failing_check_command": "python3 workstreams/so02/control-plane/operating-environment/tools/write_admission.py /tmp/decl-probe.json",
+    "observed_exit_code": 0,
+    "observed_failure": "Before the repair this returned '[pass] evidence EVIDENCE_RECOMPUTED' for a declaration whose only recorded sha256 was sixty-four zeroes. Exit code 0 on a forged record is the failure being repaired."
+  },
+  "reversal": {
+    "method": "RESTORE_REF_TO_RECORDED_SHA",
+    "recorded_sha": "217c41c2cceafe0fa2bee22fa901d3ddbcd422d6",
+    "custody_ref": "custody/scp-si-01-gatefix-20260827T0625Z",
+    "command": [
+      "git",
+      "push",
+      "--force-with-lease",
+      "origin",
+      "217c41c2cceafe0fa2bee22fa901d3ddbcd422d6:refs/heads/cursor/operating-environment-return-20260822-v001"
+    ]
+  },
+  "evidence": {
+    "asserts_result": true,
+    "kind": "MANIFEST_CLOSURE",
+    "record": {
+      "entries": [
+        {
+          "path": "workstreams/so02/control-plane/operating-environment/tools/evidence_integrity.py",
+          "size_bytes": 12911,
+          "sha256": "fff028ca7425ac01eaeb4bbaea41d3f6c0a54e59e28d0073dadc4052fb29f6f7"
+        },
+        {
+          "path": "workstreams/so02/control-plane/operating-environment/tools/test_evidence_integrity.py",
+          "size_bytes": 10907,
+          "sha256": "7a49b3fa97fde37932efffe826490adfb6c9ae0588f0e63a4eefc303648f2ac0"
+        },
+        {
+          "path": "workstreams/so02/control-plane/operating-environment/tools/test_write_admission.py",
+          "size_bytes": 16821,
+          "sha256": "a414964bb8f83a68e4b34e8792a0c303f1b92595f1292b251cb65d8f622eb094"
+        },
+        {
+          "path": "workstreams/so02/control-plane/operating-environment/tools/write_admission.py",
+          "size_bytes": 14367,
+          "sha256": "7ca05987539debcea27df5f4720489ef3eaae188896424f623766fad6be50a85"
+        },
+        {
+          "path": "workstreams/so02/control-plane/tests/__pycache__/test_scctl.cpython-312.pyc",
+          "size_bytes": 49866,
+          "sha256": "7c6ce745025dcd9dc9500f48b197a6b8dbf2c123c2a989bc90d9c9865bd9dd48"
+        },
+        {
+          "path": "workstreams/so02/control-plane/tools/__pycache__/scctl.cpython-312.pyc",
+          "size_bytes": 51956,
+          "sha256": "65f38580816d317ee0a6009b19b053dd7428195a14ee857e65199617e27fee62"
+        }
+      ],
+      "entry_count": 6,
+      "bundle_sha256": "e49c67039ed2a716ee4ad01f63c306cde0934d1017de7e2183f9c6a6ca13e9b1",
+      "closure_note": "Closure over the declared changed set, now truth-checked by the very fix it declares."
+    }
+  },
+  "concurrency": {
+    "observed_at": "2026-08-27T06:11:37Z",
+    "ref_sha_at_observation": "217c41c2cceafe0fa2bee22fa901d3ddbcd422d6",
+    "instrument": "cursor-cloud list-cloud-agents, read-only",
+    "agents": [
+      {
+        "bcId": "bc-b0b15e5d-cd46-5eb2-82ad-53c13fd8b41b",
+        "name": "ChatGPT function constitution",
+        "branchName": null,
+        "status": "IDLE"
+      },
+      {
+        "bcId": "bc-10daec71-5a06-5a78-beb4-a6c2e97460da",
+        "name": "ChatGPT to Cursor route evidence",
+        "branchName": null,
+        "status": "IDLE"
+      },
+      {
+        "bcId": "bc-3cc25012-4770-5deb-b207-7d4ee809dcd1",
+        "name": "ChatGPT estate connection architecture",
+        "branchName": null,
+        "status": "ERROR"
+      },
+      {
+        "bcId": "bc-42b8be39-e5be-5400-8535-019c4d9f13e1",
+        "name": "Agentic office launch guide",
+        "branchName": null,
+        "status": "IDLE"
+      },
+      {
+        "bcId": "bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+        "name": "Primary orchestration route qualification",
+        "branchName": "cursor/so02-cur-orch-qual-01",
+        "status": "RUNNING"
+      },
+      {
+        "bcId": "bc-aa38db59-c61c-4e29-9c26-4424b20f6e19",
+        "name": "Po-03 wave a attempts",
+        "branchName": "cursor/po03-wave-a-factory-6e19",
+        "status": "IDLE"
+      },
+      {
+        "bcId": "bc-13b664e4-a9eb-4a06-9b23-3283644e5b31",
+        "name": "Po-03 wave a attempts",
+        "branchName": "po03/repository-engineering-portable-runtime-20260822-v001",
+        "status": "ERROR"
+      },
+      {
+        "bcId": "bc-2bb75c2e-66fe-4eee-b456-e1d5e22db2e7",
+        "name": "Po-03 wave a attempts",
+        "branchName": "cursor/po03-wave-a-transactional-factory-b2e7",
+        "status": "IDLE"
+      },
+      {
+        "bcId": "bc-ecd55d9e-0ffe-49e1-897d-929d0a4b5086",
+        "name": "Po-03 wave a attempts",
+        "branchName": "cursor/po03-wave-a-transactional-factory-5086",
+        "status": "IDLE"
+      },
+      {
+        "bcId": "bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8",
+        "name": "Po-03 wave a attempts",
+        "branchName": "cursor/po03-independent-challenger-70f8",
+        "status": "IDLE"
+      },
+      {
+        "bcId": "bc-b1956656-b897-4889-aeab-82c4556c1a9f",
+        "name": "Po-03 wave a attempts",
+        "branchName": "cursor/po03-wave-a-b195-1a9f",
+        "status": "IDLE"
+      },
+      {
+        "bcId": "bc-7137a066-3242-43a2-a30e-9a352047b759",
+        "name": "Po-03 wave a attempts",
+        "branchName": null,
+        "status": "IDLE"
+      },
+      {
+        "bcId": "bc-e92c4fa6-3658-4270-ab36-9eb56bf2ed20",
+        "name": "Po-03 wave a attempts",
+        "branchName": "cursor/po03-wave-a-transactional-factory-ed20",
+        "status": "IDLE"
+      }
+    ],
+    "note": "Lanes B, D, I in flight on their own branches; none holds this ref."
+  }
+}
