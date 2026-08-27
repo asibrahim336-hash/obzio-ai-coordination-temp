@@ -38,6 +38,18 @@ SUITES: tuple[dict[str, str], ...] = (
         "path": "workstreams/so02/control-plane/operating-environment/tools/test_lane_guard.py",
         "covers_chains": "ICH-03-SHARED-WORKTREE-COLLISION, ICH-04-SILENT-PUSH-NO-OP",
     },
+    {
+        "suite_id": "SUITE-IMPROVEMENT-CHAIN",
+        "path": "workstreams/so02/control-plane/operating-environment/scp-si-01/lane-b/"
+                "tests/test_improvement_chain.py",
+        "covers_chains": "the chain mechanism itself, and the seeded state of all eight",
+    },
+    {
+        "suite_id": "SUITE-SCCTL",
+        "path": "workstreams/so02/control-plane/tests/test_scctl.py",
+        "covers_chains": "the canonical seed validator, which is what catches a broken "
+                         "hash chain after the append",
+    },
 )
 
 COUNT_RE = re.compile(r"^Ran (\d+) tests? in ", re.MULTILINE)

@@ -1,0 +1,58 @@
+{
+  "record_id": "SCP-B-MOVEMENT-GATE-FAILOPEN-REPRO-20260827-v001",
+  "decision_changed": [
+    "Lane B's own concurrency observation was corrected: it claimed the ref did not exist on the remote, and the ref existed at a1592234. The declaration was rebuilt with the observed remote SHA and re-admitted."
+  ],
+  "produced_at": "2026-08-27T05:52:55Z",
+  "instrument": "workstreams/so02/control-plane/operating-environment/scp-si-01/lane-b/tools/reproduce_movement_gate_failopen.py",
+  "interpreter": "python3 -I 3.12.3",
+  "module_under_test": "workstreams/so02/control-plane/operating-environment/tools/concurrency_observer.py",
+  "ref": "cursor/scp-b-improvement-chain-696d",
+  "live_remote_sha": "a24b0b6d21ce0472022af1cf5e32ad1dacfb901f",
+  "how_it_was_found": "Not by auditing the module. Lane B pushed, and `git push` reported a1592234..a24b0b6d \u2014 a range, meaning the ref already existed. The lane's own admitted declaration had asserted it did not. Checking why the gate had not caught the false assertion produced the defect.",
+  "cases": {
+    "A_recorded_sha_omitted": {
+      "recorded_sha": null,
+      "verdict": "SETTLED_SUBJECT_TO_TOP_LAYER_LIMIT",
+      "writable": true,
+      "ref_movement": {
+        "observable": true,
+        "remote_sha": "a24b0b6d21ce0472022af1cf5e32ad1dacfb901f",
+        "moved": null,
+        "detail": "no recorded_sha to compare against; movement not determinable"
+      },
+      "expected_if_failing_closed": "UNOBSERVABLE / writable false",
+      "fails_open": true
+    },
+    "B_recorded_sha_wrong": {
+      "recorded_sha": "0000000000000000000000000000000000000000",
+      "verdict": "IN_FLIGHT_REF_MOVED_SINCE_DECLARATION",
+      "writable": false,
+      "gate_catches_it": true
+    },
+    "C_recorded_sha_truthful": {
+      "recorded_sha": "a24b0b6d21ce0472022af1cf5e32ad1dacfb901f",
+      "verdict": "SETTLED_SUBJECT_TO_TOP_LAYER_LIMIT",
+      "writable": true
+    }
+  },
+  "finding": "concurrency_verdict tests `moved is True` and `not observable`, so the third outcome \u2014 observable, movement not determinable \u2014 reaches the terminal else and is reported SETTLED and writable. Omitting one optional field disables the check the module's own docstring calls the only signal that can catch a writer the agent layer cannot see.",
+  "reproduced": true,
+  "evidence_label": "DIRECTLY_REPRODUCED",
+  "same_class_as": "ICH-02-DENYLIST-CAPACITY",
+  "why_same_class": "Both enumerate the outcomes that are bad and let the remainder reach a permissive default. There IDLE\u2192ERROR was not in the harmful list; here moved=None is not in the refusing list. The fix shape is the same inversion: name the outcomes that mean safe and refuse the rest.",
+  "provenance_class": "EARNED",
+  "provenance_basis": "Found by this lane tripping the gate with a false declaration and then noticing the gate had admitted it. Not an invented rule and not traceable to a founder utterance, so it binds as mechanism.",
+  "mechanism_change_state": "PENDING",
+  "mechanism_change_owner": "owner of the write-admission subsystem (lane D or the SCP-SI-01 coordinator)",
+  "why_this_lane_does_not_ship_it": "concurrency_observer.py is the write-admission subsystem, not the ledger schema this lane was commissioned to extend, and every lane in this cohort is pushing through that gate right now. Changing the gate's verdict mid-cohort from a lane that is itself being gated by it would be a producer editing its own admission criteria. Recorded PENDING and routed.",
+  "what_this_lane_did_instead": [
+    "Corrected its own concurrency observation to carry the observed remote SHA, so the movement check actually runs against a real value.",
+    "Re-ran write_admission and recorded the second verdict.",
+    "Seeded the finding as ICH-08 with the mechanism change declared pending."
+  ],
+  "honest_limits": [
+    "One module, one branch in the verdict function. Whether other gates in write_admission share the pattern was not audited and is not claimed.",
+    "The fail-open is shown for a ref that exists. It was not tested against a ref genuinely absent from the remote, where moved=None is the honest answer and refusing may be the wrong behaviour \u2014 which is precisely why the fix is an allowlist of outcomes and not a blanket refusal on None."
+  ]
+}

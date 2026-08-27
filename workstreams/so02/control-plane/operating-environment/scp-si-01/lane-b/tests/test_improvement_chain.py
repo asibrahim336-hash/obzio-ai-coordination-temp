@@ -44,6 +44,8 @@ SCCTL_PATH = CONTROL_PLANE / "tools/scctl.py"
 EVENTS_PATH = CONTROL_PLANE / "state/events.jsonl"
 SEED_PATH = (CONTROL_PLANE / "operating-environment/scp-si-01/lane-b/chains"
              / "SCP-B-CHAIN-SEED-20260827-v001.json")
+SEEDED = json.loads(SEED_PATH.read_text(encoding="utf-8"))
+SEEDED_IDS = [chain["chain_id"] for chain in SEEDED["chains"]]
 
 
 def _load(name: str, path: Path):
@@ -613,27 +615,38 @@ class SeededHistoryTests(unittest.TestCase):
     def test_the_real_seeded_chains_are_not_refused(self) -> None:
         self.assertEqual([], errors(self.findings))
 
-    def test_seven_chains_are_seeded(self) -> None:
-        self.assertEqual(7, len(self.chains))
+    def test_every_seeded_chain_reaches_the_projection(self) -> None:
+        # Derived from the seed, not pinned. Counting literals here is what broke
+        # three tests in test_scctl.py and two of these when history grew.
+        self.assertEqual(sorted(SEEDED_IDS), sorted(self.chains))
 
-    def test_five_are_closed_and_two_are_open_with_a_pending_mechanism(self) -> None:
-        states = [chain["chain_state"] for chain in self.chains.values()]
-        self.assertEqual(5, states.count("CLOSED_THROUGH_PROMOTION"))
-        self.assertEqual(2, states.count("OPEN_SUCCESSOR_PENDING"))
-        for chain_id in ("ICH-06-HOOKS-NOT-FIRING",
-                         "ICH-07-SUPERSESSION-READS-AS-TAMPERING"):
+    def test_each_chain_is_either_closed_or_openly_pending(self) -> None:
+        # The real invariant: no chain sits in a third state. A chain is finished,
+        # or it says out loud what it is waiting for. Nothing is quietly stalled.
+        for chain_id, chain in self.chains.items():
+            self.assertIn(chain["chain_state"],
+                          ("CLOSED_THROUGH_PROMOTION", "OPEN_SUCCESSOR_PENDING"), chain_id)
+
+    def test_the_open_chains_are_exactly_the_ones_the_seed_declares_open(self) -> None:
+        declared = set(SEEDED["open_chains_with_a_pending_mechanism"])
+        projected = {chain_id for chain_id, chain in self.chains.items()
+                     if chain["chain_state"] == "OPEN_SUCCESSOR_PENDING"}
+        self.assertEqual(declared, projected)
+        self.assertTrue(declared, "the seed claims to model unfinished work; none is present")
+
+    def test_every_open_chain_is_pending_a_mechanism_change(self) -> None:
+        for chain_id in SEEDED["open_chains_with_a_pending_mechanism"]:
             chain = self.chains[chain_id]
             self.assertEqual("MECHANISM_CHANGE", chain["next_required_node_kind"], chain_id)
             self.assertEqual("MECHANISM_CHANGE", chain["pending"][0]["node_kind"], chain_id)
 
-    def test_the_open_chains_name_an_owner_who_is_not_this_lane(self) -> None:
+    def test_the_open_chains_route_to_an_owner_who_is_not_this_lane(self) -> None:
         # A pending successor owned by the lane that declared it is a lane
         # promising itself a fix. The waiver is only honest when it routes.
-        for chain_id in ("ICH-06-HOOKS-NOT-FIRING",
-                         "ICH-07-SUPERSESSION-READS-AS-TAMPERING"):
+        for chain_id in SEEDED["open_chains_with_a_pending_mechanism"]:
             owner = self.chains[chain_id]["pending"][0]["owner"]
             self.assertTrue(owner.strip(), chain_id)
-            self.assertNotEqual("lane B", owner.strip(), chain_id)
+            self.assertNotIn(owner.strip().lower(), ("lane b", "lane-b", "b"), chain_id)
 
     def test_every_seeded_node_is_cited_and_provenance_classified(self) -> None:
         for chain in self.chains.values():

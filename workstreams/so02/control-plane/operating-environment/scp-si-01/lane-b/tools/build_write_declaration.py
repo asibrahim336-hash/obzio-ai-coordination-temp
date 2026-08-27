@@ -81,6 +81,13 @@ WRITTEN_AFTER_ADMISSION = (
     "receipts/so02/2026-08-27/scp-b/MANIFEST.json",
 )
 
+#: The first admission of this write, obtained on a concurrency observation that
+#: falsely claimed the ref was absent from the remote. Retained rather than
+#: overwritten: a superseded gate result is evidence of how the gate behaved, and
+#: it is the citation for ICH-08.
+SUPERSEDED_ADMISSION = ("receipts/so02/2026-08-27/scp-b/admission/"
+                        "WRITE-ADMISSION-SCP-B-01-SUPERSEDED-FALSE-OBSERVATION.json")
+
 
 def changed_paths() -> list[str]:
     out = git(["diff", "--name-only", BASE, "HEAD"])
@@ -179,6 +186,19 @@ def main() -> int:
             ),
         },
         "concurrency": observation,
+        "supersedes": {
+            "prior_admission": SUPERSEDED_ADMISSION,
+            "why": (
+                "This write was already admitted once, on a concurrency observation "
+                "recording ref_sha_at_observation: null and asserting the ref did not "
+                "exist on the remote. It did exist, at a1592234. The gate admitted the "
+                "false statement because an omitted SHA skips the ref-movement check "
+                "instead of failing it. The observation is corrected here to the SHA read "
+                "from the remote, so the movement check runs against a real value, and "
+                "the fail-open is recorded as ICH-08 with its mechanism change pending."
+            ),
+            "evidence_label": "DIRECTLY_REPRODUCED",
+        },
         "scope_attestation": {
             "integration_commit_audited_against": INTEGRATION_AUDITED,
             "base_commit": BASE,
