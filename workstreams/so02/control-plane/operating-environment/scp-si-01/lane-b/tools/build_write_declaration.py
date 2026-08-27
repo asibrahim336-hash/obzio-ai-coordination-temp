@@ -129,10 +129,25 @@ def closure(paths: list[str]) -> dict[str, Any]:
 
 def main() -> int:
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    # The two fields that describe *now* are read from now, not typed. A
+    # hand-written observed_at was already refused once by the gate for being in
+    # the future, and a hand-written ref SHA is what made the first observation
+    # false. The agent list stays as captured, because that is a tool payload and
+    # rewriting it would be the forgery this lane seeded as ICH-01.
+    #
+    # This happens before the closure is computed, so the observation's digest in
+    # the closure is of the bytes that are actually on disk.
+    observation = json.loads(OBSERVATION.read_text(encoding="utf-8"))
+    observation["observed_at"] = now
+    live = git(["ls-remote", "--heads", "origin", f"refs/heads/{BRANCH}"])
+    observation["ref_sha_at_observation"] = live.split()[0] if live.strip() else None
+    observation["ref_sha_read_at"] = now
+    OBSERVATION.write_text(json.dumps(observation, indent=2) + "\n", encoding="utf-8")
+
     paths = changed_paths()
     record = closure(paths)
     reversal = reversal_rehearsal.build_reversal("DELETE_CREATED_REF", BRANCH, remote="origin")
-    observation = json.loads(OBSERVATION.read_text(encoding="utf-8"))
 
     declaration = {
         "declaration_version": "1.0",
