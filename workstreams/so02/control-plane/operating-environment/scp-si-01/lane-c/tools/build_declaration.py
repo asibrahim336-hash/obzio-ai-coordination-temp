@@ -23,17 +23,21 @@ observation is evidence with an instrument and a limitation, not a constant.
 ## What the evidence covers, and what it cannot
 
 `evidence.record` closes over every file in `lane-c/**` plus `READ-BACK.json`.
-Three files are excluded, each because it hashes or evaluates this declaration:
+Four files are in `target.paths` and not in the record, each because it is
+written after this declaration:
 
 * this declaration — a file cannot contain its own hash;
-* `ADMISSION.json` — it is the verdict *on* this declaration, so it is written
-  after it;
-* `MANIFEST.json` — it covers this declaration, and a mutual hash is a cycle.
+* `ADMISSION.json` — it is the verdict *on* this declaration;
+* `MANIFEST.json` — it covers this declaration, and a mutual hash is a cycle;
+* `PUSH-CONFIRMATION.json` — it records the SHA of a commit that does not exist
+  until after this declaration is committed.
 
-`MANIFEST.json` carries the complete closure over all of them, including this
-declaration, with its own independent `bundle_sha256`. The exclusions are stated
-in the record rather than left to be noticed, because an undeclared exclusion is
-indistinguishable from an omission.
+They are listed in `target.paths` regardless, because the write does touch them
+and a write that does not admit what it writes is the collision this whole
+declaration schema exists to prevent. `MANIFEST.json` carries the complete
+closure over all four, including this declaration, with its own independent
+`bundle_sha256`. The exclusions are stated in the record rather than left to be
+noticed, because an undeclared exclusion is indistinguishable from an omission.
 """
 
 from __future__ import annotations
@@ -54,6 +58,7 @@ DECLARATION_REL = ("workstreams/so02/control-plane/operating-environment/"
 READ_BACK_REL = "receipts/so02/2026-08-27/scp-c/READ-BACK.json"
 ADMISSION_REL = "receipts/so02/2026-08-27/scp-c/ADMISSION.json"
 MANIFEST_REL = "receipts/so02/2026-08-27/scp-c/MANIFEST.json"
+PUSH_CONFIRMATION_REL = "receipts/so02/2026-08-27/scp-c/PUSH-CONFIRMATION.json"
 OBSERVATION_REL = "receipts/so02/2026-08-27/scp-c/raw/concurrency-observation.json"
 
 STATEMENT = (
@@ -106,7 +111,8 @@ def main(argv: list[str] | None = None) -> int:
     # file. target.paths is the write's footprint; evidence.present_paths is the
     # subset whose bytes are final now. Conflating them is what would force the
     # cycle the docstring describes.
-    touched = sorted(set(covered) | {DECLARATION_REL, ADMISSION_REL, MANIFEST_REL})
+    touched = sorted(set(covered) | {DECLARATION_REL, ADMISSION_REL, MANIFEST_REL,
+                                     PUSH_CONFIRMATION_REL})
 
     declaration = {
         "declaration_version": "1.0",
@@ -161,13 +167,17 @@ def main(argv: list[str] | None = None) -> int:
                     "build_declaration.py in the same run as the push rather than transcribed. "
                     "present_paths is stated explicitly rather than defaulted from the entry "
                     "list, so the closure question is well posed instead of trivially true. "
-                    "Three paths in target.paths are deliberately not covered here and the "
+                    "Four paths in target.paths are deliberately not covered here and the "
                     "exclusions are declared rather than silent: this declaration, because a "
                     "file cannot contain its own hash; ADMISSION.json, because it is the "
-                    "verdict on this declaration and is therefore written after it; and "
+                    "verdict on this declaration and is therefore written after it; "
                     "MANIFEST.json, because it covers this declaration and a mutual hash is a "
-                    "cycle. MANIFEST.json carries the complete closure over all three, with "
-                    "its own independent bundle_sha256."
+                    "cycle; and PUSH-CONFIRMATION.json, because it records the SHA of a commit "
+                    "that does not exist until after this declaration is committed. All four "
+                    "are listed in target.paths anyway, because the write does touch them and "
+                    "a write that does not admit what it writes is the collision this schema "
+                    "exists to prevent. MANIFEST.json carries the complete closure over all "
+                    "four, with its own independent bundle_sha256."
                 ),
                 "verify_it_yourself": (
                     "python3 -I workstreams/so02/control-plane/operating-environment/"

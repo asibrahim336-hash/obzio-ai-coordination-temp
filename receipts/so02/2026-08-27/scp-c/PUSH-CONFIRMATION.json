@@ -1,0 +1,23 @@
+{
+  "receipt_id": "SCP-C-PUSH-CONFIRMATION-20260827-v001",
+  "lane": "SCP-SI-01 lane C",
+  "generated_at": "2026-08-27T06:01:27Z",
+  "evidence_label": "DIRECTLY_REPRODUCED",
+  "ref": "cursor/scp-c-authorship-sidecar-696d",
+  "pushed_sha": "53c3831c2c0a32460582104c2b1eb645e4fc1734",
+  "pushed_sha_source": "git ls-remote origin refs/heads/cursor/scp-c-authorship-sidecar-696d — the remote's own answer. Not the local branch tip, because git push can exit 0 without moving the ref.",
+  "integration_ref": "cursor/operating-environment-return-20260822-v001",
+  "integration_sha_at_confirmation": "f0fb3f51a25db67b33bdd558c73055f3d02ddb60",
+  "confirms_manifest": {
+    "path": "receipts/so02/2026-08-27/scp-c/MANIFEST.json",
+    "bundle_sha256": "3ebd1e295aa62c1f9b49ad0a7c7beef40d39a7e52b831bacb42dce1e7c5e6c9a",
+    "entry_count": 33,
+    "sha256_on_remote": "b8e72c228f258319439288f63d2bfd383ce22df39059696fa4ec4041e16a63d3"
+  },
+  "method": "Every manifest entry is read out of the pushed commit with git cat-file and hashed, rather than read off local disk. READ-BACK.json proves the working tree; this proves the remote. MANIFEST.json excludes itself from its own entries, so it is fetched and re-verified separately, including recomputing its bundle_sha256 from the pushed bytes.",
+  "entries_confirmed_on_remote": 33,
+  "findings": [],
+  "verdict": "REMOTE_HOLDS_THE_DECLARED_BYTES",
+  "outside_manifest_closure": "This receipt records the SHA of the commit that contains MANIFEST.json, so it cannot be inside that commit and is therefore not one of the manifest's entries. The exclusion is structural rather than chosen: a file cannot carry the hash of a commit that does not exist until the file does. It is stated here rather than left to be noticed, and the bundle_sha256 it confirms is named above so a reader can tell which manifest it refers to.",
+  "decision_changed": []
+}

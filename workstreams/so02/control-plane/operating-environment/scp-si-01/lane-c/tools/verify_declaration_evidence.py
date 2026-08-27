@@ -40,13 +40,14 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import authorship_sidecar as A  # noqa: E402
 import build_receipts as R  # noqa: E402
 from build_declaration import (ADMISSION_REL, DECLARATION_REL, MANIFEST_REL,  # noqa: E402
-                              OBSERVATION_REL, READ_BACK_REL)
+                              OBSERVATION_REL, PUSH_CONFIRMATION_REL, READ_BACK_REL)
 
 #: The only paths that may appear in target.paths without a hash in the record.
-#: Each is excluded because it hashes or evaluates the declaration itself; the
-#: reasons are stated in the declaration's closure_note and here so that a
-#: reader of either finds the same three.
-DECLARED_EXCLUSIONS = frozenset({DECLARATION_REL, ADMISSION_REL, MANIFEST_REL})
+#: Each is excluded because it hashes, evaluates or postdates the declaration
+#: itself; the reasons are stated in the declaration's closure_note and here so
+#: that a reader of either finds the same four.
+DECLARED_EXCLUSIONS = frozenset({DECLARATION_REL, ADMISSION_REL, MANIFEST_REL,
+                                 PUSH_CONFIRMATION_REL})
 
 
 def verify(repo_root: str, declaration: dict | None = None) -> list[str]:
