@@ -1,0 +1,133 @@
+{
+  "schema": "scp-d-routed-findings-v1",
+  "author": "SCP-SI-01 lane D",
+  "purpose": "Route the genuine portability findings inside the 117-finding population to the cohort that owns the file, per workstreams/po03/control/path-ownership.json. This lane holds no write access to workstreams/po03/** and applies no fix here; each row is a citation, not a patch.",
+  "source_of_findings": {
+    "authoritative_triage": {
+      "path": "workstreams/po03/runtime/finding-triage.json",
+      "commit": "2779185a",
+      "branch": "cursor/po03-a3-portable-runtime-ed20",
+      "author": "po03-worker-a3",
+      "provenance": "DOCUMENTED"
+    },
+    "independent_reproduction": {
+      "tool": "workstreams/po03/runtime/hermeticity.py",
+      "run_output": "triage/hermeticity-reproduction-run.json",
+      "tree": "scratch worktree merging origin/cursor/operating-environment-return-20260822-v001 with origin/cursor/po03-a3-portable-runtime-ed20, outside this lane's branch",
+      "provenance": "DIRECTLY_REPRODUCED"
+    }
+  },
+  "routes": [
+    {
+      "finding_id": "PROBE-TELEMETRY-NETWORK-IMPORT",
+      "path": "workstreams/po03/metrics/probe_telemetry.py",
+      "line": 16,
+      "rule": "NETWORK_IMPORT",
+      "verdict": "GENUINE",
+      "owner": "po03-worker-a7",
+      "owner_basis": "path-ownership.json: po03-worker-a7 owns workstreams/po03/metrics/",
+      "detail": "imports socket; whether anything is found depends on the host, not the committed tree",
+      "minimal_fix": "record NOT_OBSERVABLE when the socket is unreachable, so recorded evidence is host-independent",
+      "status_at_audit": "UNFIXED",
+      "evidence": "DIRECTLY_REPRODUCED — present at line 16 in the merged tree scanned this run"
+    },
+    {
+      "finding_id": "PROBE-TELEMETRY-NETWORK-CALL",
+      "path": "workstreams/po03/metrics/probe_telemetry.py",
+      "line": 89,
+      "rule": "NETWORK_CALL",
+      "verdict": "GENUINE",
+      "owner": "po03-worker-a7",
+      "owner_basis": "path-ownership.json: po03-worker-a7 owns workstreams/po03/metrics/",
+      "detail": "socket.socket(...) call whose result is host-dependent, in a module whose output is committed evidence",
+      "minimal_fix": "same fix as NETWORK_IMPORT; the call may stay, the recorded result must not depend on the host",
+      "status_at_audit": "UNFIXED",
+      "evidence": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "finding_id": "PROBE-TELEMETRY-ABS-PATH",
+      "path": "workstreams/po03/metrics/probe_telemetry.py",
+      "line": "33-39",
+      "rule": "ABS_PATH_LITERAL",
+      "verdict": "GENUINE",
+      "owner": "po03-worker-a7",
+      "owner_basis": "path-ownership.json: po03-worker-a7 owns workstreams/po03/metrics/",
+      "detail": "CANDIDATE_USAGE_PATHS holds seven hand-written absolute host locations that the module stats directly",
+      "minimal_fix": "move CANDIDATE_USAGE_PATHS into a committed JSON data file; record every candidate checked together with its NOT_OBSERVABLE outcome",
+      "status_at_audit": "UNFIXED",
+      "evidence": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "finding_id": "PROBE-TELEMETRY-TEMP-PATH",
+      "path": "workstreams/po03/metrics/probe_telemetry.py",
+      "line": "37-38",
+      "rule": "TEMP_PATH_LITERAL",
+      "verdict": "GENUINE",
+      "owner": "po03-worker-a7",
+      "owner_basis": "path-ownership.json: po03-worker-a7 owns workstreams/po03/metrics/",
+      "detail": "two of the seven candidates are under /tmp, exactly the state outside the committed tree the clean-runtime requirement excludes",
+      "minimal_fix": "same fix as ABS_PATH_LITERAL in this file",
+      "status_at_audit": "UNFIXED",
+      "evidence": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "finding_id": "PROBE-TELEMETRY-ENV-READ",
+      "path": "workstreams/po03/metrics/probe_telemetry.py",
+      "line": "79,117",
+      "rule": "ENV_READ",
+      "verdict": "GENUINE",
+      "owner": "po03-worker-a7",
+      "owner_basis": "path-ownership.json: po03-worker-a7 owns workstreams/po03/metrics/",
+      "detail": "reads ambient environment variables to discover provider telemetry; output not reproducible from source alone",
+      "minimal_fix": "record which variables were consulted and that each was absent, rather than letting presence change the result silently",
+      "status_at_audit": "UNFIXED",
+      "evidence": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "finding_id": "BOUNDARY-RUN-ABS-PATH",
+      "path": "workstreams/po03/packverify/boundary_run.py",
+      "line": 34,
+      "rule": "ABS_PATH_LITERAL",
+      "verdict": "GENUINE",
+      "owner": "po03-worker-a4",
+      "owner_basis": "path-ownership.json: po03-worker-a4 owns workstreams/po03/packverify/",
+      "detail": "/usr/bin:/bin is a hand-written platform assumption where the standard library already supplies the portable value",
+      "minimal_fix": "os.environ.get(\"PATH\", os.defpath) — identical behaviour on POSIX, correct on any platform",
+      "status_at_audit": "UNFIXED",
+      "evidence": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "finding_id": "GENERATION-ADAPTER-SYS-PATH-MUTATION",
+      "path": "workstreams/po03/holdout/generation_adapter.py",
+      "line": 142,
+      "rule": "SYS_PATH_MUTATION",
+      "verdict": "GENUINE",
+      "owner": "po03-worker-a13",
+      "owner_basis": "path-ownership.json: po03-worker-a13 owns workstreams/po03/holdout/",
+      "detail": "sys.path.insert(0, str(source_root)) where source_root is populated at run time by extracting a git archive into a caller-supplied workdir, not derived from __file__ — this is genuinely unanchored, unlike the 68 SYS_PATH_ANCHORED cases",
+      "minimal_fix": "anchor the insertion, or scope its lifetime (remove from sys.path after the import, or use importlib.util.spec_from_file_location) so a dynamically-extracted historical generation cannot shadow a later test's import resolution in the same discover run",
+      "status_at_audit": "UNFIXED",
+      "note": "not part of a3's pinned 117 — this file postdates her observation pin (0b91b697525e); newly observed by this lane while auditing the broader merged tree",
+      "evidence": "DIRECTLY_REPRODUCED"
+    }
+  ],
+  "not_routed_residual_imprecision": [
+    {
+      "path": "workstreams/po03/packverify/boundary_run.py",
+      "line": 34,
+      "rule": "ENV_READ",
+      "verdict": "FALSE_POSITIVE",
+      "reason_kept_visible": "the read builds a fully-enumerated child environment (hermeticity work, not ambient dependence); no structural rule separates a fencing read from a leaking one without a value allowlist, which a3 declined to add and this lane will not add outside po03's namespace",
+      "evidence": "DOCUMENTED (a3) + DIRECTLY_REPRODUCED (still present, exempt reasoning still applies)"
+    },
+    {
+      "path": "workstreams/po03/successor/g2/successor.py",
+      "line": "204,207",
+      "rule": "ABS_PATH_LITERAL",
+      "verdict": "FALSE_POSITIVE",
+      "reason_kept_visible": "/anchor is a synthetic prefix stripped before any filesystem access; correctly not a sink but indistinguishable from a real absolute path without following the value through the call graph",
+      "evidence": "DOCUMENTED (a3) + DIRECTLY_REPRODUCED"
+    }
+  ],
+  "suite_verdict": "FAILING — six genuine findings above remain unfixed in po03's namespace at the tree state this lane audited. This lane has no write access to workstreams/po03/** and applies no fix; routing is a citation."
+}

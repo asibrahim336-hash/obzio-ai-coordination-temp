@@ -1,0 +1,59 @@
+=== DEFECT 3 REPRODUCTION TRANSCRIPT ===
+COMPLETED without entry health and an output/read-back receipt (FALSE_SUCCESS)
+
+Canonical harness extended: workstreams/so02/control-plane/operating-environment/
+  l1-cursor-baseline/proposed-cursor-config/dot-cursor/hooks/verify_hooks.py
+Mechanism fix (new, lane-d namespace, inlined into): workstreams/so02/control-plane/
+  operating-environment/scp-si-01/lane-d/fixes/gate_claim_state_fixed.py
+  (function strong_receipt_health, replacing gate_claim_state.py's substring-based
+  saw_receipt check)
+
+Run: python3 -I verify_hooks.py (full output; only the gate_claim_state.py section and
+the final tally are reproduced here — the run's other sections are unrelated hooks)
+
+--- pre-fix tripwire (unmodified gate_claim_state.py's saw_receipt) ---
+  PASS  PRE-FIX TRIPWIRE (DEF-SCP-D-03): a prose MENTION of MANIFEST.json with no such
+        file anywhere in the tree is wrongly accepted as a receipt for COMPLETED
+  PASS  PRE-FIX TRIPWIRE (DEF-SCP-D-03), and the same fixture as the canonical
+        'gate-with-receipt' case above with entries=[] and an unverifying bundle_sha256
+        of all zeros: FALSE_SUCCESS accepted as a receipt
+
+A PASS on a "PRE-FIX TRIPWIRE" case means the assertion that the defect exists in the
+unmodified hook succeeded — i.e. the original saw_receipt check really does treat a bare
+prose mention of "MANIFEST.json" (no such file present) and a zero-entry, non-verifying
+manifest (fabricated bundle_sha256, entries=[]) as a valid receipt for a COMPLETED claim.
+Both are FALSE_SUCCESS by the commission's own definition.
+
+--- passing rerun (lane-d's strong_receipt_health) ---
+  PASS  lane D fix: a mentioned-but-absent manifest is correctly refused
+  PASS  lane D fix: a zero-entry, non-verifying manifest is correctly refused
+  PASS  lane D fix does not regress a manifest that actually parses, covers a real
+        entry, binds its own bundle_sha256, and reads back true from disk
+
+strong_receipt_health requires, in order: the artifact parses as JSON; it has at least
+one entry; every entry names a path that exists on disk at read-back time; and the
+manifest's own bundle_sha256 recomputes correctly over the entries it claims to cover.
+A mention of a filename is not evidence of the file. A manifest with zero entries proves
+nothing about the work it claims to cover, however "valid" its shape.
+
+--- non-regression: a genuine manifest still passes ---
+  PASS  lane D fix does not regress a manifest that actually parses, covers a real
+        entry, binds its own bundle_sha256, and reads back true from disk
+
+--- overall tally, this run ---
+72/77 cases passed
+failed:
+  - allows push to own lane branch
+  - denies commit while HEAD is protected
+  - allows --force-with-lease
+  - allows pushing a genuinely divergent branch
+  - allows pushing a branch that does not exist locally yet
+
+The five failures above are guard_write_scope.py cases, unrelated to this defect and to
+any file this lane touched (confirmed: no diff against guard_write_scope.py on this
+branch; last three commits to that file predate this lane's HEAD). They are environment/
+git-version-dependent and are reported here rather than hidden, per evidence discipline,
+but they are not part of Defect 3's regression and this lane holds no write access to fix
+them.
+
+Evidence label: DIRECTLY_REPRODUCED (this run, this session).

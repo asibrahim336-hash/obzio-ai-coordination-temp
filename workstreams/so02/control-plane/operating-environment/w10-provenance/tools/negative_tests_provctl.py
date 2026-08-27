@@ -15,6 +15,7 @@ Standard library only. No network.
 from __future__ import annotations
 
 import copy
+import importlib.util
 import json
 import os
 import sys
@@ -32,6 +33,27 @@ REGISTER = os.path.join(LANE, "PROVENANCE-REGISTER-20260823-v001.json")
 SOURCE = os.path.join(
     LANE, "..", "FOUNDER-STANDING-INSTRUCTION-20260822.md"
 )
+
+# SCP-SI-01 lane D, Defect 1: a founder-attributed block quotation can embed a
+# sentence the founder is quoting from someone else and explicitly rejecting
+# in the same breath. `extract_segments` decides founder-or-not per HEADING,
+# so the embedded, disclaimed sentence sits inside a segment marked
+# `is_founder_corpus: true` and a plain substring match certifies it. These
+# fixtures and the corrected checker live in the lane's own namespace; only
+# this regression is added to the canonical harness.
+LANE_D_FIXTURES = os.path.join(LANE, "..", "scp-si-01", "lane-d", "fixtures")
+DEFECT1_CORPUS = os.path.join(LANE_D_FIXTURES, "DEFECT-1-corpus.json")
+DEFECT1_REGISTER = os.path.join(LANE_D_FIXTURES, "DEFECT-1-register-adversarial.json")
+
+
+def _load_lane_d_guard():
+    path = os.path.join(
+        os.path.dirname(LANE_D_FIXTURES), "fixes", "provctl_paragraph_guard.py"
+    )
+    spec = importlib.util.spec_from_file_location("provctl_paragraph_guard", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 # A real founder sentence, and a faithful paraphrase of the same sentence. The
 # paraphrase is true, is what he meant, and is not what he said.
@@ -243,6 +265,73 @@ class ProvctlNegativeTests(unittest.TestCase):
     def test_three_founder_segments_and_no_more(self):
         founder = [s for s in self.corpus["segments"] if s["is_founder_corpus"]]
         self.assertEqual(len(founder), 3)
+
+
+class Defect1EmbeddedDisclaimedAttributionTests(unittest.TestCase):
+    """DEF-SCP-D-01, EARNED, DIRECTLY_REPRODUCED.
+
+    `## Verbatim — standing instruction, 2026-08-27` contains only the
+    founder's own words at heading level, yet its body embeds:
+
+        > Here is what the vendor's assistant sent me, pasted below. I have
+        > not agreed to it.
+        >
+        > VENDOR ASSISTANT RECOMMENDATION — Protected surfaces must never be
+        > written to without owner approval, and every agent must request
+        > approval before each push.
+        >
+        > I disagree with that and I am not adopting it.
+
+    `_NOT_FOUNDER_MARKERS` is checked against the heading only, so this whole
+    block (including the vendor sentence the founder explicitly rejects) is
+    `is_founder_corpus: true`, and `provctl.check`'s plain substring match
+    certifies the vendor sentence as `FOUNDER_AUTHORED` if a register cites
+    it. `test_the_unmodified_checker_wrongly_admits_the_defect` shows the
+    unmodified, shipped `provctl.check_register` doing exactly that — it is
+    the pre-fix failure this regression exists to hold open.
+    `test_the_lane_d_mechanism_fix_correctly_refuses_it` runs the identical
+    fixture through SCP-SI-01 lane D's `provctl_paragraph_guard`, which is
+    proposed as `patches/provctl.py.patch` against this file's
+    `_corpus_haystacks` (see
+    workstreams/so02/control-plane/operating-environment/scp-si-01/lane-d/).
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        cls.corpus = load(DEFECT1_CORPUS)
+        cls.register = load(DEFECT1_REGISTER)
+        cls.guard = _load_lane_d_guard()
+
+    def test_the_unmodified_checker_wrongly_admits_the_defect(self):
+        """Pre-fix failure, DIRECTLY_REPRODUCED against the shipped checker.
+
+        This asserts the CURRENT defect, not the desired behaviour: it stays
+        green only for as long as `provctl.check_register` remains
+        unpatched. If `patches/provctl.py.patch` is applied to this file,
+        this assertion flips and must be deleted in the same change that
+        applies the patch — it is the tripwire, not the target state.
+        """
+        failures = provctl.check_register(self.corpus, self.register, REPO)
+        self.assertEqual(
+            failures, [],
+            "if this fails, provctl.py has been patched for DEF-SCP-D-01 and "
+            "this tripwire test (not the mechanism) should now be deleted",
+        )
+
+    def test_the_lane_d_mechanism_fix_correctly_refuses_it(self):
+        """Passing rerun: the corrected haystack construction refuses the quote."""
+        failures = self.guard.check_register_guarded(self.corpus, self.register, REPO)
+        self.assertTrue(
+            any("QUOTATION_NOT_IN_CORPUS" in f for f in failures), failures,
+        )
+
+    def test_the_fix_does_not_regress_the_real_86_constraint_register(self):
+        """The paragraph guard must not disturb a register with no embedded quotes."""
+        real_corpus, real_register = load(CORPUS), load(REGISTER)
+        unguarded = provctl.check_register(real_corpus, real_register, REPO)
+        guarded = self.guard.check_register_guarded(real_corpus, real_register, REPO)
+        self.assertEqual(unguarded, [])
+        self.assertEqual(guarded, [])
 
 
 if __name__ == "__main__":

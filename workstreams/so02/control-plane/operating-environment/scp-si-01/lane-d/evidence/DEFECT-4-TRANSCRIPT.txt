@@ -1,0 +1,69 @@
+=== DEFECT 4 REPRODUCTION TRANSCRIPT (two independent regressions) ===
+
+## Part A — DEF-SCP-01: EVIDENCE_HASH_MISMATCH conflates supersession and tampering
+(the coordinator-assigned new defect for this cohort; see
+workstreams/so02/control-plane/operating-environment/scp-si-01/
+DEFECT-SCP-01-SUPERSESSION-READS-AS-TAMPERING.json)
+
+Canonical harness extended: workstreams/so02/control-plane/operating-environment/
+  l4-currentness-recovery/tests/test_currentctl.py, class
+  DefSCP01SupersessionVsTamperingTests
+Mechanism fix (new, lane-d namespace): workstreams/so02/control-plane/operating-
+  environment/scp-si-01/lane-d/fixes/currentctl_supersession_split.py
+Patch against the canonical tool (proposed, not applied — see §"Hard boundaries"):
+  workstreams/so02/control-plane/operating-environment/scp-si-01/lane-d/patches/
+  currentctl.py.patch
+
+Run: python3 -I test_currentctl.py -v (full 74-case run; DefSCP01 lines only below)
+
+--- pre-fix tripwire (unmodified currentctl.check_reproducibility) ---
+test_case_2_and_case_3_are_indistinguishable_in_the_unmodified_checker
+  (__main__.DefSCP01SupersessionVsTamperingTests) ... ok
+
+PASS on this tripwire means the assertion holds: a file that was correctly hashed at its
+own recorded commit and has since legitimately changed (supersession) and a file that
+was hashed wrong from the start (tampering) both produce the identical
+EVIDENCE_HASH_MISMATCH finding under the unmodified working-tree-only comparison — the
+checker cannot tell them apart, which is exactly DEF-SCP-01's claim.
+
+--- passing rerun (lane-d's currentctl_supersession_split, check_artifact_hash_with_supersession) ---
+test_the_lane_d_mechanism_correctly_splits_all_four_cases
+  (__main__.DefSCP01SupersessionVsTamperingTests) ... ok
+  Passing rerun: `currentctl_supersession_split.check_artifact_hash_with_supersession`.
+
+Verifies each artifact at its own recorded commit first (DEF-05 half), then compares
+against branch tip only if the at-commit hash is correct (DEF-16 half — neither root
+alone is right, per the commission's own framing):
+  - clean (hash right at its own commit, unchanged at tip): no finding
+  - superseded (hash right at its own commit, tip has legitimately moved): EVIDENCE_SUPERSEDED, INFO
+  - tampered (hash wrong even at its own recorded commit): EVIDENCE_HASH_MISMATCH, ERROR
+  - anchor missing (no artifact_commit on the entry): EVIDENCE_ANCHOR_MISSING, falls back
+    to the pre-existing working-tree check for full backward compatibility
+
+--- non-regression ---
+test_the_fix_does_not_regress_the_real_estate_reproducibility_checks
+  (__main__.DefSCP01SupersessionVsTamperingTests) ... ok
+
+--- overall tally, this run ---
+Ran 74 tests in 2.115s
+OK
+
+## Part B — PROJECTION_WORDS word-order bypass in gate_claim_state.py
+(observed while fixing Defect 3 in the same hook; kept as part of this defect's
+regression because it is the same finding-code-conflates-two-cases shape — a claim
+matcher whose match depended on word order silently missed half the cases it names
+in its own docstring)
+
+Canonical harness extended: same verify_hooks.py file as Defect 3.
+Mechanism fix: same gate_claim_state_fixed.py.
+
+--- pre-fix tripwire ---
+  PASS  PRE-FIX TRIPWIRE (DEF-SCP-D-04): 'COMPLETED ... pull request' (completion word
+        before the projection phrase) is wrongly accepted even with a healthy manifest
+        present, because the projection regex only matched the opposite order
+
+--- passing rerun ---
+  PASS  lane D fix: the same claim is correctly caught regardless of word order
+  PASS  lane D fix: the finding names it as a projection, not a missing receipt
+
+Evidence label: DIRECTLY_REPRODUCED (this run, this session) for both parts.

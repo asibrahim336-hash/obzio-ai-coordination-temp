@@ -30,6 +30,16 @@ GUARD = HOOK_DIR / "guard_write_scope.py"
 GATE = HOOK_DIR / "gate_claim_state.py"
 LEDGER = HOOK_DIR / "ledger_subagent.py"
 REAL_WRITE_SCOPE = HOOK_DIR.parent / "write-scope.json"
+# SCP-SI-01 lane D's proposed-fixed mirror (DEF-SCP-D-03, DEF-SCP-D-04). Not
+# a parallel suite: the fixtures below run through BOTH this and GATE, and
+# only the two `..._is_false_success_pre_fix` cases assert against GATE
+# alone to hold the pre-fix defect open as a tripwire. See
+# scp-si-01/lane-d/patches/gate_claim_state.py.patch for the proposed patch
+# that would let GATE itself pass those two cases, at which point the
+# tripwires (not GATE_FIXED) should be deleted.
+GATE_FIXED = (
+    HOOK_DIR.parents[3] / "scp-si-01" / "lane-d" / "fixes" / "gate_claim_state_fixed.py"
+)
 
 results: list[tuple[bool, str, str]] = []
 
@@ -225,8 +235,8 @@ def verify_guard(root: Path) -> None:
 # --------------------------------------------------------------------------
 # gate_claim_state.py
 # --------------------------------------------------------------------------
-def run_gate(repo: Path, status: str = "completed") -> dict:
-    r = subprocess.run([sys.executable, str(GATE)], cwd=repo,
+def run_gate(repo: Path, status: str = "completed", script: Path = GATE) -> dict:
+    r = subprocess.run([sys.executable, str(script)], cwd=repo,
                        input=json.dumps({"status": status, "loop_count": 0}),
                        capture_output=True, text=True, timeout=60)
     if not r.stdout.strip():
@@ -235,6 +245,19 @@ def run_gate(repo: Path, status: str = "completed") -> dict:
         return json.loads(r.stdout)
     except json.JSONDecodeError:
         return {"_unparseable": r.stdout[:200]}
+
+
+def _write_manifest(path: Path, entries: list) -> None:
+    import hashlib as _hashlib
+    bundle = _hashlib.sha256(
+        json.dumps(entries, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
+    path.write_text(json.dumps({"entries": entries, "bundle_sha256": bundle}), encoding="utf-8")
+
+
+def _sha256_file(path: Path) -> str:
+    import hashlib as _hashlib
+    return _hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def verify_gate(root: Path) -> None:
@@ -292,6 +315,93 @@ def verify_gate(root: Path) -> None:
     binary = new_repo(root, "gate-binary-only")
     (binary / "blob.bin").write_bytes(b"\x00\x01COMPLETED\x02")
     record(run_gate(binary) == {}, "ignores non-text artifacts")
+
+    # ---------------------------------------------------------------------
+    # DEF-SCP-D-03 (SCP-SI-01 lane D, EARNED): RECEIPT_HINTS is a substring
+    # search over filenames and prose bodies. It never parses a manifest,
+    # never checks it covers anything, never reads a byte back from disk.
+    # These two cases are FALSE_SUCCESS, DIRECTLY_REPRODUCED against the
+    # real, unmodified hook: they assert the CURRENT defective behaviour and
+    # are tripwires, not the desired state. GATE_FIXED (lane D's proposed
+    # mechanism, patches/gate_claim_state.py.patch) is run against the same
+    # fixtures and correctly refuses both.
+    # ---------------------------------------------------------------------
+    mention_only = new_repo(root, "gate-receipt-mentioned-not-present")
+    (mention_only / "notes.md").write_text(
+        "Status: COMPLETED. See MANIFEST.json for the receipt.\n", encoding="utf-8")
+    record(
+        run_gate(mention_only) == {},
+        "PRE-FIX TRIPWIRE (DEF-SCP-D-03): a prose MENTION of MANIFEST.json with no such "
+        "file anywhere in the tree is wrongly accepted as a receipt for COMPLETED",
+    )
+    record(
+        "followup_message" in run_gate(mention_only, script=GATE_FIXED),
+        "lane D fix: a mentioned-but-absent manifest is correctly refused",
+    )
+
+    zero_entry = new_repo(root, "gate-receipt-zero-entries")
+    (zero_entry / "claim.md").write_text("The lane is COMPLETED.\n", encoding="utf-8")
+    (zero_entry / "MANIFEST.json").write_text(
+        json.dumps({"entries": [], "entry_count": 0, "bundle_sha256": "0" * 64}), encoding="utf-8")
+    record(
+        run_gate(zero_entry) == {},
+        "PRE-FIX TRIPWIRE (DEF-SCP-D-03), and the same fixture as the canonical "
+        "'gate-with-receipt' case above with entries=[] and an unverifying "
+        "bundle_sha256 of all zeros: FALSE_SUCCESS accepted as a receipt",
+    )
+    record(
+        "followup_message" in run_gate(zero_entry, script=GATE_FIXED),
+        "lane D fix: a zero-entry, non-verifying manifest is correctly refused",
+    )
+
+    healthy = new_repo(root, "gate-receipt-genuinely-healthy")
+    (healthy / "claim.md").write_text("The lane is COMPLETED.\n", encoding="utf-8")
+    (healthy / "deliverable.txt").write_bytes(b"real payload bytes")
+    _write_manifest(healthy / "MANIFEST.json", [{
+        "path": "deliverable.txt",
+        "sha256": _sha256_file(healthy / "deliverable.txt"),
+        "size_bytes": (healthy / "deliverable.txt").stat().st_size,
+    }])
+    record(
+        run_gate(healthy, script=GATE_FIXED) == {},
+        "lane D fix does not regress a manifest that actually parses, covers a real "
+        "entry, binds its own bundle_sha256, and reads back true from disk",
+    )
+
+    # ---------------------------------------------------------------------
+    # DEF-SCP-D-04 (SCP-SI-01 lane D, EARNED): the compound projection regex
+    # required the projection phrase to appear BEFORE a completion word
+    # within 80 characters, so "COMPLETED ... delivered as a pull request"
+    # (completion word FIRST) was never matched — the exact pattern the
+    # hook's own docstring names as the failure ("A pull request ... gets
+    # recorded as capability"). Isolated from DEF-SCP-D-03 by giving this
+    # fixture a genuinely healthy manifest, so only the word-order bug is
+    # under test.
+    # ---------------------------------------------------------------------
+    proj_order = new_repo(root, "gate-projection-completion-word-first")
+    (proj_order / "deliverable.txt").write_bytes(b"real payload bytes")
+    _write_manifest(proj_order / "MANIFEST.json", [{
+        "path": "deliverable.txt",
+        "sha256": _sha256_file(proj_order / "deliverable.txt"),
+        "size_bytes": (proj_order / "deliverable.txt").stat().st_size,
+    }])
+    (proj_order / "report.md").write_text(
+        "COMPLETED. This work was delivered as a pull request for review.\n", encoding="utf-8")
+    record(
+        run_gate(proj_order) == {},
+        "PRE-FIX TRIPWIRE (DEF-SCP-D-04): 'COMPLETED ... pull request' (completion word "
+        "before the projection phrase) is wrongly accepted even with a healthy manifest "
+        "present, because the projection regex only matched the opposite order",
+    )
+    out = run_gate(proj_order, script=GATE_FIXED)
+    record(
+        "followup_message" in out,
+        "lane D fix: the same claim is correctly caught regardless of word order",
+    )
+    record(
+        "projection" in out.get("followup_message", "").lower(),
+        "lane D fix: the finding names it as a projection, not a missing receipt",
+    )
 
 
 # --------------------------------------------------------------------------
