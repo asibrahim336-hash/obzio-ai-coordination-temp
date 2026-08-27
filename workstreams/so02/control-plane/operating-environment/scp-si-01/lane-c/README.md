@@ -28,6 +28,7 @@ removes nothing and rewrites nothing.
 | `tools/build_declaration.py` | generates the write declaration with its hashes taken from disk |
 | `tools/verify_declaration_evidence.py` | checks the declaration against the bytes on disk, which the admission gate does not |
 | `tools/reproduce_gate_blindness.py` | reproduces that gap against the estate's live gate |
+| `tools/confirm_push.py` | reads every manifest entry back out of the pushed commit, not off local disk |
 | `tools/release.sh` | runs all nine steps in the one order that is acyclic |
 | `fixtures/mixed-message-founder-and-pasted.md` | founder words + pasted third-party block + refusal, in one message |
 | `fixtures/adopted-and-disavowed.md` | adoption, adoption-inside-attribution, and disavowal defeating adoption |
@@ -74,7 +75,17 @@ python3 -I workstreams/so02/control-plane/operating-environment/scp-si-01/lane-c
 # 8. reproduce the gap in the admission gate's evidence check
 python3 -I workstreams/so02/control-plane/operating-environment/scp-si-01/lane-c/tools/reproduce_gate_blindness.py \
     --repo-root .
+
+# 9. confirm the remote holds the bytes the manifest hashes
+python3 -I workstreams/so02/control-plane/operating-environment/scp-si-01/lane-c/tools/confirm_push.py \
+    --repo-root . --ref cursor/scp-c-authorship-sidecar-696d --no-write
 ```
+
+Command 9 is the one check that cannot be run from local disk. `READ-BACK.json`
+states its own limitation: it proves this working tree hashes and parses, not
+that the remote holds it. `git push` can exit 0 without moving a ref, so the SHA
+is taken from `git ls-remote` and every entry is read back out of the pushed
+commit with `git cat-file`.
 
 Command 3 rewrites the two files under `sidecar/`. It is deterministic: the same
 inputs produce byte-identical output, which is what makes the manifest hashes in
