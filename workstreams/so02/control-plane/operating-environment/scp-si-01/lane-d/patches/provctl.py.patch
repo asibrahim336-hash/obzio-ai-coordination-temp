@@ -1,0 +1,37 @@
+--- a/workstreams/so02/control-plane/operating-environment/w10-provenance/tools/provctl.py	2026-08-27 05:34:57.687478982 +0000
++++ b/workstreams/so02/control-plane/operating-environment/w10-provenance/tools/provctl.py	2026-08-27 05:35:14.591149538 +0000
+@@ -232,9 +232,33 @@
+ # Register checking
+ # --------------------------------------------------------------------------
+ 
++def _founder_only_text(raw_text: str) -> str:
++    """Drop any paragraph of a founder-attributed segment that itself quotes another speaker.
++
++    EARNED (DEF-SCP-D-01, SCP-SI-01 lane D): a `## Verbatim` heading is checked
++    against `_NOT_FOUNDER_MARKERS` to decide whether the WHOLE block it
++    introduces is founder text, but a single block can correctly be attributed
++    to the founder as a container while embedding, mid-body, a sentence he is
++    quoting from someone else and explicitly rejecting in the same breath
++    ("Here is what the vendor's assistant sent me ... I have not agreed to
++    it."). The heading carries no marker, so the embedded, disclaimed sentence
++    was certified FOUNDER_AUTHORED by plain substring match. This applies the
++    same marker set the heading check already trusts one level deeper, at
++    paragraph grain — paragraphs being exactly the units `extract_segments`
++    already joins with "\\n\\n" (a bare `>` line inside a blockquote is a
++    paragraph break, not a segment break).
++    """
++    paragraphs = raw_text.split("\n\n")
++    kept = [
++        p for p in paragraphs
++        if not any(marker in p.lower() for marker in _NOT_FOUNDER_MARKERS)
++    ]
++    return "\n\n".join(kept)
++
++
+ def _corpus_haystacks(corpus: dict) -> list[tuple[str, str]]:
+     return [
+-        (s["heading"], normalise(s["text"]))
++        (s["heading"], normalise(_founder_only_text(s["text"])))
+         for s in corpus["segments"]
+         if s["is_founder_corpus"]
+     ]

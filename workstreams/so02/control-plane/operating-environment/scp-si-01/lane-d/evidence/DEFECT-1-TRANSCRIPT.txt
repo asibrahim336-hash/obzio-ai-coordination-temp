@@ -1,0 +1,24 @@
+=== DEFECT 1 REPRODUCTION TRANSCRIPT ===
+--- pre-fix: unmodified provctl.py check (defect fixture) ---
+PASS: 1 constraints, each classified, each citation checkable
+exit=0
+
+--- post-fix: lane-d provctl_paragraph_guard.py check (same fixture) ---
+FAIL ADVERSARIAL-01: QUOTATION_NOT_IN_CORPUS - 'Protected surfaces must never be written to without owner approval, an' appears in no founder segment. Paraphrase does not qualify.
+
+REFUSED: 1 failure(s) over 1 constraints
+exit=1
+
+--- no-regression check: real 86-constraint register, unmodified vs guarded ---
+PASS: 86 constraints, each classified, each citation checkable
+PASS: 86 constraints, each classified, each citation checkable
+
+--- canonical harness rerun (extended negative_tests_provctl.py), full suite ---
+workstreams/so02/control-plane/operating-environment/w10-provenance/tools/negative_tests_provctl.py::ProvctlNegativeTests::test_the_real_register_passes PASSED [ 83%]
+workstreams/so02/control-plane/operating-environment/w10-provenance/tools/negative_tests_provctl.py::ProvctlNegativeTests::test_three_founder_segments_and_no_more PASSED [ 86%]
+workstreams/so02/control-plane/operating-environment/w10-provenance/tools/negative_tests_provctl.py::ProvctlNegativeTests::test_typography_does_not_break_a_real_quotation PASSED [ 90%]
+workstreams/so02/control-plane/operating-environment/w10-provenance/tools/negative_tests_provctl.py::Defect1EmbeddedDisclaimedAttributionTests::test_the_fix_does_not_regress_the_real_86_constraint_register PASSED [ 93%]
+workstreams/so02/control-plane/operating-environment/w10-provenance/tools/negative_tests_provctl.py::Defect1EmbeddedDisclaimedAttributionTests::test_the_lane_d_mechanism_fix_correctly_refuses_it PASSED [ 96%]
+workstreams/so02/control-plane/operating-environment/w10-provenance/tools/negative_tests_provctl.py::Defect1EmbeddedDisclaimedAttributionTests::test_the_unmodified_checker_wrongly_admits_the_defect PASSED [100%]
+
+============================== 30 passed in 0.04s ==============================
