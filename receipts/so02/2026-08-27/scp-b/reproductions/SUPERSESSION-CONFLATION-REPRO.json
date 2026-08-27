@@ -1,0 +1,132 @@
+{
+  "record_id": "SCP-B-SUPERSESSION-CONFLATION-REPRO-20260827-v001",
+  "decision_changed": [],
+  "defect_id": "DEF-SCP-01",
+  "defect_routed_by": "SCP-SI-01 coordinator, integration commit f0fb3f51",
+  "routed_to_this_lane_as": "secondary, because the mechanism change is PENDING and the chain must represent that state",
+  "produced_at": "2026-08-27T05:34:32Z",
+  "produced_on_commit": "2fdec95a42a83955b837876bfa8d76f19c82c5dc",
+  "instrument": "workstreams/so02/control-plane/operating-environment/scp-si-01/lane-b/tools/reproduce_supersession_conflation.py",
+  "interpreter": "python3 -I 3.12.3",
+  "steps": [
+    {
+      "step": "the alarm fires",
+      "method": "sha256 of working-tree bytes against the recorded digest, which is exactly what currentctl.check_reproducibility does",
+      "hash_bound_entries_examined": 5,
+      "mismatching": [
+        {
+          "workstream_id": "WS-SO02-CONTROL-PLANE",
+          "artifact_path": "workstreams/so02/control-plane/tools/scctl.py",
+          "recorded_sha256": "e6d0b2d8166dde54dcb27ff32cac733972e9445b62ef08213a061cf07ffc1d4b",
+          "worktree_sha256": "70a6494aad1abbcf4bad5f635853627e8032b8c07f9ab8c4b37e33d87c50c350"
+        }
+      ],
+      "finding_currentctl_emits": "EVIDENCE_HASH_MISMATCH",
+      "severity": "ERROR",
+      "reproduced": true,
+      "evidence_label": "DIRECTLY_REPRODUCED"
+    },
+    {
+      "step": "the alarm fired on supersession, not on corruption",
+      "method": "walk this branch's own history for the artifact and hash each blob, looking for a commit at which the recorded digest was right",
+      "walks": [
+        {
+          "artifact_path": "workstreams/so02/control-plane/tools/scctl.py",
+          "recorded_sha256": "e6d0b2d8166dde54dcb27ff32cac733972e9445b62ef08213a061cf07ffc1d4b",
+          "worktree_sha256": "70a6494aad1abbcf4bad5f635853627e8032b8c07f9ab8c4b37e33d87c50c350",
+          "commits_examined": 10,
+          "hash_walk": [
+            {
+              "commit": "a1592234",
+              "sha256": "70a6494aad1abbcf4bad5f635853627e8032b8c07f9ab8c4b37e33d87c50c350"
+            },
+            {
+              "commit": "3b97d6ff",
+              "sha256": "76b2ca1f91ba058318c7b11613a917d87ce57a929e4d9dc63e7e1baf6991aa79"
+            },
+            {
+              "commit": "9887f33e",
+              "sha256": "e6d0b2d8166dde54dcb27ff32cac733972e9445b62ef08213a061cf07ffc1d4b"
+            },
+            {
+              "commit": "841ddac7",
+              "sha256": "2b4946ced0af780a7732544889951a7efde17531d7b1dc2adf134d30648fcf6a"
+            },
+            {
+              "commit": "a5adfdff",
+              "sha256": "84b9110440cd79a859380b23c0b367e7e62e34b07d6db4949204277f68eb9cfa"
+            },
+            {
+              "commit": "d5117679",
+              "sha256": "0b34b92e70a62a26d5c2177af737466b54cae1a2428471c55be073424b0b2e65"
+            },
+            {
+              "commit": "b0226a81",
+              "sha256": "33b4ce68dc63cb1530dad3e968ae69d8a95a209bf675ace5971d36940727888d"
+            },
+            {
+              "commit": "8f1fc6de",
+              "sha256": "1f89c08f4f1c4f57c88b4152cd389273a5eed6e8057906da0eaf41efffb96f80"
+            }
+          ],
+          "recorded_digest_was_correct_at_commit": "9887f33e",
+          "classification": "SUPERSEDED"
+        }
+      ],
+      "superseded_count": 1,
+      "tampered_count": 0,
+      "reproduced": true,
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "note": "A digest that was correct at a commit reachable from this branch and is wrong at the tip describes an artifact that moved under an authorised write. Reporting that as an integrity ERROR is the defect."
+    },
+    {
+      "step": "the distinction is not computable, not merely uncomputed",
+      "hash_bound_entries": 5,
+      "entries_carrying_a_commit_anchor": 0,
+      "entries_carrying_no_commit_anchor": 5,
+      "unanchored": [
+        {
+          "workstream_id": "WS-V010-FULLSCALE-CHATGPT",
+          "artifact_path": "dispatch/CLAUDE_CHROME_FULL_SCALE_CHATGPT_ACCOUNT_OPERATION_SUCCESSOR_20260819_v010.md",
+          "anchor_fields_present": []
+        },
+        {
+          "workstream_id": "WS-V010-FULLSCALE-CHATGPT",
+          "artifact_path": "dispatch/CLAUDE_CHROME_CANONICAL_FULL_SCALE_LAUNCH_COMMAND_20260819_v010.md",
+          "anchor_fields_present": []
+        },
+        {
+          "workstream_id": "WS-SO02-CONTROL-PLANE",
+          "artifact_path": "workstreams/so02/control-plane/tools/scctl.py",
+          "anchor_fields_present": []
+        },
+        {
+          "workstream_id": "WS-PO03-REPOSITORY-ENGINEERING",
+          "artifact_path": "workstreams/so02/control-plane/state/PO03-LAUNCH-OBSERVATION.json",
+          "anchor_fields_present": []
+        },
+        {
+          "workstream_id": "WS-WORK-UNIT-CONTRACT",
+          "artifact_path": "modules/work_unit_contract/contract.py",
+          "anchor_fields_present": []
+        }
+      ],
+      "checker_reads_worktree_bytes_only": true,
+      "checker_mentions_a_supersession_code": false,
+      "reproduced": true,
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "consequence": "With no anchor on any entry, a checker taught to verify each artifact at its own commit would have nothing to verify against and would have to report EVIDENCE_ANCHOR_MISSING for the whole ledger. So the mechanism change is a schema addition first and a comparison second, which is why this lane records it PENDING rather than shipping half of it."
+    }
+  ],
+  "all_three_reproduced": true,
+  "independent_of_the_coordinator_s_numbers": "The coordinator recorded the tip hash as 76b2ca1f. This run finds a different tip hash for the same artifact, because this lane's own admitted write to scctl.py superseded it again. The same spurious integrity ERROR was therefore manufactured twice, by two separate authorised changes, which is stronger evidence for the split than one instance: the alarm tracks normal operation, not tampering.",
+  "mechanism_change_state": "PENDING",
+  "mechanism_change_owner": "lane D (owning), coordinator (fallback), per DEF-SCP-01 routing",
+  "why_this_lane_does_not_ship_it": "Lane B's commission is the typed link chain, and the fix is routed to lane D. Shipping the finding-code split from here would put two lanes' mechanism changes on one artifact in one cohort, which is the shared-worktree collision this lane has already seeded as ICH-03. The chain records the defect honestly with its successor declared pending.",
+  "honest_limits": [
+    "Two instances of supersession, both from this cohort's own writes. That the alarm fires on authorised change is DIRECTLY_REPRODUCED; that supersession is more frequent than genuine tampering across the estate is not measured and is not claimed.",
+    "No genuinely tampered artifact was constructed in the ledger to confirm case 3 empirically. The claim that the codes are indistinguishable rests on the absence of any anchor field to compute the distinction from, which is a property of the schema and is shown directly, not on a paired trial."
+  ],
+  "provenance_class": "EARNED",
+  "provenance_basis": "DEF-SCP-01, discovered by the coordinator during verification of lane E and re-derived here against the live module rather than accepted on report."
+}

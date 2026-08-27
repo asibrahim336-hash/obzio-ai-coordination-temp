@@ -2,7 +2,7 @@
   "seed_id": "SCP-B-CHAIN-SEED-20260827-v001",
   "decision_changed": [],
   "purpose": "Source for the typed improvement links appended to workstreams/so02/control-plane/state/events.jsonl. This file is a build input, not a store: once the events are appended, the canonical record is the hash-chained event log and this file is reproduction material. Deleting it loses no evidence.",
-  "integration_commit_audited_against": "7f29043eece45f42f018d841718a257cfd18739b",
+  "integration_commit_audited_against": "f0fb3f51a25db67b33bdd558c73055f3d02ddb60",
   "actor": {
     "function_id": "SCF-01",
     "runtime_instance_id": "SCF-01/CUR-01",
@@ -15,7 +15,6 @@
   },
   "no_chain_reaches_an_acceptance_class_promotion": true,
   "why": "Applying the independence rule to the estate's real history returns the same answer for all five closed chains: no independent acceptor has re-examined any of these fixes. The acceptor that found the defects refused the producer's claim; it did not re-accept the corrections. Every VERDICT node below therefore records independent: false, and every promotion is a mechanism-live promotion rather than an acceptance. That is a finding, not a formatting choice.",
-
   "chains": [
     {
       "chain_id": "ICH-01-FORGED-READBACK",
@@ -45,7 +44,9 @@
           "node_id": "ICH-01-DEF",
           "node_kind": "DEFECT",
           "occurred_at": "2026-08-22T20:26:40Z",
-          "derives_from": ["ICH-01-OBS"],
+          "derives_from": [
+            "ICH-01-OBS"
+          ],
           "title": "DEF-01-READBACK-SHAPE-NOT-TRUTH",
           "statement": "verify_readback asserted the internal self-consistency of a read-back claim rather than re-deriving it from the remote. Self-consistency is not custody. The remote read-back control was decorative under adversarial conditions even though the read-back itself was genuinely performed.",
           "evidence_label": "DOCUMENTED",
@@ -70,7 +71,9 @@
           "node_id": "ICH-01-MEC",
           "node_kind": "MECHANISM_CHANGE",
           "occurred_at": "2026-08-23T04:24:52Z",
-          "derives_from": ["ICH-01-DEF"],
+          "derives_from": [
+            "ICH-01-DEF"
+          ],
           "title": "evidence_integrity.verify_readback_truth",
           "statement": "The verifier now clones the remote, fetches the claimed commit, and recomputes every claimed digest from the bytes the remote actually serves. A record that cannot be re-derived is rejected even when it is internally perfectly consistent. Recompute instead of trust.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -89,7 +92,9 @@
           "node_id": "ICH-01-TST",
           "node_kind": "REGRESSION_TEST",
           "occurred_at": "2026-08-23T04:24:52Z",
-          "derives_from": ["ICH-01-MEC"],
+          "derives_from": [
+            "ICH-01-MEC"
+          ],
           "title": "The acceptor's own forgery is now a failing test",
           "statement": "test_forged_readback_naming_a_nonexistent_commit_is_rejected, test_a_non_sha_commit_reference_is_rejected_without_network and test_internal_self_consistency_alone_does_not_pass pin the old behaviour as refused.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -108,7 +113,9 @@
           "node_id": "ICH-01-RUN",
           "node_kind": "RERUN",
           "occurred_at": "2026-08-27T05:07:00Z",
-          "derives_from": ["ICH-01-TST"],
+          "derives_from": [
+            "ICH-01-TST"
+          ],
           "title": "SUITE-EVIDENCE-INTEGRITY re-executed, 19 tests, exit 0",
           "statement": "python3 -I test_evidence_integrity.py re-executed in this run at integration commit 7f29043e. 19 tests, exit code 0, result OK.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -126,7 +133,9 @@
           "node_id": "ICH-01-VER",
           "node_kind": "VERDICT",
           "occurred_at": "2026-08-27T05:12:00Z",
-          "derives_from": ["ICH-01-RUN"],
+          "derives_from": [
+            "ICH-01-RUN"
+          ],
           "title": "Producer-side verdict: the mechanism holds under rerun",
           "statement": "The mechanism refuses the exact forgery that defeated its predecessor, and the truthful record it was compared against still passes. No independent acceptor has re-examined verify_readback_truth. The acceptor that found DEF-01 refused the producer's claim; it did not accept the correction.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -154,7 +163,9 @@
           "node_id": "ICH-01-PRO",
           "node_kind": "CURRENTNESS_PROMOTION",
           "occurred_at": "2026-08-27T05:14:00Z",
-          "derives_from": ["ICH-01-VER"],
+          "derives_from": [
+            "ICH-01-VER"
+          ],
           "title": "Read-back by recomputation is the current control for route qualification",
           "statement": "The refusal ingestion already bound downstream work to this mechanism, and the SCP-SI-01 system map already carries the evidence-integrity row as live. This link records that promotion as a projection of the chain rather than as a separate assertion.",
           "evidence_label": "DOCUMENTED",
@@ -189,7 +200,6 @@
         }
       ]
     },
-
     {
       "chain_id": "ICH-02-DENYLIST-CAPACITY",
       "title": "IDLE to ERROR passed a denylist capacity detector",
@@ -218,7 +228,9 @@
           "node_id": "ICH-02-DEF",
           "node_kind": "DEFECT",
           "occurred_at": "2026-08-22T20:26:40Z",
-          "derives_from": ["ICH-02-OBS"],
+          "derives_from": [
+            "ICH-02-OBS"
+          ],
           "title": "DEF-02-DENYLIST-FAILS-OPEN",
           "statement": "INTERFERENCE_STATUSES enumerated only QUEUED, PAUSED, EVICTED, ADMISSION_REFUSED, KILLED and PENDING. A denylist of harmful states fails open on every state nobody enumerated. A pre-existing PO-03 task crashing during the observation window would not have been reported as interference.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -242,7 +254,9 @@
           "node_id": "ICH-02-MEC",
           "node_kind": "MECHANISM_CHANGE",
           "occurred_at": "2026-08-23T04:24:52Z",
-          "derives_from": ["ICH-02-DEF"],
+          "derives_from": [
+            "ICH-02-DEF"
+          ],
           "title": "Allowlist inversion: BENIGN_STATUSES",
           "statement": "capacity_verdict now asserts a closed set of benign statuses, RUNNING, IDLE, COMPLETED and FINISHED, and treats every other transition, known or not yet invented, as possible interference to be adjudicated explicitly. Allowlist benign states instead of denylisting harmful ones.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -261,7 +275,9 @@
           "node_id": "ICH-02-TST",
           "node_kind": "REGRESSION_TEST",
           "occurred_at": "2026-08-23T04:24:52Z",
-          "derives_from": ["ICH-02-MEC"],
+          "derives_from": [
+            "ICH-02-MEC"
+          ],
           "title": "An unheard-of future status fails closed",
           "statement": "test_an_unheard_of_future_status_fails_closed is the test the defect demands: not a test for ERROR, which would only re-close the one hole that was found, but a test that a status nobody has enumerated is caught. test_error_transition_now_fails, test_failed_transition_now_fails and test_previously_enumerated_states_still_fail cover the rest.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -280,7 +296,9 @@
           "node_id": "ICH-02-RUN",
           "node_kind": "RERUN",
           "occurred_at": "2026-08-27T05:07:00Z",
-          "derives_from": ["ICH-02-TST"],
+          "derives_from": [
+            "ICH-02-TST"
+          ],
           "title": "SUITE-EVIDENCE-INTEGRITY re-executed, 19 tests, exit 0",
           "statement": "The same re-execution that covers ICH-01 also covers this chain; the suite is shared and the rerun is one event, not two.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -298,7 +316,9 @@
           "node_id": "ICH-02-VER",
           "node_kind": "VERDICT",
           "occurred_at": "2026-08-27T05:12:00Z",
-          "derives_from": ["ICH-02-RUN"],
+          "derives_from": [
+            "ICH-02-RUN"
+          ],
           "title": "Producer-side verdict: the inversion holds, including on an uninvented status",
           "statement": "Lane B confirmed the refused denylist and the live allowlist disagree on exactly the transitions the acceptor named, and additionally on SOME_STATUS_NOBODY_HAS_INVENTED_YET. No independent acceptor has re-examined the inversion.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -322,7 +342,9 @@
           "node_id": "ICH-02-PRO",
           "node_kind": "CURRENTNESS_PROMOTION",
           "occurred_at": "2026-08-27T05:14:00Z",
-          "derives_from": ["ICH-02-VER"],
+          "derives_from": [
+            "ICH-02-VER"
+          ],
           "title": "The allowlist detector is the current control for capacity claims",
           "statement": "The refusal ingestion already bound every future capacity claim to the allowlist detector. This link records that promotion inside the chain so the binding is reachable from the defect that produced it.",
           "evidence_label": "DOCUMENTED",
@@ -352,7 +374,6 @@
         }
       ]
     },
-
     {
       "chain_id": "ICH-03-SHARED-WORKTREE-COLLISION",
       "title": "A shared-worktree collision reproduced live during wave-A dispatch",
@@ -385,7 +406,9 @@
           "node_id": "ICH-03-DEF",
           "node_kind": "DEFECT",
           "occurred_at": "2026-08-22T07:43:56Z",
-          "derives_from": ["ICH-03-OBS"],
+          "derives_from": [
+            "ICH-03-OBS"
+          ],
           "title": "DEF-SHARED-WORKTREE-NOT-ISOLATED",
           "statement": "Lanes dispatched into one shared working directory can commit onto the wrong branch or capture another lane's files. Instruction did not prevent it: the shared route was documented as single-writer and collided anyway.",
           "evidence_label": "DOCUMENTED",
@@ -404,7 +427,9 @@
           "node_id": "ICH-03-MEC",
           "node_kind": "MECHANISM_CHANGE",
           "occurred_at": "2026-08-22T08:01:30Z",
-          "derives_from": ["ICH-03-DEF"],
+          "derives_from": [
+            "ICH-03-DEF"
+          ],
           "title": "Isolated clones only, and executable namespace containment",
           "statement": "The shared route was reactivated for isolated clones only with a ceiling of two, the multi-parent contract made isolated_parent_branch_and_namespace_required mandatory, and lane_guard.namespace_matches turned containment into a check that runs rather than a rule that is written down.",
           "evidence_label": "DOCUMENTED",
@@ -427,7 +452,9 @@
           "node_id": "ICH-03-TST",
           "node_kind": "REGRESSION_TEST",
           "occurred_at": "2026-08-23T04:05:44Z",
-          "derives_from": ["ICH-03-MEC"],
+          "derives_from": [
+            "ICH-03-MEC"
+          ],
           "title": "Cross-contamination and contested paths are rejected by test",
           "statement": "test_another_lanes_path_is_rejected, test_shared_projection_state_is_rejected, test_sibling_prefix_is_not_treated_as_owned and test_two_lanes_claiming_one_path_is_detected pin the collision shape as refused. The sibling-prefix test matters most: it is the near-miss that a naive prefix match would pass.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -446,7 +473,9 @@
           "node_id": "ICH-03-RUN",
           "node_kind": "RERUN",
           "occurred_at": "2026-08-27T05:07:00Z",
-          "derives_from": ["ICH-03-TST"],
+          "derives_from": [
+            "ICH-03-TST"
+          ],
           "title": "SUITE-LANE-GUARD re-executed, 20 tests, exit 0",
           "statement": "python3 -I test_lane_guard.py re-executed in this run at integration commit 7f29043e. 20 tests, exit code 0, result OK.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -464,7 +493,9 @@
           "node_id": "ICH-03-VER",
           "node_kind": "VERDICT",
           "occurred_at": "2026-08-27T05:12:00Z",
-          "derives_from": ["ICH-03-RUN"],
+          "derives_from": [
+            "ICH-03-RUN"
+          ],
           "title": "Producer-side verdict, with an independent verification on the record but not upgraded",
           "statement": "An independent verification of the route-isolation canary was observed on 2026-08-22 at SCF01-EVT-0013 and accepted bounded route evidence. Lane B does not upgrade this verdict to independent on that basis: the same estate's later independent acceptance found that programme's route-independence claims overstated for a neighbouring subject, and one observation of independence does not transfer. The verdict is recorded as producer-side and the independent verification is recorded as a citation.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -493,7 +524,9 @@
           "node_id": "ICH-03-PRO",
           "node_kind": "CURRENTNESS_PROMOTION",
           "occurred_at": "2026-08-27T05:14:00Z",
-          "derives_from": ["ICH-03-VER"],
+          "derives_from": [
+            "ICH-03-VER"
+          ],
           "title": "Lane isolation by worktree is the current dispatch contract",
           "statement": "Every lane in this cohort, including this one, was dispatched into its own git worktree on its own branch. The control is live, founder-named, and was exercised by lane B's own setup.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -522,7 +555,6 @@
         }
       ]
     },
-
     {
       "chain_id": "ICH-04-SILENT-PUSH-NO-OP",
       "title": "git push printed Everything up-to-date and exited 0 while publishing nothing",
@@ -549,7 +581,9 @@
           "node_id": "ICH-04-DEF",
           "node_kind": "DEFECT",
           "occurred_at": "2026-08-27T05:05:30Z",
-          "derives_from": ["ICH-04-OBS"],
+          "derives_from": [
+            "ICH-04-OBS"
+          ],
           "title": "DEF-ZERO-EXIT-IS-NOT-PUBLICATION",
           "statement": "A zero exit code from git push is not evidence of publication. A lane can report a commit it never published, and every downstream check that trusts the report inherits a head that does not exist on the remote.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -568,7 +602,9 @@
           "node_id": "ICH-04-MEC",
           "node_kind": "MECHANISM_CHANGE",
           "occurred_at": "2026-08-23T04:05:44Z",
-          "derives_from": ["ICH-04-DEF"],
+          "derives_from": [
+            "ICH-04-DEF"
+          ],
           "title": "lane_guard.verify_reported_head",
           "statement": "The reported SHA is compared against git ls-remote. A branch the remote does not hold yields REPORTED_BUT_ABSENT; a mismatch yields SILENT_PUSH_DIVERGENCE. Only the remote ref is evidence.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -588,7 +624,9 @@
           "node_id": "ICH-04-TST",
           "node_kind": "REGRESSION_TEST",
           "occurred_at": "2026-08-23T04:05:44Z",
-          "derives_from": ["ICH-04-MEC"],
+          "derives_from": [
+            "ICH-04-MEC"
+          ],
           "title": "Absent branch and wrong reported SHA are both flagged",
           "statement": "test_absent_branch_with_a_reported_sha_is_flagged, test_a_wrong_reported_sha_is_flagged_as_silent_push_divergence and test_a_correct_reported_sha_confirms_publication cover the refusal and the pass.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -607,7 +645,9 @@
           "node_id": "ICH-04-RUN",
           "node_kind": "RERUN",
           "occurred_at": "2026-08-27T05:07:00Z",
-          "derives_from": ["ICH-04-TST"],
+          "derives_from": [
+            "ICH-04-TST"
+          ],
           "title": "SUITE-LANE-GUARD re-executed, 20 tests, exit 0",
           "statement": "Shared with ICH-03; one re-execution, cited by both chains.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -625,7 +665,9 @@
           "node_id": "ICH-04-VER",
           "node_kind": "VERDICT",
           "occurred_at": "2026-08-27T05:12:00Z",
-          "derives_from": ["ICH-04-RUN"],
+          "derives_from": [
+            "ICH-04-RUN"
+          ],
           "title": "Producer-side verdict: the mechanism holds, and lane B used it on itself",
           "statement": "The defect was reproduced fresh, the mechanism's tests re-ran clean, and lane B confirmed its own published head with git ls-remote rather than with a push exit code.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -649,7 +691,9 @@
           "node_id": "ICH-04-PRO",
           "node_kind": "CURRENTNESS_PROMOTION",
           "occurred_at": "2026-08-27T05:14:00Z",
-          "derives_from": ["ICH-04-VER"],
+          "derives_from": [
+            "ICH-04-VER"
+          ],
           "title": "Remote-ref confirmation is mandatory for every lane return",
           "statement": "A lane's published head is established by git ls-remote, never by a push exit code. The SCP-SI-01 cohort instruction carries the same requirement, and lane B's own return is evidenced that way.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -677,7 +721,6 @@
         }
       ]
     },
-
     {
       "chain_id": "ICH-05-UNPARSEABLE-ARTIFACT",
       "title": "A hash-valid truncated JSON artifact passed manifest closure",
@@ -710,7 +753,9 @@
           "node_id": "ICH-05-DEF",
           "node_kind": "DEFECT",
           "occurred_at": "2026-08-27T05:05:30Z",
-          "derives_from": ["ICH-05-OBS"],
+          "derives_from": [
+            "ICH-05-OBS"
+          ],
           "title": "DEF-BYTE-INTEGRITY-IS-NOT-SEMANTIC-VALIDITY",
           "statement": "Manifest closure and hash binding are transport controls. A structured artifact nobody can load is not evidence, and no digest can rescue it, because the digest is of the broken bytes.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -728,7 +773,9 @@
           "node_id": "ICH-05-MEC",
           "node_kind": "MECHANISM_CHANGE",
           "occurred_at": "2026-08-23T04:24:52Z",
-          "derives_from": ["ICH-05-DEF"],
+          "derives_from": [
+            "ICH-05-DEF"
+          ],
           "title": "evidence_integrity.verify_artifact_validity",
           "statement": "Every hash-bound .json artifact is parsed after read-back. A file that does not load, or does not decode as UTF-8, is an error regardless of its digest.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -748,7 +795,9 @@
           "node_id": "ICH-05-TST",
           "node_kind": "REGRESSION_TEST",
           "occurred_at": "2026-08-23T04:24:52Z",
-          "derives_from": ["ICH-05-MEC"],
+          "derives_from": [
+            "ICH-05-MEC"
+          ],
           "title": "A correct digest does not rescue invalid content",
           "statement": "test_truncated_json_is_rejected, test_a_correct_digest_does_not_rescue_invalid_content, test_non_json_files_are_not_parsed and test_absent_file_is_not_a_validity_error. The last two matter as much as the first: a validity check that reports on files it was never given is a different defect.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -767,7 +816,9 @@
           "node_id": "ICH-05-RUN",
           "node_kind": "RERUN",
           "occurred_at": "2026-08-27T05:07:00Z",
-          "derives_from": ["ICH-05-TST"],
+          "derives_from": [
+            "ICH-05-TST"
+          ],
           "title": "SUITE-EVIDENCE-INTEGRITY re-executed, 19 tests, exit 0",
           "statement": "Shared with ICH-01 and ICH-02.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -785,7 +836,9 @@
           "node_id": "ICH-05-VER",
           "node_kind": "VERDICT",
           "occurred_at": "2026-08-27T05:12:00Z",
-          "derives_from": ["ICH-05-RUN"],
+          "derives_from": [
+            "ICH-05-RUN"
+          ],
           "title": "Producer-side verdict: closure and validity are two different checks and both are needed",
           "statement": "The reproduction shows closure passing and validity refusing on the same artifact, which is the property the mechanism was written to have.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -809,7 +862,9 @@
           "node_id": "ICH-05-PRO",
           "node_kind": "CURRENTNESS_PROMOTION",
           "occurred_at": "2026-08-27T05:14:00Z",
-          "derives_from": ["ICH-05-VER"],
+          "derives_from": [
+            "ICH-05-VER"
+          ],
           "title": "Every structured artifact is hash-checked and parsed after read-back",
           "statement": "Lane B's own delivery applies it: the manifest for this lane is verified for closure and every JSON entry is parsed after read-back, with the result recorded rather than asserted.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -832,7 +887,6 @@
         }
       ]
     },
-
     {
       "chain_id": "ICH-06-HOOKS-NOT-FIRING",
       "title": "Project hooks are not firing, and the mechanism change is pending",
@@ -864,7 +918,9 @@
           "node_id": "ICH-06-DEF",
           "node_kind": "DEFECT",
           "occurred_at": "2026-08-27T05:11:00Z",
-          "derives_from": ["ICH-06-OBS"],
+          "derives_from": [
+            "ICH-06-OBS"
+          ],
           "title": "DEF-WRITE-SCOPE-GUARD-UNREACHED-FROM-WORKTREE",
           "statement": "Every boundary in .cursor/write-scope.json is documentation in this runtime. require_write_declaration: true cannot auto-refuse anything, because the hook that would refuse is never reached. write_admission.py still refuses correctly when invoked by hand, so enforcement is voluntary and lane-side, and a lane that skips it is stopped by nothing.",
           "evidence_label": "DIRECTLY_REPRODUCED",
@@ -896,6 +952,77 @@
           ]
         }
       ]
+    },
+    {
+      "chain_id": "ICH-07-SUPERSESSION-READS-AS-TAMPERING",
+      "title": "One finding code for a superseded artifact and a tampered one",
+      "note": "Picked up mid-run. The coordinator published DEF-SCP-01 to the integration branch at f0fb3f51 after this lane was dispatched, and routed it here as secondary precisely because its mechanism change is PENDING. The lane re-derived it against the live module instead of accepting the report, then recorded it open. This is the second chain in the seed whose successor is declared rather than shipped, and the first that arrived from outside the lane.",
+      "nodes": [
+        {
+          "node_id": "ICH-07-OBS",
+          "node_kind": "OBSERVATION",
+          "occurred_at": "2026-08-27T05:26:00Z",
+          "derives_from": [],
+          "title": "An integrity ERROR fired on an artifact nobody tampered with",
+          "statement": "currentctl compile emits EVIDENCE_HASH_MISMATCH at ERROR severity on urn:obzio:l4:workstream:WS-SO02-CONTROL-PLANE, because the ledger's recorded digest for scctl.py no longer matches the working tree. Walking this branch's history for that path shows the recorded digest e6d0b2d8 was correct at commit 9887f33e, was moved to 76b2ca1f by the authorised EC-13 purge at 3b97d6ff, and was moved again to 70a6494a by this lane's own admitted write at a1592234. Two authorised changes, two identical integrity alarms, no tampering at any point.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-SCP-01, found by the coordinator during verification of lane E and reproduced independently here. The coordinator's hash walk ended at 76b2ca1f; this lane's walk finds a third digest beyond it, so the reproduction is not a restatement of the original observation.",
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/SUPERSESSION-CONFLATION-REPRO.json",
+              "sha256": "642c9e14629f95aee0931ea5cb367baf3a12c238c74359f93927c44d9a1b53c7",
+              "field": "steps[0] the alarm fires, steps[1] the hash walk"
+            },
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/scp-si-01/DEFECT-SCP-01-SUPERSESSION-READS-AS-TAMPERING.json",
+              "sha256": "b35f2f40296ad053ed65a66af5496eed7a9d03ab48e42adc2d7209a61507fef0",
+              "field": "reproduction.hash_walk"
+            }
+          ]
+        },
+        {
+          "node_id": "ICH-07-DEF",
+          "node_kind": "DEFECT",
+          "occurred_at": "2026-08-27T05:32:00Z",
+          "derives_from": [
+            "ICH-07-OBS"
+          ],
+          "title": "DEF-SCP-01 \u2014 EVIDENCE_HASH_MISMATCH conflates supersession with corruption",
+          "statement": "The checker hashes working-tree bytes and compares against the recorded digest, so one ERROR code covers two situations demanding opposite responses: an artifact altered behind the ledger's back, and an artifact that legitimately moved on. The deeper finding, which the routing did not state, is that the distinction is not merely uncomputed but uncomputable from what the ledger holds: 0 of 5 hash-bound evidence entries carry any commit the digest was taken at. A lane that shipped only the comparison the defect asks for would produce a checker with nothing to compare against, failing closed across the entire ledger. The mechanism change is therefore a schema addition first and a finding-code split second.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "provenance_class": "EARNED",
+          "provenance_basis": "DEF-SCP-01. Same class as the five chains already seeded: an alarm that fires on normal operation is a control that will be ignored, which is the estate's own LESSON_DOCUMENTED failure wearing a different hat.",
+          "pending_successor": {
+            "node_kind": "MECHANISM_CHANGE",
+            "state": "PENDING",
+            "owner": "lane D (owning, per DEF-SCP-01 routing); SCP-SI-01 coordinator (declared fallback)",
+            "reason": "The fix is routed to lane D, which owns failure-to-learning. Lane B's commission is the chain itself. Landing the split from this lane would put two lanes' mechanism changes on one artifact inside one cohort, which is the collision this seed already carries as ICH-03, and would make this lane the producer and the acceptor of its own fix. The chain records the defect with the successor declared, which is what the pending mechanism exists for.",
+            "candidate_mechanisms": [
+              "Add a required recorded_at_commit to every hash-bound ledger evidence entry, and report EVIDENCE_ANCHOR_MISSING where it is absent rather than defaulting to either verdict.",
+              "Split the code: EVIDENCE_SUPERSEDED at INFO when the digest was correct at its anchor and has since changed, EVIDENCE_HASH_MISMATCH at ERROR when it was wrong at its own anchor.",
+              "Regression test the three cases the defect names, including the one that matters \u2014 correct at anchor, changed at tip \u2014 asserting INFO and not ERROR."
+            ],
+            "expires_when": "a mechanism change link derives from this defect"
+          },
+          "evidence_citations": [
+            {
+              "artifact_path": "receipts/so02/2026-08-27/scp-b/reproductions/SUPERSESSION-CONFLATION-REPRO.json",
+              "sha256": "642c9e14629f95aee0931ea5cb367baf3a12c238c74359f93927c44d9a1b53c7",
+              "field": "steps[2] the distinction is not computable"
+            },
+            {
+              "artifact_path": "workstreams/so02/control-plane/operating-environment/scp-si-01/DEFECT-SCP-01-SUPERSESSION-READS-AS-TAMPERING.json",
+              "sha256": "b35f2f40296ad053ed65a66af5496eed7a9d03ab48e42adc2d7209a61507fef0",
+              "field": "required_mechanism_change"
+            }
+          ]
+        }
+      ]
     }
+  ],
+  "open_chains_with_a_pending_mechanism": [
+    "ICH-06-HOOKS-NOT-FIRING",
+    "ICH-07-SUPERSESSION-READS-AS-TAMPERING"
   ]
 }
