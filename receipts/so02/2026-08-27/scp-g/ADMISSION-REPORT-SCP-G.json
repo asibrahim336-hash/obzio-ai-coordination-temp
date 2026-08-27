@@ -1,0 +1,124 @@
+{
+  "admitted": true,
+  "authority_basis": "Ahmed Sadek, standing amendment 2026-08-23: 'You do not need my permission for any of it \u2014 you need a reason and a rollback.' No target is consulted; the protected-surface category is void.",
+  "decision_changed": [],
+  "evaluated_at": "2026-08-27T05:50:02Z",
+  "failed_gates": [],
+  "gates": [
+    {
+      "advisories": [],
+      "all_findings": [],
+      "findings": [],
+      "gate": "declaration",
+      "passed": true,
+      "verdict": "DECLARED_AND_REASONED"
+    },
+    {
+      "findings": [],
+      "gate": "concurrency",
+      "gate_expires_when": "not gated at this observation",
+      "limit": "This observation sees only the top-level agent layer. Subagent lanes do not appear in list-cloud-agents and carry no branchName; lane OE-W9 reproduced its own absence while running. A settled verdict means no live agent was VISIBLE holding this ref and the ref had not moved \u2014 it is not proof that nobody is writing.",
+      "observation": {
+        "advisories": [],
+        "agents_considered": 19,
+        "findings": [],
+        "gate_expires_when": "not gated at this observation",
+        "limit": "This observation sees only the top-level agent layer. Subagent lanes do not appear in list-cloud-agents and carry no branchName; lane OE-W9 reproduced its own absence while running. A settled verdict means no live agent was VISIBLE holding this ref and the ref had not moved \u2014 it is not proof that nobody is writing.",
+        "live_holders": [],
+        "observation_age_seconds": 113,
+        "observed_at": "2026-08-27T05:48:09Z",
+        "ref": "cursor/scp-g-accepted-unit-696d",
+        "ref_movement": {
+          "detail": "the remote ref is where the declaration recorded it",
+          "moved": false,
+          "observable": true,
+          "recorded_sha": "0c226138718338250c5c194457dd8a929ab0eaf9",
+          "remote_sha": "0c226138718338250c5c194457dd8a929ab0eaf9"
+        },
+        "settled_statuses_allowlisted": [
+          "ARCHIVED",
+          "COMPLETED",
+          "ERROR",
+          "EXPIRED",
+          "FINISHED",
+          "IDLE"
+        ],
+        "verdict": "SETTLED_SUBJECT_TO_TOP_LAYER_LIMIT",
+        "writable": true
+      },
+      "passed": true,
+      "verdict": "SETTLED_SUBJECT_TO_TOP_LAYER_LIMIT"
+    },
+    {
+      "findings": [],
+      "gate": "reversibility",
+      "note": "The rehearsal proves the reversal constructor restores the tree against a real bare remote. It does not prove the live remote will accept the push at rollback time.",
+      "passed": true,
+      "rehearsal_receipt": {
+        "execution": [
+          {
+            "command": [
+              "git",
+              "push",
+              "origin",
+              "--delete",
+              "cursor/scp-g-accepted-unit-696d"
+            ],
+            "exit_code": 0,
+            "stderr_tail": "To /tmp/reversal-rehearsal-sg08aj94/origin.git\n - [deleted]         cursor/scp-g-accepted-unit-696d"
+          }
+        ],
+        "fixture_kind": "synthetic",
+        "fixture_remote": "/tmp/reversal-rehearsal-sg08aj94/origin.git",
+        "method": "DELETE_CREATED_REF",
+        "post_reversal": {
+          "commit": null,
+          "tree": null
+        },
+        "post_write": {
+          "commit": "19126e55f6aa175acd614e35205a68d9380bee64",
+          "tree": "fb2949e1f08a4cdb57e1910897d8c1ce98246d2c"
+        },
+        "pre_write": {
+          "commit": null,
+          "note": "the ref did not exist before the write that created it",
+          "tree": null
+        },
+        "ref": "cursor/scp-g-accepted-unit-696d",
+        "rehearsed_at": "2026-08-27T05:50:02Z",
+        "result": "REVERSAL_EXECUTED_AND_VERIFIED",
+        "reversal_commands": [
+          [
+            "git",
+            "push",
+            "origin",
+            "--delete",
+            "cursor/scp-g-accepted-unit-696d"
+          ]
+        ],
+        "sabotage": null,
+        "touches_origin": false,
+        "tree_restored": true,
+        "verified_by": "recomputation of the git tree object served by the fixture remote after the reversal ran; the reversal command's exit code is recorded but is not the verdict",
+        "write_changed_the_tree": true
+      },
+      "verdict": "REVERSAL_RE_EXECUTED_AND_VERIFIED"
+    },
+    {
+      "findings": [],
+      "gate": "evidence",
+      "note": "the gate expires with its reason; a write asserting no result owes no evidence",
+      "passed": true,
+      "verdict": "NO_RESULT_ASSERTED"
+    }
+  ],
+  "guard_id": "OE-W9-REASON-GATED-WRITE-ADMISSION",
+  "operation": "COMMIT_AND_PUSH",
+  "target_paths": [
+    "workstreams/so02/control-plane/operating-environment/scp-si-01/lane-g/**",
+    "receipts/so02/2026-08-27/scp-g/**",
+    "workstreams/so02/control-plane/operating-environment/write-declarations/WRITE-DECLARATION-SCP-G.json"
+  ],
+  "target_ref": "cursor/scp-g-accepted-unit-696d",
+  "verdict": "WRITE_ADMITTED"
+}
