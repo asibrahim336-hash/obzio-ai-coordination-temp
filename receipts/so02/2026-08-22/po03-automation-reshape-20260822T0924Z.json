@@ -1,0 +1,24 @@
+{
+  "receipt_id": "SO02-PO03-AUTOMATION-RESHAPE-20260822T0924Z",
+  "observed_at": "2026-08-22T09:24:17Z",
+  "premise": "PR #9 evidence can change materially, but synchronize-event count is not evidence-state change and does not justify one Work-mode run per push.",
+  "old_job": {
+    "title": "Reconcile PO-03 evidence",
+    "trigger": "github_pull_request_event",
+    "fanout": "one full run per matching event",
+    "state": "DISABLED"
+  },
+  "replacement_job": {
+    "title": "Batch PO-03 evidence",
+    "trigger": "hourly_schedule",
+    "schedule": "FREQ=HOURLY;INTERVAL=1",
+    "state": "ENABLED",
+    "job_shape": "one time-bounded observation window; deduplicate all commits/checks/comments/reviews; at most one evidence decision and one SO-02 commit per run; no write without material delta",
+    "cost_shape": "at most one Work-mode run per hour instead of one per PR event; zero repository writes and no notification when evidence state is unchanged",
+    "idempotency": "last durable SCF-01 observation plus immutable commit/check/comment/review identifiers"
+  },
+  "old_behaviour_probe": "github_pull_request_event_is_rejected_as_replacement_trigger",
+  "probe_result": "PASS_OLD_BEHAVIOUR_REJECTED",
+  "decision_changed": []
+}
+
