@@ -1,4 +1,13 @@
 {
   "name": "Obzio AI Coordination",
-  "install": "python3 --version && python3 -c \"import json, re, pathlib; print('stdlib ok')\""
+  "install": "bash .cursor/install.sh",
+  "start": "bash .cursor/start.sh",
+  "disableAllMcpServers": false,
+  "terminals": [
+    {
+      "name": "control-plane-validators",
+      "command": "bash .cursor/terminals/validators-watch.sh",
+      "description": "Re-runs the operator taxonomy currentness check and the control-plane validators whenever tracked state changes, so a currentness break is visible in a terminal the agent can read instead of being discovered by CI after the commit exists."
+    }
+  ]
 }

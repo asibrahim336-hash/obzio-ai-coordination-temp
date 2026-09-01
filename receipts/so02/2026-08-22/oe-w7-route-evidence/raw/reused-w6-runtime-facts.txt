@@ -1,0 +1,44 @@
+OE-W6-CHATGPT-CONNECTION — runtime facts, DIRECTLY_REPRODUCED
+Lane: OE-W6-CHATGPT-CONNECTION · Commission: COM-CUR-ENV-01-20260822-v001
+Captured: 2026-08-22 (UTC), inside the Cursor cloud-agent runtime for this lane.
+
+No credential value is printed anywhere below. Presence is reported as a
+yes/no by name only.
+
+--- credential presence (names only, never values) ---
+$ if [ -n "${OPENAI_API_KEY:-}" ]; then echo PRESENT; else echo ABSENT; fi
+ABSENT
+$ if [ -n "${OPENAI_WEBHOOK_SECRET:-}" ]; then echo PRESENT; else echo ABSENT; fi
+ABSENT
+$ if [ -n "${CHATGPT_ACCESS_TOKEN:-}" ]; then echo PRESENT; else echo ABSENT; fi
+ABSENT
+$ if [ -n "${CURSOR_API_KEY:-}" ]; then echo PRESENT; else echo ABSENT; fi
+ABSENT
+
+--- every secret configured for this scope (names only) ---
+$ printf '%s\n' "$CLOUD_AGENT_ALL_SECRET_NAMES"
+AUREA_E2E_SUPABASE_PUBLISHABLE_KEY,AUREA_E2E_SUPABASE_URL,AUREA_E2E_USER_EMAIL,AUREA_E2E_USER_PASSWORD
+$ printf '%s\n' "$CLOUD_AGENT_INJECTED_SECRET_NAMES"
+AUREA_E2E_SUPABASE_PUBLISHABLE_KEY,AUREA_E2E_SUPABASE_URL,AUREA_E2E_USER_EMAIL,AUREA_E2E_USER_PASSWORD
+
+ALL == INJECTED, so every secret configured for this scope reaches this pod and
+none is withheld. No OpenAI or ChatGPT credential of any name is configured.
+
+--- browser and display ---
+$ google-chrome --version
+Google Chrome 148.0.7778.96
+$ echo "DISPLAY=$DISPLAY"
+DISPLAY=:1
+$ xdpyinfo -display :1 | head -6
+name of display:    :1
+version number:    11.0
+vendor string:    The X.Org Foundation
+vendor release number:    12101011
+X.Org version: 21.1.11
+maximum request size:  16777212 bytes
+
+--- fetch tooling ---
+$ curl --version | head -1
+curl 8.5.0 (x86_64-pc-linux-gnu) libcurl/8.5.0 OpenSSL/3.0.13 ...
+$ python3 --version
+Python 3.12.3

@@ -1,0 +1,54 @@
+{
+  "record_id": "DEVICE-GATING-CORRECTION-20260823T0132Z",
+  "decision_changed": [],
+  "recorded_at": "2026-08-23T01:32:00Z",
+  "recorded_by": "root controller bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+
+  "finding": {
+    "id": "DEV-01-FA-W8-01-IS-MACBOOK-GATED",
+    "statement": "The ChatGPT function constitution nominates FA-W8-01 — attach a local clone of this repository as a folder in a ChatGPT desktop project — as its highest-leverage founder action. That action requires the ChatGPT desktop app, which is macOS and Windows only. Ahmed operates a Chromebook today, with a MacBook expected later. The action is therefore not executable on his current device.",
+    "severity": "HIGH_FOR_SEQUENCING",
+    "detected_by": "root controller, cross-checking the lane's action list against the device constraint another lane had already established",
+    "instrument": "The constitution bundle contains zero occurrences of Chromebook, ChromeOS or Chrome OS. The capability-research lane had established the Chromebook-now, MacBook-later constraint and compared topologies against it explicitly."
+  },
+
+  "what_the_lane_got_right": {
+    "reasoning": "Its device-versus-relay distinction is correct and worth keeping: founder-device dependency is not founder-relay dependency. A route where he supplies hardware and an authenticated session once, after which the agent writes and pushes and he reads nothing, does not put his attention on the critical path of each item. A constitution conflating the two would reject good routes for the wrong reason.",
+    "assessment": "The principle is sound. The lane simply never asked which machine he has, so it applied a correct test to an unavailable device."
+  },
+
+  "why_this_matters_beyond_one_action": {
+    "consequence": "Five functions the constitution retains depend on that local-clone custody route for their return path. If the route is unavailable, those five have no custody route today, and the constitution says so itself — it flags the central custody route as untested.",
+    "pattern": "This is the second time in two hours that a founder action was specified against an assumed rather than an established fact. The first was a question about a ChatGPT GitHub connector that does not exist. Both were caught before reaching him, but the recurrence is the signal: action specification needs the same evidence discipline as claims, and currently only claims are labelled."
+  },
+
+  "the_interim_route_that_is_available_today": {
+    "statement": "The route-evidence lane independently established a custody path that needs no desktop app and no particular device.",
+    "routes": ["R14 Codex cloud with a connected GitHub repository", "R15 Codex code review on a pull request", "R16 Codex GitHub Action"],
+    "why_it_works_now": "These operate from the ChatGPT account through GitHub and write where Cursor already reads. A commit closes the loop; a conversation does not. They are browser-reachable and carry no macOS or Windows dependency.",
+    "consequence": "The two lanes complement rather than conflict. The constitution's preferred custody route is the stronger one and is MacBook-gated; the Codex route is weaker on provenance and available tonight.",
+    "sequencing": "Use Codex-through-GitHub as the interim custody route. Re-evaluate the local-clone route when the MacBook arrives, at which point it becomes the better answer and its ten-minute test becomes runnable."
+  },
+
+  "corrected_action_ordering_for_the_founder": [
+    {"rank": 1, "action": "Mirror the existing CURSOR_API_KEY from Supabase Edge Secrets into a repository-scoped Cloud Agent secret", "device": "any browser", "status": "ACTIONABLE_NOW", "note": "unchanged; still the action that changes the shape of everything, because without it the office cannot dispatch itself"},
+    {"rank": 2, "action": "Confirm whether Codex is connected to GitHub in the ChatGPT account, and to which repositories", "device": "any browser", "status": "ACTIONABLE_NOW", "note": "decides whether the interim custody route exists already or must be created"},
+    {"rank": 3, "action": "Retire the four dead AUREA_E2E_* secrets", "device": "any browser", "status": "ACTIONABLE_NOW", "note": "live email and password reaching every run for an endpoint that no longer resolves"},
+    {"rank": 4, "action": "Point the environment at the repository file", "device": "any browser", "status": "ACTIONABLE_NOW"},
+    {"rank": 5, "action": "State the ChatGPT plan", "device": "none", "status": "ACTIONABLE_NOW", "note": "free to answer; gates the Compliance API, Codex access tokens and service accounts"},
+    {"rank": 6, "action": "FA-W8-01 attach a local clone as a ChatGPT desktop project folder", "device": "macOS or Windows", "status": "DEFERRED_MACBOOK_GATED", "note": "not executable on a Chromebook; do not attempt tonight"}
+  ],
+
+  "custody_of_the_delivering_lane": {
+    "parent_id": "OE-W8-CHATGPT-CONSTITUTION",
+    "head": "b2cb6572dc29c0662875bea67efae01e26d8370a",
+    "entries": 25, "bundle_recomputed_matches": true, "digest_mismatches": 0,
+    "uncovered": 0, "outside_scope": 0,
+    "quality_note": "The lane put the strongest case FOR the proposal before rejecting it, and identified a genuine hole in the prior reasoning — that the six independence properties are properties of the verdict process, not of the criteria's origin, so shared rule files and a shared dispatch mean model-family diversity does not break shared lineage. It then rejected the proposal anyway on separate grounds and salvaged the fragment that was actually right. That is the argument being taken seriously rather than dismissed."
+  },
+
+  "control_gap_this_exposes": {
+    "statement": "Evidence labels are applied to claims but not to founder actions. An action can be specified against an unestablished device, plan or account fact and pass every existing check.",
+    "proposed_control": "Every founder action must carry a device requirement and a prerequisite-status field, and any action whose prerequisites are not established is marked BLOCKED rather than ranked. This belongs in the next wave's dispatch contract, since a control that arrives after the workers does not prevent the defect."
+  }
+}

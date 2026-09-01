@@ -1,0 +1,62 @@
+APPLY INVENTORY — lane OE-W2-CURSOR-CONFIG-APPLY
+run at: 2026-08-22T22:48:21Z
+revert target (HEAD before apply): 3f3ee110cf9b769e60c664f758c437dcc582afd3
+
+PRE-APPLY STATE
+  tracked under .cursor at base:
+    100644 blob 7d2c912bd58fbf81346ddbb1bb70a13b60b1838a     135	.cursor/environment.json
+  .gitignore at base: ABSENT
+  .cursorignore at base: ABSENT
+
+ONE-FOR-ONE MAPPING CHECK  dot-cursor/<path> -> .cursor/<path>
+  MODIFIED     .cursor/environment.json
+  IDENTICAL    .cursor/hooks/gate_claim_state.py
+  IDENTICAL    .cursor/hooks/guard_write_scope.py
+  IDENTICAL    .cursor/hooks.json
+  IDENTICAL    .cursor/hooks/ledger_subagent.py
+  IDENTICAL    .cursor/hooks/verify_hooks.py
+  IDENTICAL    .cursor/install.sh
+  NOT-COPIED   .cursor/mcp.json  (decision record, DO NOT COPY per APPLY.md)
+  IDENTICAL    .cursor/rules/00-claim-states.mdc
+  IDENTICAL    .cursor/rules/10-currentness-and-write-scope.mdc
+  IDENTICAL    .cursor/skills/evidence-receipts/SKILL.md
+  IDENTICAL    .cursor/start.sh
+  IDENTICAL    .cursor/terminals/validators-watch.sh
+  MODIFIED     .cursor/write-scope.json
+
+FINAL APPLIED TREE (sha256, size)
+  ee26a42c6ab95a2bd6a982df996feeec5e8822afceb690435a7d1478a9bf0099      548  .cursor/environment.json
+  52e4cbffdb008d708d74fecfe18c7a70fe7ff12ca047f88aa4d550e430c8e6df     6087  .cursor/hooks/gate_claim_state.py
+  c985fcf8953964ef71d85feeeecf224afa083af9158ba5ad70931c8d67ab29bb    13246  .cursor/hooks/guard_write_scope.py
+  931b82cfb8f43595c9f01991d4c8cf8a83e1193b92f386fb3925f8c899b4c629      630  .cursor/hooks.json
+  e47c18c31777a6a1853061abc3ad7c33af51459b999eaa2e63019977676a987a     4323  .cursor/hooks/ledger_subagent.py
+  086a453d07f80a479867e7a3387a73cd15fb315ab4b39702f2f51e965bea4d9c     9034  .cursor/hooks/probe_hook_firing.py
+  e0d259eb8c47d1ba591a80ad82ef2422749cf9fa86358412050d91665b9c95d9    18758  .cursor/hooks/verify_hooks.py
+  06a5d3fa968c1911962c12b8a86b9790d472db9b5cfa5c50a86a54728fcef503      799  .cursor/install.sh
+  d8e397af03b5b032f21d0aa967086f0c78b33c87b76f2e9898ae0a144df7de02       23  .cursor/mcp.json
+  58bd354abd92142b4ba5d356134100d3da3f2e7799918576d2e0cce031900637     2152  .cursor/rules/00-claim-states.mdc
+  503f0a41afc4627820036b60f28662555188fbfc58c0fb46be2457baa3fd6365     2040  .cursor/rules/10-currentness-and-write-scope.mdc
+  14f8e7fa27dec0ffaee184f937bdcdd774d189555594ea0aaf701edd1e3a2f7e     2921  .cursor/skills/evidence-receipts/SKILL.md
+  ef9d24f3a85ce7ddda0ee55967173c3879bdc11579fa42d9af6564082b12c832     2761  .cursor/start.sh
+  58391fa1520efd30de009d2fdcc4cfde77f0b1cdda83d8e9c5baa6e0332034d2     1480  .cursor/terminals/validators-watch.sh
+  ca4f7bdd7ae1c54460d343540c9531264cc22d223d5b0774fd27c758bf16d8a8     3679  .cursor/write-scope.json
+
+EXECUTABLE BIT
+  +x .cursor/install.sh
+  +x .cursor/start.sh
+  +x .cursor/terminals/validators-watch.sh
+
+.gitignore
+  .cursor/.run/
+
+.cursorignore: NOT ADDED — decision recorded in w2-cursor-config/
+
+DELIBERATE DIVERGENCES FROM A BYTE-IDENTICAL COPY (2)
+  .cursor/environment.json  + "disableAllMcpServers": false      (G9 explicit MCP policy)
+  .cursor/write-scope.json  + "_comment_protected_path_globs"    (labels a key nothing reads)
+  Neither touches protected_branch_globs or refused_commands, so the 69
+  verify_hooks cases exercise the same globs and patterns that shipped.
+
+ADDED BEYOND THE STAGED SET (2)
+  .cursor/mcp.json                  real, strict-parseable, replaces the DO-NOT-COPY record
+  .cursor/hooks/probe_hook_firing.py  safe replacement for APPLY.md's unsafe firing probe

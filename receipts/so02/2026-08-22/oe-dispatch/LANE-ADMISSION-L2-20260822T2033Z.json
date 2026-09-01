@@ -1,0 +1,88 @@
+{
+  "record_id": "OE-LANE-ADMISSION-L2-20260822T2033Z",
+  "decision_changed": [],
+  "recorded_at": "2026-08-22T20:33:20Z",
+  "recorded_by": "root controller bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+  "lane": {
+    "parent_id": "OE-L2-CAPABILITY-RESEARCH",
+    "provider_id": "69e38132-1353-45f9-ab32-75aa39d6980d",
+    "branch": "cursor/oe-l2-capability-research-696d",
+    "immutable_head": "b6126c8dd6320d3e43f1034ef7d42b0b83e3fc71",
+    "declared_base": "fe0a595206e5986de7eaac6cabc619215a1eb81b",
+    "lane_reported_state": "READY_TO_COMMIT"
+  },
+
+  "verification_posture": {
+    "principle": "A lane's own statement that it verified itself is status, not acceptance. Every figure below was recomputed by the root controller from the bytes the remote actually serves.",
+    "why": "The independent acceptance refusal of CUR-ORCH-QUAL-01 established that a verifier which checks a claim's internal self-consistency, rather than re-deriving it, can be satisfied by a wholly fabricated record. This is the first lane admitted under the corrected controls.",
+    "controls_applied": [
+      "lane_guard.py namespace containment and lineage",
+      "independent manifest recomputation, not the lane's claimed digest",
+      "per-entry digest comparison against remote bytes",
+      "manifest closure over the full changed-file set",
+      "credential and disclosure scan over all added content"
+    ]
+  },
+
+  "results": {
+    "lineage_descends_from_declared_base": true,
+    "namespace_containment": "PASS — zero files outside the lane's owned namespace",
+    "path_collisions_with_other_lanes": 0,
+    "claimed_entry_count": 241,
+    "observed_entry_count": 241,
+    "claimed_bundle_sha256": "2fd4bcd17e7b94f65149c69b18fb613589831102b15855ac1dae36ee30ce4de6",
+    "recomputed_bundle_sha256": "2fd4bcd17e7b94f65149c69b18fb613589831102b15855ac1dae36ee30ce4de6",
+    "bundle_hash_matches": true,
+    "entries_verified_against_remote_bytes": 241,
+    "digest_mismatches": 0,
+    "manifested_but_absent": 0,
+    "changed_files": 242,
+    "files_uncovered_by_manifest": 0,
+    "manifest_closure": "PASS — the only changed file not listed as an entry is the manifest itself"
+  },
+
+  "disclosure_scan": {
+    "files_scanned": 242,
+    "patterns": ["openai_key", "github_pat", "aws_key", "bearer", "private_key", "token_in_query_string"],
+    "raw_hits": 2,
+    "adjudicated_hits": [
+      {
+        "file": "receipts/so02/2026-08-22/oe-l2-capability-research/raw/docs/spec-mcp-auth.txt",
+        "pattern": "bearer",
+        "context": "truncated illustrative JWT inside the MCP authorization specification's own example request",
+        "is_obzio_credential_material": false,
+        "verdict": "BENIGN_THIRD_PARTY_DOCUMENTATION_EXAMPLE"
+      },
+      {
+        "file": "receipts/so02/2026-08-22/oe-l2-capability-research/raw/docs/readme-pipecat.txt",
+        "pattern": "token_in_query_string",
+        "context": "public Codecov coverage-badge token in an upstream project README",
+        "is_obzio_credential_material": false,
+        "verdict": "BENIGN_PUBLIC_BADGE_TOKEN_OF_A_THIRD_PARTY_REPOSITORY"
+      }
+    ],
+    "obzio_credential_material_found": 0,
+    "note": "Both hits were read in context rather than dismissed by allowlist. Retained deliberately: the raw fetched documents are the lane's evidence, and redacting an upstream project's own public README would damage the provenance record without protecting anything."
+  },
+
+  "state_transition": {
+    "from": "READY_TO_COMMIT",
+    "to": "VERIFIED_ADMISSIBLE",
+    "not": "ACCEPTED",
+    "rule": "Admissible means the custody and containment claims hold. It does not mean the lane's conclusions are correct. The substance — the recommended topology, the candidate judgements and the discarded seeds — is a strategy proposal requiring founder decision and, where consequential, independent challenge. Custody verification is not agreement."
+  },
+
+  "substantive_items_escalated_not_decided": {
+    "rule": "No named tool, model or architecture is bound by this admission.",
+    "founder_questions_carried_forward": 10,
+    "conflict_flagged_by_lane": "One founder directive states that a named model family is locked. The lane's live evidence indicates the flagship of that family is far too large to run on any laptop, which separates 'open weights' from 'runnable by us'. Whether the directive holds as written is a founder decision, not a lane decision.",
+    "unresolved_seed": "One named discovery seed could not be resolved to any real product across repository, registry, extension-store and DNS probes. It is recorded UNRESOLVED rather than guessed at."
+  },
+
+  "integration_status": {
+    "integrated_into_return_branch": false,
+    "reason": "Integration is batched until the remaining lanes report, so the shared projection is written once by the single shared-state writer rather than incrementally by racing partial updates.",
+    "sole_shared_state_writer": "bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+    "founder_is_comparison_retrieval_or_merge_layer": false
+  }
+}

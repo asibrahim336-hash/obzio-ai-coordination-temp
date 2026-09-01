@@ -1,0 +1,100 @@
+--- a/.cursor/hooks/gate_claim_state.py (identical canonical copy: workstreams/so02/control-plane/operating-environment/l1-cursor-baseline/proposed-cursor-config/dot-cursor/hooks/gate_claim_state.py)	2026-08-27 05:44:09.297460764 +0000
++++ b/.cursor/hooks/gate_claim_state.py	2026-08-27 05:50:55.984564233 +0000
+@@ -43,6 +43,65 @@
+     r'"(acceptor|accepted_by)"\s*:\s*"(?!null)', re.IGNORECASE
+ )
+ 
++_MANIFEST_BASENAMES = ("MANIFEST.json", "EVIDENCE-MANIFEST.json")
++_SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
++
++
++def strong_receipt_health(changed_files: list) -> bool:
++    """A receipt is a manifest that parses, covers something, and reads back true.
++
++    EARNED (DEF-SCP-D-03, SCP-SI-01 lane D): `RECEIPT_HINTS` matched a
++    substring anywhere in a changed file's NAME OR PROSE BODY, so a note
++    saying "see MANIFEST.json" with no such file anywhere in the tree set
++    `saw_receipt = True`, and a manifest with `entries: []` and
++    `bundle_sha256: "0"*64` (which is not the hash of `[]` and could not be
++    the hash of any real entry list) also satisfied it. Both are
++    FALSE_SUCCESS: a `COMPLETED` claim certified on shape, not on a read-back
++    receipt. This recomputes rather than greps: the manifest must actually
++    parse, carry at least one real entry, bind its own bundle_sha256, and at
++    least one entry's declared hash must match what the file on disk hashes
++    to right now.
++    """
++    import hashlib as _hashlib
++    import json as _json
++
++    for f in changed_files:
++        if Path(f).name not in _MANIFEST_BASENAMES:
++            continue
++        try:
++            manifest = _json.loads(Path(f).read_text(encoding="utf-8"))
++        except (OSError, UnicodeDecodeError, _json.JSONDecodeError):
++            continue
++        entries = manifest.get("entries")
++        if not isinstance(entries, list) or not entries:
++            continue
++        if not all(
++            isinstance(e, dict) and e.get("path")
++            and isinstance(e.get("sha256"), str) and _SHA256_RE.match(e["sha256"])
++            for e in entries
++        ):
++            continue
++        recomputed = _hashlib.sha256(
++            _json.dumps(entries, sort_keys=True, separators=(",", ":")).encode("utf-8")
++        ).hexdigest()
++        if manifest.get("bundle_sha256") != recomputed:
++            continue
++        read_back_confirmed = False
++        for entry in entries:
++            entry_path = Path(entry["path"])
++            if not entry_path.is_file():
++                continue
++            try:
++                actual = _hashlib.sha256(entry_path.read_bytes()).hexdigest()
++            except OSError:
++                continue
++            if actual == entry["sha256"]:
++                read_back_confirmed = True
++                break
++        if read_back_confirmed:
++            return True
++    return False
++
+ 
+ def changed_files() -> list:
+     """Files this turn added or modified, staged or unstaged, plus untracked."""
+@@ -88,20 +147,28 @@
+     projection_hits = []
+     self_accept_hits = []
+ 
++    # EARNED (DEF-SCP-D-03): a receipt is recomputed, never grepped for.
++    saw_receipt = strong_receipt_health(files)
++
+     for f in text_files:
+         try:
+             body = Path(f).read_text(encoding="utf-8", errors="replace")
+         except OSError:
+             continue
+-        if any(h in f or h in body for h in RECEIPT_HINTS):
+-            saw_receipt = True
+         upper = body.upper()
+         for claim in TERMINAL_CLAIMS:
+             if re.search(rf"\b{claim}\b", upper):
+                 claims_found.add(claim)
+         if re.search(PROJECTION_WORDS, body, re.IGNORECASE):
++            # EARNED (DEF-SCP-D-04): the original pattern required the
++            # completion word to follow the projection phrase, so "COMPLETED
++            # ... a pull request" (completion word FIRST) was never matched —
++            # the exact word order the hook's own docstring names as the
++            # failure to catch. Both orders are searched now.
++            completion_words = r"\b(complete|completed|done|delivered|shipped)\b"
+             for m in re.finditer(
+-                rf"{PROJECTION_WORDS}[^.\n]{{0,80}}\b(complete|completed|done|delivered|shipped)\b",
++                rf"{PROJECTION_WORDS}[^.\n]{{0,80}}{completion_words}"
++                rf"|{completion_words}[^.\n]{{0,80}}{PROJECTION_WORDS}",
+                 body, re.IGNORECASE,
+             ):
+                 projection_hits.append(f"{f}: …{m.group(0).strip()}…")

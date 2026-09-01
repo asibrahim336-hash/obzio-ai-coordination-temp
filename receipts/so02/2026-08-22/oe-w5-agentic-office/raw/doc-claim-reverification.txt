@@ -1,0 +1,70 @@
+# OE-W5 documentation claim re-verification — captured 2026-08-23T00:32Z
+# Four load-bearing DOCUMENTED claims in the launch guide, re-fetched live and
+# checked against the guide's wording. Quoted lines are verbatim from the fetch.
+
+## Fetch
+    200  33407 bytes  https://cursor.com/docs/models-and-pricing.md
+    200   6222 bytes  https://cursor.com/docs/agent/overview.md
+    200  16752 bytes  https://cursor.com/docs/mcp.md
+    200  16232 bytes  https://cursor.com/docs/cloud-agent/automations.md
+
+## C1  Plan prices and Other-Models inclusions  (guide section 7)
+# models-and-pricing.md lines 90-92, verbatim:
+    | **Pro**      | $20/mo  | $20  | Generous included usage |
+    | **Pro Plus** | $60/mo  | $70  | Generous included usage |
+    | **Ultra**    | $200/mo | $400 | Generous included usage |
+# line 111, verbatim:
+    - **Power users (multiple agents/automation)**: Often $200+/mo total usage
+# VERDICT: the guide's plan table and the "$200+/month" line are exact. CONFIRMED.
+
+## C2  Steering a running agent  (guide section 2, "the four keys")
+# agent/overview.md line 108, verbatim:
+    Type a follow-up and hit **Send now**, or press Enter twice. The message is
+    delivered at the agent's next tool call instead of cutting off work
+    mid-action, which preserves in-flight work and keeps the agent on task.
+# line 110, verbatim:
+    This is available on cursor.com/agents now and rolling out in the Agents Window.
+# line 100, verbatim:
+    When you use Cmd+Enter to send immediately, your message is appended to the
+    most recent user message in the chat and processed right away without
+    waiting in the queue.
+# lines 86, 88: Enter queues; drag to reorder. Line 116: /goal gives a long-lived objective.
+# VERDICT: all four keys exact, including that Send now is a web-surface feature
+# today and only rolling out on desktop — which is the direction that matters for
+# a Chromebook. CONFIRMED.
+
+## C3  MCP OAuth has a web callback  (guide section 2, desktop-only table; blocker B7)
+# mcp.md lines 140-141, verbatim:
+    - **Web and Cursor Agents**: `https://www.cursor.com/agents/mcp/oauth/callback`
+    - **Desktop app**: `http://localhost:8787/callback`
+# line 143, verbatim:
+    register both URLs as allowed redirect URIs if users authenticate from both
+    web and desktop.
+# VERDICT: the desktop callback is one of two registered surfaces, not a
+# requirement. Authenticating an MCP server from a browser is supported. The
+# guide's claim that desktop is not required for MCP OAuth is CONFIRMED.
+
+## C4  Automations: context window and the repository default  (guide stage 6)
+# automations.md line 31, verbatim:
+    Automations use each model's maximum supported context window because they
+    run as cloud agents. There is no context-window toggle.
+# line 43, verbatim:
+    For certain triggers like Slack or cron schedules, Cursor defaults to not
+    using a repository. If your automation should make code changes, specify
+    which repository or repositories agents should work in.
+# line 11, verbatim:
+    The `/automate` skill lets you describe the workflow you want in plain
+    language. Cursor configures the automation's triggers, instructions, and
+    tools for you.
+# VERDICT: both guide claims CONFIRMED. The `/automate` skill was not in the
+# guide's first draft and has been added to stage 6, because configuring an
+# automation by hand is exactly the routine work that should not reach the founder.
+
+## Also noted, not currently in the guide
+# automations.md line 96: pull request triggers do not run on PRs opened from
+# forks ("Fork pull requests not supported"), except Pull request merged
+# triggers. Not load-bearing here — this office's automations trigger on push to
+# branches in the repository itself, not on fork PRs — but recorded so the
+# omission is deliberate rather than an oversight.
+
+# end

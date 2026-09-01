@@ -1,0 +1,202 @@
+{
+  "artifact_id": "OE-W8-FOUNDER-ACTIONS-20260822-v001",
+  "lane": "OE-W8-CHATGPT-CONSTITUTION",
+  "commission": "COM-CUR-ENV-01-20260822-v001",
+  "state": "READY_TO_COMMIT",
+  "decision_changed": [],
+
+  "ordering_rule": "By capability unlocked per founder minute, with a hard preference for actions that create no credential. Ordered for this constitution; where a prior lane already owns an action in full, this register places it in the order and defers the detail rather than restating it.",
+
+  "standing_rules_observed": [
+    "No action asks the founder to paste a secret into chat.",
+    "No action proposes minting a new Cursor API key. One already exists in Supabase Edge Secrets and is mirrored by hand.",
+    "No action proposes creating an OpenAI key before checking whether one already exists in the same place.",
+    "No action makes the founder a relay. Where an action runs on his machine, that is device dependency, not relay dependency: his attention is not on the critical path of each item.",
+    "No lane idles pending any of these. Everything else proceeds."
+  ],
+
+  "highest_leverage_single_action": {
+    "id": "FA-W8-01",
+    "claim": "It is the single action that unlocks the most, for this constitution.",
+    "arithmetic": "Five retained ChatGPT functions have no custody route without it: capture (P1), read-back (P2), discovery census (P4), context recovery (P5) and framing challenge (P6b). Without it every one of them produces RECOVERED_UNCOMMITTED candidates and the constitution is a document.",
+    "estate_wide_comparison_stated_honestly": "FA-W8-02, mirroring the existing Cursor API key, is the higher-leverage action for the estate as a whole and a prior lane already established it and put it before him. FA-W8-01 ranks first here because this deliverable is the ChatGPT constitution and FA-W8-01 is what makes it real. If he does two things, do both.",
+    "a_failed_test_is_not_a_wasted_action": "If FA-W8-01 fails, that failure is the highest-value output available: it converts the open question of whether a ChatGPT connector may hold repository write from 'should we?' into 'we must, and here is the evidence', with a ten-minute test behind it instead of an argument."
+  },
+
+  "actions": [
+    {
+      "id": "FA-W8-01",
+      "rank": 1,
+      "title": "Attach a local clone of this repository as a folder in a ChatGPT desktop project",
+      "exact_capability_unlocked": "A custody route for ChatGPT-resident work: a chat inside that project can read the repository, write files, run git operations and open pull requests against the primary repository, so a ChatGPT function commits its own return instead of handing it to you.",
+      "why_it_benefits_the_whole_operation": "It is the difference between this constitution running and this constitution being read. Five retained functions become able to produce evidence rather than candidates. It also removes the founder-relay pattern from the ChatGPT side of the operation in one move, rather than function by function. And it settles, by test rather than by argument, whether a bespoke repository-write connector is needed at all.",
+      "exact_account_and_settings_location": "ChatGPT desktop app (not web — local projects are a desktop-app capability). Create or open a project, open the project menu, select Edit project, select Add folder, and point it at a local clone of asibrahim336-hash/obzio-ai-coordination-temp. Make it primary. DIRECTLY_REPRODUCED from https://learn.chatgpt.com/docs/projects.md (fetched 2026-08-23): 'Add a local project when ChatGPT needs to read or change files on your computer... ChatGPT can read and change files in every attached folder... Codex also uses that folder as the default for Git operations and automatic discovery of AGENTS.md, skills, and config.toml.'",
+      "minimum_scope": "One folder. One clone of one repository. Not the home directory, not a parent directory, not a second unrelated repository. Work on a scratch branch for the test. The repository's own AGENTS.md is auto-discovered from the primary folder, so the same operator rules that govern Cursor govern this surface too — that is a feature of the minimum scope, not an accident.",
+      "secret_storage_location": "None. This action creates no credential and stores none. Git authentication is whatever the local clone already uses; nothing is entered into ChatGPT.",
+      "exact_test": "In the desktop app, in a chat in that project: ask it to create a branch named cursor/chatgpt-custody-probe-696d, add a file at receipts/so02/2026-08-22/oe-w8-chatgpt-constitution/raw/custody-probe.txt containing the current UTC time, commit it and push. Then, from any machine: git ls-remote origin refs/heads/cursor/chatgpt-custody-probe-696d",
+      "expected_result": "ls-remote prints a 40-character commit SHA against that ref. If it prints nothing, the write did not reach the remote regardless of what the chat reported — a push can exit zero against a stale ref, which is why the test is a remote read-back and not a screenshot.",
+      "verification_and_revocation": {
+        "verification": "The ls-remote above, run outside the desktop app. Recompute the file's sha256 from a fresh clone if you want the stronger form.",
+        "revocation": "Edit project, remove the folder. Delete the probe branch. Nothing persists: no OAuth grant, no installed app, no token. Fully reversible in under a minute."
+      },
+      "cost_privacy_retention": "No spend. The privacy cost is real and should be priced deliberately: repository contents attached to the project become available as context to the model in that project, and retention follows the account's data controls. The repository holds operational records, commissions and evidence — and no credential values, since the credential scanner in a prior lane refused a draft that contained one. This is the disclosure half of the open question about whether a ChatGPT surface may hold repository write, so answering it here answers that question as well.",
+      "now_or_later": "NOW. The test is minutes and a failure is as informative as a success.",
+      "viability": {
+        "label": "HYPOTHESIS",
+        "established": "DIRECTLY_REPRODUCED that the ChatGPT desktop app documents local projects with file read/write, git operations, AGENTS.md discovery, worktrees and pull-request actions.",
+        "not_established": "That it works on this account's plan, on this machine, against this repository, with its branch protections. No lane has authenticated to ChatGPT and none will.",
+        "fallback_if_it_fails": "Every ChatGPT-resident function keeps running and produces RECOVERED_UNCOMMITTED candidates: unadmitted, not blocked. The connector route escalates with a reproduced failure behind it. The owner data export remains the route for the Part C sweep, which does not depend on this action.",
+        "route_table_ownership": "A sibling lane owns the route evidence table. This action names a route and its test; it does not certify the route."
+      }
+    },
+
+    {
+      "id": "FA-W8-02",
+      "rank": 2,
+      "title": "Mirror the Cursor API key that already exists in Supabase Edge Secrets",
+      "inherited_from": "OE-W3 action FA-W3-01, which owns this in full. Restated here only to place it in the order.",
+      "exact_capability_unlocked": "A controller can create its own Cursor lanes and choose each lane's exact model configuration — including a different model family for an acceptor, which is what makes independent acceptance independent rather than nominal. DIRECTLY_REPRODUCED by the prior lane: /v1/me, /v1/models, /v1/agents and /v1/repositories all return 401 rather than 404, so the routes exist and are credential-blocked.",
+      "why_it_benefits_the_whole_operation": "It is the one item that removes the founder from the critical path of every future dispatch, on every workstream, not only this one.",
+      "exact_account_and_settings_location": "Read the existing value once from the Supabase dashboard for the project holding it: Project -> Edge Functions -> Secrets. Store that same value in Cursor Dashboard -> Cloud Agents -> Secrets, scoped to the repository.",
+      "minimum_scope": "Repository-scoped to asibrahim336-hash/obzio-ai-coordination-temp. Not team-scoped, not user-wide.",
+      "secret_storage_location": "Cursor Cloud Agent Secrets, repository-scoped, under the name CURSOR_API_KEY. DIRECTLY_REPRODUCED that repository-scoped injection works in this runtime: four secrets are injected today and CLOUD_AGENT_ALL_SECRET_NAMES matches CLOUD_AGENT_INJECTED_SECRET_NAMES exactly, so nothing is withheld.",
+      "exact_test": "bash workstreams/so02/control-plane/operating-environment/w3-credential-estate/tools/verify-cursor-api-key.sh",
+      "expected_result": "The unauthenticated baseline first, then HTTP 200 and a verdict of ACCEPTED. The script never prints a response body, because the api.cursor.com 401 body echoes a masked fragment of the presented key.",
+      "verification_and_revocation": {
+        "verification": "The 401-to-200 transition, plus a digest comparison if you want to confirm it is the same key.",
+        "revocation": "Delete the secret in the Cursor dashboard. The key in Supabase is untouched. Rotation must now update both stores, which is the honest cost of mirroring."
+      },
+      "cost_privacy_retention": "No spend, nothing created. The value passes through the clipboard once and then lives in two stores. Explicitly NOT proposed: minting a new key (prohibited by the founder's own derestriction record as wasteful and a proliferation risk), creating a Supabase personal access token to fetch it (a strictly more powerful credential to move a lesser one), or deploying an Edge Function that returns it (an exfiltration endpoint that outlives the task).",
+      "now_or_later": "NOW."
+    },
+
+    {
+      "id": "FA-W8-03",
+      "rank": 3,
+      "title": "While on that same Supabase secrets screen, check whether an OpenAI key is already there",
+      "exact_capability_unlocked": "It establishes, at zero marginal cost, whether the OpenAI API route is already credential-available. If a key exists, the entire eleven-action OpenAI activation programme a prior lane wrote collapses to one mirror action identical in shape to FA-W8-02.",
+      "why_it_benefits_the_whole_operation": "It is the check that prevents a credential being created that already exists. The founder's own derestriction record establishes exactly this pattern for the Cursor key; this applies the same rule before making the same mistake with a second provider.",
+      "exact_account_and_settings_location": "The same screen as FA-W8-02: Supabase dashboard -> Project -> Edge Functions -> Secrets. Read the list of secret NAMES.",
+      "minimum_scope": "Names only. Do not reveal, copy or transmit any value except the one being mirrored in FA-W8-02.",
+      "secret_storage_location": "Not applicable to the check. If a key is found, the destination is Cursor Cloud Agent Secrets, repository-scoped, under OPENAI_API_KEY.",
+      "exact_test": "Look for a secret whose name matches OPENAI, OAI or similar. Report the NAME, or report that none exists. Never the value, and never in chat.",
+      "expected_result": "Either a name, or a clean negative. Both are useful; the negative is what gates FA-W8-04.",
+      "verification_and_revocation": {
+        "verification": "DIRECTLY_REPRODUCED as of 2026-08-23 that OPENAI_API_KEY is absent from this runtime and that the only four Cloud Agent secrets are AUREA_E2E_*. So the key is certainly not reachable by an agent today; whether it exists in Supabase is not observable from here, which is why this is a founder action rather than a lane task.",
+        "revocation": "Nothing to revoke. Reading a list of names changes nothing."
+      },
+      "cost_privacy_retention": "None. No spend, no credential created, no value moved.",
+      "now_or_later": "NOW, folded into FA-W8-02. It is the same screen on the same visit and adds seconds."
+    },
+
+    {
+      "id": "FA-W8-04",
+      "rank": 4,
+      "title": "CONDITIONAL: create a scoped OpenAI API key",
+      "gated_on": "FA-W8-03 returning a clean negative AND an admitted function actually needing the API route. Both conditions, not either.",
+      "exact_capability_unlocked": "The OpenAI API route: Responses and Conversations, background mode with completion webhooks, and Batch at reduced cost for high-volume low-reasoning work such as the Part C sweep.",
+      "why_it_benefits_the_whole_operation": "Background mode plus a completion webhook is the combination that removes polling and waiting from API-native work entirely. It does not reach the ChatGPT UI: /v1/conversations is the API platform organisation's own store and sees none of the projects, chats, project instructions, Sources or memory. Anything implying otherwise is wrong, and this action must not be sold on that basis.",
+      "exact_account_and_settings_location": "Owned in full by OE-L5's OPENAI-ROUTE-ACTIVATION-PROGRAMME-20260822-v001.md, which specifies eleven actions each with all ten fields. Not restated here, because two specifications of one action is how they drift.",
+      "minimum_scope": "Project-scoped, least-privilege, one project.",
+      "secret_storage_location": "Cursor Cloud Agent Secrets, repository-scoped, OPENAI_API_KEY. Not in Supabase, not in a file, not in a chat.",
+      "exact_test": "python3 workstreams/so02/control-plane/operating-environment/l5-chatgpt-scale/scripts/openai_canary.py --dry-run first, then the live canary. The dry run makes no call and incurs no spend.",
+      "expected_result": "The 401 the unauthenticated probe currently returns becomes a 200 on a bounded call.",
+      "verification_and_revocation": {
+        "verification": "The canary, whose leak paths are covered by negative tests that require the guard to fire.",
+        "revocation": "Revoke the key in the OpenAI dashboard; delete the Cursor secret."
+      },
+      "cost_privacy_retention": "This is the first action in this list that can incur spend, which is why it is gated on a function needing it rather than scheduled. Retention and data-use posture for the API platform are separate from the ChatGPT account's and must be read rather than assumed.",
+      "now_or_later": "LATER, and conditional. Do not create speculatively."
+    },
+
+    {
+      "id": "FA-W8-05",
+      "rank": 5,
+      "title": "Set the one triage number",
+      "exact_capability_unlocked": "The back-catalogue sweep becomes able to self-accept. Without this number the sweep can run but cannot close, and the estate accumulates a dispositioned backlog nobody has accepted.",
+      "why_it_benefits_the_whole_operation": "It converts an unbounded stream of confirmations into a single risk-appetite decision made once, in advance. It is also the only decision in Part C that is genuinely yours: everything else is arithmetic.",
+      "exact_account_and_settings_location": "Not a settings screen. A recorded decision, returned in whatever surface is convenient, consisting of two values: the tolerable rate of consequential misclassification, and the retry budget before the sweep falls back to freezing the remainder as evidence.",
+      "minimum_scope": "Two numbers. Nothing else is asked, and no sample is sent to you to read.",
+      "secret_storage_location": "Not applicable.",
+      "exact_test": "python3 tools/triagectl.py plan --tolerance <your number> --strata <census counts> --retries <your number>",
+      "expected_result": "A sample plan, plus an instrument check telling you whether your number implies a sample or a full audit. DIRECTLY_REPRODUCED on illustrative counts: 0.01 returns FULL_AUDIT_RECOMMENDED because it demands 300 items from a readable population of 167; 0.05 returns SAMPLE_IS_APPROPRIATE at 60 items. Either is a fine answer — the tool tells you which one you chose rather than letting you choose it by accident.",
+      "verification_and_revocation": {
+        "verification": "The plan artifact is committed before the sweep runs, so the rule cannot be adjusted to fit the result.",
+        "revocation": "Change the number and re-plan. Only binding for sweeps that ran under it."
+      },
+      "cost_privacy_retention": "None.",
+      "now_or_later": "NOW. It costs one line and it unblocks the design rather than the execution, so it can be set before the export exists."
+    },
+
+    {
+      "id": "FA-W8-06",
+      "rank": 6,
+      "title": "Turn on voice capture, set the hotkey, and adopt read-back as a habit",
+      "exact_capability_unlocked": "Founder intent captured at the moment of utterance, with an interpretation stated back inside the same exchange while you can still refuse it for free.",
+      "why_it_benefits_the_whole_operation": "Every misread interpretation that is not refused at read-back is later refused as a supersession, which costs a record, a conflict object and the risk that the wrong reading propagated first. Read-back is the only zero-cost refusal point in the pipeline, which is why this constitution promotes it from a feature to an admission gate.",
+      "exact_account_and_settings_location": "ChatGPT desktop app. Settings > Voice > Voice chat hotkey. DIRECTLY_REPRODUCED from https://learn.chatgpt.com/docs/features/voice.md (fetched 2026-08-23). One operational detail worth knowing: a chat must BEGIN in voice mode — a chat started in another mode offers dictation instead, which is speech-to-text and not the same thing.",
+      "minimum_scope": "Voice only. Leave Screen context OFF initially. It is a materially more invasive macOS permission — Screen & System Audio Recording plus Accessibility — and an appshot can include text outside the visible scroll area of the frontmost window. Capture does not need it. Turn it on later for a specific task if one warrants it.",
+      "secret_storage_location": "Not applicable.",
+      "exact_test": "Start a voice chat, state a decision, and interrupt the response mid-sentence to correct it. Then confirm the recorded interpretation is the exact wording that was read back, not a later paraphrase of it.",
+      "expected_result": "Turn-taking and interruption work. A capture whose read-back was not confirmed is capped at S2 CAPTURED_UNCONFIRMED by the Part B checker, so this is verifiable rather than a matter of discipline.",
+      "verification_and_revocation": {
+        "verification": "python3 tools/intentctl.py standing --id <the utterance> shows the derived standing and which cap fired.",
+        "revocation": "Stop using it. No account state changes."
+      },
+      "cost_privacy_retention": "DIRECTLY_REPRODUCED: voice conversations use a separate, plan-dependent allowance measured in rolling five-hour windows, and tasks started through Voice consume the Codex usage budget. Only one voice chat can be active across the desktop app at a time. Availability depends on plan, rollout status and workspace settings.",
+      "now_or_later": "NOW, and it pairs with FA-W8-01 — capture without custody produces memory rather than record."
+    },
+
+    {
+      "id": "FA-W8-07",
+      "rank": 7,
+      "title": "Decide the memory posture, knowing it is smaller than it looks",
+      "exact_capability_unlocked": "A deliberate answer to whether provider-side memory carries founder material, rather than a default nobody chose.",
+      "why_it_benefits_the_whole_operation": "The reason this ranks seventh rather than first is worth stating: the constitution does not depend on the answer. Part B already makes memory constitutionally inert — an assistant utterance is S1 and can never change a decision class, whatever the model recalls. So this is a convenience and disclosure decision, not a correctness one, and it should be priced as the smaller thing it is.",
+      "exact_account_and_settings_location": "Settings > Personalization, on both web and desktop. Per-chat control in the desktop app via /memories, which chooses whether a chat may use existing memories or contribute to future ones. DIRECTLY_REPRODUCED from https://learn.chatgpt.com/docs/customization/memories.md (fetched 2026-08-23).",
+      "minimum_scope": "Account-level on/off, plus per-chat control where a specific chat needs isolation.",
+      "secret_storage_location": "Not applicable.",
+      "exact_test": "The cold-instance replay: open a fresh chat in the same project with memory disabled, supply only the repository artifact list, and re-derive a decision. Same decision means it was artifact-grounded; a different decision, or an unreachable one, means the original was memory-dependent.",
+      "expected_result": "Same decision. A different one is a finding, not a failure of the test.",
+      "verification_and_revocation": {
+        "verification": "The replay above, run on each wave's knowledge base.",
+        "revocation": "Toggle it back. Existing memories can be reviewed and removed from the same settings surface."
+      },
+      "cost_privacy_retention": "This is where indefinite provider-side retention of founder-intent material actually gets decided. The documentation states the principle the operation should adopt regardless of which way you go: treat memories as a helpful recall layer, not as the only source for rules that must always apply.",
+      "now_or_later": "LATER. Nothing waits on it."
+    },
+
+    {
+      "id": "FA-W8-08",
+      "rank": 8,
+      "title": "Produce the owner data export, once its location is confirmed",
+      "exact_capability_unlocked": "The content the Part C sweep runs on. One action produces the snapshot, and everything after it is delegable to Cursor, which can process it in a container at essentially zero further founder cost.",
+      "why_it_benefits_the_whole_operation": "It is the only route identified that lets the back catalogue be swept without anyone reading it interactively. A snapshot is a poor route and the correct instrument for a one-time sweep.",
+      "exact_account_and_settings_location": "UNESTABLISHED, and this lane will not guess it. DIRECTLY_REPRODUCED 2026-08-23: help.openai.com returns HTTP 403 to an unauthenticated fetch, so the export article could not be read — the same result a prior lane recorded. The correct way to establish it costs zero founder actions: ask the discovery function (P4) where the export control is on this account, since finding out what the account offers is precisely its job.",
+      "minimum_scope": "One export of the account's own data. No third-party sharing, no forwarding.",
+      "secret_storage_location": "Not applicable, but treat the export as sensitive at rest: it is the most concentrated copy of the account's content that will ever exist.",
+      "exact_test": "Once the archive exists, hand its path to Cursor. The sweep's first output is a manifest of what the export actually contains, including whether project-scoped chats are present and whether per-message timestamps are present.",
+      "expected_result": "HYPOTHESIS on all three counts. Per-message timestamps matter beyond the sweep: without them a recovered utterance's timestamp is UNTRUSTED under Part B, which removes the recency resolution path and pushes more conflicts to fail closed.",
+      "verification_and_revocation": {
+        "verification": "The content manifest, with a CANNOT_ASSESS stratum for anything absent. Coverage is always reported against the full population, never against what happened to be readable.",
+        "revocation": "Delete the archive. The export is a copy; producing it changes no account state."
+      },
+      "cost_privacy_retention": "No spend. A complete copy of the account's content lands on local disk and should be handled accordingly.",
+      "now_or_later": "NOW once located, and locating it is not your job."
+    }
+  ],
+
+  "what_is_deliberately_not_asked": [
+    {"item": "Which ChatGPT plan the account holds, and whether an admin-enabled workspace exists", "why": "A fact the platform can retrieve about itself. A prior lane already removed it from the founder-question list, and it is the discovery function's first task. It determines whether the Compliance API and Workspace Agents exist at all, so it is important — and still not a founder action."},
+    {"item": "Confirmation of any sweep sample", "why": "Reading a sample is evidence comparison, which the standing non-negotiable puts off-limits. The audit lane reads it."},
+    {"item": "A new Cursor API key", "why": "One already exists. Requesting a duplicate is prohibited by the founder's own derestriction record."},
+    {"item": "Any secret value in chat", "why": "Never, under any action here."},
+    {"item": "Approval to proceed with anything already covered by the standing authority", "why": "The authority record forbids asking again for work it already covers."}
+  ],
+
+  "still_needing_founder_judgment_beyond_these_actions": [
+    "Whether the disclosure in FA-W8-01 is acceptable. The action is written so the test answers the technical half; the disclosure half is yours and cannot be delegated.",
+    "Whether an existing OpenAI key, if FA-W8-03 finds one, may be reused for programme work or is reserved for something else.",
+    "The two numbers in FA-W8-05. There is no technically correct answer; the tool tells you what each choice implies."
+  ]
+}

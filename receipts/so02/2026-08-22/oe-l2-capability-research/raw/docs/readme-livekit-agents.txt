@@ -1,0 +1,398 @@
+![PyPI - Version](https://img.shields.io/pypi/v/livekit-agents)
+[![PyPI Downloads](https://static.pepy.tech/badge/livekit-agents/month)](https://pepy.tech/projects/livekit-agents)
+[![Slack community](https://img.shields.io/endpoint?url=https%3A%2F%2Flivekit.io%2Fbadges%2Fslack)](https://livekit.io/join-slack)
+[![Twitter Follow](https://img.shields.io/twitter/follow/livekit)](https://twitter.com/livekit)
+[![Ask DeepWiki for understanding the codebase](https://deepwiki.com/badge.svg)](https://deepwiki.com/livekit/agents)
+[![License](https://img.shields.io/github/license/livekit/livekit)](https://github.com/livekit/livekit/blob/master/LICENSE)
+
+Looking for the JS/TS library? Check out [AgentsJS](https://github.com/livekit/agents-js)
+
+## What is Agents?
+
+The Agent Framework is designed for building realtime, programmable participants
+that run on servers. Use it to create conversational, multi-modal voice
+agents that can see, hear, and understand.
+
+## Features
+
+- **Flexible integrations**: A comprehensive ecosystem to mix and match the right STT, LLM, TTS, and Realtime API to suit your use case.
+- **Integrated job scheduling**: Built-in task scheduling and distribution with [dispatch APIs](https://docs.livekit.io/agents/build/dispatch/) to connect end users to agents.
+- **Extensive WebRTC clients**: Build client applications using LiveKit's open-source SDK ecosystem, supporting all major platforms.
+- **Telephony integration**: Works seamlessly with LiveKit's [telephony stack](https://docs.livekit.io/sip/), allowing your agent to make calls to or receive calls from phones.
+- **Exchange data with clients**: Use [RPCs](https://docs.livekit.io/home/client/data/rpc/) and other [Data APIs](https://docs.livekit.io/home/client/data/) to seamlessly exchange data with clients.
+- **Semantic turn detection**: Uses a transformer model to detect when a user is done with their turn, helps to reduce interruptions.
+- **MCP support**: Native support for MCP. Integrate tools provided by MCP servers with one line of code.
+- **Builtin test framework**: Write tests and use judges to ensure your agent is performing as expected.
+- **Open-source**: Fully open-source, allowing you to run the entire stack on your own servers, including [LiveKit server](https://github.com/livekit/livekit), one of the most widely used WebRTC media servers.
+
+## Installation
+
+To install the core Agents library, along with plugins for popular model providers:
+
+```bash
+pip install "livekit-agents[openai,deepgram,cartesia]"
+```
+
+## Docs and guides
+
+Documentation on the framework and how to use it can be found [here](https://docs.livekit.io/agents/)
+
+### Building with AI coding agents
+
+If you're using an AI coding assistant to build with LiveKit Agents, we recommend the following setup for the best results:
+
+1. **Install the [LiveKit Docs MCP server](https://docs.livekit.io/mcp)** — Gives your coding agent access to up-to-date LiveKit documentation, code search across LiveKit repositories, and working examples.
+
+2. **Install the [LiveKit Agent Skill](https://github.com/livekit/agent-skills)** — Provides your coding agent with architectural guidance and best practices for building voice AI applications, including workflow design, handoffs, tasks, and testing patterns.
+
+```shell
+npx skills add livekit/agent-skills --skill livekit-agents
+```
+
+The Agent Skill works best alongside the MCP server: the skill teaches your agent *how to approach* building with LiveKit, while the MCP server provides the *current API details* to implement it correctly.
+
+## Core concepts
+
+- Agent: An LLM-based application with defined instructions.
+- AgentSession: A container for agents that manages interactions with end users.
+- entrypoint: The starting point for an interactive session, similar to a request handler in a web server.
+- AgentServer: The main process that coordinates job scheduling and launches agents for user sessions.
+
+## Usage
+
+### Simple voice agent
+
+---
+
+```python
+from livekit.agents import (
+Agent,
+AgentServer,
+AgentSession,
+JobContext,
+RunContext,
+cli,
+function_tool,
+inference,
+)
+
+@function_tool
+async def lookup_weather(
+context: RunContext,
+location: str,
+):
+"""Used to look up weather information."""
+
+return {"weather": "sunny", "temperature": 70}
+
+server = AgentServer()
+
+@server.rtc_session()
+async def entrypoint(ctx: JobContext):
+session = AgentSession(
+vad=inference.VAD(),
+# any combination of STT, LLM, TTS, or realtime API can be used
+# this example shows LiveKit Inference, a unified API to access different models via LiveKit Cloud
+# to use model provider keys directly, replace with the following:
+# from livekit.plugins import deepgram, openai, cartesia
+# stt=deepgram.STT(model="nova-3"),
+# llm=openai.LLM(model="gpt-4.1-mini"),
+# tts=cartesia.TTS(model="sonic-3", voice="9626c31c-bec5-4cca-baa8-f8ba9e84c8bc"),
+stt=inference.STT("deepgram/nova-3", language="multi"),
+llm=inference.LLM("google/gemma-4-31b-it"), # low-latency gemma, hosted on LiveKit
+tts=inference.TTS("cartesia/sonic-3", voice="9626c31c-bec5-4cca-baa8-f8ba9e84c8bc"),
+)
+
+agent = Agent(
+instructions="You are a friendly voice assistant built by LiveKit.",
+tools=[lookup_weather],
+)
+
+await session.start(agent=agent, room=ctx.room)
+await session.generate_reply(instructions="greet the user and ask about their day")
+
+if __name__ == "__main__":
+cli.run_app(server)
+```
+
+You'll need the following environment variables for this example:
+
+- LIVEKIT_URL
+- LIVEKIT_API_KEY
+- LIVEKIT_API_SECRET
+
+### Multi-agent handoff
+
+---
+
+This code snippet is abbreviated. For the full example, see [multi_agent.py](examples/voice_agents/multi_agent.py)
+
+```python
+...
+class IntroAgent(Agent):
+def __init__(self) -> None:
+super().__init__(
+instructions=f"You are a story teller. Your goal is to gather a few pieces of information from the user to make the story personalized and engaging."
+"Ask the user for their name and where they are from"
+)
+
+async def on_enter(self):
+self.session.generate_reply(instructions="greet the user and gather information")
+
+@function_tool
+async def information_gathered(
+self,
+context: RunContext,
+name: str,
+location: str,
+):
+"""Called when the user has provided the information needed to make the story personalized and engaging.
+
+Args:
+name: The name of the user
+location: The location of the user
+"""
+
+context.userdata.name = name
+context.userdata.location = location
+
+story_agent = StoryAgent(name, location)
+return story_agent, "Let's start the story!"
+
+class StoryAgent(Agent):
+def __init__(self, name: str, location: str) -> None:
+super().__init__(
+instructions=f"You are a storyteller. Use the user's information in order to make the story personalized."
+f"The user's name is {name}, from {location}",
+# override the default model, switching to Realtime API from standard LLMs
+llm=openai.realtime.RealtimeModel(voice="echo"),
+chat_ctx=chat_ctx,
+)
+
+async def on_enter(self):
+self.session.generate_reply()
+
+@server.rtc_session()
+async def entrypoint(ctx: JobContext):
+userdata = StoryData()
+session = AgentSession[StoryData](
+vad=inference.VAD(),
+stt="deepgram/nova-3",
+llm="google/gemma-4-31b-it", # low-latency gemma, hosted on LiveKit
+tts="cartesia/sonic-3:9626c31c-bec5-4cca-baa8-f8ba9e84c8bc",
+userdata=userdata,
+)
+
+await session.start(
+agent=IntroAgent(),
+room=ctx.room,
+)
+...
+```
+
+### Testing
+
+Automated tests are essential for building reliable agents, especially with the non-deterministic behavior of LLMs. LiveKit Agents include native test integration to help you create dependable agents.
+
+```python
+@pytest.mark.asyncio
+async def test_no_availability() -> None:
+llm = google.LLM()
+async with AgentSession(llm=llm) as sess:
+await sess.start(MyAgent())
+result = await sess.run(
+user_input="Hello, I need to place an order."
+)
+result.expect.skip_next_event_if(type="message", role="assistant")
+result.expect.next_event().is_function_call(name="start_order")
+result.expect.next_event().is_function_call_output()
+await (
+result.expect.next_event()
+.is_message(role="assistant")
+.judge(llm, intent="assistant should be asking the user what they would like")
+)
+
+```
+
+## Examples
+
+For more examples and detailed setup instructions, see the [examples directory](examples/). For even more examples, see the [python-agents-examples](https://github.com/livekit-examples/python-agents-examples) repository.
+
+🎙️ Starter Agent
+
+A starter agent optimized for voice conversations.
+
+Code
+
+🔄 Multi-user push to talk
+
+Responds to multiple users in the room via push-to-talk.
+
+Code
+
+🎵 Background audio
+
+Background ambient and thinking audio to improve realism.
+
+Code
+
+🛠️ Dynamic tool creation
+
+Creating function tools dynamically.
+
+Code
+
+☎️ Outbound caller
+
+Agent that makes outbound phone calls
+
+Code
+
+📋 Structured output
+
+Using structured output from LLM to guide TTS tone.
+
+Code
+
+🔌 MCP support
+
+Use tools from MCP servers
+
+Code
+
+💬 Text-only agent
+
+Skip voice altogether and use the same code for text-only integrations
+
+Code
+
+📝 Multi-user transcriber
+
+Produce transcriptions from all users in the room
+
+Code
+
+🎥 Video avatars
+
+Add an AI avatar with Tavus, Bithuman, LemonSlice, and more
+
+Code
+
+🍽️ Restaurant ordering and reservations
+
+Full example of an agent that handles calls for a restaurant.
+
+Code
+
+👁️ Gemini Live vision
+
+Full example (including iOS app) of Gemini Live agent that can see.
+
+Code
+
+## Running your agent
+
+### Testing in terminal
+
+```shell
+python myagent.py console
+```
+
+Runs your agent in terminal mode, enabling local audio input and output for testing.
+This mode doesn't require external servers or dependencies and is useful for quickly validating behavior.
+
+### Developing with LiveKit clients
+
+```shell
+python myagent.py dev
+```
+
+Starts the agent server and enables hot reloading when files change. This mode allows each process to host multiple concurrent agents efficiently.
+
+The agent connects to LiveKit Cloud or your self-hosted server. Set the following environment variables:
+- LIVEKIT_URL
+- LIVEKIT_API_KEY
+- LIVEKIT_API_SECRET
+
+You can connect using any LiveKit client SDK or telephony integration.
+To get started quickly, try the [Agents Playground](https://agents-playground.livekit.io/).
+
+### Running for production
+
+```shell
+python myagent.py start
+```
+
+Runs the agent with production-ready optimizations.
+
+## License
+
+The Agents framework is licensed under [Apache-2.0](LICENSE). The LiveKit turn detection models are licensed under the [LiveKit Model License](MODEL_LICENSE).
+
+## Contributing
+
+The Agents framework is under active development in a rapidly evolving field. We welcome and appreciate contributions of any kind, be it feedback, bugfixes, features, new plugins and tools, or better documentation. You can file issues under this repo, open a PR, or chat with us in the [LiveKit community](https://docs.livekit.io/intro/community/).
+
+### Development setup
+
+This project uses [uv](https://docs.astral.sh/uv/) for package management. To install dependencies for development:
+
+```shell
+uv sync --all-extras --dev
+```
+
+### Examples
+
+This project includes many examples in the [`examples`](examples/) directory. To run them, create the file `examples/.env` with credentials for LiveKit Server and any necessary model providers (see `examples/.env.example`), then run:
+
+```shell
+uv run examples/voice_agents/basic_agent.py dev
+```
+
+For more information, see the [examples README](examples/README.md).
+
+### Tests
+
+Unit tests are in the `tests` directory and can be run with:
+
+```shell
+uv run pytest --unit
+```
+
+Integration tests for each plugin require various API credentials and run automatically in GitHub CI for PRs submitted by project maintainers. See the [tests workflow](.github/workflows/tests.yml) for details.
+
+### Formatting
+
+This project uses [ruff](https://github.com/astral-sh/ruff) for formatting and linting:
+
+```shell
+uv run ruff format
+uv run ruff check --fix
+```
+
+### Documentation
+
+To generate docs locally with [pdoc](https://github.com/pdoc3/pdoc):
+
+```shell
+uv sync --all-extras --group docs
+uv run --active pdoc --skip-errors --html --output-dir=docs livekit
+```
+
+LiveKit Ecosystem
+
+Agents SDKs Python · Node.js
+
+LiveKit SDKs Browser · Swift · Android · Flutter · React Native · Rust · Node.js · Python · Unity · Unity (WebGL) · ESP32 · C++
+
+Starter Apps Python Agent · TypeScript Agent · React App · SwiftUI App · Android App · Flutter App · React Native App · Web Embed
+
+UI Components React · Android Compose · SwiftUI · Flutter
+
+Server APIs Node.js · Golang · Ruby · Java/Kotlin · Python · Rust · PHP (community) · .NET (community)
+
+Resources Docs · Docs MCP Server · CLI · LiveKit Cloud
+
+LiveKit Server OSS LiveKit server · Egress · Ingress · SIP
+
+Community Developer Community · Slack · X · YouTube

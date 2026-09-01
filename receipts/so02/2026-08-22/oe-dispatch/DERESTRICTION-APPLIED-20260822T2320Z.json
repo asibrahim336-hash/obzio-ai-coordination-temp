@@ -1,0 +1,75 @@
+{
+  "record_id": "DERESTRICTION-APPLIED-20260822T2320Z",
+  "decision_changed": [],
+  "recorded_at": "2026-08-22T23:20:00Z",
+  "recorded_by": "root controller bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+  "authority": "FOUNDER-AUTHORITY-20260822T2225Z",
+
+  "why_the_lane_could_not_do_this": "OE-W4-PLATFORM-ROLES classified 76 constraints and found three removals still live in commissions/ and state/ paths outside its write scope. Writing there from a lane lineage would silently set currentness for every inheriting branch. It reported exact locators and replacement text and left its detector failing by design. That is the correct division: the lane finds, the path holder acts.",
+
+  "removals_applied": [
+    {
+      "constraint_id": "AI-20",
+      "path": "workstreams/so02/control-plane/state/control-plane.json#current_founder_actions[FA-SCF01-CURSOR-LAUNCH]",
+      "was": "OWNER_FOLLOWUP_SUBMISSION_REQUIRED_CLOUD_BROWSER_SECURITY_VERIFICATION_BLOCKED",
+      "now": "CLOSED_SCOPE_DELIVERED_DIRECTLY_BY_FOUNDER_NO_RELAY_REQUIRED",
+      "reasoning": "The action asked the founder to submit a follow-up relaying the CUR-ENV-01 scope to Cursor. He delivered it directly and Cursor is executing the commission, so the action requested the relay verb he has forbidden.",
+      "evidence_preserved": "original state and nondelegable_reason retained in place; closing an action is not a claim it never applied"
+    },
+    {
+      "constraint_id": "AI-21",
+      "path": "workstreams/so02/control-plane/commissions/CURSOR-OPERATING-ENVIRONMENT-01.md#current-boundaries",
+      "change": "Amendment block added above the original paragraph, which is retained verbatim.",
+      "reasoning": "The paragraph had come to read as a general bar on inspecting and configuring Ahmed/Obzio-owned surfaces. That was never the founder's envelope. Inspect, access, configure, connect, use and optimise are granted; the stop is reserved for genuine owner acts.",
+      "unchanged": "every named protected surface remains in force"
+    },
+    {
+      "constraint_id": "AI-06",
+      "path": "workstreams/so02/control-plane/commissions/CHATGPT-SIR-01.md",
+      "change": "The unbounded 'supporting function' description is scoped.",
+      "reasoning": "Written without a scope, it was being read as a general demotion of the platform. The limit is narrow — within the founder operating environment it does not independently select architecture or prescribe a stack — and outside that scope ChatGPT is a full platform whose asymmetry is authenticated access."
+    }
+  ],
+
+  "contract_collision_encountered_and_resolved_the_right_way": {
+    "what_happened": "The first phrasing of the AI-06 amendment broke a seed-validator assertion requiring both 'supporting function' and 'does not independently select architecture' verbatim in that file. scctl validate exited 1.",
+    "wrong_response_available": "Relax or delete the assertion so the new text passes.",
+    "response_taken": "Rewrite the amendment so it satisfies the contract naturally. The check exists to stop the support role being either erased or left unbounded, which is exactly the concern being addressed; weakening it to fit the fix would have removed the guarantee while appearing to keep it.",
+    "outcome": "scctl validate PASS with the scoped meaning intact"
+  },
+
+  "verification_by_the_lane_s_own_instrument": {
+    "principle": "The removals are confirmed by the detector that was failing, not by the controller asserting it applied them.",
+    "derestrictctl_scan": {"before": "exit 1 by design, three findings outstanding", "after": "exit 0, RETIRED=22, PASS: no removed restriction routes work"},
+    "rolectl_check": {"result": "PASS: all 14 invariants hold", "platforms": 5, "decision_classes": 36, "functions": 26},
+    "negative_tests": {"result": "PASS: all 20 failure modes rejected by the validators"},
+    "seed_gates": {"scctl_validate": "PASS", "control_plane_tests": "52 passed", "integration_controls": "30 passed", "operator_taxonomy": "PASS"}
+  },
+
+  "custody_of_the_two_integrated_lanes": {
+    "OE-W2-CURSOR-CONFIG-APPLY": {
+      "head": "74cbc8513811cd3fc00028a544632f45490d9abf",
+      "entries": 28, "bundle_recomputed_matches": true, "uncovered": 0, "outside_scope": 0,
+      "note": "First lane to achieve full manifest closure including its own read-back record — the defect CUR-ORCH-QUAL-01 was refused for and a later lane repeated. The correction propagated only once it travelled with the dispatch contract."
+    },
+    "OE-W4-PLATFORM-ROLES": {
+      "head": "4c6f41ea3253c290fd801c169f9c840e55740df3",
+      "entries": 23, "bundle_recomputed_matches": true, "uncovered": 0, "outside_scope": 0,
+      "self_correction_noted": "The lane corrected its own register before commit after re-running an inventory returned four model configurations rather than five, and fixed a scanner defect that read supersession statements as re-inheritances. The pre-fix output is kept as a receipt."
+    }
+  },
+
+  "flagged_for_attention": {
+    "constraint_id": "AI-22",
+    "statement": "A quota function treats unknown headroom as zero headroom. It reads as prudence but is a permanent stop, because headroom is only observable at the top-level run layer and is therefore almost always unknown.",
+    "status": "removed and replaced by the lane; recorded here because it is the clearest example of a control that looks conservative and is actually an unconditional halt"
+  },
+
+  "not_done": [
+    "no pull request merged or promoted",
+    "no company strategy bound",
+    "no protected surface written",
+    "no credential created, rotated or printed",
+    "hooks not installed at the shared project root, since a lane is still executing"
+  ]
+}

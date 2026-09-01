@@ -1,0 +1,53 @@
+{
+  "defect_id": "DEF-SCP-01",
+  "title": "EVIDENCE_HASH_MISMATCH cannot distinguish a superseded artifact from a tampered one",
+  "discovered_by": "coordinator, during SCP-SI-01 verification of Lane E",
+  "discovered_at": "2026-08-27T05:26:00Z",
+  "evidence_label": "DIRECTLY_REPRODUCED",
+  "decision_changed": [],
+  "provenance_class": "EARNED",
+  "provenance_justification": "Named defect caught in this cohort with a reproduction below; not a rule invented by an assistant and not traceable to a founder utterance, so it binds as mechanism rather than as authority.",
+
+  "reproduction": {
+    "instrument": "currentctl.py compile against the integration branch",
+    "finding_emitted": "EVIDENCE_HASH_MISMATCH=1 on urn:obzio:l4:workstream:WS-SO02-CONTROL-PLANE",
+    "message": "workstreams/so02/control-plane/tools/scctl.py hashes to 76b2ca1f... , evidence claims e6d0b2d8...",
+    "hash_walk": [
+      {"commit": "fd2753fd", "sha256": "e6d0b2d8166dde54dcb27ff32cac733972e9445b62ef08213a061cf07ffc1d4b"},
+      {"commit": "ef0a74e5", "sha256": "e6d0b2d8166dde54dcb27ff32cac733972e9445b62ef08213a061cf07ffc1d4b"},
+      {"commit": "21c8ef88", "sha256": "e6d0b2d8166dde54dcb27ff32cac733972e9445b62ef08213a061cf07ffc1d4b"},
+      {"commit": "bf5a5864", "sha256": "e6d0b2d8166dde54dcb27ff32cac733972e9445b62ef08213a061cf07ffc1d4b"},
+      {"commit": "3b97d6ff", "sha256": "76b2ca1f91ba058318c7b11613a917d87ce57a929e4d9dc63e7e1baf6991aa79"}
+    ],
+    "cause": "The EC-13 purge at 3b97d6ff legitimately rewrote the pointer assertion in scctl.py. The ledger's recorded evidence hash was taken before that change and was never updated."
+  },
+
+  "why_this_is_a_defect_and_not_a_data_error": {
+    "statement": "The recorded hash was CORRECT at the commit it was recorded against. Nothing was tampered with. The artifact was superseded by an authorised change made under an admitted write declaration.",
+    "the_actual_defect": "The checker compares a recorded hash against the branch tip and emits one finding code for two different situations. EVIDENCE_HASH_MISMATCH currently means either 'this evidence was altered' or 'this evidence moved on', and those demand opposite responses — the first is an integrity incident, the second is routine and expected in a live estate.",
+    "consequence_if_left": "Every legitimate change to a hash-referenced artifact manufactures an integrity alarm. An alarm that fires on normal operation gets ignored, and then a real tamper is indistinguishable from the noise it is buried in."
+  },
+
+  "this_is_the_packet_s_DEF_05_DEF_16_pattern_reproducing_live": {
+    "packet_text": "DEF-05/DEF-16 are two halves of one thing: verify each artifact at its own commit, and compare against branch tip to flag supersession. Neither root alone is correct.",
+    "confirmation": "Verifying at its own commit would have PASSED — the hash was right at bf5a5864. Comparing to tip correctly detects that it moved. Doing only the first hides supersession; doing only the second, which is what happens today, reports supersession as corruption. The packet's diagnosis is exactly right and this is the instance."
+  },
+
+  "required_mechanism_change": {
+    "split_the_finding_code": [
+      {"code": "EVIDENCE_SUPERSEDED", "means": "the recorded hash matched at its recorded commit and the artifact has since changed under a traceable authorised write", "severity": "INFO", "action": "re-anchor the ledger entry to the new commit"},
+      {"code": "EVIDENCE_HASH_MISMATCH", "means": "the recorded hash did not match even at its own recorded commit", "severity": "ERROR", "action": "integrity incident"}
+    ],
+    "requires": "Every evidence entry must carry the commit its hash was taken at. Entries lacking one cannot be adjudicated and should report EVIDENCE_ANCHOR_MISSING rather than defaulting to either verdict.",
+    "regression_test": "Three cases: hash correct at its own commit and unchanged at tip (clean); hash correct at its own commit and changed at tip (EVIDENCE_SUPERSEDED, not an error); hash wrong at its own commit (EVIDENCE_HASH_MISMATCH, error). A checker that cannot separate case two from case three fails."
+  },
+
+  "routing": {
+    "owning_lane": "D",
+    "reason": "Lane D owns failure-to-learning and was asked for one new defect observed in this cohort. This is it, found by the coordinator rather than invented, with a reproduction and a named cause.",
+    "secondary": "Lane B, because the chain observation -> defect -> mechanism change -> regression test -> rerun -> verdict now has a live instance whose mechanism change is PENDING rather than complete, which is a state the chain must be able to represent.",
+    "coordinator_note": "Lanes B and D were dispatched before this was found. Both were instructed to re-fetch the integration branch mid-run, so committing this now is what makes it reachable by them. If neither picks it up, the coordinator lands the mechanism change at integration and says so."
+  },
+
+  "honest_limit": "One instance. It shows the two situations are conflated; it does not establish how often supersession occurs relative to genuine mismatch in this estate. The split is justified by the asymmetry of consequence, not by a frequency measurement."
+}

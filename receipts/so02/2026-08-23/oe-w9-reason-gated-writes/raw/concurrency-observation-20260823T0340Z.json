@@ -1,0 +1,60 @@
+{
+  "_evidence_label": "DIRECTLY_REPRODUCED",
+  "_what_this_is": "The unmodified agent list returned by the read-only cursor-cloud list-cloud-agents tool, captured by lane OE-W9 while that lane was itself running. It is retained because of what is MISSING from it, not what is in it.",
+  "_capture": {
+    "tool": "cursor-cloud list-cloud-agents",
+    "arguments": {"limit": 60},
+    "read_only": true,
+    "observed_at": "2026-08-23T03:40:00Z",
+    "observed_at_precision": "recorded to the minute; the newest updatedAtMs in the payload is 1787456327741 = 2026-08-23T03:38:47Z, which bounds the capture from below",
+    "observer_lane": "OE-W9-REASON-GATED-WRITES",
+    "observer_branch_at_capture": "cursor/oe-w9-reason-gated-writes-696d",
+    "observer_status_at_capture": "running"
+  },
+  "_finding_the_blind_spot": {
+    "claim": "A live writer can be entirely absent from this observation.",
+    "how_reproduced": "The observing lane was running and writing cursor/oe-w9-reason-gated-writes-696d at the instant of capture. That branch appears in none of the 13 returned agents. Sibling OE lanes running as subagents are likewise absent, and the four internal entries that do correspond to OE work carry branchName: null.",
+    "branches_visible_in_this_capture": [
+      "cursor/so02-cur-orch-qual-01",
+      "cursor/po03-wave-a-factory-6e19",
+      "po03/repository-engineering-portable-runtime-20260822-v001",
+      "cursor/po03-wave-a-transactional-factory-b2e7",
+      "cursor/po03-wave-a-transactional-factory-5086",
+      "cursor/po03-independent-challenger-70f8",
+      "cursor/po03-wave-a-b195-1a9f",
+      "cursor/po03-wave-a-transactional-factory-ed20"
+    ],
+    "agents_with_null_branch": 5,
+    "consequence": "Absence of a branch from this list is NOT evidence that nobody is writing it. concurrency_observer.py therefore never returns a bare 'clear' verdict; it returns SETTLED_SUBJECT_TO_TOP_LAYER_LIMIT and pairs it with a second signal, remote ref movement, which an invisible writer cannot avoid tripping once it pushes.",
+    "residual_hole_not_closed": "A writer that is live but has not yet pushed is invisible to both signals. This is stated rather than papered over."
+  },
+  "_statuses_present_in_this_capture": {
+    "IDLE": 9,
+    "ERROR": 2,
+    "WAITING_FOR_BACKGROUND_WORK": 1,
+    "_note": "counts cover the 12 non-observer entries plus the root controller; no agent was RUNNING at this instant. WAITING_FOR_BACKGROUND_WORK is a live state — the run is waiting on subagents that are themselves writing — and it is not in SETTLED_STATUSES. A denylist naming only RUNNING would have passed it."
+  },
+  "payload": {
+    "agentCount": 13,
+    "returned": 13,
+    "offset": 0,
+    "limit": 60,
+    "hasMore": false,
+    "totalMatched": 13,
+    "agents": [
+      {"bcId": "bc-b0b15e5d-cd46-5eb2-82ad-53c13fd8b41b", "name": "ChatGPT function constitution", "branchName": null, "status": "IDLE", "setupStatus": null, "source": "internal", "isArchived": false, "isKilled": false, "createdAtMs": 1787446244619, "updatedAtMs": 1787448356600},
+      {"bcId": "bc-10daec71-5a06-5a78-beb4-a6c2e97460da", "name": "ChatGPT to Cursor route evidence", "branchName": null, "status": "IDLE", "setupStatus": null, "source": "internal", "isArchived": false, "isKilled": false, "createdAtMs": 1787446244444, "updatedAtMs": 1787447908945},
+      {"bcId": "bc-3cc25012-4770-5deb-b207-7d4ee809dcd1", "name": "ChatGPT estate connection architecture", "branchName": null, "status": "ERROR", "setupStatus": null, "source": "internal", "isArchived": false, "isKilled": false, "createdAtMs": 1787443177549, "updatedAtMs": 1787446052973},
+      {"bcId": "bc-42b8be39-e5be-5400-8535-019c4d9f13e1", "name": "Agentic office launch guide", "branchName": null, "status": "IDLE", "setupStatus": null, "source": "internal", "isArchived": false, "isKilled": false, "createdAtMs": 1787443176494, "updatedAtMs": 1787445456549},
+      {"bcId": "bc-c6f63d58-9611-495a-96f6-2f2dcbef696d", "name": "Primary orchestration route qualification", "branchName": "cursor/so02-cur-orch-qual-01", "status": "WAITING_FOR_BACKGROUND_WORK", "setupStatus": null, "source": "web", "isArchived": false, "isKilled": false, "createdAtMs": 1787405466719, "updatedAtMs": 1787456327741},
+      {"bcId": "bc-aa38db59-c61c-4e29-9c26-4424b20f6e19", "name": "Po-03 wave a attempts", "branchName": "cursor/po03-wave-a-factory-6e19", "status": "IDLE", "setupStatus": "INSTALL_SUCCEEDED", "source": "web", "isArchived": false, "isKilled": false, "createdAtMs": 1787381280882, "updatedAtMs": 1787395354196},
+      {"bcId": "bc-13b664e4-a9eb-4a06-9b23-3283644e5b31", "name": "Po-03 wave a attempts", "branchName": "po03/repository-engineering-portable-runtime-20260822-v001", "status": "ERROR", "setupStatus": "INSTALL_SUCCEEDED", "source": "web", "isArchived": false, "isKilled": false, "createdAtMs": 1787381280239, "updatedAtMs": 1787389098106},
+      {"bcId": "bc-2bb75c2e-66fe-4eee-b456-e1d5e22db2e7", "name": "Po-03 wave a attempts", "branchName": "cursor/po03-wave-a-transactional-factory-b2e7", "status": "IDLE", "setupStatus": "INSTALL_SUCCEEDED", "source": "web", "isArchived": false, "isKilled": false, "createdAtMs": 1787381280222, "updatedAtMs": 1787391404701},
+      {"bcId": "bc-ecd55d9e-0ffe-49e1-897d-929d0a4b5086", "name": "Po-03 wave a attempts", "branchName": "cursor/po03-wave-a-transactional-factory-5086", "status": "IDLE", "setupStatus": "INSTALL_SUCCEEDED", "source": "web", "isArchived": false, "isKilled": false, "createdAtMs": 1787381280139, "updatedAtMs": 1787391428994},
+      {"bcId": "bc-94cf37fd-a126-4879-b2c1-2e2dfc7f70f8", "name": "Po-03 wave a attempts", "branchName": "cursor/po03-independent-challenger-70f8", "status": "IDLE", "setupStatus": "INSTALL_SUCCEEDED", "source": "web", "isArchived": false, "isKilled": false, "createdAtMs": 1787381280135, "updatedAtMs": 1787395335246},
+      {"bcId": "bc-b1956656-b897-4889-aeab-82c4556c1a9f", "name": "Po-03 wave a attempts", "branchName": "cursor/po03-wave-a-b195-1a9f", "status": "IDLE", "setupStatus": "INSTALL_SUCCEEDED", "source": "web", "isArchived": false, "isKilled": false, "createdAtMs": 1787381280133, "updatedAtMs": 1787402750632},
+      {"bcId": "bc-7137a066-3242-43a2-a30e-9a352047b759", "name": "Po-03 wave a attempts", "branchName": null, "status": "IDLE", "setupStatus": "INSTALL_SUCCEEDED", "source": "web", "isArchived": false, "isKilled": false, "createdAtMs": 1787381280106, "updatedAtMs": 1787395356292},
+      {"bcId": "bc-e92c4fa6-3658-4270-ab36-9eb56bf2ed20", "name": "Po-03 wave a attempts", "branchName": "cursor/po03-wave-a-transactional-factory-ed20", "status": "IDLE", "setupStatus": "INSTALL_SUCCEEDED", "source": "web", "isArchived": false, "isKilled": false, "createdAtMs": 1787381280078, "updatedAtMs": 1787395359334}
+    ]
+  }
+}

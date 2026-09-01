@@ -1,0 +1,68 @@
+{
+  "record_id": "FOUNDER-QUESTION-CORRECTION-20260823T0125Z",
+  "decision_changed": [],
+  "recorded_at": "2026-08-23T01:25:00Z",
+  "recorded_by": "root controller bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+
+  "question_withdrawn": {
+    "asked": "Do you already have a GitHub connector enabled in your ChatGPT account?",
+    "asked_at": ["2026-08-22T23:59Z", "2026-08-23T00:40Z"],
+    "status": "MIS-FRAMED — withdrawn and replaced",
+    "why": "OE-W7-CHATGPT-ROUTE-EVIDENCE established from live documentation that ChatGPT's supported connector list is exactly eight services and contains no GitHub connector. The thing I asked him to check does not exist, so no answer he could give would have been useful.",
+    "controller_error": "I asked a question shaped by an assumption rather than by evidence. The route existed; the name did not. Asking about a mechanism before establishing that the mechanism exists wastes a founder action, which is the cost this programme is specifically supposed to avoid."
+  },
+
+  "replacement_question": {
+    "ask": "Is Codex connected to GitHub in your ChatGPT account, and which repositories can it access?",
+    "why_this_is_the_right_question": "Codex, signed in to his ChatGPT account, is the GitHub-reaching route. It is not called a connector, which is why the first question missed it.",
+    "leverage": "HIGHEST among open questions. It decides whether the ChatGPT-to-Cursor loop can close today or needs building."
+  },
+
+  "the_finding_that_changes_the_connection_problem": {
+    "statement": "Three routes close the ChatGPT-to-Cursor loop for one reason: they write where Cursor already reads. No conversation API does that; a commit does.",
+    "routes": [
+      {"id": "R14", "name": "Codex cloud with a connected GitHub repository"},
+      {"id": "R15", "name": "Codex code review on a pull request", "detail": "posts a review on the pull request as a teammate would, automatically on every PR, and can push a fix back to the branch"},
+      {"id": "R16", "name": "Codex GitHub Action (openai/codex-action@v1)", "detail": "runs in this repository's own CI"}
+    ],
+    "consequence": "The connection problem the advisory proposal left unsolved — how anything reaches Cursor without the founder carrying it — has an answer that does not require the founder to relay anything.",
+    "denominator": {"total_routes": 27, "return_without_founder_touch": 13, "conditional": 8, "do_not_return": 5, "not_applicable": 1}
+  },
+
+  "the_asymmetry_worth_recording": {
+    "statement": "Two agent platforms answer the same question oppositely.",
+    "cursor": "The Cloud Agents API streams the agent's actual reply; the result event's text is the final assistant reply.",
+    "openai_workspace_agents": "The documentation states the agent's response cannot currently be retrieved through the API. Beta polling returns queued, in_progress, suspended, completed or failed, and no content.",
+    "design_consequence": "Any loop should terminate on the Cursor side. Workspace Agents has real value for dispatch and must never be drawn as a closed loop, because a workflow ending in the founder opening a conversation URL is founder-as-relay with automation upstream of the link he still has to open."
+  },
+
+  "cross_check_performed_on_this_controller_s_own_output": {
+    "concern": "The predecessor harvest recorded a 404 for a Cursor API source, and the launch guide makes claims about the Cursor Agent API. If the guide had inherited a wrong path its blocker analysis would be wrong.",
+    "checked": "The guide's claims were read directly rather than assumed sound.",
+    "result": "NO CORRECTION NEEDED. The guide records 401 on the real endpoints /v1/me, /v1/agents, /v1/models and /v1/repositories, and a differently-shaped 404 on a nonexistent route, which is exactly right. The predecessor's 404 was on a documentation page URL, not an API endpoint. Two different things that happened to share a status code."
+  },
+
+  "other_corrections_to_the_inherited_picture": [
+    {
+      "was": "Cursor's inbound API documentation could not be located (404).",
+      "now": "The 404 was a guessed path. Reading the published sitemap produced cloud-agent/api/endpoints and cloud-agent/api/webhooks, both 200."
+    },
+    {
+      "was": "A public HTTPS endpoint was identified as a blocker for connecting a private MCP server to ChatGPT.",
+      "now": "Secure MCP Tunnel, absent from the harvest entirely, connects a private MCP server over an outbound-only connection from a host inside the network, removing that blocker. The remaining need is a durable host, which an ephemeral pod is not."
+    }
+  ],
+
+  "custody_of_the_delivering_lane": {
+    "parent_id": "OE-W7-CHATGPT-ROUTE-EVIDENCE",
+    "head": "d5a90ee9ae8c8963b7398659cf68d167dae37a82",
+    "entries": 12, "bundle_recomputed_matches": true, "digest_mismatches": 0,
+    "uncovered": 0, "outside_scope": 0,
+    "salvage_worked": "The lane reused the failed predecessor's harvest rather than re-fetching, and 28 of 28 overlapping successful fetches were byte-identical to it, carrying its provenance forward. Only 6 sources were genuinely new. The recovery cost far less than the failure."
+  },
+
+  "unestablished_and_recorded_as_such": {
+    "data_export": "Three sources answered 403, once with curl's default agent, ruling out an agent-string block; the bodies are challenge pages. The published index on a host that does answer was then searched for an account-export page and has none. Looked for and not found, rather than assumed to work.",
+    "bounded_not_established": ["plan eligibility, which gates the Compliance API, Codex access tokens and service accounts", "the Compliance API contract itself", "whether any GitHub-reaching entry exists in the live plugin directory"]
+  }
+}

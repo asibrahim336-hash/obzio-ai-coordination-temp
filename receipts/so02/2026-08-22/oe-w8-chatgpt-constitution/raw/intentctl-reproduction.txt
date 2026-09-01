@@ -1,0 +1,53 @@
+OE-W8 intentctl reproduction
+recorded_at_utc: 2026-08-23T01:11:25Z
+cwd: workstreams/so02/control-plane/operating-environment/w8-chatgpt-constitution
+
+$ python3 tools/intentctl.py validate
+PASS: 4 utterance(s), schema and locator discipline hold
+exit=0
+
+$ python3 tools/intentctl.py conflicts
+        ok  DC-CHATGPT-ACCOUNT-USE             candidates=1 by=STANDING
+        --  DC-CHATGPT-FUNCTIONS               candidates=0 by=None
+        ok  DC-CREDENTIAL-POSTURE              candidates=1 by=STANDING
+        ok  DC-CURSOR-ROLE                     candidates=1 by=STANDING
+        ok  DC-INTENT-PRESERVATION             candidates=2 by=STANDING
+        ok  DC-OPERATING-AUTHORITY             candidates=2 by=FOUNDER_PRECEDENCE_RECENCY
+
+PASS: no contested class is unresolved
+exit=0
+
+$ python3 tools/intentctl.py standing --id urn:obzio:w8:utterance:chatgpt-advisory-proposal-20260822
+{
+  "utterance_id": "urn:obzio:w8:utterance:chatgpt-advisory-proposal-20260822",
+  "standing": "S1",
+  "standing_name": "CONTEXT",
+  "custody": "COMMITTED",
+  "admitted": false,
+  "timestamp_trust": "TRUSTED",
+  "derivation": [
+    "table[FOUNDER_QUOTING_OTHER][QUOTATION] = S1"
+  ]
+}
+exit=0
+
+$ python3 tools/negative_tests_intentctl.py
+PASS NT1    founder assents to an assistant proposal; the proposal is claimed as founder intent                          effective standing S1, expected S1 (the standing of what was acknowledged, not of the assent)
+PASS NT1b   founder restates the content himself, which must NOT be suppressed                                           effective standing S3, expected S3 (a rule that only ever suppresses is not a rule, it is a veto)
+PASS NT2    a recovered directive stored as a paraphrase rather than verbatim, claiming standing                         standing S1, expected S1 (CAP-PARAPHRASE outranks the designation)
+PASS NT3    a founder directive whose only locator is a display alias                                                    standing S0, expected S0 INADMISSIBLE
+PASS NT4    a recovered thread of equal standing with no verifiable utterance time contests a current founder statement  state UNRESOLVED, winner None, expected UNRESOLVED with no winner and one binary question
+PASS NT4b   the unresolved conflict must arrive as one question, not as reading material                                 founder_question present: True
+PASS NT5    a newer assistant utterance contests an older founder directive                                              winner urn:obzio:w8:utterance:test-old-high, by STANDING, expected the older founder utterance by STANDING
+PASS NT6    an utterance claims to supersede a target that is not in the ledger                                          errors: ['?: SUPERSESSION_TARGET_UNKNOWN urn:obzio:w8:utterance:test-does-not-exist — supersession is named, never inferred']
+PASS NT7    scope given as a topic keyword rather than a decision class                                                  errors: ["urn:obzio:w8:utterance:test-subject: SCOPE_NOT_A_DECISION_CLASS 'pricing strategy' — scope is declared, never inferred from keywords"]
+PASS NT8    a voice-captured directive whose read-back was never confirmed, claiming standing                            standing S2, expected S2 CAPTURED_UNCONFIRMED
+PASS NT9    a recovered founder directive still in the provider, claiming to settle a class                              standing S4 (correctly high), admitted candidates 0 (correctly zero)
+PASS NT10   an utterance recovered without an established speaker, claiming founder standing                             standing S0, expected S0
+PASS NT11   a founder thinking aloud, admitted as a founder decision                                                     standing S1, admitted candidates 0
+PASS NT12   a repository locator with no commit                                                                          errors: ['urn:obzio:w8:utterance:test-subject: LOCATOR_UNPINNED a repository locator must name a commit']
+PASS NT13   the founder's own precedence clause must still decide where he authorised it                                 state RESOLVED, winner urn:obzio:w8:utterance:test-later, by FOUNDER_PRECEDENCE_RECENCY
+PASS NT14   an older utterance that names the newer one as superseded                                                    winner urn:obzio:w8:utterance:test-older-superseding, by NAMED_SUPERSESSION (named supersession precedes recency)
+
+PASS: all 16 failure modes rejected by the rule
+exit=0

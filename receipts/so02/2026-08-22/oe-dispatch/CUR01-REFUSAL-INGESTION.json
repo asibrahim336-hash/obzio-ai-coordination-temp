@@ -1,0 +1,129 @@
+{
+  "record_id": "CUR01-INDEPENDENT-ACCEPTANCE-REFUSAL-INGESTION-20260822T2026Z",
+  "decision_changed": [],
+  "recorded_at": "2026-08-22T20:26:40Z",
+  "recorded_by": "root controller bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+  "governing_verdict": "REFUSED",
+  "verdict_is_governing_over_producer_claim": true,
+  "producer_may_overturn": false,
+  "producer_note": "The refused evidence was produced by this same root controller. It does not and may not overturn the verdict. Its only permitted responses are to verify the acceptor honoured its independence controls, to reproduce the findings, and to correct the mechanism.",
+
+  "acceptance_lane": {
+    "parent_id": "OE-L3-INDEPENDENT-ACCEPTANCE",
+    "provider_id": "c0f87d27-7d2f-4ff4-87c7-ba27142c7b07",
+    "branch": "cursor/oe-l3-independent-acceptance-696d",
+    "model_family": "gpt-5.6-sol-xhigh",
+    "producer_model_family": "claude-opus-5-thinking-max-fast",
+    "criteria_commit": "9a390df3ebdd19e1403317be24c74e6abc249415",
+    "verdict_commit": "541eff445f2acd3cabea91b54c53afae237b9d59",
+    "bundle_sha256": "5259a0b0e49369a2185ee5b81f92c1e9f7b742f3180a30b7fa728ecdf978bf80"
+  },
+
+  "independence_controls_verified_by_root_controller": {
+    "verified_at": "2026-08-22T20:25:10Z",
+    "distinct_model_family": true,
+    "criteria_committed_before_verdict": true,
+    "criteria_commit_timestamp": "2026-08-22T20:15:03+00:00",
+    "verdict_commit_timestamp": "2026-08-22T20:23:55+00:00",
+    "criteria_commit_is_ancestor_of_verdict": true,
+    "criteria_commit_touched_only_the_criteria_file": true,
+    "namespace_containment": "PASS via lane_guard.py",
+    "founder_used_as_relay_or_transporter": false,
+    "conclusion": "The independence claim is structurally checkable in git history and holds."
+  },
+
+  "root_controller_independent_reproduction_of_findings": {
+    "method": "Throwaway clone of the evidence at immutable commit 11a60dcf, defects exercised directly against the producer's own tooling. Read-only; the evidence branch was not modified.",
+    "finding_class": "DIRECTLY_REPRODUCED",
+    "defects_confirmed": [
+      {
+        "id": "DEF-01-READBACK-SHAPE-NOT-TRUTH",
+        "acceptor_criterion": "AC-05",
+        "claim": "A wholly forged read-back still makes producer verification pass.",
+        "reproduction": "Replaced REMOTE-READBACK.json with a fabricated record naming nonexistent commit 0000000000000000000000000000000000000000 and two invented transports. `orchqual.py verify` returned PASS with exit code 0.",
+        "confirmed": true,
+        "severity": "HIGH",
+        "root_cause": "verify_readback asserted the internal self-consistency of a claim rather than re-deriving it from the remote. Self-consistency is not custody. The remote read-back evidence flag was therefore never enforced by the verifier; it held only because the producer honestly ran the real command.",
+        "consequence": "The 'remote byte-for-byte read-back' control was decorative under adversarial conditions, even though the read-back itself was genuinely performed."
+      },
+      {
+        "id": "DEF-02-DENYLIST-FAILS-OPEN",
+        "acceptor_criterion": "AC-08",
+        "claim": "An IDLE to ERROR transition silently passes the capacity detector.",
+        "reproduction": "INTERFERENCE_STATUSES enumerated only QUEUED, PAUSED, EVICTED, ADMISSION_REFUSED, KILLED and PENDING. Synthetic IDLE->ERROR and IDLE->FAILED transitions both returned ZERO_PO03_CAPACITY_INTERFERENCE.",
+        "confirmed": true,
+        "severity": "HIGH",
+        "root_cause": "A denylist of harmful states fails open on every state nobody enumerated.",
+        "consequence": "A pre-existing PO-03 task crashing during the observation window would not have been reported as interference. Note that in the actual observation no PO-03 status changed at all, so the recorded result was not wrong in fact; the detector was simply incapable of catching a class of real regression."
+      }
+    ],
+    "findings_accepted_without_independent_reproduction": [
+      "AC-03 manifest omission closure",
+      "AC-06 R2 operational reality: the route observed the running producer itself and committed summaries and hashes rather than the raw retrieved artifacts",
+      "AC-07 shared controller and custody failure domains between R1 and R2",
+      "AC-12 CI corroboration circularity, since the producer authored the workflow assertions CI executes"
+    ]
+  },
+
+  "claims_now_withdrawn": [
+    {
+      "withdrawn": "PASS_TWO_OR_MORE_ROUTES",
+      "reason": "R2 is not established as genuinely independent of R1. It observed the producing run itself, committed derived summaries rather than raw retrieved artifacts, and ultimately depends on R1/GitHub for custody. Two transports are not two failure domains.",
+      "replacement": "ONE_CUSTODY_ROUTE_INDEPENDENTLY_VERIFIED_SECOND_ROUTE_REFUSED"
+    },
+    {
+      "withdrawn": "cursor_role_state MAJOR_ORCHESTRATION_LAYER_QUALIFIED",
+      "reason": "That state was predicated on two qualified independent routes.",
+      "replacement": "PRIMARY_ORCHESTRATION_CANDIDATE_ONE_ROUTE_VERIFIED_INDEPENDENT_ACCEPTANCE_REFUSED"
+    }
+  ],
+
+  "claims_that_survived_independent_challenge": [
+    "AC-04: an independent fresh-clone read-back of the final head matched 13 entries and 126,492 bytes. R1 GitHub immutable-SHA custody is independently verified and remains usable.",
+    "AC-02: all three producer gates genuinely pass, 92 tests.",
+    "AC-09: the 22-event hash chain verified, including tamper probes.",
+    "AC-11: no credential-bearing locator, no strategy binding, decision_changed empty throughout.",
+    "AC-13: two acceptance sub-lanes with different criteria emphases converged independently on refusal."
+  ],
+
+  "preservation": {
+    "cur01_evidence_branch": "cursor/so02-cur-orch-qual-01",
+    "immutable_head": "11a60dcf6dbc2eac4e6d975efab5d985ebbabd62",
+    "pull_request": 11,
+    "action_taken": "NONE — preserved byte-identical",
+    "rule": "Refused evidence remains evidence. The branch and PR are not rewritten, retracted or deleted. The refusal supersedes the claim, not the artifact."
+  },
+
+  "mechanism_corrections_shipped": {
+    "principle": "The estate's recorded failure is lessons documented without changing the mechanism. These defects are therefore corrected in executable code with the acceptor's own forgeries as regression tests, not written up as advice.",
+    "module": "workstreams/so02/control-plane/operating-environment/tools/evidence_integrity.py",
+    "tests": "workstreams/so02/control-plane/operating-environment/tools/test_evidence_integrity.py",
+    "corrections": [
+      "verify_readback_truth recomputes a read-back from a fresh clone of the remote and rejects any record whose commit is unretrievable or whose claimed digests differ from what the remote actually serves. The acceptor's exact forgery is now a failing test.",
+      "capacity_verdict inverts the denylist into an allowlist of asserted-benign statuses, so ERROR, FAILED and any status not yet invented fail closed. A test asserts an unheard-of future status is caught.",
+      "verify_manifest_closure rejects any present file not covered by a hash, closing the exclusion hole regardless of how well motivated the exclusion was."
+    ],
+    "test_count": 25,
+    "all_passing": true
+  },
+
+  "conflict_requiring_founder_judgment": {
+    "id": "CONF-01-R2-QUALIFIED-PREMISE",
+    "statement": "The founder's instruction records 'R2 Cursor agent control/results/artifacts: qualified' and directs beginning the next scaled work that 'the qualified R1/R2 routes already enable'. The independent acceptance the founder asked to be constituted has refused precisely that claim.",
+    "why_it_is_a_real_conflict": "It is not a disagreement about facts. Both statements rest on the same evidence; the acceptor applied a stricter independence standard than the producer did, and the founder's premise was formed before the acceptance existed.",
+    "root_controller_reading_pending_founder_judgment": "Proceed on R1 custody, which was independently verified, and stop describing the operation as having two independent routes. R2 remains usable as an observation and control convenience, not as a redundant custody path. This is the conservative reading and does not pause other work.",
+    "what_would_resolve_it": "Either accept the narrower reading, or commission R2 to be re-qualified properly: address a different agent run rather than the producing run itself, commit the raw retrieved artifacts rather than summaries, and establish a custody path that does not terminate in GitHub.",
+    "blocking_scope": "the two-route redundancy claim only; no other lane or work is gated on this"
+  },
+
+  "programme_impact": {
+    "operation_paused": false,
+    "basis": "The founder directed that independent acceptance status must not pause the operation. Four lanes continue.",
+    "changes_to_downstream_work": [
+      "No downstream work may cite two independent qualified routes.",
+      "Scaled work proceeding on R1 immutable-SHA custody is unaffected and independently verified.",
+      "Any future route qualification must use evidence_integrity.verify_readback_truth rather than a shape check.",
+      "Any future capacity claim must use the allowlist detector."
+    ]
+  }
+}

@@ -1,0 +1,669 @@
+{
+  "artifact_id": "OE-L2-CAPABILITY-MAP-20260822-v001",
+  "lane": "OE-L2-CAPABILITY-RESEARCH",
+  "commission_id": "COM-CUR-ENV-01-20260822-v001",
+  "parent_fence_token": "d5e76252f0ea259d",
+  "immutable_start_sha": "fe0a595206e5986de7eaac6cabc619215a1eb81b",
+  "produced_at_utc": "2026-08-22T20:45:00Z",
+  "lifecycle_state": "READY_TO_COMMIT",
+  "binding_status": "NON_BINDING_RESEARCH_NO_TOOL_MODEL_OR_ARCHITECTURE_SELECTED",
+
+  "purpose": "Reconstruct what the founder operating environment must be able to do, stated independently of any product name, so that candidates can be judged against requirements rather than requirements being reverse-engineered from a named stack. The prior lane inverted this order and produced a halted install batch.",
+
+  "evidence_label_definitions": {
+    "DIRECTLY_REPRODUCED": "This lane executed a command against a live source and recorded the command, URL and fetch date. Raw output is under receipts/so02/2026-08-22/oe-l2-capability-research/raw/.",
+    "DOCUMENTED": "Asserted by an official source that this lane fetched, where the assertion is about behaviour this lane did not itself execute.",
+    "HYPOTHESIS": "Untested inference by this lane. Never sufficient for a recommendation."
+  },
+
+  "method": {
+    "instruments": [
+      "workstreams/so02/control-plane/operating-environment/l2-capability-research/tools/gh_probe.py",
+      "workstreams/so02/control-plane/operating-environment/l2-capability-research/tools/fetch_doc.py",
+      "workstreams/so02/control-plane/operating-environment/l2-capability-research/tools/model_table.py"
+    ],
+    "live_sources_used": ["GitHub REST API via gh", "npm registry", "PyPI", "Hugging Face model API", "OpenRouter model catalogue API", "Chrome Web Store listings", "official project documentation and READMEs"],
+    "search_engines_unavailable": {
+      "evidence_class": "DIRECTLY_REPRODUCED",
+      "note": "DuckDuckGo lite/html returned HTTP 202 bot challenges, Brave 429, Mojeek 403 and searx.be a browser-verification interstitial on 2026-08-22. Name resolution therefore relied on registry, repository, store and DNS probes rather than web search, which limits negative-existence claims to those surfaces."
+    }
+  },
+
+  "operating_context": {
+    "principal": "Ahmed Sadek, Obzio — agent-first AI capability platform",
+    "device_now": {
+      "class": "Chromebook",
+      "compute_posture": "cloud-first, no meaningful local inference compute",
+      "linux_route": {
+        "name": "Crostini (Linux on ChromeOS)",
+        "evidence_class": "DOCUMENTED",
+        "source": "https://chromeos.dev/en/linux and https://chromeos.dev/en/linux/setup fetched 2026-08-22",
+        "capabilities": "Debian container, Terminal, APT, GUI apps in the launcher, folder sharing from the Files app",
+        "constraints_quoted": "All apps installed in the Linux container share the same sandbox and can affect each other. Many permissions, such as USB access or microphone access, are not shared by default and must be enabled in device settings."
+      }
+    },
+    "device_later": {
+      "class": "MacBook (Apple silicon assumed, exact model and unified memory not yet decided)",
+      "compute_posture": "local inference becomes possible; the reachable model rung is a direct function of unified memory",
+      "open_question_ref": "FQ-01"
+    },
+    "interface_preference": "voice-first: speech intake, semantic strengthening, read-back of consequential interpretation, confirmation, typed durable event, delegated execution, consolidated evidence return"
+  },
+
+  "cross_cutting_invariants": [
+    {
+      "invariant_id": "INV-01",
+      "statement": "Every model, tool and runtime must be substitutable without rewriting logic or migrating state.",
+      "mechanised_by": "an adapter boundary the founder owns, not a provider SDK used directly at call sites",
+      "verification": "substitute the component and re-run the same acceptance suite; the suite must pass unchanged"
+    },
+    {
+      "invariant_id": "INV-02",
+      "statement": "Canonical durable state is open, inspectable, versioned and reconstructable outside every provider.",
+      "verification": "delete every provider account and show the operating history is still complete and replayable from the repository"
+    },
+    {
+      "invariant_id": "INV-03",
+      "statement": "Provider memory is a cache, never constitutional authority.",
+      "verification": "clear provider memory and show no capability regression beyond latency"
+    },
+    {
+      "invariant_id": "INV-04",
+      "statement": "Evaluation and observability are product capabilities delivered with each capability, not retrofitted.",
+      "verification": "no capability is admitted without its own pass or fail gate and its own evidence artifact"
+    },
+    {
+      "invariant_id": "INV-05",
+      "statement": "Access authority and semantic disclosure are independent. Holding a credential does not entitle a component to the strategic frame.",
+      "verification": "for each component, the disclosed context is bounded by function, and the boundary is stated in the register"
+    },
+    {
+      "invariant_id": "INV-06",
+      "statement": "Maintenance risk is a first-class selection criterion. An unmaintained dependency in the founder's daily operating path is an outage waiting for a Chrome or macOS release.",
+      "verification": "every retained candidate has a live maintenance signal recorded with its fetch date and is re-checked on a schedule"
+    }
+  ],
+
+  "areas": [
+    {
+      "area_id": "C1",
+      "name": "Browser and computer control, authenticated-session operation, owner-approval gates",
+      "why_it_matters": "Most of the founder's leverage is behind logins in systems with no API. Control without an approval gate converts a convenience into an unbounded authority delegation.",
+      "capability_requirements": [
+        {
+          "req_id": "C1-R1",
+          "statement": "Operate a page inside an already-authenticated browser session without the operating environment ever holding the credential.",
+          "acceptance_test": "Complete a create-read-delete cycle on an authenticated surface; prove from structured page state that the change happened and was reverted; show no credential value was read, logged or transmitted to the controller.",
+          "failure_mode_if_absent": "Either the founder hands over credentials, or authenticated work stays manual and does not scale.",
+          "disclosure_surface": "the controller sees whatever the selected tab renders, which on an authenticated surface includes personal and commercial data",
+          "chromebook_now": "achievable only by a controller running locally in Crostini attaching to the ChromeOS browser; a cloud agent in an isolated VM has no route to the local browser",
+          "macbook_later": "same mechanism, plus the option of a controller-owned browser profile with an exported storage state, removing the extension dependency",
+          "candidate_classes": ["browser extension bridging to a locally-run controller", "controller-owned browser with imported session state", "cloud browser service holding the session", "proprietary all-in-one browser assistant"],
+          "verified_candidates": [
+            {"ref": "microsoft/playwright + Playwright Extension", "evidence_class": "DOCUMENTED", "note": "extension attaches to existing profile, per-client tab groups, per-connection approval dialog"},
+            {"ref": "ChromeDevTools/chrome-devtools-mcp", "evidence_class": "DOCUMENTED"},
+            {"ref": "harpa.ai GRID", "evidence_class": "DOCUMENTED", "note": "cloud relay orchestrates the local machine; enlarges the trust boundary"},
+            {"ref": "airtop.ai", "evidence_class": "DOCUMENTED", "note": "cloud browsers with a password vault; moves the session off the founder's device"}
+          ]
+        },
+        {
+          "req_id": "C1-R2",
+          "statement": "Every consequential action passes an owner gate that is specific, revocable and observable, not a one-time blanket grant.",
+          "acceptance_test": "Show the approval prompt, show scope limited to the approved target, then revoke and show the controller loses access without restarting the browser.",
+          "failure_mode_if_absent": "A prompt-injected page silently escalates into account actions.",
+          "disclosure_surface": "the gate itself is the disclosure control; bypass tokens remove it",
+          "chromebook_now": "available",
+          "macbook_later": "available",
+          "candidate_classes": ["per-connection approval with explicit target selection", "policy engine over tool calls", "human-in-the-loop approval mode in the agent runtime"],
+          "verified_candidates": [
+            {"ref": "Playwright Extension approval dialog and tab-group scoping", "evidence_class": "DOCUMENTED", "note": "documentation also describes PLAYWRIGHT_MCP_EXTENSION_TOKEN, which exists specifically to bypass the approval dialog; adopting the token removes the gate"},
+            {"ref": "open-policy-agent/opa", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "cedar-policy/cedar", "evidence_class": "DIRECTLY_REPRODUCED"}
+          ]
+        },
+        {
+          "req_id": "C1-R3",
+          "statement": "Failure is explicit. A target that does not exist produces a typed NOT_FOUND, never an approximate substitute action.",
+          "acceptance_test": "Instruct an action against a deliberately absent target and require an explicit failure with no fallback selection.",
+          "failure_mode_if_absent": "Silent wrong-target actions are the highest-severity browser-agent failure and are invisible in success-only logs.",
+          "disclosure_surface": "none",
+          "chromebook_now": "achievable; a property of the controller and prompt contract, not the device",
+          "macbook_later": "unchanged",
+          "candidate_classes": ["deterministic selector-based control", "accessibility-tree addressing", "vision-grounded control with confidence thresholds"],
+          "verified_candidates": [
+            {"ref": "microsoft/playwright-mcp", "evidence_class": "DOCUMENTED", "note": "README states it operates on structured accessibility snapshots for deterministic tool application rather than screenshots"}
+          ]
+        },
+        {
+          "req_id": "C1-R4",
+          "statement": "Computer control beyond the browser (desktop applications, OS state) is separable and independently gated.",
+          "acceptance_test": "Show browser control working with desktop control absent, and show enabling desktop control is a distinct, recorded authority grant.",
+          "failure_mode_if_absent": "Browser authority silently becomes machine authority.",
+          "disclosure_surface": "full screen and filesystem",
+          "chromebook_now": "not practical: ChromeOS is not a general desktop target and Crostini is a sandboxed container",
+          "macbook_later": "practical; this is one of the real capabilities the MacBook unlocks",
+          "candidate_classes": ["OS-level computer-use agents", "sandboxed virtual desktops", "screen-recording context layers"],
+          "verified_candidates": [
+            {"ref": "trycua/cua", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "bytedance/UI-TARS-desktop", "evidence_class": "DIRECTLY_REPRODUCED", "note": "last commit 2026-07-01, latest release 2025-11-04; slower cadence than its star count suggests"},
+            {"ref": "e2b-dev/desktop", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "OpenAdaptAI/OpenAdapt", "evidence_class": "DIRECTLY_REPRODUCED"}
+          ]
+        }
+      ]
+    },
+    {
+      "area_id": "C2",
+      "name": "Screen, DOM, accessibility-tree, runtime and network extraction as evidence",
+      "why_it_matters": "A claim that an agent did something is worth nothing without an artifact a third party can check. Extraction is the difference between an operating environment and a chat log.",
+      "capability_requirements": [
+        {
+          "req_id": "C2-R1",
+          "statement": "Capture structured page state (accessibility tree or DOM) rather than only pixels, so read-back is machine-checkable.",
+          "acceptance_test": "Assert a specific value from structured state, not from a model's description of a screenshot.",
+          "failure_mode_if_absent": "Verification collapses into the model grading its own homework.",
+          "disclosure_surface": "structured state contains everything the page rendered",
+          "chromebook_now": "available",
+          "macbook_later": "available",
+          "candidate_classes": ["accessibility snapshot", "DOM serialisation", "content extraction to markdown"],
+          "verified_candidates": [
+            {"ref": "microsoft/playwright-mcp", "evidence_class": "DOCUMENTED"},
+            {"ref": "dequelabs/axe-core", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "mozilla/readability", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "microsoft/markitdown", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "docling-project/docling", "evidence_class": "DIRECTLY_REPRODUCED"}
+          ]
+        },
+        {
+          "req_id": "C2-R2",
+          "statement": "Capture runtime evidence the page does not display: console messages, network requests and responses, and performance traces.",
+          "acceptance_test": "Reproduce a failed operation and show the network request and console error that explain it, not a model's guess.",
+          "failure_mode_if_absent": "Every failure becomes an unfalsifiable narrative and the same failure recurs.",
+          "disclosure_surface": "network capture includes request headers and bodies, which can contain bearer tokens; capture must be redacted before it becomes durable evidence",
+          "chromebook_now": "available",
+          "macbook_later": "available",
+          "candidate_classes": ["Chrome DevTools Protocol clients", "MCP servers over CDP", "HAR capture"],
+          "verified_candidates": [
+            {"ref": "ChromeDevTools/chrome-devtools-mcp", "evidence_class": "DOCUMENTED", "note": "documented tool groups: input automation, navigation, emulation, performance, network, debugging, memory, extensions, third-party, WebMCP, progressive web apps"},
+            {"ref": "ChromeDevTools/devtools-protocol", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "AgentDeskAI/browser-tools-mcp", "evidence_class": "DIRECTLY_REPRODUCED"}
+          ]
+        },
+        {
+          "req_id": "C2-R3",
+          "statement": "Extraction does not silently widen disclosure. What is captured, where it is stored and who can read it is declared before capture, not discovered afterwards.",
+          "acceptance_test": "For each extraction tool, show its default telemetry posture and the exact flag that disables it; record the residual.",
+          "failure_mode_if_absent": "Founder strategy leaks through a debugging tool's default analytics.",
+          "disclosure_surface": "this requirement is the control",
+          "chromebook_now": "applies",
+          "macbook_later": "applies",
+          "candidate_classes": ["local-only capture", "opt-out telemetry", "redaction before persistence"],
+          "verified_candidates": [
+            {"ref": "ChromeDevTools/chrome-devtools-mcp", "evidence_class": "DOCUMENTED", "note": "README states Google usage-statistics collection is enabled by default with --no-usage-statistics / CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS opt-out, and that performance tools may send trace URLs to the Google CrUX API unless --no-performance-crux is set"},
+            {"ref": "data-privacy-stack/presidio", "evidence_class": "DIRECTLY_REPRODUCED", "note": "PII detection and redaction; note the project moved from the microsoft org"},
+            {"ref": "gitleaks/gitleaks", "evidence_class": "DIRECTLY_REPRODUCED"}
+          ]
+        }
+      ]
+    },
+    {
+      "area_id": "C3",
+      "name": "Provenance-aware knowledge flow and knowledge graphs",
+      "why_it_matters": "Obzio's institutional claim is that its evidence survives challenge. That requires knowing, for every assertion, where it came from, when, under what authority, and what superseded it.",
+      "capability_requirements": [
+        {
+          "req_id": "C3-R1",
+          "statement": "Every durable assertion carries origin, agent, activity, time and supersession, using a vocabulary that outlives the tool that produced it.",
+          "acceptance_test": "Given any statement in the store, reconstruct who produced it, from what input, under what commission, and what replaced it, without consulting a provider.",
+          "failure_mode_if_absent": "Conflicting claims cannot be adjudicated and the archive rots into folklore.",
+          "disclosure_surface": "provenance metadata itself can reveal internal structure and should be classified",
+          "chromebook_now": "fully available; this is repository work",
+          "macbook_later": "unchanged",
+          "candidate_classes": ["W3C provenance ontology", "signed attestation frameworks", "lineage event standards", "content credentials"],
+          "verified_candidates": [
+            {"ref": "W3C PROV-O", "evidence_class": "DOCUMENTED", "note": "W3C Recommendation dated 30 April 2013; stable and unlikely to churn, which is the point"},
+            {"ref": "in-toto/attestation", "evidence_class": "DOCUMENTED", "note": "predicate / statement / envelope / bundle layering, spec v1.2"},
+            {"ref": "slsa-framework/slsa", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "sigstore/cosign", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "OpenLineage/OpenLineage", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "contentauth/c2pa-rs", "evidence_class": "DIRECTLY_REPRODUCED"}
+          ]
+        },
+        {
+          "req_id": "C3-R2",
+          "statement": "Relationships between entities are queryable, and the graph can be rebuilt from the primary evidence rather than being the only copy.",
+          "acceptance_test": "Delete the graph store, rebuild it from repository primary sources, and get the same answers.",
+          "failure_mode_if_absent": "The graph becomes an unversioned second source of truth that quietly diverges.",
+          "disclosure_surface": "an aggregated graph is more sensitive than its parts",
+          "chromebook_now": "a small embedded store is fine; heavy graph servers are not a Chromebook workload",
+          "macbook_later": "local graph and vector stores become comfortable",
+          "candidate_classes": ["derived-and-rebuildable graph over primary files", "RDF triple store", "property graph server", "graph-augmented retrieval frameworks"],
+          "verified_candidates": [
+            {"ref": "oxigraph/oxigraph", "evidence_class": "DIRECTLY_REPRODUCED", "note": "embeddable SPARQL store, no server to operate"},
+            {"ref": "apache/jena", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "getzep/graphiti", "evidence_class": "DOCUMENTED", "note": "requires a third-party graph backend: Neo4j, FalkorDB or Neptune; the Kuzu backend is marked deprecated and kuzudb/kuzu is archived on GitHub"},
+            {"ref": "microsoft/graphrag", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "topoteretes/cognee", "evidence_class": "DOCUMENTED", "note": "can run the whole memory layer on a single Postgres instance, which materially lowers operating burden"},
+            {"ref": "HKUDS/LightRAG", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "kuzudb/kuzu", "evidence_class": "DIRECTLY_REPRODUCED", "note": "ARCHIVED on GitHub, last push 2025-10-10; do not adopt"}
+          ]
+        }
+      ]
+    },
+    {
+      "area_id": "C4",
+      "name": "Cross-model memory and continuity without provider memory becoming canonical",
+      "why_it_matters": "The founder works across several providers. If continuity lives inside one of them, switching models silently costs institutional memory, which is exactly the lock-in the strategy forbids.",
+      "capability_requirements": [
+        {
+          "req_id": "C4-R1",
+          "statement": "A new session on a different provider and a different model reaches the same working context from Obzio-owned state.",
+          "acceptance_test": "Start the same task on two different providers; both reconstruct context from the shared store; outputs are comparable and both cite the same source records.",
+          "failure_mode_if_absent": "Provider substitution becomes a capability regression, so it never happens, so lock-in is real.",
+          "disclosure_surface": "the shared store is the widest disclosure in the system and must be classified per consumer",
+          "chromebook_now": "fully available; repository-backed",
+          "macbook_later": "unchanged, plus local embedding and retrieval",
+          "candidate_classes": ["plain-file memory in the versioned repository", "self-hosted memory service", "managed memory platform", "graph-based temporal memory"],
+          "verified_candidates": [
+            {"ref": "basicmachines-co/basic-memory", "evidence_class": "DOCUMENTED", "note": "README: memory lives as Markdown files, local-first plain text, no lock-in; open-version cross-device sync is manual via Git or Syncthing. Licence AGPL-3.0, which is a deliberate consideration for a company packaging IP"},
+            {"ref": "mem0ai/mem0", "evidence_class": "DOCUMENTED", "note": "README states the headline benchmark figures reflect the managed platform including proprietary optimisations not present in the open-source SDK; the open-source component is not the benchmarked artifact"},
+            {"ref": "letta-ai/letta", "evidence_class": "DOCUMENTED", "note": "the widely-cited repo is now a landing page; source moved to letta-ai/letta-code and the V1 server is on an archive branch. Anything pinned to the old repo is pinned to a redirect"},
+            {"ref": "getzep/graphiti", "evidence_class": "DOCUMENTED", "note": "the Zep product's graph engine is proprietary; the open component requires you to bring your own graph database"},
+            {"ref": "topoteretes/cognee", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "supermemoryai/supermemory", "evidence_class": "DIRECTLY_REPRODUCED"}
+          ]
+        },
+        {
+          "req_id": "C4-R2",
+          "statement": "Provider-side memory can be cleared at any time with no loss beyond re-read latency.",
+          "acceptance_test": "Clear provider memory and re-run an acceptance task; it must pass.",
+          "failure_mode_if_absent": "Provider memory has quietly become constitutional, violating INV-03.",
+          "disclosure_surface": "provider memory retains content indefinitely under the provider's policy, not Obzio's",
+          "chromebook_now": "applies",
+          "macbook_later": "applies",
+          "candidate_classes": ["context reconstruction from repository on session start"],
+          "verified_candidates": []
+        }
+      ]
+    },
+    {
+      "area_id": "C5",
+      "name": "MCP and other open, replaceable interfaces; tool permissioning and capability discovery",
+      "why_it_matters": "Interfaces are where lock-in is decided. An open interface makes the component behind it disposable.",
+      "capability_requirements": [
+        {
+          "req_id": "C5-R1",
+          "statement": "Tools are exposed over a versioned open protocol so the client and the server can be replaced independently.",
+          "acceptance_test": "Swap the client for a different one and re-run the tool suite unchanged.",
+          "failure_mode_if_absent": "Every capability is re-implemented per client.",
+          "disclosure_surface": "protocol version negotiation and server discovery reveal the toolset",
+          "chromebook_now": "available; local stdio servers run in Crostini",
+          "macbook_later": "available",
+          "candidate_classes": ["MCP", "Agent Client Protocol", "A2A", "direct CLI invocation with skills"],
+          "verified_candidates": [
+            {"ref": "modelcontextprotocol/modelcontextprotocol", "evidence_class": "DOCUMENTED", "note": "current protocol version 2026-07-28; date-based revisions; per-request version declared via io.modelcontextprotocol/protocolVersion and the MCP-Protocol-Version header; deprecated features carry a minimum twelve-month removal window"},
+            {"ref": "agentclientprotocol/agent-client-protocol", "evidence_class": "DIRECTLY_REPRODUCED", "note": "the project moved out of the zed-industries org; v1 current with a v2 draft"},
+            {"ref": "a2aproject/A2A", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "microsoft/playwright-cli", "evidence_class": "DOCUMENTED", "note": "the Playwright MCP README itself now recommends CLI plus Skills over MCP for coding agents on token-efficiency grounds, reserving MCP for long-running agentic loops needing persistent browser state. An MCP-only interface policy contradicts the maintainer's current guidance"}
+          ]
+        },
+        {
+          "req_id": "C5-R2",
+          "statement": "Capability packages are portable across clients, versioned, hashed and qualified before use.",
+          "acceptance_test": "Move a capability package between two different clients and show identical behaviour and identical hashes.",
+          "failure_mode_if_absent": "Capability becomes prompt folklore trapped in one product.",
+          "disclosure_surface": "a package carries whatever context its author embedded; packages need a disclosure class",
+          "chromebook_now": "available",
+          "macbook_later": "available",
+          "candidate_classes": ["Agent Skills standard", "MCP prompts and resources", "plain repository-held runbooks"],
+          "verified_candidates": [
+            {"ref": "agentskills/agentskills", "evidence_class": "DOCUMENTED", "note": "vendor-neutral specification with SKILL.md frontmatter including compatibility and allowed-tools; anthropics/skills explicitly defers to agentskills.io for the standard, so the format is no longer single-vendor"}
+          ]
+        },
+        {
+          "req_id": "C5-R3",
+          "statement": "Tool permissioning is explicit, least-privilege and auditable, and tool discovery cannot silently expand authority.",
+          "acceptance_test": "Add a server and show it gains no authority until a policy grant is recorded; show a scan for prompt-injection and tool-poisoning risk before admission.",
+          "failure_mode_if_absent": "A single malicious or compromised server inherits every credential the client holds.",
+          "disclosure_surface": "the registry and the policy set describe the whole estate",
+          "chromebook_now": "available",
+          "macbook_later": "available",
+          "candidate_classes": ["policy engines", "gateway with per-server scoping", "static scanning of server manifests", "signed registry entries"],
+          "verified_candidates": [
+            {"ref": "modelcontextprotocol/registry", "evidence_class": "DOCUMENTED"},
+            {"ref": "docker/mcp-gateway", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "snyk/agent-scan", "evidence_class": "DIRECTLY_REPRODUCED", "note": "this is where invariantlabs-ai/mcp-scan now redirects; the project was acquired into a vendor, which is itself a continuity signal"},
+            {"ref": "open-policy-agent/opa", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "cedar-policy/cedar", "evidence_class": "DIRECTLY_REPRODUCED"}
+          ]
+        },
+        {
+          "req_id": "C5-R4",
+          "statement": "Where a website itself declares agent-callable tools, prefer those declared tools over screen-scraping it.",
+          "acceptance_test": "On a WebMCP-enabled page, enumerate declared tools and invoke one, versus performing the same task by DOM manipulation; compare reliability.",
+          "failure_mode_if_absent": "The environment stays permanently coupled to other people's markup.",
+          "disclosure_surface": "declared tools are invoked in-page with the user's session",
+          "chromebook_now": "emerging; depends on browser support",
+          "macbook_later": "same",
+          "candidate_classes": ["WebMCP"],
+          "verified_candidates": [
+            {"ref": "webmachinelearning/webmcp", "evidence_class": "DOCUMENTED", "note": "W3C Web Machine Learning incubation; lets pages expose JavaScript functions or HTML forms as agent tools in-browser rather than via backend integration. chrome-devtools-mcp already ships list_webmcp_tools and execute_webmcp_tool, so this is reachable today, not only prospective"}
+          ]
+        }
+      ]
+    },
+    {
+      "area_id": "C6",
+      "name": "Open and local model routes, exact-model qualification, routing, adapters, inference runtimes and safe substitution",
+      "why_it_matters": "Model sovereignty is asserted constantly and verified rarely. The evidence shows the two properties usually conflated — open weights and locally runnable — come apart badly at the top of the range.",
+      "capability_requirements": [
+        {
+          "req_id": "C6-R1",
+          "statement": "Distinguish, per model, whether weights are published and whether the model can actually run on the founder's hardware. These are different properties and only the second gives sovereignty.",
+          "acceptance_test": "For each candidate model, record published-weights status and parameter count, and state the minimum unified memory for a usable quantisation.",
+          "failure_mode_if_absent": "An 'open-weight base' is adopted that can only ever be consumed as somebody else's API.",
+          "disclosure_surface": "API routes disclose prompts to the provider; local routes do not",
+          "chromebook_now": "no local inference of consequence; all routes are API routes",
+          "macbook_later": "the reachable rung is set by unified memory; see FQ-01",
+          "candidate_classes": ["frontier API-only", "open weights at non-local scale", "open weights at local scale"],
+          "verified_candidates": [
+            {"ref": "moonshotai/Kimi-K3", "evidence_class": "DIRECTLY_REPRODUCED", "note": "Hugging Face API reports safetensors total 2,779,931,837,184 parameters, about 2.78 trillion. Weights are published and the model is not runnable on any laptop. Kimi is an API route, not a local-sovereignty route"},
+            {"ref": "Qwen/Qwen3.8-27B", "evidence_class": "DIRECTLY_REPRODUCED", "note": "27,781,427,952 parameters, apache-2.0, and mlx-community/Qwen3.8-27B-4bit exists with library mlx, so an Apple-silicon 4-bit build is already published"},
+            {"ref": "openai/gpt-oss-20b", "evidence_class": "DIRECTLY_REPRODUCED", "note": "21,511,953,984 parameters, apache-2.0; the most accessible local rung"},
+            {"ref": "openai/gpt-oss-120b", "evidence_class": "DIRECTLY_REPRODUCED", "note": "116,829,156,672 parameters; needs a large-memory machine"},
+            {"ref": "Qwen/Qwen3.6-35B-A3B", "evidence_class": "DIRECTLY_REPRODUCED", "note": "35,951,822,704 parameters, sparse mixture-of-experts with about 3B active, which is the favourable shape for laptop inference"},
+            {"ref": "zai-org/GLM-4.7-Flash", "evidence_class": "DIRECTLY_REPRODUCED", "note": "31,221,488,576 parameters, MIT licence"}
+          ]
+        },
+        {
+          "req_id": "C6-R2",
+          "statement": "Exact model identity is pinned and recorded with every consequential result: dated snapshot, not a moving alias.",
+          "acceptance_test": "Show a result record naming a dated model revision; show that re-running against a moving alias is detected as a different configuration.",
+          "failure_mode_if_absent": "Yesterday's accepted evidence silently refers to a model that no longer exists.",
+          "disclosure_surface": "none",
+          "chromebook_now": "available",
+          "macbook_later": "available",
+          "candidate_classes": ["dated model slugs", "canonical slug capture from the gateway", "local weight file hashes"],
+          "verified_candidates": [
+            {"ref": "OpenRouter model catalogue", "evidence_class": "DIRECTLY_REPRODUCED", "note": "the catalogue exposes both a moving id and a dated canonical_slug, e.g. moonshotai/kimi-k3 resolving to moonshotai/kimi-k3-20260715, plus explicit moving aliases prefixed with a tilde. Pinning the canonical slug is therefore mechanically possible"}
+          ]
+        },
+        {
+          "req_id": "C6-R3",
+          "statement": "Routing and substitution happen behind one adapter, so replacing a provider is a configuration change, not a code change.",
+          "acceptance_test": "Substitute one model family for another and re-run the qualification suite with no call-site edits.",
+          "failure_mode_if_absent": "Substitutability is a slogan.",
+          "disclosure_surface": "a gateway sees every prompt; self-hosting the gateway keeps that inside Obzio",
+          "chromebook_now": "available; the gateway can be hosted anywhere",
+          "macbook_later": "available, plus a local backend behind the same adapter",
+          "candidate_classes": ["self-hosted model gateway", "hosted multi-provider gateway", "thin per-provider adapters", "CLI-level model abstraction"],
+          "verified_candidates": [
+            {"ref": "BerriAI/litellm", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "Portkey-AI/gateway", "evidence_class": "DIRECTLY_REPRODUCED", "note": "last push 2026-05-25; slower than the alternatives here"},
+            {"ref": "OpenRouter", "evidence_class": "DIRECTLY_REPRODUCED", "note": "live catalogue returned 421 models on 2026-08-22, including 9 Moonshot, 51 Qwen, 15 DeepSeek, 16 GLM, 12 Llama, 20 Mistral and 3 gpt-oss entries behind one OpenAI-compatible surface; documented features include model fallbacks, provider selection and zero-data-retention"},
+            {"ref": "andrewyng/aisuite", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "simonw/llm", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "DeepSeek API", "evidence_class": "DOCUMENTED", "note": "exposes both an OpenAI-compatible base URL and an Anthropic-compatible base URL, so it can substitute behind either SDK shape"},
+            {"ref": "lm-sys/RouteLLM", "evidence_class": "DIRECTLY_REPRODUCED", "note": "last push 2024-08-10; abandoned, do not adopt"}
+          ]
+        },
+        {
+          "req_id": "C6-R4",
+          "statement": "An inference runtime exists for each target device class, and the same weights can move between them.",
+          "acceptance_test": "Run one open-weight model on the chosen local runtime and via the API route and compare outputs on the same qualification set.",
+          "failure_mode_if_absent": "The local fallback is theoretical and fails on the day it is needed.",
+          "disclosure_surface": "local runtimes disclose nothing outward",
+          "chromebook_now": "not a real option; Crostini has no useful accelerator and the container shares one sandbox",
+          "macbook_later": "Apple-silicon runtimes are the point of the transition",
+          "candidate_classes": ["C/C++ inference engine", "Apple-silicon array framework", "model manager with an OpenAI-compatible server", "server-class GPU engine"],
+          "verified_candidates": [
+            {"ref": "ggml-org/llama.cpp", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "ml-explore/mlx", "evidence_class": "DOCUMENTED", "note": "Apple machine learning research array framework for Apple silicon with a unified-memory model; mlx-community publishes quantised builds"},
+            {"ref": "ml-explore/mlx-lm", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "ollama/ollama", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "LM Studio", "evidence_class": "DOCUMENTED", "note": "proprietary desktop application from Element Labs, Inc., stated free for home and work use, with a headless daemon, MLX model support, an OpenAI-compatibility API and MIT-licensed CLI and SDKs. Free is not open: the application itself is not substitutable on its own terms"},
+            {"ref": "vllm-project/vllm", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "sgl-project/sglang", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "kvcache-ai/ktransformers", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "huggingface/text-generation-inference", "evidence_class": "DIRECTLY_REPRODUCED", "note": "ARCHIVED on GitHub; do not adopt"}
+          ]
+        },
+        {
+          "req_id": "C6-R5",
+          "statement": "Substitution is qualified by an independent evaluation suite before a route is trusted, not asserted from vendor benchmarks.",
+          "acceptance_test": "Run the same suite across candidate routes and record per-route pass rates, latency and cost from Obzio's own harness.",
+          "failure_mode_if_absent": "Route changes become vibes and regressions are discovered in production.",
+          "disclosure_surface": "evaluation prompts may embed strategy and need a disclosure class of their own",
+          "chromebook_now": "available; evaluation runs where the agents run",
+          "macbook_later": "adds local-route comparison",
+          "candidate_classes": ["evaluation frameworks", "tracing and scoring platforms", "open telemetry conventions"],
+          "verified_candidates": [
+            {"ref": "UKGovernmentBEIS/inspect_ai", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "EleutherAI/lm-evaluation-harness", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "promptfoo/promptfoo", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "confident-ai/deepeval", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "langfuse/langfuse", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "Arize-ai/phoenix", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "open-telemetry/semantic-conventions", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "openai/evals", "evidence_class": "DIRECTLY_REPRODUCED", "note": "last push 2026-04-14; slowing"}
+          ]
+        }
+      ]
+    },
+    {
+      "area_id": "C7",
+      "name": "Voice-first intake, semantic strengthening, read-back, routing and resumability",
+      "why_it_matters": "The founder's stated interface is speech. If intake is lossy or unresumable, the whole chain downstream inherits the loss, and the founder becomes the error-correction mechanism.",
+      "capability_requirements": [
+        {
+          "req_id": "C7-R1",
+          "statement": "Speech is captured and transcribed with a recorded choice about whether audio leaves the device.",
+          "acceptance_test": "Show a transcription path with no network egress, and separately a cloud path, and record which is in use per intake class.",
+          "failure_mode_if_absent": "Strategy dictated aloud is disclosed to a transcription vendor by default.",
+          "disclosure_surface": "raw audio is the most sensitive artifact in the system: it carries unfiltered intent",
+          "chromebook_now": "browser on-device recognition is gated by the on-device-speech-recognition permissions policy with availability and install methods; a Crostini-hosted transcriber needs microphone sharing explicitly enabled because Crostini does not share the microphone by default",
+          "macbook_later": "fully local, fast, no gating",
+          "candidate_classes": ["browser speech recognition", "local Whisper-family transcription", "OpenAI-compatible self-hosted speech server", "proprietary dictation app"],
+          "verified_candidates": [
+            {"ref": "Web Speech API", "evidence_class": "DOCUMENTED", "note": "MDN documents SpeechRecognition plus an on-device-speech-recognition permissions-policy directive controlling available() and install()"},
+            {"ref": "ggml-org/whisper.cpp", "evidence_class": "DOCUMENTED", "note": "plain C/C++ with no dependencies and Apple-silicon first-class support"},
+            {"ref": "cjpais/Handy", "evidence_class": "DOCUMENTED", "note": "cross-platform desktop press-to-talk transcription that runs fully offline; MIT"},
+            {"ref": "speaches-ai/speaches", "evidence_class": "DOCUMENTED", "note": "OpenAI-API-compatible self-hosted speech-to-text and text-to-speech server, which makes the voice backend substitutable the same way the model backend is"},
+            {"ref": "SYSTRAN/faster-whisper", "evidence_class": "DIRECTLY_REPRODUCED", "note": "last push 2025-11-19; slowing"},
+            {"ref": "rhasspy/piper", "evidence_class": "DIRECTLY_REPRODUCED", "note": "ARCHIVED; the maintained successor is OHF-Voice/piper1-gpl, which is GPL-3.0 rather than MIT — a licence change that matters if speech synthesis is embedded in a product"}
+          ]
+        },
+        {
+          "req_id": "C7-R2",
+          "statement": "Consequential interpretation is read back and confirmed before it becomes a durable instruction.",
+          "acceptance_test": "Show a transcript, the strengthened interpretation, the read-back, the confirmation, and the typed durable event, as four distinct records.",
+          "failure_mode_if_absent": "A mis-transcription becomes an instruction. This lane's own unresolved 'Aircrift' seed is a live example of exactly that failure surviving into a work order.",
+          "disclosure_surface": "the strengthened interpretation is richer than the raw utterance and needs the same class",
+          "chromebook_now": "available",
+          "macbook_later": "available",
+          "candidate_classes": ["structured intake schema with explicit confirmation state", "real-time voice agent frameworks"],
+          "verified_candidates": [
+            {"ref": "pipecat-ai/pipecat", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "livekit/agents", "evidence_class": "DIRECTLY_REPRODUCED"}
+          ]
+        },
+        {
+          "req_id": "C7-R3",
+          "statement": "An intake can be paused and resumed across devices and sessions without re-dictation.",
+          "acceptance_test": "Abandon an intake mid-way, resume on another device, and complete it with no repeated speech.",
+          "failure_mode_if_absent": "Voice becomes cheaper than typing only for short instructions, which is the wrong half of the value.",
+          "disclosure_surface": "resumable intake means intermediate state is stored somewhere; where is a decision",
+          "chromebook_now": "available if intake state lives in the repository rather than in a device app",
+          "macbook_later": "unchanged",
+          "candidate_classes": ["repository-backed intake records", "durable workflow engine"],
+          "verified_candidates": []
+        }
+      ]
+    },
+    {
+      "area_id": "C8",
+      "name": "Durable external state, manifests, locators, replay and recovery",
+      "why_it_matters": "This is the property that makes everything else survivable. It is also the one Obzio already partly has, so the question is how much machinery to add, not whether to start.",
+      "capability_requirements": [
+        {
+          "req_id": "C8-R1",
+          "statement": "Every produced artifact is addressable by a stable locator and verifiable by content hash, with a manifest binding the set.",
+          "acceptance_test": "Recompute every hash in a manifest from the files on disk and match the recorded bundle hash.",
+          "failure_mode_if_absent": "Evidence cannot be distinguished from a plausible reconstruction of evidence.",
+          "disclosure_surface": "manifests reveal the shape of the estate",
+          "chromebook_now": "fully available",
+          "macbook_later": "unchanged",
+          "candidate_classes": ["git plus sha256 manifests", "content-addressed artifact registries", "signed attestation bundles"],
+          "verified_candidates": [
+            {"ref": "git-lfs/git-lfs", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "oras-project/oras", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "sigstore/cosign", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "treeverse/dvc", "evidence_class": "DIRECTLY_REPRODUCED", "note": "DVC now resolves under the treeverse org rather than iterative; ownership changed"},
+            {"ref": "treeverse/lakeFS", "evidence_class": "DIRECTLY_REPRODUCED"}
+          ]
+        },
+        {
+          "req_id": "C8-R2",
+          "statement": "A long operation survives crash, restart and provider failure, and resumes without duplicating side effects.",
+          "acceptance_test": "Kill the runtime mid-operation, restart, and show exactly-once completion with no duplicated external action.",
+          "failure_mode_if_absent": "Every failure needs a human to work out what already happened.",
+          "disclosure_surface": "a workflow engine sees all payloads it carries",
+          "chromebook_now": "a server-class engine is not a Chromebook workload; an append-only ledger in the repository is",
+          "macbook_later": "a local engine becomes practical, but the simpler option may still dominate",
+          "candidate_classes": ["append-only event ledger in the repository", "durable execution engine", "library-level durable workflows", "replicated SQLite"],
+          "verified_candidates": [
+            {"ref": "temporalio/temporal", "evidence_class": "DIRECTLY_REPRODUCED", "note": "heavyweight for a one-founder estate; the operating burden is the cost, not the licence"},
+            {"ref": "restatedev/restate", "evidence_class": "DIRECTLY_REPRODUCED", "note": "licence resolves as NOASSERTION on the GitHub API; verify the exact terms before adoption"},
+            {"ref": "dbos-inc/dbos-transact-py", "evidence_class": "DIRECTLY_REPRODUCED", "note": "library-level durable workflows, MIT; far lighter than running an engine"},
+            {"ref": "benbjohnson/litestream", "evidence_class": "DOCUMENTED", "note": "self-described beta status in its own README; disaster recovery for SQLite by incremental replication"},
+            {"ref": "windmill-labs/windmill", "evidence_class": "DIRECTLY_REPRODUCED"}
+          ]
+        },
+        {
+          "req_id": "C8-R3",
+          "statement": "Result custody is independent of the runtime that produced the result: the producer cannot be the only place the result exists.",
+          "acceptance_test": "Destroy the producing runtime and show the result, its inputs and its verdict are still retrievable and verifiable.",
+          "failure_mode_if_absent": "Provider completion becomes indistinguishable from acceptance, which the commission explicitly forbids.",
+          "disclosure_surface": "custody store holds the union of all results",
+          "chromebook_now": "available",
+          "macbook_later": "unchanged",
+          "candidate_classes": ["push-to-repository on completion", "external transaction contract with idempotent sink"],
+          "verified_candidates": []
+        }
+      ]
+    },
+    {
+      "area_id": "C9",
+      "name": "Chromebook operation now versus MacBook-local capability later, and what changes at the transition",
+      "why_it_matters": "The device change is the single largest scheduled change in the environment. Designing as if it has already happened wastes months; designing as if it never will builds a system that has to be rebuilt.",
+      "capability_requirements": [
+        {
+          "req_id": "C9-R1",
+          "statement": "Everything that does not require local compute or a local authenticated session must work today, unchanged, on the Chromebook.",
+          "acceptance_test": "Run the full non-local capability set from the Chromebook with no MacBook present.",
+          "failure_mode_if_absent": "The programme stalls waiting for hardware.",
+          "disclosure_surface": "cloud execution discloses to the cloud runtime",
+          "chromebook_now": "this is the requirement",
+          "macbook_later": "unchanged; the MacBook must not become mandatory for these",
+          "candidate_classes": ["cloud agents against the repository", "browser-only surfaces", "hosted APIs"],
+          "verified_candidates": []
+        },
+        {
+          "req_id": "C9-R2",
+          "statement": "Authenticated browser control on the Chromebook keeps the session local and requires an explicit per-connection owner approval.",
+          "acceptance_test": "Show the controller running inside Crostini, attaching only to an approved tab, with the cloud agent unable to reach it.",
+          "failure_mode_if_absent": "Either a cloud relay gets standing authority over the founder's logged-in browser, or authenticated work does not happen.",
+          "disclosure_surface": "local controller sees the approved tab only; a cloud relay sees whatever it is asked to drive",
+          "chromebook_now": "this is the central Chromebook constraint",
+          "macbook_later": "relaxes: the controller can own its own profile and imported session state",
+          "candidate_classes": ["local controller attaching to the existing profile", "cloud relay driving a local node", "cloud browser holding the credentials"],
+          "verified_candidates": [
+            {"ref": "Playwright Extension plus a Crostini-local MCP server or CLI", "evidence_class": "DOCUMENTED"},
+            {"ref": "harpa.ai GRID", "evidence_class": "DOCUMENTED", "note": "documentation states GRID orchestrates your machine to run tasks, handling data behind logins; that is precisely the trust-boundary expansion this requirement is about"}
+          ]
+        },
+        {
+          "req_id": "C9-R3",
+          "statement": "The MacBook transition adds capability without requiring migration of state, interfaces or evidence.",
+          "acceptance_test": "Introduce the MacBook and show local inference, local transcription and desktop control arriving as new backends behind unchanged adapters, with zero changes to the canonical store.",
+          "failure_mode_if_absent": "The transition becomes a re-platforming project.",
+          "disclosure_surface": "shifts inward, which is an improvement",
+          "chromebook_now": "the design constraint that must be honoured now",
+          "macbook_later": "the payoff",
+          "candidate_classes": ["adapter-behind-interface design", "device-agnostic canonical state"],
+          "verified_candidates": []
+        }
+      ]
+    },
+    {
+      "area_id": "C10",
+      "name": "Privacy, secret handling, disclosure and trust boundaries independent of access authority",
+      "why_it_matters": "The founder's standing policy separates what a component may access from what it may be told. Most tooling conflates the two by default.",
+      "capability_requirements": [
+        {
+          "req_id": "C10-R1",
+          "statement": "No secret value is ever pasted into a chat, printed, or committed; secrets are referenced, not carried.",
+          "acceptance_test": "Scan the whole estate for secret material and return zero findings; show every component obtaining credentials by reference.",
+          "failure_mode_if_absent": "One convenience paste compromises the estate permanently.",
+          "disclosure_surface": "this requirement is the control",
+          "chromebook_now": "available",
+          "macbook_later": "available, plus OS keychain integration",
+          "candidate_classes": ["file encryption with small explicit keys", "encrypted structured config", "self-hosted secret manager", "password manager CLI", "workload identity"],
+          "verified_candidates": [
+            {"ref": "FiloSottile/age", "evidence_class": "DOCUMENTED", "note": "small explicit keys, no config options, post-quantum support; BSD-3-Clause"},
+            {"ref": "getsops/sops", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "openbao/openbao", "evidence_class": "DIRECTLY_REPRODUCED", "note": "MPL-2.0, versus hashicorp/vault whose licence resolves as NOASSERTION on the GitHub API; if an open licence is required this is the substitutable one"},
+            {"ref": "bitwarden/clients", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "spiffe/spire", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "gitleaks/gitleaks", "evidence_class": "DIRECTLY_REPRODUCED"},
+            {"ref": "trufflesecurity/trufflehog", "evidence_class": "DIRECTLY_REPRODUCED", "note": "AGPL-3.0"}
+          ]
+        },
+        {
+          "req_id": "C10-R2",
+          "statement": "Each component receives only the context its function requires; identity, affiliation and strategic framing are disclosed deliberately, not by default.",
+          "acceptance_test": "For each component, state the disclosure class and show a real invocation carrying only that class.",
+          "failure_mode_if_absent": "Every vendor in the chain learns the strategy because it was convenient to paste the whole brief.",
+          "disclosure_surface": "this requirement is the control",
+          "chromebook_now": "applies",
+          "macbook_later": "applies",
+          "candidate_classes": ["context minimisation at the adapter", "controlled codenames with an internal mapping", "PII detection before egress"],
+          "verified_candidates": [
+            {"ref": "data-privacy-stack/presidio", "evidence_class": "DIRECTLY_REPRODUCED"}
+          ],
+          "note": "The founder's disclosure-policy workstream is explicitly deferred in FOUNDER-OPERATING-DIRECTIVES-20260822. This requirement is recorded so the eventual implementation has a target, and deliberately builds nothing now."
+        },
+        {
+          "req_id": "C10-R3",
+          "statement": "Third-party telemetry defaults are known, recorded and deliberately set, not inherited.",
+          "acceptance_test": "For every adopted component, record its default telemetry posture, the disabling mechanism, and the residual disclosure that cannot be disabled.",
+          "failure_mode_if_absent": "The privacy boundary is set by other people's defaults.",
+          "disclosure_surface": "this requirement is the control",
+          "chromebook_now": "applies",
+          "macbook_later": "applies",
+          "candidate_classes": ["documented opt-out review before adoption"],
+          "verified_candidates": [
+            {"ref": "ChromeDevTools/chrome-devtools-mcp", "evidence_class": "DOCUMENTED", "note": "usage statistics enabled by default; disable with --no-usage-statistics or the CHROME_DEVTOOLS_MCP_NO_USAGE_STATISTICS environment variable; performance tools may send trace URLs to the Google CrUX API unless --no-performance-crux is set"},
+            {"ref": "Sider (Chrome Web Store listing)", "evidence_class": "DIRECTLY_REPRODUCED", "note": "the listing discloses that the extension handles personally identifiable information and website content"},
+            {"ref": "HARPA (Chrome Web Store listing)", "evidence_class": "DIRECTLY_REPRODUCED", "note": "the listing states the developer has disclosed that it will not collect or use your data"},
+            {"ref": "Playwright Extension (Chrome Web Store listing)", "evidence_class": "DIRECTLY_REPRODUCED", "note": "the listing states the developer has disclosed that it will not collect or use your data"}
+          ]
+        }
+      ]
+    }
+  ],
+
+  "requirements_deliberately_not_promoted_to_gates": [
+    "full authenticated visibility into native ChatGPT Projects",
+    "a single browser bridge",
+    "a single model or model family",
+    "a single vendor",
+    "MCP as the only permitted tool interface"
+  ],
+
+  "counts": {
+    "areas": 10,
+    "capability_requirements": 32,
+    "cross_cutting_invariants": 6
+  }
+}

@@ -1,0 +1,188 @@
+commission: SCP-SI-01
+commission_sha256: 7c1bc6e8477d20f42d3f36ca8bba8fec28c1f0d4b3ef69a4dc987daef4746cd9
+coordinator: bc-c6f63d58-9611-495a-96f6-2f2dcbef696d
+frozen_at: "2026-08-27T04:57:30Z"
+decision_changed: []
+
+write_target:
+  branch: cursor/operating-environment-return-20260822-v001
+  frozen_head: 3b97d6ff5ed732c796adc0fd091f0125916079bd
+  pull_request: 12
+  correction_applied: >-
+    PART 0 withdrew the instruction to write to the so02 branch. The SCP-SI-01 commission text in
+    PART 3 names so02 as its launch surface; that is a stale locator and is not followed. The
+    return-branch custody pattern continues. This is stated rather than done silently.
+
+read_only_source:
+  branch: so02/strategic-control-plane-migration-20260822-v001
+  observed_head: fe0a595206e5986de7eaac6cabc619215a1eb81b
+  matches_packet_record: true
+
+runtime_recovery_note:
+  observed: >-
+    The VM was reset between 2026-08-23 and 2026-08-27. The prior coordinator worktree at /tmp/oe-root
+    was gone and the shell defaulted to /workspace at 11a60dcf, the preserved CUR-01 evidence branch.
+  consequence: >-
+    A first existence map run before this was noticed measured against the wrong ref and produced five
+    false NOT_FOUND results. It is void and superseded by the map below. Recorded because a stale-base
+    audit reported as fresh is exactly the defect PART 1 point 2 warns about, and it happened here in
+    the first sixty seconds.
+  action_taken: restored position on the return branch; no new branch, agent or control plane created
+
+hook_firing_verdict:
+  verdict: NOT_FIRING
+  evidence_label: DIRECTLY_REPRODUCED
+  armed_at: "2026-08-27T04:56:41Z"
+  checked_at: "2026-08-27T04:57:11Z"
+  audit_lines: "3 -> 3 (added 0)"
+  control_passed_at_arm: true
+  method: >-
+    Three inert commands were sent through the agent shell tool. git status --porcelain added no
+    audited line. git rebase --abort and gh workflow list both EXECUTED rather than being refused,
+    covering both halves of the git|gh matcher.
+  root_cause: >-
+    Cursor reads project hooks from the project root, which is /workspace. The coordinator and every
+    lane work in git worktrees under /tmp. The hook scripts are correct and unreached.
+  consequence_stated_plainly: >-
+    Every boundary in .cursor/write-scope.json is DOCUMENTATION, not enforcement, in this runtime.
+    require_write_declaration is enabled and cannot auto-refuse anything, because the hook that would
+    refuse never runs. This corrects a claim the coordinator made to the founder on 2026-08-23 that
+    enabling it would make every push require an admitted declaration. It does not.
+  what_still_works: >-
+    write_admission.py refuses correctly when invoked explicitly. Enforcement is therefore voluntary
+    and lane-side, not automatic. Every lane is instructed to run it before pushing and to attach the
+    verdict. A lane that skips it will NOT be stopped by anything.
+
+existence_map:
+  ref: 3b97d6ff5ed732c796adc0fd091f0125916079bd
+  found:
+    - workstreams/so02/control-plane/operating-environment/AGENTIC-OFFICE-LAUNCH-GUIDE.md
+    - workstreams/so02/control-plane/commissions/CURSOR-SCP-01.md
+    - workstreams/so02/control-plane/tools/scctl.py
+    - workstreams/so02/control-plane/operating-environment/tools/lane_guard.py
+    - workstreams/so02/control-plane/operating-environment/tools/write_admission.py
+    - workstreams/so02/control-plane/operating-environment/tools/evidence_integrity.py
+    - .cursor/write-scope.json
+    - .cursor/hooks.json
+    - .cursor/hooks/guard_write_scope.py
+    - .cursor/hooks/gate_claim_state.py
+    - .cursor/hooks/probe_hook_firing.py
+    - workstreams/so02/control-plane/operating-environment/w10-provenance/PURGE-AND-RATIFICATION-20260823-v001.json
+  not_found_on_this_ref_but_present_elsewhere:
+    - path: workstreams/so02/control-plane/tools/orchqual.py
+      found_at: cursor/so02-cur-orch-qual-01 @ 11a60dcf6dbc2eac4e6d975efab5d985ebbabd62
+    - path: workstreams/so02/control-plane/evaluations/INDEPENDENT-ACCEPTANCE-REQUEST-CUR-ORCH-QUAL-01.md
+      found_at: cursor/so02-cur-orch-qual-01 @ 11a60dcf6dbc2eac4e6d975efab5d985ebbabd62
+    - path: workstreams/so02/control-plane/launch/OWNER-CREDENTIAL-ACTIONS-NOW.md
+      found_at: cursor/so02-cur-orch-qual-01 @ 11a60dcf6dbc2eac4e6d975efab5d985ebbabd62
+    note: >-
+      These are not absent from the estate. They live on the preserved CUR-01 evidence branch and were
+      never carried onto the return branch. NOT_FOUND on this ref is the accurate answer and it does
+      not authorise rebuilding them.
+  scp_si_01_outputs_pre_existing: none
+
+numbers_re_verified_from_source:
+  json_artifacts_parse_valid:
+    packet_baseline: 222
+    observed: 223
+    parse_invalid: 0
+    status: VERIFIED_WITH_VARIANCE
+    variance_reason: >-
+      One artifact added since the 222 measurement, the EC-13 write declaration committed at 3b97d6ff.
+      222 -> 223 with zero invalid is consistent, not contradictory.
+  provenance_classification:
+    observed_total: 86
+    founder_authored: 20
+    earned: 30
+    assistant_authored: 36
+    status: VERIFIED
+  founder_bound_misattribution:
+    claim: 17 of 27 misattributed, 10 survived quotation testing
+    status: VERIFIED_FROM_REGISTER
+  lane_count_reconciliation:
+    claim_under_test: "eight lanes / four model families"
+    finding: >-
+      Neither figure describes this operating-environment run. The operating-environment programme
+      dispatched 14 lanes across 4 waves and 13 delivered; one, OE-W6, timed out and is recorded as
+      FAILED_INCOMPLETE. Four model families were available and two were used in anger, Claude for
+      most lanes and GPT for the independent acceptor. The "ten cohorts" figure belongs to PO-03 and
+      is not this programme's. "Eight lanes" is the SCP-SI-01 starting floor, a forward instruction,
+      not a historical measurement.
+    status: RECONCILED_BOTH_PRIOR_LABELS_WERE_WRONG_FOR_THIS_RUN
+  units_74_vs_64:
+    status: UNVERIFIED
+    reason: PO-03 figure; not measurable from this branch and not this programme's denominator
+  ten_cohorts_zero_provider_rejection:
+    status: UNVERIFIED_AND_NOT_EQUIVALENT_TO_ACCEPTANCE
+    reason: PO-03 figure. Provider non-rejection is dispatch success, never quality acceptance.
+  ten_child_worktree_canary_round_trips:
+    status: UNVERIFIED
+    reason: PO-03 figure; not measurable from this branch
+
+cur_orch_qual_true_state:
+  finding: TWO DISTINCT ARTIFACTS EXIST AND THEY ARE NOT THE SAME EVENT
+  artifact_1:
+    path: workstreams/so02/control-plane/state/CUR-ORCH-QUAL-01.json
+    ref: cursor/so02-cur-orch-qual-01 @ 11a60dcf
+    says: "independent_acceptance.state = REQUESTED_NOT_GRANTED; aggregate_classification = PASS_TWO_OR_MORE_ROUTES"
+    interpretation: >-
+      The producer's own register, frozen at the moment acceptance was requested. It is STALE by
+      design: that branch is preserved byte-identical as evidence and was deliberately never rewritten
+      after the verdict arrived. Requested-and-not-granted is not a refusal.
+  artifact_2:
+    path: workstreams/so02/control-plane/operating-environment/l3-independent-acceptance/VERDICT.json
+    verdict_commit: 541eff445f2acd3cabea91b54c53afae237b9d59
+    criteria_commit: 9a390df3ebdd19e1403317be24c74e6abc249415
+    says: REFUSED
+    independence: criteria commit provably precedes and is an ancestor of the verdict commit; different model family
+  governing_record:
+    path: receipts/so02/2026-08-22/oe-dispatch/CUR01-REFUSAL-INGESTION.json
+    ref: this branch
+    state: REFUSED, governing, producer may not overturn
+  resolved_answer: >-
+    The true current state is REFUSED. The two-independent-routes claim and the
+    MAJOR_ORCHESTRATION_LAYER_QUALIFIED role state are withdrawn. R1 GitHub immutable-SHA custody
+    survived challenge; R2 did not. The REQUESTED_NOT_GRANTED string is the earlier request state and
+    must not be cited as the current one.
+  status: RESOLVED_NOT_BYPASSED
+
+sole_external_witness_limitation:
+  stated: true
+  text: >-
+    The GitHub evidence layer that would supply a pre-verified packet returned BLOCKED with zero
+    observed repository state. The coordinator is therefore both producer and only external witness
+    for baseline facts. Every number above was recomputed from source in this run rather than carried
+    forward, and each carries VERIFIED or UNVERIFIED explicitly. Independent acceptance in Lane H is
+    the only check on this coordinator's own output and it is free to refuse.
+
+amendment_applied:
+  source: founder amendment 2026-08-27, superseding the packet where it conflicts
+  voided_constraints:
+    - id: PACKET-CRED-PROHIBITION
+      was: "Do NOT accept or store any credential"
+      provenance: ASSISTANT_AUTHORED
+      founder_rejection: FB-19 Rider 3
+      now: >-
+        Credentials handled as operationally useful. Mechanism kept: never echo a secret into a log,
+        an argument vector or a committed artifact. Prohibition on holding one is dropped.
+    - id: PACKET-APPEND-ONLY
+      was: "Append-only evidence and ratified history are NEVER deleted"
+      provenance: ASSISTANT_AUTHORED
+      founder_rejection: EC-08
+      now: >-
+        Hash-chain integrity kept for evidence still in use. Blanket preservation dropped. Deletion
+        permitted with a snapshot and a reason where retention has no value.
+    - id: PACKET-NO-MERGE
+      was: "Do not merge or promote"
+      provenance: ASSISTANT_AUTHORED
+      founder_rejection: FB-12
+      now: >-
+        Full merge permission. Separation of strategy-binding from operational authority kept. Merge
+        where merging is right, with a reason and a rollback.
+  ten_questions_settled: >-
+    All ten ratification questions raised on 2026-08-23 were answered verbatim by the founder the same
+    day. They are NOT to be referred again. The coordinator's error was failing to check the
+    ratification baseline before escalating; that check is now a standing precondition.
+  standing_provenance_discipline: >-
+    Every constraint states its provenance class in the same breath. An unclassified constraint is not
+    in force. This applies to constraints the coordinator inherits from its own packet.

@@ -1,0 +1,135 @@
+{
+  "controls_probed": 6,
+  "generated_at": "2026-08-27T06:46:41Z",
+  "not_a_control_registry": "This report is the output of one sweep, not a persisted registry. It does not replace control-plane.json or write-scope.json.",
+  "results": [
+    {
+      "armed_at": "2026-08-27T04:56:41Z",
+      "checked_at": "2026-08-27T04:57:11Z",
+      "control_id": "WRITE-SCOPE AMBIENT HOOK (.cursor/hooks/guard_write_scope.py via beforeShellExecution)",
+      "detail": "control (guard_write_scope.py run by hand) passed its own check at arm time: True. 3 inert command(s) sent through the agent's real shell tool. Audit log lines 3 -> 3 (added 0).",
+      "evidence": {
+        "audit_lines_after": 3,
+        "audit_lines_before": 3,
+        "commands_sent": [
+          "git status --porcelain",
+          "git rebase --abort",
+          "gh workflow list"
+        ],
+        "control_passed_at_arm": true
+      },
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "method": "probe_hook_firing.py --arm, then inert commands sent through the agent's own Shell tool (not subprocess-in-process, since only a real tool call can trigger a beforeShellExecution hook), then --check comparing the guard's own append-only audit log line count before and after",
+      "verdict": "INSTALLED_NOT_EFFECTIVE"
+    },
+    {
+      "armed_at": null,
+      "checked_at": null,
+      "control_id": "WRITE-ADMISSION-GATE (write_admission.py)",
+      "detail": "empty declaration -> WRITE_REFUSED (expected WRITE_REFUSED); well-formed declaration -> WRITE_ADMITTED (expected WRITE_ADMITTED)",
+      "evidence": {
+        "bad_declaration_verdict": "WRITE_REFUSED",
+        "good_declaration_gates": [
+          "declaration",
+          "concurrency",
+          "reversibility",
+          "evidence"
+        ],
+        "good_declaration_verdict": "WRITE_ADMITTED"
+      },
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "method": "admit({}) expected to refuse; admit(well-formed declaration) expected to admit, against a scratch ref that addresses no real remote branch",
+      "verdict": "EFFECTIVE"
+    },
+    {
+      "armed_at": null,
+      "checked_at": null,
+      "control_id": "EVIDENCE-INTEGRITY VALIDITY CHECK (evidence_integrity.verify_artifact_validity)",
+      "detail": "valid.json errors=[]; truncated.json errors=['validity: truncated.json is hash-bound but does not parse as JSON (Unterminated string starting at at line 1)']",
+      "evidence": {
+        "errors_on_truncated": [
+          "validity: truncated.json is hash-bound but does not parse as JSON (Unterminated string starting at at line 1)"
+        ],
+        "errors_on_valid": []
+      },
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "method": "verify_artifact_validity against a well-formed JSON file (expect no findings) and a byte-truncated one (expect a validity finding), both hash-bindable, in a disposable temp directory",
+      "verdict": "EFFECTIVE"
+    },
+    {
+      "armed_at": null,
+      "checked_at": null,
+      "control_id": "EVIDENCE-INTEGRITY READBACK CHECK (evidence_integrity.verify_readback_truth)",
+      "detail": "genuine errors=[]; forged errors=['readback: commit 0000000000000000000000000000000000000000 is not retrievable from the remote; the claim is unfounded']",
+      "evidence": {
+        "errors_on_forged": [
+          "readback: commit 0000000000000000000000000000000000000000 is not retrievable from the remote; the claim is unfounded"
+        ],
+        "errors_on_genuine": []
+      },
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "method": "verify_readback_truth against a genuine record (git-clone-recomputed hash match, expect no findings) and a forged record naming commit 0*40 (expect a rejection), both against a disposable local bare remote",
+      "verdict": "EFFECTIVE"
+    },
+    {
+      "armed_at": null,
+      "checked_at": null,
+      "control_id": "LANE-GUARD (lane_guard.py)",
+      "detail": "namespace containment fires=True; collision detection fires=True; live read-only ls-remote against origin succeeded=True; absent-branch detection fires=True. This probes the MECHANISM: that the script correctly detects what it claims when invoked, and that it can read real remote bytes. Whether the coordinator actually invokes it at every integration is a process guarantee, not a code fact \u2014 this prober attests to the former from a DIRECTLY_REPRODUCED probe and defers to the founder's own statement, DOCUMENTED not independently reproduced by this probe, for the latter: 'The only thing in this estate that is genuinely enforcing is lane_guard.py at integration time, because it reads remote bytes and the coordinator runs it.'",
+      "evidence": {
+        "absence_detection_fires": true,
+        "collision_fires": true,
+        "containment_fires": true,
+        "invocation_guarantee_evidence_label": "DOCUMENTED",
+        "live_remote_read": true
+      },
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "method": "namespace_matches/detect_path_collisions against synthetic fixtures (inert); verify_reported_head against a deliberately absent branch name and a read-only git ls-remote --heads origin (read-only, no write)",
+      "verdict": "EFFECTIVE"
+    },
+    {
+      "armed_at": null,
+      "checked_at": null,
+      "control_id": "CURRENTNESS COMPILER (currentctl.py)",
+      "detail": "trunk_head='37943ec2ff9f6702d72e127a3c8e56c81b0c3812' ref_count=187 finding_counts={'ADMISSION_OVERCLAIM': 13, 'ALIAS_USED_AS_LOCATOR': 2, 'COMMISSION_ID_COLLISION': 1, 'COMMISSION_UNRESOLVED_IN_REGISTER': 6, 'COMPETING_CURRENTNESS_CLAIM': 4, 'COORDINATION_TOKENS_COUNTED_AS_SCALE': 1, 'EVIDENCE_DISQUALIFIED': 12, 'EVIDENCE_HASH_MISMATCH': 1, 'LINEAGE_FAMILY_DISCONTINUITY': 2, 'LINEAGE_PHANTOM_VERSION': 1, 'NON_ADMISSIBLE_EVIDENCE_OFFERED': 21, 'ORPHANED_REF_POPULATION': 1, 'PR_TREATED_AS_CAPABILITY': 7, 'STACKED_UNLANDED_PR_CHAIN': 1, 'STALE_REMOTE_READBACK': 1, 'UNBACKED_EVIDENCE_CLAIM': 8, 'UNDIFFERENTIATED_COMMISSION_OVERLAP': 7} fail_closed=True",
+      "evidence": {
+        "fail_closed": true,
+        "finding_counts": {
+          "ADMISSION_OVERCLAIM": 13,
+          "ALIAS_USED_AS_LOCATOR": 2,
+          "COMMISSION_ID_COLLISION": 1,
+          "COMMISSION_UNRESOLVED_IN_REGISTER": 6,
+          "COMPETING_CURRENTNESS_CLAIM": 4,
+          "COORDINATION_TOKENS_COUNTED_AS_SCALE": 1,
+          "EVIDENCE_DISQUALIFIED": 12,
+          "EVIDENCE_HASH_MISMATCH": 1,
+          "LINEAGE_FAMILY_DISCONTINUITY": 2,
+          "LINEAGE_PHANTOM_VERSION": 1,
+          "NON_ADMISSIBLE_EVIDENCE_OFFERED": 21,
+          "ORPHANED_REF_POPULATION": 1,
+          "PR_TREATED_AS_CAPABILITY": 7,
+          "STACKED_UNLANDED_PR_CHAIN": 1,
+          "STALE_REMOTE_READBACK": 1,
+          "UNBACKED_EVIDENCE_CLAIM": 8,
+          "UNDIFFERENTIATED_COMMISSION_OVERLAP": 7
+        },
+        "projection_sha256": "54893e27550d0ec987145f67a4f42d5946e4cb83f54f156cb6b4e5c002c1779d",
+        "ref_classification_counts": {
+          "ABANDONED": 88,
+          "ACTIVE": 14,
+          "MERGED": 2,
+          "ORPHANED": 65,
+          "SUPERSEDED": 18
+        }
+      },
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "method": "compile() against this repository's own real git refs and ledger, read-only",
+      "verdict": "EFFECTIVE"
+    }
+  ],
+  "tool": "effectiveness_prober",
+  "verdict_counts": {
+    "EFFECTIVE": 5,
+    "INSTALLED_NOT_EFFECTIVE": 1
+  }
+}

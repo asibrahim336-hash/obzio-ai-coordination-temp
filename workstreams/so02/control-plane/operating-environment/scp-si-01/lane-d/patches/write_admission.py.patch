@@ -1,0 +1,23 @@
+--- a/workstreams/so02/control-plane/operating-environment/tools/write_admission.py	2026-08-27 05:38:12.308368132 +0000
++++ b/workstreams/so02/control-plane/operating-environment/tools/write_admission.py	2026-08-27 05:38:23.012235407 +0000
+@@ -179,10 +179,18 @@
+ 
+     if kind == "MANIFEST_CLOSURE":
+         present = evidence.get("present_paths") or [e.get("path") for e in record.get("entries", [])]
+-        errors = evidence_integrity.verify_manifest_closure(record, present)
++        errors = list(evidence_integrity.verify_manifest_closure(record, present))
++        # EARNED (DEF-SCP-D-02, SCP-SI-01 lane D): verify_manifest_closure checks
++        # that every present path is covered by a hash and that bundle_sha256
++        # binds the entry list as written; it never reads the files themselves.
++        # A truncated JSON artifact, correctly hashed and correctly listed,
++        # passed this gate unchanged. verify_artifact_validity already existed
++        # for exactly this and was simply never called from here.
++        errors += evidence_integrity.verify_artifact_validity(present, repo or Path("."))
+         return _gate(GATE_EVIDENCE, not errors,
+                      "EVIDENCE_RECOMPUTED" if not errors else "EVIDENCE_FAILED_RECOMPUTATION",
+-                     errors, verified_by="evidence_integrity.verify_manifest_closure")
++                     errors, verified_by="evidence_integrity.verify_manifest_closure "
++                                         "+ evidence_integrity.verify_artifact_validity")
+ 
+     if kind == "READBACK":
+         if not remote_url:

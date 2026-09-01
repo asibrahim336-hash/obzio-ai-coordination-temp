@@ -1,0 +1,20 @@
+# OE-W10 corpus chronology - DIRECTLY_REPRODUCED
+# reproduced at: 2026-08-23T03:47:14Z
+
+$ git log -1 --format="%H %ad %s" 3f3ee110   # prior register base_commit
+3f3ee110cf9b769e60c664f758c437dcc582afd3 Sat Aug 22 22:27:38 2026 +0000 CUR-ENV-01: record direct founder authority and remove assistant-created restrictions
+
+$ git log -1 --format="%H %ad %s" ef0a74e5   # founder standing instruction recorded
+ef0a74e5e66c0bf161704346c83fb5a939180f15 Sat Aug 22 23:58:06 2026 +0000 CUR-ENV-01: record founder standing instruction on the durable Cursor surface
+
+$ git log -1 --format="%H %ad %s" 21c8ef88   # standing amendment recorded
+21c8ef88d01cccf419036d9fdcc164a8769ddf05 Sun Aug 23 03:37:07 2026 +0000 CUR-ENV-01: record the standing amendment voiding the protected-surface category
+
+$ git merge-base --is-ancestor ef0a74e5 3f3ee110 ; echo $?
+exit=1
+
+$ git cat-file -e 3f3ee110:.../FOUNDER-STANDING-INSTRUCTION-20260822.md ; echo $?
+fatal: path 'workstreams/so02/control-plane/operating-environment/FOUNDER-STANDING-INSTRUCTION-20260822.md' exists on disk, but not in '3f3ee110'
+exit=128
+
+CONCLUSION: the verbatim founder corpus was empty at the prior register's base commit.

@@ -1,0 +1,164 @@
+{
+  "record_id": "OE-W3-CURSOR-API-KEY-RECOVERY-ROUTES-20260822",
+  "lane": "OE-W3-CREDENTIAL-ESTATE",
+  "commission": "COM-CUR-ENV-01-20260822-v001",
+  "authority_basis": "FOUNDER-AUTHORITY-DERESTRICTION-20260822T2225Z",
+
+  "the_founder_supplied_fact_being_worked": {
+    "statement": "A Cursor API key already exists and is stored in Supabase Edge Secrets.",
+    "source": "Ahmed Sadek, founder of Obzio, speaking directly; recorded in FOUNDER-AUTHORITY-20260822T2225Z.json",
+    "standing": "FOUNDER-AUTHORITATIVE. This lane treats it as true and works the reachability problem. It did not attempt to falsify it, and could not have: every route to Supabase Edge Secrets is credential-blocked from this runtime."
+  },
+
+  "supersession_confirmed": {
+    "superseded_request": "FOUNDER-TRANCHE-01 action OA-A / CONTROL-SURFACE-ACTIVATION-PROGRAMME action FA-CUR-API-01 — 'Issue a Cursor API key' at https://cursor.com/dashboard/api.",
+    "status": "SUPERSEDED AND WITHDRAWN by this lane.",
+    "reason": "The founder states the key exists. Minting a second key would create a duplicate credential with the same authority as the first, doubling the revocation surface and the number of places a leak could originate, while solving nothing the existing key does not already solve. The prohibition is explicit in the authority record and this lane enforces it.",
+    "what_replaces_it": "Founder action FA-W3-01 in FOUNDER-ALIGNMENT-PLAN.json — mirror the EXISTING key into a repository-scoped Cloud Agent secret. No key is created.",
+    "note_for_downstream_readers": "Those two prior files remain on the branch as evidence. They are superseded, not deleted. Anyone reading FA-CUR-API-01 should read this record alongside it."
+  },
+
+  "reproduced_starting_state": {
+    "evidence_label": "DIRECTLY_REPRODUCED",
+    "receipt": "receipts/so02/2026-08-22/oe-w3-credential-estate/raw/api-cursor-baseline.txt and secret-name-census.txt",
+    "cursor_api_key_in_this_runtime": "ABSENT. CLOUD_AGENT_ALL_SECRET_NAMES lists exactly four names, all AUREA_E2E_*, and CLOUD_AGENT_INJECTED_SECRET_NAMES is identical to it — so every secret configured for this scope is injected here and none is withheld.",
+    "api_cursor_com": "GET /v1/me, /v1/models, /v1/agents and /v1/repositories all return HTTP 401 with body keys {code,message}; GET /v1/nonexistent-route-oew3 returns HTTP 404 with body keys {error,message,statusCode}. The routes exist and are credential-blocked, not absent.",
+    "egress": "Unrestricted. cursor-cloud environment-info reports egress.restricted=false, and every external host this lane contacted responded. Nothing here is a network-policy problem."
+  },
+
+  "routes": [
+    {
+      "route_id": "R1",
+      "name": "Supabase MCP, once authenticated",
+      "verdict": "ELIMINATED — cannot reach Edge Secrets at all",
+      "evidence_label": "DOCUMENTED",
+      "source": "https://supabase.com/docs/guides/getting-started/mcp.md, fetched HTTP 200, 19041 bytes, 2026-08-22",
+      "finding": "The published tool surface is list_organizations, get_organization, list_projects, get_project, create_project, get_cost, get_project_url, get_publishable_keys, list_tables, list_extensions, list_migrations, apply_migration, execute_sql, get_advisors, list_edge_functions, get_edge_function, deploy_edge_function, list_branches, create_branch, list_storage_buckets, get_storage_config, search_docs. There is no tool that lists or reads Edge Function secrets. The only occurrences of 'secret' in the document concern OAuth client secrets used to register an MCP client.",
+      "secondary_confirmation": "DIRECTLY_REPRODUCED — while the namespace is in needsAuth its tools are not registered at all; CallDynamicTool on it fails with 'MCP server does not exist: Supabase'. So the route is doubly closed today: unauthenticated now, and lacking the necessary tool even after authentication.",
+      "residual_partial_route": "list_edge_functions and get_edge_function would reveal whether a function READS a secret named for Cursor, which is weak circumstantial evidence of where the key lives. It would not yield the value.",
+      "why_not_recommended": "Authenticating this namespace is worth doing for other reasons. It is not a route to this key, and presenting it as one would be exactly the error the evidence discipline exists to prevent."
+    },
+    {
+      "route_id": "R2",
+      "name": "Supabase Management API with a personal access token",
+      "verdict": "TECHNICALLY VIABLE — and rejected on credential-proliferation grounds",
+      "endpoint": "GET https://api.supabase.com/v1/projects/{ref}/secrets",
+      "evidence_label": "DOCUMENTED for the response shape, DIRECTLY_REPRODUCED for the auth boundary",
+      "documented": "The official OpenAPI document at https://api.supabase.com/api/v1-json (fetched HTTP 200, 334574 bytes) defines exactly one secrets path, /v1/projects/{ref}/secrets, with GET 'List all secrets'. Its 200 response is SecretResponse, whose required fields are ['name','value'] with an optional 'updated_at'. The API therefore returns the secret VALUE, not a digest.",
+      "reproduced": "Unauthenticated GET https://api.supabase.com/v1/projects returns HTTP 401 {\"message\":\"Unauthorized\"}, as does /v1/organizations. The route exists and is credential-blocked.",
+      "credential_required": "A Supabase personal access token (sbp_...), created at https://supabase.com/dashboard/account/tokens.",
+      "why_not_recommended": [
+        "It requires the founder to create a NEW credential in order to avoid creating a new credential. A Supabase PAT is a fresh secret with its own leak surface, its own revocation obligation and its own storage question.",
+        "A Supabase PAT is strictly more powerful than the Cursor key it would be used to fetch. It is account-wide and not project-scopable: the same token that reads one secret can read every secret in every project, run arbitrary SQL through the Management API's project endpoints, and create or delete projects. Introducing it to move one key inverts the risk relationship.",
+        "The retrieved value would arrive as tool or command output inside an agent run, which means it enters a transcript. The recommended route never puts the value anywhere an agent can read it.",
+        "The same OpenAPI path also serves POST (bulk create) and DELETE (bulk delete). A token able to read the key is equally able to destroy every Edge Secret in the project. That is a poor trade for one lookup."
+      ],
+      "when_it_would_become_the_right_route": "If the founder does not know which project holds the key AND has many projects AND prefers enumeration over clicking. Even then, prefer R3, which answers the same question without the value ever being returned in a form anyone has to handle."
+    },
+    {
+      "route_id": "R3",
+      "name": "Supabase CLI — `supabase secrets list`",
+      "verdict": "VIABLE FOR CONFIRMATION ONLY — cannot deliver a usable key",
+      "evidence_label": "DIRECTLY_REPRODUCED",
+      "receipt": "receipts/so02/2026-08-22/oe-w3-credential-estate/raw/supabase-routes.txt",
+      "reproduced": {
+        "cli_available_here": "npx -y supabase@latest --version prints 2.115.0. The CLI is not preinstalled but installs on demand in this runtime; `docker`, `vercel`, `wrangler` and `psql` are absent entirely.",
+        "without_a_token": "{\"_tag\":\"Error\",\"error\":{\"code\":\"LegacyPlatformAuthRequiredError\",\"message\":\"Access token not provided. Supply an access token by running `supabase login` or setting the SUPABASE_ACCESS_TOKEN environment variable.\"}}",
+        "with_a_synthetic_invalid_token": "{\"_tag\":\"Error\",\"error\":{\"code\":\"LegacySecretsListUnexpectedStatusError\",\"message\":\"unexpected list secrets status 401: {\\\"message\\\":\\\"Unauthorized\\\"}\"}}",
+        "interpretation": "The second error proves the CLI reached the Management API and was refused there. The route is credential-blocked, not unsupported or misconfigured."
+      },
+      "the_decisive_limitation": "`supabase secrets list` renders each secret as NAME plus a DIGEST of its value, not the value. The underlying API returns the value (see R2); the CLI hashes it for display. So the CLI confirms that a secret of a given name exists and lets its digest be compared against a digest computed elsewhere — which is genuinely useful — but it cannot hand an agent a working key.",
+      "untested_variant": {
+        "command": "supabase secrets list --project-ref <ref> --output-format json",
+        "claim": "It is possible that the json output format emits raw values where the text format emits digests.",
+        "evidence_label": "HYPOTHESIS",
+        "honesty_note": "This lane could not test it: there is no Supabase token in this runtime, so the command cannot get past authentication. It is recorded as an open question, not as a route. A route that could not be tested is not a route that may be presented as working.",
+        "how_to_settle_it": "Run it once with a token and observe whether the emitted string is 64 hex characters (a digest) or key-shaped."
+      },
+      "best_use": "Locating the key without disclosing it. tools/find-cursor-key-project.sh automates exactly this across every visible project and prints names plus SHA-256 digests only."
+    },
+    {
+      "route_id": "R4",
+      "name": "Mirror the existing key into a repository-scoped Cursor Cloud Agent secret",
+      "verdict": "RECOMMENDED — this is the route",
+      "evidence_label": "DIRECTLY_REPRODUCED for the mechanism, DOCUMENTED for the dashboard location",
+      "what_it_is": "The founder reads the existing key once from the Supabase dashboard (Edge Functions > Secrets, reveal) and stores that same value in Cursor Dashboard > Cloud Agents > Secrets under the name CURSOR_API_KEY, scoped to the repository asibrahim336-hash/obzio-ai-coordination-temp. The key is not reissued, not rotated, and not duplicated in the sense that matters: one credential continues to exist, now readable from the place that needs it.",
+      "mechanism_is_proven_here": "CLOUD_AGENT_ALL_SECRET_NAMES and CLOUD_AGENT_INJECTED_SECRET_NAMES are both populated in this runtime and identical, and the four AUREA_E2E_* secrets they name are present as environment variables. So repository-scoped secret injection demonstrably works in this environment — the mechanism is not being assumed.",
+      "why_it_beats_every_alternative": [
+        "It creates no new credential. R2 and R3 both require minting a Supabase personal access token first. R4 requires nothing to be created at all, which is precisely what the founder's anti-duplication directive asks for.",
+        "It introduces no credential more powerful than the one being moved. A Supabase PAT is account-wide and can delete projects; the Cursor key can create agent runs. Fetching the lesser credential by first creating the greater one is backwards.",
+        "The value never enters an agent context. Under R2 the key arrives as command output and lands in a transcript. Under R4 it arrives as an environment variable that agents consume without reading — verify-cursor-api-key.sh demonstrates use with zero disclosure, and prove-no-argv-leak.sh demonstrates that even the process list stays clean.",
+        "It puts the key where it is actually needed. R2 and R3 retrieve a value that then still has to be stored somewhere before any agent can use it — and that somewhere is Cloud Agent Secrets. Those routes are strictly longer paths to the same destination.",
+        "It is independently verifiable without disclosure. A later run confirms presence by name census and function by a 401-to-200 transition, and can prove same-key identity by comparing SHA-256 digests with `supabase secrets list`.",
+        "It survives this pod. Secrets are injected at pod start and persist across runs, so the founder acts once rather than per run."
+      ],
+      "its_honest_costs": [
+        "The value passes through the founder's clipboard. That is a real exposure window, and it is the reason this must never be done through chat — nothing in this lane asks him to paste a secret into a conversation.",
+        "The key then exists in two stores, Supabase and Cursor, so rotation must update both. This is a genuine duplication of STORAGE, though not of the credential. The alternative — an agent fetching it live from Supabase on each run — requires a permanently injected Supabase token, which is a worse duplication.",
+        "Secrets are injected at pod start, so the run that stores the secret cannot see it. Verification requires a NEW run. This is a sequencing fact, not a defect, and it is the single most common way this kind of activation is wrongly reported as failed."
+      ],
+      "exact_steps": [
+        "1. Open https://supabase.com/dashboard, select the project that holds the key, go to Edge Functions > Secrets, find the Cursor key entry and reveal its value.",
+        "2. Open https://cursor.com/dashboard, go to Cloud Agents > Secrets, add a secret named exactly CURSOR_API_KEY with that value, scoped to the repository asibrahim336-hash/obzio-ai-coordination-temp. Do not add it at team scope.",
+        "3. Start a NEW cloud agent run on that repository and run tools/verify-cursor-api-key.sh. Expect verdict VERIFIED and exit 0.",
+        "4. Optionally confirm it is the same key: compare the key_sha256 the script prints against the digest from `supabase secrets list`. Equal digests prove identity with no disclosure on either side."
+      ],
+      "if_the_project_is_unknown": "Use tools/find-cursor-key-project.sh, which enumerates every visible project and reports matching secret NAMES and value digests, never values. It needs a Supabase token, so prefer simply browsing the dashboard if the project count is small."
+    },
+    {
+      "route_id": "R5",
+      "name": "Deploy an Edge Function that returns the secret",
+      "verdict": "REJECTED — do not do this",
+      "evidence_label": "HYPOTHESIS",
+      "what_it_would_be": "Supabase Edge Functions read their project's secrets from the environment, and the Supabase MCP exposes deploy_edge_function. A function could therefore be deployed that returns the Cursor key over HTTP, making it agent-reachable without any Supabase token.",
+      "why_it_is_recorded_at_all": "It is the one route that technically circumvents every blocker identified above, so an acceptor should see that it was considered and refused on merit rather than missed.",
+      "why_rejected": [
+        "It converts a secret store into a credential exfiltration endpoint, which is a durable security defect that outlives the task that motivated it.",
+        "It is a production mutation of a project this programme does not own the deployment posture of, and the estate's own intelligence already flags an unresolved Supabase security boundary and an unprotected public preview.",
+        "It writes to a surface outside this lane's boundaries and would require deploying code to reach a value the founder can read from a dashboard in seconds.",
+        "The value would still land in an agent transcript, so it does not even achieve the hygiene property that makes R4 attractive."
+      ]
+    }
+  ],
+
+  "recommended_route": {
+    "choice": "R4 — mirror the existing key into a repository-scoped Cursor Cloud Agent secret named CURSOR_API_KEY.",
+    "one_line_justification": "It is the only route that makes the key usable without first creating a Supabase personal access token that is more powerful than the key itself, and the only one that never exposes the value to an agent context.",
+    "what_it_costs_the_founder": "Two dashboard visits and one copy-paste. No credential is created, rotated or deleted.",
+    "what_it_returns": "Every subsequent cloud agent run can call api.cursor.com — including POST /v1/agents, the endpoint that lets one orchestrator create and steer another run instead of the founder pressing a button per lane.",
+    "prohibited_alternative_explicitly_not_taken": "Issuing a new Cursor API key. That request is superseded and this lane does not restate it in any form."
+  },
+
+  "the_aurea_secrets_and_whether_they_identify_the_project": {
+    "evidence_label": "DIRECTLY_REPRODUCED",
+    "receipt": "receipts/so02/2026-08-22/oe-w3-credential-estate/raw/supabase-routes.txt",
+    "question_asked": "Do AUREA_E2E_SUPABASE_URL and AUREA_E2E_SUPABASE_PUBLISHABLE_KEY point at the project holding the Cursor key?",
+    "what_was_established_without_printing_any_value": {
+      "url_shape": "https scheme, 3 host labels, suffix supabase.co, total length 40 — consistent with exactly https://<20-char-ref>.supabase.co with no path, no trailing slash and no whitespace.",
+      "project_ref": "20 characters, all lowercase alphabetic. Redacted form od****************hq.",
+      "project_ref_sha256": "dd2c805908e2a094e0112eb86d00c1ea8b01afd9bd6173e7a5084586371945c9",
+      "full_url_sha256": "aa1ba4e10b1492bc8866eda088c1eb731655c1a4d030bf2ce06ae75e78ff08a8",
+      "publishable_key": "prefix class sb_publishable_, length 46, sha256 b0c7cb7124efd70e8b35052fdec0ffecec6db83e8af4f4eb337071dbf2b1a506. Value never printed.",
+      "disclosure_note": "The digests above let any future operator confirm or deny 'same project' by recomputation, with no value ever disclosed in either direction."
+    },
+    "the_material_finding": {
+      "observation": "That project's hostname does not exist in public DNS. Local resolution fails with gaierror (Name or service not known). DNS-over-HTTPS returns Status=3 (NXDOMAIN) with zero answers from BOTH dns.google and cloudflare-dns.com. In the same code path and the same second, the control host api.supabase.com returns Status=0 (NOERROR) with 2 answers from both resolvers, and curl reaches it for a 401.",
+      "not_a_network_policy_artefact": "environment-info reports egress.restricted=false, and https://supabase.co itself returns HTTP 307 from this runtime. The failure is specific to that one hostname.",
+      "consequence_1": "The injected AUREA_E2E_* credential set is unusable. There is no host to present it to. Any lane or test depending on it is depending on something dead.",
+      "consequence_2": "These variables do not usefully identify the project holding the Cursor API key. Either they point somewhere else, or they point at a project that no longer resolves — and in both cases they are not a route to the key.",
+      "interpretation": {
+        "evidence_label": "HYPOTHESIS",
+        "candidates": ["the project was deleted", "the project was renamed or migrated to a new ref", "the value is a placeholder that was never a live project"],
+        "discriminating_test": "With a Supabase token, GET https://api.supabase.com/v1/projects and compare each project id's SHA-256 against dd2c805908e2a094e0112eb86d00c1ea8b01afd9bd6173e7a5084586371945c9. A match means it exists and DNS is the anomaly; no match means the ref is gone. Equivalently, the founder can compare the redacted ref od****************hq against his project list by eye.",
+        "explicitly_not_claimed": "This lane does NOT claim the project was deleted. It claims, and has reproduced, that the hostname does not resolve."
+      },
+      "recommended_follow_up": "Recorded as founder action FA-W3-05: confirm whether the AUREA_E2E_* secret set is still meaningful and remove it if not. Four dead secrets injected into every run is a small, permanent, avoidable exposure."
+    }
+  },
+
+  "nothing_here_asks_the_founder_to_paste_a_secret_into_chat": {
+    "confirmed": true,
+    "how_each_route_avoids_it": "R4 moves the value between two authenticated dashboards, both under the founder's own session. R2 and R3 would have the value handled by a token the founder holds, never transcribed into a conversation. Every verification instrument in tools/ reads from the environment by NAME and reports status codes and digests.",
+    "standing_rule_applied": "FOUNDER-AUTHORITY-20260822T2225Z, standing_operating_rules_now_in_force.credential_discipline_retained — 'Secrets are never printed, echoed into argument vectors, or requested in chat. Reuse over duplication.'"
+  }
+}

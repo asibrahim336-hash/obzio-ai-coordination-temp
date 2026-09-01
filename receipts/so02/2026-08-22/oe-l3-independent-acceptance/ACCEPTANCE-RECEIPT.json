@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "receipt_id": "OE-L3-INDEPENDENT-ACCEPTANCE-CUR-ORCH-QUAL-01",
+  "recorded_at": "2026-08-22T20:23:00Z",
+  "lane_id": "OE-L3-INDEPENDENT-ACCEPTANCE",
+  "lane_state": "READY_TO_COMMIT",
+  "qualification_id": "CUR-ORCH-QUAL-01",
+  "evidence_commit": "11a60dcf6dbc2eac4e6d975efab5d985ebbabd62",
+  "acceptance_base_sha": "fe0a595206e5986de7eaac6cabc619215a1eb81b",
+  "criteria_commit_sha": "9a390df3ebdd19e1403317be24c74e6abc249415",
+  "independent_verification_commit_sha": "7a7f5b20726bdf5dffd63be7a2512b2150c389f2",
+  "verdict": "REFUSED",
+  "independence_controls": {
+    "criteria_committed_before_evidence_review": true,
+    "different_model_family_from_producer": true,
+    "producer_transcript_or_run_events_read": false,
+    "producer_self_acceptance_relied_on": false,
+    "founder_used_as_evidence_relay": false
+  },
+  "artifacts": [
+    "workstreams/so02/control-plane/operating-environment/l3-independent-acceptance/ACCEPTANCE-CRITERIA.json",
+    "workstreams/so02/control-plane/operating-environment/l3-independent-acceptance/INDEPENDENT-VERIFICATION-REPORT.json",
+    "workstreams/so02/control-plane/operating-environment/l3-independent-acceptance/independent_verify.py",
+    "workstreams/so02/control-plane/operating-environment/l3-independent-acceptance/ADVERSARIAL-TESTS.md",
+    "workstreams/so02/control-plane/operating-environment/l3-independent-acceptance/VERDICT.json"
+  ],
+  "strongest_reason": "The claimed two routes are transport-diverse but share the decisive controller and GitHub custody path; R2 queried the still-running producer, committed no raw retrieved artifacts and is not an independent end-to-end route.",
+  "additional_falsifications": [
+    "The evidence manifest omits material read-back and state artifacts.",
+    "The producer verifier accepts a synthetic read-back that performed no remote operation.",
+    "The producer capacity detector silently accepts an IDLE-to-ERROR regression.",
+    "The producer-authored CI workflow is independent execution but circular assertion design."
+  ],
+  "decision_changed": [],
+  "strategy_bound": false,
+  "protected_write_observation": "No producer commit is reachable from observed current protected heads; an unavailable historical audit trail prevents exclusion of force-pushed-away transient writes.",
+  "post_commit_mutation_rule": "Preserve this receipt and verdict. Any reassessment must be additive and explicitly superseding."
+}

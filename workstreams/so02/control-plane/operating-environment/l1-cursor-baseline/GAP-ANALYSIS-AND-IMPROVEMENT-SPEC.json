@@ -1,0 +1,339 @@
+{
+  "spec_id": "OE-L1-GAP-ANALYSIS-20260822-v001",
+  "lane_id": "OE-L1-CURSOR-BASELINE",
+  "decision_changed": [],
+  "binds_nothing": "Every item below is a recommendation with evidence. No tool, model or architecture is bound by this document. Items marked delegable are safe for Cursor to perform in-repository; items marked founder_authenticated require an act only the account owner can perform.",
+  "prioritisation_basis": "Ordered by how much of the estate's reproduced failure surface each item removes per unit of risk, not by implementation effort. G1 through G4 are the items whose absence is directly implicated in the six named recurring failures.",
+  "recurring_failures_being_designed_against": [
+    {
+      "id": "F1",
+      "failure": "competing claims of what is current",
+      "addressed_by": [
+        "G0",
+        "G1",
+        "G2",
+        "G4"
+      ]
+    },
+    {
+      "id": "F2",
+      "failure": "proposed / launched / observed / completed / accepted conflated",
+      "addressed_by": [
+        "G1",
+        "G3"
+      ]
+    },
+    {
+      "id": "F3",
+      "failure": "PRs, ZIPs and acknowledgements treated as completed capability",
+      "addressed_by": [
+        "G1",
+        "G3"
+      ]
+    },
+    {
+      "id": "F4",
+      "failure": "overlapping whole-operation commissions",
+      "addressed_by": [
+        "G0",
+        "G2",
+        "G6"
+      ]
+    },
+    {
+      "id": "F5",
+      "failure": "the founder becoming the routine relay and merge layer",
+      "addressed_by": [
+        "G5",
+        "G7",
+        "G8"
+      ]
+    },
+    {
+      "id": "F6",
+      "failure": "lessons documented without changing the mechanism",
+      "addressed_by": [
+        "G1",
+        "G2",
+        "G3",
+        "G6"
+      ]
+    }
+  ],
+  "gaps": [
+    {
+      "id": "G0",
+      "priority": 0,
+      "title": "Sibling lanes share one working tree, so declared branch isolation is not actual isolation",
+      "capability_gained": "Lane isolation that holds, and a refusal instead of a silent success when it does not.",
+      "evidence_of_the_gap": {
+        "label": "DIRECTLY_REPRODUCED",
+        "observed": "All five lanes of this group are subagents in ONE VM sharing ONE git repository at /workspace. L2, L3, L4 and the root controller each created a separate `git worktree` under /tmp and were isolated. This lane and L5 both used the shared /workspace checkout, whose HEAD was detached at 20:20:34Z. Three commits from two different lanes then interleaved on that one detached HEAD, so this lane's second commit carries an L5 commit as an ancestor. Both lanes' branch refs stayed at the immutable base, because a commit on a detached HEAD advances no branch. `git push -u origin cursor/oe-l1-cursor-baseline-696d` then pushed the stale ref, printed 'Everything up-to-date' and exited 0."
+      },
+      "why_it_matters_for_this_operation": "This is F4 and F1 reproduced live, in the very group that was dispatched to diagnose them. A manifest declaring five isolated branches did not produce five isolated branches, and the failure is silent and exit-code-zero. A lane trusting its push would report READY_TO_COMMIT while the reconciling controller reads an empty branch — which is exactly how a declared denominator diverges from an actual one. Every commit is also authored by 'Cursor Agent', so nothing in git metadata attributes work to a lane.",
+      "exact_change": "Two parts. First, dispatch must give every lane its own checkout: `git worktree add /tmp/<lane> -b <lane-branch> <immutable-base-sha>`. That is the only part that prevents the collision. Second, the staged guard now refuses a commit on a detached HEAD (DETACHED-HEAD) and refuses a push whose target branch sits on HEAD's lineage behind it (PUSH-REF-BEHIND-HEAD), which converts the silent success into a refusal when the first part was not done.",
+      "risk": "The guard makes the failure loud, not impossible. Two lanes sharing a checkout still interleave; they are simply refused at commit time. Only the per-lane worktree prevents it. The stale-ref rule also has a residual false positive — deliberately pushing a branch that sits behind your current HEAD on the same lineage is refused — which is why it is narrowed to that lineage and carries an opt-out.",
+      "delegability": "delegable_to_cursor_in_repo",
+      "founder_action_required": false,
+      "recovery_actually_performed_by_this_lane": {
+        "label": "DIRECTLY_REPRODUCED",
+        "statement": "This lane hit the failure and recovered from it inside the same run, which is why the remedy below is a procedure rather than a suggestion.",
+        "steps": [
+          "git worktree add /tmp/oe-l1 cursor/oe-l1-cursor-baseline-696d",
+          "git cherry-pick 9851d988 && git cherry-pick 96af4244   # L5's fe934462 deliberately skipped",
+          "copy the uncommitted working state of the lane's own namespaces into the worktree",
+          "commit and push from /tmp/oe-l1, where HEAD is attached to the lane branch"
+        ],
+        "verified": "2 commits above base, L5's commit not an ancestor of HEAD, and 0 changed paths outside this lane's two allowed namespaces.",
+        "raw_evidence": "receipts/so02/2026-08-22/oe-l1-cursor-baseline/raw/shared-worktree-collision.txt"
+      }
+    },
+    {
+      "id": "G1",
+      "priority": 1,
+      "title": "No project hooks — every governance rule in this repository is unenforced prose",
+      "capability_gained": "Deterministic, pre-execution refusal of the specific actions that damage this estate, plus a stop-time check that a terminal claim carries its evidence.",
+      "evidence_of_the_gap": {
+        "label": "DIRECTLY_REPRODUCED",
+        "observed": "There is no .cursor/hooks.json anywhere in the repository. AGENTS.md instruction 10 requires `python scripts/check_operator_taxonomy.py` before commit; nothing runs it. core.hooksPath is already redirected to Cursor's dispatcher, which would run a repository pre-commit hook of the same name if one existed, and none does. The only enforcement is a CI workflow that runs after the commit already exists."
+      },
+      "why_it_matters_for_this_operation": "F6 is the meta-failure: this estate reliably notices its own failures and reliably records them as lessons rather than as mechanisms. Hooks are the only surface in this runtime that converts a written rule into a refusal. Everything else — AGENTS.md, rules, skills — is advice a model may or may not follow. A hook is not advice.",
+      "exact_change": "Apply proposed-cursor-config/dot-cursor/hooks.json, the three hook scripts and verify_hooks.py in dot-cursor/hooks/, and dot-cursor/write-scope.json, following proposed-cursor-config/APPLY.md.",
+      "documented_basis": {
+        "label": "DOCUMENTED",
+        "source": "https://cursor.com/docs/hooks.md",
+        "points": [
+          "Cloud agents load and run project hooks from .cursor/hooks.json.",
+          "beforeShellExecution, subagentStart, subagentStop and stop are all supported in cloud agents.",
+          "Exit code 2 blocks the action and is equivalent to permission \"deny\"; any other non-zero exit fails open."
+        ]
+      },
+      "what_was_actually_reproduced": {
+        "label": "DIRECTLY_REPRODUCED",
+        "statement": "The three hook scripts were executed as the platform executes them — a JSON payload on stdin, the decision read from stdout — against throwaway git repositories, and all 69 cases pass. The harness is shipped with the hooks as .cursor/hooks/verify_hooks.py so the claim is re-checkable rather than a sentence in a document, and it loads the real write-scope.json with only the currentness command stubbed, so the branch globs and refusal patterns it exercises are the ones that actually ship.",
+        "command": "python3 .cursor/hooks/verify_hooks.py",
+        "raw_evidence": "receipts/so02/2026-08-22/oe-l1-cursor-baseline/raw/hook-verification.txt",
+        "cases_passed_total": 69,
+        "guard_cases_passed": 47,
+        "guard_coverage": [
+          "allows git status, gh pr list, unrelated shell, and commit and push on a lane branch",
+          "denies push to each of the nine protected globs, including main, so02/*, po03/*, soo/*, packs/*, cursor/po03-*, cursor/so02-cur-orch-qual-01 and cursor/operating-environment-return-*",
+          "resolves SRC:DST refspecs, refs/heads/ destinations and the + force-refspec prefix",
+          "treats a bare `git push` as targeting the current branch",
+          "denies commit while HEAD is a protected branch",
+          "denies gh pr create, gh pr merge and gh issue create",
+          "denies gh api writes in both the -X and --method spellings and in lower case, while allowing gh api GET and an explicit -X GET",
+          "denies --force and -f but allows --force-with-lease",
+          "denies rebase, filter-branch, reset --hard and commit --amend",
+          "denies commit when the currentness check exits non-zero, quoting the check's own output back, while leaving non-commit commands alone",
+          "denies commit on a detached HEAD, and denies pushing the lane ref that was left behind at base — the exact collision reproduced live in this run",
+          "fires the stale-ref rule with HEAD attached, and spares a divergent branch and a branch that does not exist locally, so pushing a different branch on purpose is not refused",
+          "honours the refuse_detached_head and refuse_stale_ref_push opt-outs",
+          "fails open on malformed stdin and on a missing write-scope.json",
+          "writes an append-only audit line per decision"
+        ],
+        "stop_gate_cases_passed": 12,
+        "stop_gate_coverage": [
+          "stays silent when the turn changed nothing, when the turn did not complete, and on non-text artifacts",
+          "fires on COMPLETED and on QUALIFIED with no receipt manifest, and names bundle_sha256 as the specific missing evidence",
+          "stays silent once a MANIFEST.json carrying bundle_sha256 exists",
+          "fires when a run writes its own non-null acceptor, and names REQUESTED_NOT_GRANTED as the state that claim actually sits in",
+          "treats an explicitly null acceptor as an honest not-yet-accepted and stays silent",
+          "fires when a pull request is described as completion, and explains that a pull request is a projection"
+        ],
+        "ledger_cases_passed": 10,
+        "ledger_coverage": [
+          "appends one line per lifecycle event and records the phase",
+          "records subagent type and id — the only identity a subagent exposes — plus the checked-out branch",
+          "marks turn metadata unavailable rather than inventing a value, and falls back to the boot snapshot while saying which source it used",
+          "treats the metadata service's 404 JSON error body as absence, never as a value",
+          "exits 0 on malformed stdin"
+        ]
+      },
+      "honest_gap": "Script correctness is reproduced; hook FIRING in this runtime is DOCUMENTED only. No hook was installed or fired during this lane, because writing .cursor/hooks.json is outside this lane's namespace. APPLY.md specifies the firing probe that must be run immediately after applying, and nothing here should be relied upon until that probe refuses a command someone actually typed.",
+      "risk": "The guard runs on every git and gh command in every lane, so an over-broad pattern blocks legitimate work. Two mitigations, both reproduced: every unexpected condition fails open, and the stale-ref rule was deliberately narrowed to refs on HEAD's own lineage after the first version would have refused pushing an unrelated older branch. Failing open is a deliberate trade — a silently broken guard protects nothing — which is why the firing probe is mandatory rather than advisory.",
+      "delegability": "delegable_to_cursor_in_repo",
+      "founder_action_required": false
+    },
+    {
+      "id": "G2",
+      "priority": 2,
+      "title": "No project rules — the repository has no always-applied statement of claim states or write scope",
+      "capability_gained": "Every agent turn on this repository starts with the same definition of what PROPOSED, LAUNCHED, OBSERVED, READY_TO_COMMIT, RECONCILED and ACCEPTED mean, and the same statement that a projection is not a state.",
+      "evidence_of_the_gap": {
+        "label": "DIRECTLY_REPRODUCED",
+        "observed": "No .cursor/rules directory and no .mdc file exists anywhere in the repository. Governance is carried entirely by one root AGENTS.md of ten numbered instructions, with no nested AGENTS.md anywhere. AGENTS.md is applied, and it is good, but it describes institutional taxonomy rather than claim discipline: nothing in it defines the difference between observed and accepted."
+      },
+      "why_it_matters_for_this_operation": "F1 and F2 are vocabulary failures before they are process failures. Two agents cannot avoid producing competing claims about what is current if they do not share a definition of 'current', and cannot avoid conflating launched with completed if nothing states that they differ. A rule with alwaysApply:true is the only surface that reaches every turn regardless of which files are touched.",
+      "exact_change": "Apply proposed-cursor-config/dot-cursor/rules/00-claim-states.mdc and 10-currentness-and-write-scope.mdc to .cursor/rules/. Both are alwaysApply:true and deliberately short.",
+      "documented_basis": {
+        "label": "DOCUMENTED",
+        "source": "https://cursor.com/docs/rules.md",
+        "points": [
+          "Project rules must use the .mdc extension; a plain .md file in .cursor/rules is ignored because it has no frontmatter.",
+          "alwaysApply:true includes the rule in every chat session and causes globs and description to be ignored.",
+          "AGENTS.md is the plain-markdown alternative and is supported in the project root and in subdirectories, with nested files combined and more specific ones taking precedence."
+        ]
+      },
+      "design_note": "The reason to add rules rather than extend AGENTS.md is that rules and AGENTS.md serve different jobs here. AGENTS.md answers 'who is the operator and what is the pointer chain'. The claim-state table answers 'what may I assert and on what evidence'. Keeping them separate prevents the second from being buried inside the first, which is how a rule stops being read.",
+      "risk": "alwaysApply rules consume context on every turn, including turns where they are irrelevant. Mitigated by keeping both files short and pushing procedural detail into the paths-scoped skill in G4.",
+      "delegability": "delegable_to_cursor_in_repo",
+      "founder_action_required": false
+    },
+    {
+      "id": "G3",
+      "priority": 3,
+      "title": "environment.json is inert — no start, no terminals, and the install phase does not run",
+      "capability_gained": "Per-boot initialisation that actually executes: the runtime binding captured while it is still readable, the secret-name inventory recorded, validation dependencies present, and currentness reported at boot instead of discovered by CI.",
+      "evidence_of_the_gap": {
+        "label": "DIRECTLY_REPRODUCED",
+        "observed": [
+          ".cursor/environment.json contains only name and install. Both are valid per the live schema, yet environment-info returns environmentJson:null, name:null, environmentJsonPath:null, source:Team, recordedVia:RUNTIME_FORWARD_FILL and the note 'environment.json was found but contained no recognized configuration fields'. The repository file's name did not reach the environment record, which is the discriminating observation.",
+          "The generated install wrapper at /tmp/cursor/async-install/install-user.sh does not contain the repository install command. Its log reads 'Started from stale build bld-20260822-015195f7-955b-445d-8b57-78bc58eec228, skipping install script' and it exited 0.",
+          "/tmp/cursor/start-user/ does not exist, so no start phase ran. The terminals directory exists and is empty.",
+          "Eleven of twelve environment builds are SYSTEM/RECURRING and SKIPPED; the single SUCCEEDED build is the permanent baseline and warmFork is cold."
+        ]
+      },
+      "why_it_matters_for_this_operation": "Two distinct costs. First, every agent boots cold and re-derives the same environment facts by hand — this lane spent a meaningful fraction of its budget rediscovering things a start script could have written to a file in under a second. Second, and more seriously, the transient turn/ metadata subtree was observed to disappear inside this run, so a binding that is not captured at boot is simply lost. Provenance that depends on looking something up later is provenance that will be missing.",
+      "exact_change": "Apply proposed-cursor-config/dot-cursor/environment.json, install.sh, start.sh and terminals/validators-watch.sh. The proposed environment.json validates against the live schema.",
+      "critical_constraint": {
+        "label": "DIRECTLY_REPRODUCED",
+        "statement": "The live schema sets unevaluatedProperties:false, and six fields listed as common by Cursor's own bundled env-setup skill are rejected: image, chromeExecutablePath, egressMode, egressAllowlist, containerRuntime and build.dockerfileContents. So is $schema. Validate against the live schema, never against the skill's field table or a remembered list. A single rejected field invalidates the whole file, which is one plausible way an environment ends up recorded as having no recognized configuration."
+      },
+      "design_note": "Everything the estate needs on every boot is in start, not install, because install is skipped when a pod boots from a stale build — which is what happened here, and which will keep happening while all real work lives on feature branches that never reach the default branch that recurring builds track.",
+      "risk": "A failing start prevents a successful agent start. Every step in the proposed start.sh is individually guarded and the currentness check is explicitly non-fatal, because a currentness break must block promotion rather than the running programme.",
+      "residual_uncertainty": "Whether a corrected .cursor/environment.json actually takes effect for this estate's feature-branch runs was NOT verified. Settling it requires trigger-environment-build, which is outside this lane's permitted tools. This must be proven by a lane that is permitted to call it before the improvement is claimed as working.",
+      "delegability": "delegable_to_cursor_in_repo_but_unverifiable_from_this_lane",
+      "founder_action_required": false
+    },
+    {
+      "id": "G4",
+      "priority": 4,
+      "title": "No repository skills — the receipts discipline is re-derived by hand in every lane",
+      "capability_gained": "A path-scoped procedure that surfaces automatically when an agent touches receipts/**, workstreams/** or state/**, specifying the canonical bundle_sha256 serialisation and requiring remote read-back by immutable SHA.",
+      "evidence_of_the_gap": {
+        "label": "DIRECTLY_REPRODUCED",
+        "observed": "No .cursor/skills/, .agents/skills/, .claude/skills/ or .codex/skills/ exists in this repository. Only three skills are present, all injected by the runtime: env-setup, migrate-to-builds and subscribe. The receipts convention is real and consistently applied in the CUR-01 bundle, but it exists only as a precedent to be copied, not as a procedure the runtime surfaces."
+      },
+      "why_it_matters_for_this_operation": "The canonical serialisation json.dumps(entries, sort_keys=True, separators=(\",\",\":\")) is load-bearing: any other serialisation produces a different bundle hash and silently breaks comparability with every earlier bundle. That detail currently survives only by being copied correctly from a previous lane's output. A paths-scoped skill puts it where it is needed without loading it into unrelated turns.",
+      "exact_change": "Apply proposed-cursor-config/dot-cursor/skills/evidence-receipts/SKILL.md to .cursor/skills/evidence-receipts/SKILL.md.",
+      "documented_basis": {
+        "label": "DOCUMENTED",
+        "source": "https://cursor.com/docs/skills.md",
+        "points": [
+          "Project skills load from .cursor/skills/ and .agents/skills/; the skills root is walked recursively.",
+          "Frontmatter name is required and must match the parent folder name.",
+          "The paths field scopes a skill to matching files so it is only surfaced when the agent works with them.",
+          "disable-model-invocation:true restricts a skill to explicit /skill-name invocation."
+        ]
+      },
+      "answer_to_should_skills_encode_this_discipline": "Yes for procedures, no for prohibitions. A skill is retrieved when the model judges it relevant, which is right for 'how do I build a receipt bundle' and wrong for 'never push to main'. Prohibitions belong in hooks, where they are refusals rather than suggestions. Splitting them this way is the substance of G1 versus G4: the same discipline, enforced where it must be deterministic and surfaced where it must be procedural.",
+      "risk": "Low. A paths-scoped skill is inert outside its globs.",
+      "delegability": "delegable_to_cursor_in_repo",
+      "founder_action_required": false
+    },
+    {
+      "id": "G5",
+      "priority": 5,
+      "title": "No Cursor API key — one orchestrator cannot create or steer another run",
+      "capability_gained": "Programmatic agent and run creation with an explicit per-run model id, run streaming, artifact retrieval, and cancellation. This is the missing half of the already-qualified R2 route, which proved observation and retrieval but not creation.",
+      "evidence_of_the_gap": {
+        "label": "DIRECTLY_REPRODUCED",
+        "observed": "CURSOR_API_KEY is absent from the runtime by name census, and CLOUD_AGENT_ALL_SECRET_NAMES lists only four unrelated AUREA_E2E_* credentials. GET https://api.cursor.com/v1/agents, /v1/models, /v1/repositories, /v1/me and /v1/agents/{id}/runs all return HTTP 401 'Invalid User API Key', while /v1/nonexistent-route returns a routing 404 — so those routes exist and are credential-blocked, not absent. Egress is unrestricted."
+      },
+      "why_it_matters_for_this_operation": "F5 directly. Today a five-lane group exists because a human pressed a button five times, and a distinct-family independent acceptor exists only if a human selects that model. POST /v1/agents with an explicit model.id is the mechanism that makes lane dispatch and acceptor selection a property of the programme rather than of the founder's attention.",
+      "exact_change": "See CONTROL-SURFACE-ACTIVATION-PROGRAMME.json, action FA-CUR-API-01, specified against the ten-point schema.",
+      "risk": "A Cursor API key can create agent runs, which consumes usage and can create pull requests. It is the highest-consequence credential in this programme and is the reason its activation is staged behind a bounded first test rather than handed to the general programme.",
+      "delegability": "founder_authenticated",
+      "founder_action_required": true
+    },
+    {
+      "id": "G6",
+      "priority": 6,
+      "title": "Subagents are invisible at the provider layer, so declared fan-out cannot be reconciled against actual",
+      "capability_gained": "A local record of which subagents actually started and stopped, with type, the top-level run they belong to, and the model in force.",
+      "evidence_of_the_gap": {
+        "label": "DIRECTLY_REPRODUCED",
+        "observed": "This lane is a subagent. run-info returns the top-level run's identity, name and branch, not this lane's. list-cloud-agents returns nine runs and this lane is not among them. /v1/meta-data/agent/id returns the parent bcId. /cursor/stores/self symlinks to the parent bcId, so all subagents share one store with their parent. There is no provider-side identifier for a subagent anywhere in the surface."
+      },
+      "why_it_matters_for_this_operation": "F4. A group manifest declares a denominator of five parents. Nothing in the platform can confirm that five started, that five returned, or which one produced a given artifact. Attribution has to be carried in repository artifacts or it does not exist — and 'declared five, actually four' is exactly how overlapping and orphaned commissions arise.",
+      "exact_change": "Apply proposed-cursor-config/dot-cursor/hooks/ledger_subagent.py with the subagentStart and subagentStop registrations in hooks.json.",
+      "honest_limit": "The ledger is written to .cursor/.run/, which is per-pod and not committed. It is an observation instrument, not custody. An entry that needs to be durable must be promoted into a receipt. It also cannot see a subagent that the runtime never starts, so it reconciles started-versus-returned, not dispatched-versus-started.",
+      "risk": "Very low. Write-only, append-only, fails silently, affects nothing if it breaks.",
+      "delegability": "delegable_to_cursor_in_repo",
+      "founder_action_required": false
+    },
+    {
+      "id": "G7",
+      "priority": 7,
+      "title": "Slack and Linear event returns are documented in the bundled skill but absent from this deployment",
+      "capability_gained": "Waking an agent on a human reply or an issue state change without polling and without the founder relaying the message.",
+      "evidence_of_the_gap": {
+        "label": "DIRECTLY_REPRODUCED",
+        "observed": "The bundled subscribe skill documents subscribe_slack_thread, subscribe_slack_channel, subscribe_slack_new_channels, subscribe_linear_issue and subscribe_linear_comment. GetMcpTools against cursor-subscriptions returns exactly five tools and none of them is a Slack or Linear tool. The absence is therefore localised to an unconnected integration, not to an unsupported feature."
+      },
+      "why_it_matters_for_this_operation": "F5 again, from the other direction. Where a human genuinely must be in the loop, the question is whether their reply reaches the programme automatically or whether they must carry it. Today they must carry it.",
+      "exact_change": "See CONTROL-SURFACE-ACTIVATION-PROGRAMME.json, action FA-MCP-OAUTH-01.",
+      "caution": "This is the lowest-priority activation in the programme and may be the wrong one. Adding a second channel where 'what is current' can be asserted is this estate's F1 failure mode. Recommend it only once the git pointer chain is unambiguously canonical over any chat surface.",
+      "delegability": "founder_authenticated",
+      "founder_action_required": true
+    },
+    {
+      "id": "G8",
+      "priority": 8,
+      "title": "The container runtime and the graphical runtime are present, unrecorded and unused",
+      "capability_gained": "Two capabilities the prior baseline did not know existed: containerised replay for independent acceptance, and browser/DOM evidence capture without acquiring any external stack.",
+      "evidence_of_the_gap": {
+        "label": "DIRECTLY_REPRODUCED",
+        "observed": [
+          "Docker Engine 29.1.4 with API 1.52 answers on 127.0.0.1:2375 with two images present including moby/buildkit:v0.29.0, and zero containers running. The docker CLI is not installed, but the HTTP API is fully reachable.",
+          "Google Chrome 148.0.7778.96 is installed and executed successfully headless, returning a parsed DOM. DISPLAY=:1 is a live X.Org 21.1.11 server (Xtigervnc on 5901) with a noVNC bridge on 26058.",
+          "No browser, computer-control, web-search or web-fetch tool is exposed to the agent."
+        ]
+      },
+      "why_it_matters_for_this_operation": "The independent-acceptance lane's strongest available claim is a replay executed somewhere the producing run does not control. A container with no network and no inherited credentials is a materially better instrument for that than running the same replay in the producer's own shell. Separately, recording browser control as NOT_SUPPORTED — as the prior baseline did — would misdirect the whole browser strand of this commission toward acquiring an external stack when a working browser and display already exist in the pod.",
+      "exact_change": "No change is proposed here. This is an inventory correction whose consequence belongs to the acceptance lane and to the capability-research lane. Recording it is the deliverable.",
+      "security_observation": "The Docker API is unauthenticated and bound to 0.0.0.0 rather than to loopback or a unix socket, so any process in this VM has root-equivalent container control. Inside a single-tenant isolated pod the practical exposure is low and the bind is platform-owned. Recorded, not acted on.",
+      "boundary": "Nothing here executes, installs or expands the halted SO-02 browser batch. Chrome, Xvfb and noVNC are pre-existing base-image components, not an installed stack.",
+      "delegability": "recording_only",
+      "founder_action_required": false
+    },
+    {
+      "id": "G9",
+      "priority": 9,
+      "title": "No .cursorignore, and no repository MCP policy statement",
+      "capability_gained": "An explicit statement of what agents may read and which MCP servers this repository intends to permit, rather than silent inheritance of upstream defaults.",
+      "evidence_of_the_gap": {
+        "label": "DIRECTLY_REPRODUCED",
+        "observed": "No .cursorignore, no .cursorindexingignore and no .cursor/mcp.json. The live environment schema accepts disableAllMcpServers and mcpServerAllowlist; neither is set, so the repository inherits whatever upstream team or user MCP policy exists with no repository-side statement of intent."
+      },
+      "why_it_matters_for_this_operation": "Lower stakes than G1 through G4 but the same shape of problem: an unstated default is indistinguishable from an unconsidered one. When a boundary is not written down, nobody can tell whether it was decided or overlooked.",
+      "exact_change": "Decide the MCP policy explicitly and record it, either as mcpServerAllowlist in environment.json or as a written decision that inheritance is intended. proposed-cursor-config/dot-cursor/mcp.json is a decision record for this, not an apply-ready file. A .cursorignore is probably unnecessary for a repository of text state and is not proposed.",
+      "risk": "Setting mcpServerAllowlist too narrowly could remove a server another lane depends on. Cursor built-in servers are never restricted by it.",
+      "delegability": "delegable_to_cursor_in_repo_after_an_explicit_decision",
+      "founder_action_required": false
+    }
+  ],
+  "explicitly_not_recommended": [
+    {
+      "item": "Putting lineage, acceptance or coordination state in the persistent agent store at /cursor/stores/self",
+      "why": "Reproduced: the store is keyed to the run's bcId and only self is mounted, so a new run cannot address it, and foreign store paths cannot even be created. It is also invisible to the founder, to CI and to any independent acceptor. It is an excellent delivery point for asynchronous returns and a disqualifying place for canonical state."
+    },
+    {
+      "item": "Adding chromeExecutablePath, image, egressMode, egressAllowlist, containerRuntime or build.dockerfileContents to .cursor/environment.json",
+      "why": "Reproduced: the live schema rejects all six under unevaluatedProperties:false, despite Cursor's own bundled skill listing them as common fields."
+    },
+    {
+      "item": "Treating the cursor-cloud run event log as an audit trail",
+      "why": "Reproduced: over a run spanning 13:31Z to 20:15Z it contains two entries, both pr_created. It records provider-side milestones and nothing about what the agent did."
+    },
+    {
+      "item": "Relying on a subscription surviving as a durable channel",
+      "why": "Reproduced: list_subscriptions returns zero active subscriptions, so the CI subscription used during CUR-01 has already expired or closed, and its deliveries survive only in a per-run store. Addressable retrieval by immutable SHA must stay the primary path, with subscriptions as the wake-up mechanism only."
+    },
+    {
+      "item": "Using X-Accepted-Github-Permissions response headers as evidence of what the token holds",
+      "why": "Reproduced: the header states what the endpoint accepts, and every GET reports '=read' regardless of the token. HTTP status is the discriminator. Similarly, the all-false permissions object on GET /repos/{r} is the user-permission projection and is contradicted directly by a successful push dry-run."
+    }
+  ]
+}

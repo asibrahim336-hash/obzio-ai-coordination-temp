@@ -1,0 +1,63 @@
+{
+  "record_id": "OE-SHARED-WORKTREE-COLLISION-LIVE-REPRODUCTION-20260822T2014Z",
+  "decision_changed": [],
+  "finding_class": "DIRECTLY_REPRODUCED",
+  "severity": "HIGH_MECHANISM_DEFECT",
+  "observed_at": "2026-08-22T20:14:10Z",
+  "summary": "The documented ERR-MULTI-PARENT-SHARED-WRITER / SHARED_WORKTREE_COLLISION failure reproduced live, unprompted, within two minutes of dispatching five concurrent lanes. This is the same defect recorded against PO-03 as SHARED_WORKTREE_COLLISION_DURABLE, now observed in a fresh group under a different commission.",
+  "what_happened": {
+    "mechanism": "Cursor local subagents dispatched from one parent share a single filesystem and therefore a single git working directory at /workspace. Each lane was instructed to run `git checkout -b <its branch> <base sha>`, which each did. They then contended for one HEAD.",
+    "observed_evidence": {
+      "instrument": "git rev-parse --abbrev-ref HEAD; git branch -v; git worktree list",
+      "workspace_head_owner_at_observation": "cursor/oe-l2-capability-research-696d",
+      "branches_created_by_lanes": 5,
+      "all_lane_branches_at_same_base": "fe0a595206e5986de7eaac6cabc619215a1eb81b",
+      "root_controller_file_disappeared_from_working_tree": "workstreams/so02/control-plane/operating-environment/GROUP-MANIFEST-OE-20260822-v001.json",
+      "root_controller_file_safe_on_remote": true,
+      "root_controller_commit": "9aea2fee28afdfb4203e29c8c0f06c27b8d837cc"
+    },
+    "how_it_surfaced": "The root controller attempted to amend its own committed group manifest and received FileNotFoundError, because another lane had switched the shared working tree to a branch that does not contain that commit."
+  },
+  "why_this_matters": "The estate's recorded diagnosis says lessons are documented without changing the mechanism. This is a direct instance: the collision was already known, already named, already written down, and it still recurred immediately in a new group because nothing structurally prevented it. Guidance in a commission document is not a control.",
+  "root_cause": "Isolation was specified as a branch-level property (each lane owns a branch and a path namespace) when the actual contended resource is the working directory. Branch isolation without worktree isolation is not isolation.",
+  "concrete_risks_created": [
+    "A lane running `git add -A` can capture another lane's untracked files into its own commit.",
+    "A lane can commit onto whichever branch another lane most recently checked out, so work lands on the wrong branch.",
+    "A lane can observe a partially written tree belonging to another lane and treat it as repository evidence.",
+    "Any lane's `git checkout` silently changes every other lane's view of the repository mid-task."
+  ],
+  "what_did_not_break": [
+    "Untracked files survive branch switches, so no lane's written output was destroyed by the contention.",
+    "Path namespaces are disjoint, so file-level overwrites were not observed.",
+    "The root controller's work was already pushed, so the remote copy was authoritative and recoverable.",
+    "One lane, OE-L4-CURRENTNESS-RECOVERY, independently created its own worktree at /tmp/oe-l4 and was structurally immune."
+  ],
+  "mitigation_applied_now": {
+    "action": "The root controller removed itself from contention by creating an isolated worktree at /tmp/oe-root bound to the return branch, and moved its uncommitted work there.",
+    "instrument": "git worktree add -f /tmp/oe-root cursor/operating-environment-return-20260822-v001",
+    "result": "The root controller no longer competes for /workspace HEAD and its shared-projection writes are safe.",
+    "limitation": "Running lanes could not be corrected in flight, because a follow-up cannot be delivered to a subagent that is still executing. The remaining lanes continue to share /workspace."
+  },
+  "fail_closed_integration_response": {
+    "rule": "Because in-flight correction was impossible, correctness is enforced at integration instead of assumed at dispatch.",
+    "checks_the_root_controller_will_apply_before_integrating_any_lane": [
+      "The lane branch must contain changes ONLY inside that lane's declared owned namespace; any file outside it is cross-contamination and the candidate is rejected.",
+      "Every commit on the lane branch must be authored against that lane's branch, verified by walking the branch from the declared base SHA.",
+      "The lane's manifest hashes must be recomputed independently from the fetched remote bytes, not trusted.",
+      "Two lanes claiming the same file path is an automatic fail-closed rejection of both until adjudicated.",
+      "A lane whose branch is missing or empty is recorded as NOT_RETURNED rather than assumed successful."
+    ],
+    "founder_is_not_the_repair_layer": true
+  },
+  "required_mechanism_change": {
+    "statement": "Lane isolation must be enforced by construction, not by instruction.",
+    "changes": [
+      "Every dispatched lane must be given a pre-created dedicated git worktree path and told to cd into it, rather than being told to run `git checkout -b` in the shared root.",
+      "The dispatch contract must forbid `git checkout` and `git add -A` in the shared root outright.",
+      "The group manifest schema must carry a `worktree_path` field per parent, and dispatch must fail closed if it is absent.",
+      "An executable pre-integration guard must verify namespace containment per lane branch; this is a test, not a guideline."
+    ],
+    "owner": "root controller, folded into the operating-environment programme and handed to the currentness-mechanism lane as live input"
+  },
+  "reuse_value": "This is a reproduction of a real recurring defect with a known-good control, obtained at zero cost to protected surfaces. It should be admitted as reproduction evidence for the error-recurrence matrix rather than discarded as an incident."
+}

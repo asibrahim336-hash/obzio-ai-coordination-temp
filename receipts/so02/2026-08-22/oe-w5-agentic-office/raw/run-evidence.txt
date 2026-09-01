@@ -1,0 +1,81 @@
+# OE-W5 run evidence — captured 2026-08-23T00:27:41Z
+# Every line below is command output produced in this runtime.
+
+## P1  Cursor Agent API surface: 401 means gated, 404 means absent
+GET https://api.cursor.com/v1/me   401 {"code":"error","message":"Invalid User API Key"}
+GET https://api.cursor.com/v1/agents 401 {"code":"error","message":"Invalid User API Key"}
+GET https://api.cursor.com/v1/models 401 {"code":"error","message":"Invalid User API Key"}
+GET https://api.cursor.com/v1/repositories 401 {"code":"error","message":"Invalid User API Key"}
+GET https://api.cursor.com/v1/nonexistent-route-oew5 404 {"message":"Route GET:/v1/nonexistent-route-oew5 not found","error":"Not Found","statusCode":404}
+
+## P2  Secret-name census (names only, never values)
+CLOUD_AGENT_ALL_SECRET_NAMES ->
+    AUREA_E2E_SUPABASE_PUBLISHABLE_KEY
+    AUREA_E2E_SUPABASE_URL
+    AUREA_E2E_USER_EMAIL
+    AUREA_E2E_USER_PASSWORD
+CURSOR_API_KEY present? ->
+    ABSENT
+
+## P3  Store scope: does a subagent get its own store, or its parent's?
+    total 4
+    drwxr-xr-x 2 ubuntu ubuntu    0 Aug 22 13:31 .
+    drwxrwxrwt 3 root   root   4096 Aug 22 13:31 ..
+    drwxrwxrwx 2 ubuntu ubuntu    0 Aug 22 13:31 bc-c6f63d58-9611-495a-96f6-2f2dcbef696d
+    lrwxrwxrwx 1 ubuntu ubuntu   39 Aug 22 13:31 self -> bc-c6f63d58-9611-495a-96f6-2f2dcbef696d
+    self resolves to: /cursor/stores/bc-c6f63d58-9611-495a-96f6-2f2dcbef696d
+
+## P4  VM sharing: sibling lane worktrees visible from this lane
+    hostname: cursor
+    uptime:    00:27:42 up 10:45,  0 user,  load average: 0.42, 0.15, 0.09
+    /tmp/oe-l1
+    /tmp/oe-l1-detachtest
+    /tmp/oe-l1-hooktest
+    /tmp/oe-l1-raw
+    /tmp/oe-l1-stoptest
+    /tmp/oe-l2
+    /tmp/oe-l3-bin
+    /tmp/oe-l3-evidence
+    /tmp/oe-l3-independent-acceptance
+    /tmp/oe-l4
+    /tmp/oe-l5
+    /tmp/oe-root
+    /tmp/oe-w2
+    /tmp/oe-w2-codebase-indexing.md
+    /tmp/oe-w2-env.schema.json
+    /tmp/oe-w2-hooks-docs.md
+    /tmp/oe-w2-ignore-doc.md
+    /tmp/oe-w2-ignore-doc.txt
+    /tmp/oe-w2-ignore-files.md
+    /tmp/oe-w2-llms.txt
+    /tmp/oe-w2-manifest.py
+    /tmp/oe-w2-mcp-doc.md
+    /tmp/oe-w2-paths.txt
+    /tmp/oe-w2-readback
+    /tmp/oe-w2-readback.py
+    /tmp/oe-w2-t.md
+    /tmp/oe-w2-try.html
+    /tmp/oe-w3
+    /tmp/oe-w4
+    /tmp/oe-w5
+    /tmp/oe-w6
+    /tmp/oe-w6-work
+
+## P5  Shared-checkout hazard: HEAD state of the shared /workspace checkout
+    /workspace HEAD  -> HEAD
+    this worktree    -> cursor/oe-w5-agentic-office-696d
+
+## P6  Agent metadata socket
+    socket: srw-rw-rw- 1 root root 0 Aug 22 13:31 /run/cursor/api.sock
+    GET /v1/meta-data/ ->
+        agent/
+        owner/
+        workspace/
+
+## P7  Role-partition constitution still holds
+    platforms 5  decision classes 36  functions 26
+    PASS: all 14 invariants hold
+    
+    PASS: all 20 failure modes rejected by the validators
+
+# end 2026-08-23T00:27:42Z

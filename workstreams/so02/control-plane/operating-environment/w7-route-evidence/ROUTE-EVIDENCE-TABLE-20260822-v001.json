@@ -1,0 +1,2347 @@
+{
+  "artifact_id": "OE-W7-ROUTE-EVIDENCE-TABLE-20260822-v001",
+  "built_at_utc": "2026-08-23T01:15:01Z",
+  "commission": "COM-CUR-ENV-01-20260822-v001",
+  "decisive_column": {
+    "field": "returns_without_founder_touch",
+    "note": "One-time setup by the founder does not make a route NO. A route is NO when he must act on every result. Setup cost is carried in founder_action_required instead, so the two are never conflated.",
+    "question": "Does a result travel from the ChatGPT account into a surface Cursor reads, with no act by Ahmed at the moment of return?",
+    "values": {
+      "CONDITIONAL": "Returns without a founder act only once a stated precondition holds. The precondition is named in the row, and until it holds the row behaves as NO.",
+      "NO": "The result exists only where a person must open it. This is the founder-as-relay pattern the standing instruction forbids, and it does not stop being that pattern because a machine started the work.",
+      "NOT_APPLICABLE": "The route carries no result in this direction.",
+      "YES": "A machine reads the result. No founder act at return time."
+    }
+  },
+  "decisive_column_rollup": {
+    "CONDITIONAL": {
+      "count": 8,
+      "route_ids": [
+        "R04",
+        "R05",
+        "R06",
+        "R09",
+        "R10",
+        "R11",
+        "R22",
+        "R26"
+      ]
+    },
+    "NO": {
+      "count": 5,
+      "route_ids": [
+        "R07",
+        "R08",
+        "R13",
+        "R20",
+        "R21"
+      ]
+    },
+    "NOT_APPLICABLE": {
+      "count": 1,
+      "route_ids": [
+        "R19"
+      ]
+    },
+    "YES": {
+      "count": 13,
+      "route_ids": [
+        "R01",
+        "R02",
+        "R03",
+        "R12",
+        "R14",
+        "R15",
+        "R16",
+        "R17",
+        "R18",
+        "R23",
+        "R24",
+        "R25",
+        "R27"
+      ]
+    }
+  },
+  "evidence_label_meaning": {
+    "DIRECTLY_REPRODUCED": "This lane ran the command or fetched the URL in this run. Command or URL, output and UTC time recorded.",
+    "DOCUMENTED": "Official source, fetched and hashed, quoted verbatim from the body this lane holds. Model recall is never a source.",
+    "HYPOTHESIS": "Inference this lane did not test, including compositions of separately documented parts. Never used to assert a capability."
+  },
+  "evidence_reuse": {
+    "cross_harvest_corroboration": "Twenty-six URLs were fetched independently by OE-L5 at 20:36Z and OE-W6 at 00:03Z, and every sha256 agrees. The documentation was stable across that window, so L5's excerpts remain valid against W6's hashes and this lane reuses them rather than re-cutting them.",
+    "l5_prior_work": {
+      "artifact": "OE-L5-OPENAI-SURFACE-EVIDENCE-20260822-v001",
+      "built_at_utc": "2026-08-22T20:42:59Z",
+      "claim_count": 62,
+      "claims_reused_here": 18
+    },
+    "position": "The predecessor lane's harvest is treated as evidence to carry forward, not as work to redo. Re-fetching everything is what exhausted it.",
+    "this_lane_fetch": {
+      "authenticated_requests": 0,
+      "byte_identical_to_w6": 28,
+      "changed_since_w6": [
+        "openai-data-controls-faq",
+        "openai-export-data",
+        "openai-privacy-portal"
+      ],
+      "credential_used": null,
+      "fetched_but_not_cited": [
+        "api-tools-remote-mcp",
+        "chatgpt-build-skills",
+        "chatgpt-plugins",
+        "chatgpt-projects",
+        "codex-code-review",
+        "codex-remote-connections",
+        "cursor-docs-sitemap",
+        "cursor-mcp",
+        "plugins-auth"
+      ],
+      "http_200_count": 33,
+      "non_200": {
+        "api-tools-remote-mcp": 404,
+        "openai-data-controls-faq": 403,
+        "openai-export-data": 403,
+        "openai-privacy-portal": 403
+      },
+      "note_on_the_404": "developers.openai.com/api/docs/guides/tools-remote-mcp.md returns 404: the .md convention that resolves elsewhere on that host does not resolve for this path. No claim in this table cites it. The claims it was meant to support were established from api-secure-mcp-tunnels and chatgpt-extend-mcp instead, both 200.",
+      "source_count": 37,
+      "sources_cited_by_a_claim": 28
+    },
+    "w6_harvest": {
+      "authenticated_requests": 0,
+      "branch": "cursor/oe-w6-chatgpt-connection-696d",
+      "built_at_utc": "2026-08-23T00:03:58Z",
+      "commit": "2d2b346cd90e4059e26f2d3238f702a582943c32",
+      "http_200_count": 75,
+      "source_count": 79,
+      "what_it_lacked": "It committed the log but not the bodies, so the text behind each recorded hash was unavailable. That is the gap this lane filled, and the only reason any fetching was necessary."
+    }
+  },
+  "excerpt_discipline": "72 excerpts cut out of bodies fetched by this lane using literal locators; 18 claims reused from OE-L5 with their own hashes; 3 counted scans used for absence claims. A locator that stops matching fails the build rather than emitting a stale quotation.",
+  "founder_authority_basis": "The founder's standing instruction that the entire authorised ChatGPT account, not only active threads, may be used to recover context, initiate follow-ups and message its models, preserving provenance. Recorded verbatim at workstreams/so02/control-plane/operating-environment/FOUNDER-STANDING-INSTRUCTION-20260822.md.",
+  "how_to_reproduce": [
+    "python3 tools/fetch_route_gaps.py --harvest W6LOG --out BODIES --log GAPLOG",
+    "bash    tools/capture_runtime_facts.sh",
+    "python3 tools/build_route_table.py --bodies BODIES --gap-log GAPLOG --w6-log W6LOG --l5-evidence L5JSON --runtime-facts FACTS --out TABLE.json"
+  ],
+  "lane": "OE-W7-CHATGPT-ROUTE-EVIDENCE",
+  "route_count": 27,
+  "routes": [
+    {
+      "cannot_reach": [
+        "Ahmed's ChatGPT projects, project chats or sidebar chats. Nothing in the reference addresses ChatGPT UI content.",
+        "Any conversation the founder had in the ChatGPT UI."
+      ],
+      "confidence": "high",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "OPENAI_API_KEY"
+      ],
+      "direction": "cursor_to_openai_platform",
+      "endpoint": "POST/GET https://api.openai.com/v1/responses",
+      "evidence": [
+        {
+          "claim": "POST /responses accepts a `conversation` parameter; items from that conversation are prepended to the request and the input and output items of the response are added back to the conversation automatically.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "fetched_at_utc": "2026-08-22T20:36:47Z",
+          "matched_at_line": 34,
+          "reused_claim_id": "C-RESP-CONVERSATION",
+          "reused_from_lane": "OE-L5-CHATGPT-SCALE",
+          "source_sha256": "ed5a9b7b97acb7f2ea8e921d7de56a66cc7034efd933d11eecf7691364df1527",
+          "source_url": "https://developers.openai.com/api/reference/resources/responses/methods/create.md",
+          "verbatim_excerpt": "- `conversation: optional string or ResponseConversationParam or null`\n\n  The conversation that this response belongs to. Items from this conversation are prepended to `input_items` for this response request.\n  Input items and output items from this response are automatically added to this conversation after this response completes."
+        },
+        {
+          "claim": "`store` controls whether the generated response is retained for later retrieval via API.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "fetched_at_utc": "2026-08-22T20:36:47Z",
+          "matched_at_line": 4685,
+          "reused_claim_id": "C-RESP-STORE",
+          "reused_from_lane": "OE-L5-CHATGPT-SCALE",
+          "source_sha256": "ed5a9b7b97acb7f2ea8e921d7de56a66cc7034efd933d11eecf7691364df1527",
+          "source_url": "https://developers.openai.com/api/reference/resources/responses/methods/create.md",
+          "verbatim_excerpt": "- `store: optional boolean or null`\n\n  Whether to store the generated model response for later retrieval via\n  API."
+        },
+        {
+          "evidence_kind": "runtime_observation",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "observation": "api.openai.com/v1/models answers 401 from this pod: gated, not missing.",
+          "receipt": "receipts/so02/2026-08-22/oe-w7-route-evidence/raw/runtime-facts.txt"
+        },
+        {
+          "distinct_context_count": 12,
+          "distinct_contexts": [
+            "ChatGPT. One of `server_url`, `connec",
+            "ChatGPT. One of `server_url`, `connecto",
+            "ChatGPT. One of `server_url`, `connector_id",
+            "ChatGPT. One of `server_url`, `connector_id`,",
+            "chatgpt-4o-latest\"` - `\"codex-mini-latest\"`",
+            "chatgpt-image-latest`. Default: `gp",
+            "chatgpt-image-latest`. Default: `gpt-",
+            "chatgpt-image-latest`. Default: `gpt-im",
+            "chatgpt-image-latest`. Default: `gpt-imag",
+            "chatgpt-image-latest`. Default: `gpt-image-",
+            "chatgpt-image-latest`. Default: `gpt-image-1`",
+            "chatgpt.com\", \"title\": \"...\""
+          ],
+          "evidence_kind": "counted_scan_for_absence",
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "interpretation": "Every occurrence of 'chatgpt' in the 474 KB Responses create reference is either the image model id chatgpt-image-latest, a service-connector identifier, or a utm_source=chatgpt.com query string inside an example web-search citation. None is a route to ChatGPT UI content.",
+          "pattern": "(?i)chatgpt",
+          "source_id": "api-responses-create",
+          "source_sha256": "ed5a9b7b97acb7f2ea8e921d7de56a66cc7034efd933d11eecf7691364df1527",
+          "source_url": "https://developers.openai.com/api/reference/resources/responses/methods/create.md",
+          "total_occurrences": 29
+        }
+      ],
+      "founder_action_required": [
+        "Issue a Platform API key with least-privilege scopes.",
+        "Set a hard spend limit before the key is issued, so activation is reversible by arithmetic rather than by trust."
+      ],
+      "maturity": "General availability. Stable, versioned, widely used.",
+      "name": "OpenAI Responses API",
+      "provenance_quality": "High for what it covers. Response ids are addressable and retrievable, and retention is published. But provenance is only ever of Cursor's own calls: this route can prove what Cursor asked and what the model answered, and can say nothing about what the founder discussed.",
+      "reaches": [
+        "Model execution against inputs Cursor supplies.",
+        "Retrieval of a response Cursor itself created, by response id.",
+        "Asynchronous execution via background:true, so work outlives a held connection."
+      ],
+      "returns_without_founder_touch": "YES",
+      "returns_without_founder_touch_reason": "Cursor makes the call and reads the result. No founder act at return time. This is not, however, a return route from the ChatGPT account, because nothing from that account is in it.",
+      "route_id": "R01",
+      "status": "ESTABLISHED",
+      "surface": "API Platform (api.openai.com). Not the ChatGPT account."
+    },
+    {
+      "cannot_reach": [
+        "Ahmed's ChatGPT projects, project chats or sidebar chats.",
+        "A conv_\u2026 object is not a chat in the founder's sidebar, and no route here converts one into the other."
+      ],
+      "confidence": "high",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "OPENAI_API_KEY"
+      ],
+      "direction": "cursor_to_openai_platform",
+      "endpoint": "POST/GET/DELETE https://api.openai.com/v1/conversations[/{id}/items]",
+      "evidence": [
+        {
+          "claim": "The conversation object carries exactly id, created_at, metadata and object: it is an addressable container, not a provenance record.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "fetched_at_utc": "2026-08-22T20:36:45Z",
+          "matched_at_line": 15,
+          "reused_claim_id": "C-CONV-SHAPE",
+          "reused_from_lane": "OE-L5-CHATGPT-SCALE",
+          "source_sha256": "249da6e143be3fc29102a7973d3fcc9a358f36235d376b7c796d2ec03784936c",
+          "source_url": "https://developers.openai.com/api/reference/resources/conversations/methods/retrieve.md",
+          "verbatim_excerpt": "- `Conversation object { id, created_at, metadata, object }`"
+        },
+        {
+          "claim": "Conversation metadata is capped at 16 key-value pairs, keys at 64 characters and values at 512 characters.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "fetched_at_utc": "2026-08-22T20:36:45Z",
+          "matched_at_line": 27,
+          "reused_claim_id": "C-CONV-METADATA-LIMIT",
+          "reused_from_lane": "OE-L5-CHATGPT-SCALE",
+          "source_sha256": "249da6e143be3fc29102a7973d3fcc9a358f36235d376b7c796d2ec03784936c",
+          "source_url": "https://developers.openai.com/api/reference/resources/conversations/methods/retrieve.md",
+          "verbatim_excerpt": "Set of 16 key-value pairs that can be attached to an object. This can be         useful for storing additional information about the object in a structured         format, and querying for objects via API or the dashboard.\n    Keys are strings with a maximum length of 64 characters. Values are strings         with a maximum length of 512 characters."
+        },
+        {
+          "claim": "Deleting a conversation does not delete its items: deletion of the container is not deletion of the content.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "fetched_at_utc": "2026-08-22T20:36:45Z",
+          "matched_at_line": 7,
+          "reused_claim_id": "C-CONV-DELETE-ORPHANS",
+          "reused_from_lane": "OE-L5-CHATGPT-SCALE",
+          "source_sha256": "fa7d96be6bfd17d17fbeb6433b32e8504353f797ec4dc443aeff50babe156c63",
+          "source_url": "https://developers.openai.com/api/reference/resources/conversations/methods/delete.md",
+          "verbatim_excerpt": "**delete** `/conversations/{conversation_id}`\n\nDelete a conversation. Items in the conversation will not be deleted."
+        },
+        {
+          "claim": "/v1/conversations and /v1/conversations/items retain application state UNTIL DELETED and are NOT Zero Data Retention eligible. Durability is the point of the endpoint, and it is also its privacy cost.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "fetched_at_utc": "2026-08-22T20:36:46Z",
+          "matched_at_line": 61,
+          "reused_claim_id": "C-RET-CONVERSATIONS",
+          "reused_from_lane": "OE-L5-CHATGPT-SCALE",
+          "source_sha256": "e8abb2995e37c881f3084506702d89af22582b739edd88ef39d6d452a8c4aa91",
+          "source_url": "https://developers.openai.com/api/docs/guides/your-data.md",
+          "verbatim_excerpt": "| `/v1/conversations`        |           No           |       Until deleted        |         Until deleted          |               No               |                   No                   |\n| `/v1/conversations/items`  |           No           |       Until deleted        |         Until deleted          |               No               |                   No                   |"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 1520,
+          "note": "The only substantive mention of ChatGPT anywhere in the 832 KB Conversations reference is this connector-identifier note. The reference does not describe reading ChatGPT UI content because it cannot.",
+          "source_id": "api-conversations-overview",
+          "source_sha256": "cf14a03b13c1022f7cd09a195691f5ea0d726cbadb2817a3181a3306695b0400",
+          "source_url": "https://developers.openai.com/api/reference/resources/conversations.md",
+          "verbatim_excerpt": "Identifier for service connectors, like those available in ChatGPT. One of"
+        },
+        {
+          "distinct_context_count": 5,
+          "distinct_contexts": [
+            "ChatGPT. One of `server_url`, `connecto",
+            "ChatGPT. One of `server_url`, `connector_",
+            "chatgpt-image-latest`. Default: `gpt-",
+            "chatgpt-image-latest`. Default: `gpt-im",
+            "chatgpt-image-latest`. Default: `gpt-imag"
+          ],
+          "evidence_kind": "counted_scan_for_absence",
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "interpretation": "All occurrences resolve to the image model id chatgpt-image-latest or the service-connector sentence quoted above. There is no ChatGPT-UI read path in this reference.",
+          "pattern": "(?i)chatgpt",
+          "source_id": "api-conversations-overview",
+          "source_sha256": "cf14a03b13c1022f7cd09a195691f5ea0d726cbadb2817a3181a3306695b0400",
+          "source_url": "https://developers.openai.com/api/reference/resources/conversations.md",
+          "total_occurrences": 42
+        }
+      ],
+      "founder_action_required": [
+        "Issue a Platform API key.",
+        "Decide, as a founder decision rather than a lane decision, that material may sit under indefinite provider-side retention: /v1/conversations retains until deleted and is not Zero Data Retention eligible."
+      ],
+      "maturity": "General availability. The most retentive endpoint on the platform.",
+      "name": "OpenAI Conversations API",
+      "provenance_quality": "Addressable but thin. The conversation object carries only id, created_at, metadata and object, and metadata is capped at 16 pairs with 512-character values. It cannot hold a provenance chain, so the id is a locator into the repository and the repository stays canonical.",
+      "reaches": [
+        "Durable, addressable containers for API-native turns, with conv_ prefixed ids.",
+        "Item lists for conversations this route created."
+      ],
+      "returns_without_founder_touch": "YES",
+      "returns_without_founder_touch_reason": "Cursor reads it directly. Again, nothing from the founder's account is in it, so this closes no loop that was open.",
+      "route_id": "R02",
+      "status": "ESTABLISHED",
+      "surface": "API Platform (api.openai.com). Not the ChatGPT account."
+    },
+    {
+      "cannot_reach": [
+        "GitHub. There is no GitHub connector in the supported connector_id list, so this route does not reach this repository at all.",
+        "The founder's ChatGPT chats. These connectors reach third-party services, not ChatGPT content."
+      ],
+      "confidence": "high",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "OPENAI_API_KEY",
+        "per-connector service authorization"
+      ],
+      "direction": "openai_platform_to_third_party",
+      "endpoint": "connector_id parameter on Responses/Conversations MCP tool calls",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 1524,
+          "note": "The enumerated list. Its completeness is the finding: no GitHub.",
+          "source_id": "api-conversations-overview",
+          "source_sha256": "cf14a03b13c1022f7cd09a195691f5ea0d726cbadb2817a3181a3306695b0400",
+          "source_url": "https://developers.openai.com/api/reference/resources/conversations.md",
+          "verbatim_excerpt": "Currently supported `connector_id` values are:\n\n          - Dropbox: `connector_dropbox`\n          - Gmail: `connector_gmail`\n          - Google Calendar: `connector_googlecalendar`\n          - Google Drive: `connector_googledrive`\n          - Microsoft Teams: `connector_microsoftteams`\n          - Outlook Calendar: `connector_outlookcalendar`\n          - Outlook Email: `connector_outlookemail`\n          - SharePoint: `connector_sharepoint`\n\n          - `\"connector_dropbox\"`"
+        }
+      ],
+      "founder_action_required": [
+        "Authorize each connector against the target service, as himself or as an identity he designates."
+      ],
+      "maturity": "General availability, with an explicitly enumerated and therefore checkable list.",
+      "name": "API-side service connectors (connector_id)",
+      "provenance_quality": "Whatever the connected service returns, bounded by the authenticated identity's permissions there.",
+      "reaches": [
+        "Exactly eight named services: Dropbox, Gmail, Google Calendar, Google Drive, Microsoft Teams, Outlook Calendar, Outlook Email, SharePoint."
+      ],
+      "returns_without_founder_touch": "YES",
+      "returns_without_founder_touch_reason": "Cursor makes the call and reads the result. Irrelevant to this lane's question, though, because the enumerated list contains no GitHub and no ChatGPT content.",
+      "route_id": "R03",
+      "status": "ESTABLISHED",
+      "surface": "API Platform, calling OpenAI-hosted connectors"
+    },
+    {
+      "cannot_reach": [
+        "Anything beyond the authenticated identity's own permissions in the connected service. Making a plugin available grants nothing by itself.",
+        "This repository, unless a connector for it exists and is admitted. No GitHub connector is evidenced in the material this lane holds.",
+        "The IDE extension surface."
+      ],
+      "confidence": "high for the mechanism, none for a GitHub connector",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "The founder's ChatGPT session",
+        "Per-service authorization held by the connector"
+      ],
+      "direction": "chatgpt_ui_to_third_party",
+      "endpoint": "chatgpt.com/apps, chatgpt.com/admin/ca, chatgpt.com/admin/plugins",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:58Z",
+          "matched_at_line": 80,
+          "source_id": "chatgpt-apps-connectors",
+          "source_sha256": "05d24c2282b66781fc52b14b4cf5f4557b8fa04661b800443b0a87a46a01311e",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/apps-and-connectors.md",
+          "verbatim_excerpt": "Plugins in ChatGPT and Codex can include connectors that search, retrieve, sync,"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:58Z",
+          "matched_at_line": 119,
+          "note": "Write actions exist and are gated. This is the sentence that makes R04 conditional rather than impossible.",
+          "source_id": "chatgpt-apps-connectors",
+          "source_sha256": "05d24c2282b66781fc52b14b4cf5f4557b8fa04661b800443b0a87a46a01311e",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/apps-and-connectors.md",
+          "verbatim_excerpt": "Whatever the initial set, start with read actions. Before enabling write\nactions, identify the plugin owner, review connector scopes and service\npermissions, confirm data access, and document external effects and a recovery"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:58Z",
+          "matched_at_line": 73,
+          "source_id": "chatgpt-apps-connectors",
+          "source_sha256": "05d24c2282b66781fc52b14b4cf5f4557b8fa04661b800443b0a87a46a01311e",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/apps-and-connectors.md",
+          "verbatim_excerpt": "Making an app or plugin available in ChatGPT doesn't grant access to files,\n  records, or actions in the connected service. Before troubleshooting or"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:58Z",
+          "matched_at_line": 138,
+          "source_id": "chatgpt-apps-connectors",
+          "source_sha256": "05d24c2282b66781fc52b14b4cf5f4557b8fa04661b800443b0a87a46a01311e",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/apps-and-connectors.md",
+          "verbatim_excerpt": "normal chat-retention controls. ChatGPT conversations that use apps remain\navailable through the Compliance API."
+        }
+      ],
+      "founder_action_required": [
+        "Admin admission across a six-layer capability chain: availability, included skills, app access, actions and permissions, service authorization, runtime permissions.",
+        "Explicitly enable write actions, which the documentation gates behind naming an owner, reviewing scopes and documenting a recovery path."
+      ],
+      "maturity": "General availability. Admin-gated, plan-sensitive, directory contents change.",
+      "name": "ChatGPT plugins, apps and connectors (UI-side)",
+      "provenance_quality": "Results land in the chat as tool output. Conversations that use apps remain available through the Compliance API, so there is an audit path in principle, on eligible plans.",
+      "reaches": [
+        "External systems a plugin's connectors are configured for: connectors can search, retrieve, sync or act on them.",
+        "Write actions, where the connector supports Action control and an admin has enabled them."
+      ],
+      "returns_without_founder_touch": "CONDITIONAL",
+      "returns_without_founder_touch_reason": "Precondition: the connector must write into a system Cursor already reads. A connector that only returns data into the chat leaves the result where a person must read it, which is NO. A connector holding write to a Cursor-visible system turns the same mechanism into YES. The direction of the write, not the existence of the connector, is what decides this row.",
+      "route_id": "R04",
+      "status": "ESTABLISHED_MECHANISM_UNESTABLISHED_FOR_THIS_REPOSITORY",
+      "surface": "The founder's ChatGPT account, inside a chat"
+    },
+    {
+      "cannot_reach": [
+        "Local Codex configuration. ChatGPT web does not read local config files or expose local MCP servers."
+      ],
+      "confidence": "high for the mechanism",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "The founder's ChatGPT session",
+        "ChatGPT developer-mode access (a separate workspace permission)",
+        "Bearer or OAuth credentials on the MCP server, our side"
+      ],
+      "direction": "chatgpt_ui_to_our_system",
+      "endpoint": "chatgpt.com/plugins \u2192 developer-mode app \u2192 Streamable HTTP MCP server",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:58Z",
+          "matched_at_line": 9,
+          "source_id": "chatgpt-extend-mcp",
+          "source_sha256": "b3f015b9edce4bd7a27c29d7b39f3014b92ab7dd5c4481e96ee3c9d4ab137efa",
+          "source_url": "https://learn.chatgpt.com/docs/extend/mcp.md",
+          "verbatim_excerpt": "ChatGPT web can use remote MCP-backed tools supplied by plugins. Local Codex"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:58Z",
+          "matched_at_line": 70,
+          "source_id": "chatgpt-extend-mcp",
+          "source_sha256": "b3f015b9edce4bd7a27c29d7b39f3014b92ab7dd5c4481e96ee3c9d4ab137efa",
+          "source_url": "https://learn.chatgpt.com/docs/extend/mcp.md",
+          "verbatim_excerpt": "ChatGPT web doesn't read local Codex configuration files or expose the local"
+        },
+        {
+          "byte_identical_to_w6_harvest": null,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 128,
+          "source_id": "api-secure-mcp-tunnels",
+          "source_sha256": "c7b2edc6fe4b09b9b0709036577bdc332a475fd1533b1f429b40b840cdcdd21d",
+          "source_url": "https://developers.openai.com/api/docs/guides/secure-mcp-tunnels.md",
+          "verbatim_excerpt": "Go to [ChatGPT Plugins](https://chatgpt.com/plugins), select the plus button to create a developer-mode app, and choose **Tunnel** under **Connection**. Select an available tunnel when ChatGPT lists it, or paste a valid `tunnel_id` if you already have one."
+        },
+        {
+          "byte_identical_to_w6_harvest": null,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 60,
+          "source_id": "api-secure-mcp-tunnels",
+          "source_sha256": "c7b2edc6fe4b09b9b0709036577bdc332a475fd1533b1f429b40b840cdcdd21d",
+          "source_url": "https://developers.openai.com/api/docs/guides/secure-mcp-tunnels.md",
+          "verbatim_excerpt": "- ChatGPT developer mode is a separate workspace permission. For Enterprise/Edu, a workspace admin grants developer-mode access; the user then enables it in **Settings \u2192 Security and login**. See the [developer-mode Help Center article](https://help.openai.com/en/articles/12584461-developer-mode-apps-and-full-mcp-connectors-in-chatgpt-beta) for plan-specific policy."
+        }
+      ],
+      "founder_action_required": [
+        "Obtain developer-mode access: for Enterprise/Edu a workspace admin grants it, then the user enables it in Settings \u2192 Security and login.",
+        "Create the developer-mode app in ChatGPT Plugins."
+      ],
+      "maturity": "Beta. Developer mode is explicitly a beta workspace permission.",
+      "name": "Remote MCP connector in ChatGPT (developer-mode app)",
+      "provenance_quality": "Excellent, and this is the reason to care about this route. Our own server sees the exact tool arguments, so the material arrives as structured input we hash and record on receipt rather than as prose someone pasted.",
+      "reaches": [
+        "Any tool our own MCP server exposes, called from inside a chat.",
+        "Therefore, in principle, the repository: the server is our code."
+      ],
+      "returns_without_founder_touch": "CONDITIONAL",
+      "returns_without_founder_touch_reason": "Precondition: a publicly reachable HTTPS MCP endpoint, or the tunnel in R06. Once reachable, ChatGPT calls our server and our server writes the repository, with no founder act at return time. The remaining founder-shaped dependency is the trigger, not the return: some ChatGPT-side turn must invoke the app, which R09 can schedule.",
+      "route_id": "R05",
+      "status": "ESTABLISHED_MECHANISM_NOT_ACTIVATED",
+      "surface": "The founder's ChatGPT account calling out to a server we control"
+    },
+    {
+      "cannot_reach": [
+        "Public plugin submission or distribution. That still needs a stable, publicly reachable HTTPS endpoint.",
+        "Anything if tunnel-client is not running. It long-polls; it is not a listener that survives its host."
+      ],
+      "confidence": "high",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "OPENAI_API_KEY (a runtime key for tunnel-client)",
+        "A tunnel_id from Platform tunnel settings",
+        "Tunnels RBAC: Read + Manage to create, Read + Use to run"
+      ],
+      "direction": "chatgpt_ui_to_our_private_network",
+      "endpoint": "tunnel-client \u2192 OpenAI-hosted MCP tunnel endpoint (outbound HTTPS only)",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": null,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 5,
+          "source_id": "api-secure-mcp-tunnels",
+          "source_sha256": "c7b2edc6fe4b09b9b0709036577bdc332a475fd1533b1f429b40b840cdcdd21d",
+          "source_url": "https://developers.openai.com/api/docs/guides/secure-mcp-tunnels.md",
+          "verbatim_excerpt": "Secure MCP Tunnel lets you connect private MCP servers to supported OpenAI products without opening inbound firewall ports or exposing those servers to the public internet. Run `tunnel-client` inside the network that can already reach your MCP server; it opens an outbound HTTPS path to OpenAI, pulls queued MCP work, forwards requests locally, and returns responses through the same tunnel."
+        },
+        {
+          "byte_identical_to_w6_harvest": null,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 16,
+          "source_id": "api-secure-mcp-tunnels",
+          "source_sha256": "c7b2edc6fe4b09b9b0709036577bdc332a475fd1533b1f429b40b840cdcdd21d",
+          "source_url": "https://developers.openai.com/api/docs/guides/secure-mcp-tunnels.md",
+          "verbatim_excerpt": "An MCP tunnel is an outbound-only connection from a host inside your network to an OpenAI-hosted MCP endpoint. Use it when your MCP server is private, on-premises, or behind a firewall, but ChatGPT, Codex, the Responses API, or another supported OpenAI surface still needs to call it."
+        },
+        {
+          "byte_identical_to_w6_harvest": null,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 8,
+          "source_id": "api-secure-mcp-tunnels",
+          "source_sha256": "c7b2edc6fe4b09b9b0709036577bdc332a475fd1533b1f429b40b840cdcdd21d",
+          "source_url": "https://developers.openai.com/api/docs/guides/secure-mcp-tunnels.md",
+          "verbatim_excerpt": "testing. It does not support public plugin submission or distribution. Public"
+        },
+        {
+          "byte_identical_to_w6_harvest": null,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 151,
+          "source_id": "api-secure-mcp-tunnels",
+          "source_sha256": "c7b2edc6fe4b09b9b0709036577bdc332a475fd1533b1f429b40b840cdcdd21d",
+          "source_url": "https://developers.openai.com/api/docs/guides/secure-mcp-tunnels.md",
+          "verbatim_excerpt": "- Tunnel control-plane auth, long-poll / response traffic, and individual tunnel transport requests are not emitted as ChatGPT Compliance Platform app events by the tunnel path."
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 14,
+          "source_id": "api-tools-connectors-mcp",
+          "source_sha256": "d994cfbfd4f85aacdefd672a80fac1d0cabf1b27274f598658df552bec49b0d1",
+          "source_url": "https://developers.openai.com/api/docs/guides/tools-connectors-mcp.md",
+          "verbatim_excerpt": "If your MCP server is private, on-premises, or behind a firewall, use [Secure MCP Tunnel](https://developers.openai.com/api/docs/guides/secure-mcp-tunnels) to connect it to supported OpenAI products without exposing the server to the public internet. Download the latest public release from [openai/tunnel-client](https://github.com/openai/tunnel-client/releases/latest)."
+        }
+      ],
+      "founder_action_required": [
+        "Create the tunnel in Platform tunnel settings and grant the Tunnels role.",
+        "Associate the tunnel with the target ChatGPT workspace, not only with the Platform organization, or it will not appear in ChatGPT.",
+        "Provide a durable host for tunnel-client. An ephemeral cloud-agent pod is not one."
+      ],
+      "maturity": "Documented, versioned client, enterprise networking features. Paired with ChatGPT developer mode, which is beta.",
+      "name": "Secure MCP Tunnel",
+      "provenance_quality": "Strong on the app path, with a stated gap. App-level compliance logging still applies, including app invocation and APP_AUTH_LOG events, and tunnel metadata changes appear in Platform audit logs as tunnel.created, tunnel.updated and tunnel.deleted. But tunnel transport traffic itself is explicitly not emitted as Compliance Platform app events, so the transport leg is not independently auditable from the ChatGPT side.",
+      "reaches": [
+        "A private MCP server with no public listener and no inbound firewall port.",
+        "Named callers: ChatGPT, Codex, the Responses API, or another supported OpenAI surface.",
+        "Narrowly scoped private HTTP endpoints, via the embedded Harpoon server, limited to targets and methods we configure."
+      ],
+      "returns_without_founder_touch": "CONDITIONAL",
+      "returns_without_founder_touch_reason": "This is the finding that most changes the picture, because it removes the blocker the prior lane identified. OE-L5 concluded that push-based return needed a durable public HTTPS endpoint this runtime lacks. A tunnel is outbound-only, so no public endpoint is needed at all. Precondition becomes a durable host plus the credentials above, which is a materially easier thing to obtain than public ingress.",
+      "route_id": "R06",
+      "status": "ESTABLISHED_MECHANISM_NOT_ACTIVATED",
+      "surface": "A private MCP server inside our own boundary, reachable by ChatGPT"
+    },
+    {
+      "cannot_reach": [
+        "The agent's own answer. This is the decisive limit and it is stated flatly in the documentation.",
+        "Existing projects or chats. This starts new work; it reads nothing."
+      ],
+      "confidence": "high",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "A Workspace Agent access token, scoped to Workspace Agents operations only"
+      ],
+      "direction": "cursor_to_chatgpt_account",
+      "endpoint": "POST https://api.chatgpt.com/v1/workspace_agents/{id}/trigger",
+      "evidence": [
+        {
+          "claim": "A published ChatGPT workspace agent can be triggered from outside the UI on api.chatgpt.com.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "fetched_at_utc": "2026-08-22T20:36:47Z",
+          "matched_at_line": 15,
+          "reused_claim_id": "C-WA-TRIGGER-ROUTE",
+          "reused_from_lane": "OE-L5-CHATGPT-SCALE",
+          "source_sha256": "60a309e6ca391e85eab32bbde95c81ff8404911128e84e69828d742bb4442c4b",
+          "source_url": "https://developers.openai.com/workspace-agents/trigger-runs.md",
+          "verbatim_excerpt": "POST https://api.chatgpt.com/v1/workspace_agents/{id}/trigger\nGET  https://api.chatgpt.com/v1/workspace_agents/{id}/runs/{run_id}"
+        },
+        {
+          "claim": "The trigger route durably queues the event and returns 202 with a conversation URL.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "fetched_at_utc": "2026-08-22T20:36:47Z",
+          "matched_at_line": 59,
+          "reused_claim_id": "C-WA-ACCEPTED",
+          "reused_from_lane": "OE-L5-CHATGPT-SCALE",
+          "source_sha256": "60a309e6ca391e85eab32bbde95c81ff8404911128e84e69828d742bb4442c4b",
+          "source_url": "https://developers.openai.com/workspace-agents/trigger-runs.md",
+          "verbatim_excerpt": "The API durably queues the trigger event and returns `202 Accepted` with a link"
+        },
+        {
+          "claim": "THE DECISIVE LIMIT: the agent's response cannot currently be retrieved through the API. Workspace Agents is a dispatch route with no return channel.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "fetched_at_utc": "2026-08-22T20:36:47Z",
+          "matched_at_line": 68,
+          "reused_claim_id": "C-WA-NO-RETURN",
+          "reused_from_lane": "OE-L5-CHATGPT-SCALE",
+          "source_sha256": "60a309e6ca391e85eab32bbde95c81ff8404911128e84e69828d742bb4442c4b",
+          "source_url": "https://developers.openai.com/workspace-agents/trigger-runs.md",
+          "verbatim_excerpt": "The agent's response cannot currently be retrieved through the API."
+        },
+        {
+          "claim": "Workspace Agent access tokens are provisioned in ChatGPT under Admin, Access tokens, with the Workspace Agents scope, and a workspace admin must first enable the feature.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "fetched_at_utc": "2026-08-22T20:36:47Z",
+          "matched_at_line": 15,
+          "reused_claim_id": "C-WA-TOKEN-LOCATION",
+          "reused_from_lane": "OE-L5-CHATGPT-SCALE",
+          "source_sha256": "79ac2bd59e0bbfe2c1732e69f6802731f76ba27ab32de0d957ceb657f28f1189",
+          "source_url": "https://developers.openai.com/workspace-agents/authentication.md",
+          "verbatim_excerpt": "enable Workspace agents and turn on **Allow users to create personal access\ntokens** in Admin > Permissions & roles.\n\n1. In ChatGPT, open Admin > Access tokens.\n2. Create an access token and select the **Workspace Agents** scope.\n3. Copy the token and store it in your secrets manager."
+        },
+        {
+          "claim": "The Workspace Agent access token is scoped to Workspace Agents operations only and is a different credential from OPENAI_API_KEY.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "fetched_at_utc": "2026-08-22T20:36:47Z",
+          "matched_at_line": 30,
+          "reused_claim_id": "C-WA-TOKEN-SCOPE",
+          "reused_from_lane": "OE-L5-CHATGPT-SCALE",
+          "source_sha256": "79ac2bd59e0bbfe2c1732e69f6802731f76ba27ab32de0d957ceb657f28f1189",
+          "source_url": "https://developers.openai.com/workspace-agents/authentication.md",
+          "verbatim_excerpt": "Workspace Agent access tokens are scoped to Workspace Agents API operations\nonly."
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 19,
+          "note": "Independent confirmation that this is a third, separate credential.",
+          "source_id": "chatgpt-access-tokens",
+          "source_sha256": "0173ee418a00c968e9a0b5b42c8748b5a4bc46ab5b8477a0242b87649ee03149",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/access-tokens.md",
+          "verbatim_excerpt": "app-server client; they do not authenticate workspace agent trigger calls. See"
+        },
+        {
+          "evidence_kind": "runtime_observation",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "observation": "api.chatgpt.com/v1/workspace_agents/x/runs/y answers 401 from this pod: the route exists and is gated.",
+          "receipt": "receipts/so02/2026-08-22/oe-w7-route-evidence/raw/runtime-facts.txt"
+        }
+      ],
+      "founder_action_required": [
+        "A workspace admin enables Workspace agents and turns on personal access tokens under Admin \u2192 Permissions & roles.",
+        "Create the token under Admin \u2192 Access tokens with the Workspace Agents scope."
+      ],
+      "maturity": "Available, with the return path documented as absent rather than merely unspecified.",
+      "name": "ChatGPT Workspace Agents \u2014 trigger",
+      "provenance_quality": "Good for dispatch, nil for content. You can prove you triggered it and that it finished. You cannot obtain what it said.",
+      "reaches": [
+        "A published workspace agent inside the account, started from outside.",
+        "Durable queueing: the trigger returns 202 Accepted with a conversation link.",
+        "Continuation of one agent conversation across triggers, via conversation_key."
+      ],
+      "returns_without_founder_touch": "NO",
+      "returns_without_founder_touch_reason": "The result comes back as a conversation URL. A workflow that ends in 'the founder opens the link and reads it' is founder-as-relay wearing the costume of automation, and it is prohibited however much machinery sits upstream of the link.",
+      "route_id": "R07",
+      "status": "ESTABLISHED_DISPATCH_ONLY",
+      "surface": "The founder's ChatGPT workspace, entered from outside the UI"
+    },
+    {
+      "cannot_reach": [
+        "Any content the agent produced. Status only, never the response."
+      ],
+      "confidence": "high",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "A Workspace Agent access token"
+      ],
+      "direction": "chatgpt_account_to_cursor",
+      "endpoint": "GET https://api.chatgpt.com/v1/workspace_agents/{id}/runs/{run_id} (OpenAI-Beta: workspace_agent_runs=v1)",
+      "evidence": [
+        {
+          "claim": "Beta run polling returns status only - queued, in_progress, suspended, completed, failed - never content.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "fetched_at_utc": "2026-08-22T20:36:47Z",
+          "matched_at_line": 111,
+          "reused_claim_id": "C-WA-RUN-STATUS",
+          "reused_from_lane": "OE-L5-CHATGPT-SCALE",
+          "source_sha256": "60a309e6ca391e85eab32bbde95c81ff8404911128e84e69828d742bb4442c4b",
+          "source_url": "https://developers.openai.com/workspace-agents/trigger-runs.md",
+          "verbatim_excerpt": "| ------------- | ---------------------------------------------------------------- |\n| `queued`      | The trigger was accepted and is waiting to start.                |\n| `in_progress` | The agent is running.                                            |\n| `suspended`   | The agent is waiting for an external action or tool.             |\n| `completed`   | The agent run completed successfully.                            |\n| `failed`      | The agent run failed. See `error.code` for the failure category. |"
+        },
+        {
+          "claim": "THE DECISIVE LIMIT: the agent's response cannot currently be retrieved through the API. Workspace Agents is a dispatch route with no return channel.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "fetched_at_utc": "2026-08-22T20:36:47Z",
+          "matched_at_line": 68,
+          "reused_claim_id": "C-WA-NO-RETURN",
+          "reused_from_lane": "OE-L5-CHATGPT-SCALE",
+          "source_sha256": "60a309e6ca391e85eab32bbde95c81ff8404911128e84e69828d742bb4442c4b",
+          "source_url": "https://developers.openai.com/workspace-agents/trigger-runs.md",
+          "verbatim_excerpt": "The agent's response cannot currently be retrieved through the API."
+        }
+      ],
+      "founder_action_required": [
+        "As R07."
+      ],
+      "maturity": "Beta, behind an explicit beta header.",
+      "name": "ChatGPT Workspace Agents \u2014 beta run polling",
+      "provenance_quality": "A verifiable completion signal and nothing else. Enough to prove work finished, never enough to know what it concluded.",
+      "reaches": [
+        "Run status, one of queued, in_progress, suspended, completed, failed.",
+        "A failure category in error.code."
+      ],
+      "returns_without_founder_touch": "NO",
+      "returns_without_founder_touch_reason": "This lane was asked to verify this against live documentation because it is decisive, and it verifies. Polling returns a status enum. Cursor can learn that the agent finished and still cannot learn one word of what it said, so the content still requires a person to fetch it. A status-only channel automates the noticing and leaves the relaying to Ahmed, which is the half that matters.",
+      "route_id": "R08",
+      "status": "ESTABLISHED_STATUS_ONLY",
+      "surface": "The same workspace agent, polled for progress"
+    },
+    {
+      "cannot_reach": [
+        "A local folder or worktree. Web scheduled tasks keep none between runs.",
+        "Any machine-readable outbox. Findings land in the Scheduled view, which the documentation calls an inbox."
+      ],
+      "confidence": "high",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "The founder's ChatGPT session; his account's own entitlements"
+      ],
+      "direction": "internal_to_chatgpt_account",
+      "endpoint": "ChatGPT Scheduled view; RFC 5545 RRULE schedules",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 115,
+          "source_id": "chatgpt-automations",
+          "source_sha256": "1b305d8d341ae32412f6d7c3a992c08a7df94f58612155e026a7448ef049c0ac",
+          "source_url": "https://learn.chatgpt.com/docs/automations.md",
+          "verbatim_excerpt": "Scheduled tasks run unattended with your default sandbox settings. Start with the"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 124,
+          "source_id": "chatgpt-automations",
+          "source_sha256": "1b305d8d341ae32412f6d7c3a992c08a7df94f58612155e026a7448ef049c0ac",
+          "source_url": "https://learn.chatgpt.com/docs/automations.md",
+          "verbatim_excerpt": "The **Scheduled** view acts as your inbox. Scheduled task runs with findings"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 188,
+          "source_id": "chatgpt-automations",
+          "source_sha256": "1b305d8d341ae32412f6d7c3a992c08a7df94f58612155e026a7448ef049c0ac",
+          "source_url": "https://learn.chatgpt.com/docs/automations.md",
+          "verbatim_excerpt": "- polling Slack, GitHub, or another connected source when the results should"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 253,
+          "source_id": "chatgpt-automations",
+          "source_sha256": "1b305d8d341ae32412f6d7c3a992c08a7df94f58612155e026a7448ef049c0ac",
+          "source_url": "https://learn.chatgpt.com/docs/automations.md",
+          "verbatim_excerpt": "Scheduled tasks use `approval_policy = \"never\"` when your organization policy"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 74,
+          "source_id": "chatgpt-automations",
+          "source_sha256": "1b305d8d341ae32412f6d7c3a992c08a7df94f58612155e026a7448ef049c0ac",
+          "source_url": "https://learn.chatgpt.com/docs/automations.md",
+          "verbatim_excerpt": "plugins available to that chat. They don't keep a local folder or"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 48,
+          "note": "Every delivery channel terminates at a person.",
+          "source_id": "chatgpt-notifications",
+          "source_sha256": "3574fbb5669fd40e44364681b4fbda7dcf7f8ef932bc5b57eeade2381a759fb2",
+          "source_url": "https://learn.chatgpt.com/docs/notifications.md",
+          "verbatim_excerpt": "channels can include push, email, or SMS. Use **Manage tasks** from the task"
+        }
+      ],
+      "founder_action_required": [
+        "Create the scheduled task once, and set the sandbox mode it runs under."
+      ],
+      "maturity": "General availability. Model pinning inside a task expires: gpt-5.4 and gpt-5.4-mini retire 2026-08-31.",
+      "name": "ChatGPT scheduled tasks (Tasks / automations) \u2014 web",
+      "provenance_quality": "Each run is a chat with a timestamp, which is real provenance but only inside the account.",
+      "reaches": [
+        "Unattended runs on a schedule, using the uploaded files, connected tools, skills and plugins available to that chat.",
+        "Polling of connected sources such as Slack or GitHub, where a connector exists.",
+        "approval_policy = \"never\", where organization policy allows it."
+      ],
+      "returns_without_founder_touch": "CONDITIONAL",
+      "returns_without_founder_touch_reason": "By default NO: findings arrive in an inbox and the notification channels are push, email and SMS, all of which terminate at a person. It becomes YES only when the scheduled run's own action writes outward \u2014 through a connector (R04) or an MCP app on a tunnel (R05/R06). This is the most useful row in the table, because scheduling is the piece that removes the founder from the trigger, and it is worthless for return until it is pointed at an outward-writing tool.",
+      "route_id": "R09",
+      "status": "ESTABLISHED",
+      "surface": "The founder's ChatGPT account, running on a schedule"
+    },
+    {
+      "cannot_reach": [
+        "Anything at all unless the machine is powered on and the desktop app is running, with the project still present on disk.",
+        "Files outside the workspace, under workspace-write mode."
+      ],
+      "confidence": "high",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "The founder's ChatGPT session on his own machine"
+      ],
+      "direction": "chatgpt_account_to_local_repository",
+      "endpoint": "ChatGPT desktop app, project bound to a Git working copy or worktree",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 91,
+          "source_id": "chatgpt-automations",
+          "source_sha256": "1b305d8d341ae32412f6d7c3a992c08a7df94f58612155e026a7448ef049c0ac",
+          "source_url": "https://learn.chatgpt.com/docs/automations.md",
+          "verbatim_excerpt": "For project-scoped scheduled tasks, keep the machine powered on and the ChatGPT\ndesktop app running. The selected project must still be available on disk when\nthe task is scheduled to run."
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 95,
+          "source_id": "chatgpt-automations",
+          "source_sha256": "1b305d8d341ae32412f6d7c3a992c08a7df94f58612155e026a7448ef049c0ac",
+          "source_url": "https://learn.chatgpt.com/docs/automations.md",
+          "verbatim_excerpt": "In Git repositories, you can choose whether a scheduled task runs in your local\nproject or on a new [worktree](https://learn.chatgpt.com/docs/environments/git-worktrees). Both options run in the\nbackground. Worktrees keep changes from scheduled tasks separate from unfinished local\nwork, while running in your local project can modify files you are still\nworking on. In non-version-controlled projects, scheduled tasks run directly in the"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 242,
+          "source_id": "chatgpt-automations",
+          "source_sha256": "1b305d8d341ae32412f6d7c3a992c08a7df94f58612155e026a7448ef049c0ac",
+          "source_url": "https://learn.chatgpt.com/docs/automations.md",
+          "verbatim_excerpt": "- If your sandbox mode is **full access**, background scheduled tasks carry\n  elevated risk, as ChatGPT may change files, run commands, and access network\n  without asking. Consider updating sandbox settings to workspace write, and"
+        }
+      ],
+      "founder_action_required": [
+        "Keep the machine powered on and the desktop app running for the schedule to fire.",
+        "Choose the sandbox mode, and accept that full access lets background tasks change files and run commands without asking."
+      ],
+      "maturity": "General availability. Depends on desktop-app behaviour and local state.",
+      "name": "ChatGPT scheduled tasks \u2014 desktop app, project-scoped, with repository write",
+      "provenance_quality": "Good if it reaches a commit: Git records author, time and diff. The risk is the opposite of missing provenance \u2014 local mode can modify files the founder is actively editing, so changes can arrive entangled with unfinished work.",
+      "reaches": [
+        "Files in the selected project on disk, in the local checkout or a dedicated worktree.",
+        "Commands and network, subject to sandbox mode; under full access, changes without asking."
+      ],
+      "returns_without_founder_touch": "CONDITIONAL",
+      "returns_without_founder_touch_reason": "Precondition: his machine is on, the app is running, and the task pushes rather than only editing locally. Then commits reach the remote and Cursor reads them with no founder act. But the precondition makes the route depend on the founder's hardware being awake, which is a weaker guarantee than a server-side route and should not be presented as equivalent to one.",
+      "route_id": "R10",
+      "status": "ESTABLISHED",
+      "surface": "The founder's own machine, driven by his ChatGPT account"
+    },
+    {
+      "cannot_reach": [
+        "A complete audit trail. The documentation states plainly that these records do not establish one for every hosted file operation, shell command, browser interaction, tool invocation or approval.",
+        "Anything on an ineligible plan. Coverage depends on product, surface, permissions, available endpoint and documented event schema.",
+        "History older than the retention window: the Compliance Logs Platform retains data for 30 days."
+      ],
+      "confidence": "high on coverage and limits, none on contract. This lane can say what it covers and cannot say how to call it.",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "ChatGPT workspace admin access; credential type not publicly specified"
+      ],
+      "direction": "chatgpt_account_to_external_system",
+      "endpoint": "Contract published only at chatgpt.com/admin/api-reference (authenticated)",
+      "evidence": [
+        {
+          "claim": "The Compliance API exists to export auditable ChatGPT records into an external system.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "fetched_at_utc": "2026-08-22T20:36:44Z",
+          "matched_at_line": 20,
+          "reused_claim_id": "C-COMPLIANCE-PURPOSE",
+          "reused_from_lane": "OE-L5-CHATGPT-SCALE",
+          "source_sha256": "d4db4be75e8e7ebdc029e628475e88216d49eddff179824f8cab9d89dc3d35c6",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/compliance-api.md",
+          "verbatim_excerpt": "The Compliance API is appropriate when you need to:\n\n- Export supported records into an audit or investigation system.\n- Apply organizational retention and legal-hold processes.\n- Correlate Codex activity with other security or identity data.\n- Support approved security, legal, or governance investigations."
+        },
+        {
+          "claim": "The public page deliberately does not publish routes or schemas; the authenticated Admin API reference is the source of truth. The contract cannot be read without admin access.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "fetched_at_utc": "2026-08-22T20:36:44Z",
+          "matched_at_line": 10,
+          "reused_claim_id": "C-COMPLIANCE-UNDOCUMENTED",
+          "reused_from_lane": "OE-L5-CHATGPT-SCALE",
+          "source_sha256": "d4db4be75e8e7ebdc029e628475e88216d49eddff179824f8cab9d89dc3d35c6",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/compliance-api.md",
+          "verbatim_excerpt": "The authenticated [Admin API reference](https://chatgpt.com/admin/api-reference)\nis the source of truth for current access requirements, event coverage, routes,\nschemas, filters, retention, and request behavior."
+        },
+        {
+          "claim": "The Compliance Platform guide is titled for Enterprise, Edu and ChatGPT for Teachers, indicating a plan gate.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "fetched_at_utc": "2026-08-22T20:36:44Z",
+          "matched_at_line": 14,
+          "reused_claim_id": "C-COMPLIANCE-PLAN-GATE",
+          "reused_from_lane": "OE-L5-CHATGPT-SCALE",
+          "source_sha256": "d4db4be75e8e7ebdc029e628475e88216d49eddff179824f8cab9d89dc3d35c6",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/compliance-api.md",
+          "verbatim_excerpt": "For an overview of the available compliance surfaces and common integration\npatterns, see the [Compliance Platform guide](https://help.openai.com/en/articles/9261474-compliance-api-for-chatgpt-enterprise-edu-and-chatgpt-for-teachers)."
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 216,
+          "note": "New relative to OE-L5, and reached on a host that answers rather than one that 403s. It upgrades the row from 'plan-gated and unspecified' to 'plan-gated, unspecified, and documented to cover conversation records'.",
+          "source_id": "chatgpt-work-admin-faq",
+          "source_sha256": "0ddd34764efbd4f3f03494a6cebdc703817cd2b8161fe233aa139e75d98e4c8e",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/work-admin-faq.md",
+          "verbatim_excerpt": "workspaces, the Compliance API provides covered ChatGPT conversation records,\nincluding supported cloud Work activity. Coverage depends on the product,\nsurface, permissions, available endpoint, and documented event schema. See"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 225,
+          "source_id": "chatgpt-work-admin-faq",
+          "source_sha256": "0ddd34764efbd4f3f03494a6cebdc703817cd2b8161fe233aa139e75d98e4c8e",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/work-admin-faq.md",
+          "verbatim_excerpt": "provides Work user prompts and agent responses."
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 229,
+          "source_id": "chatgpt-work-admin-faq",
+          "source_sha256": "0ddd34764efbd4f3f03494a6cebdc703817cd2b8161fe233aa139e75d98e4c8e",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/work-admin-faq.md",
+          "verbatim_excerpt": "These records don't establish a complete audit trail for every hosted file\noperation, shell command, browser interaction, tool invocation, or approval."
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 234,
+          "source_id": "chatgpt-work-admin-faq",
+          "source_sha256": "0ddd34764efbd4f3f03494a6cebdc703817cd2b8161fe233aa139e75d98e4c8e",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/work-admin-faq.md",
+          "verbatim_excerpt": "The Compliance Logs Platform retains data for 30 days. Export records"
+        }
+      ],
+      "founder_action_required": [
+        "Confirm which plan the workspace is on. Every claim in this row branches on that single fact, and this lane does not have it.",
+        "Read the authenticated Admin API reference, which is the only published source of routes and schemas."
+      ],
+      "maturity": "Available on eligible plans. Public documentation deliberately omits routes, schemas, filters and retention behaviour.",
+      "name": "ChatGPT Compliance API",
+      "provenance_quality": "The best available in principle: auditable records of prompts and responses, designed for legal hold and investigation. Its weakness is purpose rather than fidelity \u2014 it is built to export to a SIEM, not to hand a working answer to a coordinating agent.",
+      "reaches": [
+        "Covered ChatGPT conversation records, on eligible workspaces, including supported cloud Work activity.",
+        "Work user prompts and agent responses, for eligible Enterprise and Edu workspaces.",
+        "Active Library files, through Library-specific endpoints.",
+        "Connected app calls, logged separately."
+      ],
+      "returns_without_founder_touch": "CONDITIONAL",
+      "returns_without_founder_touch_reason": "If eligible and credentialed, a machine reads it continuously and no founder act is needed per result \u2014 the documentation's own advice is to export records continuously to a downstream system. Until plan eligibility is confirmed and the authenticated contract is read, this row cannot be built against, so it behaves as NO today.",
+      "route_id": "R11",
+      "status": "PARTIALLY_ESTABLISHED",
+      "surface": "The founder's ChatGPT workspace, read as auditable records"
+    },
+    {
+      "cannot_reach": [
+        "Raw records. The documentation says outright that it is not a raw audit-log interface and points to the Compliance API instead.",
+        "Any conversation content."
+      ],
+      "confidence": "high",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "A Platform organization API key whose organization matches the workspace's"
+      ],
+      "direction": "chatgpt_account_to_external_system",
+      "endpoint": "Contract published only at chatgpt.com/codex/cloud/settings/apireference (authenticated)",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 21,
+          "source_id": "chatgpt-analytics-api",
+          "source_sha256": "5439c9b30725b8a3ea27961d2e783354840994c54093b0e56ae8dfbd51013719",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/analytics-api.md",
+          "verbatim_excerpt": "It's not a raw audit-log interface. Use the"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 28,
+          "source_id": "chatgpt-analytics-api",
+          "source_sha256": "5439c9b30725b8a3ea27961d2e783354840994c54093b0e56ae8dfbd51013719",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/analytics-api.md",
+          "verbatim_excerpt": "authenticate with a Platform organization API key. The key's organization must\nmatch the organization associated with the workspace."
+        }
+      ],
+      "founder_action_required": [
+        "Issue the org-scoped key; confirm the org/workspace pairing."
+      ],
+      "maturity": "Available. Contract behind authentication.",
+      "name": "Codex Analytics API",
+      "provenance_quality": "Aggregates only. Useful for detecting that something happened, never for what.",
+      "reaches": [
+        "Aggregated Codex usage and activity metrics, scoped to a ChatGPT workspace."
+      ],
+      "returns_without_founder_touch": "YES",
+      "returns_without_founder_touch_reason": "A machine reads it. Worth recording precisely so it is not mistaken for a content route during a hunt for one: it returns counts, and counts are not context.",
+      "route_id": "R12",
+      "status": "ESTABLISHED_METRICS_ONLY",
+      "surface": "Aggregated workspace metrics"
+    },
+    {
+      "cannot_reach": [
+        "UNESTABLISHED."
+      ],
+      "confidence": "none on viability; high on the fact of the block, which was reproduced twice by two lanes",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "The founder's own account credentials (owner-identity act)"
+      ],
+      "direction": "chatgpt_account_to_founder",
+      "endpoint": "ChatGPT Settings \u2192 Data controls \u2192 Export (route not confirmable from here)",
+      "evidence": [
+        {
+          "attempts": [
+            {
+              "fetched_at_utc": "2026-08-23T01:01:01Z",
+              "http_status_this_lane": 403,
+              "http_status_w6": 403,
+              "sha256": "31c5dedbc4e67b887b31bc5232b49f70ff65e9636090d8b57eb027c982c0a146",
+              "source_id": "openai-export-data",
+              "url": "https://help.openai.com/en/articles/7260999-how-do-i-export-my-chatgpt-history-and-data",
+              "user_agent_used": "curl-default"
+            },
+            {
+              "fetched_at_utc": "2026-08-23T01:01:01Z",
+              "http_status_this_lane": 403,
+              "http_status_w6": 403,
+              "sha256": "6ffb2d45947ef0cf4c866b4f6783cdbcae1100ba782a78274a2d83b97dd1f30b",
+              "source_id": "openai-data-controls-faq",
+              "url": "https://help.openai.com/en/articles/7730893-data-controls-faq",
+              "user_agent_used": "curl-default"
+            },
+            {
+              "fetched_at_utc": "2026-08-23T01:01:01Z",
+              "http_status_this_lane": 403,
+              "http_status_w6": 403,
+              "sha256": "4c6ed5e368fe312b52422eeca51d0089274f3100b122ffc03b88c35f77e76669",
+              "source_id": "openai-privacy-portal",
+              "url": "https://privacy.openai.com/policies",
+              "user_agent_used": "curl-default"
+            }
+          ],
+          "evidence_kind": "fetch_failure_reproduced",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "note": "All three answered 403 for OE-W6 at 00:03Z and 403 again for this lane, once with curl's default user agent, which rules out an agent-string-specific block. The bodies are bot-challenge pages: privacy.openai.com returns a Cloudflare 'Just a moment...' interstitial and help.openai.com returns a refresh-and-retry page. Their bytes differ between fetches because the challenge carries a per-request nonce, which is why they are the only three sources this lane reports as CHANGED. No attempt was made to defeat the challenge."
+        },
+        {
+          "evidence_kind": "searched_published_index_and_found_no_entry",
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "interpretation": "The published learn.chatgpt.com index was searched for an account data-export page on a host that does answer. It has none: the only export entries are a single-file Markdown export of the docs themselves and a security-findings export. So the export route is unestablished rather than merely undocumented \u2014 this lane looked for a reachable description of it and there is not one.",
+          "matching_index_entries": [
+            "- [Combined ChatGPT docs](https://learn.chatgpt.com/docs/llms-full.txt): Single-file Markdown export of ChatGPT and Codex guides and references.",
+            "- [Export and track security findings](https://learn.chatgpt.com/docs/security/plugin/export-findings.md): Create portable findings artifacts or prepare approval-gated issues and draft advis"
+          ],
+          "pattern": "(?i)export",
+          "source_id": "index-chatgpt",
+          "source_sha256": "f21d034ecd2a24adf50c43f5f59b4bcbae39eb9a9bdf4e9cf00c91d8b394f133",
+          "source_url": "https://learn.chatgpt.com/docs/llms.txt"
+        }
+      ],
+      "founder_action_required": [
+        "UNESTABLISHED. Even the shape of the action cannot be stated from documentation this lane was able to read."
+      ],
+      "maturity": "UNESTABLISHED.",
+      "name": "Owner's own ChatGPT data export",
+      "provenance_quality": "UNESTABLISHED.",
+      "reaches": [
+        "UNESTABLISHED. This lane could not read the documentation that would say."
+      ],
+      "returns_without_founder_touch": "NO",
+      "returns_without_founder_touch_reason": "An export is initiated by the account owner and delivered to him. Even on the most favourable reading it is a one-shot owner act, not a route, and a lane may not assume the favourable reading of something it could not read at all.",
+      "route_id": "R13",
+      "status": "UNESTABLISHED",
+      "surface": "The founder's account, exporting itself"
+    },
+    {
+      "cannot_reach": [
+        "Repositories not selected during the GitHub connection step.",
+        "The founder's own chats and projects. This surface reaches code, not conversation history."
+      ],
+      "confidence": "high",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "The founder's ChatGPT sign-in to Codex",
+        "A GitHub connection scoped to chosen repositories"
+      ],
+      "direction": "chatgpt_account_to_github",
+      "endpoint": "chatgpt.com/codex, chatgpt.com/codex/settings/environments",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 34,
+          "source_id": "codex-cloud",
+          "source_sha256": "a91151b55ae491b364b6792dd8cb19acde34ffb54d97abfa3011685117be1f69",
+          "source_url": "https://learn.chatgpt.com/docs/cloud.md",
+          "verbatim_excerpt": "Connect GitHub or GitLab (Beta) when prompted. For GitHub, choose the repositories Codex can access; for GitLab, select a project when you create the environment. For GitLab setup, webhook permissions, and merge request reviews, see [Use Codex with GitLab (Beta)](https://learn.chatgpt.com/docs/third-party/gitlab)."
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 7,
+          "source_id": "codex-cloud",
+          "source_sha256": "a91151b55ae491b364b6792dd8cb19acde34ffb54d97abfa3011685117be1f69",
+          "source_url": "https://learn.chatgpt.com/docs/cloud.md",
+          "verbatim_excerpt": "Run tasks in isolated cloud environments, work in parallel, and start work from the web, GitHub, GitLab, Linear, or Slack."
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 48,
+          "source_id": "codex-cloud",
+          "source_sha256": "a91151b55ae491b364b6792dd8cb19acde34ffb54d97abfa3011685117be1f69",
+          "source_url": "https://learn.chatgpt.com/docs/cloud.md",
+          "verbatim_excerpt": "Review the summary and diff. Ask Codex to make follow-up changes, or open a pull request when the work is ready."
+        }
+      ],
+      "founder_action_required": [
+        "Sign in to Codex and connect GitHub, choosing which repositories Codex may access. This is a new external OAuth grant and therefore an owner act.",
+        "Create an environment for the repository."
+      ],
+      "maturity": "General availability for GitHub. GitLab is marked Beta.",
+      "name": "Codex cloud with a connected GitHub repository",
+      "provenance_quality": "The strongest of any route here. Output arrives as commits, branches and pull requests, which are content-addressed, attributable and reviewable by the same machinery this repository already uses.",
+      "reaches": [
+        "Repositories he selects when connecting GitHub or GitLab.",
+        "Isolated cloud environments with configured dependencies, variables and secrets.",
+        "Branch work and pull requests: agents work on a branch and a PR can be opened when ready.",
+        "Work started from GitHub, GitLab, Linear or Slack, not only from the web UI."
+      ],
+      "returns_without_founder_touch": "YES",
+      "returns_without_founder_touch_reason": "Once connected, work lands in GitHub, and Cursor reads GitHub directly. No founder act at return time. This is the answer to the question the brief poses: the account-resident surface that closes the loop is Codex, not any conversation API, because Codex writes where Cursor already reads.",
+      "route_id": "R14",
+      "status": "ESTABLISHED_MECHANISM_NOT_ACTIVATED",
+      "surface": "The founder's ChatGPT account, signed in to Codex, holding repository access"
+    },
+    {
+      "cannot_reach": [
+        "Anything outside a repository with Codex cloud set up.",
+        "A substitute for tests, branch protections or required approvals \u2014 the documentation says review rules do not replace them."
+      ],
+      "confidence": "high",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "The GitHub connection from R14",
+        "GitHub push or admin permission to configure it"
+      ],
+      "direction": "chatgpt_account_to_github",
+      "endpoint": "@codex review / @codex on a GitHub PR; automatic reviews",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 69,
+          "source_id": "codex-third-party-github",
+          "source_sha256": "0eaa1c0ddc9143f7e625509fde2f010a2115cfe71dc88f5e5ad57c72580b3071",
+          "source_url": "https://learn.chatgpt.com/docs/third-party/github.md",
+          "verbatim_excerpt": "Codex posts a review on the pull request, just like a teammate would. In"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 91,
+          "source_id": "codex-third-party-github",
+          "source_sha256": "0eaa1c0ddc9143f7e625509fde2f010a2115cfe71dc88f5e5ad57c72580b3071",
+          "source_url": "https://learn.chatgpt.com/docs/third-party/github.md",
+          "verbatim_excerpt": "Codex will post a review whenever someone opens a new PR for review, without"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 183,
+          "source_id": "codex-third-party-github",
+          "source_sha256": "0eaa1c0ddc9143f7e625509fde2f010a2115cfe71dc88f5e5ad57c72580b3071",
+          "source_url": "https://learn.chatgpt.com/docs/third-party/github.md",
+          "verbatim_excerpt": "Codex starts a cloud chat with the pull request as context and can push a fix"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 29,
+          "source_id": "codex-third-party-github",
+          "source_sha256": "0eaa1c0ddc9143f7e625509fde2f010a2115cfe71dc88f5e5ad57c72580b3071",
+          "source_url": "https://learn.chatgpt.com/docs/third-party/github.md",
+          "verbatim_excerpt": "To configure automatic reviews, you need a connected GitHub repository and"
+        }
+      ],
+      "founder_action_required": [
+        "Turn on Code review for the repository in Codex settings, and Automatic reviews if the trigger should not need a comment."
+      ],
+      "maturity": "General availability. Security Review is research preview.",
+      "name": "Codex code review on a pull request",
+      "provenance_quality": "Excellent. Review comments and pushed commits are attributable, timestamped GitHub objects.",
+      "reaches": [
+        "Pull request reviews posted as a GitHub review, like a teammate would.",
+        "Pushes back to the branch, when it has permission to do so.",
+        "Every new pull request automatically, with Automatic reviews on and no comment needed to trigger it.",
+        "Repository guidance in AGENTS.md, including Code Review Rules."
+      ],
+      "returns_without_founder_touch": "YES",
+      "returns_without_founder_touch_reason": "With Automatic reviews on, a pull request event triggers it and the output is a GitHub review. Nobody opens a link for the content to exist somewhere a machine reads. This lane did not exercise it: its boundaries forbid modifying any pull request, so the row is DOCUMENTED and deliberately not DIRECTLY_REPRODUCED.",
+      "route_id": "R15",
+      "status": "ESTABLISHED_MECHANISM_NOT_ACTIVATED",
+      "surface": "The account's Codex integration acting inside GitHub"
+    },
+    {
+      "cannot_reach": [
+        "The founder's ChatGPT account content. This route authenticates with a Platform API key, so it never enters the ChatGPT workspace at all."
+      ],
+      "confidence": "high",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "OPENAI_API_KEY, stored as a GitHub secret"
+      ],
+      "direction": "repository_to_openai_platform_and_back",
+      "endpoint": "GitHub Actions workflow running codex exec",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 6,
+          "source_id": "codex-github-action",
+          "source_sha256": "3c3a244ef87fffb064114e388f4c7827b3ddc55b712f5aec50f2719a3cf1bc6a",
+          "source_url": "https://learn.chatgpt.com/docs/github-action.md",
+          "verbatim_excerpt": "The action installs the Codex CLI, starts the Responses API proxy when you provide an API key, and runs `codex exec` under the permissions you specify."
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 18,
+          "source_id": "codex-github-action",
+          "source_sha256": "3c3a244ef87fffb064114e388f4c7827b3ddc55b712f5aec50f2719a3cf1bc6a",
+          "source_url": "https://learn.chatgpt.com/docs/github-action.md",
+          "verbatim_excerpt": "- Store your OpenAI key as a GitHub secret (for example `OPENAI_API_KEY`) and reference it in the workflow."
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 25,
+          "source_id": "codex-github-action",
+          "source_sha256": "3c3a244ef87fffb064114e388f4c7827b3ddc55b712f5aec50f2719a3cf1bc6a",
+          "source_url": "https://learn.chatgpt.com/docs/github-action.md",
+          "verbatim_excerpt": "The sample workflow below reviews new pull requests, captures Codex's response, and posts it back on the PR."
+        }
+      ],
+      "founder_action_required": [
+        "Store the OpenAI key as a repository secret. This is a secrets act and therefore his, not a lane's."
+      ],
+      "maturity": "Versioned action at v1, with a published source repository.",
+      "name": "Codex GitHub Action (openai/codex-action@v1)",
+      "provenance_quality": "Very good. A workflow run is logged, attributable and re-runnable, and its output is a commit or a PR comment.",
+      "reaches": [
+        "The repository contents, once the workflow checks them out.",
+        "Model execution through the Responses API proxy the action starts when given an API key.",
+        "The pull request, via a following job that posts the captured output."
+      ],
+      "returns_without_founder_touch": "YES",
+      "returns_without_founder_touch_reason": "CI runs on a repository event and writes back to the repository. Worth distinguishing carefully from R14 and R15: this one is model capacity hosted in our CI, not the founder's account reaching outward. It is excellent for capacity and contributes nothing to recovering his context.",
+      "route_id": "R16",
+      "status": "ESTABLISHED_MECHANISM_NOT_ACTIVATED",
+      "surface": "This repository's own CI, calling the API Platform"
+    },
+    {
+      "cannot_reach": [
+        "Workspace agent trigger calls. The documentation states plainly that Codex access tokens do not authenticate those.",
+        "General OpenAI API calls, which want a Platform API key instead.",
+        "Confirmed availability on this account: tokens are supported for ChatGPT Business and Enterprise workspaces only."
+      ],
+      "confidence": "high on the mechanism; plan eligibility for this account is unknown",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "A Codex access token \u2014 a third credential type, distinct from the other two"
+      ],
+      "direction": "our_automation_as_chatgpt_workspace_identity",
+      "endpoint": "codex exec / app-server client, authenticated by a Codex access token",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 5,
+          "source_id": "chatgpt-access-tokens",
+          "source_sha256": "0173ee418a00c968e9a0b5b42c8748b5a4bc46ab5b8477a0242b87649ee03149",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/access-tokens.md",
+          "verbatim_excerpt": "Codex access tokens are ChatGPT workspace credentials scoped to Codex permissions. They authenticate trusted non-interactive local workflows, including Codex CLI and app-server-based automation, with a ChatGPT workspace identity. Use them when a script, scheduled job, or CI runner needs repeatable local access."
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 7,
+          "source_id": "chatgpt-access-tokens",
+          "source_sha256": "0173ee418a00c968e9a0b5b42c8748b5a4bc46ab5b8477a0242b87649ee03149",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/access-tokens.md",
+          "verbatim_excerpt": "Codex access tokens are currently supported for ChatGPT Business and"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 25,
+          "source_id": "chatgpt-access-tokens",
+          "source_sha256": "0173ee418a00c968e9a0b5b42c8748b5a4bc46ab5b8477a0242b87649ee03149",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/access-tokens.md",
+          "verbatim_excerpt": "Use an access token when Codex CLI or an app-server client needs to run without a user completing a browser sign-in. The token represents the ChatGPT workspace user who created it, so runs can use that user's access and appear in workspace governance data."
+        }
+      ],
+      "founder_action_required": [
+        "A workspace admin turns on Allow users to create access tokens, and Allow members to use Codex Local if a local surface is needed.",
+        "Create the token under Admin \u2192 Access tokens and place it in a secret manager."
+      ],
+      "maturity": "Available on Business and Enterprise. Expiry limits are admin-configurable.",
+      "name": "Codex access token running non-interactive automation",
+      "provenance_quality": "Notably good, and this is its real value: runs are attributable to a named workspace identity and appear in governance data, so automated work is auditable as that identity rather than as an anonymous key.",
+      "reaches": [
+        "Codex CLI and app-server runs without a browser sign-in, tied to the workspace identity that created the token.",
+        "That user's access and workspace-managed entitlements, with runs appearing in workspace governance data."
+      ],
+      "returns_without_founder_touch": "YES",
+      "returns_without_founder_touch_reason": "Our runner invokes it and reads the output directly, non-interactively. The important caveat is scope, not return: it grants the workspace identity's access to Codex, which is code work, and does not thereby open his chats and projects.",
+      "route_id": "R17",
+      "status": "ESTABLISHED_MECHANISM_PLAN_GATED",
+      "surface": "Our own runner, acting as a ChatGPT workspace user"
+    },
+    {
+      "cannot_reach": [
+        "The creator's plugins or connected apps. A service account inherits none of them.",
+        "Any workspace not on a pay-as-you-go plan: service accounts are available only on those."
+      ],
+      "confidence": "high on the mechanism; plan eligibility unknown",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "A service-account access token"
+      ],
+      "direction": "our_automation_as_non_human_identity",
+      "endpoint": "chatgpt.com/admin/service-accounts",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 5,
+          "source_id": "chatgpt-service-accounts",
+          "source_sha256": "54b1d955fe020c628632946f95f6236632adbc16a88f2e2ff4d27bc23f72d146",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/service-accounts.md",
+          "verbatim_excerpt": "Service accounts let you run and scale headless Codex workflows across your organization without relying on an employee's account. Each continuous integration (CI) runner, scheduled job, or shared integration gets its own ChatGPT workspace identity, with the same groups, roles, access controls, and auditability you expect for people."
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 9,
+          "source_id": "chatgpt-service-accounts",
+          "source_sha256": "54b1d955fe020c628632946f95f6236632adbc16a88f2e2ff4d27bc23f72d146",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/service-accounts.md",
+          "verbatim_excerpt": "Service accounts are available only on pay-as-you-go plans."
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 25,
+          "source_id": "chatgpt-service-accounts",
+          "source_sha256": "54b1d955fe020c628632946f95f6236632adbc16a88f2e2ff4d27bc23f72d146",
+          "source_url": "https://learn.chatgpt.com/docs/enterprise/service-accounts.md",
+          "verbatim_excerpt": "Configure plugins for the service account itself. It doesn't inherit the creator's plugins or connected apps."
+        }
+      ],
+      "founder_action_required": [
+        "Only workspace owners and admins can create service accounts. He creates it, or delegates management explicitly."
+      ],
+      "maturity": "Available on pay-as-you-go plans only.",
+      "name": "ChatGPT service account (non-human workspace identity)",
+      "provenance_quality": "The cleanest attribution available: each runner or scheduled job gets its own identity with the same roles and auditability as a person, which is what makes independent acceptance meaningful rather than nominal.",
+      "reaches": [
+        "Headless Codex workflows at scale, without depending on an employee's account.",
+        "Its own plugins and connected apps, configured for the account itself.",
+        "Its own access tokens, representing the service account rather than its creator."
+      ],
+      "returns_without_founder_touch": "YES",
+      "returns_without_founder_touch_reason": "The identity is designed for exactly this: automation that does not route through a person. It answers the durability objection to R17, because it does not break when one employee's account changes.",
+      "route_id": "R18",
+      "status": "ESTABLISHED_MECHANISM_PLAN_GATED",
+      "surface": "A workspace identity that is not a person"
+    },
+    {
+      "cannot_reach": [
+        "Anything not on the founder's local disk. User-level setup comes from files on his machine and project-level setup from the folders he selects.",
+        "A running task, a remote session, or a session connected to a local app-server daemon \u2014 /import is unavailable in all three."
+      ],
+      "confidence": "high",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "The founder's ChatGPT session on his own machine"
+      ],
+      "direction": "cursor_to_chatgpt_account",
+      "endpoint": "ChatGPT desktop app Settings \u2192 Import; Codex CLI /import",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 7,
+          "source_id": "chatgpt-import",
+          "source_sha256": "34893c4daf7be033d4313dc188b3b0e5b89c11f2899d5a3e3cdbe8108f31fac7",
+          "source_url": "https://learn.chatgpt.com/docs/import.md",
+          "verbatim_excerpt": "The desktop app can import from **Claude Code**, **Claude Cowork**,\nor **Cursor**. Codex CLI can import from **Claude Code** or **Cursor**."
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 52,
+          "source_id": "chatgpt-import",
+          "source_sha256": "34893c4daf7be033d4313dc188b3b0e5b89c11f2899d5a3e3cdbe8108f31fac7",
+          "source_url": "https://learn.chatgpt.com/docs/import.md",
+          "verbatim_excerpt": "Codex CLI imports up to 50 chats from the last 30 days. The `/import` command"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 66,
+          "source_id": "chatgpt-import",
+          "source_sha256": "34893c4daf7be033d4313dc188b3b0e5b89c11f2899d5a3e3cdbe8108f31fac7",
+          "source_url": "https://learn.chatgpt.com/docs/import.md",
+          "verbatim_excerpt": "User-level setup comes from files on your machine. Project-level setup comes"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 40,
+          "source_id": "chatgpt-import",
+          "source_sha256": "34893c4daf7be033d4313dc188b3b0e5b89c11f2899d5a3e3cdbe8108f31fac7",
+          "source_url": "https://learn.chatgpt.com/docs/import.md",
+          "verbatim_excerpt": "In the ChatGPT desktop app, open **Settings > Import** and turn on automatic"
+        }
+      ],
+      "founder_action_required": [
+        "Run the import once, and optionally turn on automatic updates."
+      ],
+      "maturity": "Available in the desktop app and Codex CLI. Cursor is a named supported source.",
+      "name": "ChatGPT import from Cursor",
+      "provenance_quality": "Good in the direction it runs: the source is files under version control. The direction is the point, though \u2014 this carries Cursor's context into ChatGPT, and returns nothing.",
+      "reaches": [
+        "Cursor instruction files into AGENTS.md, settings.json into config.toml, skills, plugins, MCP server configuration, hooks, slash commands and subagents.",
+        "Existing project folders, becoming ChatGPT projects over the same folders.",
+        "Chats from the last 30 days, becoming ChatGPT chats. Codex CLI imports up to 50.",
+        "Continuous synchronisation, when automatic updates are turned on."
+      ],
+      "returns_without_founder_touch": "NOT_APPLICABLE",
+      "returns_without_founder_touch_reason": "It carries no result toward Cursor; it is the reverse direction. Recorded because the brief asked for routes the list omits and because it is genuinely useful: it is the documented way to give the account the repository's own instructions, which makes account-side work more likely to be accepted when it does return by another route.",
+      "route_id": "R19",
+      "status": "ESTABLISHED",
+      "surface": "The founder's machine, reading local Cursor state into his account"
+    },
+    {
+      "cannot_reach": [
+        "Anything without his browser running and the extension installed.",
+        "This runtime. It is an extension in his Chrome, not a service."
+      ],
+      "confidence": "high",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "Whatever sessions his Chrome profile already holds"
+      ],
+      "direction": "chatgpt_account_to_authenticated_web_sessions",
+      "endpoint": "ChatGPT Chrome extension",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 5,
+          "source_id": "chatgpt-chrome-extension",
+          "source_sha256": "fd32bb64696e5c95b8d8082db5b048f85a19f765541afa921a495d34224bd163",
+          "source_url": "https://learn.chatgpt.com/docs/chrome-extension.md",
+          "verbatim_excerpt": "Use the Chrome extension to let ChatGPT control your Chrome browser. ChatGPT can\nread or act on sites where you're already signed in, such as LinkedIn,\nSalesforce, Gmail, or internal tools."
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 33,
+          "source_id": "chatgpt-chrome-extension",
+          "source_sha256": "fd32bb64696e5c95b8d8082db5b048f85a19f765541afa921a495d34224bd163",
+          "source_url": "https://learn.chatgpt.com/docs/chrome-extension.md",
+          "verbatim_excerpt": "ChatGPT can use context from your open tabs when a task needs it."
+        }
+      ],
+      "founder_action_required": [
+        "Install the extension and keep Chrome open for a task to run."
+      ],
+      "maturity": "Available.",
+      "name": "ChatGPT Chrome extension driving the founder's browser",
+      "provenance_quality": "Weak for our purposes. Output is chat content, and the acting identity is the founder's own live sessions, which makes attribution of an action to an agent rather than to him inherently muddy.",
+      "reaches": [
+        "Sites where he is already signed in, read or acted on, using his real Chrome profile.",
+        "Context from his open tabs, when a task needs it."
+      ],
+      "returns_without_founder_touch": "NO",
+      "returns_without_founder_touch_reason": "Results land in a chat on his machine. Recorded because it is the one route that genuinely reaches authenticated sessions nothing else can, and precisely for that reason it is the most founder-coupled route in the table.",
+      "route_id": "R20",
+      "status": "ESTABLISHED",
+      "surface": "The founder's own Chrome profile, on his own machine"
+    },
+    {
+      "cannot_reach": [
+        "His existing sessions. The built-in browser uses a separate profile and does not share his tabs or session.",
+        "This Linux runtime. Computer Use is documented for macOS and Windows in the desktop app, and requires Screen Recording and Accessibility grants.",
+        "Codex CLI or the IDE extension, where Browser is unavailable."
+      ],
+      "confidence": "high",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "Interactive sign-in inside the built-in browser, where a task needs an account"
+      ],
+      "direction": "chatgpt_account_to_web_and_desktop_gui",
+      "endpoint": "@Browser in ChatGPT web and desktop; Computer Use plugin",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 5,
+          "source_id": "chatgpt-computer-use",
+          "source_sha256": "f2547594a2d057b2503f7a7293b46a391cf6b1bf7f02f9f8ee38e071ec3edf74",
+          "source_url": "https://learn.chatgpt.com/docs/computer-use.md",
+          "verbatim_excerpt": "In supported regions, Computer Use in the ChatGPT desktop app is available on"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 27,
+          "source_id": "chatgpt-browser",
+          "source_sha256": "f28e5f118ccd0ecb84380e4e10df46a94f88f6fdab3862f611cba04bbada652f",
+          "source_url": "https://learn.chatgpt.com/docs/browser.md",
+          "verbatim_excerpt": "The built-in browser uses a browser profile that is separate from your regular"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:00:59Z",
+          "matched_at_line": 7,
+          "source_id": "chatgpt-browser",
+          "source_sha256": "f28e5f118ccd0ecb84380e4e10df46a94f88f6fdab3862f611cba04bbada652f",
+          "source_url": "https://learn.chatgpt.com/docs/browser.md",
+          "verbatim_excerpt": "Browser isn't available in Codex CLI or the Codex IDE extension. Open the"
+        }
+      ],
+      "founder_action_required": [
+        "Install the Computer Use plugin and grant OS permissions, on a supported OS."
+      ],
+      "maturity": "Available in supported regions, on ChatGPT Work and Codex, macOS and Windows.",
+      "name": "ChatGPT built-in browser and Computer Use (desktop app)",
+      "provenance_quality": "Chat-resident: screenshots and narration. Not a structured record.",
+      "reaches": [
+        "Websites, opened and acted on from inside a chat, in a separate browser profile.",
+        "With Computer Use: graphical interfaces on macOS or Windows, seen and operated."
+      ],
+      "returns_without_founder_touch": "NO",
+      "returns_without_founder_touch_reason": "Output is chat content, and the desktop variant needs his machine and his OS grants. Included to close off a tempting misreading: the existence of ChatGPT-side computer control does not give Cursor a way to reach his account.",
+      "route_id": "R21",
+      "status": "ESTABLISHED_AND_PLATFORM_INCOMPATIBLE_WITH_THIS_RUNTIME",
+      "surface": "OpenAI-side browser, or the founder's macOS/Windows desktop"
+    },
+    {
+      "cannot_reach": [
+        "An authenticated ChatGPT session. This runtime holds no ChatGPT credential of any name, and acquiring one is an owner-identity act this lane is forbidden to attempt."
+      ],
+      "confidence": "high on capability and on the blocker",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "An authenticated chatgpt.com session \u2014 the entire blocker"
+      ],
+      "direction": "cursor_to_chatgpt_ui",
+      "endpoint": "Cursor agent Browser tool, or the Responses API computer tool with a harness we supply",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": null,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 3,
+          "source_id": "cursor-agent-browser",
+          "source_sha256": "f15beb6863ede9e7ded065608130956d47c6274b6e358f5e00183a3e2946d60b",
+          "source_url": "https://cursor.com/docs/agent/tools/browser.md",
+          "verbatim_excerpt": "Agent can control a web browser to test applications, audit accessibility, convert designs into code, and more. With full access to console logs and network traffic, Agent can debug issues and automate comprehensive testing workflows."
+        },
+        {
+          "byte_identical_to_w6_harvest": null,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 18,
+          "source_id": "cursor-agent-browser",
+          "source_sha256": "f15beb6863ede9e7ded065608130956d47c6274b6e358f5e00183a3e2946d60b",
+          "source_url": "https://cursor.com/docs/agent/tools/browser.md",
+          "verbatim_excerpt": "You can use Browser without installing or configuring any external tools."
+        },
+        {
+          "byte_identical_to_w6_harvest": null,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 5,
+          "source_id": "cursor-agent-browser",
+          "source_sha256": "f15beb6863ede9e7ded065608130956d47c6274b6e358f5e00183a3e2946d60b",
+          "source_url": "https://cursor.com/docs/agent/tools/browser.md",
+          "verbatim_excerpt": "For enterprise customers, browser controls are governed by MCP allowlist or denylist."
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 5,
+          "note": "The API-side tool returns actions for the caller to execute, so the caller supplies the browser.",
+          "source_id": "api-computer-use",
+          "source_sha256": "462e8c2afc8d17d3c0ba3764b23286103488d82d454ef887ca6cff60598a29b7",
+          "source_url": "https://developers.openai.com/api/docs/guides/tools-computer-use.md",
+          "verbatim_excerpt": "Computer use lets a model operate software through the user interface. It can inspect screenshots, return interface actions for your code to execute, or work through a custom harness that mixes visual and programmatic interaction with the UI."
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:00Z",
+          "matched_at_line": 15,
+          "source_id": "api-computer-use",
+          "source_sha256": "462e8c2afc8d17d3c0ba3764b23286103488d82d454ef887ca6cff60598a29b7",
+          "source_url": "https://developers.openai.com/api/docs/guides/tools-computer-use.md",
+          "verbatim_excerpt": "Before you begin, prepare an environment that can capture screenshots and run the returned actions. Use an isolated environment whenever possible, and decide up front which sites, accounts, and actions the agent is allowed to reach."
+        },
+        {
+          "evidence_kind": "runtime_observation",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "observation": "Google Chrome 148.0.7778.96 installed; X.Org 21.1.11 live on DISPLAY=:1; no ChatGPT credential of any name present.",
+          "receipt": "receipts/so02/2026-08-22/oe-w7-route-evidence/raw/runtime-facts.txt"
+        }
+      ],
+      "founder_action_required": [
+        "A decision about session delegation, which is an owner-identity act and carries a real security cost. This lane raises it and does not recommend it."
+      ],
+      "maturity": "Cursor's tool is generally available and, for enterprise, governed by MCP allowlist or denylist. Driving another vendor's UI is inherently brittle: it depends on markup nobody promised to keep.",
+      "name": "Cursor-side browser control of chatgpt.com",
+      "provenance_quality": "Mixed and worth being honest about. Screenshots and scraped DOM are evidence of what a page showed, but the content is unstructured and its fidelity depends on the scrape holding as the UI changes. Better than no route; much worse than a documented contract.",
+      "reaches": [
+        "Any web UI the browser can reach and is authenticated to.",
+        "Full console logs and network traffic, on the Cursor tool.",
+        "In principle the ChatGPT UI itself, including projects and chats, which no API route reaches."
+      ],
+      "returns_without_founder_touch": "CONDITIONAL",
+      "returns_without_founder_touch_reason": "Mechanically YES once a session exists: the agent drives the browser and reads the result with no founder act. The brief's framing is confirmed by this runtime \u2014 rendering is not the constraint. Chrome 148 is installed and an X server is live on DISPLAY=:1, and the agent-facing browser tool is documented and needs no external tools. The constraint is the session alone, and it is an authorization question rather than a technical one.",
+      "route_id": "R22",
+      "status": "TECHNICALLY_AVAILABLE_CREDENTIAL_BLOCKED",
+      "surface": "This runtime's own Chrome, driving the ChatGPT web UI"
+    },
+    {
+      "cannot_reach": [
+        "Anything in the ChatGPT account. This is the Cursor side of the boundary."
+      ],
+      "confidence": "high",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "CURSOR_API_KEY \u2014 a user API key, or a service-account key"
+      ],
+      "direction": "external_system_to_cursor_and_back",
+      "endpoint": "POST /v1/agents, GET /v1/agents/{id}, /v1/agents/{id}/runs/{id}/stream",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": null,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 8,
+          "source_id": "cursor-api-endpoints",
+          "source_sha256": "5e66ef90b60108b021a45f510198b98d7ed0680fd80aed6f3a9a792b7c9d3c2b",
+          "source_url": "https://cursor.com/docs/cloud-agent/api/endpoints.md",
+          "verbatim_excerpt": "The Cloud Agents API lets you programmatically launch and manage cloud agents that work on your repositories."
+        },
+        {
+          "byte_identical_to_w6_harvest": null,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 530,
+          "source_id": "cursor-api-endpoints",
+          "source_sha256": "5e66ef90b60108b021a45f510198b98d7ed0680fd80aed6f3a9a792b7c9d3c2b",
+          "source_url": "https://cursor.com/docs/cloud-agent/api/endpoints.md",
+          "verbatim_excerpt": "- `result` \u2014 terminal run status. Payload: `{ runId, status, text?, durationMs?, git? }`. `text` is the final assistant reply, `durationMs` is the wall-clock run duration in milliseconds, and `git` mirrors `Run.git` (the agent's current pushed branches, not just this run's)."
+        },
+        {
+          "byte_identical_to_w6_harvest": null,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 5,
+          "source_id": "cursor-api-endpoints",
+          "source_sha256": "5e66ef90b60108b021a45f510198b98d7ed0680fd80aed6f3a9a792b7c9d3c2b",
+          "source_url": "https://cursor.com/docs/cloud-agent/api/endpoints.md",
+          "verbatim_excerpt": "The Cloud Agents API v1 is in public beta. APIs may change before general\navailability."
+        },
+        {
+          "byte_identical_to_w6_harvest": null,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 13,
+          "source_id": "cursor-api-endpoints",
+          "source_sha256": "5e66ef90b60108b021a45f510198b98d7ed0680fd80aed6f3a9a792b7c9d3c2b",
+          "source_url": "https://cursor.com/docs/cloud-agent/api/endpoints.md",
+          "verbatim_excerpt": "- Webhooks are coming soon. The legacy [v0 API](https://cursor.com/docs/cloud-agent/api/v0.md) still supports them \u2014 see [Webhooks](https://cursor.com/docs/cloud-agent/api/webhooks.md)."
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 43,
+          "source_id": "cursor-cloud-agents",
+          "source_sha256": "8ff480c6e6e713ee1a23f7a2cdcf2e5f9bc36e76f758c5cb63d99f96b21308d4",
+          "source_url": "https://cursor.com/docs/cloud-agent.md",
+          "verbatim_excerpt": "Cloud agents clone your repo from GitHub, GitLab, Azure DevOps Services, or Bitbucket Cloud and work on a separate branch, then push changes to your repo for handoff."
+        },
+        {
+          "attempts": [
+            {
+              "http_status": 404,
+              "only_in_w6_harvest": true,
+              "source_id": "cursor-api-agents-w6",
+              "url": "https://cursor.com/docs/background-agent/api/overview.md",
+              "w6_fetched_at_utc": "2026-08-23T00:03:58Z"
+            }
+          ],
+          "evidence_kind": "fetch_failure_reproduced",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "note": "OE-W6 recorded 404 for cursor.com/docs/background-agent/api/overview.md and therefore could not establish this route. That path does not exist. This lane read the published docs sitemap instead of guessing again, which produced cloud-agent/api/endpoints and cloud-agent/api/webhooks, both HTTP 200. The route was never absent; the guess was wrong. Correcting it is the single largest change this lane makes to the inherited picture."
+        }
+      ],
+      "founder_action_required": [
+        "Generate the key from Cursor Dashboard \u2192 API Keys, or issue a service-account key.",
+        "Connect source control for the account, which a Cursor account admin must do."
+      ],
+      "maturity": "Public beta, explicitly may change before general availability. v1 webhooks are marked coming soon; the legacy v0 API still has them.",
+      "name": "Cursor Cloud Agents API \u2014 inbound trigger and content return",
+      "provenance_quality": "The best on either side of this boundary. Status, reasoning, tool calls with arguments and results, the final reply text, run duration and git information all arrive as structured events.",
+      "reaches": [
+        "Creating a cloud agent and enqueuing its first run, programmatically.",
+        "The agent's actual output: the stream emits assistant text deltas, thinking, tool calls with args and results, and a terminal result event whose text is the final assistant reply.",
+        "Artifacts, listable and downloadable.",
+        "Repository work: agents clone, work on a branch, and push for handoff."
+      ],
+      "returns_without_founder_touch": "YES",
+      "returns_without_founder_touch_reason": "This is the asymmetry that decides the whole question, so it is worth stating side by side. Cursor's agent API returns the agent's actual reply text over a documented stream. OpenAI's Workspace Agents API states that its agent's response cannot currently be retrieved through the API. Two agent platforms, the same architectural question, opposite answers \u2014 so any loop between them should be built to end on the Cursor side, where content is retrievable, rather than on the ChatGPT side, where it is not.",
+      "route_id": "R23",
+      "status": "ESTABLISHED",
+      "surface": "Cursor's own API"
+    },
+    {
+      "cannot_reach": [
+        "Anything before an account admin connects source control."
+      ],
+      "confidence": "high for the trigger; the Codex composition is explicitly HYPOTHESIS",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "A connected source-control integration; the Slack app, where used"
+      ],
+      "direction": "third_party_to_cursor",
+      "endpoint": "@cursor comment on a GitHub PR or issue; @cursor in Slack or Linear",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 25,
+          "source_id": "cursor-cloud-agents",
+          "source_sha256": "8ff480c6e6e713ee1a23f7a2cdcf2e5f9bc36e76f758c5cb63d99f96b21308d4",
+          "source_url": "https://cursor.com/docs/cloud-agent.md",
+          "verbatim_excerpt": "5. **GitHub or Bitbucket**: Comment `@cursor` on a GitHub PR or issue, or on a Bitbucket PR, to kick off an agent"
+        },
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 17,
+          "source_id": "cursor-cloud-agents",
+          "source_sha256": "8ff480c6e6e713ee1a23f7a2cdcf2e5f9bc36e76f758c5cb63d99f96b21308d4",
+          "source_url": "https://cursor.com/docs/cloud-agent.md",
+          "verbatim_excerpt": "Before anyone can start a cloud agent from a repository, a Cursor account admin needs to connect source control for the account. Set up [GitHub (Cloud and Enterprise Server)](https://cursor.com/docs/integrations/github.md), [GitLab (Cloud and Self-Hosted)](https://cursor.com/docs/integrations/gitlab.md), [Bitbucket Cloud](https://cursor.com/docs/integrations/bitbucket.md), or [Azure DevOps](https://cursor.com/docs/integrations/azure-devops.md)."
+        }
+      ],
+      "founder_action_required": [
+        "A Cursor account admin connects source control before anyone can start an agent from a repository."
+      ],
+      "maturity": "Generally available across the listed integrations.",
+      "name": "Cursor inbound triggers from GitHub, Slack and Linear",
+      "provenance_quality": "Good. The trigger is a durable GitHub or Slack object with an author and a timestamp.",
+      "reaches": [
+        "A cloud agent started by commenting @cursor on a GitHub PR or issue, or on a Bitbucket PR.",
+        "The same from Slack and Linear."
+      ],
+      "returns_without_founder_touch": "YES",
+      "returns_without_founder_touch_reason": "Any system that can post a GitHub comment can start Cursor work without him. Composed with R15, where Codex posts to pull requests, this is the shape of a machine-to-machine loop between his account and Cursor. That composition is HYPOTHESIS, not documentation: nothing this lane read says Codex would emit the literal @cursor trigger, and this lane may not test it because its boundaries forbid commenting on any pull request.",
+      "route_id": "R24",
+      "status": "ESTABLISHED",
+      "surface": "GitHub, Slack or Linear, starting Cursor work"
+    },
+    {
+      "cannot_reach": [
+        "Any state other than ERROR or FINISHED: statusChange is the only event.",
+        "A v1 caller today. Webhooks are marked coming soon for v1 and remain on the legacy v0 API."
+      ],
+      "confidence": "high",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "A webhook signing secret; a reachable HTTPS endpoint"
+      ],
+      "direction": "cursor_to_external_system",
+      "endpoint": "statusChange POST to a webhook URL supplied at agent creation",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": null,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 3,
+          "source_id": "cursor-api-webhooks",
+          "source_sha256": "ac1de6fe77d750240651d849f26974af43c2ce378cf4f73afc1eb369b049d6d1",
+          "source_url": "https://cursor.com/docs/cloud-agent/api/webhooks.md",
+          "verbatim_excerpt": "When you create an agent with a webhook URL, Cursor will send HTTP POST requests to notify you about status changes. Currently, only `statusChange` events are supported, specifically when an agent encounters an `ERROR` or `FINISHED` state."
+        },
+        {
+          "byte_identical_to_w6_harvest": null,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 13,
+          "source_id": "cursor-api-webhooks",
+          "source_sha256": "ac1de6fe77d750240651d849f26974af43c2ce378cf4f73afc1eb369b049d6d1",
+          "source_url": "https://cursor.com/docs/cloud-agent/api/webhooks.md",
+          "verbatim_excerpt": "- **`X-Webhook-Signature`** \u2013 Contains the HMAC-SHA256 signature in the format `sha256=<hex_digest>`"
+        },
+        {
+          "byte_identical_to_w6_harvest": null,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 13,
+          "source_id": "cursor-api-endpoints",
+          "source_sha256": "5e66ef90b60108b021a45f510198b98d7ed0680fd80aed6f3a9a792b7c9d3c2b",
+          "source_url": "https://cursor.com/docs/cloud-agent/api/endpoints.md",
+          "verbatim_excerpt": "- Webhooks are coming soon. The legacy [v0 API](https://cursor.com/docs/cloud-agent/api/v0.md) still supports them \u2014 see [Webhooks](https://cursor.com/docs/cloud-agent/api/webhooks.md)."
+        }
+      ],
+      "founder_action_required": [
+        "None beyond providing an endpoint that outlives an agent run."
+      ],
+      "maturity": "Available on v0; coming soon on v1. Only one event type.",
+      "name": "Cursor cloud agent webhooks",
+      "provenance_quality": "Strong. Signed, replay-loggable, and carrying the branch and PR that resulted, which is enough to reconcile without trusting the message.",
+      "reaches": [
+        "ERROR and FINISHED transitions, pushed as signed HTTP POSTs.",
+        "A payload carrying status, repository, ref, branch name, PR URL and a summary.",
+        "HMAC-SHA256 signature verification via X-Webhook-Signature."
+      ],
+      "returns_without_founder_touch": "YES",
+      "returns_without_founder_touch_reason": "Push notification straight to a machine. Recorded to keep the ledger symmetric: the Cursor side has both a content-returning API and a push channel, and the ChatGPT side has neither.",
+      "route_id": "R25",
+      "status": "ESTABLISHED_ON_LEGACY_API",
+      "surface": "Cursor announcing its own completion"
+    },
+    {
+      "cannot_reach": [
+        "Anything about the ChatGPT account. These are platform-object events.",
+        "Any endpoint that does not outlive an agent run."
+      ],
+      "confidence": "high",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "OPENAI_WEBHOOK_SECRET, separate from the API key"
+      ],
+      "direction": "openai_platform_to_our_endpoint",
+      "endpoint": "Endpoints registered in the OpenAI dashboard, subscribed to response.* and batch.* events",
+      "evidence": [
+        {
+          "claim": "Webhooks deliver real-time notification when a batch completes, a background response is generated or a fine-tuning job finishes. This is the push route that removes polling and, with it, the human poller.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "fetched_at_utc": "2026-08-22T20:36:46Z",
+          "matched_at_line": 5,
+          "reused_claim_id": "C-WH-EVENTS",
+          "reused_from_lane": "OE-L5-CHATGPT-SCALE",
+          "source_sha256": "c647843e21c03cd1db2ae64aa08325781df71148e48ac9e2e2212c93a7a549ab",
+          "source_url": "https://developers.openai.com/api/docs/guides/webhooks.md",
+          "verbatim_excerpt": "OpenAI [webhooks](http://chatgpt.com/?q=eli5+what+is+a+webhook?) allow you to receive real-time notifications about events in the API, such as when a batch completes, a background response is generated, or a fine-tuning job finishes. Webhooks are delivered to an HTTP endpoint you control, following the [Standard Webhooks specification](https://github.com/standard-webhooks/standard-webhooks/blob/main/spec/standard-webhooks.md). The full list of webhook events can be found in the [API reference](https://developers.openai.com/api/reference/resources/webhooks)."
+        },
+        {
+          "claim": "Webhook signature verification uses a separate secret carried in OPENAI_WEBHOOK_SECRET, distinct from the API key.",
+          "evidence_label": "DIRECTLY_REPRODUCED",
+          "fetched_at_utc": "2026-08-22T20:36:46Z",
+          "matched_at_line": 254,
+          "reused_claim_id": "C-WH-SECRET-ENV",
+          "reused_from_lane": "OE-L5-CHATGPT-SCALE",
+          "source_sha256": "c647843e21c03cd1db2ae64aa08325781df71148e48ac9e2e2212c93a7a549ab",
+          "source_url": "https://developers.openai.com/api/docs/guides/webhooks.md",
+          "verbatim_excerpt": "```\nexport OPENAI_WEBHOOK_SECRET=\"<your secret here>\""
+        }
+      ],
+      "founder_action_required": [
+        "Register the endpoint in the dashboard and subscribe it to events."
+      ],
+      "maturity": "Generally available.",
+      "name": "OpenAI platform webhooks",
+      "provenance_quality": "Good: authenticity is validated before parsing, per the Standard Webhooks specification.",
+      "reaches": [
+        "response.completed and related events for background responses, batches and fine-tuning jobs."
+      ],
+      "returns_without_founder_touch": "CONDITIONAL",
+      "returns_without_founder_touch_reason": "Precondition: a durable HTTPS endpoint, which this runtime does not have. Until one exists the honest fallback is background execution plus scheduled polling from a durable runner, carried as a known deficiency rather than presented as a live push route.",
+      "route_id": "R26",
+      "status": "ESTABLISHED_MECHANISM_BLOCKED_BY_MISSING_ENDPOINT",
+      "surface": "The API Platform announcing its own completions"
+    },
+    {
+      "cannot_reach": [
+        "The ChatGPT account, absent an MCP server that itself holds ChatGPT access. No such server is evidenced here, and building one returns to the credential problem in R22."
+      ],
+      "confidence": "high",
+      "credential_present_in_this_runtime": false,
+      "credential_required": [
+        "Whatever each MCP server requires"
+      ],
+      "direction": "cursor_to_external_tools",
+      "endpoint": "Cursor MCP configuration",
+      "evidence": [
+        {
+          "byte_identical_to_w6_harvest": true,
+          "evidence_label": "DOCUMENTED",
+          "fetched_at_utc": "2026-08-23T01:01:01Z",
+          "matched_at_line": 11,
+          "source_id": "cursor-cloud-agents",
+          "source_sha256": "8ff480c6e6e713ee1a23f7a2cdcf2e5f9bc36e76f758c5cb63d99f96b21308d4",
+          "source_url": "https://cursor.com/docs/cloud-agent.md",
+          "verbatim_excerpt": "Because they have access to their own virtual machine, cloud agents can build, test, and interact with the changed software. They can also use computers to control the desktop and browser. Cloud agents support [MCP servers](https://cursor.com/docs/mcp.md), giving them access to external tools and data sources like databases, APIs, and third-party services."
+        }
+      ],
+      "founder_action_required": [
+        "None inherently; per-server authorization where a server needs it."
+      ],
+      "maturity": "Generally available on both sides.",
+      "name": "Cursor consuming MCP servers",
+      "provenance_quality": "As good as the server's own outputs, and the server can be ours and therefore auditable.",
+      "reaches": [
+        "External tools and data sources: databases, APIs, third-party services."
+      ],
+      "returns_without_founder_touch": "YES",
+      "returns_without_founder_touch_reason": "Cursor calls the tool and reads the result. Listed to complete the symmetry with R05: both platforms consume MCP, which makes MCP the one vocabulary both sides already speak, and therefore the natural place to put a bridge.",
+      "route_id": "R27",
+      "status": "ESTABLISHED",
+      "surface": "Cursor's own agents, given external tools"
+    }
+  ],
+  "scope": "Every route by which anything can travel between Ahmed Sadek's authorised ChatGPT account and Cursor. One deliverable. This lane evidences routes; it does not open them, and it authenticated to nothing.",
+  "sources_cited": {
+    "api-computer-use": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 98588,
+      "fetched_at_utc": "2026-08-23T01:01:00Z",
+      "http_status": 200,
+      "sha256": "462e8c2afc8d17d3c0ba3764b23286103488d82d454ef887ca6cff60598a29b7",
+      "source_id": "api-computer-use",
+      "url": "https://developers.openai.com/api/docs/guides/tools-computer-use.md",
+      "w6_source_id": "api-computer-use",
+      "why_fetched": "the API-side computer-use tool: who supplies the browser"
+    },
+    "api-conversations-overview": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 832049,
+      "fetched_at_utc": "2026-08-23T01:01:01Z",
+      "http_status": 200,
+      "sha256": "cf14a03b13c1022f7cd09a195691f5ea0d726cbadb2817a3181a3306695b0400",
+      "source_id": "api-conversations-overview",
+      "url": "https://developers.openai.com/api/reference/resources/conversations.md",
+      "w6_source_id": "api-conversations-overview",
+      "why_fetched": "whether the Conversations API references ChatGPT UI content at all"
+    },
+    "api-responses-create": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 474778,
+      "fetched_at_utc": "2026-08-23T01:01:01Z",
+      "http_status": 200,
+      "sha256": "ed5a9b7b97acb7f2ea8e921d7de56a66cc7034efd933d11eecf7691364df1527",
+      "source_id": "api-responses-create",
+      "url": "https://developers.openai.com/api/reference/resources/responses/methods/create.md",
+      "w6_source_id": "api-responses-create",
+      "why_fetched": "whether the Responses API references ChatGPT UI content at all"
+    },
+    "api-secure-mcp-tunnels": {
+      "byte_identical_to_w6_harvest": null,
+      "bytes": 15917,
+      "fetched_at_utc": "2026-08-23T01:01:01Z",
+      "http_status": 200,
+      "sha256": "c7b2edc6fe4b09b9b0709036577bdc332a475fd1533b1f429b40b840cdcdd21d",
+      "source_id": "api-secure-mcp-tunnels",
+      "url": "https://developers.openai.com/api/docs/guides/secure-mcp-tunnels.md",
+      "w6_source_id": null,
+      "why_fetched": "whether a private MCP server can be reached without a public endpoint"
+    },
+    "api-tools-connectors-mcp": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 60684,
+      "fetched_at_utc": "2026-08-23T01:00:59Z",
+      "http_status": 200,
+      "sha256": "d994cfbfd4f85aacdefd672a80fac1d0cabf1b27274f598658df552bec49b0d1",
+      "source_id": "api-tools-connectors-mcp",
+      "url": "https://developers.openai.com/api/docs/guides/tools-connectors-mcp.md",
+      "w6_source_id": "api-tools-connectors-mcp",
+      "why_fetched": "connectors reachable from the API side rather than the UI"
+    },
+    "chatgpt-access-tokens": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 11387,
+      "fetched_at_utc": "2026-08-23T01:01:00Z",
+      "http_status": 200,
+      "sha256": "0173ee418a00c968e9a0b5b42c8748b5a4bc46ab5b8477a0242b87649ee03149",
+      "source_id": "chatgpt-access-tokens",
+      "url": "https://learn.chatgpt.com/docs/enterprise/access-tokens.md",
+      "w6_source_id": "chatgpt-access-tokens",
+      "why_fetched": "which tokens the account can mint and what each scope reaches"
+    },
+    "chatgpt-analytics-api": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 1797,
+      "fetched_at_utc": "2026-08-23T01:01:00Z",
+      "http_status": 200,
+      "sha256": "5439c9b30725b8a3ea27961d2e783354840994c54093b0e56ae8dfbd51013719",
+      "source_id": "chatgpt-analytics-api",
+      "url": "https://learn.chatgpt.com/docs/enterprise/analytics-api.md",
+      "w6_source_id": "chatgpt-analytics-api",
+      "why_fetched": "whether analytics is a content read route or a metrics route"
+    },
+    "chatgpt-apps-connectors": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 9291,
+      "fetched_at_utc": "2026-08-23T01:00:58Z",
+      "http_status": 200,
+      "sha256": "05d24c2282b66781fc52b14b4cf5f4557b8fa04661b800443b0a87a46a01311e",
+      "source_id": "chatgpt-apps-connectors",
+      "url": "https://learn.chatgpt.com/docs/enterprise/apps-and-connectors.md",
+      "w6_source_id": "chatgpt-apps-connectors",
+      "why_fetched": "what connectors reach and who admits them"
+    },
+    "chatgpt-automations": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 16308,
+      "fetched_at_utc": "2026-08-23T01:00:59Z",
+      "http_status": 200,
+      "sha256": "1b305d8d341ae32412f6d7c3a992c08a7df94f58612155e026a7448ef049c0ac",
+      "source_id": "chatgpt-automations",
+      "url": "https://learn.chatgpt.com/docs/automations.md",
+      "w6_source_id": "chatgpt-automations",
+      "why_fetched": "whether ChatGPT Tasks/automations can emit a result outside the UI"
+    },
+    "chatgpt-browser": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 11307,
+      "fetched_at_utc": "2026-08-23T01:00:59Z",
+      "http_status": 200,
+      "sha256": "f28e5f118ccd0ecb84380e4e10df46a94f88f6fdab3862f611cba04bbada652f",
+      "source_id": "chatgpt-browser",
+      "url": "https://learn.chatgpt.com/docs/browser.md",
+      "w6_source_id": "chatgpt-browser",
+      "why_fetched": "the ChatGPT-side browsing surface and its direction of travel"
+    },
+    "chatgpt-chrome-extension": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 8975,
+      "fetched_at_utc": "2026-08-23T01:01:00Z",
+      "http_status": 200,
+      "sha256": "fd32bb64696e5c95b8d8082db5b048f85a19f765541afa921a495d34224bd163",
+      "source_id": "chatgpt-chrome-extension",
+      "url": "https://learn.chatgpt.com/docs/chrome-extension.md",
+      "w6_source_id": "chatgpt-chrome-extension",
+      "why_fetched": "whether a browser extension bridges an authenticated session"
+    },
+    "chatgpt-computer-use": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 10098,
+      "fetched_at_utc": "2026-08-23T01:00:59Z",
+      "http_status": 200,
+      "sha256": "f2547594a2d057b2503f7a7293b46a391cf6b1bf7f02f9f8ee38e071ec3edf74",
+      "source_id": "chatgpt-computer-use",
+      "url": "https://learn.chatgpt.com/docs/computer-use.md",
+      "w6_source_id": "chatgpt-computer-use",
+      "why_fetched": "account-side computer control and what it is allowed to drive"
+    },
+    "chatgpt-extend-mcp": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 13213,
+      "fetched_at_utc": "2026-08-23T01:00:58Z",
+      "http_status": 200,
+      "sha256": "b3f015b9edce4bd7a27c29d7b39f3014b92ab7dd5c4481e96ee3c9d4ab137efa",
+      "source_id": "chatgpt-extend-mcp",
+      "url": "https://learn.chatgpt.com/docs/extend/mcp.md",
+      "w6_source_id": "chatgpt-extend-mcp",
+      "why_fetched": "whether a ChatGPT-side MCP connector can carry write actions"
+    },
+    "chatgpt-import": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 5364,
+      "fetched_at_utc": "2026-08-23T01:01:00Z",
+      "http_status": 200,
+      "sha256": "34893c4daf7be033d4313dc188b3b0e5b89c11f2899d5a3e3cdbe8108f31fac7",
+      "source_id": "chatgpt-import",
+      "url": "https://learn.chatgpt.com/docs/import.md",
+      "w6_source_id": "chatgpt-import",
+      "why_fetched": "the reverse direction: repository content into the account"
+    },
+    "chatgpt-notifications": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 3165,
+      "fetched_at_utc": "2026-08-23T01:00:59Z",
+      "http_status": 200,
+      "sha256": "3574fbb5669fd40e44364681b4fbda7dcf7f8ef932bc5b57eeade2381a759fb2",
+      "source_id": "chatgpt-notifications",
+      "url": "https://learn.chatgpt.com/docs/notifications.md",
+      "w6_source_id": "chatgpt-notifications",
+      "why_fetched": "whether completion can be signalled anywhere a machine reads"
+    },
+    "chatgpt-service-accounts": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 8935,
+      "fetched_at_utc": "2026-08-23T01:01:00Z",
+      "http_status": 200,
+      "sha256": "54b1d955fe020c628632946f95f6236632adbc16a88f2e2ff4d27bc23f72d146",
+      "source_id": "chatgpt-service-accounts",
+      "url": "https://learn.chatgpt.com/docs/enterprise/service-accounts.md",
+      "w6_source_id": "chatgpt-service-accounts",
+      "why_fetched": "whether a non-human identity can hold account access"
+    },
+    "chatgpt-work-admin-faq": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 28550,
+      "fetched_at_utc": "2026-08-23T01:01:00Z",
+      "http_status": 200,
+      "sha256": "0ddd34764efbd4f3f03494a6cebdc703817cd2b8161fe233aa139e75d98e4c8e",
+      "source_id": "chatgpt-work-admin-faq",
+      "url": "https://learn.chatgpt.com/docs/enterprise/work-admin-faq.md",
+      "w6_source_id": "chatgpt-work-admin-faq",
+      "why_fetched": "the admin surface, and any export statement on a non-403 host"
+    },
+    "codex-cloud": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 4174,
+      "fetched_at_utc": "2026-08-23T01:00:59Z",
+      "http_status": 200,
+      "sha256": "a91151b55ae491b364b6792dd8cb19acde34ffb54d97abfa3011685117be1f69",
+      "source_id": "codex-cloud",
+      "url": "https://learn.chatgpt.com/docs/cloud.md",
+      "w6_source_id": "codex-cloud",
+      "why_fetched": "the account-resident agent that runs against a repository"
+    },
+    "codex-github-action": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 7266,
+      "fetched_at_utc": "2026-08-23T01:00:59Z",
+      "http_status": 200,
+      "sha256": "3c3a244ef87fffb064114e388f4c7827b3ddc55b712f5aec50f2719a3cf1bc6a",
+      "source_id": "codex-github-action",
+      "url": "https://learn.chatgpt.com/docs/github-action.md",
+      "w6_source_id": "codex-github-action",
+      "why_fetched": "whether a repository-side trigger can invoke the account"
+    },
+    "codex-third-party-github": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 6566,
+      "fetched_at_utc": "2026-08-23T01:00:59Z",
+      "http_status": 200,
+      "sha256": "0eaa1c0ddc9143f7e625509fde2f010a2115cfe71dc88f5e5ad57c72580b3071",
+      "source_id": "codex-third-party-github",
+      "url": "https://learn.chatgpt.com/docs/third-party/github.md",
+      "w6_source_id": "codex-third-party-github",
+      "why_fetched": "whether an account-side GitHub integration reaches this repository"
+    },
+    "cursor-agent-browser": {
+      "byte_identical_to_w6_harvest": null,
+      "bytes": 10305,
+      "fetched_at_utc": "2026-08-23T01:01:01Z",
+      "http_status": 200,
+      "sha256": "f15beb6863ede9e7ded065608130956d47c6274b6e358f5e00183a3e2946d60b",
+      "source_id": "cursor-agent-browser",
+      "url": "https://cursor.com/docs/agent/tools/browser.md",
+      "w6_source_id": null,
+      "why_fetched": "the agent-facing browser tool: the real constraint, not rendering"
+    },
+    "cursor-api-endpoints": {
+      "byte_identical_to_w6_harvest": null,
+      "bytes": 52232,
+      "fetched_at_utc": "2026-08-23T01:01:01Z",
+      "http_status": 200,
+      "sha256": "5e66ef90b60108b021a45f510198b98d7ed0680fd80aed6f3a9a792b7c9d3c2b",
+      "source_id": "cursor-api-endpoints",
+      "url": "https://cursor.com/docs/cloud-agent/api/endpoints.md",
+      "w6_source_id": null,
+      "why_fetched": "whether an external system can start Cursor work without a person"
+    },
+    "cursor-api-webhooks": {
+      "byte_identical_to_w6_harvest": null,
+      "bytes": 2687,
+      "fetched_at_utc": "2026-08-23T01:01:01Z",
+      "http_status": 200,
+      "sha256": "ac1de6fe77d750240651d849f26974af43c2ce378cf4f73afc1eb369b049d6d1",
+      "source_id": "cursor-api-webhooks",
+      "url": "https://cursor.com/docs/cloud-agent/api/webhooks.md",
+      "w6_source_id": null,
+      "why_fetched": "whether Cursor completion can announce itself to a machine"
+    },
+    "cursor-cloud-agents": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 10826,
+      "fetched_at_utc": "2026-08-23T01:01:01Z",
+      "http_status": 200,
+      "sha256": "8ff480c6e6e713ee1a23f7a2cdcf2e5f9bc36e76f758c5cb63d99f96b21308d4",
+      "source_id": "cursor-cloud-agents",
+      "url": "https://cursor.com/docs/cloud-agent.md",
+      "w6_source_id": "cursor-cloud-agents",
+      "why_fetched": "what reaches a Cursor cloud agent, and what it can be triggered by"
+    },
+    "index-chatgpt": {
+      "byte_identical_to_w6_harvest": true,
+      "bytes": 24336,
+      "fetched_at_utc": "2026-08-23T01:01:01Z",
+      "http_status": 200,
+      "sha256": "f21d034ecd2a24adf50c43f5f59b4bcbae39eb9a9bdf4e9cf00c91d8b394f133",
+      "source_id": "index-chatgpt",
+      "url": "https://learn.chatgpt.com/docs/llms.txt",
+      "w6_source_id": "index-chatgpt",
+      "why_fetched": "published path list, to locate export docs outside the 403 hosts"
+    },
+    "openai-data-controls-faq": {
+      "byte_identical_to_w6_harvest": false,
+      "bytes": 9796,
+      "fetched_at_utc": "2026-08-23T01:01:01Z",
+      "http_status": 403,
+      "sha256": "6ffb2d45947ef0cf4c866b4f6783cdbcae1100ba782a78274a2d83b97dd1f30b",
+      "source_id": "openai-data-controls-faq",
+      "url": "https://help.openai.com/en/articles/7730893-data-controls-faq",
+      "w6_source_id": "openai-data-controls-faq",
+      "why_fetched": "data controls: 403 for W6"
+    },
+    "openai-export-data": {
+      "byte_identical_to_w6_harvest": false,
+      "bytes": 9917,
+      "fetched_at_utc": "2026-08-23T01:01:01Z",
+      "http_status": 403,
+      "sha256": "31c5dedbc4e67b887b31bc5232b49f70ff65e9636090d8b57eb027c982c0a146",
+      "source_id": "openai-export-data",
+      "url": "https://help.openai.com/en/articles/7260999-how-do-i-export-my-chatgpt-history-and-data",
+      "w6_source_id": "openai-export-data",
+      "why_fetched": "the owner's own export: viability could not be documented for W6"
+    },
+    "openai-privacy-portal": {
+      "byte_identical_to_w6_harvest": false,
+      "bytes": 5433,
+      "fetched_at_utc": "2026-08-23T01:01:01Z",
+      "http_status": 403,
+      "sha256": "4c6ed5e368fe312b52422eeca51d0089274f3100b122ffc03b88c35f77e76669",
+      "source_id": "openai-privacy-portal",
+      "url": "https://privacy.openai.com/policies",
+      "w6_source_id": "openai-privacy-portal",
+      "why_fetched": "privacy portal: 403 for W6"
+    }
+  },
+  "terminal_state": "READY_TO_COMMIT",
+  "unestablished": [
+    {
+      "name": "Owner's own ChatGPT data export",
+      "route_id": "R13",
+      "why": "UNESTABLISHED."
+    }
+  ],
+  "what_this_lane_did_not_do": [
+    "Did not authenticate to ChatGPT, acquire any credential, or sign up for anything.",
+    "Did not print or store any credential value. Presence was reported by name only.",
+    "Did not open, comment on, merge or modify any pull request.",
+    "Did not message or configure SW, and did not touch PO-01, PO-03 or MANUS.",
+    "Did not attempt to defeat the bot challenge on the three 403 sources.",
+    "Did not write outside its own two namespaces on its own branch."
+  ]
+}

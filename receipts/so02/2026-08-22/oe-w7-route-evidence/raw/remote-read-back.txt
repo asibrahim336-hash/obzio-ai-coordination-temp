@@ -1,0 +1,34 @@
+OE-W7-CHATGPT-ROUTE-EVIDENCE — remote read-back by recomputation
+Lane: OE-W7-CHATGPT-ROUTE-EVIDENCE · Commission: COM-CUR-ENV-01-20260822-v001
+Verified at: 2026-08-23T01:16:39Z
+Branch: cursor/oe-w7-route-evidence-696d
+
+$ git fetch origin cursor/oe-w7-route-evidence-696d
+FETCH_HEAD = 1b7cdb2561e5da0adaa0b039564b757407e42d2a
+$ git ls-remote origin refs/heads/cursor/oe-w7-route-evidence-696d
+1b7cdb2561e5da0adaa0b039564b757407e42d2a	refs/heads/cursor/oe-w7-route-evidence-696d
+
+Each row recomputes sha256 over the bytes read back out of the fetched
+remote object store, and compares it with the local working file.
+
+RESULT   SHA256 (recomputed from remote)                                  PATH
+MATCH    410f7c08722584cef7d67b92b4871eb197ace8c1b1ed0ceb64bb8c163ccd5e13 receipts/so02/2026-08-22/oe-w7-route-evidence/raw/gap-fetch-log.json
+MATCH    4ae885ee9c24869aee8cd4f20639502c60d69d43dfaef08c21dac2457c26255c receipts/so02/2026-08-22/oe-w7-route-evidence/raw/reused-w6-doc-fetch-log.json
+MATCH    114c8331ab09441b11682121e00606294cacb27f65c826bfd9ec98b97354bcea receipts/so02/2026-08-22/oe-w7-route-evidence/raw/reused-w6-runtime-facts.txt
+MATCH    cc92379f4a9e0622a91abbd97797b9558246909de43199a4dfa1d78eccefe75a receipts/so02/2026-08-22/oe-w7-route-evidence/raw/runtime-facts.txt
+MATCH    a7b8c794f8c735e08dc088fd78ecb3955cbf0de4e563370051f6508d7d4a4034 workstreams/so02/control-plane/operating-environment/w7-route-evidence/ROUTE-EVIDENCE-SUMMARY-20260822-v001.md
+MATCH    6b3c945b20b8945f2815df43aa91e20196d2088485589124d5efda5fb6adae1a workstreams/so02/control-plane/operating-environment/w7-route-evidence/ROUTE-EVIDENCE-TABLE-20260822-v001.json
+MATCH    b7947f2075163d3a330d70e554878632c006465b8a1d0fc4ed590e3bc9b0d63c workstreams/so02/control-plane/operating-environment/w7-route-evidence/tools/build_route_table.py
+MATCH    47f97a48b3fd3703ae0aaf45b022976fe5c8763912122221516ddc2fc0342a7b workstreams/so02/control-plane/operating-environment/w7-route-evidence/tools/capture_runtime_facts.sh
+MATCH    b718e8e3121297b64310e5cb59b965f9c321a4a7b70c8083bddbe44b3f6a9e2c workstreams/so02/control-plane/operating-environment/w7-route-evidence/tools/fetch_route_gaps.py
+MATCH    1dcff92953bca4fb80c4511163ce13d373b75f19f27a92edc96d730cdc3b8fae workstreams/so02/control-plane/operating-environment/w7-route-evidence/tools/remote_read_back.sh
+
+matched=10 differed=0 absent_from_remote=0
+
+local files under the lane prefixes that the remote does not have:
+  DECLARED EXCEPTION (this run own output, cannot pre-exist): receipts/so02/2026-08-22/oe-w7-route-evidence/raw/remote-read-back.txt
+  none beyond the declared exception
+
+VERDICT: READ_BACK_VERIFIED — every lane file on the remote recomputes to
+the local hash, and no local lane file is missing from the remote apart
+from this run own output, declared above.

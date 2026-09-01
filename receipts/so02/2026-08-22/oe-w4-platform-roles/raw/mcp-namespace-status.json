@@ -1,0 +1,33 @@
+{
+  "receipt_id": "OE-W4-RAW-MCP-NAMESPACE-STATUS",
+  "captured_by": "lane OE-W4-PLATFORM-ROLES",
+  "captured_at": "2026-08-22T23:01Z",
+  "method": "dynamic tool catalogue enumeration, no arguments",
+  "evidence_label": "DIRECTLY_REPRODUCED",
+  "boundary_kept": "Reading which namespaces report needsAuth is not authenticating to any of them. This lane did not attempt an OAuth flow, did not acquire a credential, and did not call a tool in any needsAuth namespace.",
+  "supports": [
+    "AI-05 removal: MCP integrations are candidate authorised access, not out of scope",
+    "AI-02 removal: the Cursor API key blocker is an unauthenticated integration, not a missing credential"
+  ],
+  "totals": { "namespaces": 8, "ready": 3, "needs_auth": 5 },
+  "needs_auth": [
+    { "namespace": "Supabase", "status": "needsAuth", "error": "This MCP server requires authentication before its tools can be used." },
+    { "namespace": "Vercel", "status": "needsAuth", "error": "This MCP server requires authentication before its tools can be used." },
+    { "namespace": "Cloudflare-bindings", "status": "needsAuth", "error": "This MCP server requires authentication before its tools can be used." },
+    { "namespace": "Cloudflare-builds", "status": "needsAuth", "error": "This MCP server requires authentication before its tools can be used." },
+    { "namespace": "Cloudflare-observability", "status": "needsAuth", "error": "This MCP server requires authentication before its tools can be used." }
+  ],
+  "ready": [
+    { "namespace": "cursor-cloud", "status": "ready", "tool_count": 14 },
+    { "namespace": "cursor-subscriptions", "status": "ready", "tool_count": 5 },
+    { "namespace": "Cloudflare-docs", "status": "ready", "tool_count": 2 }
+  ],
+  "the_finding_that_changes_a_founder_action": {
+    "reproduced": "CURSOR_API_KEY is absent from this runtime's injected secret names (see secret-name-census.txt), and the Supabase MCP namespace is present and reports needsAuth.",
+    "founder_stated": "A Cursor API key already exists in Supabase Edge Secrets.",
+    "inference_label": "HYPOTHESIS",
+    "inference": "If the key is where the founder says it is, the blocker is that the Supabase integration in this Cursor account is unauthorised, not that a key is missing. This lane cannot confirm the key's presence without authenticating, which is out of bounds, so the presence of the key remains founder-stated and unverified here.",
+    "consequence": "The founder action changes shape. Instead of creating, scoping and storing a new credential, the act is authorising one already-configured integration in the Cursor dashboard. That act is owner-scoped and cannot be delegated, but it is materially smaller and produces no duplicate credential.",
+    "what_this_lane_must_not_do": "Authorising that integration requires an OAuth consent this lane is explicitly barred from attempting. Naming the correct action is in scope; performing it is not."
+  }
+}

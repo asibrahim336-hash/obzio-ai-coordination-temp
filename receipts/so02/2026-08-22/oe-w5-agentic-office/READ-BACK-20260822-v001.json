@@ -1,0 +1,61 @@
+{
+  "record_id": "OE-W5-READ-BACK-20260822-v001",
+  "lane": "OE-W5-AGENTIC-OFFICE-GUIDE",
+  "commission_id": "COM-CUR-ENV-01-20260822-v001",
+  "state": "READY_TO_COMMIT",
+  "evidence_label": "DIRECTLY_REPRODUCED",
+  "captured_at": "2026-08-23T00:35Z",
+
+  "why_this_record_exists": [
+    "A zero exit from `git push` is not evidence of publication. Reproduced in this estate: two lanes committed on the shared /workspace checkout's detached HEAD, so their branch refs never advanced, and `git push -u origin <branch>` then pushed the stale ref while printing 'Everything up-to-date' and exiting 0. Both lanes would have reported success against an effectively empty branch.",
+    "A read-back that merely names a commit is also not enough. A fabricated read-back naming a nonexistent commit once passed a producer's own verifier here. So this record does not rest on asserting a SHA: it re-derives file hashes from bytes fetched back out of the remote by a process that never saw the working tree."
+  ],
+
+  "method": {
+    "step_1": "git clone --no-checkout --depth 1 --branch cursor/oe-w5-agentic-office-696d https://github.com/asibrahim336-hash/obzio-ai-coordination-temp.git /tmp/w5-readback",
+    "step_2": "git checkout cursor/oe-w5-agentic-office-696d in the fresh clone",
+    "step_3": "sha256 every delivered file in the fresh clone and compare against the same path in the working tree",
+    "independence_note": "The clone is a separate directory populated only from the remote. It shares no object store, no index and no working tree with /tmp/oe-w5. The comparison is therefore between bytes GitHub served and bytes this lane wrote, not between a file and itself."
+  },
+
+  "observation_1_publication_is_real": {
+    "branch": "cursor/oe-w5-agentic-office-696d",
+    "local_head": "cdb2d8f70179eac1361153fbd88b6f3d4a3bab4b",
+    "fresh_clone_head": "cdb2d8f70179eac1361153fbd88b6f3d4a3bab4b",
+    "ls_remote": "cdb2d8f70179eac1361153fbd88b6f3d4a3bab4b\trefs/heads/cursor/oe-w5-agentic-office-696d",
+    "all_three_agree": true,
+    "what_this_rules_out": "The exit-zero-on-a-stale-ref failure. A fresh clone reached this commit from the remote, so the ref genuinely advanced rather than the push silently no-opping."
+  },
+
+  "observation_2_bytes_survive_the_round_trip": {
+    "files_checked": 25,
+    "match": 25,
+    "mismatch": 0,
+    "absent_on_remote": 0,
+    "verdict": "PASS",
+    "scope": "Every file delivered as of cdb2d8f7: the launch guide, all of w5-agentic-office/, and the lane's raw receipts."
+  },
+
+  "why_no_per_file_hash_list_is_duplicated_here": {
+    "statement": "Per-file hashes live in MANIFEST.json and are deliberately not copied into this record.",
+    "reason": "This record is written before the final commit, so any hash list embedded in it goes stale the moment a covered file is amended — and a stale hash list that still reads as a verification is worse than none. The guide was in fact amended after cdb2d8f7 to add the manifest-check command, which is exactly the case that would have rotted a copied list.",
+    "single_authority": "MANIFEST.json holds path, size_bytes and sha256 for every delivered file, plus entry_count and a bundle_sha256 a third party recomputes independently."
+  },
+
+  "the_closing_check_a_reviewer_should_run": {
+    "statement": "This record and MANIFEST.json cannot appear in a clone taken before the commit that carries them. The regress is closed by running the check against the final branch head, where every file including this one is present.",
+    "commands": [
+      "git ls-remote origin cursor/oe-w5-agentic-office-696d",
+      "git clone --branch cursor/oe-w5-agentic-office-696d https://github.com/asibrahim336-hash/obzio-ai-coordination-temp.git /tmp/verify",
+      "cd /tmp/verify && python3 workstreams/so02/control-plane/operating-environment/w5-agentic-office/tools/build_manifest.py --check receipts/so02/2026-08-22/oe-w5-agentic-office/MANIFEST.json"
+    ],
+    "expected": "PASS, with entry_count and bundle_sha256 recomputed from the remote's own bytes. That single command supersedes this record: it verifies every delivered file, including this one, from a clone that never saw the producing runtime.",
+    "expected_exit_code": 0
+  },
+
+  "what_this_record_does_not_establish": [
+    "That the guide is correct. Publication and byte-integrity are not acceptance. Nothing here rises above DURABLE on the admission ladder.",
+    "That any claim inside the guide was independently validated. S-ACCEPT has not run against this bundle.",
+    "That the manifest's own bytes are verified by this record. The manifest is verified by the commit that carries it and by its own --check."
+  ]
+}

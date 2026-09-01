@@ -1,0 +1,87 @@
+
+guard_write_scope.py — beforeShellExecution
+ benign commands are not touched
+  PASS  allows git status
+  PASS  allows gh pr list (read)
+  PASS  allows unrelated shell
+  PASS  allows push to own lane branch
+  PASS  allows commit on lane branch
+ protected branches are refused on push
+  PASS  denies push to main
+  PASS  denies push to so02/strategic-control-plane-migration-20260822-v001
+  PASS  denies push to soo/whatever
+  PASS  denies push to packs/bundle-1
+  PASS  denies push to cursor/po03-something
+  PASS  denies push to cursor/so02-cur-orch-qual-01
+  PASS  denies push to cursor/operating-environment-return-20260822-v001
+  PASS  denies push to po03/anything
+  PASS  denies push to cursor/setup-dev-environment-abc
+ refspec forms resolve to the destination branch
+  PASS  resolves SRC:DST refspec
+  PASS  strips refs/heads/ from destination
+  PASS  handles the + force-refspec prefix
+ protected branches are refused on commit, and bare push follows HEAD
+  PASS  denies commit while HEAD is protected
+  PASS  bare push targets the current branch
+ named command refusals
+  PASS  denies gh pr create
+  PASS  denies gh pr merge
+  PASS  denies gh issue create
+  PASS  denies gh api -X POST
+  PASS  denies the --method spelling of the same write
+  PASS  denies a lowercase verb
+  PASS  allows gh api GET
+  PASS  allows an explicit -X GET
+  PASS  denies --force
+  PASS  denies the -f short form
+  PASS  allows --force-with-lease
+  PASS  denies rebase
+  PASS  denies filter-branch
+  PASS  denies reset --hard
+  PASS  denies commit --amend
+ currentness must hold before a commit may exist
+  PASS  denies commit when currentness check fails
+  PASS  quotes the failing check's own output back to the agent
+  PASS  a failing check does not block non-commits
+ detached HEAD and stale-ref push (the reproduced collision)
+  PASS  denies commit on a detached HEAD
+  PASS  denies pushing the lane ref left behind at base
+  PASS  the reproduced condition is real: the branch ref is still at base
+ the stale-ref rule fires with HEAD attached, and spares divergent branches
+  PASS  denies pushing a ref strictly behind HEAD on the same lineage
+  PASS  allows pushing a genuinely divergent branch
+  PASS  allows pushing a branch that does not exist locally yet
+ the rules are configurable, and the guard fails open
+  PASS  honours refuse_detached_head:false
+  PASS  fails open on malformed stdin
+  PASS  fails open when write-scope.json is absent
+  PASS  writes an append-only audit line per decision
+
+gate_claim_state.py — stop
+  PASS  stays silent when the turn changed nothing
+  PASS  stays silent when the turn did not complete
+  PASS  fires on COMPLETED with no receipt manifest
+  PASS  names the specific evidence a COMPLETED claim requires
+  PASS  stays silent when COMPLETED is backed by a manifest
+  PASS  fires on QUALIFIED with no receipt manifest
+  PASS  fires when a run records its own acceptance
+  PASS  names the state a self-acceptance actually sits in
+  PASS  accepts a null acceptor as an honest not-yet-accepted
+  PASS  fires when a pull request is described as completion
+  PASS  explains that a pull request is a projection
+  PASS  ignores non-text artifacts
+
+ledger_subagent.py — subagentStart / subagentStop
+  PASS  subagentStart exits 0
+  PASS  subagentStop exits 0
+  PASS  tolerates malformed stdin
+  PASS  appends one line per lifecycle event
+  PASS  records the phase
+  PASS  records the only identity a subagent exposes
+  PASS  records which branch the subagent was actually on
+  PASS  marks turn metadata unavailable rather than inventing a value
+  PASS  falls back to the boot snapshot and says so
+  PASS  treats a 404 error body as absence, never as a value
+
+69/69 cases passed
+exit=0

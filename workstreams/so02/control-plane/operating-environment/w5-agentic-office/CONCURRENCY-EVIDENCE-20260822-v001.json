@@ -1,0 +1,97 @@
+{
+  "record_id": "OE-W5-CONCURRENCY-EVIDENCE-20260822-v001",
+  "lane": "OE-W5-AGENTIC-OFFICE-GUIDE",
+  "commission_id": "COM-CUR-ENV-01-20260822-v001",
+  "evidence_label": "DIRECTLY_REPRODUCED",
+  "instrument": "cursor-cloud list-cloud-agents (limit=200, includeArchived=true)",
+  "scan_complete": true,
+  "totals": {
+    "top_level_cloud_agents": 11,
+    "one_account": true,
+    "one_repository": true,
+    "distinct_exact_model_configurations": 4,
+    "distinct_model_families": 2
+  },
+  "exact_model_configurations_observed": [
+    "claude-opus-5-thinking-max",
+    "claude-sonnet-5-thinking-max",
+    "gpt-5.6-sol-max-fast",
+    "gpt-5.6-terra-max-fast"
+  ],
+  "model_families_observed": [
+    "claude",
+    "gpt"
+  ],
+  "by_source": {
+    "internal": 2,
+    "web": 9
+  },
+  "by_lifecycle_status": {
+    "RUNNING": 2,
+    "WAITING_FOR_BACKGROUND_WORK": 1,
+    "IDLE": 7,
+    "ERROR": 1
+  },
+  "simultaneous_dispatch": {
+    "largest_burst_within_1000ms": {
+      "agents": 8,
+      "tightest_window_ms": 804
+    },
+    "window_by_count": [
+      {
+        "agents": 2,
+        "tightest_window_ms": 2
+      },
+      {
+        "agents": 3,
+        "tightest_window_ms": 6
+      },
+      {
+        "agents": 4,
+        "tightest_window_ms": 33
+      },
+      {
+        "agents": 5,
+        "tightest_window_ms": 61
+      },
+      {
+        "agents": 6,
+        "tightest_window_ms": 133
+      },
+      {
+        "agents": 7,
+        "tightest_window_ms": 161
+      },
+      {
+        "agents": 8,
+        "tightest_window_ms": 804
+      },
+      {
+        "agents": 9,
+        "tightest_window_ms": 24186641
+      },
+      {
+        "agents": 10,
+        "tightest_window_ms": 61896416
+      },
+      {
+        "agents": 11,
+        "tightest_window_ms": 61897471
+      }
+    ],
+    "earliest_created_at": "2026-08-22T06:48:00.078000Z",
+    "latest_created_at": "2026-08-22T23:59:37.549000Z"
+  },
+  "what_this_does_and_does_not_establish": {
+    "establishes": [
+      "One Cursor account ran this many top-level cloud agents on one repository.",
+      "Several distinct exact model configurations ran concurrently under one account.",
+      "A burst of agents was dispatched inside a sub-second window from a single operator action."
+    ],
+    "does_not_establish": [
+      "Any platform concurrency ceiling. A census of what did run is not a measurement of what may run.",
+      "Any statement about compute or rate-limit contention. Only the visible run layer is observable from inside a pod.",
+      "Any cost figure. Token consumption is not exposed by this instrument."
+    ]
+  }
+}

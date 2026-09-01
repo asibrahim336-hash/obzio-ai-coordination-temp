@@ -1,0 +1,47 @@
+---
+alwaysApply: true
+---
+
+# Claim states
+
+Every statement about work in this repository is in exactly one of these
+states. Never use two at once and never let a later sentence quietly promote
+one.
+
+| State | Means | Minimum evidence |
+|---|---|---|
+| `PROPOSED` | Written down. Nothing has run. | The proposal itself. |
+| `LAUNCHED` | Something was started. | The launch instrument and a stable locator for the thing started. |
+| `OBSERVED` | Something was seen to happen. | The instrument, the observation time, and the raw output. |
+| `READY_TO_COMMIT` | A work unit produced artifacts and stopped at its own boundary. | The artifacts plus a receipt manifest with per-file `sha256` and a `bundle_sha256`. |
+| `RECONCILED` | The artifacts are in immutable remote custody. | The commit SHA plus a byte-for-byte read-back addressed by that SHA. |
+| `ACCEPTED` | An independent party judged it against criteria it did not write. | An acceptance record naming an acceptor that is not the producing run. |
+
+## What is not a state
+
+A pull request is a projection. An archive is a projection. An
+acknowledgement, a handover document and a status message are projections. A
+provider reporting a run as finished is a **status**, not an acceptance. None
+of these advances the claim state and none may be described as delivery,
+completion or capability.
+
+## Evidence labels
+
+Label every factual claim exactly one of:
+
+- `DIRECTLY_REPRODUCED` — you ran it in this runtime. Include the command and
+  the observed output.
+- `DOCUMENTED` — an official source says so. Include the URL. You did not run
+  it.
+- `HYPOTHESIS` — untested inference. It is not evidence of capability.
+
+Never blur them and never let a `DOCUMENTED` capability be summarised as a
+working one. A capability you could not test is not one you may present as
+proven. When you could not test something, say what stopped you and name the
+instrument that would settle it.
+
+## Self-acceptance
+
+A producing run may not accept its own work, and may not write a non-null
+acceptor for itself. If acceptance has been requested and not granted, the
+state is `REQUESTED_NOT_GRANTED` and stays there.

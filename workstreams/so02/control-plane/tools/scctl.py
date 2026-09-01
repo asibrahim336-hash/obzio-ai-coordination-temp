@@ -205,7 +205,18 @@ def validate_control_plane(root: Path, data: dict[str, Any], errors: list[str]) 
 
     pointer = data.get("global_pointer_state", {})
     add(errors, pointer.get("state") == "RECONCILIATION_PENDING", "control-plane: global pointer conflict must remain explicit")
-    add(errors, "state/**" in pointer.get("prohibited_paths", []), "control-plane: state/** must remain protected")
+    # EC-13 retired 2026-08-23. This asserted a named-target prohibition list, the
+    # exact shape the founder voided, and it forbade state/** while the pointer sits
+    # at RECONCILIATION_PENDING — forbidding the work whose completion expires it.
+    # What replaces it is not a shorter list: a write must be reason-gated.
+    gating = pointer.get("write_gating", {})
+    add(errors, gating.get("model") == "REASON_AND_ROLLBACK", "control-plane: pointer writes must be reason-gated")
+    add(
+        errors,
+        set(gating.get("gates", [])) == {"concurrency", "reversibility", "evidence"},
+        "control-plane: the three write gates must all be present",
+    )
+    add(errors, "prohibited_paths" not in pointer, "control-plane: the voided prohibited-path list must not return")
 
     bindings = data.get("runtime_bindings", [])
     ids = [item.get("binding_id") for item in bindings if isinstance(item, dict)]

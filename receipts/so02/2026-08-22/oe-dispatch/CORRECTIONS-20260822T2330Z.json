@@ -1,0 +1,79 @@
+{
+  "record_id": "ROOT-CONTROLLER-CORRECTIONS-20260822T2330Z",
+  "decision_changed": [],
+  "recorded_at": "2026-08-22T23:30:00Z",
+  "recorded_by": "root controller bc-c6f63d58-9611-495a-96f6-2f2dcbef696d",
+  "purpose": "Record claims this controller propagated that a later lane falsified, and correct guidance already given to the founder. A wrong statement that has already been acted on is worse than one that has not, so these are corrected in place and named.",
+
+  "corrections": [
+    {
+      "correction_id": "COR-01-TWO-GITHUB-CREDENTIALS",
+      "claim_this_controller_recorded": "There are two distinct GitHub credentials: the gh CLI holds a read-only App installation token while git push uses a separate injected x-access-token carrying write.",
+      "recorded_in": "receipts/so02/2026-08-22/oe-dispatch/LANE-ADMISSION-L1-20260822T2046Z.json, and repeated in the PR body",
+      "source": "OE-L1-CURSOR-BASELINE, accepted by this controller without independent test",
+      "status": "FALSE",
+      "falsified_by": "OE-W3-CREDENTIAL-ESTATE",
+      "what_is_actually_true": "It is ONE GitHub App installation token surfaced through two transports: the REST API via gh, and git-over-HTTPS via six url.insteadOf rewrites. Both locations hold byte-identical values, and the decisive evidence is that the token rotated mid-run and both locations moved together to the same new value. Two independently injected credentials would not refresh in lockstep. The local remote.origin.url holds no token at all.",
+      "what_survives": "L1's conclusion was right even though its model was wrong. GET /repos does report every permission false, including pull:false, which is contradicted by the fetch that populated the worktree. The permission projection is misleading; there just are not two credentials behind it.",
+      "additional_fact": "It is a one-hour token, so any recorded digest is point-in-time. The durable claim is the invariant that the two locations always agree, not any particular value.",
+      "lesson": "This controller verified L1's custody rigorously and then accepted one of its substantive findings on trust. Custody verification and claim verification are different things, and doing the first well does not discharge the second."
+    },
+    {
+      "correction_id": "COR-02-SUPABASE-MCP-AS-KEY-ROUTE",
+      "claim_this_controller_gave_the_founder": "Authenticate the Supabase MCP integration; it matters most because it holds the Cursor API key, and authenticating it unlocks the Agent API.",
+      "given_in": "direct founder guidance at 2026-08-22T22:31Z and repeated at 23:05Z",
+      "status": "FALSE AND ACTED-ON-ADVICE, therefore corrected with priority",
+      "falsified_by": "OE-W3-CREDENTIAL-ESTATE",
+      "what_is_actually_true": "The Supabase MCP has no Edge-secrets tool in its published surface, so authenticating it would not have reached the key at all. The needsAuth namespaces additionally have no registered tools whatsoever — calling one fails with 'MCP server does not exist', a resolution failure rather than an authorisation failure.",
+      "corrected_action": "Mirror the existing key by hand: reveal it once in the Supabase dashboard and store that same value as a repository-scoped Cloud Agent secret named CURSOR_API_KEY.",
+      "why_the_alternatives_lose": "The Management API can return the value, but requires a Supabase personal access token that is strictly more powerful than the key it fetches — account-wide, not project-scopable, able to run SQL and to bulk-delete every secret through the same path it reads. The CLI reaches the API but renders digests, not values. Mirroring creates no new credential, introduces nothing more powerful, keeps the value out of every agent transcript, and lands the key exactly where the other routes would have had to put it anyway.",
+      "supabase_mcp_still_worth_authenticating": "Yes, but for its own reasons — schema and security advisors against the unresolved Supabase boundary — and it must not be scheduled as though it reaches the key."
+    },
+    {
+      "correction_id": "COR-03-MCP-AUTH-REQUIRES-DESKTOP",
+      "claim_this_controller_gave_the_founder": "MCP integrations are authenticated in the Cursor desktop IDE.",
+      "status": "INCOMPLETE, and the correction lowers founder effort",
+      "what_is_actually_true": "MCP OAuth exposes a web callback at https://www.cursor.com/agents/mcp/oauth/callback as well as a desktop one, so authentication can be completed from cursor.com/agents without opening the desktop IDE.",
+      "note": "Recorded because the whole point of the founder action list is to minimise the work, and an unnecessary device requirement is exactly the kind of friction that gets an action deferred."
+    }
+  ],
+
+  "new_security_finding_requiring_founder_action": {
+    "finding_id": "SEC-01-DEAD-AUREA-SECRETS",
+    "statement": "Four AUREA_E2E_* secrets are injected into every agent run in this repository, and the project they belong to does not resolve in public DNS — NXDOMAIN from both dns.google and cloudflare-dns.com, against a control that resolves, with egress unrestricted.",
+    "why_it_matters": "Two of the four are a live email address and password. They reach every run for no benefit, since the endpoint they authenticate against cannot be reached.",
+    "claim_boundary": "The evidence supports that the hostname does not resolve. It does not support the claim that the project was deleted.",
+    "action": "Retire all four secrets, pending one line of founder confirmation that they are genuinely unused.",
+    "urgency": "NOW — this reduces standing exposure and costs nothing"
+  },
+
+  "hazard_recorded": {
+    "hazard_id": "HAZ-01-GH-AUTH-STATUS-PRINTS-TOKEN",
+    "statement": "gh auth status prints live token material even without --show-token.",
+    "self_check_performed": "This controller ran gh auth status during its first environment census and the output did include JWT material. A full scan of every file on the return branch for JWT and GitHub token patterns returns zero hits, so nothing was committed. The token was transient shell output only, and it has since rotated on its one-hour cycle.",
+    "control_adopted": "Capture scripts must refuse to run gh auth status. Use gh api /rate_limit or scope headers instead when identity or scope information is needed."
+  },
+
+  "verification_of_the_final_lane": {
+    "parent_id": "OE-W3-CREDENTIAL-ESTATE",
+    "head": "e21a1fb5318a94e986e3f86d828d19de733c8c0e",
+    "reported_sha_matches_remote": true,
+    "entries": 24,
+    "bundle_recomputed_matches": true,
+    "digest_mismatches": 0,
+    "uncovered_by_manifest": 0,
+    "outside_scope": 0,
+    "closure": "complete, including its own remote read-back record; only MANIFEST.json is excluded and it declares that explicitly",
+    "note": "The lane verified itself three ways including a hermetic container replay with NetworkMode=none that re-derived the same digest with no network. That is a stronger self-check than any prior lane produced, and it was still independently recomputed here rather than accepted."
+  },
+
+  "group_closure": {
+    "lanes_dispatched": 8,
+    "lanes_delivered": 8,
+    "lanes_rejected": 0,
+    "all_heads_merged_into_return_branch": true,
+    "total_files_vs_so02_base": 442,
+    "files_outside_the_allowlist": 0,
+    "credential_values_committed": 0
+  }
+}

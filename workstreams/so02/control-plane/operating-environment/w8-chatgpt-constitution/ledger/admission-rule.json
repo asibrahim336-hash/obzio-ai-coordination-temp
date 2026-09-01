@@ -1,0 +1,138 @@
+{
+  "artifact_id": "OE-W8-INTENT-ADMISSION-RULE-20260822-v001",
+  "lane": "OE-W8-CHATGPT-CONSTITUTION",
+  "commission": "COM-CUR-ENV-01-20260822-v001",
+  "schema_version": 1,
+  "decision_changed": [],
+  "governs": "How an utterance recovered from an arbitrary thread in the founder's ChatGPT account is admitted as evidence, at what standing, and how two conflicting utterances are ranked.",
+
+  "unit_of_admission": {
+    "the_unit": "UTTERANCE",
+    "not": "THREAD",
+    "why": "A thread is a container of utterances of mixed standing: the founder's own words, an assistant's paraphrase of them, an assistant's own proposals, and the founder acknowledging an assistant proposal. Persuasiveness is a property of prose; standing is a property of an utterance's speaker and speech act. The failure mode 'a persuasive old thread mistaken for current intent' exists because the thread is treated as the atom. Separating them is most of the solution.",
+    "worked_proof_from_the_estate_itself": "FOUNDER-STANDING-INSTRUCTION-20260822.md contains, in one file, three utterances of three different standings: the founder's standing instruction (binding), his clarification (binding), and the ChatGPT advisory proposal he quoted (explicitly not binding). Admitted as one object at one standing, the advisory proposal would inherit founder authority. The estate got this right by hand. This rule makes it mechanical."
+  },
+
+  "standing_lattice": {
+    "S0": {"name": "INADMISSIBLE", "may": [], "typical": "unattributed content, or content whose only locator is a display alias"},
+    "S1": {"name": "CONTEXT", "may": ["inform"], "may_not": ["change any decision class"], "typical": "an assistant utterance, a founder exploration, a quotation of a third party. Most of the account's back catalogue lands here, and that is the correct result rather than a failure of the sweep."},
+    "S2": {"name": "FOUNDER_SIGNAL", "may": ["inform", "raise an open question", "seed a warrant"], "may_not": ["decide"], "typical": "founder preference or assessment; also a voice-captured directive whose read-back was not confirmed"},
+    "S3": {"name": "FOUNDER_DECISION", "may": ["decide within its declared scope"], "typical": "founder directive or decision, scoped, with a stable locator"},
+    "S4": {"name": "FOUNDER_CONTROLLING", "may": ["decide within its declared scope", "stand over future operations until directly amended"], "typical": "an S3 the founder designated as standing"}
+  },
+
+  "standing_table": {
+    "_comment": "speaker_class -> speech_act -> base standing. A table, not a judgment. Anything absent is an error, never a default.",
+    "FOUNDER_DIRECT": {
+      "DIRECTIVE": "S3",
+      "DECISION": "S3",
+      "PREFERENCE": "S2",
+      "ASSESSMENT": "S2",
+      "EXPLORATION": "S1",
+      "ACKNOWLEDGEMENT": "S3",
+      "QUOTATION": "S1"
+    },
+    "FOUNDER_QUOTING_OTHER": {
+      "DIRECTIVE": "S1",
+      "DECISION": "S1",
+      "PREFERENCE": "S1",
+      "ASSESSMENT": "S1",
+      "EXPLORATION": "S1",
+      "ACKNOWLEDGEMENT": "S1",
+      "QUOTATION": "S1"
+    },
+    "ASSISTANT": {
+      "DIRECTIVE": "S1", "DECISION": "S1", "PREFERENCE": "S1",
+      "ASSESSMENT": "S1", "EXPLORATION": "S1", "ACKNOWLEDGEMENT": "S1", "QUOTATION": "S1"
+    },
+    "THIRD_PARTY": {
+      "DIRECTIVE": "S1", "DECISION": "S1", "PREFERENCE": "S1",
+      "ASSESSMENT": "S1", "EXPLORATION": "S1", "ACKNOWLEDGEMENT": "S1", "QUOTATION": "S1"
+    },
+    "UNATTRIBUTED": {
+      "DIRECTIVE": "S0", "DECISION": "S0", "PREFERENCE": "S0",
+      "ASSESSMENT": "S0", "EXPLORATION": "S0", "ACKNOWLEDGEMENT": "S0", "QUOTATION": "S0"
+    }
+  },
+
+  "caps_and_promotions": [
+    {
+      "id": "CAP-PARAPHRASE",
+      "rule": "An utterance that is not recorded verbatim is capped at S1, regardless of who paraphrased it.",
+      "why": "The founder's standing instruction requires that assistant-generated summaries never distort founder intent. A paraphrase of a directive is an assistant utterance about a directive, and an assistant utterance is S1."
+    },
+    {
+      "id": "CAP-ALIAS-LOCATOR",
+      "rule": "An utterance whose locator class is ALIAS is S0.",
+      "why": "An alias such as 'the chat where we discussed pricing' resolves to whatever the reader happens to be looking at. The estate's existing locator discipline already rejects display and session aliases."
+    },
+    {
+      "id": "CAP-UNCONFIRMED-VOICE",
+      "rule": "A voice-captured utterance whose read_back_confirmed is false is capped at S2 and labelled CAPTURED_UNCONFIRMED.",
+      "why": "Read-back is promoted from a feature to a gate in Part A. Speech is lossy at the point of transcription and interpretation, and read-back is the only zero-cost refusal point in the pipeline."
+    },
+    {
+      "id": "PROMOTE-DESIGNATED",
+      "rule": "An S3 whose designated_standing is true becomes S4.",
+      "why": "Standing over future operations is a founder act, not an inference from tone or importance."
+    },
+    {
+      "id": "CAP-ACKNOWLEDGEMENT",
+      "rule": "An ACKNOWLEDGEMENT's effective standing for a scope is the lesser of its own standing and the standing of the utterance it acknowledges, unless restates_content_verbatim is true.",
+      "why": "This is the laundering path. 'Yes, do that' against an assistant proposal must not convert the proposal into founder intent. If the founder restates the content himself, the restatement is his utterance and carries his standing; if he only assents, what he authored is the assent."
+    }
+  ],
+
+  "custody": {
+    "axis": "Custody is orthogonal to standing. Standing is how much authority an utterance carries; custody is whether it is yet evidence.",
+    "states": ["COMMITTED", "RECOVERED_UNCOMMITTED"],
+    "admitted_iff": "custody == COMMITTED and standing >= S2",
+    "why_orthogonal": "An uncommitted founder directive genuinely is a founder directive. It is simply not yet admissible, in the same way a provider's completion without a committed artifact is never DURABLE. Collapsing the two axes would either admit uncommitted content or deny that the founder said something."
+  },
+
+  "timestamp_trust": {
+    "why_it_exists": "The founder's own precedence rule authorises recency for direct founder intent. Recency requires knowing which utterance is more recent, and most recovered context does not establish that.",
+    "TRUSTED": ["REPOSITORY_PATH with a commit", "EXPORT_RECORD carrying a message timestamp"],
+    "UNTRUSTED": ["CONVERSATION_URL alone — a URL identifies a conversation, not when a message inside it was made", "any record whose uttered_at is absent"],
+    "consequence": "An untrusted timestamp cannot win a recency tie-break. It does not lower standing; it removes one resolution path."
+  },
+
+  "resolution_order": [
+    {"step": 1, "test": "Filter to admitted utterances whose scope contains the contested decision class.", "outcome": "candidate set"},
+    {"step": 2, "test": "Is the maximum standing held by exactly one candidate?", "if_yes": "That candidate wins. resolved_by = STANDING."},
+    {"step": 3, "test": "Among the candidates at maximum standing, does exactly one supersede all the others by name?", "if_yes": "That candidate wins. resolved_by = NAMED_SUPERSESSION. Named, never inferred, and it holds regardless of date order."},
+    {"step": 4, "test": "Are all remaining candidates FOUNDER_DIRECT, at equal standing, with TRUSTED timestamps that strictly order them?", "if_yes": "The most recent wins. resolved_by = FOUNDER_PRECEDENCE_RECENCY. This is the founder's own precedence clause, applied exactly where he stated it and nowhere else."},
+    {"step": 5, "test": "Otherwise.", "outcome": "UNRESOLVED. Fail closed. Neither candidate is admitted for the contested class; the class retains its previously admitted value; a conflict object is filed carrying every candidate's locator; and the conflict is presented to the founder as one binary question rather than as reading material. Under the estate's existing conflict rule an unresolved conflict never blocks work."}
+  ],
+
+  "what_recency_is_and_is_not": {
+    "authorised": "Step 4 only: two direct founder utterances, equal standing, overlapping scope, both with trustworthy timestamps.",
+    "never_applies": [
+      "across standings — an old S4 beats a new S1, which is the actual failure mode",
+      "to any assistant utterance",
+      "where scope overlap is inferred from topic keywords rather than declared decision classes",
+      "where either timestamp is untrusted"
+    ],
+    "the_point": "The danger is not a new founder statement beating an old one; the founder authorised that. The danger is an old persuasive assistant-authored thread beating a current founder statement, or a founder exploration read as a founder decision. Neither is a date problem, and a rule that sorts by date solves neither."
+  },
+
+  "scope_discipline": {
+    "rule": "Scope is a set of declared decision-class identifiers. It is never inferred from topic keywords.",
+    "why": "Two utterances about the same topic usually touch different decision classes and are not in conflict at all. Keyword overlap manufactures conflicts, and manufactured conflicts consume the founder's attention, which is the resource the whole design protects.",
+    "unscoped": "An utterance with an empty scope may still be admitted, but it can never win or lose a resolution, because it contests nothing."
+  },
+
+  "conflict_object": {
+    "states": ["OPEN", "RESOLVED_BY_EVIDENCE", "RESOLVED_BY_FOUNDER", "STANDING_DISSENT"],
+    "blocking": "none",
+    "founder_presentation": "one binary question naming both locators and the contested class; never a reading assignment"
+  },
+
+  "recovery_protocol": {
+    "step_1": "The recovering function returns utterance records, not a summary. A summary of a thread is a new assistant utterance and is S1 by construction.",
+    "step_2": "Each record carries verbatim text, a stable locator, speaker class, speech act and declared scope. Fields it cannot establish are left absent, never guessed. An absent speaker_class is UNATTRIBUTED and therefore S0.",
+    "step_3": "Records land in git. Until then they are RECOVERED_UNCOMMITTED and are not evidence.",
+    "step_4": "The checker derives standing, resolves each contested class, and fails closed on UNRESOLVED.",
+    "what_this_forbids": "Recovering context by reading a thread and reporting what it means. That is the single most natural way to use the account and it is inadmissible above S1 no matter how accurate it is, because accuracy that cannot be checked is indistinguishable from confidence."
+  }
+}

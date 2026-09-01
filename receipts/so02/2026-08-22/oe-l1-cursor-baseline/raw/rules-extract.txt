@@ -1,0 +1,89 @@
+=== rules.md :: rule anatomy / frontmatter ===
+### Rule file structure
+
+Each rule is an `.mdc` file that you can name anything you want. Project rules must use the `.mdc` extension. A plain `.md` file in `.cursor/rules` is ignored by the rules system because it has no frontmatter to specify `description`, `globs`, and `alwaysApply`. If you prefer plain markdown, use [AGENTS.md](https://cursor.com/docs/rules.md#agentsmd) instead.
+
+```bash
+.cursor/rules/
+  react-patterns.mdc       # Recognized as a project rule
+  api-guidelines.md        # Ignored (wrong extension)
+  frontend/                # Organize rules in folders
+    components.mdc
+```
+
+### Rule anatomy
+
+Each rule is a markdown file with frontmatter metadata and content. Control how rules are applied from the type dropdown which changes properties `description`, `globs`, `alwaysApply`.
+
+| Rule Type                 | Description                                           |
+| :------------------------ | :---------------------------------------------------- |
+| `Always Apply`            | Apply to every chat session                           |
+| `Apply Intelligently`     | When Agent decides it's relevant based on description |
+| `Apply to Specific Files` | When file matches a specified pattern                 |
+| `Apply Manually`          | When @-mentioned in chat (e.g., `@my-rule`)           |
+
+Under the hood, the three frontmatter fields interact to determine when a rule is included:
+
+| `alwaysApply` | `description` | `globs`  | Behavior                                                         |
+| :------------ | :------------ | :------- | :--------------------------------------------------------------- |
+| `true`        | —             | —        | Always included. Globs and description are ignored.              |
+| `false`       | —             | provided | Auto-attached when a matching file is in context.                |
+| `false`       | provided      | omitted  | Agent reads the description and pulls the rule in when relevant. |
+| `false`       | omitted       | omitted  | Included only when you `@`-mention the rule in chat.             |
+
+```md title="Always applied"
+---
+alwaysApply: true
+---
+
+- All source files must include the company copyright header
+- When you are unsure about implementation details, read the relevant
+  source files before proposing changes
+- Never modify generated files in the `dist/` or `build/` directories
+
+=== rules.md :: AGENTS.md + nested ===
+## AGENTS.md
+
+`AGENTS.md` is a simple markdown file for defining agent instructions. Place it in your project root as an alternative to `.cursor/rules` for straightforward use cases.
+
+Unlike Project Rules, `AGENTS.md` is a plain markdown file without metadata or complex configurations. It's perfect for projects that need simple, readable instructions without the overhead of structured rules.
+
+Cursor supports AGENTS.md in the project root and subdirectories.
+
+```markdown
+# Project Instructions
+
+## Code Style
+
+- Use TypeScript for all new files
+- Prefer functional components in React
+- Use snake_case for database columns
+
+## Architecture
+
+- Follow the repository pattern
+- Keep business logic in service layers
+```
+
+### Improvements
+
+### Nested AGENTS.md support
+
+Nested `AGENTS.md` support in subdirectories is now available. You can place `AGENTS.md` files in any subdirectory of your project, and they will be automatically applied when working with files in that directory or its children.
+
+This allows for more granular control of agent instructions based on the area of your codebase you're working in:
+
+```bash
+project/
+  AGENTS.md              # Global instructions
+  frontend/
+    AGENTS.md            # Frontend-specific instructions
+    components/
+      AGENTS.md          # Component-specific instructions
+  backend/
+    AGENTS.md            # Backend-specific instructions
+```
+
+Instructions from nested `AGENTS.md` files are combined with parent directories, with more specific instructions taking precedence.
+
+## User Rules

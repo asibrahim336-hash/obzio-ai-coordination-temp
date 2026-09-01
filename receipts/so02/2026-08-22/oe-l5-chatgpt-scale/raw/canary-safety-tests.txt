@@ -1,0 +1,39 @@
+=== canary safety negative tests, run 2026-08-22T20:42:00Z ===
+NT-1 PASSED: guard fired as intended
+NT-2 PASSED: guard fired as intended
+NT-3 PASSED: guard fired as intended
+NT-4 PASSED: a clean record is still accepted
+NT-5 PASSED: guard fired as intended
+NT-5b PASSED: guard fired as intended
+NT-6 PASSED: guard fired as intended
+NT-6b PASSED: guard fired as intended
+NT-6c PASSED: guard fired as intended
+NT-6d PASSED: guard fired as intended
+
+PASS: every credential-leak path was refused, and clean records still write
+exit=0
+
+=== canary dry-run, no credential present ===
+[2026-08-22T20:42:01Z] dry-run    plan validated; no network call was made
+{
+  "mode": "DRY_RUN",
+  "checked_at_utc": "2026-08-22T20:42:01Z",
+  "credential_present": false,
+  "credential_env_var_name": "OPENAI_API_KEY",
+  "calls_that_would_be_made": [
+    "GET  /v1/models                        (skipped if --model given)",
+    "POST /v1/conversations                 (metadata: 4 pairs, all pointers)",
+    "POST /v1/responses                     (store=true, strict json_schema, max_output_tokens=256, no tools)",
+    "GET  /v1/conversations/{id}            (the addressability test)",
+    "GET  /v1/conversations/{id}/items      (the retrievability test)"
+  ],
+  "calls_made_now": 0,
+  "spend_now": 0,
+  "would_write": "/tmp/oe-l5/workstreams/so02/control-plane/operating-environment/l5-chatgpt-scale/locators/openai-canary-locator.json",
+  "safety": {
+    "credential_ever_printed": false,
+    "credential_ever_written": false,
+    "output_scanned_for_secret_shapes": true,
+    "deletes_anything": false
+  }
+}

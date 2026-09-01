@@ -1,0 +1,43 @@
+{
+  "record_id": "OE-W10-REMOTE-READBACK-20260823-v001",
+  "lane": "OE-W10-PROVENANCE-REDERIVATION",
+  "method": "READ_BACK_BY_RECOMPUTATION",
+  "recorded_at": "2026-08-23T04:10:57Z",
+  "what_this_is_not": "Not an assertion-shaped boolean. L3 AC-05 reproduced that a synthetic read-back naming an all-zero commit passed the producer's own verifier, so a record claiming success proves nothing. This record is the output of fetching the branch from GitHub into an empty directory over the network and recomputing every digest there.",
+  "remote": {
+    "url": "github.com/asibrahim336-hash/obzio-ai-coordination-temp",
+    "branch": "cursor/oe-w10-provenance-696d",
+    "ref_sha_from_git_ls_remote": "7dbc7177c544cc2f9ac5e9d0f8e0ed8ffab346fb",
+    "independent_clone_head": "7dbc7177c544cc2f9ac5e9d0f8e0ed8ffab346fb",
+    "clone_path": "/tmp/oe-w10-readback",
+    "clone_is_shallow_depth_1": true,
+    "ref_matches_clone_head": true
+  },
+  "recomputation": {
+    "files_compared": 15,
+    "digest_mismatches": [],
+    "present_locally_absent_remotely": [],
+    "present_remotely_absent_locally": [],
+    "all_digests_match": true
+  },
+  "functional_read_back_from_the_clone": {
+    "why": "Digest equality proves the bytes arrived. It does not prove the bundle is internally consistent. These three commands were run inside the clone, against only the files that were published.",
+    "provctl_verify_corpus": "PASS - 4 segments recomputed byte-identical",
+    "provctl_check": "PASS - 86 constraints, each classified, each citation checkable",
+    "negative_tests": "OK - 27 tests",
+    "transcript": "receipts/so02/2026-08-23/oe-w10-provenance/raw/remote-readback.txt"
+  },
+  "bootstrap_declared": {
+    "attested_commit": "7dbc7177c544cc2f9ac5e9d0f8e0ed8ffab346fb",
+    "what_it_covers": "The 15 bundle files that existed at 7dbc7177, recomputed byte-identical from an independent clone.",
+    "files_added_after_the_attested_commit": [
+      "receipts/so02/2026-08-23/oe-w10-provenance/REMOTE-READBACK.json",
+      "receipts/so02/2026-08-23/oe-w10-provenance/raw/remote-readback.txt",
+      "receipts/so02/2026-08-23/oe-w10-provenance/raw/manifest-build.txt",
+      "receipts/so02/2026-08-23/oe-w10-provenance/MANIFEST.json"
+    ],
+    "what_it_cannot_cover": "MANIFEST.json and REMOTE-READBACK.json are written after the commit they attest and are published in the following commit. A record cannot hash the commit that contains it. The manifest closes over this record; this record attests the commit before the manifest. That circularity is declared here rather than hidden, which is the only honest handling of it.",
+    "how_a_verifier_closes_the_loop": "Fetch the final branch head, recompute every entry in MANIFEST.json, recompute bundle_sha256 over the entries array, and confirm that the files this record attests are byte-identical at the final head. Two commits, one continuous chain of digests."
+  },
+  "evidence_label": "DIRECTLY_REPRODUCED"
+}

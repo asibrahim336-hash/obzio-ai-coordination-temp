@@ -149,6 +149,26 @@ class ControlPlaneTests(unittest.TestCase):
         changed["protected_workstreams"][0]["contact_or_mutation_allowed"] = True
         self.assertTrue(any("PO-01 non-interference" in item for item in self.errors_for(changed)))
 
+    def test_voided_prohibited_path_list_cannot_return(self) -> None:
+        """EC-13 was a named-target list, the shape the founder voided. Reintroducing it must fail."""
+        changed = copy.deepcopy(self.control)
+        changed["global_pointer_state"]["prohibited_paths"] = ["state/**"]
+        self.assertTrue(any("voided prohibited-path list must not return" in item for item in self.errors_for(changed)))
+
+    def test_pointer_writes_must_be_reason_gated(self) -> None:
+        changed = copy.deepcopy(self.control)
+        changed["global_pointer_state"]["write_gating"]["model"] = "NAMED_TARGET_PROHIBITION"
+        self.assertTrue(any("must be reason-gated" in item for item in self.errors_for(changed)))
+
+    def test_all_three_write_gates_are_required(self) -> None:
+        for missing in ("concurrency", "reversibility", "evidence"):
+            changed = copy.deepcopy(self.control)
+            gates = [g for g in changed["global_pointer_state"]["write_gating"]["gates"] if g != missing]
+            changed["global_pointer_state"]["write_gating"]["gates"] = gates
+            self.assertTrue(
+                any("three write gates" in item for item in self.errors_for(changed)), missing
+            )
+
     def test_global_pointer_conflict_cannot_be_hidden(self) -> None:
         changed = copy.deepcopy(self.control)
         changed["global_pointer_state"]["state"] = "RESOLVED"

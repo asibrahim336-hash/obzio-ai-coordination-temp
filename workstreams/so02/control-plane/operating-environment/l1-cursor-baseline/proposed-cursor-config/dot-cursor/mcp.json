@@ -1,0 +1,35 @@
+{
+  "_comment_1": "PROPOSED, NOT APPLIED. Adding an MCP server changes what every agent on this repository can reach, so nothing here is enabled by staging it. Each entry below is a candidate with a stated reason, and each carries a distinct risk profile that must be decided before it is added.",
+  "_comment_2": "Transport guidance is DOCUMENTED from https://cursor.com/docs/cloud-agent/capabilities.md — prefer HTTP, because with HTTP the server configuration never enters the agent VM and tool calls are proxied through the backend, whereas a stdio server runs inside the VM and the agent can read its environment and credentials. SSE and mcp-remote are not supported.",
+  "_comment_3": "This estate has no repository .cursor/mcp.json today, and only the two built-in Cursor servers are present. The candidates below are ordered by how directly they remove a founder relay step, which is the failure this operation is trying to stop.",
+
+  "candidates_not_yet_enabled": {
+    "git-immutable-readback": {
+      "why": "The receipts discipline needs byte-for-byte read-back by immutable SHA from a transport the producing run does not control. Today that is done with ad-hoc git and gh calls written fresh each time. A local stdio server exposing exactly read-only 'fetch blob by sha' and 'compare tree at sha' would make the check identical across every lane rather than re-implemented per lane.",
+      "transport": "stdio",
+      "risk": "Runs inside the VM with the agent's git credential. Must be read-only by construction, with no command that can write a ref.",
+      "status": "candidate; no such server has been evaluated or named"
+    },
+    "documentation-fetch": {
+      "why": "This runtime has no web-search and no web-fetch tool. Every DOCUMENTED claim in this lane had to be established with curl into files. A read-only documentation-fetch server would make sourcing routine instead of artisanal, which matters because unsourced 'documented' claims are one of the ways this estate drifts.",
+      "transport": "http",
+      "risk": "Low for read-only public fetches. Fetched text is untrusted third-party content and must never be treated as instructions.",
+      "status": "candidate; egress is unrestricted so curl already covers the need, making this a convenience rather than a capability"
+    },
+    "issue-tracker": {
+      "why": "GitHub Issues are unavailable to this route — the installation token returns 403 on /issues. If coordination state needs somewhere addressable to live outside git, that gap has to be filled deliberately rather than by putting coordination state in PR descriptions.",
+      "transport": "http",
+      "risk": "Introduces a second place where 'what is current' can be asserted, which is precisely this estate's recurring failure. Do not add this unless the pointer chain makes git unambiguously canonical over it.",
+      "status": "candidate with a caution; the caution may be decisive"
+    }
+  },
+
+  "environment_level_policy_note": {
+    "_comment": "Independent of which servers are added, the live environment schema accepts two fields that constrain MCP for every agent using this environment. Neither is set today, so this repository currently inherits whatever upstream team or user MCP policy exists, with no repository-side statement of intent.",
+    "disableAllMcpServers": "boolean; when true, blocks every user and team MCP server for agents in this environment. Cursor built-in servers are never restricted.",
+    "mcpServerAllowlist": "array of {name, serverUrl | command, toolAllowlist}; allows an HTTP MCP by serverUrl pattern or a stdio MCP by command pattern, optionally narrowed to named tools.",
+    "recommendation": "Decide this explicitly before adding any server. An allowlist that names the intended servers is a stronger statement than an empty configuration that silently inherits."
+  },
+
+  "mcpServers": {}
+}

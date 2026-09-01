@@ -1,0 +1,289 @@
+{
+  "record_id": "OE-W3-FOUNDER-ALIGNMENT-PLAN-20260822",
+  "lane": "OE-W3-CREDENTIAL-ESTATE",
+  "commission": "COM-CUR-ENV-01-20260822-v001",
+  "authority_basis": "FOUNDER-AUTHORITY-DERESTRICTION-20260822T2225Z",
+  "objective": "Give Cursor the maximum useful AUTHORISED access across the estate, ordered by leverage per unit of founder effort.",
+
+  "ordering_principle": "Ranked by capability unlocked divided by founder minutes spent, with a hard preference for actions that create no new credential. An action that unlocks a great deal but requires minting a powerful new secret is ranked below one that unlocks less using something that already exists.",
+
+  "the_single_highest_leverage_action": "FA-W3-01. It is the only action in this plan that removes the founder from the critical path of every future multi-lane dispatch, and it creates no credential to do it.",
+
+  "founder_actions": [
+    {
+      "action_id": "FA-W3-01",
+      "rank": 1,
+      "title": "Mirror the EXISTING Cursor API key from Supabase Edge Secrets into a repository-scoped Cloud Agent secret",
+      "estimated_founder_effort": "two dashboard visits, one copy-paste",
+      "creates_a_new_credential": false,
+      "marker": "*** THIS IS THE ACTION THAT UNLOCKS THE MOST ***",
+
+      "1_exact_capability_unlocked": "Authenticated access to api.cursor.com from inside every cloud agent run on this repository. Concretely: POST /v1/agents to create an agent run with an explicitly chosen model, POST /v1/agents/{id}/runs to send it follow-up instructions, the run listing, streaming and cancellation endpoints, GET /v1/models to read the account's actually-selectable model list, and GET /v1/me for identity. Today every one of these returns HTTP 401 'Invalid User API Key' — reproduced against /v1/me, /v1/models, /v1/agents and /v1/repositories — while a nonexistent path returns a 404 of a different shape, so the routes exist and are credential-blocked rather than absent.",
+
+      "2_why_it_benefits_the_whole_operation": "It converts lane dispatch from a human action into a programme capability. Today a five-lane group exists because a person pressed a button five times, and an independent acceptor from a different model family exists only if a person selects that model. Both are single points of failure and both cost founder attention on every cycle. With this key a controller creates its own lanes, chooses each lane's model deliberately — including choosing a different family for the acceptor, which is what makes the acceptance independent rather than nominal — collects results, and follows up, with no relay. cursor-cloud already provides the observation half of that loop and is proven working; this is the missing creation half. It also settles a standing open question the baseline lane could not close: which models this account can actually select.",
+
+      "3_exact_account_and_settings_location": {
+        "read_the_existing_value": "https://supabase.com/dashboard — sign in as the owner of the Obzio Supabase projects, select the project holding the key, open Edge Functions > Secrets, find the Cursor key entry and reveal its value. If the project is not obvious, see the 'if_the_project_is_unknown' note below.",
+        "store_it_for_cursor": "https://cursor.com/dashboard — signed in as Ahmed Sadek, sadekahmed@meta.com, user id 406024541 (confirmed from this run's own identity metadata). Open Cloud Agents > Secrets and add a secret named exactly CURSOR_API_KEY, scoped to the repository asibrahim336-hash/obzio-ai-coordination-temp.",
+        "if_the_project_is_unknown": "Either browse the project list in the Supabase dashboard, or run workstreams/so02/control-plane/operating-environment/w3-credential-estate/tools/find-cursor-key-project.sh, which enumerates every visible project and prints matching secret NAMES and value DIGESTS only, never values. The script needs a Supabase token, so if the project count is small the dashboard is the lower-cost path.",
+        "what_NOT_to_do": "Do not issue a new key at https://cursor.com/dashboard/api. That request appeared in FOUNDER-TRANCHE-01 as OA-A and in CONTROL-SURFACE-ACTIVATION-PROGRAMME as FA-CUR-API-01. It is superseded and withdrawn."
+      },
+
+      "4_minimum_appropriate_scope": "Repository scope, not team scope. Cursor API keys are not permission-scoped per endpoint, so the only scope control available is which runs can read the secret — which makes repository scoping the whole of the least-privilege story here, not a formality. Scope it to asibrahim336-hash/obzio-ai-coordination-temp alone. Do not reuse this key for anything outside this programme, and do not add it at team-wide scope where every repository's runs would receive it.",
+
+      "5_secret_storage_location": "Cursor Dashboard > Cloud Agents > Secrets, repository-scoped. It will continue to exist in Supabase Edge Secrets as well, which is expected — that is where it already lives and this action does not remove it. Never place it in .cursor/environment.json, never in a Dockerfile, never in a committed script, never in a chat message, and never in a command-line argument. Note that the key will then exist in two stores, so a future rotation must update both; that is the honest cost of this route and it is smaller than the alternative, which is injecting a Supabase token into every run so agents can fetch it live.",
+
+      "6_exact_test_command": {
+        "run_where": "In a NEW cloud agent run on this repository. Secrets are injected at pod start, so the run that stores the secret cannot see it. This is the most common way this kind of activation is wrongly reported as failed.",
+        "step_a_presence_without_reading_the_value": "echo \"$CLOUD_AGENT_ALL_SECRET_NAMES\" | tr ',' '\\n' | grep -x CURSOR_API_KEY",
+        "step_b_full_verification": "./workstreams/so02/control-plane/operating-environment/w3-credential-estate/tools/verify-cursor-api-key.sh",
+        "why_use_the_script_rather_than_a_bare_curl": "It establishes the unauthenticated baseline first, so a 401 afterwards is interpretable; it delivers the Authorization header to curl on stdin so the key never enters a process argument vector; and it prints status codes only, never bodies. That last point is not cosmetic — the api.cursor.com 401 body echoes a masked fragment of the presented key, so any script that prints bodies leaks key material into its own receipt.",
+        "step_c_confirm_it_is_the_SAME_key_optional": "Compare the key_sha256 printed by the script against the digest shown by `supabase secrets list --project-ref <ref>`. Equal digests prove the two stores hold one key, with no disclosure on either side."
+      },
+
+      "7_expected_result": {
+        "step_a": "prints CURSOR_API_KEY. Before activation it prints nothing and exits 1 — reproduced as today's actual state.",
+        "step_b": "name_census PRESENT, baseline_no_header HTTP 401, authenticated_call HTTP 200, verdict VERIFIED, exit 0. Today the same script prints verdict NOT_PRESENT and exits 2, and with a synthetic invalid key prints HTTP 401 and verdict REJECTED_INVALID_KEY — both reproduced in receipts/so02/2026-08-22/oe-w3-credential-estate/raw/verification-script-test.txt.",
+        "the_discriminating_transition": "401 to 200 on GET /v1/me. That single transition is the whole test.",
+        "if_it_returns_401": "The stored value is wrong, expired or revoked. Re-read it from Supabase and compare digests before assuming the key is bad.",
+        "if_it_returns_403": "The key authenticates but lacks authority for that endpoint — a different problem from a bad key, and the script distinguishes them."
+      },
+
+      "8_verification_and_revocation": {
+        "verification": "Re-run step_b in any later run. Because it re-establishes the baseline each time, its result stands alone and does not depend on trusting an earlier receipt.",
+        "revocation": "Delete the key at https://cursor.com/dashboard/api. Revocation is immediate and unilateral; no agent can prevent or delay it. Then also remove the secret from Cloud Agents > Secrets so no future pod receives a dead value, and remove or rotate it in Supabase Edge Secrets if the key is being retired rather than merely un-mirrored. Confirm by running step_b in a new run and observing 401.",
+        "detection_if_misused": "Agent runs created through the API appear in the same dashboard as any other run and are enumerable via cursor-cloud list-cloud-agents, so unexpected creation is visible without additional tooling."
+      },
+
+      "9_cost_privacy_and_retention": {
+        "cost": "The key itself costs nothing. Runs created through it consume the account's usage exactly as runs created by pressing the button do. The change is that runs become creatable programmatically, so a defective loop could create many — which is an argument for a bounded first use, not against the key.",
+        "privacy": "No new data flow. Prompts, repository content and tool output from created runs are processed by Cursor and the selected model provider under the account's existing settings, which is already true of every run today.",
+        "retention": "Run streams have a documented retention window; run records and artifacts persist until archived or deleted. This does not change the estate's custody position, because provider-held state is already treated as non-canonical and git remains canonical.",
+        "worth_stating_plainly": "This is the highest-consequence credential in the programme. It can create runs that write branches and open pull requests. It deserves more caution than any other item in this plan — which is an argument for repository scoping and a bounded first use, not for delay."
+      },
+
+      "10_now_or_later": "NOW. It is the only action here on the critical path of anything currently blocked, it creates no credential, and every other item in this plan is either optional or dependent on a question this one answers."
+    },
+
+    {
+      "action_id": "FA-W3-02",
+      "rank": 2,
+      "title": "Retire the four dead AUREA_E2E_* Cloud Agent secrets",
+      "estimated_founder_effort": "one dashboard visit; a decision, then four deletions",
+      "creates_a_new_credential": false,
+
+      "1_exact_capability_unlocked": "None directly. This removes capability that does not work, and with it a standing exposure. It is included because it is the cheapest real security improvement available and because leaving it undone will keep costing time: the next lane to find these variables will assume they work.",
+
+      "2_why_it_benefits_the_whole_operation": "Four credentials — a Supabase URL, a publishable key, a user email and a user password — are injected into every cloud agent run on this repository, and all four are unusable: the Supabase project hostname they target does not exist in public DNS. A live user email and password reaching every run, with no working service behind them, is exposure with no upside. It also removes a false signal: a lane reading the secret-name census today sees four credentials and reasonably infers a working Supabase route. There is none.",
+
+      "3_exact_account_and_settings_location": "https://cursor.com/dashboard — Cloud Agents > Secrets. The four entries are named AUREA_E2E_SUPABASE_URL, AUREA_E2E_SUPABASE_PUBLISHABLE_KEY, AUREA_E2E_USER_EMAIL and AUREA_E2E_USER_PASSWORD.",
+
+      "4_minimum_appropriate_scope": "If the AUREA end-to-end tests are genuinely retired, delete all four. If they are merely paused, narrow them to the repository that actually runs those tests rather than leaving them on this coordination repository, which contains no application code and no test that could use them. If the underlying credential is a real user account password, treat this as a rotation candidate independently of this programme.",
+
+      "5_secret_storage_location": "Not applicable — this action removes secrets from storage. If they are retained, they belong scoped to the AUREA application repository, not here.",
+
+      "6_exact_test_command": {
+        "before": "echo \"$CLOUD_AGENT_ALL_SECRET_NAMES\" | tr ',' '\\n' | sort",
+        "confirm_the_project_is_unreachable": "python3 -c \"import os,socket,urllib.parse; h=urllib.parse.urlsplit(os.environ['AUREA_E2E_SUPABASE_URL']).hostname; print(socket.getaddrinfo(h,443))\"",
+        "after": "run the same census in a NEW run and confirm the four names are gone"
+      },
+
+      "7_expected_result": {
+        "before": "the four AUREA_E2E_* names, and nothing else.",
+        "unreachability_check": "socket.gaierror '[Errno -2] Name or service not known'. Independently, DNS-over-HTTPS returns NXDOMAIN with zero answers from BOTH dns.google and cloudflare-dns.com, while the control host api.supabase.com returns NOERROR with 2 answers from both. All reproduced in receipts/so02/2026-08-22/oe-w3-credential-estate/raw/supabase-routes.txt.",
+        "after": "the census prints nothing, or only CURSOR_API_KEY once FA-W3-01 is done."
+      },
+
+      "8_verification_and_revocation": {
+        "verification": "The name census in a new run is the whole verification.",
+        "revocation": "This action IS a revocation. It is reversible by re-adding the values, so nothing is lost that the founder still holds.",
+        "caution": "Confirm with whoever owns the AUREA tests before deleting. This lane establishes that the hostname does not resolve; it does NOT establish that the project was deleted. A paused or migrated project could be restored, and the credentials would matter again."
+      },
+
+      "9_cost_privacy_and_retention": {
+        "cost": "None.",
+        "privacy": "Positive. A user email and password stop being injected into every run and therefore stop being present in every pod's environment.",
+        "retention": "Deleting the secret stops future injection. It does not retroactively remove the values from any run that already received them, which is another reason to do it sooner rather than later."
+      },
+
+      "10_now_or_later": "NOW, subject to a one-line confirmation that the AUREA end-to-end tests are not expected back imminently. Effort is minimal and the benefit is immediate."
+    },
+
+    {
+      "action_id": "FA-W3-03",
+      "rank": 3,
+      "title": "Authenticate the Supabase MCP integration",
+      "estimated_founder_effort": "one OAuth sign-in",
+      "creates_a_new_credential": false,
+
+      "1_exact_capability_unlocked": "The tool surface published at https://supabase.com/docs/guides/getting-started/mcp.md: organisation and project listing, project detail and URL, publishable keys, table and extension listing, migration listing and application, arbitrary SQL execution, security and performance advisors, Edge Function listing, retrieval and deployment, database branch listing and creation, storage bucket and config inspection, and documentation search.",
+
+      "2_why_it_benefits_the_whole_operation": "The estate's own intelligence records Supabase migrations and functions in obzio-platform, Obzio-Control and Obzio-Luxury, and names an unresolved Supabase security boundary as an open question with no assigned instrument. get_advisors is that instrument. list_migrations and execute_sql let a lane establish real schema state instead of inferring it from repository files that may not match what is deployed. This is the difference between a documented estate and an observed one.",
+
+      "3_exact_account_and_settings_location": "In Cursor, open Customize in the sidebar, find the Supabase MCP server, and complete the OAuth sign-in as the owner of the Obzio Supabase projects. This works from the web at https://cursor.com/agents as well as from the desktop app — Cursor registers callbacks for both surfaces (https://www.cursor.com/agents/mcp/oauth/callback for web and Cursor Agents, http://localhost:8787/callback for desktop), documented at https://cursor.com/docs/mcp.md. Team-level MCP policy, if it needs checking, is at https://cursor.com/dashboard/team-settings#mcp-configuration.",
+
+      "4_minimum_appropriate_scope": "Authenticate as an identity holding only what is needed. If Supabase organisation roles allow a read-oriented member, prefer that: apply_migration, execute_sql, deploy_edge_function and create_branch are all mutating, and the value described above is almost entirely read-side. If the MCP offers a read-only mode at connection time, enable it and lift the restriction deliberately when a lane genuinely needs to write.",
+
+      "5_secret_storage_location": "None to manage. OAuth tokens are held by Cursor's MCP client, not by this repository and not by any agent. No secret is created, copied or stored by this action — which is the main reason it ranks above the Cloudflare and Vercel decisions despite similar effort.",
+
+      "6_exact_test_command": {
+        "step_a_namespace_state": "GetDynamicTools with namespace 'Supabase' — check namespaceStatus.",
+        "step_b_a_real_call": "CallDynamicTool namespace=Supabase toolName=list_projects arguments={}"
+      },
+
+      "7_expected_result": {
+        "step_a": "namespaceStatus 'ready' with a populated tools array. Today it returns 'needsAuth' with an empty tools array — reproduced.",
+        "step_b": "a list of projects. Today the identical call fails with 'MCP server does not exist: Supabase', because a needsAuth namespace has no registered tools at all — reproduced.",
+        "explicitly_do_not_expect": "Access to Edge Function secrets. The published tool surface has no tool for them. This action does NOT reach the Cursor API key and must not be scheduled as though it does."
+      },
+
+      "8_verification_and_revocation": {
+        "verification": "The namespace status transition from needsAuth to ready, plus one successful list_projects.",
+        "revocation": "Disconnect the server in Customize, and revoke the OAuth grant in the Supabase account's connected-applications settings. Verify by re-running step_b and observing the namespace fail to resolve."
+      },
+
+      "9_cost_privacy_and_retention": {
+        "cost": "No direct cost. execute_sql and apply_migration can cause database load and, if misused, data change — which is what the scope note above is for.",
+        "privacy": "Query results flow into agent context and therefore into transcripts. If any Obzio project holds personal data, an unbounded SELECT would place it in a provider-held transcript. Constrain queries deliberately.",
+        "retention": "Transcripts follow the account's existing retention. No new store is created."
+      },
+
+      "10_now_or_later": "LATER, and specifically after FA-W3-01. It is worth having and carries no credential cost, but nothing is currently blocked on it, and authenticating it now risks being recorded as progress toward the Cursor API key, which it is not."
+    },
+
+    {
+      "action_id": "FA-W3-04",
+      "rank": 4,
+      "title": "Decide the Cloudflare and Vercel integrations as one bundled question",
+      "estimated_founder_effort": "one decision, then up to two OAuth sign-ins",
+      "creates_a_new_credential": false,
+
+      "1_exact_capability_unlocked": "Cloudflare: Workers, KV, R2 and D1 binding management (Cloudflare-bindings), Workers build status (Cloudflare-builds), and Workers logs and analytics (Cloudflare-observability). Vercel: project, deployment and log surfaces. Exact tool lists cannot be enumerated from here — a needsAuth namespace returns an empty tools array — so these are described from vendor documentation, not from observation.",
+
+      "2_why_it_benefits_the_whole_operation": "Conditionally. The estate intelligence records Vercel configuration in obzio-platform and lists Cloudflare, R2, Pages and DNS among deployment bindings whose current state is explicitly unverified, alongside an unprotected public preview and an apex domain that does not serve the product. If those are still live, these namespaces are how a lane establishes deployment reality without founder relay. If Obzio has moved off them, they are worth nothing and should not be connected. Bundled because one Cloudflare sign-in plausibly satisfies all three Cloudflare namespaces, making this one decision rather than four.",
+
+      "3_exact_account_and_settings_location": "Cursor sidebar > Customize > the relevant MCP server > OAuth sign-in, from web or desktop as in FA-W3-03.",
+
+      "4_minimum_appropriate_scope": "Read-oriented wherever the provider allows it. Neither platform needs write access to answer the questions that motivate connecting them. If Cloudflare offers account or zone scoping at grant time, restrict to the account holding Obzio resources.",
+
+      "5_secret_storage_location": "None. OAuth grants held by Cursor's MCP client. No secret is created or stored.",
+
+      "6_exact_test_command": {
+        "step_a": "GetDynamicTools with no arguments — confirm each namespace's status.",
+        "step_b_the_decision_test": "Once authenticated, list projects (Vercel) or R2 buckets and Workers (Cloudflare) and compare against the repositories named in state/REPOSITORY_ESTATE_INTELLIGENCE_20260818_v001.md."
+      },
+
+      "7_expected_result": {
+        "step_a": "the chosen namespaces move from needsAuth to ready.",
+        "step_b": "either resources that correspond to known Obzio repositories, in which case keep the connection, or an empty or unrelated list, in which case disconnect it. That comparison is the entire point of connecting: it converts a HYPOTHESIS about current platform usage into a reproduced fact."
+      },
+
+      "8_verification_and_revocation": {
+        "verification": "Namespace status transition plus one successful listing call.",
+        "revocation": "Disconnect in Customize and revoke the OAuth grant in the provider account. Straightforward and complete, since no token was copied anywhere."
+      },
+
+      "9_cost_privacy_and_retention": {
+        "cost": "None to connect. Read calls are free on both platforms.",
+        "privacy": "Deployment metadata and logs flow into agent context. Production logs can contain user data — constrain log queries by time window and volume rather than fetching broadly.",
+        "retention": "No new store. Provider-side logs retain per each platform's existing policy."
+      },
+
+      "10_now_or_later": "LATER. Connect the moment a lane has an actual question about a deployment, and not before. Speculative connection adds account bindings that nothing consumes and dilutes the meaning of 'ready' in the integration matrix."
+    },
+
+    {
+      "action_id": "FA-W3-05",
+      "rank": 5,
+      "title": "Decide whether the programme's Cursor identity should be a service account rather than a personal key",
+      "estimated_founder_effort": "a decision now; implementation only if the plan supports it",
+      "creates_a_new_credential": "yes, if adopted — which is why it is a deliberate decision and not a default",
+
+      "1_exact_capability_unlocked": "The same api.cursor.com capability as FA-W3-01, but bound to a service identity rather than to Ahmed Sadek personally. Documented at https://cursor.com/docs/account/enterprise/service-accounts.md (reachable, HTTP 200).",
+
+      "2_why_it_benefits_the_whole_operation": "A personal key ties programme continuity to one individual's account. If that account changes, is suspended, or leaves the team, every automated dispatch stops and the failure appears as an authentication error rather than as what it is. A service account decouples the programme's identity from a person, and makes attribution of automated runs unambiguous in the dashboard.",
+
+      "3_exact_account_and_settings_location": "https://cursor.com/dashboard — team settings, service accounts, if the team plan exposes them. Read https://cursor.com/docs/account/enterprise/service-accounts.md first to confirm availability for this plan tier.",
+
+      "4_minimum_appropriate_scope": "One service account for this programme, with access to asibrahim336-hash/obzio-ai-coordination-temp only. Not a shared account reused across unrelated work.",
+
+      "5_secret_storage_location": "Identical to FA-W3-01 — Cursor Dashboard > Cloud Agents > Secrets, repository-scoped, named CURSOR_API_KEY. The storage question is unchanged; only the identity behind the key differs.",
+
+      "6_exact_test_command": "The same verification script: tools/verify-cursor-api-key.sh. It is identity-agnostic and tests the credential, not the account behind it.",
+
+      "7_expected_result": "verdict VERIFIED, exit 0, exactly as for FA-W3-01. Additionally, runs created by this key should show the service account rather than a person as owner in the dashboard and in cursor-cloud run-info.",
+
+      "8_verification_and_revocation": {
+        "verification": "As FA-W3-01, plus confirming run ownership attribution.",
+        "revocation": "Delete the service account key, or the account itself, in team settings. Cleaner than revoking a personal key because nothing else depends on that identity."
+      },
+
+      "9_cost_privacy_and_retention": {
+        "cost": "May consume a seat or carry a plan requirement. Confirm before adopting — this is the main reason it is a decision rather than a recommendation.",
+        "privacy": "Slightly better. Programme activity is attributed to a service identity rather than commingled with an individual's personal usage history.",
+        "retention": "Unchanged."
+      },
+
+      "10_now_or_later": "LATER, and only as a considered improvement. It is explicitly NOT a reason to delay FA-W3-01. Mirror the existing key now; migrate to a service identity later if the plan supports it and the founder prefers it. Note the tension with the anti-duplication directive: adopting this WOULD create a new credential, and it is justified only if the existing key is then retired from programme use rather than kept alongside."
+    }
+  ],
+
+  "actions_this_lane_recommends_NOT_taking": [
+    {
+      "id": "NOT-01",
+      "action": "Issue a new Cursor API key.",
+      "why_not": "Superseded by founder authority. A key already exists. A second key with identical authority doubles the revocation surface and the number of places a leak can originate while unlocking nothing the first does not.",
+      "status": "WITHDRAWN — this lane does not restate it in any form."
+    },
+    {
+      "id": "NOT-02",
+      "action": "Create a Supabase personal access token so an agent can fetch the Cursor key from Edge Secrets.",
+      "why_not": "It creates a NEW credential that is strictly more powerful than the one being fetched — account-wide, not project-scopable, able to run SQL through the Management API and to create or delete projects, and able to bulk-delete every Edge Secret through the same path used to read one. It also delivers the key as command output into an agent transcript. FA-W3-01 reaches the same destination with nothing created and nothing disclosed.",
+      "when_it_would_change": "If enumeration across many projects becomes genuinely necessary. Even then prefer the CLI, which reports digests rather than values."
+    },
+    {
+      "id": "NOT-03",
+      "action": "Deploy a Supabase Edge Function that returns the Cursor key over HTTP.",
+      "why_not": "It would work, and it would turn a secret store into a credential exfiltration endpoint that outlives the task. It is also a production mutation of a project whose security boundary the estate's own intelligence already flags as unresolved.",
+      "recorded_because": "It is the one route that circumvents every blocker, so it should be visibly refused on merit rather than appear to have been overlooked."
+    },
+    {
+      "id": "NOT-04",
+      "action": "Obtain a GitHub credential with broader permissions so agents can use issues, Actions secrets or webhooks.",
+      "why_not": "The installed GitHub App's permissions are set by the App, not by the installing user, so this cannot be done by adjusting the existing installation — it would require a separate fine-grained personal access token, which is credential proliferation for a capability the programme does not need. Coordination already runs on git, where the existing credential has proven contents write. Use branches and files, not issues.",
+      "evidence": "GET /repos/{r}/issues, /actions/secrets, /actions/variables, /hooks and /deployments all return 403 on the current credential — reproduced."
+    }
+  ],
+
+  "internal_actions_requiring_no_founder_involvement": {
+    "note": "These proceed under the authority already granted and are recorded so the founder can see what is being done without him, not to request permission.",
+    "actions": [
+      {
+        "id": "IA-01",
+        "action": "Adopt the container runtime for independent acceptance.",
+        "detail": "Have the independent acceptor recompute every manifest digest and bundle_sha256 inside a container started with HostConfig.NetworkMode=none. Proven working: a container ran to exit 0 with uid=0, NET=ISOLATED and five inherited environment variables. Access is via the HTTP API on 127.0.0.1:2375; the docker CLI is not installed.",
+        "why": "It converts acceptance from document review into hermetic replay. A result obtained with no network and no inherited credential cannot have been obtained by calling the producer or by reusing the producer's authentication."
+      },
+      {
+        "id": "IA-02",
+        "action": "Make tools/scan-for-credentials.py a standing pre-commit gate for lanes handling credentials.",
+        "detail": "It refused this lane's own first draft — a redaction placeholder long enough to look like URL-embedded userinfo. Validated against positive controls (a live token, a shaped Supabase PAT, a tokenised URL) and a negative control.",
+        "why": "The discipline 'never print a secret' is unenforceable by intention. `gh auth status` prints live token material to stdout unasked, which is exactly the kind of leak a mechanical gate catches and a careful human does not."
+      },
+      {
+        "id": "IA-03",
+        "action": "Use cursor-subscriptions instead of polling wherever a lane waits on GitHub CI or a pull request event.",
+        "detail": "Available and unused. A lane that subscribes and ends its turn costs nothing while waiting.",
+        "why": "Polling burns budget and wall-clock for no information gain."
+      }
+    ]
+  },
+
+  "sequencing": {
+    "immediately": ["FA-W3-01", "FA-W3-02"],
+    "after_FA-W3-01_verifies": ["FA-W3-03"],
+    "on_demand_only": ["FA-W3-04"],
+    "decision_deferred": ["FA-W3-05"],
+    "no_action_blocks_any_other": "FA-W3-01 is independent of every other item. Nothing in this plan should be sequenced behind a decision the founder has not yet made, and no lane should idle waiting on any of it."
+  }
+}

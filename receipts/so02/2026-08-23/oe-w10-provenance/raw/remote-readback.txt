@@ -1,0 +1,18 @@
+# OE-W10 remote read-back by recomputation - DIRECTLY_REPRODUCED
+# executed inside an independent shallow clone fetched from GitHub over the network
+# clone path: /tmp/oe-w10-readback
+# clone HEAD: 7dbc7177c544cc2f9ac5e9d0f8e0ed8ffab346fb
+# recorded at: 2026-08-23T04:11:08Z
+
+$ git ls-remote origin cursor/oe-w10-provenance-696d
+7dbc7177c544cc2f9ac5e9d0f8e0ed8ffab346fb	refs/heads/cursor/oe-w10-provenance-696d
+
+$ provctl.py verify-corpus ... (from the clone)
+corpus verified: 4 segments recomputed byte-identical
+
+$ provctl.py check ... (from the clone)
+PASS: 86 constraints, each classified, each citation checkable
+
+$ negative_tests_provctl.py (from the clone)
+Ran 27 tests in 0.011s
+OK
